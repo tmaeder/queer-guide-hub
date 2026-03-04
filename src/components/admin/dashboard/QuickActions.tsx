@@ -1,88 +1,88 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
-import { 
-  Plus, 
-  Upload, 
-  Download, 
-  Settings, 
-  Users, 
-  Building, 
-  Calendar, 
-  ShoppingBag, 
+import {
+  Plus,
+  Upload,
+  Download,
+  Settings,
+  Users,
+  Building,
+  Calendar,
+  ShoppingBag,
   Tags,
   Globe,
   MapPin,
   FileText,
   Newspaper,
   Zap,
-  FileEdit
-} from "lucide-react";
+  FileEdit,
+} from 'lucide-react';
 
 export function QuickActions() {
   const navigate = useNavigate();
 
   const quickActions = [
     {
-      title: "Add New Event",
-      description: "Create a new event",
+      title: 'Add New Event',
+      description: 'Create a new event',
       icon: Plus,
-      action: () => navigate("/admin/content/events"),
-      variant: "default" as const
+      action: () => navigate('/admin/content/events'),
+      variant: 'default' as const,
     },
     {
-      title: "Add New Venue",
-      description: "Register a new venue",
+      title: 'Add New Venue',
+      description: 'Register a new venue',
       icon: Building,
-      action: () => navigate("/admin/content/venues"),
-      variant: "outline" as const
+      action: () => navigate('/admin/content/venues'),
+      variant: 'outline' as const,
     },
     {
-      title: "Import Data",
-      description: "Bulk import content",
+      title: 'Import Data',
+      description: 'Bulk import content',
       icon: Upload,
-      action: () => navigate("/admin/imports"),
-      variant: "outline" as const
+      action: () => navigate('/admin/imports'),
+      variant: 'outline' as const,
     },
     {
-      title: "Manage Users",
-      description: "View and manage users",
+      title: 'Manage Users',
+      description: 'View and manage users',
       icon: Users,
-      action: () => navigate("/admin/users"),
-      variant: "outline" as const
-    }
+      action: () => navigate('/admin/users'),
+      variant: 'outline' as const,
+    },
   ];
 
   const managementSections = [
     {
-      title: "Content Management",
+      title: 'Content Management',
       items: [
-        { label: "Events", icon: Calendar, path: "/admin/content/events" },
-        { label: "Venues", icon: Building, path: "/admin/content/venues" },
-        { label: "Marketplace", icon: ShoppingBag, path: "/admin/content/marketplace_listings" },
-        { label: "Groups", icon: Users, path: "/admin/content/community_groups" }
-      ]
+        { label: 'Events', icon: Calendar, path: '/admin/content/events' },
+        { label: 'Venues', icon: Building, path: '/admin/content/venues' },
+        { label: 'Marketplace', icon: ShoppingBag, path: '/admin/content/marketplace_listings' },
+        { label: 'Groups', icon: Users, path: '/admin/content/community_groups' },
+      ],
     },
     {
-      title: "System Management",
+      title: 'System Management',
       items: [
-        { label: "Tags", icon: Tags, path: "/admin/content/unified_tags" },
-        { label: "Countries", icon: Globe, path: "/admin/content/countries" },
-        { label: "Cities", icon: MapPin, path: "/admin/content/cities" },
-        { label: "Email Templates", icon: FileText, path: "/admin/email-templates" }
-      ]
+        { label: 'Tags', icon: Tags, path: '/admin/content/unified_tags' },
+        { label: 'Countries', icon: Globe, path: '/admin/content/countries' },
+        { label: 'Cities', icon: MapPin, path: '/admin/content/cities' },
+        { label: 'Email Templates', icon: FileText, path: '/admin/email-templates' },
+      ],
     },
     {
-      title: "Tools & Utilities",
+      title: 'Tools & Utilities',
       items: [
-        { label: "CMS", icon: FileEdit, path: "/admin/content" },
-        { label: "Import Hub", icon: Upload, path: "/admin/imports" },
-        { label: "News Sources", icon: Newspaper, path: "/admin/imports/news-sources" },
-        { label: "Analytics", icon: Zap, path: "/admin/analytics" },
-        { label: "Settings", icon: Settings, path: "/admin/settings" }
-      ]
-    }
+        { label: 'CMS', icon: FileEdit, path: '/admin/content' },
+        { label: 'Import Hub', icon: Upload, path: '/admin/imports' },
+        { label: 'News Sources', icon: Newspaper, path: '/admin/imports/news-sources' },
+        { label: 'Analytics', icon: Zap, path: '/admin/analytics' },
+        { label: 'Settings', icon: Settings, path: '/admin/settings' },
+      ],
+    },
   ];
 
   return (
@@ -109,7 +109,17 @@ export function QuickActions() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Icon style={{ height: 18, width: 18, flexShrink: 0 }} />
                     <Box sx={{ textAlign: 'left', minWidth: 0 }}>
-                      <Box sx={{ fontWeight: 500, fontSize: '0.8125rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{action.title}</Box>
+                      <Box
+                        sx={{
+                          fontWeight: 500,
+                          fontSize: '0.8125rem',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {action.title}
+                      </Box>
                     </Box>
                   </Box>
                 </Button>
@@ -126,7 +136,9 @@ export function QuickActions() {
             <CardHeader style={{ paddingBottom: 8 }}>
               <CardTitle style={{ fontSize: '0.8125rem' }}>{section.title}</CardTitle>
             </CardHeader>
-            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingTop: 0 }}>
+            <CardContent
+              style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingTop: 0 }}
+            >
               {section.items.map((item) => {
                 const Icon = item.icon;
                 return (

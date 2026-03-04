@@ -1,8 +1,8 @@
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User } from "lucide-react";
-import { BigHead } from "@bigheads/core";
-import type { AvatarConfig } from "./AvatarBuilder";
-import { getGravatarUrl } from "@/lib/gravatar";
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { User } from 'lucide-react';
+import { BigHead } from '@bigheads/core';
+import type { AvatarConfig } from './AvatarBuilder';
+import { generateAvatarUrl } from '@/lib/avatar';
 import Box from '@mui/material/Box';
 
 interface AvatarDisplayProps {
@@ -10,19 +10,19 @@ interface AvatarDisplayProps {
   avatarConfig?: AvatarConfig;
   email?: string;
   sx?: object;
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
 }
 
 const sizeStyles = {
   sm: { width: 32, height: 32 },
   md: { width: 40, height: 40 },
-  lg: { width: 64, height: 64 }
+  lg: { width: 64, height: 64 },
 };
 
 const sizePixels = {
   sm: 32,
   md: 40,
-  lg: 64
+  lg: 64,
 };
 
 export const AvatarDisplay = ({
@@ -30,11 +30,11 @@ export const AvatarDisplay = ({
   avatarConfig,
   email,
   sx,
-  size = "md"
+  size = 'md',
 }: AvatarDisplayProps) => {
-  const gravatarUrl = getGravatarUrl(email, sizePixels[size]);
+  const initialsUrl = generateAvatarUrl(email, sizePixels[size]);
 
-  // Priority: avatarUrl > avatarConfig > gravatarUrl > fallback
+  // Priority: avatarUrl > avatarConfig > initials > fallback
   if (avatarUrl) {
     return (
       <Avatar>
@@ -75,12 +75,12 @@ export const AvatarDisplay = ({
     );
   }
 
-  // Use Gravatar if available
-  if (gravatarUrl) {
+  // Use initials avatar if email is available
+  if (initialsUrl) {
     return (
       <Avatar>
         <Box component="span" sx={{ ...sizeStyles[size], display: 'inline-flex', ...sx }}>
-          <AvatarImage src={gravatarUrl} alt="Gravatar avatar" />
+          <AvatarImage src={initialsUrl} alt="User avatar" />
           <AvatarFallback>
             <User style={{ width: 16, height: 16 }} />
           </AvatarFallback>

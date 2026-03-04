@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { MapPin, Landmark } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Box from '@mui/material/Box';
@@ -29,7 +29,9 @@ export function VillageCard({ village }: VillageCardProps) {
           flexDirection: 'column',
         }}
       >
-        <Box sx={{ position: 'relative', height: 180, overflow: 'hidden', bgcolor: 'action.hover' }}>
+        <Box
+          sx={{ position: 'relative', height: 180, overflow: 'hidden', bgcolor: 'action.hover' }}
+        >
           {imageUrl ? (
             <img
               src={imageUrl}
@@ -38,12 +40,27 @@ export function VillageCard({ village }: VillageCardProps) {
               loading="lazy"
             />
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+              }}
+            >
               <Landmark style={{ width: 32, height: 32, color: '#999999' }} />
             </Box>
           )}
           {village.featured && (
-            <Badge style={{ position: 'absolute', top: 8, right: 8, backgroundColor: 'hsl(var(--primary))', color: 'white' }}>
+            <Badge
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                backgroundColor: 'hsl(var(--primary))',
+                color: 'white',
+              }}
+            >
               Featured
             </Badge>
           )}
@@ -64,7 +81,18 @@ export function VillageCard({ village }: VillageCardProps) {
           )}
 
           {village.description && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                mt: 0.5,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
               {village.description}
             </Typography>
           )}

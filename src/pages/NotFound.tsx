@@ -1,29 +1,45 @@
-import { Link, useLocation } from "react-router-dom";
-import { useEffect } from "react";
-import { Home, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import { Link, useLocation } from 'react-router';
+import { useEffect } from 'react';
+import { Home, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
+    console.error('404 Error: User attempted to access non-existent route:', location.pathname);
   }, [location.pathname]);
 
   return (
-    <Box sx={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default' }}>
+    <Box
+      sx={{
+        minHeight: '60vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+      }}
+    >
       <Box sx={{ textAlign: 'center', maxWidth: '28rem', mx: 'auto', px: 2 }}>
-        <Typography variant="h2" sx={{ fontWeight: 700, mb: 2 }}>404</Typography>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Page not found</Typography>
+        <Typography variant="h2" sx={{ fontWeight: 700, mb: 2 }}>
+          404
+        </Typography>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+          Page not found
+        </Typography>
         <Typography color="text.secondary" sx={{ mb: 4 }}>
           The page you're looking for doesn't exist or has been moved.
         </Typography>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, justifyContent: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 1.5,
+            justifyContent: 'center',
+          }}
+        >
           <Button
             variant="outline"
             onClick={() => window.history.back()}

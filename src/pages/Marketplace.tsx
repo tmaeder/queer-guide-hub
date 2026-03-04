@@ -6,9 +6,15 @@ import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Store, Plus, Grid, List } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,18 +36,15 @@ const Marketplace = () => {
     error,
     fetchListings,
     toggleFavorite,
-    incrementViews
+    incrementViews,
   } = useMarketplace();
-  const {
-    user
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   useMeta({
     title: 'Marketplace',
-    description: 'Browse queer-friendly businesses, services, and products in the LGBTQ+ marketplace.',
+    description:
+      'Browse queer-friendly businesses, services, and products in the LGBTQ+ marketplace.',
     canonicalPath: '/marketplace',
     jsonLd: {
       '@context': 'https://schema.org',
@@ -68,11 +71,20 @@ const Marketplace = () => {
   const sortedListings = useMemo(() => {
     const sorted = [...listings];
     switch (sortBy) {
-      case 'newest': return sorted.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
-      case 'oldest': return sorted.sort((a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime());
-      case 'az': return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-      case 'za': return sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
-      default: return sorted;
+      case 'newest':
+        return sorted.sort(
+          (a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime(),
+        );
+      case 'oldest':
+        return sorted.sort(
+          (a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime(),
+        );
+      case 'az':
+        return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      case 'za':
+        return sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+      default:
+        return sorted;
     }
   }, [listings, sortBy]);
 
@@ -82,26 +94,25 @@ const Marketplace = () => {
   const handleToggleFavorite = async (listingId: string) => {
     if (!user) {
       toast({
-        title: "Sign in required",
-        description: "Please sign in to save favorites.",
-        variant: "destructive"
+        title: 'Sign in required',
+        description: 'Please sign in to save favorites.',
+        variant: 'destructive',
       });
       return;
     }
-    const {
-      favorited,
-      error
-    } = await toggleFavorite(listingId);
+    const { favorited, error } = await toggleFavorite(listingId);
     if (error) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error,
-        variant: "destructive"
+        variant: 'destructive',
       });
     } else {
       toast({
-        title: favorited ? "Added to favorites" : "Removed from favorites",
-        description: favorited ? "You can find this in your favorites list." : "Item removed from your favorites."
+        title: favorited ? 'Added to favorites' : 'Removed from favorites',
+        description: favorited
+          ? 'You can find this in your favorites list.'
+          : 'Item removed from your favorites.',
       });
       fetchListings(); // Refresh to show updated favorites
     }
@@ -116,32 +127,39 @@ const Marketplace = () => {
   // Filter listings by category for tabs
   const getFilteredListings = (category?: string) => {
     if (!category || category === 'all') return sortedListings;
-    return sortedListings.filter(listing => listing.category === category);
+    return sortedListings.filter((listing) => listing.category === category);
   };
-  const categories = [{
-    id: 'all',
-    label: 'All',
-    count: sortedListings.length
-  }, {
-    id: 'products',
-    label: 'Products',
-    count: sortedListings.filter(l => l.category === 'products').length
-  }, {
-    id: 'services',
-    label: 'Services',
-    count: sortedListings.filter(l => l.category === 'services').length
-  }];
+  const categories = [
+    {
+      id: 'all',
+      label: 'All',
+      count: sortedListings.length,
+    },
+    {
+      id: 'products',
+      label: 'Products',
+      count: sortedListings.filter((l) => l.category === 'products').length,
+    },
+    {
+      id: 'services',
+      label: 'Services',
+      count: sortedListings.filter((l) => l.category === 'services').length,
+    },
+  ];
   if (error) {
-    return <Box sx={{ minHeight: '100vh' }}>
+    return (
+      <Box sx={{ minHeight: '100vh' }}>
         <Container maxWidth="lg" sx={{ py: 4 }}>
           <ErrorState
             message="Something went wrong while loading the marketplace. Please try again."
             onRetry={() => fetchListings()}
           />
         </Container>
-      </Box>;
+      </Box>
+    );
   }
-  return <Box sx={{ minHeight: '100vh' }}>
+  return (
+    <Box sx={{ minHeight: '100vh' }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
         <PageHeader
@@ -152,7 +170,11 @@ const Marketplace = () => {
               style={{ display: 'flex', gap: 8 }}
               onClick={() => {
                 if (!user) {
-                  toast({ title: 'Sign in required', description: 'Create a free account to list your business.', variant: 'default' });
+                  toast({
+                    title: 'Sign in required',
+                    description: 'Create a free account to list your business.',
+                    variant: 'default',
+                  });
                   navigate('/auth');
                   return;
                 }
@@ -175,11 +197,26 @@ const Marketplace = () => {
 
             {/* Category Tabs & View Toggle */}
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <TabsList style={{ display: 'grid', width: '100%', maxWidth: '28rem', gridTemplateColumns: '1fr 1fr 1fr' }}>
-                {categories.map(category => <TabsTrigger key={category.id} value={category.id} style={{ fontSize: '0.75rem' }}>
+              <TabsList
+                style={{
+                  display: 'grid',
+                  width: '100%',
+                  maxWidth: '28rem',
+                  gridTemplateColumns: '1fr 1fr 1fr',
+                }}
+              >
+                {categories.map((category) => (
+                  <TabsTrigger
+                    key={category.id}
+                    value={category.id}
+                    style={{ fontSize: '0.75rem' }}
+                  >
                     {category.label}
-                    <span style={{ marginLeft: 4, fontSize: '0.75rem', color: '#999999' }}>({category.count})</span>
-                  </TabsTrigger>)}
+                    <span style={{ marginLeft: 4, fontSize: '0.75rem', color: '#999999' }}>
+                      ({category.count})
+                    </span>
+                  </TabsTrigger>
+                ))}
               </TabsList>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -188,15 +225,27 @@ const Marketplace = () => {
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
-                    {sortOptions.map(opt => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    {sortOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} aria-label="Grid view">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  aria-label="Grid view"
+                >
                   <Grid style={{ width: 16, height: 16 }} />
                 </Button>
-                <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} aria-label="List view">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  aria-label="List view"
+                >
                   <List style={{ width: 16, height: 16 }} />
                 </Button>
               </Box>
@@ -208,58 +257,110 @@ const Marketplace = () => {
           {loading && !loadingTimedOut && <PageLoadingState count={6} />}
 
           {/* Empty State */}
-          {!loading && sortedListings.length === 0 && <EmptyState
+          {!loading && sortedListings.length === 0 && (
+            <EmptyState
               icon={Store}
               title="No listings found"
               description="We couldn't find any listings matching your criteria. Try adjusting your filters or be the first to add your business!"
-              primaryAction={{ label: 'List Your Business', onClick: () => {
-                if (!user) {
-                  toast({ title: 'Sign in required', description: 'Create a free account to list your business.', variant: 'default' });
-                  navigate('/auth');
-                  return;
-                }
-                navigate('/marketplace/submit');
-              }}}
+              primaryAction={{
+                label: 'List Your Business',
+                onClick: () => {
+                  if (!user) {
+                    toast({
+                      title: 'Sign in required',
+                      description: 'Create a free account to list your business.',
+                      variant: 'default',
+                    });
+                    navigate('/auth');
+                    return;
+                  }
+                  navigate('/marketplace/submit');
+                },
+              }}
               secondaryAction={{ label: 'Clear Filters', onClick: () => handleFiltersChange({}) }}
-            />}
+            />
+          )}
 
           {/* Tab Contents */}
-          {categories.map(category => <TabsContent key={category.id} value={category.id}>
-              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length > 0 && <>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography color="text.secondary">
-                      Found {getFilteredListings(category.id === 'all' ? undefined : category.id).length} listing{getFilteredListings(category.id === 'all' ? undefined : category.id).length !== 1 ? 's' : ''}
-                    </Typography>
-                  </Box>
+          {categories.map((category) => (
+            <TabsContent key={category.id} value={category.id}>
+              {!loading &&
+                getFilteredListings(category.id === 'all' ? undefined : category.id).length > 0 && (
+                  <>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mb: 3,
+                      }}
+                    >
+                      <Typography color="text.secondary">
+                        Found{' '}
+                        {
+                          getFilteredListings(category.id === 'all' ? undefined : category.id)
+                            .length
+                        }{' '}
+                        listing
+                        {getFilteredListings(category.id === 'all' ? undefined : category.id)
+                          .length !== 1
+                          ? 's'
+                          : ''}
+                      </Typography>
+                    </Box>
 
-                  <Box sx={viewMode === 'grid'
-                    ? { display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)', '2xl': 'repeat(4, 1fr)' }, gap: { xs: 2, sm: 3 } }
-                    : { display: 'flex', flexDirection: 'column', gap: 1.5 }
-                  }>
-                    {getFilteredListings(category.id === 'all' ? undefined : category.id).map(listing =>
-                      <Box key={listing.id}>
-                        <MarketplaceCard
-                          listing={listing}
-                          onViewDetails={handleViewDetails}
-                          onToggleFavorite={user ? handleToggleFavorite : undefined}
-                          showFavoriteButton={!!user}
-                        />
-                      </Box>
-                    )}
-                  </Box>
-                </>}
+                    <Box
+                      sx={
+                        viewMode === 'grid'
+                          ? {
+                              display: 'grid',
+                              gridTemplateColumns: {
+                                xs: '1fr',
+                                sm: '1fr 1fr',
+                                lg: 'repeat(3, 1fr)',
+                                '2xl': 'repeat(4, 1fr)',
+                              },
+                              gap: { xs: 2, sm: 3 },
+                            }
+                          : { display: 'flex', flexDirection: 'column', gap: 1.5 }
+                      }
+                    >
+                      {getFilteredListings(category.id === 'all' ? undefined : category.id).map(
+                        (listing) => (
+                          <Box key={listing.id}>
+                            <MarketplaceCard
+                              listing={listing}
+                              onViewDetails={handleViewDetails}
+                              onToggleFavorite={user ? handleToggleFavorite : undefined}
+                              showFavoriteButton={!!user}
+                            />
+                          </Box>
+                        ),
+                      )}
+                    </Box>
+                  </>
+                )}
 
               {/* Category-specific empty state */}
-              {!loading && getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 && sortedListings.length > 0 && <EmptyState
-                  icon={Store}
-                  title={`No ${category.label.toLowerCase()} found`}
-                  description={`There are no ${category.label.toLowerCase()} matching your current filters.`}
-                  primaryAction={{ label: 'Clear Filters', onClick: () => handleFiltersChange({}), variant: 'outline' }}
-                />}
-            </TabsContent>)}
+              {!loading &&
+                getFilteredListings(category.id === 'all' ? undefined : category.id).length === 0 &&
+                sortedListings.length > 0 && (
+                  <EmptyState
+                    icon={Store}
+                    title={`No ${category.label.toLowerCase()} found`}
+                    description={`There are no ${category.label.toLowerCase()} matching your current filters.`}
+                    primaryAction={{
+                      label: 'Clear Filters',
+                      onClick: () => handleFiltersChange({}),
+                      variant: 'outline',
+                    }}
+                  />
+                )}
+            </TabsContent>
+          ))}
         </Tabs>
-
       </Container>
-    </Box>;
+    </Box>
+  );
 };
 export default Marketplace;

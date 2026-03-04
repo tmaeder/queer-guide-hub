@@ -1,8 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { sendEmail } from "../_shared/email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -99,10 +96,10 @@ const handler = async (req: Request): Promise<Response> => {
         `;
     }
 
-    const emailResponse = await resend.emails.send({
+    const emailResult = await sendEmail({
       from: "Community Groups <noreply@resend.dev>",
       to: [user_email],
-      subject: subject,
+      subject,
       html: `
         <div style="max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #374151;">
           ${htmlContent}
@@ -115,9 +112,13 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Group notification email sent successfully:", emailResponse);
+    if (emailResult.error) {
+      throw new Error(emailResult.error);
+    }
 
-    return new Response(JSON.stringify(emailResponse), {
+    console.log("Group notification email sent successfully:", emailResult.id);
+
+    return new Response(JSON.stringify({ data: { id: emailResult.id } }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

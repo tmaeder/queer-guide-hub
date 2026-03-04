@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { Resend } from "npm:resend@2.0.0";
+import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,10 +9,8 @@ const corsHeaders = {
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 interface SendEmailRequest {
   template_key: string;
@@ -27,8 +25,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  if (!resend) {
-    console.error('RESEND_API_KEY not configured');
+  if (!isEmailConfigured()) {
+    console.error('Email service not configured');
     return new Response(
       JSON.stringify({ error: 'Email service not configured' }),
       {
@@ -133,27 +131,20 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending email with subject: "${subject}" to ${to_email}`);
 
-    // Send the email using Resend
-    const emailData: any = {
-      from: "The Queer Guide <noreply@resend.dev>", // You can customize this
+    const emailResult = await sendEmail({
+      from: "The Queer Guide <noreply@resend.dev>",
       to: [to_email],
-      subject: subject,
+      subject,
       html: htmlContent,
-    };
+      text: textContent.trim() || undefined,
+    });
 
-    // Add text content if available
-    if (textContent.trim()) {
-      emailData.text = textContent;
+    if (emailResult.error) {
+      console.error('Email send error:', emailResult.error);
+      throw new Error(emailResult.error);
     }
 
-    const emailResponse = await resend.emails.send(emailData);
-
-    if (emailResponse.error) {
-      console.error('Resend error:', emailResponse.error);
-      throw new Error(emailResponse.error.message || 'Failed to send email');
-    }
-
-    console.log('Email sent successfully:', emailResponse.data);
+    console.log('Email sent successfully:', emailResult.id);
 
     // Log the email send for tracking (optional)
     if (!is_test) {
@@ -164,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
           recipient_email: to_email,
           subject,
           sent_at: new Date().toISOString(),
-          resend_id: emailResponse.data?.id,
+          resend_id: emailResult.id,
         })
         .catch(err => console.log('Failed to log email:', err)); // Non-blocking
     }
@@ -173,7 +164,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         message: `Email sent successfully to ${to_email}`,
-        email_id: emailResponse.data?.id 
+        email_id: emailResult.id
       }),
       {
         status: 200,

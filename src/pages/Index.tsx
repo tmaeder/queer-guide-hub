@@ -1,9 +1,24 @@
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Heart, MapPin, Calendar, Store, Plane, Users, Shield, ArrowRight, CheckCircle, Sparkles, Globe, Search, BookOpen, Image as ImageIcon } from 'lucide-react';
+import {
+  Heart,
+  MapPin,
+  Calendar,
+  Store,
+  Plane,
+  Users,
+  Shield,
+  ArrowRight,
+  CheckCircle,
+  Sparkles,
+  Globe,
+  Search,
+  BookOpen,
+  Image as ImageIcon,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -11,88 +26,105 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
-
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
 const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider'));
 const RegionalEventsCalendar = React.lazy(() => import('@/components/home/RegionalEventsCalendar'));
 const Index = React.memo(() => {
-  const {
-    user
-  } = useAuth();
-  const {
-    stats: realStats,
-    loading
-  } = useConsolidatedStats();
+  const { user } = useAuth();
+  const { stats: realStats, loading } = useConsolidatedStats();
   const isMobile = useIsMobile();
-  const features = [{
-    icon: MapPin,
-    title: 'Venues',
-    description: 'Find verified queer-friendly venues where you can be yourself',
-    color: 'text.primary',
-    link: '/venues'
-  }, {
-    icon: Calendar,
-    title: 'Events',
-    description: 'Discover local and virtual gatherings in your area',
-    color: 'text.primary',
-    link: '/events'
-  }, {
-    icon: Store,
-    title: 'Marketplace',
-    description: 'Support queer-owned businesses and creators',
-    color: 'text.primary',
-    link: '/marketplace'
-  }, {
-    icon: Plane,
-    title: 'Places',
-    description: 'Explore queer-friendly cities and countries worldwide',
-    color: 'text.primary',
-    link: '/places'
-  }, {
-    icon: Users,
-    title: 'Community',
-    description: 'Connect with like-minded people and join groups',
-    color: 'text.primary',
-    link: '/groups'
-  }, {
-    icon: BookOpen,
-    title: 'Resources',
-    description: 'Learn about rights, culture, and community topics',
-    color: 'text.primary',
-    link: '/resources'
-  }];
+  const features = [
+    {
+      icon: MapPin,
+      title: 'Venues',
+      description: 'Find verified queer-friendly venues where you can be yourself',
+      color: 'text.primary',
+      link: '/venues',
+    },
+    {
+      icon: Calendar,
+      title: 'Events',
+      description: 'Discover local and virtual gatherings in your area',
+      color: 'text.primary',
+      link: '/events',
+    },
+    {
+      icon: Store,
+      title: 'Marketplace',
+      description: 'Support queer-owned businesses and creators',
+      color: 'text.primary',
+      link: '/marketplace',
+    },
+    {
+      icon: Plane,
+      title: 'Places',
+      description: 'Explore queer-friendly cities and countries worldwide',
+      color: 'text.primary',
+      link: '/places',
+    },
+    {
+      icon: Users,
+      title: 'Community',
+      description: 'Connect with like-minded people and join groups',
+      color: 'text.primary',
+      link: '/groups',
+    },
+    {
+      icon: BookOpen,
+      title: 'Resources',
+      description: 'Learn about rights, culture, and community topics',
+      color: 'text.primary',
+      link: '/resources',
+    },
+  ];
   const formatNumber = (num: number) => {
     if (num >= 1000) {
       return `${Math.floor(num / 1000)}K+`;
     }
     return num.toString();
   };
-  const stats = useMemo(() => loading ? [{
-    number: '---',
-    label: 'Verified Venues'
-  }, {
-    number: '---',
-    label: 'Community Members'
-  }, {
-    number: '---',
-    label: 'Cities Worldwide'
-  }, {
-    number: '---',
-    label: 'Weekly Events'
-  }] : [{
-    number: formatNumber(realStats.venues),
-    label: 'Verified Venues'
-  }, {
-    number: formatNumber(realStats.profiles),
-    label: 'Community Members'
-  }, {
-    number: formatNumber(realStats.cities),
-    label: 'Cities Worldwide'
-  }, {
-    number: formatNumber(realStats.events),
-    label: 'Weekly Events'
-  }], [loading, realStats, formatNumber]);
+  const stats = useMemo(
+    () =>
+      loading
+        ? [
+            {
+              number: '---',
+              label: 'Verified Venues',
+            },
+            {
+              number: '---',
+              label: 'Community Members',
+            },
+            {
+              number: '---',
+              label: 'Cities Worldwide',
+            },
+            {
+              number: '---',
+              label: 'Weekly Events',
+            },
+          ]
+        : [
+            {
+              number: formatNumber(realStats.venues),
+              label: 'Verified Venues',
+            },
+            {
+              number: formatNumber(realStats.profiles),
+              label: 'Community Members',
+            },
+            {
+              number: formatNumber(realStats.cities),
+              label: 'Cities Worldwide',
+            },
+            {
+              number: formatNumber(realStats.events),
+              label: 'Weekly Events',
+            },
+          ],
+    [loading, realStats, formatNumber],
+  );
   return (
     <Box sx={{ minHeight: '100vh' }}>
       {/* Explore Map */}
@@ -101,7 +133,9 @@ const Index = React.memo(() => {
           <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
             Explore Venues & Events Near You
           </Typography>
-          <React.Suspense fallback={<Box sx={{ height: 480, bgcolor: 'action.hover', borderRadius: 2 }} />}>
+          <React.Suspense
+            fallback={<Box sx={{ height: 480, bgcolor: 'action.hover', borderRadius: 2 }} />}
+          >
             <ExploreMap
               height={480}
               defaultLayers={['venues', 'events']}
@@ -130,10 +164,22 @@ const Index = React.memo(() => {
             {features.map((feature, index) => {
               const Icon = feature.icon as any;
               return (
-                <Link to={feature.link} key={index} style={{ textDecoration: 'none', display: 'block' }}>
+                <Link
+                  to={feature.link}
+                  key={index}
+                  style={{ textDecoration: 'none', display: 'block' }}
+                >
                   <Card style={{ height: '100%' }}>
                     <CardContent style={{ padding: 20 }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, textAlign: 'center' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 1,
+                          textAlign: 'center',
+                        }}
+                      >
                         <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                           <Icon
                             style={{ width: 24, height: 24, color: 'inherit' }}
@@ -172,7 +218,10 @@ const Index = React.memo(() => {
                 }}
               >
                 {stats.map((stat, index) => (
-                  <Box key={index} sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Box
+                    key={index}
+                    sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 0.5 }}
+                  >
                     <Typography
                       variant="h4"
                       sx={{
@@ -184,7 +233,9 @@ const Index = React.memo(() => {
                     >
                       {stat.number}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>{stat.label}</Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {stat.label}
+                    </Typography>
                   </Box>
                 ))}
               </Box>
@@ -207,17 +258,12 @@ const Index = React.memo(() => {
       <React.Suspense fallback={<SliderSkeleton title="Latest News" />}>
         <LatestNewsSlider />
       </React.Suspense>
-
     </Box>
   );
 });
 
 // Enhanced skeleton component for lazy-loaded sliders
-const SliderSkeleton = ({
-  title
-}: {
-  title: string;
-}) => {
+const SliderSkeleton = ({ title }: { title: string }) => {
   const isMobile = useIsMobile();
   return (
     <Box
@@ -230,7 +276,9 @@ const SliderSkeleton = ({
     >
       <Container maxWidth="lg">
         <Box sx={{ mb: isMobile ? 4 : 6 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}
+          >
             <Box>
               <Box
                 sx={{
@@ -272,16 +320,24 @@ const SliderSkeleton = ({
           sx={{
             display: 'grid',
             gap: 3,
-            gridTemplateColumns: isMobile ? '1fr' : { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+            gridTemplateColumns: isMobile
+              ? '1fr'
+              : { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
           }}
         >
           {Array.from({
-            length: isMobile ? 2 : 3
+            length: isMobile ? 2 : 3,
           }).map((_, i) => (
             <Card key={i} style={{ height: 320, opacity: 0.5 }}>
               <CardContent style={{ padding: 32 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Box
                       sx={{
                         height: 24,

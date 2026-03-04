@@ -48,7 +48,7 @@ export function useSimilarTags(tagId: string | null, limit: number = 10) {
       const { data, error } = await supabase.rpc('get_similar_tags', {
         p_tag_id: tagId,
         p_limit: limit,
-        p_min_score: 0.2,
+        p_min_score: 0.7,
       } as any);
 
       if (error) {
@@ -67,7 +67,7 @@ export function useSimilarTags(tagId: string | null, limit: number = 10) {
 /**
  * Fetch full graph data for the graph visualization
  */
-export function useTagGraph(minScore: number = 0.5, categoryFilter: string | null = null) {
+export function useTagGraph(minScore: number = 0.8, categoryFilter: string | null = null) {
   return useQuery({
     queryKey: ['tag-graph', minScore, categoryFilter],
     queryFn: async (): Promise<GraphData> => {

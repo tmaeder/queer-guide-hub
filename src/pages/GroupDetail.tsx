@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,7 @@ import {
   Clock,
   Shield,
   Crown,
-  User
+  User,
 } from 'lucide-react';
 import { useGroups, Group } from '@/hooks/useGroups';
 import { useGroupPosts } from '@/hooks/useGroupPosts';
@@ -43,15 +43,8 @@ export default function GroupDetail() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const {
-    groups,
-    userGroups,
-    isLoading,
-    joinGroup,
-    isJoining,
-    leaveGroup,
-    isLeaving
-  } = useGroups();
+  const { groups, userGroups, isLoading, joinGroup, isJoining, leaveGroup, isLeaving } =
+    useGroups();
 
   const {
     posts,
@@ -62,7 +55,7 @@ export default function GroupDetail() {
     likePost,
     unlikePost,
     voteOnPoll,
-    togglePin
+    togglePin,
   } = useGroupPosts(groupId || '');
 
   const {
@@ -75,17 +68,17 @@ export default function GroupDetail() {
     leaveEvent,
     isLeavingEvent,
     deleteEvent,
-    isDeletingEvent
+    isDeletingEvent,
   } = useGroupEvents(groupId || '');
 
   const [group, setGroup] = useState<Group | null>(null);
-  const [activeTab, setActiveTab] = useState("about");
+  const [activeTab, setActiveTab] = useState('about');
 
   useEffect(() => {
     if (!groupId) return;
 
     // Find group in both arrays
-    const foundGroup = [...groups, ...userGroups].find(g => g.id === groupId);
+    const foundGroup = [...groups, ...userGroups].find((g) => g.id === groupId);
     setGroup(foundGroup || null);
   }, [groupId, groups, userGroups]);
 
@@ -94,7 +87,9 @@ export default function GroupDetail() {
 
     joinGroup(group.id);
     // Update local group state optimistically
-    setGroup(prev => prev ? { ...prev, is_member: true, member_count: prev.member_count + 1 } : null);
+    setGroup((prev) =>
+      prev ? { ...prev, is_member: true, member_count: prev.member_count + 1 } : null,
+    );
   };
 
   const handleLeave = () => {
@@ -102,16 +97,16 @@ export default function GroupDetail() {
 
     leaveGroup(group.id);
     // Update local group state optimistically
-    setGroup(prev => prev ? { ...prev, is_member: false, member_count: prev.member_count - 1 } : null);
+    setGroup((prev) =>
+      prev ? { ...prev, is_member: false, member_count: prev.member_count - 1 } : null,
+    );
   };
 
   if (!user) {
     return (
       <Box sx={{ maxWidth: 896, mx: 'auto', py: 4 }}>
         <Alert>
-          <AlertDescription>
-            Please sign in to view group details.
-          </AlertDescription>
+          <AlertDescription>Please sign in to view group details.</AlertDescription>
         </Alert>
       </Box>
     );
@@ -120,7 +115,14 @@ export default function GroupDetail() {
   if (isLoading) {
     return (
       <Box sx={{ maxWidth: 896, mx: 'auto', py: 4 }}>
-        <div style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div
+          style={{
+            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+          }}
+        >
           <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%' }} />
           <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }} />
           <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
@@ -133,8 +135,12 @@ export default function GroupDetail() {
     return (
       <Box sx={{ maxWidth: 896, mx: 'auto', py: 4 }}>
         <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Group not found</Typography>
-          <p style={{ color: '#999999' }}>The group you're looking for doesn't exist or you don't have access to it.</p>
+          <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+            Group not found
+          </Typography>
+          <p style={{ color: '#999999' }}>
+            The group you're looking for doesn't exist or you don't have access to it.
+          </p>
           <Button asChild>
             <Link to="/groups">
               <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
@@ -150,7 +156,9 @@ export default function GroupDetail() {
   const isOwner = group.user_role === 'admin';
 
   return (
-    <Box sx={{ maxWidth: 896, mx: 'auto', py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box
+      sx={{ maxWidth: 896, mx: 'auto', py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <Button variant="outline" onClick={() => navigate(-1)}>
@@ -165,15 +173,43 @@ export default function GroupDetail() {
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
             <Avatar style={{ height: 96, width: 96 }}>
               <AvatarImage src={group.image_url || undefined} />
-              <AvatarFallback style={{ background: 'var(--gradient-primary)', color: 'white', fontSize: '1.5rem' }}>
+              <AvatarFallback
+                style={{
+                  background: 'var(--gradient-primary)',
+                  color: 'white',
+                  fontSize: '1.5rem',
+                }}
+              >
                 {group.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
-            <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' }, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box
+              sx={{
+                flex: 1,
+                textAlign: { xs: 'center', md: 'left' },
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
               <div>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: { xs: 'center', md: 'flex-start' }, mb: 1 }}>
-                  <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>{group.name}</Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    justifyContent: { xs: 'center', md: 'flex-start' },
+                    mb: 1,
+                  }}
+                >
+                  <Typography
+                    variant="h4"
+                    component="h1"
+                    sx={{ fontSize: '1.875rem', fontWeight: 700 }}
+                  >
+                    {group.name}
+                  </Typography>
                   {group.is_private ? (
                     <Lock style={{ height: 20, width: 20, color: '#999999' }} />
                   ) : (
@@ -181,7 +217,15 @@ export default function GroupDetail() {
                   )}
                 </Box>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: { xs: 'center', md: 'flex-start' }, color: 'text.secondary' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    justifyContent: { xs: 'center', md: 'flex-start' },
+                    color: 'text.secondary',
+                  }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Users style={{ height: 16, width: 16 }} />
                     <span>{group.member_count} members</span>
@@ -193,10 +237,21 @@ export default function GroupDetail() {
                 </Box>
 
                 {group.user_role && (
-                  <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' }, mt: 1 }}>
-                    <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: { xs: 'center', md: 'flex-start' },
+                      mt: 1,
+                    }}
+                  >
+                    <Badge
+                      variant="secondary"
+                      style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
                       {group.user_role === 'admin' && <Crown style={{ height: 12, width: 12 }} />}
-                      {group.user_role === 'moderator' && <Shield style={{ height: 12, width: 12 }} />}
+                      {group.user_role === 'moderator' && (
+                        <Shield style={{ height: 12, width: 12 }} />
+                      )}
                       {group.user_role === 'member' && <User style={{ height: 12, width: 12 }} />}
                       {group.user_role}
                     </Badge>
@@ -204,13 +259,16 @@ export default function GroupDetail() {
                 )}
               </div>
 
-              {group.description && (
-                <p style={{ color: '#999999' }}>{group.description}</p>
-              )}
+              {group.description && <p style={{ color: '#999999' }}>{group.description}</p>}
 
               {group.tags && group.tags.length > 0 && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}>Tags:</Box>
+                  <Box
+                    component="span"
+                    sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.secondary' }}
+                  >
+                    Tags:
+                  </Box>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {group.tags.map((tag) => (
                       <Badge key={tag} variant="outline" style={{ fontSize: '0.75rem' }}>
@@ -221,7 +279,9 @@ export default function GroupDetail() {
                 </Box>
               )}
 
-              <Box sx={{ display: 'flex', gap: 1, justifyContent: { xs: 'center', md: 'flex-start' } }}>
+              <Box
+                sx={{ display: 'flex', gap: 1, justifyContent: { xs: 'center', md: 'flex-start' } }}
+              >
                 {!group.is_member ? (
                   <Button
                     onClick={handleJoin}
@@ -229,16 +289,12 @@ export default function GroupDetail() {
                     style={{ background: 'var(--gradient-primary)' }}
                   >
                     <UserPlus style={{ height: 16, width: 16, marginRight: 8 }} />
-                    {isJoining ? "Joining..." : "Join Group"}
+                    {isJoining ? 'Joining...' : 'Join Group'}
                   </Button>
                 ) : (
-                  <Button
-                    onClick={handleLeave}
-                    disabled={isLeaving}
-                    variant="outline"
-                  >
+                  <Button onClick={handleLeave} disabled={isLeaving} variant="outline">
                     <UserMinus style={{ height: 16, width: 16, marginRight: 8 }} />
-                    {isLeaving ? "Leaving..." : "Leave Group"}
+                    {isLeaving ? 'Leaving...' : 'Leave Group'}
                   </Button>
                 )}
 
@@ -261,7 +317,10 @@ export default function GroupDetail() {
             <Users style={{ height: 16, width: 16 }} />
             About
           </TabsTrigger>
-          <TabsTrigger value="members" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <TabsTrigger
+            value="members"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
             <Users style={{ height: 16, width: 16 }} />
             Members
           </TabsTrigger>
@@ -275,23 +334,39 @@ export default function GroupDetail() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="about" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <TabsContent
+          value="about"
+          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+        >
           <Card>
             <CardHeader>
               <CardTitle>About this group</CardTitle>
             </CardHeader>
             <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {group.description ? (
-                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>{group.description}</Typography>
+                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+                  {group.description}
+                </Typography>
               ) : (
-                <Typography sx={{ color: 'text.secondary', fontStyle: 'italic' }}>No description available.</Typography>
+                <Typography sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                  No description available.
+                </Typography>
               )}
 
               <Separator />
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                <Typography variant="subtitle1" component="h4" sx={{ fontWeight: 600 }}>Group Details</Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, fontSize: '0.875rem' }}>
+                <Typography variant="subtitle1" component="h4" sx={{ fontWeight: 600 }}>
+                  Group Details
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                    gap: 2,
+                    fontSize: '0.875rem',
+                  }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Users style={{ height: 16, width: 16, color: '#999999' }} />
                     <span>{group.member_count} members</span>
@@ -320,7 +395,9 @@ export default function GroupDetail() {
                 <>
                   <Separator />
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Typography variant="subtitle1" component="h4" sx={{ fontWeight: 600 }}>Tags</Typography>
+                    <Typography variant="subtitle1" component="h4" sx={{ fontWeight: 600 }}>
+                      Tags
+                    </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {group.tags.map((tag) => (
                         <Badge key={tag} variant="outline">
@@ -336,8 +413,14 @@ export default function GroupDetail() {
                 <>
                   <Separator />
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Typography variant="subtitle1" component="h4" sx={{ fontWeight: 600 }}>Group Rules</Typography>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', whiteSpace: 'pre-wrap' }}>{group.rules}</Typography>
+                    <Typography variant="subtitle1" component="h4" sx={{ fontWeight: 600 }}>
+                      Group Rules
+                    </Typography>
+                    <Typography
+                      sx={{ fontSize: '0.875rem', color: 'text.secondary', whiteSpace: 'pre-wrap' }}
+                    >
+                      {group.rules}
+                    </Typography>
                   </Box>
                 </>
               )}
@@ -345,7 +428,10 @@ export default function GroupDetail() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="members" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <TabsContent
+          value="members"
+          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+        >
           <Card>
             <CardHeader>
               <CardTitle>Members ({group.member_count})</CardTitle>
@@ -362,8 +448,8 @@ export default function GroupDetail() {
                   onStartConversation={(userId) => {
                     // TODO: Implement conversation starting
                     toast({
-                      title: "Not yet available",
-                      description: "Direct messaging is not yet available."
+                      title: 'Not yet available',
+                      description: 'Direct messaging is not yet available.',
                     });
                   }}
                 />
@@ -372,9 +458,14 @@ export default function GroupDetail() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="posts" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <TabsContent
+          value="posts"
+          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h6" component="h3" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Group Posts</Typography>
+            <Typography variant="h6" component="h3" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
+              Group Posts
+            </Typography>
             {group.is_member && (
               <CreatePostDialog
                 onCreatePost={createPost}
@@ -389,7 +480,10 @@ export default function GroupDetail() {
           {postsLoading ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {[1, 2, 3].map((i) => (
-                <div key={i} style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+                <div
+                  key={i}
+                  style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+                >
                   <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 2 }} />
                 </div>
               ))}
@@ -397,12 +491,20 @@ export default function GroupDetail() {
           ) : posts.length === 0 ? (
             <Card>
               <CardContent style={{ padding: '32px', textAlign: 'center' }}>
-                <MessageSquare style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }} />
-                <Typography variant="h6" component="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No posts yet</Typography>
+                <MessageSquare
+                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }}
+                />
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}
+                >
+                  No posts yet
+                </Typography>
                 <Typography sx={{ color: 'text.secondary', mb: 2 }}>
                   {group.is_member
-                    ? "Be the first to start a conversation in this group!"
-                    : "Join the group to see and participate in discussions."}
+                    ? 'Be the first to start a conversation in this group!'
+                    : 'Join the group to see and participate in discussions.'}
                 </Typography>
                 {group.is_member && (
                   <CreatePostDialog
@@ -432,21 +534,26 @@ export default function GroupDetail() {
           )}
         </TabsContent>
 
-        <TabsContent value="events" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <TabsContent
+          value="events"
+          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h6" component="h3" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Group Events</Typography>
+            <Typography variant="h6" component="h3" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
+              Group Events
+            </Typography>
             {group.is_member && (
-              <CreateGroupEventDialog
-                onCreateEvent={createEvent}
-                isCreating={isCreatingEvent}
-              />
+              <CreateGroupEventDialog onCreateEvent={createEvent} isCreating={isCreatingEvent} />
             )}
           </Box>
 
           {eventsLoading ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {[1, 2, 3].map((i) => (
-                <div key={i} style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+                <div
+                  key={i}
+                  style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+                >
                   <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 2 }} />
                 </div>
               ))}
@@ -454,12 +561,20 @@ export default function GroupDetail() {
           ) : events.length === 0 ? (
             <Card>
               <CardContent style={{ padding: '32px', textAlign: 'center' }}>
-                <Calendar style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }} />
-                <Typography variant="h6" component="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No events yet</Typography>
+                <Calendar
+                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }}
+                />
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}
+                >
+                  No events yet
+                </Typography>
                 <Typography sx={{ color: 'text.secondary', mb: 2 }}>
                   {group.is_member
-                    ? "Be the first to create an event for this group!"
-                    : "Join the group to see and participate in events."}
+                    ? 'Be the first to create an event for this group!'
+                    : 'Join the group to see and participate in events.'}
                 </Typography>
                 {group.is_member && (
                   <CreateGroupEventDialog

@@ -60,6 +60,20 @@ const FIELD_DEFINITIONS: Record<string, FieldDef[]> = {
     { key: 'is_featured', label: 'Featured', type: 'boolean' },
     { key: 'category', label: 'Category', type: 'text' },
   ],
+  cities: [
+    { key: 'name', label: 'Name', type: 'text' },
+    { key: 'description', label: 'Description', type: 'textarea' },
+    { key: 'country_id', label: 'Country ID', type: 'text' },
+    { key: 'region_name', label: 'Region', type: 'text' },
+    { key: 'population', label: 'Population', type: 'number' },
+    { key: 'latitude', label: 'Latitude', type: 'number' },
+    { key: 'longitude', label: 'Longitude', type: 'number' },
+    { key: 'is_capital', label: 'Capital', type: 'boolean' },
+    { key: 'is_major_city', label: 'Major City', type: 'boolean' },
+    { key: 'lgbt_friendly_rating', label: 'LGBTQ+ Rating', type: 'number' },
+    { key: 'official_website', label: 'Website', type: 'text' },
+    { key: 'image_url', label: 'Image URL', type: 'text' },
+  ],
   hotels: [
     { key: 'name', label: 'Name', type: 'text' },
     { key: 'description', label: 'Description', type: 'textarea' },
@@ -82,15 +96,15 @@ function getFieldsForEntity(entityType: string, data: Record<string, any>): Fiel
 
   // Build field defs dynamically from data keys
   return Object.keys(data)
-    .filter(k => !['id', 'created_at', 'updated_at'].includes(k))
+    .filter((k) => !['id', 'created_at', 'updated_at'].includes(k))
     .slice(0, 20)
-    .map(key => {
+    .map((key) => {
       const val = data[key];
       let type: FieldDef['type'] = 'text';
       if (typeof val === 'boolean') type = 'boolean';
       else if (typeof val === 'number') type = 'number';
       else if (typeof val === 'string' && val.length > 100) type = 'textarea';
-      return { key, label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), type };
+      return { key, label: key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()), type };
     });
 }
 
@@ -101,20 +115,37 @@ function isUrl(value: unknown): boolean {
 
 function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
   if (value === null || value === undefined || value === '') {
-    return <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</Typography>;
+    return (
+      <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>
+        —
+      </Typography>
+    );
   }
 
   switch (type) {
     case 'boolean':
       return value ? (
-        <Chip icon={<Check style={{ width: 12, height: 12 }} />} label="Yes" size="small" color="success" variant="outlined" />
+        <Chip
+          icon={<Check style={{ width: 12, height: 12 }} />}
+          label="Yes"
+          size="small"
+          color="success"
+          variant="outlined"
+        />
       ) : (
-        <Chip icon={<X style={{ width: 12, height: 12 }} />} label="No" size="small" variant="outlined" />
+        <Chip
+          icon={<X style={{ width: 12, height: 12 }} />}
+          label="No"
+          size="small"
+          variant="outlined"
+        />
       );
 
     case 'date':
       try {
-        return <Typography variant="body2">{new Date(String(value)).toLocaleDateString()}</Typography>;
+        return (
+          <Typography variant="body2">{new Date(String(value)).toLocaleDateString()}</Typography>
+        );
       } catch {
         return <Typography variant="body2">{String(value)}</Typography>;
       }
@@ -127,12 +158,20 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
       }
 
     case 'number':
-      return <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{String(value)}</Typography>;
+      return (
+        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+          {String(value)}
+        </Typography>
+      );
 
     case 'textarea':
       return (
-        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', maxHeight: 120, overflow: 'auto', lineHeight: 1.4 }}>
-          {String(value).slice(0, 500)}{String(value).length > 500 ? '...' : ''}
+        <Typography
+          variant="body2"
+          sx={{ whiteSpace: 'pre-wrap', maxHeight: 120, overflow: 'auto', lineHeight: 1.4 }}
+        >
+          {String(value).slice(0, 500)}
+          {String(value).length > 500 ? '...' : ''}
         </Typography>
       );
 
@@ -140,14 +179,25 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
       if (isUrl(value)) {
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="body2" sx={{ color: '#3b82f6', wordBreak: 'break-all' }}>{String(value)}</Typography>
-            <a href={String(value)} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0 }}>
+            <Typography variant="body2" sx={{ color: '#3b82f6', wordBreak: 'break-all' }}>
+              {String(value)}
+            </Typography>
+            <a
+              href={String(value)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ flexShrink: 0 }}
+            >
               <ExternalLink style={{ width: 12, height: 12, color: '#3b82f6' }} />
             </a>
           </Box>
         );
       }
-      return <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>{String(value)}</Typography>;
+      return (
+        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+          {String(value)}
+        </Typography>
+      );
   }
 }
 
@@ -158,7 +208,12 @@ interface StructuredFieldDisplayProps {
   highlightFields?: string[];
 }
 
-export function StructuredFieldDisplay({ entityType, data, compact = false, highlightFields }: StructuredFieldDisplayProps) {
+export function StructuredFieldDisplay({
+  entityType,
+  data,
+  compact = false,
+  highlightFields,
+}: StructuredFieldDisplayProps) {
   const fields = getFieldsForEntity(entityType, data);
 
   if (compact) {
@@ -166,12 +221,15 @@ export function StructuredFieldDisplay({ entityType, data, compact = false, high
     const keyFields = fields.slice(0, 5);
     return (
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-        {keyFields.map(field => {
+        {keyFields.map((field) => {
           const val = data[field.key];
           if (val === null || val === undefined || val === '') return null;
           return (
             <Box key={field.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>
+              <Typography
+                variant="caption"
+                sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}
+              >
                 {field.label}:
               </Typography>
               <Typography variant="caption">{String(val).slice(0, 60)}</Typography>
@@ -183,8 +241,15 @@ export function StructuredFieldDisplay({ entityType, data, compact = false, high
   }
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '140px 1fr' }, gap: 1, alignItems: 'start' }}>
-      {fields.map(field => {
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', sm: '140px 1fr' },
+        gap: 1,
+        alignItems: 'start',
+      }}
+    >
+      {fields.map((field) => {
         const val = data[field.key];
         const isHighlighted = highlightFields?.includes(field.key);
         return (
@@ -202,13 +267,17 @@ export function StructuredFieldDisplay({ entityType, data, compact = false, high
             >
               {field.label}
             </Typography>
-            <Box sx={{
-              px: 1,
-              py: 0.3,
-              borderRadius: 0.5,
-              bgcolor: isHighlighted ? 'rgba(250, 204, 21, 0.15)' : 'transparent',
-              border: isHighlighted ? '1px solid rgba(250, 204, 21, 0.3)' : '1px solid transparent',
-            }}>
+            <Box
+              sx={{
+                px: 1,
+                py: 0.3,
+                borderRadius: 0.5,
+                bgcolor: isHighlighted ? 'rgba(250, 204, 21, 0.15)' : 'transparent',
+                border: isHighlighted
+                  ? '1px solid rgba(250, 204, 21, 0.3)'
+                  : '1px solid transparent',
+              }}
+            >
               {formatValue(val, field.type)}
             </Box>
           </React.Fragment>

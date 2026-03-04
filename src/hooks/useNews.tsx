@@ -55,11 +55,13 @@ export const useNews = () => {
 
       let queryBuilder = supabase
         .from('news_articles')
-        .select(`
+        .select(
+          `
           id, title, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured,
           country_ids, city_ids, tags, category
-        `)
+        `,
+        )
         .not('published_at', 'is', null)
         .order(sortField, { ascending: sortOrder });
 
@@ -68,7 +70,7 @@ export const useNews = () => {
         queryBuilder = (queryBuilder as any).in('city_id', filters.cityIds);
       }
 
-      // Apply country filtering if provided  
+      // Apply country filtering if provided
       if (filters?.countryIds && filters.countryIds.length > 0) {
         queryBuilder = (queryBuilder as any).in('country_id', filters.countryIds);
       }
@@ -84,7 +86,9 @@ export const useNews = () => {
 
       // Apply search filtering if provided
       if (filters?.search) {
-        queryBuilder = (queryBuilder as any).or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
+        queryBuilder = (queryBuilder as any).or(
+          `title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`,
+        );
       }
 
       // Apply source filtering if provided
@@ -144,7 +148,6 @@ export const useNews = () => {
     }
   }, []);
 
-
   const fetchSources = useCallback(async () => {
     try {
       const { data, error: fetchError } = await supabase
@@ -169,7 +172,7 @@ export const useNews = () => {
   const incrementViews = useCallback(async (articleId: string) => {
     try {
       const { error } = await supabase.rpc('increment_article_views', {
-        article_id: articleId
+        article_id: articleId,
       });
 
       if (error) {
@@ -184,11 +187,13 @@ export const useNews = () => {
     try {
       const { data, error: fetchError } = await supabase
         .from('news_articles')
-        .select(`
+        .select(
+          `
           id, title, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured,
           country_ids, city_ids, tags, category
-        `)
+        `,
+        )
         .eq('is_featured', true)
         .not('published_at', 'is', null)
         .order('published_at', { ascending: false })
@@ -219,10 +224,12 @@ export const useNews = () => {
         return [];
       }
 
-      return data?.map((item: any) => ({
-        tag: item.name,
-        count: item.usage_count || 0
-      })) || [];
+      return (
+        data?.map((item: any) => ({
+          tag: item.name,
+          count: item.usage_count || 0,
+        })) || []
+      );
     } catch (err) {
       console.warn('Error fetching trending tags:', err);
       return [];
@@ -230,14 +237,11 @@ export const useNews = () => {
   }, []);
 
   const refreshData = useCallback(async () => {
-    await Promise.allSettled([
-      fetchArticles(),
-      fetchSources()
-    ]);
+    await Promise.allSettled([fetchArticles(), fetchSources()]);
   }, [fetchArticles, fetchSources]);
 
   // Initialize on mount — fetchArticles/fetchSources have [] deps so are stable
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     Promise.all([fetchArticles(), fetchSources()]);
   }, []);
@@ -252,6 +256,6 @@ export const useNews = () => {
     incrementViews,
     getFeaturedArticles,
     getTrendingTags,
-    refreshData
+    refreshData,
   };
 };

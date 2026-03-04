@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
@@ -9,7 +9,7 @@ import { TravelDealCard } from '@/components/travel/TravelDealCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 import Skeleton from '@mui/material/Skeleton';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 
 export default function Travel() {
@@ -28,12 +28,22 @@ export default function Travel() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Hero */}
-      <Paper variant="outlined" sx={{ p: { xs: 3, sm: 4 }, mb: 4, bgcolor: 'background.paper', textAlign: 'center' }}>
+      <Paper
+        variant="outlined"
+        sx={{ p: { xs: 3, sm: 4 }, mb: 4, bgcolor: 'background.paper', textAlign: 'center' }}
+      >
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <Box sx={{
-            width: 56, height: 56, borderRadius: '50%',
-            bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              bgcolor: 'primary.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Plane style={{ height: 28, width: 28, color: 'white' }} />
           </Box>
         </Box>
@@ -60,11 +70,25 @@ export default function Travel() {
         </Box>
 
         {originLoading || popularLoading ? (
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
-            {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} variant="rounded" height={140} />)}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+              gap: 2,
+            }}
+          >
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} variant="rounded" height={140} />
+            ))}
           </Box>
         ) : popularDeals && popularDeals.length > 0 ? (
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+              gap: 2,
+            }}
+          >
             {popularDeals.map((deal, i) => (
               <TravelDealCard
                 key={`${deal.origin}-${deal.destination}-${i}`}
@@ -85,7 +109,10 @@ export default function Travel() {
       </Paper>
 
       {/* CTA */}
-      <Paper variant="outlined" sx={{ textAlign: 'center', py: 3, px: 3, bgcolor: 'background.paper' }}>
+      <Paper
+        variant="outlined"
+        sx={{ textAlign: 'center', py: 3, px: 3, bgcolor: 'background.paper' }}
+      >
         <Typography sx={{ fontWeight: 600, mb: 1 }}>
           Explore LGBTQ+ Friendly Destinations
         </Typography>

@@ -1,21 +1,33 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ArrowLeft, Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useToast } from '@/hooks/use-toast';
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 interface EventType {
   id: string;
@@ -59,9 +71,9 @@ export default function AdminEventTypes() {
 
     if (!isAdmin) {
       toast({
-        title: "Access Denied",
-        description: "You need admin privileges to access this page.",
-        variant: "destructive"
+        title: 'Access Denied',
+        description: 'You need admin privileges to access this page.',
+        variant: 'destructive',
       });
       navigate('/');
       return;
@@ -82,9 +94,9 @@ export default function AdminEventTypes() {
     } catch (error) {
       console.error('Error fetching event types:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch event types",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to fetch event types',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -104,19 +116,17 @@ export default function AdminEventTypes() {
         if (error) throw error;
 
         toast({
-          title: "Success",
-          description: "Event type updated successfully"
+          title: 'Success',
+          description: 'Event type updated successfully',
         });
       } else {
-        const { error } = await supabase
-          .from('event_types')
-          .insert([formData]);
+        const { error } = await supabase.from('event_types').insert([formData]);
 
         if (error) throw error;
 
         toast({
-          title: "Success",
-          description: "Event type created successfully"
+          title: 'Success',
+          description: 'Event type created successfully',
         });
       }
 
@@ -126,9 +136,9 @@ export default function AdminEventTypes() {
     } catch (error: any) {
       console.error('Error saving event type:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to save event type",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to save event type',
+        variant: 'destructive',
       });
     }
   };
@@ -162,42 +172,50 @@ export default function AdminEventTypes() {
     if (!confirm('Are you sure you want to delete this event type?')) return;
 
     try {
-      const { error } = await supabase
-        .from('event_types')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('event_types').delete().eq('id', id);
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Event type deleted successfully"
+        title: 'Success',
+        description: 'Event type deleted successfully',
       });
 
       fetchEventTypes();
     } catch (error: any) {
       console.error('Error deleting event type:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete event type",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to delete event type',
+        variant: 'destructive',
       });
     }
   };
 
-  const filteredEventTypes = eventTypes.filter(type => {
-    const matchesSearch = type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (type.description?.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === 'all' ||
-                         (statusFilter === 'active' && type.is_active) ||
-                         (statusFilter === 'inactive' && !type.is_active);
+  const filteredEventTypes = eventTypes.filter((type) => {
+    const matchesSearch =
+      type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      type.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && type.is_active) ||
+      (statusFilter === 'inactive' && !type.is_active);
     return matchesSearch && matchesStatus;
   });
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <Box sx={{ height: 128, width: 128, bgcolor: 'primary.main', animation: 'spin 1s linear infinite' }} />
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}
+      >
+        <Box
+          sx={{
+            height: 128,
+            width: 128,
+            bgcolor: 'primary.main',
+            animation: 'spin 1s linear infinite',
+          }}
+        />
       </Box>
     );
   }
@@ -210,7 +228,9 @@ export default function AdminEventTypes() {
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Dashboard
           </Button>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>Event Types Management</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>
+            Event Types Management
+          </Typography>
         </Box>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -222,11 +242,13 @@ export default function AdminEventTypes() {
           </DialogTrigger>
           <DialogContent sx={{ maxWidth: 448 }}>
             <DialogHeader>
-              <DialogTitle>
-                {editingType ? 'Edit Event Type' : 'Create New Event Type'}
-              </DialogTitle>
+              <DialogTitle>{editingType ? 'Edit Event Type' : 'Create New Event Type'}</DialogTitle>
             </DialogHeader>
-            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            >
               <Box>
                 <Label htmlFor="name">Name *</Label>
                 <Input
@@ -275,7 +297,9 @@ export default function AdminEventTypes() {
                   id="sort_order"
                   type="number"
                   value={formData.sort_order}
-                  onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })
+                  }
                   placeholder="0"
                 />
               </Box>
@@ -306,7 +330,10 @@ export default function AdminEventTypes() {
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ maxWidth: 384 }}
         />
-        <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}>
+        <Select
+          value={statusFilter}
+          onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}
+        >
           <SelectTrigger style={{ width: 160 }}>
             <SelectValue />
           </SelectTrigger>
@@ -319,29 +346,54 @@ export default function AdminEventTypes() {
       </Box>
 
       {/* Stats */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, mb: 3 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+          gap: 2,
+          mb: 3,
+        }}
+      >
         <Card>
           <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>{eventTypes.length}</Typography>
-            <Typography variant="body2" color="text.secondary">Total Event Types</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {eventTypes.length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Total Event Types
+            </Typography>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>{eventTypes.filter(type => type.is_active).length}</Typography>
-            <Typography variant="body2" color="text.secondary">Active</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {eventTypes.filter((type) => type.is_active).length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Active
+            </Typography>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>{eventTypes.filter(type => !type.is_active).length}</Typography>
-            <Typography variant="body2" color="text.secondary">Inactive</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {eventTypes.filter((type) => !type.is_active).length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Inactive
+            </Typography>
           </CardContent>
         </Card>
       </Box>
 
       {/* Event Types List */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' },
+          gap: 2,
+        }}
+      >
         {filteredEventTypes.map((eventType) => (
           <Card key={eventType.id} sx={{ position: 'relative' }}>
             <CardHeader sx={{ pb: 2 }}>
@@ -355,7 +407,7 @@ export default function AdminEventTypes() {
                     <Typography variant="subtitle1">{eventType.name}</Typography>
                   </Box>
                 </CardTitle>
-                <Badge variant={eventType.is_active ? "default" : "secondary"}>
+                <Badge variant={eventType.is_active ? 'default' : 'secondary'}>
                   {eventType.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </Box>
@@ -369,26 +421,24 @@ export default function AdminEventTypes() {
                 )}
                 {eventType.icon && (
                   <Typography variant="body2">
-                    <Box component="span" sx={{ fontWeight: 600 }}>Icon:</Box> {eventType.icon}
+                    <Box component="span" sx={{ fontWeight: 600 }}>
+                      Icon:
+                    </Box>{' '}
+                    {eventType.icon}
                   </Typography>
                 )}
                 <Typography variant="body2">
-                  <Box component="span" sx={{ fontWeight: 600 }}>Sort Order:</Box> {eventType.sort_order}
+                  <Box component="span" sx={{ fontWeight: 600 }}>
+                    Sort Order:
+                  </Box>{' '}
+                  {eventType.sort_order}
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(eventType)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(eventType)}>
                     <Edit style={{ width: 16, height: 16 }} />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(eventType.id)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => handleDelete(eventType.id)}>
                     <Trash2 style={{ width: 16, height: 16 }} />
                   </Button>
                 </Box>
@@ -400,7 +450,9 @@ export default function AdminEventTypes() {
 
       {filteredEventTypes.length === 0 && (
         <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="text.secondary">No event types found matching your criteria.</Typography>
+          <Typography color="text.secondary">
+            No event types found matching your criteria.
+          </Typography>
         </Box>
       )}
     </Container>

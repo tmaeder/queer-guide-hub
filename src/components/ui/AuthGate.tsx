@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LucideIcon, LogIn } from 'lucide-react';
@@ -58,11 +58,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
           variant: 'outline',
         }}
       />
-      {showPreview && (
-        <Box sx={{ mt: 4 }}>
-          {showPreview}
-        </Box>
-      )}
+      {showPreview && <Box sx={{ mt: 4 }}>{showPreview}</Box>}
     </Container>
   );
 };

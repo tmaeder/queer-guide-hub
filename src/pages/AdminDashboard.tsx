@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -26,8 +32,8 @@ import {
   List,
   RefreshCw,
   Settings,
-  Filter
-} from "lucide-react";
+  Filter,
+} from 'lucide-react';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -87,7 +93,7 @@ export default function AdminDashboard() {
     weeklyGrowth: 0,
     monthlyUsers: 0,
     avgSessionTime: 0,
-    conversionRate: 0
+    conversionRate: 0,
   });
 
   const [statsLoading, setStatsLoading] = useState(true);
@@ -99,7 +105,7 @@ export default function AdminDashboard() {
     lastCheck: new Date(),
     dbLatency: 0,
     storageUsed: 0,
-    apiCalls: 0
+    apiCalls: 0,
   });
 
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -110,11 +116,11 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user) {
-      navigate("/auth");
+      navigate('/auth');
       return;
     }
     if (!loading && !canManageContent()) {
-      navigate("/");
+      navigate('/');
       return;
     }
   }, [user, loading, canManageContent]);
@@ -146,21 +152,43 @@ export default function AdminDashboard() {
       const results = await Promise.allSettled([
         supabase.from('venues').select('id', { count: 'exact', head: true }),
         supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('marketplace_listings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase
+          .from('marketplace_listings')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'active'),
         supabase.from('news_articles').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('community_groups').select('id', { count: 'exact', head: true }),
         supabase.from('group_posts').select('id', { count: 'exact', head: true }),
-        supabase.from('community_groups').select('id', { count: 'exact', head: true }).gt('member_count', 0),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', dateFilter),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
+        supabase
+          .from('community_groups')
+          .select('id', { count: 'exact', head: true })
+          .gt('member_count', 0),
+        supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', dateFilter),
+        supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()),
       ]);
 
-      const [venues, events, listings, articles, users, groups, posts, activeGroups, recentUsers, weekOldUsers] = results.map(
-        result => result.status === 'fulfilled' ? result.value : { count: 0 }
-      );
+      const [
+        venues,
+        events,
+        listings,
+        articles,
+        users,
+        groups,
+        posts,
+        activeGroups,
+        recentUsers,
+        weekOldUsers,
+      ] = results.map((result) => (result.status === 'fulfilled' ? result.value : { count: 0 }));
 
-      const totalContentCount = (articles.count || 0) + (events.count || 0) + (listings.count || 0) + (posts.count || 0);
+      const totalContentCount =
+        (articles.count || 0) + (events.count || 0) + (listings.count || 0) + (posts.count || 0);
       const weeklyGrowth = ((recentUsers.count || 0) / Math.max(weekOldUsers.count || 1, 1)) * 100;
 
       setStats({
@@ -176,7 +204,7 @@ export default function AdminDashboard() {
         weeklyGrowth: Math.round(weeklyGrowth),
         monthlyUsers: recentUsers.count || 0,
         avgSessionTime: Math.round(Math.random() * 300 + 180),
-        conversionRate: Math.round(Math.random() * 5 + 2)
+        conversionRate: Math.round(Math.random() * 5 + 2),
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -225,7 +253,7 @@ export default function AdminDashboard() {
           .select('id, name, created_at, city, country')
           .gte('created_at', sevenDaysAgo)
           .order('created_at', { ascending: false })
-          .limit(3)
+          .limit(3),
       ]);
 
       const [
@@ -233,62 +261,69 @@ export default function AdminDashboard() {
         recentEventsResult,
         recentListingsResult,
         recentUsersResult,
-        recentVenuesResult
+        recentVenuesResult,
       ] = results;
 
-      const recentPosts = recentPostsResult.status === 'fulfilled' ? recentPostsResult.value.data : [];
-      const recentEvents = recentEventsResult.status === 'fulfilled' ? recentEventsResult.value.data : [];
-      const recentListings = recentListingsResult.status === 'fulfilled' ? recentListingsResult.value.data : [];
-      const recentUsers = recentUsersResult.status === 'fulfilled' ? recentUsersResult.value.data : [];
-      const recentVenues = recentVenuesResult.status === 'fulfilled' ? recentVenuesResult.value.data : [];
+      const recentPosts =
+        recentPostsResult.status === 'fulfilled' ? recentPostsResult.value.data : [];
+      const recentEvents =
+        recentEventsResult.status === 'fulfilled' ? recentEventsResult.value.data : [];
+      const recentListings =
+        recentListingsResult.status === 'fulfilled' ? recentListingsResult.value.data : [];
+      const recentUsers =
+        recentUsersResult.status === 'fulfilled' ? recentUsersResult.value.data : [];
+      const recentVenues =
+        recentVenuesResult.status === 'fulfilled' ? recentVenuesResult.value.data : [];
 
       const activities: ActivityItem[] = [
-        ...(recentPosts?.map(post => ({
+        ...(recentPosts?.map((post) => ({
           id: post.id,
           type: 'post',
           title: `New post in ${post.community_groups?.name || 'Unknown Group'}`,
           description: post.content?.substring(0, 60) + '...' || 'No content',
           timestamp: post.created_at,
           icon: MessageSquare,
-          badge: 'Community'
+          badge: 'Community',
         })) || []),
-        ...(recentEvents?.map(event => ({
+        ...(recentEvents?.map((event) => ({
           id: event.id,
           type: 'event',
           title: `New ${event.event_type || 'event'}`,
           description: `${event.title} in ${event.city || 'Unknown'}, ${event.country || 'Unknown'}`,
           timestamp: event.created_at,
           icon: Calendar,
-          badge: 'Events'
+          badge: 'Events',
         })) || []),
-        ...(recentListings?.map(listing => ({
+        ...(recentListings?.map((listing) => ({
           id: listing.id,
           type: 'marketplace',
           title: `New marketplace listing`,
           description: listing.title || 'Untitled listing',
           timestamp: listing.created_at,
           icon: ShoppingBag,
-          badge: 'Marketplace'
+          badge: 'Marketplace',
         })) || []),
-        ...(recentUsers?.map(user => ({
+        ...(recentUsers?.map((user) => ({
           id: user.id,
           type: 'user',
           title: 'New user registration',
           description: user.display_name || 'Anonymous user',
           timestamp: user.created_at,
           icon: Users,
-          badge: 'Users'
+          badge: 'Users',
         })) || []),
-        ...(recentVenues?.map(venue => ({
+        ...(recentVenues?.map((venue) => ({
           id: venue.id,
           type: 'venue',
           title: 'New venue added',
           description: `${venue.name} in ${venue.city || 'Unknown'}, ${venue.country || 'Unknown'}`,
           timestamp: venue.created_at,
           icon: Building,
-          badge: 'Venues'
-        })) || [])
-      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
+          badge: 'Venues',
+        })) || []),
+      ]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 10);
 
       setRecentActivity(activities);
     } catch (error) {
@@ -311,7 +346,7 @@ export default function AdminDashboard() {
           lastCheck: new Date(),
           dbLatency: 0,
           storageUsed: Math.round(Math.random() * 80 + 20),
-          apiCalls: Math.round(Math.random() * 10000 + 5000)
+          apiCalls: Math.round(Math.random() * 10000 + 5000),
         });
       } else {
         setSystemHealth({
@@ -321,7 +356,7 @@ export default function AdminDashboard() {
           lastCheck: new Date(),
           dbLatency,
           storageUsed: Math.round(Math.random() * 80 + 20),
-          apiCalls: Math.round(Math.random() * 10000 + 5000)
+          apiCalls: Math.round(Math.random() * 10000 + 5000),
         });
       }
     } catch (error) {
@@ -332,7 +367,7 @@ export default function AdminDashboard() {
         lastCheck: new Date(),
         dbLatency: 0,
         storageUsed: 0,
-        apiCalls: 0
+        apiCalls: 0,
       });
     }
   };
@@ -343,21 +378,21 @@ export default function AdminDashboard() {
     checkSystemHealth();
     setLastUpdate(new Date());
     toast({
-      title: "Dashboard Updated",
-      description: "All data has been refreshed successfully."
+      title: 'Dashboard Updated',
+      description: 'All data has been refreshed successfully.',
     });
   };
 
   if (loading) {
-    return (
-      <Box sx={{ textAlign: 'center', py: 4 }}>Loading admin dashboard...</Box>
-    );
+    return <Box sx={{ textAlign: 'center', py: 4 }}>Loading admin dashboard...</Box>;
   }
 
   if (!canManageContent()) {
     return (
       <Box sx={{ textAlign: 'center', py: 4 }}>
-        <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Access Denied</Typography>
+        <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>
+          Access Denied
+        </Typography>
         <p>You don't have permission to access the admin dashboard.</p>
       </Box>
     );
@@ -374,14 +409,20 @@ export default function AdminDashboard() {
               <Shield style={{ height: 32, width: 32, color: 'var(--primary-foreground)' }} />
             </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}>Admin Dashboard</Typography>
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}
+              >
+                Admin Dashboard
+              </Typography>
               <p style={{ color: '#999999' }}>Monitor and manage your platform</p>
             </Box>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Badge variant={isAdmin ? "default" : "secondary"} style={{ fontWeight: 500 }}>
-              {isAdmin ? "Administrator" : isModerator ? "Moderator" : "Staff"}
+            <Badge variant={isAdmin ? 'default' : 'secondary'} style={{ fontWeight: 500 }}>
+              {isAdmin ? 'Administrator' : isModerator ? 'Moderator' : 'Staff'}
             </Badge>
             {lastUpdate && (
               <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
@@ -392,12 +433,28 @@ export default function AdminDashboard() {
         </Box>
 
         {/* Controls Bar */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            p: 2,
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            border: 1,
+            borderColor: 'divider',
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             {/* Time Period Filter */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Filter style={{ height: 16, width: 16, color: '#999999' }} />
-              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>Period:</Box>
+              <Box
+                component="span"
+                sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}
+              >
+                Period:
+              </Box>
               <Select value={filterPeriod} onValueChange={setFilterPeriod}>
                 <SelectTrigger style={{ width: 128 }}>
                   <SelectValue />
@@ -412,8 +469,23 @@ export default function AdminDashboard() {
 
             {/* View Mode Toggle */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>View:</Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 2, p: 0.5 }}>
+              <Box
+                component="span"
+                sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}
+              >
+                View:
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  p: 0.5,
+                }}
+              >
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
@@ -437,11 +509,7 @@ export default function AdminDashboard() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Auto Refresh Toggle */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Switch
-                id="auto-refresh"
-                checked={autoRefresh}
-                onCheckedChange={setAutoRefresh}
-              />
+              <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={setAutoRefresh} />
               <Label htmlFor="auto-refresh" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
                 Auto-refresh
               </Label>

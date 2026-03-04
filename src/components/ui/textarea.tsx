@@ -1,8 +1,7 @@
-import * as React from "react"
-import InputBase from "@mui/material/InputBase"
+import * as React from 'react';
+import InputBase from '@mui/material/InputBase';
 
-export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, style, ...props }, ref) => {
@@ -34,9 +33,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         }}
         {...(props as any)}
       />
-    )
-  }
-)
-Textarea.displayName = "Textarea"
+    );
+  },
+);
+Textarea.displayName = 'Textarea';
 
-export { Textarea }
+export { Textarea };

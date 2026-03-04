@@ -1,6 +1,19 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Star, MapPin, Phone, Globe, Instagram, Mail, Clock, Wifi, Car, Accessibility, ChevronRight } from 'lucide-react';
+import {
+  ArrowLeft,
+  Star,
+  MapPin,
+  Phone,
+  Globe,
+  Instagram,
+  Mail,
+  Clock,
+  Wifi,
+  Car,
+  Accessibility,
+  ChevronRight,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,7 +41,12 @@ type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
 
 type VenueWithRelations = Venue & {
   cities?: { id: string; name: string } | null;
-  countries?: { id: string; name: string; equality_score: number | null; lgbti_criminalization: Record<string, any> | null } | null;
+  countries?: {
+    id: string;
+    name: string;
+    equality_score: number | null;
+    lgbti_criminalization: Record<string, any> | null;
+  } | null;
 };
 
 export default function VenueDetail() {
@@ -39,7 +57,7 @@ export default function VenueDetail() {
   const [checkinRefresh, setCheckinRefresh] = useState(0);
   const { events } = useEvents();
 
-  const venueEvents = events.filter(event => event.venue_id === id);
+  const venueEvents = events.filter((event) => event.venue_id === id);
 
   useEffect(() => {
     if (!id) return;
@@ -50,7 +68,9 @@ export default function VenueDetail() {
 
         const { data: venueData, error: venueError } = await supabase
           .from('venues')
-          .select('*, cities:city_id(id, name), countries:country_id(id, name, equality_score, lgbti_criminalization)')
+          .select(
+            '*, cities:city_id(id, name), countries:country_id(id, name, equality_score, lgbti_criminalization)',
+          )
           .eq('id', id)
           .single();
 
@@ -59,19 +79,20 @@ export default function VenueDetail() {
 
         const { data: reviewsData, error: reviewsError } = await supabase
           .from('venue_reviews')
-          .select(`
+          .select(
+            `
             *,
             profiles:user_id (
               display_name,
               avatar_url
             )
-          `)
+          `,
+          )
           .eq('venue_id', id)
           .order('created_at', { ascending: false });
 
         if (reviewsError) throw reviewsError;
         setReviews(reviewsData || []);
-
       } catch (error) {
         console.error('Error fetching venue:', error);
       } finally {
@@ -85,13 +106,21 @@ export default function VenueDetail() {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+        <Box
+          sx={{
+            '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
+            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }}
+        >
           <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: '40%', mb: 2 }} />
           <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 3, mb: 3 }} />
           <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '60%', mb: 2 }} />
           <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-            {[1, 2, 3, 4].map(i => (
-              <Box key={i} sx={{ height: 32, width: 80, bgcolor: 'action.hover', borderRadius: 4 }} />
+            {[1, 2, 3, 4].map((i) => (
+              <Box
+                key={i}
+                sx={{ height: 32, width: 80, bgcolor: 'action.hover', borderRadius: 4 }}
+              />
             ))}
           </Box>
           <Box sx={{ height: 40, bgcolor: 'action.hover', borderRadius: 1, mb: 3 }} />
@@ -107,8 +136,12 @@ export default function VenueDetail() {
   if (!venue) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Venue Not Found</Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>The venue you're looking for doesn't exist.</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Venue Not Found
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          The venue you're looking for doesn't exist.
+        </Typography>
         <Link to="/venues">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
@@ -129,14 +162,21 @@ export default function VenueDetail() {
   };
 
   const formatHours = (hours: any) => {
-    if (!hours || typeof hours !== 'object') return <Typography variant="body2" color="text.secondary">Hours not available</Typography>;
+    if (!hours || typeof hours !== 'object')
+      return (
+        <Typography variant="body2" color="text.secondary">
+          Hours not available
+        </Typography>
+      );
 
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return days.map((day, index) => (
       <Box key={day} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>{dayNames[index]}</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {dayNames[index]}
+        </Typography>
         <Typography variant="body2" color="text.secondary">
           {hours[day] || 'Closed'}
         </Typography>
@@ -145,7 +185,8 @@ export default function VenueDetail() {
   };
 
   const heroImage = venue.images && venue.images.length > 0 ? venue.images[0] : null;
-  const remainingImages = venue.images && venue.images.length > 1 ? venue.images.slice(1) : (venue.images || []);
+  const remainingImages =
+    venue.images && venue.images.length > 1 ? venue.images.slice(1) : venue.images || [];
 
   const cityName = venue.cities?.name || venue.city;
   const countryName = venue.countries?.name || venue.country;
@@ -156,19 +197,41 @@ export default function VenueDetail() {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
-        <Link to="/venues" style={{ display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
+        <Link
+          to="/venues"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            color: 'inherit',
+            textDecoration: 'none',
+          }}
+        >
           <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Venues</Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ '&:hover': { color: 'primary.main' } }}
+          >
+            Venues
+          </Typography>
         </Link>
         {countryName && (
           <>
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
             {countryLink ? (
               <Link to={countryLink} style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>{countryName}</Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ '&:hover': { color: 'primary.main' } }}
+                >
+                  {countryName}
+                </Typography>
               </Link>
             ) : (
-              <Typography variant="body2" color="text.secondary">{countryName}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {countryName}
+              </Typography>
             )}
           </>
         )}
@@ -177,27 +240,39 @@ export default function VenueDetail() {
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
             {cityLink ? (
               <Link to={cityLink} style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>{cityName}</Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ '&:hover': { color: 'primary.main' } }}
+                >
+                  {cityName}
+                </Typography>
               </Link>
             ) : (
-              <Typography variant="body2" color="text.secondary">{cityName}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {cityName}
+              </Typography>
             )}
           </>
         )}
         <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>{venue.name}</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {venue.name}
+        </Typography>
       </Box>
 
       {/* Hero Image */}
       {heroImage && (
-        <Box sx={{
-          width: '100%',
-          height: { xs: 160, md: 192 },
-          borderRadius: 3,
-          overflow: 'hidden',
-          mb: 3,
-          position: 'relative',
-        }}>
+        <Box
+          sx={{
+            width: '100%',
+            height: { xs: 160, md: 192 },
+            borderRadius: 3,
+            overflow: 'hidden',
+            mb: 3,
+            position: 'relative',
+          }}
+        >
           <Box
             component="img"
             src={heroImage}
@@ -219,21 +294,23 @@ export default function VenueDetail() {
       )}
 
       {/* Title Row */}
-      <Box sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
-        alignItems: { md: 'flex-start' },
-        justifyContent: { md: 'space-between' },
-        gap: 2,
-        mb: 2,
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { md: 'flex-start' },
+          justifyContent: { md: 'space-between' },
+          gap: 2,
+          mb: 2,
+        }}
+      >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5, flexWrap: 'wrap' }}>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>{venue.name}</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {venue.name}
+            </Typography>
             {venue.verified && <Badge variant="secondary">Verified</Badge>}
-            {venue.featured && (
-              <Badge>Featured</Badge>
-            )}
+            {venue.featured && <Badge>Featured</Badge>}
             {venue.countries?.equality_score != null && (
               <EqualityScoreBadge score={venue.countries.equality_score} size="sm" />
             )}
@@ -243,17 +320,33 @@ export default function VenueDetail() {
             <Typography variant="body2" color="text.secondary">
               {cityLink ? (
                 <Link to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                  <Typography component="span" variant="body2" sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}>{cityName}</Typography>
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
+                  >
+                    {cityName}
+                  </Typography>
                 </Link>
-              ) : cityName}
+              ) : (
+                cityName
+              )}
               {countryName && (
                 <>
                   {', '}
                   {countryLink ? (
                     <Link to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                      <Typography component="span" variant="body2" sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}>{countryName}</Typography>
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
+                      >
+                        {countryName}
+                      </Typography>
                     </Link>
-                  ) : countryName}
+                  ) : (
+                    countryName
+                  )}
                 </>
               )}
             </Typography>
@@ -263,13 +356,19 @@ export default function VenueDetail() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
           <FavoriteButton itemId={venue.id} type="venue" size="md" />
           <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
-          <AdminEditButton contentType="venues" contentId={venue.id} contentName={venue.name} currentData={venue as Record<string, unknown>} onSaved={() => window.location.reload()} />
+          <AdminEditButton
+            contentType="venues"
+            contentId={venue.id}
+            contentName={venue.name}
+            currentData={venue as Record<string, unknown>}
+            onSaved={() => window.location.reload()}
+          />
           <VenueCheckInButton
             venueId={venue.id}
             venueName={venue.name}
             venueLatitude={venue.latitude}
             venueLongitude={venue.longitude}
-            onCheckInSuccess={() => setCheckinRefresh(prev => prev + 1)}
+            onCheckInSuccess={() => setCheckinRefresh((prev) => prev + 1)}
           />
           {venue.phone && (
             <Button variant="outline" size="sm" onClick={() => window.open(`tel:${venue.phone}`)}>
@@ -278,7 +377,11 @@ export default function VenueDetail() {
             </Button>
           )}
           {venue.website && (
-            <Button variant="outline" size="sm" onClick={() => window.open(venue.website!, '_blank')}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open(venue.website!, '_blank')}
+            >
               <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
               Website
             </Button>
@@ -288,11 +391,14 @@ export default function VenueDetail() {
 
       {/* Stat Chips */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-        {venue.category && (
-          <Chip label={venue.category} size="small" />
-        )}
+        {venue.category && <Chip label={venue.category} size="small" />}
         {cityName && (
-          <Chip icon={<MapPin style={{ width: 14, height: 14 }} />} label={`${cityName}${countryName ? `, ${countryName}` : ''}`} size="small" variant="outlined" />
+          <Chip
+            icon={<MapPin style={{ width: 14, height: 14 }} />}
+            label={`${cityName}${countryName ? `, ${countryName}` : ''}`}
+            size="small"
+            variant="outlined"
+          />
         )}
         {venue.price_range && (
           <Chip label={getPriceRange(venue.price_range)} size="small" variant="outlined" />
@@ -306,7 +412,13 @@ export default function VenueDetail() {
           />
         )}
         {venue.amenities?.map((amenity) => (
-          <Chip key={amenity} label={amenity.replace('-', ' ')} size="small" variant="outlined" sx={{ textTransform: 'capitalize' }} />
+          <Chip
+            key={amenity}
+            label={amenity.replace('-', ' ')}
+            size="small"
+            variant="outlined"
+            sx={{ textTransform: 'capitalize' }}
+          />
         ))}
       </Box>
 
@@ -315,7 +427,9 @@ export default function VenueDetail() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           {(remainingImages.length > 0 || heroImage) && (
-            <TabsTrigger value="photos">Photos {venue.images && venue.images.length > 0 ? `(${venue.images.length})` : ''}</TabsTrigger>
+            <TabsTrigger value="photos">
+              Photos {venue.images && venue.images.length > 0 ? `(${venue.images.length})` : ''}
+            </TabsTrigger>
           )}
           {venueEvents.length > 0 && (
             <TabsTrigger value="events">Events ({venueEvents.length})</TabsTrigger>
@@ -325,7 +439,14 @@ export default function VenueDetail() {
 
         {/* Overview Tab */}
         <TabsContent value="overview">
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3, mt: 1 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
+              gap: 3,
+              mt: 1,
+            }}
+          >
             {/* Main Content */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Description */}
@@ -335,7 +456,9 @@ export default function VenueDetail() {
                     <CardTitle>About</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>{venue.description}</Typography>
+                    <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                      {venue.description}
+                    </Typography>
                   </CardContent>
                 </Card>
               )}
@@ -347,16 +470,43 @@ export default function VenueDetail() {
                     <CardTitle>Amenities</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr' },
+                        gap: 1.5,
+                      }}
+                    >
                       {venue.amenities.map((amenity, index) => (
-                        <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, borderRadius: 1 }}>
+                        <Box
+                          key={index}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            p: 1,
+                            borderRadius: 1,
+                          }}
+                        >
                           {amenity === 'wifi' && <Wifi style={{ width: 16, height: 16 }} />}
                           {amenity === 'parking' && <Car style={{ width: 16, height: 16 }} />}
-                          {amenity === 'wheelchair-accessible' && <Accessibility style={{ width: 16, height: 16 }} />}
-                          {!['wifi', 'parking', 'wheelchair-accessible'].includes(amenity) && (
-                            <Box sx={{ width: 16, height: 16, borderRadius: '50%', bgcolor: 'action.disabled', flexShrink: 0 }} />
+                          {amenity === 'wheelchair-accessible' && (
+                            <Accessibility style={{ width: 16, height: 16 }} />
                           )}
-                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{amenity.replace('-', ' ')}</Typography>
+                          {!['wifi', 'parking', 'wheelchair-accessible'].includes(amenity) && (
+                            <Box
+                              sx={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: '50%',
+                                bgcolor: 'action.disabled',
+                                flexShrink: 0,
+                              }}
+                            />
+                          )}
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                            {amenity.replace('-', ' ')}
+                          </Typography>
                         </Box>
                       ))}
                     </Box>
@@ -385,8 +535,19 @@ export default function VenueDetail() {
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   {venue.address && (
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                      <MapPin style={{ width: 16, height: 16, color: '#999999', flexShrink: 0, marginTop: 2 }} />
-                      <Typography variant="body2">{venue.address}{venue.postal_code ? `, ${venue.postal_code}` : ''}</Typography>
+                      <MapPin
+                        style={{
+                          width: 16,
+                          height: 16,
+                          color: '#999999',
+                          flexShrink: 0,
+                          marginTop: 2,
+                        }}
+                      />
+                      <Typography variant="body2">
+                        {venue.address}
+                        {venue.postal_code ? `, ${venue.postal_code}` : ''}
+                      </Typography>
                     </Box>
                   )}
                   {venue.phone && (
@@ -427,7 +588,12 @@ export default function VenueDetail() {
                         rel="noopener noreferrer"
                         variant="body2"
                         color="primary"
-                        sx={{ '&:hover': { textDecoration: 'underline' }, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        sx={{
+                          '&:hover': { textDecoration: 'underline' },
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
                       >
                         {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                       </Typography>
@@ -491,14 +657,36 @@ export default function VenueDetail() {
         {/* Photos Tab */}
         <TabsContent value="photos">
           {venue.images && venue.images.length > 0 ? (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2, mt: 1 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
+                gap: 2,
+                mt: 1,
+              }}
+            >
               {venue.images.map((imageUrl, index) => (
-                <Box key={index} sx={{ aspectRatio: '1/1', borderRadius: 2, overflow: 'hidden', bgcolor: 'action.hover' }}>
+                <Box
+                  key={index}
+                  sx={{
+                    aspectRatio: '1/1',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    bgcolor: 'action.hover',
+                  }}
+                >
                   <Box
                     component="img"
                     src={imageUrl}
                     alt={`${venue.name} - Image ${index + 1}`}
-                    sx={{ width: '100%', height: '100%', objectFit: 'cover', '&:hover': { transform: 'scale(1.05)' }, transition: 'transform 300ms', cursor: 'pointer' }}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      '&:hover': { transform: 'scale(1.05)' },
+                      transition: 'transform 300ms',
+                      cursor: 'pointer',
+                    }}
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       (e.target as HTMLImageElement).src = '/placeholder.svg';
                     }}
@@ -539,13 +727,34 @@ export default function VenueDetail() {
               {reviews.map((review) => (
                 <Card key={review.id}>
                   <CardContent sx={{ pt: 2.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Box sx={{ width: 36, height: 36, bgcolor: 'action.hover', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '0.875rem' }}>
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            bgcolor: 'action.hover',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                          }}
+                        >
                           {review.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
                         </Box>
                         <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{review.profiles?.display_name || 'Anonymous'}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {review.profiles?.display_name || 'Anonymous'}
+                          </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
                             {Array.from({ length: 5 }).map((_, i) => (
                               <Star
@@ -566,10 +775,14 @@ export default function VenueDetail() {
                       </Typography>
                     </Box>
                     {review.title && (
-                      <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{review.title}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                        {review.title}
+                      </Typography>
                     )}
                     {review.content && (
-                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>{review.content}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                        {review.content}
+                      </Typography>
                     )}
                   </CardContent>
                 </Card>
@@ -577,7 +790,9 @@ export default function VenueDetail() {
             </Box>
           ) : (
             <Box sx={{ textAlign: 'center', py: 6 }}>
-              <Typography color="text.secondary">No reviews yet. Be the first to leave a review!</Typography>
+              <Typography color="text.secondary">
+                No reviews yet. Be the first to leave a review!
+              </Typography>
             </Box>
           )}
         </TabsContent>

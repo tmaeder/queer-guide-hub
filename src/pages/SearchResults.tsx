@@ -1,12 +1,42 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Calendar, Star, Eye, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, Search, Filter, ArrowUpDown, Grid, List, TrendingUp, Clock, Sparkles, Tag, User, Hotel, Tent, HelpCircle } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  MapPin,
+  Calendar,
+  Star,
+  Eye,
+  Users,
+  ShoppingBag,
+  Newspaper,
+  Globe,
+  Plane,
+  FileText,
+  Search,
+  Filter,
+  ArrowUpDown,
+  Grid,
+  List,
+  TrendingUp,
+  Clock,
+  Sparkles,
+  Tag,
+  User,
+  Hotel,
+  Tent,
+  HelpCircle,
+} from 'lucide-react';
 import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -63,12 +93,12 @@ export default function SearchResults() {
   const [filters, setFilters] = useState<SearchFilters>({
     types: initialTypes,
     location: initialLocation,
-    categories: initialCategories.length > 0 ? initialCategories : undefined
+    categories: initialCategories.length > 0 ? initialCategories : undefined,
   });
 
   const { results, loading } = useSearch(query, {
     ...filters,
-    types: selectedTab === 'all' ? filters.types : [selectedTab]
+    types: selectedTab === 'all' ? filters.types : [selectedTab],
   });
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
@@ -103,11 +133,14 @@ export default function SearchResults() {
   }, [sortBy]);
 
   const getResultsByType = () => {
-    return results.reduce((acc, result) => {
-      if (!acc[result.type]) acc[result.type] = [];
-      acc[result.type].push(result);
-      return acc;
-    }, {} as Record<string, SearchResult[]>);
+    return results.reduce(
+      (acc, result) => {
+        if (!acc[result.type]) acc[result.type] = [];
+        acc[result.type].push(result);
+        return acc;
+      },
+      {} as Record<string, SearchResult[]>,
+    );
   };
 
   const formatResultDate = (dateString?: string) => {
@@ -119,9 +152,13 @@ export default function SearchResults() {
     const sorted = [...results];
     switch (sortBy) {
       case 'newest':
-        return sorted.sort((a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime());
+        return sorted.sort(
+          (a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime(),
+        );
       case 'oldest':
-        return sorted.sort((a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime());
+        return sorted.sort(
+          (a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime(),
+        );
       case 'rating':
         return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
       case 'price-low':
@@ -202,18 +239,41 @@ export default function SearchResults() {
 
     if (viewMode === 'grid') {
       return (
-        <Card key={`${result.type}-${result.objectID}`} sx={{ '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' }, transition: 'all 0.2s', cursor: 'pointer' }} onClick={() => navigateToResult(result)}>
+        <Card
+          key={`${result.type}-${result.objectID}`}
+          sx={{
+            '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' },
+            transition: 'all 0.2s',
+            cursor: 'pointer',
+          }}
+          onClick={() => navigateToResult(result)}
+        >
           <Box sx={{ position: 'relative' }}>
             {result.imageUrl ? (
-              <Box sx={{ aspectRatio: '16/9', position: 'relative', overflow: 'hidden', borderRadius: '8px 8px 0 0' }}>
+              <Box
+                sx={{
+                  aspectRatio: '16/9',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  borderRadius: '8px 8px 0 0',
+                }}
+              >
                 <Box
                   component="img"
                   src={result.imageUrl}
                   alt={result.title}
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.2s' }}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.2s',
+                  }}
                 />
                 <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
-                  <Badge variant="secondary" style={{ fontSize: '0.75rem', background: theme.palette.background.paper }}>
+                  <Badge
+                    variant="secondary"
+                    style={{ fontSize: '0.75rem', background: theme.palette.background.paper }}
+                  >
                     <Icon style={{ width: 12, height: 12, marginRight: 4 }} />
                     {result.type}
                   </Badge>
@@ -228,17 +288,46 @@ export default function SearchResults() {
                 )}
               </Box>
             ) : (
-              <Box sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', borderRadius: '8px 8px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  aspectRatio: '16/9',
+                  bgcolor: 'action.hover',
+                  borderRadius: '8px 8px 0 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <Icon style={{ width: 48, height: 48, color: theme.palette.text.secondary }} />
               </Box>
             )}
           </Box>
           <CardContent style={{ padding: 16 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: 600,
+                mb: 1,
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
               {result.title}
             </Typography>
             {result.description && (
-              <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', mb: 1.5 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  overflow: 'hidden',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  mb: 1.5,
+                }}
+              >
                 {result.description}
               </Typography>
             )}
@@ -246,13 +335,17 @@ export default function SearchResults() {
               {result.location && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <MapPin style={{ width: 12, height: 12 }} />
-                  <Typography variant="caption" color="text.secondary">{result.location}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {result.location}
+                  </Typography>
                 </Box>
               )}
               {result.rating && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Star style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15' }} />
-                  <Typography variant="caption" color="text.secondary">{result.rating}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {result.rating}
+                  </Typography>
                 </Box>
               )}
             </Box>
@@ -264,7 +357,11 @@ export default function SearchResults() {
               ) : (
                 <Box />
               )}
-              <Button variant="outline" size="sm" style={{ transition: 'color 0.15s, background-color 0.15s' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                style={{ transition: 'color 0.15s, background-color 0.15s' }}
+              >
                 View
               </Button>
             </Box>
@@ -274,7 +371,15 @@ export default function SearchResults() {
     }
 
     return (
-      <Card key={`${result.type}-${result.objectID}`} sx={{ '&:hover': { boxShadow: 4, borderColor: 'primary.main' }, transition: 'all 0.2s', cursor: 'pointer' }} onClick={() => navigateToResult(result)}>
+      <Card
+        key={`${result.type}-${result.objectID}`}
+        sx={{
+          '&:hover': { boxShadow: 4, borderColor: 'primary.main' },
+          transition: 'all 0.2s',
+          cursor: 'pointer',
+        }}
+        onClick={() => navigateToResult(result)}
+      >
         <CardContent style={{ padding: 16 }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             {result.imageUrl && (
@@ -283,12 +388,25 @@ export default function SearchResults() {
                   component="img"
                   src={result.imageUrl}
                   alt={result.title}
-                  sx={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 2, transition: 'transform 0.2s' }}
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    objectFit: 'cover',
+                    borderRadius: 2,
+                    transition: 'transform 0.2s',
+                  }}
                 />
               </Box>
             )}
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  gap: 1,
+                }}
+              >
                 <Box sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                     <Icon style={{ width: 16, height: 16, color: theme.palette.text.secondary }} />
@@ -306,33 +424,61 @@ export default function SearchResults() {
                     {result.title}
                   </Typography>
                   {result.description && (
-                    <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', mb: 1.5 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        mb: 1.5,
+                      }}
+                    >
                       {result.description}
                     </Typography>
                   )}
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 1.5 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      gap: 2,
+                      mb: 1.5,
+                    }}
+                  >
                     {result.location && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <MapPin style={{ width: 12, height: 12 }} />
-                        <Typography variant="body2" color="text.secondary">{result.location}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {result.location}
+                        </Typography>
                       </Box>
                     )}
                     {result.date && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Calendar style={{ width: 12, height: 12 }} />
-                        <Typography variant="body2" color="text.secondary">{formatResultDate(result.date)}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {formatResultDate(result.date)}
+                        </Typography>
                       </Box>
                     )}
                     {result.rating && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Star style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15' }} />
-                        <Typography variant="body2" color="text.secondary">{result.rating}</Typography>
+                        <Star
+                          style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15' }}
+                        />
+                        <Typography variant="body2" color="text.secondary">
+                          {result.rating}
+                        </Typography>
                       </Box>
                     )}
                     {result.metadata?.viewsCount && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Eye style={{ width: 12, height: 12 }} />
-                        <Typography variant="body2" color="text.secondary">{result.metadata.viewsCount} views</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {result.metadata.viewsCount} views
+                        </Typography>
                       </Box>
                     )}
                   </Box>
@@ -351,13 +497,21 @@ export default function SearchResults() {
                     </Box>
                   )}
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}
+                >
                   {result.price && (
-                    <Typography sx={{ fontWeight: 600, fontSize: '1.25rem', color: 'primary.main' }}>
+                    <Typography
+                      sx={{ fontWeight: 600, fontSize: '1.25rem', color: 'primary.main' }}
+                    >
                       ${result.price}
                     </Typography>
                   )}
-                  <Button variant="outline" size="sm" style={{ transition: 'color 0.15s, background-color 0.15s' }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    style={{ transition: 'color 0.15s, background-color 0.15s' }}
+                  >
                     View Details
                   </Button>
                 </Box>
@@ -372,10 +526,13 @@ export default function SearchResults() {
   const resultsByType = getResultsByType();
   const totalResults = results.length;
   const sortedResults = sortResults(results);
-  const sortedResultsByType = Object.entries(resultsByType).reduce((acc, [type, typeResults]) => {
-    acc[type] = sortResults(typeResults);
-    return acc;
-  }, {} as Record<string, SearchResult[]>);
+  const sortedResultsByType = Object.entries(resultsByType).reduce(
+    (acc, [type, typeResults]) => {
+      acc[type] = sortResults(typeResults);
+      return acc;
+    },
+    {} as Record<string, SearchResult[]>,
+  );
 
   const availableTabs = ['all', ...Object.keys(resultsByType)];
 
@@ -399,8 +556,11 @@ export default function SearchResults() {
           >
             <Filter style={{ width: 16, height: 16 }} />
             Filters
-            {Object.values(filters).some(v => v && (Array.isArray(v) ? v.length > 0 : true)) && (
-              <Badge variant="destructive" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>
+            {Object.values(filters).some((v) => v && (Array.isArray(v) ? v.length > 0 : true)) && (
+              <Badge
+                variant="destructive"
+                style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}
+              >
                 !
               </Badge>
             )}
@@ -410,7 +570,17 @@ export default function SearchResults() {
         {/* Enhanced Search Bar */}
         <Box sx={{ display: 'flex', gap: 1.5 }}>
           <Box sx={{ flex: 1, position: 'relative' }}>
-            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: theme.palette.text.secondary }} />
+            <Search
+              style={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 16,
+                height: 16,
+                color: theme.palette.text.secondary,
+              }}
+            />
             <Input
               placeholder="Refine your search..."
               value={searchQuery}
@@ -419,9 +589,7 @@ export default function SearchResults() {
               style={{ paddingLeft: 40 }}
             />
           </Box>
-          <Button onClick={handleSearch}>
-            Search
-          </Button>
+          <Button onClick={handleSearch}>Search</Button>
         </Box>
       </PageHeader>
 
@@ -434,15 +602,31 @@ export default function SearchResults() {
 
       {/* Results Controls */}
       {!loading && results.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', gap: 2, mb: 3, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            justifyContent: 'space-between',
+            gap: 2,
+            mb: 3,
+            p: 2,
+            bgcolor: 'action.hover',
+            borderRadius: 2,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Sort by:</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Sort by:
+              </Typography>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger style={{ width: 160 }}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent style={{ zIndex: 50, backgroundColor: theme.palette.background.paper }}>
+                <SelectContent
+                  style={{ zIndex: 50, backgroundColor: theme.palette.background.paper }}
+                >
                   <SelectItem value="relevance">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <TrendingUp style={{ width: 12, height: 12 }} />
@@ -477,8 +661,7 @@ export default function SearchResults() {
                   <SelectItem value="price-high">Price: High to Low</SelectItem>
                   <SelectItem value="alpha-asc">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <ArrowUpDown style={{ width: 12, height: 12 }} />
-                      A - Z
+                      <ArrowUpDown style={{ width: 12, height: 12 }} />A - Z
                     </Box>
                   </SelectItem>
                   <SelectItem value="alpha-desc">
@@ -493,8 +676,18 @@ export default function SearchResults() {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>View:</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              View:
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 2,
+              }}
+            >
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
@@ -529,7 +722,14 @@ export default function SearchResults() {
                   Try searching for...
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-                  {['Berlin venues', 'Pride events', 'Drag shows', 'LGBTQ+ history', 'Queer artists', 'Safe spaces'].map((suggestion) => (
+                  {[
+                    'Berlin venues',
+                    'Pride events',
+                    'Drag shows',
+                    'LGBTQ+ history',
+                    'Queer artists',
+                    'Safe spaces',
+                  ].map((suggestion) => (
                     <Button
                       key={suggestion}
                       variant="outline"
@@ -556,7 +756,12 @@ export default function SearchResults() {
                     { label: 'Places', path: '/places' },
                     { label: 'Resources', path: '/resources' },
                   ].map((cat) => (
-                    <Button key={cat.label} variant="ghost" size="sm" onClick={() => navigate(cat.path)}>
+                    <Button
+                      key={cat.label}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(cat.path)}
+                    >
                       {cat.label}
                     </Button>
                   ))}
@@ -567,9 +772,27 @@ export default function SearchResults() {
 
           {/* No results -- shown when there IS a query but no results */}
           {query && query.trim() !== '' && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, textAlign: 'center' }}>
-              <Search style={{ width: 48, height: 48, color: theme.palette.text.secondary, marginBottom: 16 }} />
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No results found</Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 6,
+                textAlign: 'center',
+              }}
+            >
+              <Search
+                style={{
+                  width: 48,
+                  height: 48,
+                  color: theme.palette.text.secondary,
+                  marginBottom: 16,
+                }}
+              />
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                No results found
+              </Typography>
               <Typography color="text.secondary" sx={{ mb: 2 }}>
                 Try adjusting your search query or filters
               </Typography>
@@ -583,7 +806,14 @@ export default function SearchResults() {
                   Or try one of these searches:
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
-                  {['Berlin venues', 'Pride events', 'Drag shows', 'LGBTQ+ history', 'Queer artists', 'Safe spaces'].map((suggestion) => (
+                  {[
+                    'Berlin venues',
+                    'Pride events',
+                    'Drag shows',
+                    'LGBTQ+ history',
+                    'Queer artists',
+                    'Safe spaces',
+                  ].map((suggestion) => (
                     <Button
                       key={suggestion}
                       variant="outline"
@@ -609,7 +839,11 @@ export default function SearchResults() {
             {Object.entries(resultsByType).map(([type, typeResults]) => {
               const Icon = contentTypeIcons[type] || HelpCircle;
               return (
-                <TabsTrigger key={type} value={type} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <TabsTrigger
+                  key={type}
+                  value={type}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                >
                   <Icon style={{ width: 12, height: 12 }} />
                   {type} ({typeResults.length})
                 </TabsTrigger>
@@ -618,20 +852,44 @@ export default function SearchResults() {
           </TabsList>
 
           <TabsContent value="all">
-            <Box sx={viewMode === 'grid'
-              ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }
-              : { display: 'flex', flexDirection: 'column', gap: 2 }
-            }>
+            <Box
+              sx={
+                viewMode === 'grid'
+                  ? {
+                      display: 'grid',
+                      gridTemplateColumns: {
+                        xs: '1fr',
+                        md: '1fr 1fr',
+                        lg: 'repeat(3, 1fr)',
+                        xl: 'repeat(4, 1fr)',
+                      },
+                      gap: 3,
+                    }
+                  : { display: 'flex', flexDirection: 'column', gap: 2 }
+              }
+            >
               {sortedResults.map(renderResultCard)}
             </Box>
           </TabsContent>
 
           {Object.entries(sortedResultsByType).map(([type, typeResults]) => (
             <TabsContent key={type} value={type}>
-              <Box sx={viewMode === 'grid'
-                ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }
-                : { display: 'flex', flexDirection: 'column', gap: 2 }
-              }>
+              <Box
+                sx={
+                  viewMode === 'grid'
+                    ? {
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          md: '1fr 1fr',
+                          lg: 'repeat(3, 1fr)',
+                          xl: 'repeat(4, 1fr)',
+                        },
+                        gap: 3,
+                      }
+                    : { display: 'flex', flexDirection: 'column', gap: 2 }
+                }
+              >
                 {typeResults.map(renderResultCard)}
               </Box>
             </TabsContent>

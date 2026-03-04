@@ -1,10 +1,22 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ArrowLeft, Plus, Search, Edit2, Trash2, Music, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -53,7 +65,8 @@ export default function AdminFestivals() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { canManageContent, loading: rolesLoading } = useAdminRoles();
-  const { festivals, loading, fetchFestivals, createFestival, updateFestival, deleteFestival } = useFestivals();
+  const { festivals, loading, fetchFestivals, createFestival, updateFestival, deleteFestival } =
+    useFestivals();
 
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -64,8 +77,16 @@ export default function AdminFestivals() {
   const [countries, setCountries] = useState<Array<{ id: string; name: string }>>([]);
 
   useEffect(() => {
-    supabase.from('cities').select('id, name').order('name').then(({ data }) => setCities(data ?? []));
-    supabase.from('countries').select('id, name').order('name').then(({ data }) => setCountries(data ?? []));
+    supabase
+      .from('cities')
+      .select('id, name')
+      .order('name')
+      .then(({ data }) => setCities(data ?? []));
+    supabase
+      .from('countries')
+      .select('id, name')
+      .order('name')
+      .then(({ data }) => setCountries(data ?? []));
   }, []);
 
   useEffect(() => {
@@ -75,12 +96,17 @@ export default function AdminFestivals() {
   const filtered = useMemo(() => {
     if (!search) return festivals;
     const q = search.toLowerCase();
-    return festivals.filter(f => f.name.toLowerCase().includes(q) || f.cities?.name?.toLowerCase().includes(q));
+    return festivals.filter(
+      (f) => f.name.toLowerCase().includes(q) || f.cities?.name?.toLowerCase().includes(q),
+    );
   }, [festivals, search]);
 
   const generateSlug = () => {
-    const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    setForm(f => ({ ...f, slug }));
+    const slug = form.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    setForm((f) => ({ ...f, slug }));
   };
 
   const openCreate = () => {
@@ -114,7 +140,10 @@ export default function AdminFestivals() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) { toast.error('Name is required'); return; }
+    if (!form.name.trim()) {
+      toast.error('Name is required');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
@@ -131,7 +160,12 @@ export default function AdminFestivals() {
         country_id: form.country_id,
         website: form.website || null,
         ticket_url: form.ticket_url || null,
-        tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        tags: form.tags
+          ? form.tags
+              .split(',')
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : [],
         is_recurring: form.is_recurring,
         recurrence_pattern: form.recurrence_pattern || null,
         featured: form.featured,
@@ -164,22 +198,52 @@ export default function AdminFestivals() {
   };
 
   if (rolesLoading || loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
     <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
         <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Music style={{ width: 24, height: 24 }} /> Manage Festivals ({festivals.length})
         </Typography>
-        <Button onClick={openCreate}><Plus className="w-4 h-4 mr-1" /> Add Festival</Button>
+        <Button onClick={openCreate}>
+          <Plus className="w-4 h-4 mr-1" /> Add Festival
+        </Button>
       </Box>
 
       {/* Search */}
       <Box sx={{ mb: 3, position: 'relative', maxWidth: 400 }}>
-        <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: '#9ca3af' }} />
-        <Input placeholder="Search festivals..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8" />
+        <Search
+          style={{
+            position: 'absolute',
+            left: 10,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: 16,
+            height: 16,
+            color: '#9ca3af',
+          }}
+        />
+        <Input
+          placeholder="Search festivals..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-8"
+        />
       </Box>
 
       {/* List */}
@@ -189,13 +253,17 @@ export default function AdminFestivals() {
         </Paper>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {filtered.map(f => (
+          {filtered.map((f) => (
             <Paper key={f.id} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <Typography variant="subtitle2" fontWeight={600}>{f.name}</Typography>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    {f.name}
+                  </Typography>
                   <Chip size="small" label={f.festival_type} variant="outlined" />
-                  {f.featured && <Badge style={{ backgroundColor: '#333', color: '#fff' }}>Featured</Badge>}
+                  {f.featured && (
+                    <Badge style={{ backgroundColor: '#333', color: '#fff' }}>Featured</Badge>
+                  )}
                 </Box>
                 <Typography variant="caption" color="text.secondary">
                   {[f.cities?.name, f.countries?.name].filter(Boolean).join(', ') || 'No location'}
@@ -225,52 +293,150 @@ export default function AdminFestivals() {
           </DialogHeader>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
-              <TextField label="Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} size="small" fullWidth required />
+              <TextField
+                label="Name"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                size="small"
+                fullWidth
+                required
+              />
             </Box>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
-              <TextField label="Slug" value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} size="small" fullWidth />
-              <Button size="sm" variant="outline" onClick={generateSlug} type="button">Gen</Button>
+              <TextField
+                label="Slug"
+                value={form.slug}
+                onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                size="small"
+                fullWidth
+              />
+              <Button size="sm" variant="outline" onClick={generateSlug} type="button">
+                Gen
+              </Button>
             </Box>
-            <TextField label="Description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} size="small" multiline rows={3} />
-            <Select value={form.festival_type} onValueChange={v => setForm(f => ({ ...f, festival_type: v }))}>
-              <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+            <TextField
+              label="Description"
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              size="small"
+              multiline
+              rows={3}
+            />
+            <Select
+              value={form.festival_type}
+              onValueChange={(v) => setForm((f) => ({ ...f, festival_type: v }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
               <SelectContent>
-                {FESTIVAL_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                {FESTIVAL_TYPES.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField label="Start Date" type="datetime-local" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} size="small" fullWidth InputLabelProps={{ shrink: true }} />
-              <TextField label="End Date" type="datetime-local" value={form.end_date} onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))} size="small" fullWidth InputLabelProps={{ shrink: true }} />
+              <TextField
+                label="Start Date"
+                type="datetime-local"
+                value={form.start_date}
+                onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))}
+                size="small"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                label="End Date"
+                type="datetime-local"
+                value={form.end_date}
+                onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
+                size="small"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
             </Box>
-            <TextField label="Timezone (IANA)" value={form.timezone} onChange={e => setForm(f => ({ ...f, timezone: e.target.value }))} size="small" placeholder="Europe/Zurich" />
+            <TextField
+              label="Timezone (IANA)"
+              value={form.timezone}
+              onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))}
+              size="small"
+              placeholder="Europe/Zurich"
+            />
             <Autocomplete
               options={cities}
-              getOptionLabel={o => o.name}
-              value={cities.find(c => c.id === form.city_id) || null}
-              onChange={(_, v) => setForm(f => ({ ...f, city_id: v?.id ?? null, city: v?.name ?? '' }))}
-              renderInput={params => <TextField {...params} label="City" size="small" />}
+              getOptionLabel={(o) => o.name}
+              value={cities.find((c) => c.id === form.city_id) || null}
+              onChange={(_, v) =>
+                setForm((f) => ({ ...f, city_id: v?.id ?? null, city: v?.name ?? '' }))
+              }
+              renderInput={(params) => <TextField {...params} label="City" size="small" />}
               size="small"
             />
             <Autocomplete
               options={countries}
-              getOptionLabel={o => o.name}
-              value={countries.find(c => c.id === form.country_id) || null}
-              onChange={(_, v) => setForm(f => ({ ...f, country_id: v?.id ?? null, country: v?.name ?? '' }))}
-              renderInput={params => <TextField {...params} label="Country" size="small" />}
+              getOptionLabel={(o) => o.name}
+              value={countries.find((c) => c.id === form.country_id) || null}
+              onChange={(_, v) =>
+                setForm((f) => ({ ...f, country_id: v?.id ?? null, country: v?.name ?? '' }))
+              }
+              renderInput={(params) => <TextField {...params} label="Country" size="small" />}
               size="small"
             />
-            <TextField label="Website" value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} size="small" />
-            <TextField label="Ticket URL" value={form.ticket_url} onChange={e => setForm(f => ({ ...f, ticket_url: e.target.value }))} size="small" />
-            <TextField label="Tags (comma-separated)" value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} size="small" />
-            <FormControlLabel control={<Switch checked={form.is_recurring} onChange={e => setForm(f => ({ ...f, is_recurring: e.target.checked }))} />} label="Recurring" />
+            <TextField
+              label="Website"
+              value={form.website}
+              onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
+              size="small"
+            />
+            <TextField
+              label="Ticket URL"
+              value={form.ticket_url}
+              onChange={(e) => setForm((f) => ({ ...f, ticket_url: e.target.value }))}
+              size="small"
+            />
+            <TextField
+              label="Tags (comma-separated)"
+              value={form.tags}
+              onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
+              size="small"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={form.is_recurring}
+                  onChange={(e) => setForm((f) => ({ ...f, is_recurring: e.target.checked }))}
+                />
+              }
+              label="Recurring"
+            />
             {form.is_recurring && (
-              <TextField label="Recurrence Pattern" value={form.recurrence_pattern} onChange={e => setForm(f => ({ ...f, recurrence_pattern: e.target.value }))} size="small" placeholder="Annual, every June" />
+              <TextField
+                label="Recurrence Pattern"
+                value={form.recurrence_pattern}
+                onChange={(e) => setForm((f) => ({ ...f, recurrence_pattern: e.target.value }))}
+                size="small"
+                placeholder="Annual, every June"
+              />
             )}
-            <FormControlLabel control={<Switch checked={form.featured} onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))} />} label="Featured" />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={form.featured}
+                  onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))}
+                />
+              }
+              label="Featured"
+            />
           </Box>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : editId ? 'Update' : 'Create'}</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : editId ? 'Update' : 'Create'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

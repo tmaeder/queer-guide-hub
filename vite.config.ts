@@ -37,6 +37,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  esbuild: mode === 'production' ? {
+    drop: ['console', 'debugger'],
+    legalComments: 'none',
+  } : {},
   build: {
     rollupOptions: {
       output: {
@@ -92,26 +96,12 @@ export default defineConfig(({ mode }) => ({
       },
     },
     cssCodeSplit: true,
-    minify: mode === 'production' ? 'terser' : false,
+    minify: mode === 'production' ? 'esbuild' : false,
     // Cloudflare Pages optimization
     target: 'esnext',
     sourcemap: mode === 'development',
     ...(mode === 'production' && {
-      terserOptions: {
-        compress: {
-          drop_console: true,
-          drop_debugger: true,
-          pure_funcs: ['console.log', 'console.info', 'console.debug'],
-          passes: 1,
-        },
-        mangle: {
-          safari10: true,
-        },
-        format: {
-          comments: false,
-        },
-      },
-      reportCompressedSize: false, // Faster builds for Cloudflare
+      reportCompressedSize: false,
       chunkSizeWarningLimit: 1000,
     }),
   },

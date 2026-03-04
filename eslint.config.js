@@ -26,7 +26,14 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": ["warn", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        destructuredArrayIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^_",
+      }],
+      "no-case-declarations": "warn",
       // Accessibility rules (WCAG 2.2 AA)
       "jsx-a11y/alt-text": "warn",
       "jsx-a11y/anchor-has-content": "warn",

@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -94,9 +94,7 @@ export default function Page() {
 
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        {page.category && (
-          <Chip label={page.category} size="small" sx={{ mb: 1 }} />
-        )}
+        {page.category && <Chip label={page.category} size="small" sx={{ mb: 1 }} />}
         <Typography variant="h3" component="h1" sx={{ fontWeight: 800, lineHeight: 1.2, mb: 1 }}>
           {page.title}
         </Typography>
@@ -107,7 +105,8 @@ export default function Page() {
         )}
         {page.published_at && (
           <Typography variant="caption" color="text.secondary">
-            Published {new Date(page.published_at).toLocaleDateString('en-US', {
+            Published{' '}
+            {new Date(page.published_at).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -147,7 +146,13 @@ export default function Page() {
               my: 2,
               fontSize: '0.875rem',
             },
-            '& code': { bgcolor: 'action.hover', borderRadius: 0.5, px: 0.75, py: 0.25, fontSize: '0.875em' },
+            '& code': {
+              bgcolor: 'action.hover',
+              borderRadius: 0.5,
+              px: 0.75,
+              py: 0.25,
+              fontSize: '0.875em',
+            },
             '& table': { borderCollapse: 'collapse', width: '100%', my: 2 },
             '& th, & td': { border: 1, borderColor: 'divider', px: 1.5, py: 1, textAlign: 'left' },
             '& th': { bgcolor: 'action.hover', fontWeight: 600 },

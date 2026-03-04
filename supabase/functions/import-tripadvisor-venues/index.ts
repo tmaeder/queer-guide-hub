@@ -397,7 +397,7 @@ serve(async (req) => {
               const { category, categoryId, amenityNames, serviceNames, amenityIds, serviceIds } = await mapVenueCategoryAndAmenities(supabase, venue, keyword)
 
               // Download and store photos
-              let imageUrls: string[] = [];
+              const imageUrls: string[] = [];
               if (venue.photos && Array.isArray(venue.photos)) {
                 for (const photo of venue.photos.slice(0, 3)) { // Limit to 3 photos
                   if (photo.images?.large?.url) {

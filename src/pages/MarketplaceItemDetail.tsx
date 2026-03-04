@@ -1,6 +1,20 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Star, MapPin, Phone, Globe, Mail, Heart, ExternalLink, Share2, Eye, Shield, Truck, ChevronRight } from 'lucide-react';
+import {
+  ArrowLeft,
+  Star,
+  MapPin,
+  Phone,
+  Globe,
+  Mail,
+  Heart,
+  ExternalLink,
+  Share2,
+  Eye,
+  Shield,
+  Truck,
+  ChevronRight,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,13 +65,15 @@ export default function MarketplaceItemDetail() {
 
         const { data: reviewsData, error: reviewsError } = await supabase
           .from('marketplace_reviews')
-          .select(`
+          .select(
+            `
             *,
             profiles:user_id (
               display_name,
               avatar_url
             )
-          `)
+          `,
+          )
           .eq('listing_id', id)
           .order('created_at', { ascending: false });
 
@@ -74,7 +90,6 @@ export default function MarketplaceItemDetail() {
 
           setIsFavorited(!!favoriteData);
         }
-
       } catch (error) {
         console.error('Error fetching listing:', error);
       } finally {
@@ -83,15 +98,15 @@ export default function MarketplaceItemDetail() {
     };
 
     fetchListing();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user]);
 
   const handleToggleFavorite = async () => {
     if (!user) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to favorite items",
-        variant: "destructive",
+        title: 'Authentication required',
+        description: 'Please sign in to favorite items',
+        variant: 'destructive',
       });
       return;
     }
@@ -108,7 +123,7 @@ export default function MarketplaceItemDetail() {
 
         if (error) throw error;
         setIsFavorited(false);
-        toast({ title: "Removed from favorites" });
+        toast({ title: 'Removed from favorites' });
       } else {
         const { error } = await supabase
           .from('marketplace_favorites')
@@ -116,14 +131,14 @@ export default function MarketplaceItemDetail() {
 
         if (error) throw error;
         setIsFavorited(true);
-        toast({ title: "Added to favorites" });
+        toast({ title: 'Added to favorites' });
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
       toast({
-        title: "Error",
-        description: "Failed to update favorites",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update favorites',
+        variant: 'destructive',
       });
     }
   };
@@ -131,7 +146,12 @@ export default function MarketplaceItemDetail() {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+        <Box
+          sx={{
+            '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
+            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }}
+        >
           <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }} />
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -151,8 +171,12 @@ export default function MarketplaceItemDetail() {
   if (!listing) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Item Not Found</Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>The marketplace item you're looking for doesn't exist.</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Item Not Found
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          The marketplace item you're looking for doesn't exist.
+        </Typography>
         <Link to="/marketplace">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
@@ -216,15 +240,20 @@ export default function MarketplaceItemDetail() {
   };
 
   const heroImage = listing.images && listing.images.length > 0 ? listing.images[0] : null;
-  const remainingImages = listing.images && listing.images.length > 1 ? listing.images.slice(1) : [];
+  const remainingImages =
+    listing.images && listing.images.length > 1 ? listing.images.slice(1) : [];
 
   const handleShare = async () => {
     const shareUrl = window.location.href;
     if (navigator.share) {
-      try { await navigator.share({ title: listing.title, url: shareUrl }); } catch { /* cancelled */ }
+      try {
+        await navigator.share({ title: listing.title, url: shareUrl });
+      } catch {
+        /* cancelled */
+      }
     } else {
       await navigator.clipboard.writeText(shareUrl);
-      toast({ title: "Link copied", description: "Listing link copied to clipboard" });
+      toast({ title: 'Link copied', description: 'Listing link copied to clipboard' });
     }
   };
 
@@ -232,29 +261,49 @@ export default function MarketplaceItemDetail() {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
-        <Link to="/marketplace" style={{ display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
+        <Link
+          to="/marketplace"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            color: 'inherit',
+            textDecoration: 'none',
+          }}
+        >
           <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Marketplace</Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ '&:hover': { color: 'primary.main' } }}
+          >
+            Marketplace
+          </Typography>
         </Link>
         {listing.category && (
           <>
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
-            <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>{listing.category}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
+              {listing.category}
+            </Typography>
           </>
         )}
         <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>{listing.title}</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {listing.title}
+        </Typography>
       </Box>
 
       {/* Hero Image */}
       {heroImage && (
-        <Box sx={{
-          width: '100%',
-          height: { xs: 160, md: 192 },
-          borderRadius: 3,
-          overflow: 'hidden',
-          mb: 3,
-        }}>
+        <Box
+          sx={{
+            width: '100%',
+            height: { xs: 160, md: 192 },
+            borderRadius: 3,
+            overflow: 'hidden',
+            mb: 3,
+          }}
+        >
           <Box
             component="img"
             src={heroImage}
@@ -269,56 +318,88 @@ export default function MarketplaceItemDetail() {
 
       {/* Title Row */}
       <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' }, gap: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: { md: 'flex-start' },
+            justifyContent: { md: 'space-between' },
+            gap: 2,
+          }}
+        >
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
-              <Typography variant="h4" sx={{ fontWeight: 700 }}>{listing.title}</Typography>
-              {listing.featured && (
-                <Badge>Featured</Badge>
-              )}
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                {listing.title}
+              </Typography>
+              {listing.featured && <Badge>Featured</Badge>}
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, flexWrap: 'wrap' }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>{listing.business_name}</Typography>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, flexWrap: 'wrap' }}
+            >
+              <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                {listing.business_name}
+              </Typography>
               {listing.business_type && getBusinessTypeIcon(listing.business_type)}
               {listing.location && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <MapPin style={{ width: 12, height: 12, color: '#999999' }} />
-                  <Typography variant="body2" color="text.secondary">{listing.location}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {listing.location}
+                  </Typography>
                 </Box>
               )}
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-              <Badge variant="secondary">
-                {listing.category}
-              </Badge>
-              {listing.subcategory && (
-                <Badge variant="outline">
-                  {listing.subcategory}
-                </Badge>
-              )}
+              <Badge variant="secondary">{listing.category}</Badge>
+              {listing.subcategory && <Badge variant="outline">{listing.subcategory}</Badge>}
               {averageRating > 0 && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Star style={{ width: 16, height: 16, fill: 'currentColor', color: 'inherit' }} />
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>{averageRating.toFixed(1)}</Typography>
-                  <Typography variant="body2" color="text.secondary">({reviews.length} reviews)</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {averageRating.toFixed(1)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    ({reviews.length} reviews)
+                  </Typography>
                 </Box>
               )}
               {listing.views_count && listing.views_count > 0 && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Eye style={{ width: 16, height: 16, color: '#999999' }} />
-                  <Typography variant="body2" color="text.secondary">{listing.views_count} views</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {listing.views_count} views
+                  </Typography>
                 </Box>
               )}
             </Box>
           </Box>
 
           <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
-            <ReportButton contentType="marketplace_listings" contentId={listing.id} contentName={listing.title} />
-            <AdminEditButton contentType="marketplace_listings" contentId={listing.id} contentName={listing.title} currentData={listing as Record<string, unknown>} onSaved={() => window.location.reload()} />
+            <ReportButton
+              contentType="marketplace_listings"
+              contentId={listing.id}
+              contentName={listing.title}
+            />
+            <AdminEditButton
+              contentType="marketplace_listings"
+              contentId={listing.id}
+              contentName={listing.title}
+              currentData={listing as Record<string, unknown>}
+              onSaved={() => window.location.reload()}
+            />
             <Button variant="outline" size="sm" onClick={handleToggleFavorite}>
-              <Heart style={{ width: 16, height: 16, marginRight: 8, fill: isFavorited ? 'currentColor' : 'none', color: isFavorited ? '#d32f2f' : 'inherit' }} />
+              <Heart
+                style={{
+                  width: 16,
+                  height: 16,
+                  marginRight: 8,
+                  fill: isFavorited ? 'currentColor' : 'none',
+                  color: isFavorited ? '#d32f2f' : 'inherit',
+                }}
+              />
               {isFavorited ? 'Favorited' : 'Favorite'}
             </Button>
             <Button variant="outline" size="sm" onClick={handleShare}>
@@ -339,14 +420,35 @@ export default function MarketplaceItemDetail() {
                 <CardTitle>Photos</CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                    gap: 2,
+                  }}
+                >
                   {remainingImages.map((image, index) => (
-                    <Box key={index} sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', borderRadius: 2, overflow: 'hidden' }}>
+                    <Box
+                      key={index}
+                      sx={{
+                        aspectRatio: '16/9',
+                        bgcolor: 'action.hover',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                      }}
+                    >
                       <Box
                         component="img"
                         src={image}
                         alt={`${listing.title} - Image ${index + 2}`}
-                        sx={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer', '&:hover': { transform: 'scale(1.05)' }, transition: 'transform 300ms' }}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          cursor: 'pointer',
+                          '&:hover': { transform: 'scale(1.05)' },
+                          transition: 'transform 300ms',
+                        }}
                         onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                           e.currentTarget.style.display = 'none';
                         }}
@@ -366,7 +468,9 @@ export default function MarketplaceItemDetail() {
                 <CardTitle>Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>{listing.description}</Typography>
+                <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
+                  {listing.description}
+                </Typography>
               </CardContent>
             </Card>
           )}
@@ -397,8 +501,23 @@ export default function MarketplaceItemDetail() {
               {reviews.length > 0 ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {reviews.slice(0, 5).map((review) => (
-                    <Box key={review.id} sx={{ borderBottom: 1, borderColor: 'divider', pb: 2, '&:last-child': { borderBottom: 0 } }}>
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                    <Box
+                      key={review.id}
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        pb: 2,
+                        '&:last-child': { borderBottom: 0 },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          justifyContent: 'space-between',
+                          mb: 1,
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           <Avatar style={{ width: 32, height: 32 }}>
                             <AvatarFallback>
@@ -406,7 +525,9 @@ export default function MarketplaceItemDetail() {
                             </AvatarFallback>
                           </Avatar>
                           <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{review.profiles?.display_name || 'Anonymous'}</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {review.profiles?.display_name || 'Anonymous'}
+                            </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
@@ -435,16 +556,22 @@ export default function MarketplaceItemDetail() {
                         </Box>
                       </Box>
                       {review.title && (
-                        <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>{review.title}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                          {review.title}
+                        </Typography>
                       )}
                       {review.content && (
-                        <Typography variant="body2" color="text.secondary">{review.content}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {review.content}
+                        </Typography>
                       )}
                     </Box>
                   ))}
                 </Box>
               ) : (
-                <Typography color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>No reviews yet</Typography>
+                <Typography color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+                  No reviews yet
+                </Typography>
               )}
             </CardContent>
           </Card>
@@ -463,7 +590,9 @@ export default function MarketplaceItemDetail() {
                   {formatPrice()}
                 </Typography>
                 {listing.currency && listing.currency !== 'USD' && (
-                  <Typography variant="body2" color="text.secondary">Currency: {listing.currency}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Currency: {listing.currency}
+                  </Typography>
                 )}
               </Box>
 
@@ -499,7 +628,17 @@ export default function MarketplaceItemDetail() {
               </Box>
 
               {listing.shipping_available && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14, bgcolor: 'action.hover', p: 1, borderRadius: 1 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    fontSize: 14,
+                    bgcolor: 'action.hover',
+                    p: 1,
+                    borderRadius: 1,
+                  }}
+                >
                   <Truck style={{ width: 16, height: 16 }} />
                   Shipping available
                 </Box>
@@ -514,22 +653,32 @@ export default function MarketplaceItemDetail() {
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Business Type</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                  Business Type
+                </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {listing.business_type && getBusinessTypeIcon(listing.business_type)}
-                  <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{listing.business_type || 'Not specified'}</Typography>
+                  <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                    {listing.business_type || 'Not specified'}
+                  </Typography>
                 </Box>
               </Box>
 
               {listing.location && (
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Location</Typography>
-                  <Typography variant="body2" color="text.secondary">{listing.location}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                    Location
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {listing.location}
+                  </Typography>
                 </Box>
               )}
 
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Listed</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                  Listed
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {new Date(listing.created_at).toLocaleDateString()}
                 </Typography>
@@ -544,20 +693,22 @@ export default function MarketplaceItemDetail() {
                 <CardTitle>Social Media</CardTitle>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {Object.entries(listing.social_media as Record<string, string>).map(([platform, url]) => (
-                  <Button
-                    key={platform}
-                    variant="outline"
-                    size="sm"
-                    style={{ width: '100%', justifyContent: 'flex-start' }}
-                    asChild
-                  >
-                    <a href={url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
-                      {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                    </a>
-                  </Button>
-                ))}
+                {Object.entries(listing.social_media as Record<string, string>).map(
+                  ([platform, url]) => (
+                    <Button
+                      key={platform}
+                      variant="outline"
+                      size="sm"
+                      style={{ width: '100%', justifyContent: 'flex-start' }}
+                      asChild
+                    >
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                        {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                      </a>
+                    </Button>
+                  ),
+                )}
               </CardContent>
             </Card>
           )}

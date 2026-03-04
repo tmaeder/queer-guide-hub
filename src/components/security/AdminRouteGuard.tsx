@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +14,7 @@ interface AdminRouteGuardProps {
 export function AdminRouteGuard({
   children,
   requiredRole = 'moderator',
-  fallbackPath = '/'
+  fallbackPath = '/',
 }: AdminRouteGuardProps) {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, isModerator, loading: rolesLoading } = useAdminRoles();
@@ -28,24 +28,22 @@ export function AdminRouteGuard({
     // Check authentication first
     if (!user) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to access this area.",
-        variant: "destructive"
+        title: 'Authentication Required',
+        description: 'Please sign in to access this area.',
+        variant: 'destructive',
       });
       navigate('/auth');
       return;
     }
 
     // Check role permissions
-    const hasPermission = requiredRole === 'admin'
-      ? isAdmin
-      : (isAdmin || isModerator);
+    const hasPermission = requiredRole === 'admin' ? isAdmin : isAdmin || isModerator;
 
     if (!hasPermission) {
       toast({
-        title: "Access Denied",
+        title: 'Access Denied',
         description: `You need ${requiredRole} privileges to access this area.`,
-        variant: "destructive"
+        variant: 'destructive',
       });
       navigate(fallbackPath);
       return;
@@ -59,22 +57,29 @@ export function AdminRouteGuard({
     requiredRole,
     fallbackPath,
     navigate,
-    toast
+    toast,
   ]);
 
   // Show loading while checking permissions
   if (authLoading || rolesLoading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <Box sx={{ animation: 'spin 1s linear infinite', height: 128, width: 128, bgcolor: 'primary.main' }} />
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}
+      >
+        <Box
+          sx={{
+            animation: 'spin 1s linear infinite',
+            height: 128,
+            width: 128,
+            bgcolor: 'primary.main',
+          }}
+        />
       </Box>
     );
   }
 
   // Only render children if user has proper permissions
-  const hasPermission = requiredRole === 'admin'
-    ? isAdmin
-    : (isAdmin || isModerator);
+  const hasPermission = requiredRole === 'admin' ? isAdmin : isAdmin || isModerator;
 
   if (!user || !hasPermission) {
     return null;

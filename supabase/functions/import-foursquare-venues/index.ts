@@ -465,7 +465,7 @@ Deno.serve(async (req) => {
         try {
           // Fix Foursquare API request - use simpler search terms and correct headers
           const sanitizedSearchTerm = searchTerm.replace(/LGBTQ|gay|lesbian/gi, 'bar'); // Avoid potentially restricted terms
-          let searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(sanitizedSearchTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features`
+          const searchUrl = `https://api.foursquare.com/v3/places/search?near=${encodeURIComponent(location)}&query=${encodeURIComponent(sanitizedSearchTerm)}&radius=${radius}&limit=${limit}&fields=fsq_id,name,geocodes,location,tel,website,email,categories,hours,rating,photos,description,verified,price,features`
           
           console.log(`Foursquare API URL: ${searchUrl}`)
           console.log(`Using sanitized search term: "${sanitizedSearchTerm}" (original: "${searchTerm}")`)

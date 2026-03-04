@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Shield } from 'lucide-react';
 import { useAdminRoles } from '@/hooks/useAdminRoles';

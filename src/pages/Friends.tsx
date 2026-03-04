@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ export default function Friends() {
     removeRelationship,
     getFriends,
     getPendingRequests,
-    loading
+    loading,
   } = useUserRelationships();
 
   const friends = getFriends();
@@ -34,11 +34,14 @@ export default function Friends() {
 
   // Fetch profile data for friends and pending requests
   const { data: friendProfiles } = useQuery({
-    queryKey: ['friend-profiles', friends.map(f => f.user_id === user?.id ? f.target_user_id : f.user_id)],
+    queryKey: [
+      'friend-profiles',
+      friends.map((f) => (f.user_id === user?.id ? f.target_user_id : f.user_id)),
+    ],
     queryFn: async () => {
       if (!user || friends.length === 0) return [];
 
-      const friendIds = friends.map(f => f.user_id === user.id ? f.target_user_id : f.user_id);
+      const friendIds = friends.map((f) => (f.user_id === user.id ? f.target_user_id : f.user_id));
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url, location')
@@ -47,15 +50,15 @@ export default function Friends() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && friends.length > 0
+    enabled: !!user && friends.length > 0,
   });
 
   const { data: requestProfiles } = useQuery({
-    queryKey: ['request-profiles', pendingRequests.map(r => r.user_id)],
+    queryKey: ['request-profiles', pendingRequests.map((r) => r.user_id)],
     queryFn: async () => {
       if (!user || pendingRequests.length === 0) return [];
 
-      const requestIds = pendingRequests.map(r => r.user_id);
+      const requestIds = pendingRequests.map((r) => r.user_id);
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url, location')
@@ -64,7 +67,7 @@ export default function Friends() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && pendingRequests.length > 0
+    enabled: !!user && pendingRequests.length > 0,
   });
 
   return (
@@ -115,18 +118,27 @@ export default function Friends() {
                 ) : (
                   <Box sx={{ display: 'grid', gap: 2 }}>
                     {friends.map((friendship) => {
-                      const friendId = friendship.user_id === user!.id ? friendship.target_user_id : friendship.user_id;
-                      const profile = friendProfiles?.find(p => p.user_id === friendId);
+                      const friendId =
+                        friendship.user_id === user!.id
+                          ? friendship.target_user_id
+                          : friendship.user_id;
+                      const profile = friendProfiles?.find((p) => p.user_id === friendId);
 
                       return (
                         <Card key={friendship.id}>
                           <CardContent sx={{ p: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                              }}
+                            >
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <Avatar style={{ width: 48, height: 48 }}>
                                   <AvatarImage src={profile?.avatar_url || undefined} />
                                   <AvatarFallback>
-                                    {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
+                                    {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
                                   </AvatarFallback>
                                 </Avatar>
                                 <Box>
@@ -134,7 +146,7 @@ export default function Friends() {
                                     to={`/users/${friendId}`}
                                     style={{ fontWeight: 500, transition: 'color 0.2s' }}
                                   >
-                                    {profile?.display_name || "Unknown User"}
+                                    {profile?.display_name || 'Unknown User'}
                                   </Link>
                                   {profile?.location && (
                                     <Typography variant="body2" color="text.secondary">
@@ -146,7 +158,7 @@ export default function Friends() {
                               <Box sx={{ display: 'flex', gap: 1 }}>
                                 <StartConversationButton
                                   userId={friendId}
-                                  userName={profile?.display_name || "User"}
+                                  userName={profile?.display_name || 'User'}
                                   variant="outline"
                                   size="sm"
                                 />
@@ -180,17 +192,23 @@ export default function Friends() {
                 ) : (
                   <Box sx={{ display: 'grid', gap: 2 }}>
                     {pendingRequests.map((request) => {
-                      const profile = requestProfiles?.find(p => p.user_id === request.user_id);
+                      const profile = requestProfiles?.find((p) => p.user_id === request.user_id);
 
                       return (
                         <Card key={request.id}>
                           <CardContent sx={{ p: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                              }}
+                            >
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <Avatar style={{ width: 48, height: 48 }}>
                                   <AvatarImage src={profile?.avatar_url || undefined} />
                                   <AvatarFallback>
-                                    {profile?.display_name?.charAt(0)?.toUpperCase() || "U"}
+                                    {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
                                   </AvatarFallback>
                                 </Avatar>
                                 <Box>
@@ -198,7 +216,7 @@ export default function Friends() {
                                     to={`/users/${request.user_id}`}
                                     style={{ fontWeight: 500, transition: 'color 0.2s' }}
                                   >
-                                    {profile?.display_name || "Unknown User"}
+                                    {profile?.display_name || 'Unknown User'}
                                   </Link>
                                   <Typography variant="body2" color="text.secondary">
                                     Sent you a friend request

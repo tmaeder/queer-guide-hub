@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { MapPin, Globe, Landmark, Building, Calendar, ExternalLink, Heart, Image as ImageIcon } from 'lucide-react';
+import { useParams, Link } from 'react-router';
+import {
+  MapPin,
+  Globe,
+  Landmark,
+  Building,
+  Calendar,
+  ExternalLink,
+  Heart,
+  Image as ImageIcon,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,7 +77,11 @@ export default function QueerVillageDetail() {
       setVillage(data);
     } catch (err) {
       console.error('Error fetching village:', err);
-      toast({ title: 'Error', description: 'Failed to load village details', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'Failed to load village details',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -93,9 +106,15 @@ export default function QueerVillageDetail() {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Village Not Found</Typography>
-          <Typography sx={{ color: 'text.secondary', mb: 3 }}>The queer village you're looking for doesn't exist.</Typography>
-          <Link to="/villages" style={{ color: 'inherit', fontWeight: 500 }}>← Back to Villages</Link>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+            Village Not Found
+          </Typography>
+          <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+            The queer village you're looking for doesn't exist.
+          </Typography>
+          <Link to="/villages" style={{ color: 'inherit', fontWeight: 500 }}>
+            ← Back to Villages
+          </Link>
         </Box>
       </Box>
     );
@@ -104,12 +123,28 @@ export default function QueerVillageDetail() {
   return (
     <Box sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 3 }}>
       {/* Breadcrumb */}
-      <Box component="nav" sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.875rem', color: 'text.secondary', mb: 2, flexWrap: 'wrap' }}>
-        <Link to="/villages" style={{ color: 'inherit', textDecoration: 'none' }}>← Villages</Link>
+      <Box
+        component="nav"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+          fontSize: '0.875rem',
+          color: 'text.secondary',
+          mb: 2,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Link to="/villages" style={{ color: 'inherit', textDecoration: 'none' }}>
+          ← Villages
+        </Link>
         <span>/</span>
         {village.countries && (
           <>
-            <Link to={`/country/${village.countries.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+            <Link
+              to={`/country/${village.countries.id}`}
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
               {village.countries.name}
             </Link>
             <span>/</span>
@@ -117,27 +152,50 @@ export default function QueerVillageDetail() {
         )}
         {village.cities && (
           <>
-            <Link to={`/city/${village.cities.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+            <Link
+              to={`/city/${village.cities.id}`}
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
               {village.cities.name}
             </Link>
             <span>/</span>
           </>
         )}
-        <Box component="span" sx={{ color: 'text.primary', fontWeight: 500 }}>{village.name}</Box>
+        <Box component="span" sx={{ color: 'text.primary', fontWeight: 500 }}>
+          {village.name}
+        </Box>
       </Box>
 
       {/* Hero Image */}
       {village.image_url && (
-        <Box sx={{ position: 'relative', height: { xs: 200, md: 280 }, borderRadius: 2, overflow: 'hidden', mb: 3 }}>
+        <Box
+          sx={{
+            position: 'relative',
+            height: { xs: 200, md: 280 },
+            borderRadius: 2,
+            overflow: 'hidden',
+            mb: 3,
+          }}
+        >
           <Box
             component="img"
             src={village.image_url}
             alt={village.name}
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
           />
           {village.featured && (
-            <Badge style={{ position: 'absolute', top: 12, right: 12, backgroundColor: 'hsl(var(--primary))', color: 'white' }}>
+            <Badge
+              style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                backgroundColor: 'hsl(var(--primary))',
+                color: 'white',
+              }}
+            >
               Featured
             </Badge>
           )}
@@ -145,23 +203,54 @@ export default function QueerVillageDetail() {
       )}
 
       {/* Title Row */}
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, mb: 1, flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 2,
+          mb: 1,
+          flexWrap: 'wrap',
+        }}
+      >
         <Box>
-          <Typography variant="h3" sx={{ fontSize: { xs: '1.75rem', lg: '2.25rem' }, fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
-            {village.countries?.flag_emoji && <>{village.countries.flag_emoji}{' '}</>}
+          <Typography
+            variant="h3"
+            sx={{
+              fontSize: { xs: '1.75rem', lg: '2.25rem' },
+              fontWeight: 700,
+              color: 'text.primary',
+              mb: 0.5,
+            }}
+          >
+            {village.countries?.flag_emoji && <>{village.countries.flag_emoji} </>}
             {village.name}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
             <MapPin style={{ width: 16, height: 16 }} />
             <Typography sx={{ fontSize: '1.125rem' }}>
               {village.cities && (
-                <Link to={`/city/${village.cities.id}`} style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
+                <Link
+                  to={`/city/${village.cities.id}`}
+                  style={{
+                    color: 'inherit',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '2px',
+                  }}
+                >
                   {village.cities.name}
                 </Link>
               )}
               {village.cities && village.countries && ', '}
               {village.countries && (
-                <Link to={`/country/${village.countries.id}`} style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
+                <Link
+                  to={`/country/${village.countries.id}`}
+                  style={{
+                    color: 'inherit',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '2px',
+                  }}
+                >
                   {village.countries.name}
                 </Link>
               )}
@@ -170,10 +259,27 @@ export default function QueerVillageDetail() {
         </Box>
 
         <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, mt: 1, flexWrap: 'wrap' }}>
-          <ReportButton contentType="queer_villages" contentId={village.id} contentName={village.name} />
-          <AdminEditButton contentType="queer_villages" contentId={village.id} contentName={village.name} currentData={village as Record<string, unknown>} onSaved={() => window.location.reload()} />
+          <ReportButton
+            contentType="queer_villages"
+            contentId={village.id}
+            contentName={village.name}
+          />
+          <AdminEditButton
+            contentType="queer_villages"
+            contentId={village.id}
+            contentName={village.name}
+            currentData={village as Record<string, unknown>}
+            onSaved={() => window.location.reload()}
+          />
           <Button variant="outline" size="sm" onClick={handleFavoriteToggle}>
-            <Heart style={{ height: 16, width: 16, marginRight: 6, ...(isFavorited(village.id) ? { fill: 'currentColor' } : {}) }} />
+            <Heart
+              style={{
+                height: 16,
+                width: 16,
+                marginRight: 6,
+                ...(isFavorited(village.id) ? { fill: 'currentColor' } : {}),
+              }}
+            />
             {isFavorited(village.id) ? 'Favorited' : 'Favorite'}
           </Button>
           {village.website && (
@@ -199,29 +305,47 @@ export default function QueerVillageDetail() {
       {/* Main Content */}
       <Card sx={{ borderColor: 'divider', boxShadow: 1 }}>
         <CardContent sx={{ p: { xs: 2, md: 3 } }}>
-          <Tabs defaultValue="overview" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+          <Tabs
+            defaultValue="overview"
+            style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
+          >
+            <TabsList
+              style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}
+            >
               <TabsTrigger value="overview" style={{ fontSize: '0.875rem' }}>
                 <Landmark style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Overview</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Overview
+                </Box>
               </TabsTrigger>
               <TabsTrigger value="venues" style={{ fontSize: '0.875rem' }}>
                 <Building style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Venues</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Venues
+                </Box>
               </TabsTrigger>
               <TabsTrigger value="events" style={{ fontSize: '0.875rem' }}>
                 <Calendar style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Events</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Events
+                </Box>
               </TabsTrigger>
               <TabsTrigger value="photos" style={{ fontSize: '0.875rem' }}>
                 <ImageIcon style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Photos</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Photos
+                </Box>
               </TabsTrigger>
             </TabsList>
 
             {/* OVERVIEW */}
-            <TabsContent value="overview" style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, gap: 3 }}>
+            <TabsContent
+              value="overview"
+              style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}
+            >
+              <Box
+                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, gap: 3 }}
+              >
                 {/* Description */}
                 <Card sx={{ borderColor: 'divider' }}>
                   <CardHeader>
@@ -232,7 +356,8 @@ export default function QueerVillageDetail() {
                   </CardHeader>
                   <CardContent>
                     <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-                      {village.description || `Discover ${village.name}, a vibrant LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
+                      {village.description ||
+                        `Discover ${village.name}, a vibrant LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -249,14 +374,30 @@ export default function QueerVillageDetail() {
                     {village.notable_landmarks && village.notable_landmarks.length > 0 ? (
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         {village.notable_landmarks.map((landmark, i) => (
-                          <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                            <Landmark style={{ width: 16, height: 16, flexShrink: 0, color: '#777777' }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{landmark}</Typography>
+                          <Box
+                            key={i}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              p: 1.5,
+                              borderRadius: 2,
+                              bgcolor: 'action.hover',
+                            }}
+                          >
+                            <Landmark
+                              style={{ width: 16, height: 16, flexShrink: 0, color: '#777777' }}
+                            />
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {landmark}
+                            </Typography>
                           </Box>
                         ))}
                       </Box>
                     ) : (
-                      <Typography variant="body2" color="text.secondary">No landmarks listed yet.</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        No landmarks listed yet.
+                      </Typography>
                     )}
                   </CardContent>
                 </Card>
@@ -272,7 +413,9 @@ export default function QueerVillageDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Typography sx={{ color: 'text.secondary', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                    <Typography
+                      sx={{ color: 'text.secondary', lineHeight: 1.7, whiteSpace: 'pre-line' }}
+                    >
                       {village.history}
                     </Typography>
                   </CardContent>
@@ -289,7 +432,10 @@ export default function QueerVillageDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Typography variant="body2" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontFamily: 'monospace', color: 'text.secondary' }}
+                    >
                       {village.latitude.toFixed(4)}, {village.longitude.toFixed(4)}
                     </Typography>
                   </CardContent>
@@ -307,13 +453,25 @@ export default function QueerVillageDetail() {
                   <Typography color="text.secondary">Loading venues...</Typography>
                 </Box>
               ) : venues.length > 0 ? (
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-                  {venues.map(venue => <VenueCard key={venue.id} venue={venue} />)}
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                    gap: 2,
+                  }}
+                >
+                  {venues.map((venue) => (
+                    <VenueCard key={venue.id} venue={venue} />
+                  ))}
                 </Box>
               ) : (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <Building style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }} />
-                  <Typography variant="h6" color="text.secondary">No venues found</Typography>
+                  <Building
+                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                  />
+                  <Typography variant="h6" color="text.secondary">
+                    No venues found
+                  </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     Check back later as we continue to add venues in this area.
                   </Typography>
@@ -331,13 +489,25 @@ export default function QueerVillageDetail() {
                   <Typography color="text.secondary">Loading events...</Typography>
                 </Box>
               ) : events.length > 0 ? (
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2 }}>
-                  {events.map(event => <EventCard key={event.id} event={event} />)}
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                    gap: 2,
+                  }}
+                >
+                  {events.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
                 </Box>
               ) : (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <Calendar style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }} />
-                  <Typography variant="h6" color="text.secondary">No upcoming events</Typography>
+                  <Calendar
+                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                  />
+                  <Typography variant="h6" color="text.secondary">
+                    No upcoming events
+                  </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     Check back later for events in this area.
                   </Typography>
@@ -348,11 +518,22 @@ export default function QueerVillageDetail() {
             {/* PHOTOS */}
             <TabsContent value="photos" style={{ marginTop: 24 }}>
               {village.images && village.images.length > 0 ? (
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                    gap: 2,
+                  }}
+                >
                   {village.images.map((img, i) => (
                     <Box
                       key={i}
-                      sx={{ borderRadius: 2, overflow: 'hidden', height: 200, bgcolor: 'action.hover' }}
+                      sx={{
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        height: 200,
+                        bgcolor: 'action.hover',
+                      }}
                     >
                       <img
                         src={img}
@@ -365,8 +546,12 @@ export default function QueerVillageDetail() {
                 </Box>
               ) : (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <ImageIcon style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }} />
-                  <Typography variant="h6" color="text.secondary">No photos yet</Typography>
+                  <ImageIcon
+                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                  />
+                  <Typography variant="h6" color="text.secondary">
+                    No photos yet
+                  </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     Photos will be added soon.
                   </Typography>

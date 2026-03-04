@@ -238,7 +238,7 @@ Deno.serve(async (req) => {
     
     console.log(`Found ${cities.length} cities to process for action: ${action}`);
     
-    let results = [];
+    const results = [];
     let totalSuccessCount = 0;
     let totalErrorCount = 0;
     

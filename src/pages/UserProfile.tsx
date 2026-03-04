@@ -1,20 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  ArrowLeft,
-  MapPin,
-  Calendar,
-  Check,
-  Shield,
-  User,
-  Share2,
-  Flag
-} from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Check, Shield, User, Share2, Flag } from 'lucide-react';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
@@ -41,7 +32,7 @@ export default function UserProfile() {
     loading: isLoading,
     error,
     isOwnProfile,
-    canViewSensitiveField
+    canViewSensitiveField,
   } = useSecurePublicProfile(userId);
 
   const handleShare = async () => {
@@ -64,13 +55,13 @@ export default function UserProfile() {
     try {
       await navigator.clipboard.writeText(url);
       toast({
-        title: "Link copied!",
-        description: "Profile link copied to clipboard",
+        title: 'Link copied!',
+        description: 'Profile link copied to clipboard',
       });
     } catch (error) {
       // Final fallback: manual copy instruction
       toast({
-        title: "Share this profile",
+        title: 'Share this profile',
         description: `Copy this link: ${url}`,
         duration: 5000,
       });
@@ -80,7 +71,9 @@ export default function UserProfile() {
   if (isLoading) {
     return (
       <Container maxWidth="lg" sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, animation: 'pulse 2s infinite' }}>
+        <Box
+          sx={{ display: 'flex', flexDirection: 'column', gap: 3, animation: 'pulse 2s infinite' }}
+        >
           <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '25%' }} />
           <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
           <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }} />
@@ -93,8 +86,17 @@ export default function UserProfile() {
     return (
       <Container maxWidth="lg" sx={{ p: 3 }}>
         <Box sx={{ textAlign: 'center', py: 6 }}>
-          <User style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Profile not found</Typography>
+          <User
+            style={{
+              width: 48,
+              height: 48,
+              margin: '0 auto 16px',
+              color: 'var(--muted-foreground)',
+            }}
+          />
+          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
+            Profile not found
+          </Typography>
           <Typography color="text.secondary" sx={{ mb: 2 }}>
             This user profile doesn't exist or has been removed.
           </Typography>
@@ -111,7 +113,7 @@ export default function UserProfile() {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -125,8 +127,17 @@ export default function UserProfile() {
     return (
       <Container maxWidth="lg" sx={{ p: 3 }}>
         <Box sx={{ textAlign: 'center', py: 6 }}>
-          <Shield style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Private Profile</Typography>
+          <Shield
+            style={{
+              width: 48,
+              height: 48,
+              margin: '0 auto 16px',
+              color: 'var(--muted-foreground)',
+            }}
+          />
+          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
+            Private Profile
+          </Typography>
           <Typography color="text.secondary" sx={{ mb: 2 }}>
             This user has set their profile to private.
           </Typography>
@@ -163,12 +174,26 @@ export default function UserProfile() {
         {/* Profile Header */}
         <Card>
           <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: { xs: 'center', md: 'left' } }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 3,
+                alignItems: 'flex-start',
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: { xs: 'center', md: 'left' },
+                }}
+              >
                 <Avatar style={{ width: 128, height: 128, marginBottom: 16 }}>
                   <AvatarImage src={profile.avatar_url || undefined} />
                   <AvatarFallback style={{ fontSize: '1.5rem' }}>
-                    {profile.display_name?.charAt(0)?.toUpperCase() || "U"}
+                    {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 {(profile as any)?.verified_identity && (
@@ -181,17 +206,35 @@ export default function UserProfile() {
 
               <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box>
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'center' }, gap: 1.5, mb: 1 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: { xs: 'column', md: 'row' },
+                      alignItems: { md: 'center' },
+                      gap: 1.5,
+                      mb: 1,
+                    }}
+                  >
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {profile.display_name || "Anonymous User"}
+                      {profile.display_name || 'Anonymous User'}
                     </Typography>
                     {(profile as any)?.user_mode && (
                       <UserModeBadge mode={(profile as any).user_mode} size="lg" />
                     )}
                   </Box>
 
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, color: 'text.secondary', mb: 1.5 }}>
-                    {profile.pronouns && <Typography variant="body2">{profile.pronouns}</Typography>}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 1.5,
+                      color: 'text.secondary',
+                      mb: 1.5,
+                    }}
+                  >
+                    {profile.pronouns && (
+                      <Typography variant="body2">{profile.pronouns}</Typography>
+                    )}
                     {(profile as any)?.age_range && (
                       <>
                         {profile.pronouns && <Typography variant="body2">&#8226;</Typography>}
@@ -217,7 +260,9 @@ export default function UserProfile() {
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Calendar style={{ width: 16, height: 16 }} />
-                    <Typography variant="body2" color="text.secondary">Joined {formatDate(profile.created_at)}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Joined {formatDate(profile.created_at)}
+                    </Typography>
                   </Box>
                 </Box>
 
@@ -225,7 +270,7 @@ export default function UserProfile() {
                   <Box sx={{ display: 'flex', gap: 1.5 }}>
                     <StartConversationButton
                       userId={profile.user_id}
-                      userName={profile.display_name || "User"}
+                      userName={profile.display_name || 'User'}
                       variant="default"
                     />
                     <UserRelationshipActions targetUserId={profile.user_id} />
@@ -233,9 +278,7 @@ export default function UserProfile() {
                 )}
 
                 {isOwnProfile && (
-                  <Button onClick={() => navigate('/profile/settings')}>
-                    Edit Profile
-                  </Button>
+                  <Button onClick={() => navigate('/profile/settings')}>Edit Profile</Button>
                 )}
               </Box>
             </Box>
@@ -244,7 +287,9 @@ export default function UserProfile() {
 
         {/* Profile Content */}
         <Tabs defaultValue="about" style={{ width: '100%' }}>
-          <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(5, 1fr)' }}>
+          <TabsList
+            style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(5, 1fr)' }}
+          >
             <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="photos">Photos</TabsTrigger>
@@ -254,10 +299,7 @@ export default function UserProfile() {
 
           <TabsContent value="about">
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <SecureProfileViewer
-                profile={profile}
-                isOwnProfile={isOwnProfile}
-              />
+              <SecureProfileViewer profile={profile} isOwnProfile={isOwnProfile} />
             </Box>
           </TabsContent>
 
@@ -277,11 +319,20 @@ export default function UserProfile() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Identity information is now handled securely in SecureProfileViewer */}
               <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Shield style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Protected Information</Typography>
+                <Shield
+                  style={{
+                    width: 48,
+                    height: 48,
+                    margin: '0 auto 16px',
+                    color: 'var(--muted-foreground)',
+                  }}
+                />
+                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
+                  Protected Information
+                </Typography>
                 <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto' }}>
-                  Identity and personal details are protected by privacy settings.
-                  Only information you've chosen to make public will be visible to others.
+                  Identity and personal details are protected by privacy settings. Only information
+                  you've chosen to make public will be visible to others.
                 </Typography>
               </Box>
             </Box>
@@ -291,8 +342,17 @@ export default function UserProfile() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Contact information is now handled securely in SecureProfileViewer */}
               <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Shield style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Contact Privacy</Typography>
+                <Shield
+                  style={{
+                    width: 48,
+                    height: 48,
+                    margin: '0 auto 16px',
+                    color: 'var(--muted-foreground)',
+                  }}
+                />
+                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
+                  Contact Privacy
+                </Typography>
                 <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto' }}>
                   Contact details are protected. Only users who have made their contact information
                   public will have it displayed here.

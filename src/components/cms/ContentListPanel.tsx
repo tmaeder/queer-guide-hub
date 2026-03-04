@@ -37,7 +37,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { getContentType } from '@/config/contentTypeRegistry';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';
 import { useContext } from 'react';
@@ -106,7 +106,8 @@ function extractStatus(row: Record<string, unknown>, ct: ContentTypeConfig): str
   // Personalities have visibility
   if ('visibility' in row && typeof row.visibility === 'string') return row.visibility;
   // Personalities have verification_status
-  if ('verification_status' in row && typeof row.verification_status === 'string') return row.verification_status;
+  if ('verification_status' in row && typeof row.verification_status === 'string')
+    return row.verification_status;
   return undefined;
 }
 
@@ -302,7 +303,11 @@ function SortableHeader({
 
 // ── Main Component ──────────────────────────────────────────────────
 
-export function ContentListPanel({ contentTypeId: propTypeId, onEdit: propOnEdit, onCreate: propOnCreate }: ContentListPanelProps) {
+export function ContentListPanel({
+  contentTypeId: propTypeId,
+  onEdit: propOnEdit,
+  onCreate: propOnCreate,
+}: ContentListPanelProps) {
   // Support route-based usage: /admin/content/:type
   const { type: routeType } = useParams<{ type?: string }>();
 
@@ -396,8 +401,15 @@ export function ContentListPanel({ contentTypeId: propTypeId, onEdit: propOnEdit
   async function loadAllTypes() {
     const allItems: ListItem[] = [];
     const configs = [
-      'venues', 'events', 'personalities', 'news_articles', 'cities',
-      'countries', 'unified_tags', 'marketplace_listings', 'community_groups',
+      'venues',
+      'events',
+      'personalities',
+      'news_articles',
+      'cities',
+      'countries',
+      'unified_tags',
+      'marketplace_listings',
+      'community_groups',
     ]
       .map((id) => getContentType(id))
       .filter(Boolean) as ContentTypeConfig[];
@@ -573,7 +585,9 @@ export function ContentListPanel({ contentTypeId: propTypeId, onEdit: propOnEdit
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         <TextField
           size="small"
-          placeholder={config ? `Search ${config.label.plural.toLowerCase()}...` : 'Search all content...'}
+          placeholder={
+            config ? `Search ${config.label.plural.toLowerCase()}...` : 'Search all content...'
+          }
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ width: { xs: '100%', sm: 320 } }}
@@ -628,9 +642,7 @@ export function ContentListPanel({ contentTypeId: propTypeId, onEdit: propOnEdit
                 />
 
                 {/* Type (only in "all content" mode) */}
-                {!contentTypeId && (
-                  <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-                )}
+                {!contentTypeId && <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>}
 
                 {/* Status */}
                 <TableCell sx={{ fontWeight: 600, width: 90 }}>Status</TableCell>
@@ -767,11 +779,7 @@ export function ContentListPanel({ contentTypeId: propTypeId, onEdit: propOnEdit
                       {/* Updated date — relative */}
                       <TableCell>
                         <Tooltip
-                          title={
-                            item.updatedAt
-                              ? new Date(item.updatedAt).toLocaleString()
-                              : ''
-                          }
+                          title={item.updatedAt ? new Date(item.updatedAt).toLocaleString() : ''}
                           placement="top"
                         >
                           <Typography variant="caption" color="text.secondary">

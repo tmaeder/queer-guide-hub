@@ -1,17 +1,39 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ArrowLeft, Plus, Search, Edit2, Trash2, Star, Hotel as HotelIcon } from 'lucide-react';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
-import { exportToExcel, fetchAllRows, formatDateTime, formatBoolean, generateFilename, type ExportColumnDef } from '@/utils/excelExport';
+import {
+  exportToExcel,
+  fetchAllRows,
+  formatDateTime,
+  formatBoolean,
+  generateFilename,
+  type ExportColumnDef,
+} from '@/utils/excelExport';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useHotels, type Hotel } from '@/hooks/useHotels';
-import { LocationAutocomplete, type AddressComponents } from '@/components/ui/location-autocomplete';
+import {
+  LocationAutocomplete,
+  type AddressComponents,
+} from '@/components/ui/location-autocomplete';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { toast } from 'sonner';
 import Box from '@mui/material/Box';
@@ -80,27 +102,31 @@ export default function AdminHotels() {
     let filtered = hotels;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(h =>
-        h.name.toLowerCase().includes(q) ||
-        h.city?.toLowerCase().includes(q) ||
-        h.country?.toLowerCase().includes(q)
+      filtered = filtered.filter(
+        (h) =>
+          h.name.toLowerCase().includes(q) ||
+          h.city?.toLowerCase().includes(q) ||
+          h.country?.toLowerCase().includes(q),
       );
     }
     if (typeFilter !== 'all') {
-      filtered = filtered.filter(h => h.hotel_type === typeFilter);
+      filtered = filtered.filter((h) => h.hotel_type === typeFilter);
     }
     return filtered;
   }, [hotels, searchQuery, typeFilter]);
 
-  const stats = useMemo(() => ({
-    total: hotels.length,
-    featured: hotels.filter(h => h.featured).length,
-    verified: hotels.filter(h => h.verified).length,
-    types: HOTEL_TYPES.map(t => ({
-      ...t,
-      count: hotels.filter(h => h.hotel_type === t.value).length,
-    })).filter(t => t.count > 0),
-  }), [hotels]);
+  const stats = useMemo(
+    () => ({
+      total: hotels.length,
+      featured: hotels.filter((h) => h.featured).length,
+      verified: hotels.filter((h) => h.verified).length,
+      types: HOTEL_TYPES.map((t) => ({
+        ...t,
+        count: hotels.filter((h) => h.hotel_type === t.value).length,
+      })).filter((t) => t.count > 0),
+    }),
+    [hotels],
+  );
 
   const resetForm = () => {
     setFormData(emptyForm);
@@ -195,7 +221,12 @@ export default function AdminHotels() {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} style={{ marginBottom: 8 }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/admin')}
+            style={{ marginBottom: 8 }}
+          >
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 6 }} />
             Back to Admin
           </Button>
@@ -207,23 +238,33 @@ export default function AdminHotels() {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <ExportExcelButton onExport={async () => {
-            const columns: ExportColumnDef<any>[] = [
-              { header: 'Name', accessor: r => r.name },
-              { header: 'Hotel Type', accessor: r => r.hotel_type },
-              { header: 'City', accessor: r => r.city },
-              { header: 'Country', accessor: r => r.country },
-              { header: 'Star Rating', accessor: r => r.star_rating },
-              { header: 'LGBTQ Friendly', accessor: r => formatBoolean(r.lgbtq_friendly) },
-              { header: 'Featured', accessor: r => formatBoolean(r.featured) },
-              { header: 'Verified', accessor: r => formatBoolean(r.verified) },
-              { header: 'Website', accessor: r => r.website },
-              { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
-            ];
-            const allData = await fetchAllRows('hotels', '*', { column: 'name', ascending: true });
-            await exportToExcel(allData, columns, generateFilename('hotels'));
-          }} />
-          <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+          <ExportExcelButton
+            onExport={async () => {
+              const columns: ExportColumnDef<any>[] = [
+                { header: 'Name', accessor: (r) => r.name },
+                { header: 'Hotel Type', accessor: (r) => r.hotel_type },
+                { header: 'City', accessor: (r) => r.city },
+                { header: 'Country', accessor: (r) => r.country },
+                { header: 'Star Rating', accessor: (r) => r.star_rating },
+                { header: 'LGBTQ Friendly', accessor: (r) => formatBoolean(r.lgbtq_friendly) },
+                { header: 'Featured', accessor: (r) => formatBoolean(r.featured) },
+                { header: 'Verified', accessor: (r) => formatBoolean(r.verified) },
+                { header: 'Website', accessor: (r) => r.website },
+                { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
+              ];
+              const allData = await fetchAllRows('hotels', '*', {
+                column: 'name',
+                ascending: true,
+              });
+              await exportToExcel(allData, columns, generateFilename('hotels'));
+            }}
+          />
+          <Button
+            onClick={() => {
+              resetForm();
+              setIsDialogOpen(true);
+            }}
+          >
             <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
             Add Hotel
           </Button>
@@ -235,7 +276,7 @@ export default function AdminHotels() {
         <Chip label={`${stats.total} Total`} size="small" />
         <Chip label={`${stats.featured} Featured`} size="small" color="primary" />
         <Chip label={`${stats.verified} Verified`} size="small" color="success" />
-        {stats.types.map(t => (
+        {stats.types.map((t) => (
           <Chip key={t.value} label={`${t.count} ${t.label}`} size="small" variant="outlined" />
         ))}
       </Box>
@@ -243,8 +284,23 @@ export default function AdminHotels() {
       {/* Filters */}
       <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
         <Box sx={{ position: 'relative', flex: '1 1 200px', maxWidth: 320 }}>
-          <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, opacity: 0.5 }} />
-          <Input placeholder="Search hotels..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ paddingLeft: 32 }} />
+          <Search
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: 16,
+              height: 16,
+              opacity: 0.5,
+            }}
+          />
+          <Input
+            placeholder="Search hotels..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ paddingLeft: 32 }}
+          />
         </Box>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger style={{ width: 160 }}>
@@ -252,8 +308,10 @@ export default function AdminHotels() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {HOTEL_TYPES.map(t => (
-              <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+            {HOTEL_TYPES.map((t) => (
+              <SelectItem key={t.value} value={t.value}>
+                {t.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -271,16 +329,31 @@ export default function AdminHotels() {
         </Box>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {filteredHotels.map(hotel => (
-            <Paper key={hotel.id} elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+          {filteredHotels.map((hotel) => (
+            <Paper
+              key={hotel.id}
+              elevation={0}
+              sx={{
+                p: 2,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="subtitle2" noWrap>{hotel.name}</Typography>
+                  <Typography variant="subtitle2" noWrap>
+                    {hotel.name}
+                  </Typography>
                   {hotel.featured && <Badge>Featured</Badge>}
                   {hotel.verified && <Badge variant="outline">Verified</Badge>}
                 </Box>
                 <Typography variant="caption" color="text.secondary">
-                  {HOTEL_TYPES.find(t => t.value === hotel.hotel_type)?.label || hotel.hotel_type}
+                  {HOTEL_TYPES.find((t) => t.value === hotel.hotel_type)?.label || hotel.hotel_type}
                   {hotel.city && ` · ${hotel.city}`}
                   {hotel.country && `, ${hotel.country}`}
                   {hotel.star_rating && ` · ${hotel.star_rating}★`}
@@ -306,21 +379,48 @@ export default function AdminHotels() {
             <DialogTitle>{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</DialogTitle>
           </DialogHeader>
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-            <TextField label="Name" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} required fullWidth size="small" />
-            <TextField label="Description" value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} multiline rows={3} fullWidth size="small" />
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}
+          >
+            <TextField
+              label="Name"
+              value={formData.name}
+              onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+              required
+              fullWidth
+              size="small"
+            />
+            <TextField
+              label="Description"
+              value={formData.description}
+              onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+              multiline
+              rows={3}
+              fullWidth
+              size="small"
+            />
 
             <FormControl fullWidth size="small">
               <InputLabel>Type</InputLabel>
-              <MuiSelect value={formData.hotel_type} label="Type" onChange={e => setFormData(p => ({ ...p, hotel_type: e.target.value }))}>
-                {HOTEL_TYPES.map(t => <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>)}
+              <MuiSelect
+                value={formData.hotel_type}
+                label="Type"
+                onChange={(e) => setFormData((p) => ({ ...p, hotel_type: e.target.value }))}
+              >
+                {HOTEL_TYPES.map((t) => (
+                  <MenuItem key={t.value} value={t.value}>
+                    {t.label}
+                  </MenuItem>
+                ))}
               </MuiSelect>
             </FormControl>
 
             <LocationAutocomplete
               value={formData.address}
               onChange={async (address, coordinates, components) => {
-                setFormData(p => ({
+                setFormData((p) => ({
                   ...p,
                   address,
                   latitude: coordinates ? String(coordinates.lat) : p.latitude,
@@ -329,9 +429,14 @@ export default function AdminHotels() {
                   ...(components?.country ? { country: components.country } : {}),
                 }));
                 if (components?.country) {
-                  const resolved = await resolveAddress(components.city, components.country, coordinates?.lat, coordinates?.lng);
+                  const resolved = await resolveAddress(
+                    components.city,
+                    components.country,
+                    coordinates?.lat,
+                    coordinates?.lng,
+                  );
                   if (resolved) {
-                    setFormData(p => ({
+                    setFormData((p) => ({
                       ...p,
                       ...(resolved.city_name ? { city: resolved.city_name } : {}),
                       ...(resolved.country_name ? { country: resolved.country_name } : {}),
@@ -346,45 +451,155 @@ export default function AdminHotels() {
             />
 
             <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <TextField label="City" value={formData.city} onChange={e => setFormData(p => ({ ...p, city: e.target.value }))} fullWidth size="small" />
-              <TextField label="Country" value={formData.country} onChange={e => setFormData(p => ({ ...p, country: e.target.value }))} fullWidth size="small" />
+              <TextField
+                label="City"
+                value={formData.city}
+                onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
+                fullWidth
+                size="small"
+              />
+              <TextField
+                label="Country"
+                value={formData.country}
+                onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
+                fullWidth
+                size="small"
+              />
             </Box>
 
-            {(formData.latitude && formData.longitude) && (
+            {formData.latitude && formData.longitude && (
               <Box sx={{ display: 'flex', gap: 1.5 }}>
-                <TextField label="Latitude" value={formData.latitude} fullWidth size="small" InputProps={{ readOnly: true }} sx={{ '& .MuiInputBase-root': { bgcolor: 'action.hover' } }} helperText="Auto-populated from address" />
-                <TextField label="Longitude" value={formData.longitude} fullWidth size="small" InputProps={{ readOnly: true }} sx={{ '& .MuiInputBase-root': { bgcolor: 'action.hover' } }} helperText="Auto-populated from address" />
+                <TextField
+                  label="Latitude"
+                  value={formData.latitude}
+                  fullWidth
+                  size="small"
+                  InputProps={{ readOnly: true }}
+                  sx={{ '& .MuiInputBase-root': { bgcolor: 'action.hover' } }}
+                  helperText="Auto-populated from address"
+                />
+                <TextField
+                  label="Longitude"
+                  value={formData.longitude}
+                  fullWidth
+                  size="small"
+                  InputProps={{ readOnly: true }}
+                  sx={{ '& .MuiInputBase-root': { bgcolor: 'action.hover' } }}
+                  helperText="Auto-populated from address"
+                />
               </Box>
             )}
 
-            <TextField label="Website" value={formData.website} onChange={e => setFormData(p => ({ ...p, website: e.target.value }))} fullWidth size="small" />
-            <TextField label="Booking URL" value={formData.booking_url} onChange={e => setFormData(p => ({ ...p, booking_url: e.target.value }))} fullWidth size="small" />
+            <TextField
+              label="Website"
+              value={formData.website}
+              onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
+              fullWidth
+              size="small"
+            />
+            <TextField
+              label="Booking URL"
+              value={formData.booking_url}
+              onChange={(e) => setFormData((p) => ({ ...p, booking_url: e.target.value }))}
+              fullWidth
+              size="small"
+            />
 
             <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <TextField label="Phone" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} fullWidth size="small" />
-              <TextField label="Email" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} fullWidth size="small" />
+              <TextField
+                label="Phone"
+                value={formData.phone}
+                onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
+                fullWidth
+                size="small"
+              />
+              <TextField
+                label="Email"
+                value={formData.email}
+                onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+                fullWidth
+                size="small"
+              />
             </Box>
 
             <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <TextField label="Star Rating" value={formData.star_rating} onChange={e => setFormData(p => ({ ...p, star_rating: e.target.value }))} type="number" fullWidth size="small" inputProps={{ min: 1, max: 5, step: 0.5 }} />
-              <TextField label="Price Range (1-4)" value={formData.price_range} onChange={e => setFormData(p => ({ ...p, price_range: e.target.value }))} type="number" fullWidth size="small" inputProps={{ min: 1, max: 4 }} />
+              <TextField
+                label="Star Rating"
+                value={formData.star_rating}
+                onChange={(e) => setFormData((p) => ({ ...p, star_rating: e.target.value }))}
+                type="number"
+                fullWidth
+                size="small"
+                inputProps={{ min: 1, max: 5, step: 0.5 }}
+              />
+              <TextField
+                label="Price Range (1-4)"
+                value={formData.price_range}
+                onChange={(e) => setFormData((p) => ({ ...p, price_range: e.target.value }))}
+                type="number"
+                fullWidth
+                size="small"
+                inputProps={{ min: 1, max: 4 }}
+              />
             </Box>
 
-            <TextField label="Queer Safety Notes" value={formData.queer_safety_notes} onChange={e => setFormData(p => ({ ...p, queer_safety_notes: e.target.value }))} multiline rows={2} fullWidth size="small" />
+            <TextField
+              label="Queer Safety Notes"
+              value={formData.queer_safety_notes}
+              onChange={(e) => setFormData((p) => ({ ...p, queer_safety_notes: e.target.value }))}
+              multiline
+              rows={2}
+              fullWidth
+              size="small"
+            />
 
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <FormControlLabel control={<Switch checked={formData.lgbtq_friendly} onChange={e => setFormData(p => ({ ...p, lgbtq_friendly: e.target.checked }))} size="small" />} label="LGBTQ+ Friendly" />
-              <FormControlLabel control={<Switch checked={formData.featured} onChange={e => setFormData(p => ({ ...p, featured: e.target.checked }))} size="small" />} label="Featured" />
-              <FormControlLabel control={<Switch checked={formData.verified} onChange={e => setFormData(p => ({ ...p, verified: e.target.checked }))} size="small" />} label="Verified" />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.lgbtq_friendly}
+                    onChange={(e) =>
+                      setFormData((p) => ({ ...p, lgbtq_friendly: e.target.checked }))
+                    }
+                    size="small"
+                  />
+                }
+                label="LGBTQ+ Friendly"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.featured}
+                    onChange={(e) => setFormData((p) => ({ ...p, featured: e.target.checked }))}
+                    size="small"
+                  />
+                }
+                label="Featured"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.verified}
+                    onChange={(e) => setFormData((p) => ({ ...p, verified: e.target.checked }))}
+                    size="small"
+                  />
+                }
+                label="Verified"
+              />
             </Box>
 
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => { resetForm(); setIsDialogOpen(false); }}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => {
+                  resetForm();
+                  setIsDialogOpen(false);
+                }}
+              >
                 Cancel
               </Button>
-              <Button type="submit">
-                {editingHotel ? 'Update Hotel' : 'Add Hotel'}
-              </Button>
+              <Button type="submit">{editingHotel ? 'Update Hotel' : 'Add Hotel'}</Button>
             </DialogFooter>
           </Box>
         </DialogContent>

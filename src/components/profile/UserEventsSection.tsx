@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Clock, Loader2 } from 'lucide-react';
 import { useUserEvents } from '@/hooks/useUserEvents';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -33,7 +33,9 @@ export default function UserEventsSection() {
           <CardTitle>My Events</CardTitle>
         </CardHeader>
         <CardContent>
-          <Typography variant="body2" sx={{ color: 'error.main' }}>Error loading events: {error}</Typography>
+          <Typography variant="body2" sx={{ color: 'error.main' }}>
+            Error loading events: {error}
+          </Typography>
         </CardContent>
       </Card>
     );
@@ -46,14 +48,14 @@ export default function UserEventsSection() {
     const startFormatted = start.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
 
     if (end && end.toDateString() !== start.toDateString()) {
       const endFormatted = end.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
-        year: 'numeric'
+        year: 'numeric',
       });
       return `${startFormatted} - ${endFormatted}`;
     }
@@ -65,7 +67,7 @@ export default function UserEventsSection() {
     return new Date(startDate).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     });
   };
 
@@ -91,9 +93,7 @@ export default function UserEventsSection() {
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
               You haven't shown interest in any events yet.
             </Typography>
-            <Button onClick={() => navigate('/events')}>
-              Browse Events
-            </Button>
+            <Button onClick={() => navigate('/events')}>Browse Events</Button>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -111,8 +111,22 @@ export default function UserEventsSection() {
                 }}
                 onClick={() => navigate(`/events/${attendance.event.id}`)}
               >
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600, '&:hover': { color: 'primary.main' }, transition: 'color 0.2s' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    mb: 1,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 600,
+                      '&:hover': { color: 'primary.main' },
+                      transition: 'color 0.2s',
+                    }}
+                  >
                     {attendance.event.title}
                   </Typography>
                   <Badge variant={getStatusBadgeVariant(attendance.status)}>
@@ -123,9 +137,13 @@ export default function UserEventsSection() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Calendar style={{ height: 16, width: 16 }} />
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>{formatEventDate(attendance.event.start_date, attendance.event.end_date)}</Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {formatEventDate(attendance.event.start_date, attendance.event.end_date)}
+                    </Typography>
                     <Clock style={{ height: 16, width: 16, marginLeft: 8 }} />
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>{formatEventTime(attendance.event.start_date)}</Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {formatEventTime(attendance.event.start_date)}
+                    </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

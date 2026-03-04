@@ -14,24 +14,18 @@ import {
   Megaphone,
   BarChart3,
   MessageSquare,
-  Heart
+  Heart,
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useGroupNotifications, GroupNotification } from '@/hooks/useGroupNotifications';
 import { formatDistanceToNow } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 export const GroupNotificationBell = () => {
-  const {
-    notifications,
-    unreadCount,
-    isLoading,
-    markAsRead,
-    markAllAsRead,
-    isMarkingAsRead
-  } = useGroupNotifications();
+  const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead, isMarkingAsRead } =
+    useGroupNotifications();
 
   const [open, setOpen] = useState(false);
 
@@ -90,14 +84,27 @@ export const GroupNotificationBell = () => {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" sx={{ position: 'relative' }}>
           {unreadCount > 0 ? (
-            <Bell style={{ height: 20, width: 20, fill: 'currentColor', color: 'var(--primary)' }} />
+            <Bell
+              style={{ height: 20, width: 20, fill: 'currentColor', color: 'var(--primary)' }}
+            />
           ) : (
             <BellOff style={{ height: 20, width: 20 }} />
           )}
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              sx={{ position: 'absolute', top: '-4px', right: '-4px', height: 20, width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0, fontSize: '0.75rem' }}
+              sx={{
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                height: 20,
+                width: 20,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                p: 0,
+                fontSize: '0.75rem',
+              }}
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
@@ -130,7 +137,15 @@ export const GroupNotificationBell = () => {
           <CardContent sx={{ p: 0 }}>
             {notifications.length === 0 ? (
               <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-                <Bell style={{ width: 48, height: 48, margin: '0 auto', marginBottom: 16, opacity: 0.5 }} />
+                <Bell
+                  style={{
+                    width: 48,
+                    height: 48,
+                    margin: '0 auto',
+                    marginBottom: 16,
+                    opacity: 0.5,
+                  }}
+                />
                 <Typography>No notifications yet</Typography>
                 <Typography variant="caption">Group activity will appear here</Typography>
               </Box>
@@ -145,7 +160,14 @@ export const GroupNotificationBell = () => {
                         handleNotificationClick(notification);
                         setOpen(false);
                       }}
-                      style={{ display: 'block', padding: 16, transition: 'background-color 0.2s', textDecoration: 'none', color: 'inherit', ...(notification.read_at ? {} : { borderLeft: '4px solid var(--primary)' }) }}
+                      style={{
+                        display: 'block',
+                        padding: 16,
+                        transition: 'background-color 0.2s',
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        ...(notification.read_at ? {} : { borderLeft: '4px solid var(--primary)' }),
+                      }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                         <Box sx={{ flexShrink: 0, mt: 0.5 }}>
@@ -155,14 +177,23 @@ export const GroupNotificationBell = () => {
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                             <Avatar sx={{ height: 24, width: 24 }}>
-                              <AvatarImage src={notification.triggered_by_profile?.avatar_url || undefined} />
+                              <AvatarImage
+                                src={notification.triggered_by_profile?.avatar_url || undefined}
+                              />
                               <AvatarFallback sx={{ fontSize: '0.75rem' }}>
                                 {notification.triggered_by_profile?.display_name?.charAt(0) || 'U'}
                               </AvatarFallback>
                             </Avatar>
 
                             {!notification.read_at && (
-                              <Box sx={{ width: 8, height: 8, bgcolor: 'primary.main', borderRadius: '50%' }} />
+                              <Box
+                                sx={{
+                                  width: 8,
+                                  height: 8,
+                                  bgcolor: 'primary.main',
+                                  borderRadius: '50%',
+                                }}
+                              />
                             )}
                           </Box>
 
@@ -171,18 +202,38 @@ export const GroupNotificationBell = () => {
                           </Typography>
 
                           {notification.content && (
-                            <Typography variant="caption" sx={{ color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 1 }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: 'text.secondary',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                mb: 1,
+                              }}
+                            >
                               {notification.content}
                             </Typography>
                           )}
 
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                            }}
+                          >
                             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                              {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                              {formatDistanceToNow(new Date(notification.created_at), {
+                                addSuffix: true,
+                              })}
                             </Typography>
 
                             {notification.read_at && (
-                              <Check style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }} />
+                              <Check
+                                style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }}
+                              />
                             )}
                           </Box>
                         </Box>

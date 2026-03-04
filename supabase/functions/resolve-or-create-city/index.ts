@@ -258,7 +258,7 @@ async function createCity(
             }
             // Also get region_name from Photon properties
             const props = geoData.features[0].properties || {}
-            var regionName = props.state || null
+            const regionName = props.state || null
           }
         }
       } catch (geoErr) {

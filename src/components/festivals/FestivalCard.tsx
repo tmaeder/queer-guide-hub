@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Calendar, MapPin, Music } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Box from '@mui/material/Box';
@@ -51,7 +51,11 @@ export function FestivalCard({ festival }: FestivalCardProps) {
       >
         {heroImage && (
           <Box sx={{ height: 160, overflow: 'hidden' }}>
-            <img src={heroImage} alt={festival.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img
+              src={heroImage}
+              alt={festival.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
           </Box>
         )}
         <Box sx={{ p: 2 }}>
@@ -59,7 +63,9 @@ export function FestivalCard({ festival }: FestivalCardProps) {
             <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ flex: 1 }}>
               {festival.name}
             </Typography>
-            {festival.featured && <Badge style={{ backgroundColor: '#333', color: '#fff' }}>Featured</Badge>}
+            {festival.featured && (
+              <Badge style={{ backgroundColor: '#333', color: '#fff' }}>Featured</Badge>
+            )}
           </Box>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
             <Chip
@@ -87,12 +93,16 @@ export function FestivalCard({ festival }: FestivalCardProps) {
             )}
           </Box>
           {festival.description && (
-            <Typography variant="body2" color="text.secondary" sx={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
               {festival.description}
             </Typography>
           )}

@@ -50,7 +50,7 @@ export function useApiKeys() {
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('manage-api-keys?action=status', {
-        method: 'GET'
+        method: 'GET',
       });
 
       if (error) throw error;
@@ -60,9 +60,9 @@ export function useApiKeys() {
     } catch (error) {
       console.error('Error loading API key status:', error);
       toast({
-        title: "Error",
-        description: "Failed to load API key status",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load API key status',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -73,24 +73,24 @@ export function useApiKeys() {
     try {
       const { data, error } = await supabase.functions.invoke('manage-api-keys', {
         method: 'POST',
-        body: keyData
+        body: keyData,
       });
 
       if (error) throw error;
 
       await loadKeyStatus();
       toast({
-        title: "Success",
-        description: "API key created successfully",
+        title: 'Success',
+        description: 'API key created successfully',
       });
 
       return data.key;
     } catch (error: any) {
       console.error('Error creating API key:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to create API key",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to create API key',
+        variant: 'destructive',
       });
       throw error;
     }
@@ -100,24 +100,24 @@ export function useApiKeys() {
     try {
       const { data, error } = await supabase.functions.invoke('manage-api-keys', {
         method: 'PUT',
-        body: { ...updateData, id }
+        body: { ...updateData, id },
       });
 
       if (error) throw error;
 
       await loadKeyStatus();
       toast({
-        title: "Success",
-        description: "API key updated successfully",
+        title: 'Success',
+        description: 'API key updated successfully',
       });
 
       return data.key;
     } catch (error: any) {
       console.error('Error updating API key:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update API key",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to update API key',
+        variant: 'destructive',
       });
       throw error;
     }
@@ -127,33 +127,29 @@ export function useApiKeys() {
     try {
       const { error } = await supabase.functions.invoke('manage-api-keys', {
         method: 'DELETE',
-        body: { id }
+        body: { id },
       });
 
       if (error) throw error;
 
       await loadKeyStatus();
       toast({
-        title: "Success",
-        description: "API key deleted successfully",
+        title: 'Success',
+        description: 'API key deleted successfully',
       });
     } catch (error: any) {
       console.error('Error deleting API key:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete API key",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to delete API key',
+        variant: 'destructive',
       });
       throw error;
     }
   };
 
   const toggleApiKey = async (id: string, is_active: boolean) => {
-    try {
-      await updateApiKey(id, { is_active });
-    } catch (error) {
-      throw error;
-    }
+    await updateApiKey(id, { is_active });
   };
 
   useEffect(() => {
@@ -168,6 +164,6 @@ export function useApiKeys() {
     updateApiKey,
     deleteApiKey,
     toggleApiKey,
-    refreshKeys: loadKeyStatus
+    refreshKeys: loadKeyStatus,
   };
 }

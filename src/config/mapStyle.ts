@@ -20,7 +20,7 @@ export const mapStyle: StyleSpecification = {
     protomaps: {
       type: 'vector',
       tiles: [TILE_URL],
-      maxzoom: 6, // Current extract is z0-6; increase to 15 when full planet is uploaded
+      maxzoom: 15, // Full planet z0-15 (20260301 build)
       attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
     },
   },

@@ -223,7 +223,8 @@ Return ONLY valid JSON with tag names as keys and category slugs as values:
               { role: 'user', content: prompt }
             ],
             temperature: 0.1,
-            max_tokens: 1500, // Increased for more tags
+            max_tokens: 1500,
+            store: false,
           }),
         });
 

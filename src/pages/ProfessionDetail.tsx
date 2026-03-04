@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Users, MapPin, Calendar, User } from "lucide-react";
-import { PersonalityCard } from "@/components/personalities/PersonalityCard";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowLeft, Users, MapPin, Calendar, User } from 'lucide-react';
+import { PersonalityCard } from '@/components/personalities/PersonalityCard';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -39,18 +39,21 @@ export default function ProfessionDetail() {
 
         if (personalitiesError) throw personalitiesError;
 
-        const filteredPersonalities = personalities?.filter(p =>
-          p.profession && p.profession.split(',')
-            .map((prof: string) => prof.trim().toLowerCase())
-            .includes(decodedProfession.toLowerCase())
-        ) || [];
+        const filteredPersonalities =
+          personalities?.filter(
+            (p) =>
+              p.profession &&
+              p.profession
+                .split(',')
+                .map((prof: string) => prof.trim().toLowerCase())
+                .includes(decodedProfession.toLowerCase()),
+          ) || [];
 
         setProfessionData({
           name: decodedProfession,
           personalities: filteredPersonalities,
-          totalCount: filteredPersonalities.length
+          totalCount: filteredPersonalities.length,
         });
-
       } catch (err) {
         console.error('Error loading profession data:', err);
         setError('Failed to load profession data');
@@ -74,7 +77,18 @@ export default function ProfessionDetail() {
             <Skeleton style={{ height: 40, width: 96 }} />
             <Skeleton style={{ height: 32, width: 256 }} />
           </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '1fr 1fr',
+                lg: 'repeat(3, 1fr)',
+                xl: 'repeat(4, 1fr)',
+              },
+              gap: 3,
+            }}
+          >
             {Array.from({ length: 8 }).map((_, i) => (
               <Card key={i} style={{ overflow: 'hidden' }}>
                 <Skeleton style={{ aspectRatio: '1/1', width: '100%' }} />
@@ -117,7 +131,9 @@ export default function ProfessionDetail() {
           </Button>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <User style={{ width: 32, height: 32, color: 'var(--primary)' }} />
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>{professionData.name}</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {professionData.name}
+            </Typography>
             <Badge variant="secondary">
               {professionData.totalCount} {professionData.totalCount === 1 ? 'person' : 'people'}
             </Badge>
@@ -125,31 +141,62 @@ export default function ProfessionDetail() {
         </Box>
 
         {/* Stats Overview */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+        <Box
+          sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}
+        >
           <Card>
-            <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardHeader
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: 8,
+              }}
+            >
               <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Total People</CardTitle>
               <Users style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
             </CardHeader>
             <CardContent>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>{professionData.totalCount}</Typography>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
-              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Locations</CardTitle>
-              <MapPin style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
-            </CardHeader>
-            <CardContent>
               <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                {new Set(professionData.personalities.map(p => p.birth_place).filter(Boolean)).size}
+                {professionData.totalCount}
               </Typography>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8 }}>
+            <CardHeader
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: 8,
+              }}
+            >
+              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Locations</CardTitle>
+              <MapPin style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+            </CardHeader>
+            <CardContent>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                {
+                  new Set(professionData.personalities.map((p) => p.birth_place).filter(Boolean))
+                    .size
+                }
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: 8,
+              }}
+            >
               <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500 }}>Age Range</CardTitle>
               <Calendar style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
             </CardHeader>
@@ -157,7 +204,11 @@ export default function ProfessionDetail() {
               <Typography variant="h5" sx={{ fontWeight: 700 }}>
                 {(() => {
                   const ages = professionData.personalities
-                    .map(p => p.birth_date ? new Date().getFullYear() - new Date(p.birth_date).getFullYear() : null)
+                    .map((p) =>
+                      p.birth_date
+                        ? new Date().getFullYear() - new Date(p.birth_date).getFullYear()
+                        : null,
+                    )
                     .filter(Boolean);
                   if (ages.length === 0) return 'N/A';
                   const min = Math.min(...ages);
@@ -171,9 +222,22 @@ export default function ProfessionDetail() {
 
         {/* People Grid */}
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>People in {professionData.name}</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            People in {professionData.name}
+          </Typography>
           {professionData.personalities.length > 0 ? (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  md: '1fr 1fr',
+                  lg: 'repeat(3, 1fr)',
+                  xl: 'repeat(4, 1fr)',
+                },
+                gap: 3,
+              }}
+            >
               {professionData.personalities.map((personality) => (
                 <PersonalityCard key={personality.id} personality={personality} />
               ))}

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { TravelDealCard } from './TravelDealCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 interface TravelDealsSectionProps {
   destinationIata?: string | null;
@@ -35,8 +35,16 @@ export function TravelDealsSection({
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Skeleton variant="text" width={200} height={28} />
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-          {[1, 2, 3].map(i => <Skeleton key={i} variant="rounded" height={140} />)}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 2,
+          }}
+        >
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} variant="rounded" height={140} />
+          ))}
         </Box>
       </Box>
     );
@@ -78,11 +86,25 @@ export function TravelDealsSection({
       </Box>
 
       {loading ? (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-          {[1, 2, 3].map(i => <Skeleton key={i} variant="rounded" height={140} />)}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 2,
+          }}
+        >
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} variant="rounded" height={140} />
+          ))}
         </Box>
       ) : deals && deals.length > 0 ? (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 2,
+          }}
+        >
           {deals.map((deal, i) => (
             <TravelDealCard
               key={`${deal.origin}-${deal.destination}-${deal.departure_date}-${i}`}
@@ -94,7 +116,14 @@ export function TravelDealsSection({
         </Box>
       ) : (
         <Box sx={{ textAlign: 'center', py: 3, bgcolor: 'action.hover', borderRadius: 2 }}>
-          <Plane style={{ height: 24, width: 24, margin: '0 auto 8px', color: 'var(--muted-foreground)' }} />
+          <Plane
+            style={{
+              height: 24,
+              width: 24,
+              margin: '0 auto 8px',
+              color: 'var(--muted-foreground)',
+            }}
+          />
           <Typography sx={{ color: 'text.secondary', mb: 1 }}>
             No deals available right now
           </Typography>

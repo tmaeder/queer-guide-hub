@@ -1,6 +1,17 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ExternalLink, Calendar, MapPin, Briefcase, Star, Share2, Heart, Verified, Tag } from 'lucide-react';
+import {
+  ArrowLeft,
+  ExternalLink,
+  Calendar,
+  MapPin,
+  Briefcase,
+  Star,
+  Share2,
+  Heart,
+  Verified,
+  Tag,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -56,9 +67,9 @@ export default function PersonalityDetail() {
         if (error) {
           console.error('Error fetching personality:', error);
           toast({
-            title: "Error",
-            description: "Failed to load personality details",
-            variant: "destructive"
+            title: 'Error',
+            description: 'Failed to load personality details',
+            variant: 'destructive',
           });
           navigate('/personalities');
           return;
@@ -66,9 +77,9 @@ export default function PersonalityDetail() {
 
         if (!data) {
           toast({
-            title: "Not Found",
-            description: "Personality not found",
-            variant: "destructive"
+            title: 'Not Found',
+            description: 'Personality not found',
+            variant: 'destructive',
           });
           navigate('/personalities');
           return;
@@ -76,18 +87,22 @@ export default function PersonalityDetail() {
 
         const transformedData: Personality = {
           ...data,
-          fields: Array.isArray(data.fields) ? data.fields as string[] : [],
-          achievements: Array.isArray(data.achievements) ? data.achievements as string[] : [],
+          fields: Array.isArray(data.fields) ? (data.fields as string[]) : [],
+          achievements: Array.isArray(data.achievements) ? (data.achievements as string[]) : [],
           social_links: (data.social_links as Record<string, any>) || {},
           tags: data.tags || [],
-          verification_status: (data.verification_status as 'pending' | 'verified' | 'disputed') || 'pending',
-          visibility: (data.visibility as 'public' | 'private' | 'draft') || 'public'
+          verification_status:
+            (data.verification_status as 'pending' | 'verified' | 'disputed') || 'pending',
+          visibility: (data.visibility as 'public' | 'private' | 'draft') || 'public',
         };
 
         setPersonality(transformedData);
 
         document.title = `${transformedData.name} - Queer Guide`;
-        const metaDescription = transformedData.description || transformedData.bio?.substring(0, 160) || `Learn about ${transformedData.name}, a notable LGBTQ+ personality.`;
+        const metaDescription =
+          transformedData.description ||
+          transformedData.bio?.substring(0, 160) ||
+          `Learn about ${transformedData.name}, a notable LGBTQ+ personality.`;
         const existingMeta = document.querySelector('meta[name="description"]');
         if (existingMeta) {
           existingMeta.setAttribute('content', metaDescription);
@@ -112,16 +127,15 @@ export default function PersonalityDetail() {
         const { data: similarData } = await supabase.rpc('get_similar_personalities', {
           personality_uuid: id,
           result_limit: 6,
-          min_similarity: 0.3
+          min_similarity: 0.3,
         });
         if (similarData) setSimilarPersonalities(similarData);
-
       } catch (error) {
         console.error('Unexpected error:', error);
         toast({
-          title: "Error",
-          description: "Failed to load personality details",
-          variant: "destructive"
+          title: 'Error',
+          description: 'Failed to load personality details',
+          variant: 'destructive',
         });
         navigate('/personalities');
       } finally {
@@ -150,15 +164,38 @@ export default function PersonalityDetail() {
   };
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(' ')
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   const getVerificationBadge = () => {
     switch (personality?.verification_status) {
       case 'verified':
-        return <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Verified style={{ height: 12, width: 12 }} />Verified</Badge>;
+        return (
+          <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Verified style={{ height: 12, width: 12 }} />
+            Verified
+          </Badge>
+        );
       case 'disputed':
-        return <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#fef9e7', color: '#a16207' }}>Disputed</Badge>;
+        return (
+          <Badge
+            variant="secondary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              backgroundColor: '#fef9e7',
+              color: '#a16207',
+            }}
+          >
+            Disputed
+          </Badge>
+        );
       default:
         return null;
     }
@@ -178,8 +215,8 @@ export default function PersonalityDetail() {
     } else {
       navigator.clipboard.writeText(window.location.href);
       toast({
-        title: "Link Copied",
-        description: "Profile link copied to clipboard"
+        title: 'Link Copied',
+        description: 'Profile link copied to clipboard',
       });
     }
   };
@@ -189,8 +226,21 @@ export default function PersonalityDetail() {
       <Box sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4 }}>
         <div style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
           <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }} />
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 4 }}>
-            <Box sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' },
+              gap: 4,
+            }}
+          >
+            <Box
+              sx={{
+                gridColumn: { lg: 'span 2' },
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 3,
+              }}
+            >
               <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
               <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 1 }} />
             </Box>
@@ -207,8 +257,12 @@ export default function PersonalityDetail() {
   if (!personality) {
     return (
       <Box sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>Personality Not Found</Typography>
-        <Typography sx={{ color: 'text.secondary', mb: 3 }}>The personality you're looking for doesn't exist.</Typography>
+        <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>
+          Personality Not Found
+        </Typography>
+        <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+          The personality you're looking for doesn't exist.
+        </Typography>
         <Button onClick={() => navigate('/personalities')}>
           <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
           Back to Personalities
@@ -230,7 +284,15 @@ export default function PersonalityDetail() {
           Back to Personalities
         </Button>
 
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' }, gap: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: { md: 'flex-start' },
+            justifyContent: { md: 'space-between' },
+            gap: 2,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             <Avatar style={{ height: 96, width: 96 }}>
               <AvatarImage
@@ -245,9 +307,18 @@ export default function PersonalityDetail() {
 
             <div>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>{personality.name}</Typography>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  sx={{ fontSize: '1.875rem', fontWeight: 700 }}
+                >
+                  {personality.name}
+                </Typography>
                 {personality.is_featured && (
-                  <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Badge
+                    variant="secondary"
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
                     <Star style={{ height: 12, width: 12 }} />
                     Featured
                   </Badge>
@@ -256,30 +327,58 @@ export default function PersonalityDetail() {
               </Box>
 
               {personality.pronouns && (
-                <Typography sx={{ color: 'text.secondary', mb: 1 }}>({personality.pronouns})</Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 1 }}>
+                  ({personality.pronouns})
+                </Typography>
               )}
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', mb: 1.5, flexWrap: 'wrap' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  color: 'text.secondary',
+                  mb: 1.5,
+                  flexWrap: 'wrap',
+                }}
+              >
                 {personality.profession && (
                   <Box
                     component="a"
                     href={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
                     onClick={(e: React.MouseEvent) => {
                       e.preventDefault();
-                      navigate(`/personalities?profession=${encodeURIComponent(personality.profession!)}`);
+                      navigate(
+                        `/personalities?profession=${encodeURIComponent(personality.profession!)}`,
+                      );
                     }}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'primary.main', textDecoration: 'none', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      color: 'primary.main',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
                   >
                     <Briefcase style={{ height: 16, width: 16 }} />
                     <span>{personality.profession}</span>
                   </Box>
                 )}
-                {personality.nationality && (
-                  countryId ? (
+                {personality.nationality &&
+                  (countryId ? (
                     <Box
                       component={Link}
                       to={`/country/${countryId}`}
-                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' },
+                      }}
                     >
                       <MapPin style={{ height: 16, width: 16 }} />
                       <span>{personality.nationality}</span>
@@ -289,8 +388,7 @@ export default function PersonalityDetail() {
                       <MapPin style={{ height: 16, width: 16 }} />
                       <span>{personality.nationality}</span>
                     </Box>
-                  )
-                )}
+                  ))}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   {personality.is_living ? (
                     <>
@@ -326,8 +424,18 @@ export default function PersonalityDetail() {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ReportButton contentType="personalities" contentId={personality.id} contentName={personality.name} />
-            <AdminEditButton contentType="personalities" contentId={personality.id} contentName={personality.name} currentData={personality as Record<string, unknown>} onSaved={() => window.location.reload()} />
+            <ReportButton
+              contentType="personalities"
+              contentId={personality.id}
+              contentName={personality.name}
+            />
+            <AdminEditButton
+              contentType="personalities"
+              contentId={personality.id}
+              contentName={personality.name}
+              currentData={personality as Record<string, unknown>}
+              onSaved={() => window.location.reload()}
+            />
             <Button variant="outline" size="sm" onClick={handleShare}>
               <Share2 style={{ height: 16, width: 16, marginRight: 8 }} />
               Share
@@ -344,9 +452,13 @@ export default function PersonalityDetail() {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 4 }}>
+      <Box
+        sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 4 }}
+      >
         {/* Main Content */}
-        <Box sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box
+          sx={{ gridColumn: { lg: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}
+        >
           {/* Description */}
           {personality.description && (
             <Card>
@@ -367,13 +479,14 @@ export default function PersonalityDetail() {
               </CardHeader>
               <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {personality.bio.split('\n').map((paragraph, index) => (
-                    paragraph.trim() && (
-                      <p key={index} style={{ color: '#999999' }}>
-                        {paragraph}
-                      </p>
-                    )
-                  ))}
+                  {personality.bio.split('\n').map(
+                    (paragraph, index) =>
+                      paragraph.trim() && (
+                        <p key={index} style={{ color: '#999999' }}>
+                          {paragraph}
+                        </p>
+                      ),
+                  )}
                 </Box>
               </CardContent>
             </Card>
@@ -388,8 +501,21 @@ export default function PersonalityDetail() {
               <CardContent>
                 <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {personality.achievements.map((achievement, index) => (
-                    <Box component="li" key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                      <Box sx={{ height: 8, width: 8, bgcolor: 'primary.main', borderRadius: '50%', mt: 1, flexShrink: 0 }} />
+                    <Box
+                      component="li"
+                      key={index}
+                      sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
+                    >
+                      <Box
+                        sx={{
+                          height: 8,
+                          width: 8,
+                          bgcolor: 'primary.main',
+                          borderRadius: '50%',
+                          mt: 1,
+                          flexShrink: 0,
+                        }}
+                      />
                       <span style={{ color: '#999999' }}>{achievement}</span>
                     </Box>
                   ))}
@@ -405,7 +531,13 @@ export default function PersonalityDetail() {
                 <CardTitle>Similar Personalities</CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                    gap: 2,
+                  }}
+                >
                   {similarPersonalities.map((similar) => (
                     <Box
                       key={similar.id}
@@ -422,21 +554,46 @@ export default function PersonalityDetail() {
                         textDecoration: 'none',
                         color: 'inherit',
                         transition: 'all 0.2s',
-                        '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' }
+                        '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
                       }}
                     >
                       <Avatar style={{ height: 40, width: 40, flexShrink: 0 }}>
-                        <AvatarImage src={similar.image_url || ''} alt={similar.name} style={{ objectFit: 'cover' }} />
+                        <AvatarImage
+                          src={similar.image_url || ''}
+                          alt={similar.name}
+                          style={{ objectFit: 'cover' }}
+                        />
                         <AvatarFallback style={{ fontSize: '0.75rem' }}>
-                          {similar.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                          {similar.name
+                            .split(' ')
+                            .map((w) => w[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)}
                         </AvatarFallback>
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <Typography
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
                           {similar.name}
                         </Typography>
                         {similar.profession && (
-                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <Typography
+                            sx={{
+                              fontSize: '0.75rem',
+                              color: 'text.secondary',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
                             {similar.profession}
                           </Typography>
                         )}
@@ -461,7 +618,9 @@ export default function PersonalityDetail() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Born</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                      Born
+                    </Typography>
                     <Typography sx={{ fontWeight: 500 }}>
                       {new Date(personality.birth_date).toLocaleDateString()}
                     </Typography>
@@ -472,7 +631,9 @@ export default function PersonalityDetail() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Died</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                      Died
+                    </Typography>
                     <Typography sx={{ fontWeight: 500 }}>
                       {new Date(personality.death_date).toLocaleDateString()}
                     </Typography>
@@ -483,12 +644,19 @@ export default function PersonalityDetail() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <MapPin style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Nationality</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                      Nationality
+                    </Typography>
                     {countryId ? (
                       <Typography
                         component={Link}
                         to={`/country/${countryId}`}
-                        sx={{ fontWeight: 500, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                        sx={{
+                          fontWeight: 500,
+                          color: 'primary.main',
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' },
+                        }}
                       >
                         {personality.nationality}
                       </Typography>
@@ -502,11 +670,18 @@ export default function PersonalityDetail() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Briefcase style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Profession</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                      Profession
+                    </Typography>
                     <Typography
                       component={Link}
                       to={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
-                      sx={{ fontWeight: 500, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      sx={{
+                        fontWeight: 500,
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' },
+                      }}
                     >
                       {personality.profession}
                     </Typography>
@@ -517,7 +692,9 @@ export default function PersonalityDetail() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <MapPin style={{ height: 16, width: 16, color: '#999999' }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Birth Place</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                      Birth Place
+                    </Typography>
                     <Typography sx={{ fontWeight: 500 }}>{personality.birth_place}</Typography>
                   </div>
                 </Box>
@@ -532,10 +709,7 @@ export default function PersonalityDetail() {
                 <CardTitle>Social Links</CardTitle>
               </CardHeader>
               <CardContent>
-                <SocialLinksDisplay
-                  socialLinks={personality.social_links}
-                  size="sm"
-                />
+                <SocialLinksDisplay socialLinks={personality.social_links} size="sm" />
               </CardContent>
             </Card>
           )}

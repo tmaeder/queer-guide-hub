@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Clock, MapPin } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -41,12 +41,27 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {sortedDays.map((day, dayIdx) => (
         <Box key={day}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 600, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}
+          >
             {format(parseISO(day), 'EEEE, MMMM d, yyyy')}
-            <Chip size="small" label={`${grouped[day].length} event${grouped[day].length !== 1 ? 's' : ''}`} />
+            <Chip
+              size="small"
+              label={`${grouped[day].length} event${grouped[day].length !== 1 ? 's' : ''}`}
+            />
           </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pl: 2, borderLeft: 3, borderColor: 'primary.main' }}>
-            {grouped[day].map(event => (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              pl: 2,
+              borderLeft: 3,
+              borderColor: 'primary.main',
+            }}
+          >
+            {grouped[day].map((event) => (
               <Link key={event.id} to={`/events/${event.id}`} style={{ textDecoration: 'none' }}>
                 <Paper
                   elevation={0}
@@ -59,10 +74,27 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
                     transition: 'all 0.15s',
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: 2,
+                    }}
+                  >
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="subtitle2" fontWeight={600}>{event.title}</Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        {event.title}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          mt: 0.5,
+                          flexWrap: 'wrap',
+                        }}
+                      >
                         <Chip
                           size="small"
                           icon={<Clock style={{ width: 12, height: 12 }} />}

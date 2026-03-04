@@ -230,7 +230,7 @@ serve(async (req) => {
     console.log('Existing tags to update:', existingTagsToUpdate.length);
 
     let insertedTags = [];
-    let updatedTags = [];
+    const updatedTags = [];
     let insertError = null;
     let updateError = null;
 

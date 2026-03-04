@@ -227,7 +227,7 @@ serve(async (req) => {
 
     // Parse occupation (P106)
     let profession = ''
-    let fields: string[] = []
+    const fields: string[] = []
     if (claims.P106) {
       const occupations = []
       for (const occupation of claims.P106) {
@@ -482,7 +482,8 @@ Return ONLY valid JSON, no additional text.`;
           { role: 'user', content: prompt }
         ],
         max_tokens: 1200,
-        temperature: 0.2
+        temperature: 0.2,
+        store: false,
       }),
     });
 

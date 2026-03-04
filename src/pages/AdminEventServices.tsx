@@ -1,21 +1,33 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ArrowLeft, Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useToast } from '@/hooks/use-toast';
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 interface EventService {
   id: string;
@@ -52,7 +64,17 @@ export default function AdminEventServices() {
     sort_order: 0,
   });
 
-  const categories = ['Planning', 'Administration', 'Technology', 'Communication', 'Safety', 'Documentation', 'Aesthetics', 'Maintenance', 'Logistics'];
+  const categories = [
+    'Planning',
+    'Administration',
+    'Technology',
+    'Communication',
+    'Safety',
+    'Documentation',
+    'Aesthetics',
+    'Maintenance',
+    'Logistics',
+  ];
 
   useEffect(() => {
     if (!user) {
@@ -62,9 +84,9 @@ export default function AdminEventServices() {
 
     if (!isAdmin) {
       toast({
-        title: "Access Denied",
-        description: "You need admin privileges to access this page.",
-        variant: "destructive"
+        title: 'Access Denied',
+        description: 'You need admin privileges to access this page.',
+        variant: 'destructive',
       });
       navigate('/');
       return;
@@ -85,9 +107,9 @@ export default function AdminEventServices() {
     } catch (error) {
       console.error('Error fetching event services:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch event services",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to fetch event services',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -107,19 +129,17 @@ export default function AdminEventServices() {
         if (error) throw error;
 
         toast({
-          title: "Success",
-          description: "Event service updated successfully"
+          title: 'Success',
+          description: 'Event service updated successfully',
         });
       } else {
-        const { error } = await supabase
-          .from('event_services')
-          .insert([formData]);
+        const { error } = await supabase.from('event_services').insert([formData]);
 
         if (error) throw error;
 
         toast({
-          title: "Success",
-          description: "Event service created successfully"
+          title: 'Success',
+          description: 'Event service created successfully',
         });
       }
 
@@ -129,9 +149,9 @@ export default function AdminEventServices() {
     } catch (error: any) {
       console.error('Error saving event service:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to save event service",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to save event service',
+        variant: 'destructive',
       });
     }
   };
@@ -165,43 +185,51 @@ export default function AdminEventServices() {
     if (!confirm('Are you sure you want to delete this event service?')) return;
 
     try {
-      const { error } = await supabase
-        .from('event_services')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('event_services').delete().eq('id', id);
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Event service deleted successfully"
+        title: 'Success',
+        description: 'Event service deleted successfully',
       });
 
       fetchServices();
     } catch (error: any) {
       console.error('Error deleting event service:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete event service",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to delete event service',
+        variant: 'destructive',
       });
     }
   };
 
-  const filteredServices = services.filter(service => {
-    const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (service.description?.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredServices = services.filter((service) => {
+    const matchesSearch =
+      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || service.category === categoryFilter;
-    const matchesStatus = statusFilter === 'all' ||
-                         (statusFilter === 'active' && service.is_active) ||
-                         (statusFilter === 'inactive' && !service.is_active);
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && service.is_active) ||
+      (statusFilter === 'inactive' && !service.is_active);
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <Box sx={{ height: 128, width: 128, bgcolor: 'primary.main', animation: 'spin 1s linear infinite' }} />
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}
+      >
+        <Box
+          sx={{
+            height: 128,
+            width: 128,
+            bgcolor: 'primary.main',
+            animation: 'spin 1s linear infinite',
+          }}
+        />
       </Box>
     );
   }
@@ -214,7 +242,9 @@ export default function AdminEventServices() {
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Dashboard
           </Button>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>Event Services Management</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>
+            Event Services Management
+          </Typography>
         </Box>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -230,7 +260,11 @@ export default function AdminEventServices() {
                 {editingService ? 'Edit Event Service' : 'Create New Event Service'}
               </DialogTitle>
             </DialogHeader>
-            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            >
               <div>
                 <Label htmlFor="name">Name *</Label>
                 <Input
@@ -265,7 +299,10 @@ export default function AdminEventServices() {
 
               <div>
                 <Label htmlFor="category">Category</Label>
-                <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
@@ -285,7 +322,9 @@ export default function AdminEventServices() {
                   id="sort_order"
                   type="number"
                   value={formData.sort_order}
-                  onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })
+                  }
                   placeholder="0"
                 />
               </div>
@@ -329,7 +368,10 @@ export default function AdminEventServices() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}>
+        <Select
+          value={statusFilter}
+          onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}
+        >
           <SelectTrigger style={{ width: 160 }}>
             <SelectValue />
           </SelectTrigger>
@@ -342,35 +384,64 @@ export default function AdminEventServices() {
       </Box>
 
       {/* Stats */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2, mb: 3 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' },
+          gap: 2,
+          mb: 3,
+        }}
+      >
         <Card>
           <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>{services.length}</Typography>
-            <Typography variant="body2" color="text.secondary">Total Services</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {services.length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Total Services
+            </Typography>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>{services.filter(s => s.is_active).length}</Typography>
-            <Typography variant="body2" color="text.secondary">Active</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {services.filter((s) => s.is_active).length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Active
+            </Typography>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>{new Set(services.map(s => s.category)).size}</Typography>
-            <Typography variant="body2" color="text.secondary">Categories</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {new Set(services.map((s) => s.category)).size}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Categories
+            </Typography>
           </CardContent>
         </Card>
         <Card>
           <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>{services.filter(s => !s.is_active).length}</Typography>
-            <Typography variant="body2" color="text.secondary">Inactive</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {services.filter((s) => !s.is_active).length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Inactive
+            </Typography>
           </CardContent>
         </Card>
       </Box>
 
       {/* Services List */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' },
+          gap: 2,
+        }}
+      >
         {filteredServices.map((service) => (
           <Card key={service.id} sx={{ position: 'relative' }}>
             <CardHeader sx={{ pb: 2 }}>
@@ -378,7 +449,7 @@ export default function AdminEventServices() {
                 <CardTitle>
                   <Typography variant="subtitle1">{service.name}</Typography>
                 </CardTitle>
-                <Badge variant={service.is_active ? "default" : "secondary"}>
+                <Badge variant={service.is_active ? 'default' : 'secondary'}>
                   {service.is_active ? 'Active' : 'Inactive'}
                 </Badge>
               </Box>
@@ -390,31 +461,27 @@ export default function AdminEventServices() {
                     {service.description}
                   </Typography>
                 )}
-                {service.category && (
-                  <Badge variant="outline">{service.category}</Badge>
-                )}
+                {service.category && <Badge variant="outline">{service.category}</Badge>}
                 {service.icon && (
                   <Typography variant="body2">
-                    <Box component="span" sx={{ fontWeight: 600 }}>Icon:</Box> {service.icon}
+                    <Box component="span" sx={{ fontWeight: 600 }}>
+                      Icon:
+                    </Box>{' '}
+                    {service.icon}
                   </Typography>
                 )}
                 <Typography variant="body2">
-                  <Box component="span" sx={{ fontWeight: 600 }}>Sort Order:</Box> {service.sort_order}
+                  <Box component="span" sx={{ fontWeight: 600 }}>
+                    Sort Order:
+                  </Box>{' '}
+                  {service.sort_order}
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(service)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(service)}>
                     <Edit style={{ width: 16, height: 16 }} />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(service.id)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => handleDelete(service.id)}>
                     <Trash2 style={{ width: 16, height: 16 }} />
                   </Button>
                 </Box>

@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
 import { useOptimizedEvents } from '@/hooks/useOptimizedEvents';
 import { useOptimizedCities, useOptimizedCountries } from '@/hooks/useOptimizedPlaces';
@@ -43,12 +45,12 @@ export interface ExploreMapFilters {
 // ── Layer colours ──────────────────────────────────────────────────────────────
 
 export const LAYER_COLORS: Record<LayerType, string> = {
-  venues: '#6366f1',       // indigo
-  events: '#ec4899',       // pink
-  cities: '#3b82f6',       // blue
-  countries: '#dc2626',    // red
-  restrooms: '#10b981',    // emerald
-  hotels: '#f59e0b',       // amber
+  venues: '#6366f1', // indigo
+  events: '#ec4899', // pink
+  cities: '#3b82f6', // blue
+  countries: '#dc2626', // red
+  restrooms: '#10b981', // emerald
+  hotels: '#f59e0b', // amber
   neighbourhoods: '#8b5cf6', // violet
 };
 
@@ -60,24 +62,19 @@ interface UseExploreMapDataOptions {
   filters?: ExploreMapFilters;
 }
 
-export function useExploreMapData({
-  enabledLayers,
-  viewport,
-  filters,
-}: UseExploreMapDataOptions) {
+export function useExploreMapData({ enabledLayers, viewport, filters }: UseExploreMapDataOptions) {
   // ── Venues ─────────────────────────────────────────────────────────────────
   const venuesEnabled = enabledLayers.includes('venues');
-  const { venues: rawVenues = [], isFetching: venuesFetching } =
-    useOptimizedVenues(
-      venuesEnabled
-        ? {
-            limit: 500,
-            ...(filters?.search ? { search: filters.search } : {}),
-            ...(filters?.category ? { category: filters.category } : {}),
-            ...(filters?.tags?.length ? { tags: filters.tags } : {}),
-          }
-        : { limit: 0 },
-    );
+  const { venues: rawVenues = [], isFetching: venuesFetching } = useOptimizedVenues(
+    venuesEnabled
+      ? {
+          limit: 500,
+          ...(filters?.search ? { search: filters.search } : {}),
+          ...(filters?.category ? { category: filters.category } : {}),
+          ...(filters?.tags?.length ? { tags: filters.tags } : {}),
+        }
+      : { limit: 0 },
+  );
 
   const venueMarkers = useMemo<MapMarker[]>(() => {
     if (!venuesEnabled) return [];
@@ -98,16 +95,15 @@ export function useExploreMapData({
 
   // ── Events ─────────────────────────────────────────────────────────────────
   const eventsEnabled = enabledLayers.includes('events');
-  const { events: rawEvents = [], isFetching: eventsFetching } =
-    useOptimizedEvents(
-      eventsEnabled
-        ? {
-            limit: 300,
-            ...(filters?.search ? { search: filters.search } : {}),
-            ...(filters?.dateRange ? { dateRange: filters.dateRange } : {}),
-          }
-        : { limit: 0 },
-    );
+  const { events: rawEvents = [], isFetching: eventsFetching } = useOptimizedEvents(
+    eventsEnabled
+      ? {
+          limit: 300,
+          ...(filters?.search ? { search: filters.search } : {}),
+          ...(filters?.dateRange ? { dateRange: filters.dateRange } : {}),
+        }
+      : { limit: 0 },
+  );
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];
@@ -127,9 +123,7 @@ export function useExploreMapData({
 
         if (lat === null || lng === null) return null;
 
-        const startDate = e.start_date
-          ? new Date(e.start_date).toLocaleDateString()
-          : '';
+        const startDate = e.start_date ? new Date(e.start_date).toLocaleDateString() : '';
 
         return {
           id: `event-${e.id}`,
@@ -154,15 +148,14 @@ export function useExploreMapData({
 
   // ── Cities ─────────────────────────────────────────────────────────────────
   const citiesEnabled = enabledLayers.includes('cities');
-  const { cities: rawCities = [], isFetching: citiesFetching } =
-    useOptimizedCities(
-      citiesEnabled
-        ? {
-            limit: 500,
-            ...(filters?.search ? { search: filters.search } : {}),
-          }
-        : { limit: 0 },
-    );
+  const { cities: rawCities = [], isFetching: citiesFetching } = useOptimizedCities(
+    citiesEnabled
+      ? {
+          limit: 500,
+          ...(filters?.search ? { search: filters.search } : {}),
+        }
+      : { limit: 0 },
+  );
 
   const cityMarkers = useMemo<MapMarker[]>(() => {
     if (!citiesEnabled) return [];
@@ -188,15 +181,14 @@ export function useExploreMapData({
 
   // ── Countries ──────────────────────────────────────────────────────────────
   const countriesEnabled = enabledLayers.includes('countries');
-  const { countries: rawCountries = [], isFetching: countriesFetching } =
-    useOptimizedCountries(
-      countriesEnabled
-        ? {
-            limit: 250,
-            ...(filters?.search ? { search: filters.search } : {}),
-          }
-        : { limit: 0 },
-    );
+  const { countries: rawCountries = [], isFetching: countriesFetching } = useOptimizedCountries(
+    countriesEnabled
+      ? {
+          limit: 250,
+          ...(filters?.search ? { search: filters.search } : {}),
+        }
+      : { limit: 0 },
+  );
 
   const countryMarkers = useMemo<MapMarker[]>(() => {
     if (!countriesEnabled) return [];
@@ -221,14 +213,95 @@ export function useExploreMapData({
       }));
   }, [rawCountries, countriesEnabled]);
 
-  // ── Restrooms (stub — requires viewport-based API fetch) ──────────────────
-  // Restrooms use the Refuge API which requires lat/lng. We keep this as a
-  // placeholder; Phase 2 will wire up debounced viewport-based fetching.
-  const restroomMarkers = useMemo<MapMarker[]>(() => [], []);
+  // ── Restrooms (Refuge API, viewport-based) ─────────────────────────────────
+  const restroomsEnabled = enabledLayers.includes('restrooms');
+  const [lat, lng] = [viewport.center[1], viewport.center[0]]; // center is [lng, lat]
 
-  // ── Hotels & Neighbourhoods (empty tables) ────────────────────────────────
+  const { data: rawRestrooms = [], isFetching: restroomsFetching } = useQuery({
+    queryKey: ['restrooms_map', Math.round(lat * 10) / 10, Math.round(lng * 10) / 10],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('get-refuge-restrooms', {
+        body: { lat, lng, per_page: 100 },
+      });
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        id: number;
+        name: string;
+        street: string;
+        city: string;
+        state: string;
+        latitude: number;
+        longitude: number;
+        accessible: boolean;
+        unisex: boolean;
+      }>;
+    },
+    enabled: restroomsEnabled && !(lat === 0 && lng === 0),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
+  const restroomMarkers = useMemo<MapMarker[]>(() => {
+    if (!restroomsEnabled) return [];
+    return rawRestrooms
+      .filter((r) => typeof r.latitude === 'number' && typeof r.longitude === 'number')
+      .map((r) => ({
+        id: `restroom-${r.id}`,
+        type: 'restrooms' as const,
+        lat: r.latitude,
+        lng: r.longitude,
+        name: r.name || `Restroom at ${r.street || 'Unknown'}`,
+        subtitle: [r.city, r.state].filter(Boolean).join(', ') || undefined,
+        color: LAYER_COLORS.restrooms,
+        meta: { accessible: r.accessible, unisex: r.unisex },
+      }));
+  }, [rawRestrooms, restroomsEnabled]);
+
+  // ── Hotels (stub) ─────────────────────────────────────────────────────────
   const hotelMarkers = useMemo<MapMarker[]>(() => [], []);
-  const neighbourhoodMarkers = useMemo<MapMarker[]>(() => [], []);
+
+  // ── Neighbourhoods / Queer Villages ──────────────────────────────────────
+  const neighbourhoodsEnabled = enabledLayers.includes('neighbourhoods');
+  const { data: rawVillages = [], isFetching: villagesFetching } = useQuery({
+    queryKey: ['queer_villages_map', filters?.search],
+    queryFn: async () => {
+      let query = supabase
+        .from('queer_villages')
+        .select('id, name, slug, latitude, longitude, description, featured, cities:city_id(name)')
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null)
+        .order('featured', { ascending: false })
+        .order('name', { ascending: true })
+        .limit(500);
+      if (filters?.search) {
+        query = query.ilike('name', `%${filters.search}%`);
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: neighbourhoodsEnabled,
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
+  const neighbourhoodMarkers = useMemo<MapMarker[]>(() => {
+    if (!neighbourhoodsEnabled) return [];
+    return rawVillages
+      .filter((v: any) => typeof v?.latitude === 'number' && typeof v?.longitude === 'number')
+      .map((v: any) => ({
+        id: `neighbourhood-${v.id}`,
+        type: 'neighbourhoods' as const,
+        lat: Number(v.latitude),
+        lng: Number(v.longitude),
+        name: v.name ?? 'Neighbourhood',
+        subtitle: v.cities?.name ?? undefined,
+        color: LAYER_COLORS.neighbourhoods,
+        scale: 0.85,
+        linkTo: `/villages/${v.slug}`,
+        meta: { city: v.cities?.name, featured: v.featured, description: v.description },
+      }));
+  }, [rawVillages, neighbourhoodsEnabled]);
 
   // ── Merged output ─────────────────────────────────────────────────────────
   const allMarkers = useMemo<MapMarker[]>(
@@ -241,11 +314,24 @@ export function useExploreMapData({
       ...hotelMarkers,
       ...neighbourhoodMarkers,
     ],
-    [venueMarkers, eventMarkers, cityMarkers, countryMarkers, restroomMarkers, hotelMarkers, neighbourhoodMarkers],
+    [
+      venueMarkers,
+      eventMarkers,
+      cityMarkers,
+      countryMarkers,
+      restroomMarkers,
+      hotelMarkers,
+      neighbourhoodMarkers,
+    ],
   );
 
   const isFetching =
-    venuesFetching || eventsFetching || citiesFetching || countriesFetching;
+    venuesFetching ||
+    eventsFetching ||
+    citiesFetching ||
+    countriesFetching ||
+    restroomsFetching ||
+    villagesFetching;
 
   const layerCounts: Record<LayerType, number> = {
     venues: venueMarkers.length,

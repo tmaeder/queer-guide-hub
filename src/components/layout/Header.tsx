@@ -1,23 +1,57 @@
 import { useState, useCallback } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Heart, Menu, User, X, MapPin, Calendar, Store, Globe, Plane,
-  Newspaper, Settings, Users, MessageSquare, LogOut, Accessibility,
-  Tags, UserCheck, Map, Smile, Handshake, Home, UsersRound, Rss,
-  Plus, Shield, Info, Scale, Mail, ChevronRight, Building,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Heart,
+  Menu,
+  User,
+  X,
+  MapPin,
+  Calendar,
+  Store,
+  Globe,
+  Plane,
+  Newspaper,
+  Settings,
+  Users,
+  MessageSquare,
+  LogOut,
+  Accessibility,
+  Tags,
+  UserCheck,
+  Map,
+  Smile,
+  Handshake,
+  Home,
+  UsersRound,
+  Rss,
+  Plus,
+  Shield,
+  Info,
+  Scale,
+  Mail,
+  ChevronRight,
+  Building,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuSeparator,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { getGravatarUrl } from '@/lib/gravatar';
+import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
@@ -63,7 +97,7 @@ const navigationSections = [
 const userMenuItems = [
   { to: '/favorites', icon: Heart, label: 'Favorites' },
   { to: '/profile/settings', icon: Settings, label: 'Settings' },
-  { to: '/messages', icon: MessageSquare, label: 'Messages' },
+  { to: '/inbox', icon: Mail, label: 'Inbox' },
   { to: '/friends', icon: Users, label: 'Friends' },
   { to: '/my-groups', icon: UsersRound, label: 'My Groups' },
   { to: '/accessibility', icon: Accessibility, label: 'Accessibility' },
@@ -100,19 +134,30 @@ export function Header() {
   const { unreadCount } = useNotifications();
   const { isAdmin, isModerator } = useAdminRoles();
 
-  const avatarSrc = profile?.avatar_url || (user?.email ? getGravatarUrl(user.email, 96, 'mp') || undefined : undefined);
+  const avatarSrc =
+    profile?.avatar_url ||
+    (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
 
   const getSubmitCta = useCallback(() => {
-    if (location.pathname.startsWith('/events')) return { label: 'Submit Event', route: '/submit/event' };
-    if (location.pathname.startsWith('/venues')) return { label: 'Submit Venue', route: '/submit/venue' };
-    return { label: 'Submit a Space', route: '/submit/venue' };
+    if (location.pathname.startsWith('/events'))
+      return { label: 'Submit Event', route: '/submit/event' };
+    if (location.pathname.startsWith('/venues'))
+      return { label: 'Submit Venue', route: '/submit/venue' };
+    if (location.pathname.startsWith('/marketplace'))
+      return { label: 'Submit Product', route: '/submit/product' };
+    if (location.pathname.startsWith('/hotels'))
+      return { label: 'Submit Hotel', route: '/submit/hotel' };
+    return { label: 'Contribute', route: '/submit' };
   }, [location.pathname]);
   const submitCta = getSubmitCta();
 
-  const isActiveRoute = useCallback((path: string) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
-  }, [location.pathname]);
+  const isActiveRoute = useCallback(
+    (path: string) => {
+      if (path === '/') return location.pathname === '/';
+      return location.pathname.startsWith(path);
+    },
+    [location.pathname],
+  );
 
   const handleModeChange = async (mode: string) => {
     await updateProfile({
@@ -152,7 +197,16 @@ export function Header() {
       ModalProps={{ keepMounted: false }}
     >
       {/* Drawer header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.5, flexShrink: 0 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 2,
+          py: 1.5,
+          flexShrink: 0,
+        }}
+      >
         <Link
           to="/"
           onClick={() => setDrawerOpen(false)}
@@ -176,7 +230,6 @@ export function Header() {
 
       {/* Scrollable content */}
       <Box sx={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
-
         {/* User section (logged in) */}
         {user && (
           <>
@@ -192,10 +245,27 @@ export function Header() {
                   </AvatarFallback>
                 </Avatar>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {profile?.display_name || 'User'}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      display: 'block',
+                    }}
+                  >
                     {user.email}
                   </Typography>
                 </Box>
@@ -250,7 +320,10 @@ export function Header() {
                 variant="default"
                 size="sm"
                 style={{ width: '100%', fontWeight: 600, height: 44 }}
-                onClick={() => { setDrawerOpen(false); setAuthDialogOpen(true); }}
+                onClick={() => {
+                  setDrawerOpen(false);
+                  setAuthDialogOpen(true);
+                }}
               >
                 <User style={{ width: 16, height: 16, marginRight: 8 }} />
                 Sign In / Sign Up
@@ -265,7 +338,14 @@ export function Header() {
           <Button
             variant="default"
             size="sm"
-            style={{ width: '100%', fontWeight: 600, height: 44, display: 'flex', alignItems: 'center', gap: 8 }}
+            style={{
+              width: '100%',
+              fontWeight: 600,
+              height: 44,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
             onClick={() => handleDrawerNav(submitCta.route)}
           >
             <Plus style={{ width: 18, height: 18 }} />
@@ -280,7 +360,14 @@ export function Header() {
           <Box key={section.title}>
             <Typography
               variant="overline"
-              sx={{ px: 2, pt: 1.5, pb: 0.5, display: 'block', color: 'text.secondary', letterSpacing: 1 }}
+              sx={{
+                px: 2,
+                pt: 1.5,
+                pb: 0.5,
+                display: 'block',
+                color: 'text.secondary',
+                letterSpacing: 1,
+              }}
             >
               {section.title}
             </Typography>
@@ -322,12 +409,23 @@ export function Header() {
           <>
             <Typography
               variant="overline"
-              sx={{ px: 2, pt: 1.5, pb: 0.5, display: 'block', color: 'text.secondary', letterSpacing: 1 }}
+              sx={{
+                px: 2,
+                pt: 1.5,
+                pb: 0.5,
+                display: 'block',
+                color: 'text.secondary',
+                letterSpacing: 1,
+              }}
             >
               Your Account
             </Typography>
             {userMenuItems.map((item) => (
-              <ListItemButton key={item.to} onClick={() => handleDrawerNav(item.to)} sx={{ minHeight: 48, px: 2 }}>
+              <ListItemButton
+                key={item.to}
+                onClick={() => handleDrawerNav(item.to)}
+                sx={{ minHeight: 48, px: 2 }}
+              >
                 <ListItemIcon sx={{ minWidth: 36 }}>
                   <item.icon style={{ width: 18, height: 18 }} />
                 </ListItemIcon>
@@ -337,11 +435,17 @@ export function Header() {
 
             {/* Admin link */}
             {(isAdmin || isModerator) && (
-              <ListItemButton onClick={() => handleDrawerNav('/admin')} sx={{ minHeight: 48, px: 2 }}>
+              <ListItemButton
+                onClick={() => handleDrawerNav('/admin')}
+                sx={{ minHeight: 48, px: 2 }}
+              >
                 <ListItemIcon sx={{ minWidth: 36 }}>
                   <Shield style={{ width: 18, height: 18 }} />
                 </ListItemIcon>
-                <ListItemText primary="Admin Console" primaryTypographyProps={{ variant: 'body2' }} />
+                <ListItemText
+                  primary="Admin Console"
+                  primaryTypographyProps={{ variant: 'body2' }}
+                />
               </ListItemButton>
             )}
 
@@ -352,12 +456,23 @@ export function Header() {
         {/* Legal / Info */}
         <Typography
           variant="overline"
-          sx={{ px: 2, pt: 1.5, pb: 0.5, display: 'block', color: 'text.secondary', letterSpacing: 1 }}
+          sx={{
+            px: 2,
+            pt: 1.5,
+            pb: 0.5,
+            display: 'block',
+            color: 'text.secondary',
+            letterSpacing: 1,
+          }}
         >
           Info
         </Typography>
         {legalItems.map((item) => (
-          <ListItemButton key={item.to} onClick={() => handleDrawerNav(item.to)} sx={{ minHeight: 44, px: 2 }}>
+          <ListItemButton
+            key={item.to}
+            onClick={() => handleDrawerNav(item.to)}
+            sx={{ minHeight: 44, px: 2 }}
+          >
             <ListItemIcon sx={{ minWidth: 36 }}>
               <item.icon style={{ width: 16, height: 16 }} />
             </ListItemIcon>
@@ -370,13 +485,19 @@ export function Header() {
           <>
             <Divider sx={{ my: 0.5 }} />
             <ListItemButton
-              onClick={() => { signOut(); setDrawerOpen(false); }}
+              onClick={() => {
+                signOut();
+                setDrawerOpen(false);
+              }}
               sx={{ minHeight: 48, px: 2, color: 'error.main' }}
             >
               <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
                 <LogOut style={{ width: 18, height: 18 }} />
               </ListItemIcon>
-              <ListItemText primary="Sign Out" primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} />
+              <ListItemText
+                primary="Sign Out"
+                primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+              />
             </ListItemButton>
           </>
         )}
@@ -427,7 +548,13 @@ export function Header() {
             <img src="/images/logo.png" alt="Queer Guide Logo" style={{ height: 32, width: 32 }} />
             <Box
               component="span"
-              sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+              sx={{
+                position: 'absolute',
+                width: 1,
+                height: 1,
+                overflow: 'hidden',
+                clip: 'rect(0,0,0,0)',
+              }}
             >
               Queer Guide
             </Box>
@@ -457,29 +584,40 @@ export function Header() {
               <Menu style={{ width: 22, height: 22 }} />
               {/* Show notification dot on hamburger when logged in with unread */}
               {user && unreadCount > 0 && (
-                <Box
-                  component="span"
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    bgcolor: 'error.main',
-                  }}
-                />
+                <>
+                  <Box
+                    component="span"
+                    aria-hidden="true"
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: 'error.main',
+                    }}
+                  />
+                  <Box
+                    component="span"
+                    sx={{
+                      position: 'absolute',
+                      width: 1,
+                      height: 1,
+                      overflow: 'hidden',
+                      clip: 'rect(0,0,0,0)',
+                    }}
+                  >
+                    {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+                  </Box>
+                </>
               )}
             </IconButton>
           ) : (
             /* DESKTOP: all controls visible */
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
               {/* Submit CTA */}
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => navigate(submitCta.route)}
-              >
+              <Button variant="default" size="sm" onClick={() => navigate(submitCta.route)}>
                 <Box
                   component="span"
                   sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, fontWeight: 600 }}
@@ -549,7 +687,10 @@ export function Header() {
                   <DropdownMenuContent align="end" style={{ width: 320, padding: 16, zIndex: 50 }}>
                     {/* User mode */}
                     <Box sx={{ mb: 2 }}>
-                      <Select value={profile?.user_mode || 'community'} onValueChange={handleModeChange}>
+                      <Select
+                        value={profile?.user_mode || 'community'}
+                        onValueChange={handleModeChange}
+                      >
                         <SelectTrigger style={{ width: '100%' }}>
                           <SelectValue placeholder="Select mode" />
                         </SelectTrigger>
@@ -574,7 +715,9 @@ export function Header() {
                     <DropdownMenuSeparator />
 
                     {/* Quick actions grid */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, p: 1 }}>
+                    <Box
+                      sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, p: 1 }}
+                    >
                       {userMenuItems.map((item) => (
                         <Button
                           key={item.to}
@@ -624,14 +767,30 @@ export function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  style={{ width: 288, maxHeight: '80vh', overflowY: 'auto', padding: 16, zIndex: 50 }}
+                  style={{
+                    width: 288,
+                    maxHeight: '80vh',
+                    overflowY: 'auto',
+                    padding: 16,
+                    zIndex: 50,
+                  }}
                 >
                   {navigationSections.map((section) => (
                     <Box key={section.title} sx={{ mb: 3 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary', mb: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 500, color: 'text.secondary', mb: 1 }}
+                      >
                         {section.title}
                       </Typography>
-                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, p: 1 }}>
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(3, 1fr)',
+                          gap: 1,
+                          p: 1,
+                        }}
+                      >
                         {section.items.map((item) => (
                           <Button
                             key={item.to}
@@ -646,7 +805,8 @@ export function Header() {
                               gap: 4,
                               ...(isActiveRoute(item.to)
                                 ? {
-                                    backgroundColor: 'var(--mui-palette-action-hover, rgba(124,58,237,0.08))',
+                                    backgroundColor:
+                                      'var(--mui-palette-action-hover, rgba(124,58,237,0.08))',
                                     color: '#7c3aed',
                                     border: '1px solid var(--mui-palette-divider, #e0d6ff)',
                                   }

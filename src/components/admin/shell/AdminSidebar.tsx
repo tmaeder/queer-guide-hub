@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -71,16 +71,10 @@ const navItemSx = (isActive: boolean, accentColor?: string) => ({
   pl: isActive ? 1.5 : 1.75,
   position: 'relative' as const,
   transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-  bgcolor: isActive
-    ? (accentColor ? accentColor + '10' : 'action.selected')
-    : 'transparent',
-  borderLeft: isActive
-    ? `3px solid ${accentColor || '#8b5cf6'}`
-    : '3px solid transparent',
+  bgcolor: isActive ? (accentColor ? accentColor + '10' : 'action.selected') : 'transparent',
+  borderLeft: isActive ? `3px solid ${accentColor || '#8b5cf6'}` : '3px solid transparent',
   '&:hover': {
-    bgcolor: isActive
-      ? (accentColor ? accentColor + '14' : 'action.selected')
-      : 'action.hover',
+    bgcolor: isActive ? (accentColor ? accentColor + '14' : 'action.selected') : 'action.hover',
     transform: 'translateX(2px)',
   },
   '&.Mui-selected': {
@@ -279,10 +273,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
             >
               Admin Console
             </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: 'text.disabled', fontSize: '0.7rem' }}
-            >
+            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>
               Manage everything
             </Typography>
           </Box>
