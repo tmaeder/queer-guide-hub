@@ -1,7 +1,9 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import tsconfigPaths from "vite-tsconfig-paths";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Prevent Cloudflare Rocket Loader from mangling ES module script tags
 function cfRocketLoaderBypass(): Plugin {
@@ -23,18 +25,16 @@ export default defineConfig(({ mode }) => ({
     setupFiles: [],
   },
   server: {
-    host: "::",
+    host: "127.0.0.1",
     port: parseInt(process.env.PORT || "8080"),
   },
   plugins: [
     react(),
-    tsconfigPaths({ root: './' }),
     cfRocketLoaderBypass(),
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "~": path.resolve(__dirname, "./src"),
     },
   },
   build: {
@@ -57,8 +57,8 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/react-force-graph') || id.includes('node_modules/force-graph') || id.includes('node_modules/d3-')) {
             return 'graph';
           }
-          if (id.includes('node_modules/xlsx/')) {
-            return 'xlsx';
+          if (id.includes('node_modules/exceljs/')) {
+            return 'exceljs';
           }
           if (id.includes('node_modules/maplibre-gl/') || id.includes('node_modules/@protomaps/')) {
             return 'maplibre';
@@ -96,7 +96,7 @@ export default defineConfig(({ mode }) => ({
           drop_console: true,
           drop_debugger: true,
           pure_funcs: ['console.log', 'console.info', 'console.debug'],
-          passes: 2,
+          passes: 1,
         },
         mangle: {
           safari10: true,
