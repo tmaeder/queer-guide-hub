@@ -63,6 +63,12 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/maplibre-gl/') || id.includes('node_modules/@protomaps/')) {
             return 'maplibre';
           }
+          if (id.includes('node_modules/@tiptap/') || id.includes('node_modules/lowlight/') || id.includes('node_modules/prosemirror-') || id.includes('node_modules/highlight.js/')) {
+            return 'tiptap';
+          }
+          if (id.includes('node_modules/hls.js/')) {
+            return 'hls';
+          }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
             return 'vendor';
