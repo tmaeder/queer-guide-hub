@@ -1,12 +1,5 @@
 /**
  * AdminReview — Unified review & moderation dashboard.
- *
- * Consolidates 4 review workflows into one page:
- *   1. Import Staging — AI-validated data pending human review (10K+ items)
- *   2. Moderation — User-reported content flags
- *   3. Content Workflow — CMS editorial review (draft → review → published)
- *   4. Tag Suggestions — Auto-tag and near-duplicate detection results
- *
  * Accepts ?tab= query param to deep-link to a specific tab.
  */
 
@@ -16,9 +9,9 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Inbox, Flag, FileCheck, Tag, Shield, GitMerge, Zap } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { useReviewCounts } from '@/hooks/useReviewCounts';
+import { useReviewCounts, type ReviewCounts } from '@/hooks/useReviewCounts';
 
 // Lazy-load tab contents to keep initial bundle small
 const ReviewQueueEnhanced = lazy(() =>
@@ -76,10 +69,11 @@ function StatCard({ icon: Icon, label, count, color, active, onClick }: StatCard
     <Card
       onClick={onClick}
       style={{
-        cursor: onClick ? 'pointer' : 'default',
+        cursor: 'pointer',
         borderColor: active ? color : undefined,
-        borderWidth: active ? 2 : 1,
-        transition: 'border-color 0.15s',
+        borderWidth: active ? '1px 1px 3px 1px' : '1px',
+        opacity: count === 0 && !active ? 0.45 : 1,
+        transition: 'border-color 0.15s, opacity 0.15s',
       }}
     >
       <CardContent sx={{ p: 2, textAlign: 'center', '&:last-child': { pb: 2 } }}>
@@ -105,10 +99,27 @@ const Loading = () => (
   </Box>
 );
 
+const TAB_COUNT_KEY: Record<TabId, keyof ReviewCounts> = {
+  staging: 'staging',
+  moderation: 'moderation',
+  content: 'cmsReview',
+  tags: 'tagSuggestions',
+  duplicates: 'duplicates',
+  automation: 'automation',
+};
+
+const TAB_PRIORITY: TabId[] = [
+  'moderation',
+  'staging',
+  'content',
+  'tags',
+  'duplicates',
+  'automation',
+];
+
 export default function AdminReview() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const activeTab = isValidTab(tabParam) ? tabParam : 'staging';
 
   const { data: counts } = useReviewCounts();
   const c = counts ?? {
@@ -121,17 +132,17 @@ export default function AdminReview() {
     total: 0,
   };
 
+  const defaultTab = useMemo(() => {
+    if (!counts) return 'staging';
+    return TAB_PRIORITY.find((t) => (counts[TAB_COUNT_KEY[t]] ?? 0) > 0) ?? 'staging';
+  }, [counts]);
+
+  const activeTab = isValidTab(tabParam) ? tabParam : defaultTab;
+
   const handleTabChange = (value: string) => {
-    if (value === 'staging') {
-      searchParams.delete('tab');
-    } else {
-      searchParams.set('tab', value);
-    }
+    searchParams.set('tab', value);
     setSearchParams(searchParams, { replace: true });
   };
-
-  const tabBadge = (count: number) =>
-    count > 0 ? ` (${count > 999 ? `${(count / 1000).toFixed(1)}k` : count})` : '';
 
   return (
     <Box>
@@ -209,17 +220,8 @@ export default function AdminReview() {
         />
       </Box>
 
-      {/* Tabs */}
+      {/* Tab content — navigation via stat cards above */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList style={{ backgroundColor: 'var(--card)', marginBottom: 16 }}>
-          <TabsTrigger value="staging">Import Staging{tabBadge(c.staging)}</TabsTrigger>
-          <TabsTrigger value="moderation">Moderation{tabBadge(c.moderation)}</TabsTrigger>
-          <TabsTrigger value="content">Content Workflow{tabBadge(c.cmsReview)}</TabsTrigger>
-          <TabsTrigger value="tags">Tag Suggestions{tabBadge(c.tagSuggestions)}</TabsTrigger>
-          <TabsTrigger value="duplicates">Duplicates{tabBadge(c.duplicates ?? 0)}</TabsTrigger>
-          <TabsTrigger value="automation">Automation{tabBadge(c.automation)}</TabsTrigger>
-        </TabsList>
-
         <TabsContent value="staging">
           <Suspense fallback={<Loading />}>
             <ReviewQueueEnhanced />
