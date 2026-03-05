@@ -19,7 +19,7 @@ ALTER TABLE public.automation_rules
   ADD CONSTRAINT automation_rules_rule_type_check
   CHECK (rule_type IN (
     'required','format','length','regex','url_valid','geo_match',
-    'normalize','sanitize','ai_check','custom',
+    'normalize','sanitize','ai_check','ai_enhance','custom',
     'event_time_window','event_day_check','event_time_order','event_dedup'
   ));
 
