@@ -1,460 +1,276 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ArrowLeft, Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { AdminDataTable } from '@/components/admin/data-table';
+import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
+import { createColumnHelper } from '@tanstack/react-table';
+import { useQueryClient } from '@tanstack/react-query';
+import { Edit, Trash2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
 
-interface EventType {
+interface EventTypeRow {
   id: string;
   name: string;
-  description?: string;
-  icon?: string;
+  description: string | null;
+  icon: string | null;
   color: string;
   is_active: boolean;
   sort_order: number;
   created_at: string;
-  updated_at: string;
 }
 
+const columnHelper = createColumnHelper<EventTypeRow>();
+
+const emptyForm = {
+  name: '',
+  description: '',
+  icon: '',
+  color: '#6366f1',
+  is_active: true,
+  sort_order: 0,
+};
+
 export default function AdminEventTypes() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { isAdmin } = useAdminRoles();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
-  const [eventTypes, setEventTypes] = useState<EventType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingType, setEditingType] = useState<EventType | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const invalidateTable = () =>
+    queryClient.invalidateQueries({ queryKey: ['admin-table', 'event_types'] });
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    icon: '',
-    color: '#6366f1',
-    is_active: true,
-    sort_order: 0,
-  });
-
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    if (!isAdmin) {
-      toast({
-        title: 'Access Denied',
-        description: 'You need admin privileges to access this page.',
-        variant: 'destructive',
-      });
-      navigate('/');
-      return;
-    }
-
-    fetchEventTypes();
-  }, [user, isAdmin, navigate, toast]);
-
-  const fetchEventTypes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('event_types')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (error) throw error;
-      setEventTypes(data || []);
-    } catch (error) {
-      console.error('Error fetching event types:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch event types',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setDialogOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const openEdit = (row: EventTypeRow) => {
+    setEditingId(row.id);
+    setForm({
+      name: row.name || '',
+      description: row.description || '',
+      icon: row.icon || '',
+      color: row.color || '#6366f1',
+      is_active: row.is_active,
+      sort_order: row.sort_order || 0,
+    });
+    setDialogOpen(true);
+  };
 
+  const handleSave = async () => {
+    if (!form.name.trim()) {
+      toast({ title: 'Error', description: 'Name is required', variant: 'destructive' });
+      return;
+    }
     try {
-      if (editingType) {
-        const { error } = await supabase
-          .from('event_types')
-          .update(formData)
-          .eq('id', editingType.id);
-
+      if (editingId) {
+        const { error } = await supabase.from('event_types').update(form).eq('id', editingId);
         if (error) throw error;
-
-        toast({
-          title: 'Success',
-          description: 'Event type updated successfully',
-        });
+        toast({ title: 'Success', description: 'Event type updated' });
       } else {
-        const { error } = await supabase.from('event_types').insert([formData]);
-
+        const { error } = await supabase.from('event_types').insert([form]);
         if (error) throw error;
-
-        toast({
-          title: 'Success',
-          description: 'Event type created successfully',
-        });
+        toast({ title: 'Success', description: 'Event type created' });
       }
-
-      setIsDialogOpen(false);
-      resetForm();
-      fetchEventTypes();
-    } catch (error: any) {
-      console.error('Error saving event type:', error);
+      setDialogOpen(false);
+      invalidateTable();
+    } catch (err: any) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to save event type',
+        description: err?.message || 'Failed to save',
         variant: 'destructive',
       });
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      icon: '',
-      color: '#6366f1',
-      is_active: true,
-      sort_order: 0,
-    });
-    setEditingType(null);
-  };
-
-  const handleEdit = (eventType: EventType) => {
-    setFormData({
-      name: eventType.name,
-      description: eventType.description || '',
-      icon: eventType.icon || '',
-      color: eventType.color,
-      is_active: eventType.is_active,
-      sort_order: eventType.sort_order,
-    });
-    setEditingType(eventType);
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this event type?')) return;
-
+  const handleDelete = async (row: EventTypeRow) => {
+    if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await supabase.from('event_types').delete().eq('id', id);
-
+      const { error } = await supabase.from('event_types').delete().eq('id', row.id);
       if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: 'Event type deleted successfully',
-      });
-
-      fetchEventTypes();
-    } catch (error: any) {
-      console.error('Error deleting event type:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete event type',
-        variant: 'destructive',
-      });
+      toast({ title: 'Success', description: 'Event type deleted' });
+      invalidateTable();
+    } catch {
+      toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
     }
   };
 
-  const filteredEventTypes = eventTypes.filter((type) => {
-    const matchesSearch =
-      type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      type.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === 'all' ||
-      (statusFilter === 'active' && type.is_active) ||
-      (statusFilter === 'inactive' && !type.is_active);
-    return matchesSearch && matchesStatus;
-  });
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('name', {
+        header: 'Name',
+        cell: (info) => (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{ width: 16, height: 16, borderRadius: 1, flexShrink: 0 }}
+              style={{ backgroundColor: info.row.original.color }}
+            />
+            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+          </Box>
+        ),
+        meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('description', {
+        header: 'Description',
+        cell: (info) => (
+          <span
+            style={{
+              maxWidth: 300,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              display: 'block',
+            }}
+          >
+            {info.getValue() || '-'}
+          </span>
+        ),
+        meta: { hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('is_active', {
+        header: 'Status',
+        cell: (info) => (
+          <Badge variant={info.getValue() ? 'default' : 'secondary'}>
+            {info.getValue() ? 'Active' : 'Inactive'}
+          </Badge>
+        ),
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('sort_order', {
+        header: 'Order',
+        cell: (info) => info.getValue(),
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+    ],
+    [],
+  );
 
-  if (loading) {
-    return (
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}
-      >
-        <Box
-          sx={{
-            height: 128,
-            width: 128,
-            bgcolor: 'primary.main',
-            animation: 'spin 1s linear infinite',
-          }}
-        />
-      </Box>
-    );
-  }
+  const tableConfig: AdminTableConfig<EventTypeRow> = useMemo(
+    () => ({
+      tableName: 'event_types',
+      select: 'id,name,description,icon,color,is_active,sort_order,created_at',
+      columns,
+      defaultSort: { column: 'sort_order', direction: 'asc' },
+      defaultPageSize: 50,
+      enableSelection: true,
+      enableSearch: true,
+      searchColumns: ['name'],
+      entityFilters: [{ key: 'is_active', label: 'Active', type: 'boolean', column: 'is_active' }],
+      bulkEditFields: [{ key: 'is_active', label: 'Active', type: 'boolean', column: 'is_active' }],
+      rowActions: [
+        { key: 'edit', label: 'Edit', icon: Edit, onClick: openEdit },
+        {
+          key: 'delete',
+          label: 'Delete',
+          icon: Trash2,
+          variant: 'destructive',
+          onClick: handleDelete,
+        },
+      ],
+      toolbarActions: (
+        <Button size="sm" onClick={openCreate}>
+          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          Add Event Type
+        </Button>
+      ),
+    }),
+    [columns],
+  );
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button variant="outline" onClick={() => navigate('/admin')}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
-            Back to Dashboard
-          </Button>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Event Types Management
-          </Typography>
-        </Box>
+    <Box>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          Event Types
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Manage event type classifications
+        </Typography>
+      </Box>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
-              Add Event Type
-            </Button>
-          </DialogTrigger>
-          <DialogContent sx={{ maxWidth: 448 }}>
-            <DialogHeader>
-              <DialogTitle>{editingType ? 'Edit Event Type' : 'Create New Event Type'}</DialogTitle>
-            </DialogHeader>
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-            >
-              <Box>
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Event type name"
-                  required
-                />
-              </Box>
+      <AdminDataTable config={tableConfig} />
 
-              <Box>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Description of the event type"
-                  rows={3}
-                />
-              </Box>
-
-              <Box>
-                <Label htmlFor="icon">Icon</Label>
-                <Input
-                  id="icon"
-                  value={formData.icon}
-                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                  placeholder="Lucide icon name (e.g., Calendar)"
-                />
-              </Box>
-
-              <Box>
-                <Label htmlFor="color">Color</Label>
-                <Input
-                  id="color"
-                  type="color"
-                  value={formData.color}
-                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                />
-              </Box>
-
-              <Box>
-                <Label htmlFor="sort_order">Sort Order</Label>
-                <Input
-                  id="sort_order"
-                  type="number"
-                  value={formData.sort_order}
-                  onChange={(e) =>
-                    setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })
-                  }
-                  placeholder="0"
-                />
-              </Box>
-
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                />
-                <Label htmlFor="is_active">Active</Label>
-              </Box>
-
-              <Button type="submit" style={{ width: '100%' }}>
-                {editingType ? 'Update Event Type' : 'Create Event Type'}
-              </Button>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent style={{ maxWidth: 480 }}>
+          <DialogHeader>
+            <DialogTitle>{editingId ? 'Edit Event Type' : 'Create Event Type'}</DialogTitle>
+          </DialogHeader>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <Box>
+              <Label>Name *</Label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              />
             </Box>
-          </DialogContent>
-        </Dialog>
-      </Box>
-
-      {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <Input
-          placeholder="Search event types..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ maxWidth: 384 }}
-        />
-        <Select
-          value={statusFilter}
-          onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}
-        >
-          <SelectTrigger style={{ width: 160 }}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
-      </Box>
-
-      {/* Stats */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
-          gap: 2,
-          mb: 3,
-        }}
-      >
-        <Card>
-          <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {eventTypes.length}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Total Event Types
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {eventTypes.filter((type) => type.is_active).length}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Active
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent sx={{ p: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {eventTypes.filter((type) => !type.is_active).length}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Inactive
-            </Typography>
-          </CardContent>
-        </Card>
-      </Box>
-
-      {/* Event Types List */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' },
-          gap: 2,
-        }}
-      >
-        {filteredEventTypes.map((eventType) => (
-          <Card key={eventType.id} sx={{ position: 'relative' }}>
-            <CardHeader sx={{ pb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <CardTitle>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box
-                      sx={{ width: 16, height: 16, borderRadius: 1 }}
-                      style={{ backgroundColor: eventType.color }}
-                    />
-                    <Typography variant="subtitle1">{eventType.name}</Typography>
-                  </Box>
-                </CardTitle>
-                <Badge variant={eventType.is_active ? 'default' : 'secondary'}>
-                  {eventType.is_active ? 'Active' : 'Inactive'}
-                </Badge>
+            <Box>
+              <Label>Description</Label>
+              <Textarea
+                value={form.description}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                rows={3}
+              />
+            </Box>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+              <Box>
+                <Label>Icon</Label>
+                <Input
+                  value={form.icon}
+                  onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+                  placeholder="Lucide name"
+                />
               </Box>
-            </CardHeader>
-            <CardContent>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {eventType.description && (
-                  <Typography variant="body2" color="text.secondary">
-                    {eventType.description}
-                  </Typography>
-                )}
-                {eventType.icon && (
-                  <Typography variant="body2">
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      Icon:
-                    </Box>{' '}
-                    {eventType.icon}
-                  </Typography>
-                )}
-                <Typography variant="body2">
-                  <Box component="span" sx={{ fontWeight: 600 }}>
-                    Sort Order:
-                  </Box>{' '}
-                  {eventType.sort_order}
-                </Typography>
-
-                <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(eventType)}>
-                    <Edit style={{ width: 16, height: 16 }} />
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDelete(eventType.id)}>
-                    <Trash2 style={{ width: 16, height: 16 }} />
-                  </Button>
-                </Box>
+              <Box>
+                <Label>Color</Label>
+                <Input
+                  type="color"
+                  value={form.color}
+                  onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                />
               </Box>
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
-
-      {filteredEventTypes.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="text.secondary">
-            No event types found matching your criteria.
-          </Typography>
-        </Box>
-      )}
-    </Container>
+              <Box>
+                <Label>Sort Order</Label>
+                <Input
+                  type="number"
+                  value={form.sort_order}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
+                  }
+                />
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Switch
+                checked={form.is_active}
+                onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
+              />
+              <Label>Active</Label>
+            </Box>
+          </Box>
+          <DialogFooter style={{ marginTop: 16 }}>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Box>
   );
 }

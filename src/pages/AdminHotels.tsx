@@ -1,6 +1,26 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import { ArrowLeft, Plus, Search, Edit2, Trash2, Star, Hotel as HotelIcon } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MuiSelect from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { useAuth } from '@/hooks/useAuth';
+import { useHotels, type Hotel } from '@/hooks/useHotels';
+import { useAddressResolver } from '@/hooks/useAddressResolver';
+import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -10,44 +30,12 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/useAuth';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { useHotels, type Hotel } from '@/hooks/useHotels';
-import {
-  LocationAutocomplete,
-  type AddressComponents,
-} from '@/components/ui/location-autocomplete';
-import { useAddressResolver } from '@/hooks/useAddressResolver';
+import { AdminDataTable } from '@/components/admin/data-table';
+import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
+import { createColumnHelper } from '@tanstack/react-table';
+import { useQueryClient } from '@tanstack/react-query';
+import { Edit, Trash2, Star, Hotel as HotelIcon, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import MuiSelect from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import CircularProgress from '@mui/material/CircularProgress';
-import Chip from '@mui/material/Chip';
 
 const HOTEL_TYPES = [
   { value: 'hotel', label: 'Hotel' },
@@ -58,6 +46,31 @@ const HOTEL_TYPES = [
   { value: 'resort', label: 'Resort' },
   { value: 'other', label: 'Other' },
 ];
+
+interface HotelRow {
+  id: string;
+  name: string;
+  description: string | null;
+  hotel_type: string;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  website: string | null;
+  phone: string | null;
+  email: string | null;
+  booking_url: string | null;
+  price_range: number | null;
+  star_rating: number | null;
+  queer_safety_notes: string | null;
+  lgbtq_friendly: boolean;
+  featured: boolean;
+  verified: boolean;
+  created_at: string;
+}
+
+const columnHelper = createColumnHelper<HotelRow>();
 
 const emptyForm = {
   name: '',
@@ -81,59 +94,24 @@ const emptyForm = {
 };
 
 export default function AdminHotels() {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const { canManageContent, loading: rolesLoading } = useAdminRoles();
-  const { hotels, loading, createHotel, updateHotel, deleteHotel, refetch } = useHotels();
+  const { createHotel, updateHotel, deleteHotel } = useHotels();
   const { resolveAddress } = useAddressResolver();
+  const queryClient = useQueryClient();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingHotel, setEditingHotel] = useState<Hotel | null>(null);
+  const [editingHotel, setEditingHotel] = useState<HotelRow | null>(null);
   const [formData, setFormData] = useState(emptyForm);
 
-  useEffect(() => {
-    if (!user) navigate('/auth');
-    if (!rolesLoading && !canManageContent()) navigate('/');
-  }, [user, rolesLoading, canManageContent, navigate]);
-
-  const filteredHotels = useMemo(() => {
-    let filtered = hotels;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (h) =>
-          h.name.toLowerCase().includes(q) ||
-          h.city?.toLowerCase().includes(q) ||
-          h.country?.toLowerCase().includes(q),
-      );
-    }
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter((h) => h.hotel_type === typeFilter);
-    }
-    return filtered;
-  }, [hotels, searchQuery, typeFilter]);
-
-  const stats = useMemo(
-    () => ({
-      total: hotels.length,
-      featured: hotels.filter((h) => h.featured).length,
-      verified: hotels.filter((h) => h.verified).length,
-      types: HOTEL_TYPES.map((t) => ({
-        ...t,
-        count: hotels.filter((h) => h.hotel_type === t.value).length,
-      })).filter((t) => t.count > 0),
-    }),
-    [hotels],
-  );
+  const invalidateTable = () =>
+    queryClient.invalidateQueries({ queryKey: ['admin-table', 'hotels'] });
 
   const resetForm = () => {
     setFormData(emptyForm);
     setEditingHotel(null);
   };
 
-  const handleEdit = (hotel: Hotel) => {
+  const handleEdit = (hotel: HotelRow) => {
     setEditingHotel(hotel);
     setFormData({
       name: hotel.name || '',
@@ -158,12 +136,12 @@ export default function AdminHotels() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (hotel: Hotel) => {
-    if (!confirm(`Delete "${hotel.name}"? This cannot be undone.`)) return;
+  const handleDelete = async (hotel: HotelRow) => {
+    if (!confirm(`Delete "${hotel.name}"?`)) return;
     try {
       await deleteHotel(hotel.id);
       toast.success('Hotel deleted');
-      refetch();
+      invalidateTable();
     } catch (err: any) {
       toast.error(err.message || 'Failed to delete');
     }
@@ -195,7 +173,7 @@ export default function AdminHotels() {
       lgbtq_friendly: formData.lgbtq_friendly,
       featured: formData.featured,
       verified: formData.verified,
-    } as Record<string, unknown>;
+    };
     if ((formData as any).city_id) payload.city_id = (formData as any).city_id;
     if ((formData as any).country_id) payload.country_id = (formData as any).country_id;
 
@@ -210,56 +188,158 @@ export default function AdminHotels() {
       }
       resetForm();
       setIsDialogOpen(false);
-      refetch();
+      invalidateTable();
     } catch (err: any) {
       toast.error(err.message || 'Failed to save');
     }
   };
 
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
+  const handleExportExcel = async () => {
+    const columns: ExportColumnDef<any>[] = [
+      { header: 'Name', accessor: (r) => r.name },
+      { header: 'Hotel Type', accessor: (r) => r.hotel_type },
+      { header: 'City', accessor: (r) => r.city },
+      { header: 'Country', accessor: (r) => r.country },
+      { header: 'Star Rating', accessor: (r) => r.star_rating },
+      { header: 'LGBTQ Friendly', accessor: (r) => formatBoolean(r.lgbtq_friendly) },
+      { header: 'Featured', accessor: (r) => formatBoolean(r.featured) },
+      { header: 'Verified', accessor: (r) => formatBoolean(r.verified) },
+      { header: 'Website', accessor: (r) => r.website },
+      { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
+    ];
+    const allData = await fetchAllRows('hotels', '*', { column: 'name', ascending: true });
+    await exportToExcel(allData, columns, generateFilename('hotels'));
+  };
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('name', {
+        header: 'Name',
+        cell: (info) => (
+          <Box>
+            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+            <Typography variant="body2" color="text.secondary">
+              {HOTEL_TYPES.find((t) => t.value === info.row.original.hotel_type)?.label ||
+                info.row.original.hotel_type}
+              {info.row.original.star_rating && ` · ${info.row.original.star_rating}★`}
+            </Typography>
+          </Box>
+        ),
+        meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('city', {
+        header: 'City',
+        cell: (info) => {
+          const h = info.row.original;
+          return [h.city, h.country].filter(Boolean).join(', ') || '-';
+        },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('hotel_type', {
+        header: 'Type',
+        cell: (info) => (
+          <Badge variant="outline">
+            {HOTEL_TYPES.find((t) => t.value === info.getValue())?.label || info.getValue()}
+          </Badge>
+        ),
+        meta: {
+          serverSortable: true,
+          serverFilterable: true,
+          hideable: true,
+        } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('lgbtq_friendly', {
+        header: 'LGBTQ+',
+        cell: (info) =>
+          info.getValue() ? (
+            <Badge style={{ backgroundColor: '#dbeafe', color: '#1e40af' }}>LGBTQ+</Badge>
+          ) : null,
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('featured', {
+        header: 'Featured',
+        cell: (info) =>
+          info.getValue() ? (
+            <Badge style={{ backgroundColor: '#f3e8ff', color: '#6b21a8' }}>
+              <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+              Featured
+            </Badge>
+          ) : null,
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('verified', {
+        header: 'Verified',
+        cell: (info) => (info.getValue() ? <Badge variant="outline">Verified</Badge> : null),
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('created_at', {
+        header: 'Created',
+        cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
+      }),
+    ],
+    [],
+  );
+
+  const tableConfig: AdminTableConfig<HotelRow> = useMemo(
+    () => ({
+      tableName: 'hotels',
+      select:
+        'id,name,description,hotel_type,address,city,country,latitude,longitude,website,phone,email,booking_url,price_range,star_rating,queer_safety_notes,lgbtq_friendly,featured,verified,created_at',
+      columns,
+      defaultSort: { column: 'name', direction: 'asc' },
+      defaultPageSize: 50,
+      enableSelection: true,
+      enableSearch: true,
+      searchColumns: ['name', 'city', 'country'],
+      entityFilters: [
+        {
+          key: 'hotel_type',
+          label: 'Type',
+          type: 'select',
+          column: 'hotel_type',
+          options: HOTEL_TYPES,
+        },
+        { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
+        { key: 'verified', label: 'Verified', type: 'boolean', column: 'verified' },
+        { key: 'lgbtq_friendly', label: 'LGBTQ+', type: 'boolean', column: 'lgbtq_friendly' },
+      ],
+      bulkEditFields: [
+        {
+          key: 'hotel_type',
+          label: 'Hotel Type',
+          type: 'select',
+          column: 'hotel_type',
+          options: HOTEL_TYPES,
+        },
+        { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
+        { key: 'verified', label: 'Verified', type: 'boolean', column: 'verified' },
+        {
+          key: 'lgbtq_friendly',
+          label: 'LGBTQ+ Friendly',
+          type: 'boolean',
+          column: 'lgbtq_friendly',
+        },
+      ],
+      rowActions: [
+        { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEdit },
+        {
+          key: 'delete',
+          label: 'Delete',
+          icon: Trash2,
+          variant: 'destructive',
+          onClick: handleDelete,
+        },
+      ],
+      toolbarActions: (
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <ExportExcelButton onExport={handleExportExcel} />
           <Button
-            variant="ghost"
             size="sm"
-            onClick={() => navigate('/admin')}
-            style={{ marginBottom: 8 }}
-          >
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 6 }} />
-            Back to Admin
-          </Button>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Hotels & BnBs
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage LGBTQ+ friendly accommodations
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <ExportExcelButton
-            onExport={async () => {
-              const columns: ExportColumnDef<any>[] = [
-                { header: 'Name', accessor: (r) => r.name },
-                { header: 'Hotel Type', accessor: (r) => r.hotel_type },
-                { header: 'City', accessor: (r) => r.city },
-                { header: 'Country', accessor: (r) => r.country },
-                { header: 'Star Rating', accessor: (r) => r.star_rating },
-                { header: 'LGBTQ Friendly', accessor: (r) => formatBoolean(r.lgbtq_friendly) },
-                { header: 'Featured', accessor: (r) => formatBoolean(r.featured) },
-                { header: 'Verified', accessor: (r) => formatBoolean(r.verified) },
-                { header: 'Website', accessor: (r) => r.website },
-                { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
-              ];
-              const allData = await fetchAllRows('hotels', '*', {
-                column: 'name',
-                ascending: true,
-              });
-              await exportToExcel(allData, columns, generateFilename('hotels'));
-            }}
-          />
-          <Button
             onClick={() => {
               resetForm();
               setIsDialogOpen(true);
@@ -269,108 +349,23 @@ export default function AdminHotels() {
             Add Hotel
           </Button>
         </Box>
+      ),
+    }),
+    [columns],
+  );
+
+  return (
+    <Box>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          Hotels & BnBs
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Manage LGBTQ+ friendly accommodations
+        </Typography>
       </Box>
 
-      {/* Stats */}
-      <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-        <Chip label={`${stats.total} Total`} size="small" />
-        <Chip label={`${stats.featured} Featured`} size="small" color="primary" />
-        <Chip label={`${stats.verified} Verified`} size="small" color="success" />
-        {stats.types.map((t) => (
-          <Chip key={t.value} label={`${t.count} ${t.label}`} size="small" variant="outlined" />
-        ))}
-      </Box>
-
-      {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-        <Box sx={{ position: 'relative', flex: '1 1 200px', maxWidth: 320 }}>
-          <Search
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 16,
-              height: 16,
-              opacity: 0.5,
-            }}
-          />
-          <Input
-            placeholder="Search hotels..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: 32 }}
-          />
-        </Box>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger style={{ width: 160 }}>
-            <SelectValue placeholder="All Types" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            {HOTEL_TYPES.map((t) => (
-              <SelectItem key={t.value} value={t.value}>
-                {t.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Box>
-
-      {/* Hotels List */}
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
-        </Box>
-      ) : filteredHotels.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <HotelIcon style={{ width: 48, height: 48, opacity: 0.3, margin: '0 auto 16px' }} />
-          <Typography color="text.secondary">No hotels found</Typography>
-        </Box>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {filteredHotels.map((hotel) => (
-            <Paper
-              key={hotel.id}
-              elevation={0}
-              sx={{
-                p: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 2,
-              }}
-            >
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="subtitle2" noWrap>
-                    {hotel.name}
-                  </Typography>
-                  {hotel.featured && <Badge>Featured</Badge>}
-                  {hotel.verified && <Badge variant="outline">Verified</Badge>}
-                </Box>
-                <Typography variant="caption" color="text.secondary">
-                  {HOTEL_TYPES.find((t) => t.value === hotel.hotel_type)?.label || hotel.hotel_type}
-                  {hotel.city && ` · ${hotel.city}`}
-                  {hotel.country && `, ${hotel.country}`}
-                  {hotel.star_rating && ` · ${hotel.star_rating}★`}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
-                <Button variant="ghost" size="sm" onClick={() => handleEdit(hotel)}>
-                  <Edit2 style={{ width: 14, height: 14 }} />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(hotel)}>
-                  <Trash2 style={{ width: 14, height: 14, color: '#ef4444' }} />
-                </Button>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
-      )}
+      <AdminDataTable config={tableConfig} />
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -378,7 +373,6 @@ export default function AdminHotels() {
           <DialogHeader>
             <DialogTitle>{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</DialogTitle>
           </DialogHeader>
-
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -401,7 +395,6 @@ export default function AdminHotels() {
               fullWidth
               size="small"
             />
-
             <FormControl fullWidth size="small">
               <InputLabel>Type</InputLabel>
               <MuiSelect
@@ -416,7 +409,6 @@ export default function AdminHotels() {
                 ))}
               </MuiSelect>
             </FormControl>
-
             <LocationAutocomplete
               value={formData.address}
               onChange={async (address, coordinates, components) => {
@@ -449,7 +441,6 @@ export default function AdminHotels() {
               placeholder="Search for hotel address..."
               label="Address"
             />
-
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <TextField
                 label="City"
@@ -466,30 +457,6 @@ export default function AdminHotels() {
                 size="small"
               />
             </Box>
-
-            {formData.latitude && formData.longitude && (
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
-                <TextField
-                  label="Latitude"
-                  value={formData.latitude}
-                  fullWidth
-                  size="small"
-                  InputProps={{ readOnly: true }}
-                  sx={{ '& .MuiInputBase-root': { bgcolor: 'action.hover' } }}
-                  helperText="Auto-populated from address"
-                />
-                <TextField
-                  label="Longitude"
-                  value={formData.longitude}
-                  fullWidth
-                  size="small"
-                  InputProps={{ readOnly: true }}
-                  sx={{ '& .MuiInputBase-root': { bgcolor: 'action.hover' } }}
-                  helperText="Auto-populated from address"
-                />
-              </Box>
-            )}
-
             <TextField
               label="Website"
               value={formData.website}
@@ -504,7 +471,6 @@ export default function AdminHotels() {
               fullWidth
               size="small"
             />
-
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <TextField
                 label="Phone"
@@ -521,7 +487,6 @@ export default function AdminHotels() {
                 size="small"
               />
             </Box>
-
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <TextField
                 label="Star Rating"
@@ -542,7 +507,6 @@ export default function AdminHotels() {
                 inputProps={{ min: 1, max: 4 }}
               />
             </Box>
-
             <TextField
               label="Queer Safety Notes"
               value={formData.queer_safety_notes}
@@ -552,7 +516,6 @@ export default function AdminHotels() {
               fullWidth
               size="small"
             />
-
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <FormControlLabel
                 control={
@@ -587,7 +550,6 @@ export default function AdminHotels() {
                 label="Verified"
               />
             </Box>
-
             <DialogFooter>
               <Button
                 variant="outline"
