@@ -34,8 +34,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
 import { useNews } from '@/hooks/useNews';
-import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
-import { useOptimizedEvents } from '@/hooks/useOptimizedEvents';
+import { useVenues } from '@/hooks/useVenues';
+import { useEvents } from '@/hooks/useEvents';
 import { useOptimizedCountry } from '@/hooks/useOptimizedDirectory';
 import { NewsCard } from '@/components/news/NewsCard';
 import { VenueCard } from '@/components/venues/VenueCard';
@@ -108,8 +108,18 @@ export default function CityDetail() {
   const [loading, setLoading] = useState(true);
   const [imageUrl, setImageUrl] = useState<string>('');
 
-  const { venues, loading: venuesLoading } = useOptimizedVenues({ city: city?.name, limit: 12 });
-  const { events, loading: eventsLoading } = useOptimizedEvents({ city: city?.name, limit: 12 });
+  const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
+  const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+
+  useEffect(() => {
+    fetchVenues({ city: city?.name, limit: 12 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city?.name]);
+
+  useEffect(() => {
+    fetchEvents({ city: city?.name, limit: 12 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city?.name]);
   const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(
     city?.countries?.id || '',
   );

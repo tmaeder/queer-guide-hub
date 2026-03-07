@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
+import { useVenues } from '@/hooks/useVenues';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { VenueFilters } from '@/components/venues/VenueFilters';
 import Box from '@mui/material/Box';
@@ -47,7 +47,12 @@ export const FrontPageVenueMap: React.FC<FrontPageVenueMapProps> = ({
   }, [visitorLocation]);
 
   // Fetch venues with current filters
-  const { venues = [], isFetching } = (useOptimizedVenues as any)(filters);
+  const { venues = [], isFetching, fetchVenues } = useVenues(false);
+
+  useEffect(() => {
+    fetchVenues(filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
   // Initialize map
   useEffect(() => {

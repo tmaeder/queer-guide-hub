@@ -40,8 +40,8 @@ import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
 import { ActivitiesWidget } from '@/components/activities/ActivitiesWidget';
 import { useOptimizedCountry, useOptimizedCities } from '@/hooks/useOptimizedDirectory';
-import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
-import { useOptimizedEvents } from '@/hooks/useOptimizedEvents';
+import { useVenues } from '@/hooks/useVenues';
+import { useEvents } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';
 import { NewsCard } from '@/components/news/NewsCard';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,15 +59,24 @@ export default function CountryDetail() {
     limit: 12,
   });
 
-  const { venues, loading: venuesLoading } = useOptimizedVenues({
-    city: country?.name,
-    limit: 12,
-  });
+  const { venues, loading: venuesLoading, fetchVenues: fetchCountryVenues } = useVenues(false);
+  const {
+    venues: cityVenues,
+    loading: cityVenuesLoading,
+    fetchVenues: fetchCityVenues,
+  } = useVenues(false);
+
+  useEffect(() => {
+    fetchCountryVenues({ city: country?.name, limit: 12 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country?.name]);
+
+  useEffect(() => {
+    fetchCityVenues({ limit: 12 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const cityNames = cities.map((city) => city.name);
-  const { venues: cityVenues, loading: cityVenuesLoading } = useOptimizedVenues({
-    limit: 12,
-  });
 
   const filteredCityVenues = useMemo(() => {
     if (!cityVenues || cityNames.length === 0) return [];
@@ -88,10 +97,12 @@ export default function CountryDetail() {
     return uniqueVenues.slice(0, 12);
   }, [venues, filteredCityVenues]);
 
-  const { events, loading: eventsLoading } = useOptimizedEvents({
-    city: country?.name,
-    limit: 12,
-  });
+  const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+
+  useEffect(() => {
+    fetchEvents({ city: country?.name, limit: 12 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country?.name]);
 
   const { articles: localNews, loading: newsLoading, incrementViews } = useNews();
   const countryNews = useMemo(() => {

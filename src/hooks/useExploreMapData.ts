@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
-import { useOptimizedEvents } from '@/hooks/useOptimizedEvents';
+import { useVenues } from '@/hooks/useVenues';
+import { useEvents } from '@/hooks/useEvents';
 import { useOptimizedCities, useOptimizedCountries } from '@/hooks/useOptimizedPlaces';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -65,16 +65,18 @@ interface UseExploreMapDataOptions {
 export function useExploreMapData({ enabledLayers, viewport, filters }: UseExploreMapDataOptions) {
   // ── Venues ─────────────────────────────────────────────────────────────────
   const venuesEnabled = enabledLayers.includes('venues');
-  const { venues: rawVenues = [], isFetching: venuesFetching } = useOptimizedVenues(
-    venuesEnabled
-      ? {
-          limit: 500,
-          ...(filters?.search ? { search: filters.search } : {}),
-          ...(filters?.category ? { category: filters.category } : {}),
-          ...(filters?.tags?.length ? { tags: filters.tags } : {}),
-        }
-      : { limit: 0 },
-  );
+  const { venues: rawVenues = [], isFetching: venuesFetching, fetchVenues } = useVenues(false);
+
+  useEffect(() => {
+    if (!venuesEnabled) return;
+    fetchVenues({
+      limit: 500,
+      ...(filters?.search ? { search: filters.search } : {}),
+      ...(filters?.category ? { category: filters.category } : {}),
+      ...(filters?.tags?.length ? { tags: filters.tags } : {}),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [venuesEnabled, filters?.search, filters?.category, JSON.stringify(filters?.tags)]);
 
   const venueMarkers = useMemo<MapMarker[]>(() => {
     if (!venuesEnabled) return [];
@@ -95,15 +97,17 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Events ─────────────────────────────────────────────────────────────────
   const eventsEnabled = enabledLayers.includes('events');
-  const { events: rawEvents = [], isFetching: eventsFetching } = useOptimizedEvents(
-    eventsEnabled
-      ? {
-          limit: 300,
-          ...(filters?.search ? { search: filters.search } : {}),
-          ...(filters?.dateRange ? { dateRange: filters.dateRange } : {}),
-        }
-      : { limit: 0 },
-  );
+  const { events: rawEvents = [], isFetching: eventsFetching, fetchEvents } = useEvents(false);
+
+  useEffect(() => {
+    if (!eventsEnabled) return;
+    fetchEvents({
+      limit: 300,
+      ...(filters?.search ? { search: filters.search } : {}),
+      ...(filters?.dateRange ? { dateRange: filters.dateRange } : {}),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventsEnabled, filters?.search, JSON.stringify(filters?.dateRange)]);
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];

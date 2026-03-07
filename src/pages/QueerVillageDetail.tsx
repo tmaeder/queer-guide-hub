@@ -22,8 +22,8 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { supabase } from '@/integrations/supabase/client';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
-import { useOptimizedVenues } from '@/hooks/useOptimizedVenues';
-import { useOptimizedEvents } from '@/hooks/useOptimizedEvents';
+import { useVenues } from '@/hooks/useVenues';
+import { useEvents } from '@/hooks/useEvents';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -59,8 +59,18 @@ export default function QueerVillageDetail() {
   const [loading, setLoading] = useState(true);
 
   const cityName = village?.cities?.name;
-  const { venues, loading: venuesLoading } = useOptimizedVenues({ city: cityName, limit: 8 });
-  const { events, loading: eventsLoading } = useOptimizedEvents({ city: cityName, limit: 8 });
+  const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
+  const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+
+  useEffect(() => {
+    fetchVenues({ city: cityName, limit: 8 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityName]);
+
+  useEffect(() => {
+    fetchEvents({ city: cityName, limit: 8 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityName]);
 
   useEffect(() => {
     if (slug) fetchVillage();

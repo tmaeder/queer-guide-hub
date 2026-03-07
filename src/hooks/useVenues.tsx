@@ -35,9 +35,10 @@ export function useVenues(autoFetch: boolean = true) {
       search?: string;
       userLocation?: { latitude: number; longitude: number };
       nearMe?: boolean;
+      limit?: number;
     },
-    options?: { page?: number; pageSize?: number; append?: boolean }
-) => {
+    options?: { page?: number; pageSize?: number; append?: boolean },
+  ) => {
     let fetchedCount = 0;
     let totalCount: number | null = null;
     try {
@@ -49,6 +50,7 @@ export function useVenues(autoFetch: boolean = true) {
       let query = supabase
         .from('venues')
         .select('*', { count: 'exact' })
+        .neq('data_source', 'refuge_restrooms')
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -80,8 +82,14 @@ export function useVenues(autoFetch: boolean = true) {
         query = query.overlaps('target_groups', filters.targetGroups);
       }
 
+      if (typeof filters?.limit === 'number') {
+        query = query.limit(filters.limit);
+      }
+
       if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,address.ilike.%${filters.search}%`);
+        query = query.or(
+          `name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,address.ilike.%${filters.search}%`,
+        );
       }
 
       if (typeof page === 'number') {
@@ -90,34 +98,34 @@ export function useVenues(autoFetch: boolean = true) {
         query = query.range(from, to);
       }
 
-      const { data, error, count } = await queryWithRetry(() => query) as any;
+      const { data, error, count } = (await queryWithRetry(() => query)) as any;
 
       if (error) throw error;
-      
+
       let processedVenues = data || [];
 
       // If nearMe filter is active and user location is available, sort by distance
       if (filters?.nearMe && filters?.userLocation) {
         // Filter venues that have latitude and longitude and calculate distances
         processedVenues = processedVenues
-          .filter(venue => venue.latitude && venue.longitude)
-          .map(venue => ({
+          .filter((venue) => venue.latitude && venue.longitude)
+          .map((venue) => ({
             ...venue,
             distance: calculateDistanceKm(
               filters.userLocation!.latitude,
               filters.userLocation!.longitude,
               Number(venue.latitude),
-              Number(venue.longitude)
-            )
+              Number(venue.longitude),
+            ),
           }))
           .filter((venue: any) => venue.distance <= 50) // Within 50km
           .sort((a: any, b: any) => a.distance - b.distance); // Sort by distance
       }
 
       if (options?.append) {
-        setVenues(prev => {
+        setVenues((prev) => {
           const merged = [...prev, ...processedVenues];
-          return Array.from(new Map(merged.map(v => [v.id, v])).values());
+          return Array.from(new Map(merged.map((v) => [v.id, v])).values());
         });
       } else {
         setVenues(processedVenues);
@@ -147,18 +155,14 @@ export function useVenues(autoFetch: boolean = true) {
 
   const createVenue = async (venue: VenueInsert) => {
     try {
-      const { data, error } = await supabase
-        .from('venues')
-        .insert([venue])
-        .select()
-        .single();
+      const { data, error } = await supabase.from('venues').insert([venue]).select().single();
 
       if (error) throw error;
       return { data, error: null };
     } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Failed to create venue' 
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : 'Failed to create venue',
       };
     }
   };
@@ -175,25 +179,22 @@ export function useVenues(autoFetch: boolean = true) {
       if (error) throw error;
       return { data, error: null };
     } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Failed to update venue' 
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : 'Failed to update venue',
       };
     }
   };
 
   const deleteVenue = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('venues')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('venues').delete().eq('id', id);
 
       if (error) throw error;
       return { error: null };
     } catch (err) {
-      return { 
-        error: err instanceof Error ? err.message : 'Failed to delete venue' 
+      return {
+        error: err instanceof Error ? err.message : 'Failed to delete venue',
       };
     }
   };
@@ -207,6 +208,7 @@ export function useVenues(autoFetch: boolean = true) {
   return {
     venues,
     loading,
+    isFetching: loading,
     loadingTimedOut,
     error,
     hasMore,
