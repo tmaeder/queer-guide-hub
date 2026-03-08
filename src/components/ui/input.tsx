@@ -1,10 +1,8 @@
-import * as React from "react"
-import TextField from "@mui/material/TextField"
-import InputBase from "@mui/material/InputBase"
+import * as React from 'react';
+import TextField from '@mui/material/TextField';
+import InputBase from '@mui/material/InputBase';
 
-export interface InputProps extends React.ComponentProps<"input"> {
-  // Keep the same interface as before
-}
+export type InputProps = React.ComponentProps<'input'>;
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, style, ...props }, ref) => {
@@ -37,9 +35,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         }}
         {...(props as any)}
       />
-    )
-  }
-)
-Input.displayName = "Input"
+    );
+  },
+);
+Input.displayName = 'Input';
 
-export { Input }
+export { Input };

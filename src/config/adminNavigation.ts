@@ -39,6 +39,7 @@ import {
   Handshake,
   Inbox,
   Workflow,
+  Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -265,6 +266,14 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#3b82f6',
       },
       {
+        id: 'email-ingestions',
+        label: 'Email Ingestions',
+        icon: Mail,
+        route: '/admin/imports/email-ingestions',
+        countTable: 'email_ingestions',
+        color: '#ec4899',
+      },
+      {
         id: 'pipeline',
         label: 'Pipeline',
         icon: Activity,
@@ -304,6 +313,14 @@ export const adminNavSections: AdminNavSection[] = [
     icon: ClipboardCheck,
     color: '#f59e0b',
     items: [
+      {
+        id: 'automation',
+        label: 'Automation Modules',
+        icon: Zap,
+        route: '/admin/automation',
+        adminOnly: true,
+        color: '#8b5cf6',
+      },
       {
         id: 'review-queue',
         label: 'Review & Moderation',
@@ -416,9 +433,7 @@ export function getNavItemByRoute(route: string): AdminNavItem | undefined {
  * e.g. `/admin/content/venues` =>
  *   [{ label: 'Admin Console', route: '/admin' }, { label: 'Content', route: '/admin/content' }, { label: 'Venues' }]
  */
-export function getBreadcrumbsForRoute(
-  pathname: string,
-): Array<{ label: string; route?: string }> {
+export function getBreadcrumbsForRoute(pathname: string): Array<{ label: string; route?: string }> {
   const crumbs: Array<{ label: string; route?: string }> = [
     { label: 'Admin Console', route: '/admin' },
   ];

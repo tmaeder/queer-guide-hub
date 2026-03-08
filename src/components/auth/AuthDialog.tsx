@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,18 +33,18 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       const { error } = await signIn(email, password);
       if (error) {
         toast({
-          title: "Sign in failed",
+          title: 'Sign in failed',
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
       } else {
         onOpenChange(false);
       }
     } catch (error) {
       toast({
-        title: "Something went wrong",
-        description: "Please try again later.",
-        variant: "destructive",
+        title: 'Something went wrong',
+        description: 'Please try again later.',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -66,9 +66,27 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent sx={{ maxWidth: { sm: '28rem' }, width: '100%', mx: 2, p: 0, gap: 0 }}>
         <DialogHeader sx={{ px: 3, pt: 3, pb: 2, textAlign: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1.5 }}>
-            <Heart style={{ width: 28, height: 28, color: 'var(--primary)', fill: 'currentColor', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
-            <Typography variant="h6" sx={{ fontWeight: 700 }} className="gradient-text">The Queer Guide</Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              mb: 1.5,
+            }}
+          >
+            <Heart
+              style={{
+                width: 28,
+                height: 28,
+                color: 'var(--primary)',
+                fill: 'currentColor',
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              }}
+            />
+            <Typography variant="h6" sx={{ fontWeight: 700 }} className="gradient-text">
+              The Queer Guide
+            </Typography>
           </Box>
           <DialogTitle sx={{ fontSize: '1.5rem', fontWeight: 600, color: 'text.primary' }}>
             Welcome Back
@@ -79,10 +97,17 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         </DialogHeader>
 
         <Box sx={{ px: 3, pb: 3 }}>
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+          >
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Label htmlFor="email" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>
+                <Label
+                  htmlFor="email"
+                  sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}
+                >
                   Email Address
                 </Label>
                 <Input
@@ -96,13 +121,16 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Label htmlFor="password" sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>
+                <Label
+                  htmlFor="password"
+                  sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}
+                >
                   Password
                 </Label>
                 <Box sx={{ position: 'relative' }}>
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -112,26 +140,40 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    sx={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 36, width: 36, p: 0 }}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    sx={{
+                      position: 'absolute',
+                      right: 4,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      height: 36,
+                      width: 36,
+                      p: 0,
+                    }}
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
                   >
-                    {showPassword ?
-                      <EyeOff style={{ width: 16, height: 16 }} sx={{ color: 'text.secondary' }} /> :
-                      <Eye style={{ width: 16, height: 16 }} sx={{ color: 'text.secondary' }} />
-                    }
+                    {showPassword ? (
+                      <EyeOff style={{ width: 16, height: 16 }} />
+                    ) : (
+                      <Eye style={{ width: 16, height: 16 }} />
+                    )}
                   </Button>
                 </Box>
               </Box>
             </Box>
 
-            <Button
-              type="submit"
-              disabled={loading}
-            >
+            <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
-                  <Loader2 style={{ marginRight: 8, height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
+                  <Loader2
+                    style={{
+                      marginRight: 8,
+                      height: 16,
+                      width: 16,
+                      animation: 'spin 1s linear infinite',
+                    }}
+                  />
                   Signing in...
                 </>
               ) : (
@@ -162,11 +204,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </Box>
 
             <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <Button
-                variant="outline"
-                onClick={handleSignUpClick}
-                style={{ width: '100%' }}
-              >
+              <Button variant="outline" onClick={handleSignUpClick} style={{ width: '100%' }}>
                 Create your account with guided signup
               </Button>
             </Box>

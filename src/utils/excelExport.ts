@@ -8,39 +8,48 @@ export interface ExportColumnDef<T> {
   accessor: (row: T) => string | number | boolean | null | undefined;
 }
 
-// ---------- Core export function (lazy-loads xlsx) ----------
+// ---------- Core export function (lazy-loads exceljs) ----------
 
 export async function exportToExcel<T>(
   data: T[],
   columns: ExportColumnDef<T>[],
   filename: string
 ): Promise<void> {
-  const XLSX = await import('xlsx');
+  const ExcelJS = await import('exceljs');
+  const workbook = new ExcelJS.Workbook();
+  const ws = workbook.addWorksheet('Data');
 
   const headers = columns.map(col => col.header);
+  ws.addRow(headers);
 
-  const rows = data.map(row =>
-    columns.map(col => {
-      const val = col.accessor(row);
-      if (val === null || val === undefined) return '';
-      return val;
-    })
-  );
-
-  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  for (const row of data) {
+    ws.addRow(
+      columns.map(col => {
+        const val = col.accessor(row);
+        if (val === null || val === undefined) return '';
+        return val;
+      })
+    );
+  }
 
   // Auto-size columns (approximate based on content length)
-  ws['!cols'] = columns.map((_col, i) => {
+  ws.columns.forEach((col, i) => {
+    const sampleRows = data.slice(0, 200);
     const maxLen = Math.max(
       headers[i].length,
-      ...rows.slice(0, 200).map(r => String(r[i] ?? '').length)
+      ...sampleRows.map(r => String(columns[i].accessor(r) ?? '').length)
     );
-    return { wch: Math.min(maxLen + 2, 60) };
+    col.width = Math.min(maxLen + 2, 60);
   });
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Data');
-  XLSX.writeFile(wb, filename);
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ---------- Generic fetch-all helper (batched to bypass PostgREST row limits) ----------

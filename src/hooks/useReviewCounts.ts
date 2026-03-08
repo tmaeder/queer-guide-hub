@@ -11,11 +11,13 @@ export interface ReviewCounts {
   cmsReview: number;
   moderation: number;
   tagSuggestions: number;
+  duplicates: number;
+  automation: number;
   total: number;
 }
 
 async function fetchReviewCounts(): Promise<ReviewCounts> {
-  const [stagingRes, cmsRes, modRes, tagRes] = await Promise.all([
+  const [stagingRes, cmsRes, modRes, tagRes, dupRes, autoRes] = await Promise.all([
     // Staging items pending review
     supabase
       .from('ingestion_staging' as any)
@@ -37,19 +39,33 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
       .from('tag_suggestions' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending'),
+    // Pending duplicate pairs
+    supabase
+      .from('scraper_dedupe_decisions' as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('decision', 'pending'),
+    // Pending automation changes
+    supabase
+      .from('content_changes' as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
   ]);
 
   const staging = stagingRes.count ?? 0;
   const cmsReview = cmsRes.count ?? 0;
   const moderation = modRes.count ?? 0;
   const tagSuggestions = tagRes.count ?? 0;
+  const duplicates = dupRes.count ?? 0;
+  const automation = autoRes.count ?? 0;
 
   return {
     staging,
     cmsReview,
     moderation,
     tagSuggestions,
-    total: staging + cmsReview + moderation + tagSuggestions,
+    duplicates,
+    automation,
+    total: staging + cmsReview + moderation + tagSuggestions + duplicates + automation,
   };
 }
 

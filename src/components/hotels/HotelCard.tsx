@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { MapPin, Star, Wifi, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Box from '@mui/material/Box';
@@ -52,7 +52,9 @@ export function HotelCard({ hotel }: HotelCardProps) {
         }}
       >
         {/* Image */}
-        <Box sx={{ position: 'relative', height: 180, overflow: 'hidden', bgcolor: 'action.hover' }}>
+        <Box
+          sx={{ position: 'relative', height: 180, overflow: 'hidden', bgcolor: 'action.hover' }}
+        >
           {imageUrl ? (
             <img
               src={imageUrl}
@@ -61,7 +63,14 @@ export function HotelCard({ hotel }: HotelCardProps) {
               loading="lazy"
             />
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+              }}
+            >
               <MapPin style={{ width: 32, height: 32, color: '#999999' }} />
             </Box>
           )}

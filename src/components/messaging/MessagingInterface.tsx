@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
-import DOMPurify from "dompurify";
+import React, { useState, useRef, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Send,
   MoreVertical,
@@ -18,14 +18,19 @@ import {
   Check,
   CheckCheck,
   Clock,
-  Eye
-} from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { useMessaging, type Conversation, type Message, type TypingIndicator } from "@/hooks/useMessaging";
-import { useAuth } from "@/hooks/useAuth";
-import { UserModeBadge } from "@/components/profile/UserModeBadge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useSearchParams } from "react-router-dom";
+  Eye,
+} from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import {
+  useMessaging,
+  type Conversation,
+  type Message,
+  type TypingIndicator,
+} from '@/hooks/useMessaging';
+import { useAuth } from '@/hooks/useAuth';
+import { UserModeBadge } from '@/components/profile/UserModeBadge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useSearchParams } from 'react-router';
 
 interface MessageItemProps {
   message: Message;
@@ -54,15 +59,19 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😠'];
 
   return (
-    <div style={{ display: 'flex', justifyContent: isOwn ? 'flex-end' : 'flex-start', marginBottom: 16 }}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: isOwn ? 'flex-end' : 'flex-start',
+        marginBottom: 16,
+      }}
+    >
       <div style={{ maxWidth: '70%', order: isOwn ? 2 : 1 }}>
         {!isOwn && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
             <Avatar style={{ height: 24, width: 24 }}>
               <AvatarImage src={message.sender?.avatar_url || ''} />
-              <AvatarFallback>
-                {message.sender?.display_name?.charAt(0) || 'U'}
-              </AvatarFallback>
+              <AvatarFallback>{message.sender?.display_name?.charAt(0) || 'U'}</AvatarFallback>
             </Avatar>
             <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
               {message.sender?.display_name || 'Unknown User'}
@@ -79,15 +88,26 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
               paddingBottom: 8,
               borderRadius: 16,
               ...(isOwn
-                ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderBottomRightRadius: 6 }
+                ? {
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--primary-foreground)',
+                    borderBottomRightRadius: 6,
+                  }
                 : { backgroundColor: 'var(--muted)', borderBottomLeftRadius: 6 }),
-              ...(message.status === 'sending' ? { opacity: 0.6 } : {})
+              ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
             }}
           >
             <Typography sx={{ fontSize: '0.875rem' }}>{message.content}</Typography>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: 4,
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                 {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
@@ -117,16 +137,21 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
                 borderRadius: 8,
                 padding: 8,
                 boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                zIndex: 10
+                zIndex: 10,
               }}
             >
               <Box sx={{ display: 'flex', gap: 0.5 }}>
-                {commonEmojis.map(emoji => (
+                {commonEmojis.map((emoji) => (
                   <Button
                     key={emoji}
                     variant="ghost"
                     size="sm"
-                    style={{ height: 32, width: 32, padding: 0, transition: 'background-color 0.2s' }}
+                    style={{
+                      height: 32,
+                      width: 32,
+                      padding: 0,
+                      transition: 'background-color 0.2s',
+                    }}
                     onClick={() => {
                       onReaction(message.id, emoji);
                       setShowReactions(false);
@@ -141,7 +166,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
 
           {message.reactions && message.reactions.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
-              {message.reactions.map(reaction => (
+              {message.reactions.map((reaction) => (
                 <Badge key={reaction.id} variant="secondary" style={{ fontSize: '0.75rem' }}>
                   {reaction.emoji} 1
                 </Badge>
@@ -161,7 +186,7 @@ interface TypingIndicatorProps {
 const TypingIndicatorComponent = ({ typingUsers }: TypingIndicatorProps) => {
   if (typingUsers.length === 0) return null;
 
-  const names = typingUsers.map(user => user.display_name).join(', ');
+  const names = typingUsers.map((user) => user.display_name).join(', ');
   const verb = typingUsers.length === 1 ? 'is' : 'are';
 
   return (
@@ -175,7 +200,7 @@ const TypingIndicatorComponent = ({ typingUsers }: TypingIndicatorProps) => {
         paddingTop: 8,
         paddingBottom: 8,
         fontSize: '0.875rem',
-        color: 'var(--muted-foreground)'
+        color: 'var(--muted-foreground)',
       }}
     >
       <Avatar style={{ height: 24, width: 24 }}>
@@ -183,7 +208,9 @@ const TypingIndicatorComponent = ({ typingUsers }: TypingIndicatorProps) => {
           {typingUsers[0]?.display_name?.charAt(0) || 'U'}
         </AvatarFallback>
       </Avatar>
-      <span>{names} {verb} typing</span>
+      <span>
+        {names} {verb} typing
+      </span>
       <Box sx={{ display: 'flex', gap: 0.5 }}>
         <Box sx={{ width: 4, height: 4, bgcolor: 'primary.main', borderRadius: '50%' }} />
         <Box sx={{ width: 4, height: 4, bgcolor: 'primary.main', borderRadius: '50%' }} />
@@ -204,7 +231,7 @@ const ConversationList = ({
   conversations,
   selectedConversation,
   onSelectConversation,
-  currentUserId
+  currentUserId,
 }: ConversationListProps) => {
   const getConversationTitle = (conversation: Conversation) => {
     if (conversation.conversation_type === 'group') {
@@ -212,9 +239,7 @@ const ConversationList = ({
     }
 
     // For direct messages, show the other participant's name
-    const otherParticipant = conversation.participants?.find(
-      p => p.user_id !== currentUserId
-    );
+    const otherParticipant = conversation.participants?.find((p) => p.user_id !== currentUserId);
     return otherParticipant?.profile?.display_name || 'Unknown User';
   };
 
@@ -223,9 +248,7 @@ const ConversationList = ({
       return null; // Could show group avatar
     }
 
-    const otherParticipant = conversation.participants?.find(
-      p => p.user_id !== currentUserId
-    );
+    const otherParticipant = conversation.participants?.find((p) => p.user_id !== currentUserId);
     return otherParticipant?.profile?.avatar_url;
   };
 
@@ -234,32 +257,44 @@ const ConversationList = ({
       return null;
     }
 
-    return conversation.participants?.find(
-      p => p.user_id !== currentUserId
-    );
+    return conversation.participants?.find((p) => p.user_id !== currentUserId);
   };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {conversations.map(conversation => (
+      {conversations.map((conversation) => (
         <Card
           key={conversation.id}
-          style={{ cursor: 'pointer', transition: 'all 0.2s', ...(selectedConversation === conversation.id ? { boxShadow: '0 0 0 2px hsl(var(--primary))', borderColor: 'hsl(var(--primary))' } : {}) }}
+          style={{
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            ...(selectedConversation === conversation.id
+              ? { boxShadow: '0 0 0 2px hsl(var(--primary))', borderColor: 'hsl(var(--primary))' }
+              : {}),
+          }}
           onClick={() => onSelectConversation(conversation.id)}
         >
           <CardContent style={{ padding: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 48 }}>
               <Avatar>
                 <AvatarImage src={getConversationAvatar(conversation) || ''} />
-                <AvatarFallback>
-                  {getConversationTitle(conversation).charAt(0)}
-                </AvatarFallback>
+                <AvatarFallback>{getConversationTitle(conversation).charAt(0)}</AvatarFallback>
               </Avatar>
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontWeight: 500,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {getConversationTitle(conversation)}
                     </Typography>
                     {getOtherParticipant(conversation)?.profile?.user_mode && (
@@ -271,13 +306,24 @@ const ConversationList = ({
                   </Box>
                   {conversation.last_message_at && (
                     <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                      {formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(conversation.last_message_at), {
+                        addSuffix: true,
+                      })}
                     </Box>
                   )}
                 </Box>
 
                 {conversation.last_message && (
-                  <Typography variant="body2" sx={{ fontSize: '0.875rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: '0.875rem',
+                      color: 'text.secondary',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {conversation.last_message.content}
                   </Typography>
                 )}
@@ -298,21 +344,54 @@ interface MessageInputProps {
   inputRef?: React.RefObject<HTMLInputElement>;
 }
 
-const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: MessageInputProps) => {
-  const [message, setMessage] = useState("");
+const MessageInput = ({
+  onSend,
+  onTyping,
+  onStopTyping,
+  disabled,
+  inputRef,
+}: MessageInputProps) => {
+  const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Common emojis for quick access
   const commonEmojis = [
-    '😀', '😂', '🥰', '😍', '🤔', '👍', '👎', '❤️', '🔥', '💯',
-    '😊', '😎', '🙄', '😴', '🤗', '👋', '👏', '🎉', '💪', '🙏',
-    '😢', '😭', '😡', '😱', '🤯', '🥺', '😤', '🤮', '😷', '🤒'
+    '😀',
+    '😂',
+    '🥰',
+    '😍',
+    '🤔',
+    '👍',
+    '👎',
+    '❤️',
+    '🔥',
+    '💯',
+    '😊',
+    '😎',
+    '🙄',
+    '😴',
+    '🤗',
+    '👋',
+    '👏',
+    '🎉',
+    '💪',
+    '🙏',
+    '😢',
+    '😭',
+    '😡',
+    '😱',
+    '🤯',
+    '🥺',
+    '😤',
+    '🤮',
+    '😷',
+    '🤒',
   ];
 
   // Add emoji to message
   const addEmoji = (emoji: string) => {
-    setMessage(prev => prev + emoji);
+    setMessage((prev) => prev + emoji);
     setShowEmojiPicker(false);
     inputRef?.current?.focus();
   };
@@ -321,7 +400,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
   const sanitizeMessage = (input: string): string => {
     return DOMPurify.sanitize(input, {
       ALLOWED_TAGS: [],
-      ALLOWED_ATTR: []
+      ALLOWED_ATTR: [],
     }).trim();
   };
 
@@ -330,7 +409,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
     const sanitizedMessage = sanitizeMessage(message);
     if (sanitizedMessage && !disabled) {
       onSend(sanitizedMessage);
-      setMessage("");
+      setMessage('');
       onStopTyping();
     }
   };
@@ -377,7 +456,7 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
         padding: 12,
         borderTop: '1px solid var(--border)',
         backgroundColor: 'color-mix(in srgb, var(--background) 50%, transparent)',
-        backdropFilter: 'blur(8px)'
+        backdropFilter: 'blur(8px)',
       }}
     >
       <Input
@@ -406,8 +485,16 @@ const MessageInput = ({ onSend, onTyping, onStopTyping, disabled, inputRef }: Me
         </PopoverTrigger>
         <PopoverContent style={{ width: 320, padding: 16 }} side="top">
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>Choose an emoji</Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(8, 1fr)', md: 'repeat(10, 1fr)' }, gap: 0.5 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+              Choose an emoji
+            </Typography>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: 'repeat(8, 1fr)', md: 'repeat(10, 1fr)' },
+                gap: 0.5,
+              }}
+            >
               {commonEmojis.map((emoji, index) => (
                 <Button
                   key={index}
@@ -450,16 +537,16 @@ export const MessagingInterface = () => {
     addReaction,
     markAsRead,
     sendTypingIndicator,
-    stopTypingIndicator
+    stopTypingIndicator,
   } = useMessaging();
 
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -470,7 +557,7 @@ export const MessagingInterface = () => {
   useEffect(() => {
     const conversationId = searchParams.get('conversation');
     if (conversationId && conversations.length > 0) {
-      const conversation = conversations.find(c => c.id === conversationId);
+      const conversation = conversations.find((c) => c.id === conversationId);
       if (conversation && selectedConversation !== conversationId) {
         handleSelectConversation(conversationId);
       }
@@ -519,12 +606,13 @@ export const MessagingInterface = () => {
     }
   };
 
-  const filteredConversations = conversations.filter(conv => {
+  const filteredConversations = conversations.filter((conv) => {
     if (!searchQuery) return true;
 
-    const title = conv.conversation_type === 'group'
-      ? conv.title
-      : conv.participants?.find(p => p.user_id !== user?.id)?.profile?.display_name;
+    const title =
+      conv.conversation_type === 'group'
+        ? conv.title
+        : conv.participants?.find((p) => p.user_id !== user?.id)?.profile?.display_name;
 
     return title?.toLowerCase().includes(searchQuery.toLowerCase());
   });
@@ -536,7 +624,18 @@ export const MessagingInterface = () => {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384 }}>
         <Box sx={{ textAlign: 'center' }}>
-          <Box sx={{ width: 32, height: 32, border: 4, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%', mx: 'auto', mb: 2 }} />
+          <Box
+            sx={{
+              width: 32,
+              height: 32,
+              border: 4,
+              borderColor: 'primary.main',
+              borderTopColor: 'transparent',
+              borderRadius: '50%',
+              mx: 'auto',
+              mb: 2,
+            }}
+          />
           <p style={{ color: 'var(--muted-foreground)' }}>Loading messages...</p>
         </Box>
       </div>
@@ -553,7 +652,7 @@ export const MessagingInterface = () => {
         borderRadius: 2,
         border: 1,
         borderColor: 'divider',
-        bgcolor: 'background.default'
+        bgcolor: 'background.default',
       }}
     >
       {/* Conversation List - Full width on mobile, 1/3 on desktop */}
@@ -564,22 +663,44 @@ export const MessagingInterface = () => {
           borderRight: 1,
           borderColor: 'divider',
           bgcolor: 'rgba(var(--background-rgb), 0.5)',
-          flexDirection: 'column'
+          flexDirection: 'column',
         }}
       >
         <Box sx={{ p: { xs: 1.5, md: 2 }, borderBottom: 1, borderColor: 'divider' }}>
           <Box
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 1.5, md: 2 } }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: { xs: 1.5, md: 2 },
+            }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: '1.125rem', md: '1rem' } }}>Messages</Typography>
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: 600, fontSize: { xs: '1.125rem', md: '1rem' } }}
+            >
+              Messages
+            </Typography>
             <Button size="sm" variant="outline" style={{ borderRadius: '50%', height: 36 }}>
               <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>New</Box>
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                New
+              </Box>
             </Button>
           </Box>
 
           <Box sx={{ position: 'relative' }}>
-            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: '#999999' }} />
+            <Search
+              style={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                height: 16,
+                width: 16,
+                color: '#999999',
+              }}
+            />
             <Input
               placeholder="Search conversations..."
               value={searchQuery}
@@ -593,7 +714,9 @@ export const MessagingInterface = () => {
           <Box sx={{ p: { xs: 1.5, md: 2 } }}>
             {filteredConversations.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
-                <MessageCircle style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }} />
+                <MessageCircle
+                  style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                />
                 <p style={{ color: 'var(--muted-foreground)' }}>No conversations yet</p>
               </Box>
             ) : (
@@ -613,13 +736,21 @@ export const MessagingInterface = () => {
         sx={{
           flex: 1,
           flexDirection: 'column',
-          display: { xs: selectedConversation ? 'flex' : 'none', md: 'flex' }
+          display: { xs: selectedConversation ? 'flex' : 'none', md: 'flex' },
         }}
       >
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <Box sx={{ p: { xs: 1.5, md: 2 }, borderBottom: 1, borderColor: 'divider', bgcolor: 'rgba(var(--background-rgb), 0.5)', backdropFilter: 'blur(8px)' }}>
+            <Box
+              sx={{
+                p: { xs: 1.5, md: 2 },
+                borderBottom: 1,
+                borderColor: 'divider',
+                bgcolor: 'rgba(var(--background-rgb), 0.5)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   {/* Back button for mobile */}
@@ -629,50 +760,103 @@ export const MessagingInterface = () => {
                     style={{ height: 36, width: 36, padding: 0 }}
                     onClick={() => setSelectedConversation(null)}
                   >
-                    <svg style={{ height: 20, width: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <svg
+                      style={{ height: 20, width: 20 }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
                     </svg>
                   </Button>
 
                   <Box sx={{ position: 'relative' }}>
                     <Avatar style={{ height: 40, width: 40 }}>
-                      <AvatarImage src={
-                        conversations.find(c => c.id === selectedConversation)?.participants
-                          ?.find(p => p.user_id !== user?.id)?.profile?.avatar_url || ''
-                      } />
+                      <AvatarImage
+                        src={
+                          conversations
+                            .find((c) => c.id === selectedConversation)
+                            ?.participants?.find((p) => p.user_id !== user?.id)?.profile
+                            ?.avatar_url || ''
+                        }
+                      />
                       <AvatarFallback>
-                        {conversations.find(c => c.id === selectedConversation)?.participants
-                          ?.find(p => p.user_id !== user?.id)?.profile?.display_name?.charAt(0) || 'C'}
+                        {conversations
+                          .find((c) => c.id === selectedConversation)
+                          ?.participants?.find((p) => p.user_id !== user?.id)
+                          ?.profile?.display_name?.charAt(0) || 'C'}
                       </AvatarFallback>
                     </Avatar>
-                    <div style={{ position: 'absolute', bottom: -2, right: -2, width: 12, height: 12, backgroundColor: '#22c55e', border: '2px solid var(--background)', borderRadius: '50%' }}></div>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: -2,
+                        right: -2,
+                        width: 12,
+                        height: 12,
+                        backgroundColor: '#22c55e',
+                        border: '2px solid var(--background)',
+                        borderRadius: '50%',
+                      }}
+                    ></div>
                   </Box>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {conversations.find(c => c.id === selectedConversation)?.participants
-                        ?.find(p => p.user_id !== user?.id)?.profile?.display_name || 'Unknown User'}
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        fontWeight: 500,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {conversations
+                        .find((c) => c.id === selectedConversation)
+                        ?.participants?.find((p) => p.user_id !== user?.id)?.profile
+                        ?.display_name || 'Unknown User'}
                     </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#16a34a' }}>Online</Typography>
+                    <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#16a34a' }}>
+                      Online
+                    </Typography>
                   </Box>
                 </Box>
 
-                <Button variant="ghost" size="sm" style={{ borderRadius: '50%', height: 36, width: 36, padding: 0 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  style={{ borderRadius: '50%', height: 36, width: 36, padding: 0 }}
+                >
                   <MoreVertical style={{ height: 16, width: 16 }} />
                 </Button>
               </Box>
             </Box>
 
             {/* Messages */}
-            <ScrollArea style={{ flex: 1, background: 'linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), var(--background))' }}>
+            <ScrollArea
+              style={{
+                flex: 1,
+                background:
+                  'linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), var(--background))',
+              }}
+            >
               <Box sx={{ p: { xs: 1.5, md: 2 } }}>
                 {currentMessages.length === 0 ? (
                   <Box sx={{ textAlign: 'center', py: 4 }}>
-                    <MessageCircle style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }} />
-                    <p style={{ color: 'var(--muted-foreground)' }}>No messages yet. Start the conversation!</p>
+                    <MessageCircle
+                      style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                    />
+                    <p style={{ color: 'var(--muted-foreground)' }}>
+                      No messages yet. Start the conversation!
+                    </p>
                   </Box>
                 ) : (
                   <div>
-                    {currentMessages.map(message => (
+                    {currentMessages.map((message) => (
                       <MessageItem
                         key={message.id}
                         message={message}
@@ -698,11 +882,29 @@ export const MessagingInterface = () => {
             />
           </>
         ) : (
-          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom, rgba(var(--background-rgb), 0.5), var(--background))' }}>
+          <Box
+            sx={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background:
+                'linear-gradient(to bottom, rgba(var(--background-rgb), 0.5), var(--background))',
+            }}
+          >
             <Box sx={{ textAlign: 'center', px: 2 }}>
-              <MessageCircle style={{ height: 64, width: 64, color: '#999999', margin: '0 auto 16px' }} />
-              <Typography variant="h6" sx={{ fontSize: '1.125rem', fontWeight: 500, mb: 1 }}>Select a conversation</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: '0.875rem', md: '1rem' } }}>Choose a conversation from the list to start messaging</Typography>
+              <MessageCircle
+                style={{ height: 64, width: 64, color: '#999999', margin: '0 auto 16px' }}
+              />
+              <Typography variant="h6" sx={{ fontSize: '1.125rem', fontWeight: 500, mb: 1 }}>
+                Select a conversation
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', fontSize: { xs: '0.875rem', md: '1rem' } }}
+              >
+                Choose a conversation from the list to start messaging
+              </Typography>
             </Box>
           </Box>
         )}

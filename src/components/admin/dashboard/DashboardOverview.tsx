@@ -1,10 +1,21 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Box, Typography } from "@mui/material";
-import { TrendingUp, Users, Building, Calendar, ShoppingBag, MessageSquare, Activity, Globe, Eye, ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Box, Typography } from '@mui/material';
+import {
+  TrendingUp,
+  Users,
+  Building,
+  Calendar,
+  ShoppingBag,
+  MessageSquare,
+  Activity,
+  Globe,
+  Eye,
+  ArrowUpRight,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router';
 
 interface DashboardStats {
   totalUsers: number;
@@ -36,82 +47,100 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
 
   const overviewCards = [
     {
-      title: "Total Users",
+      title: 'Total Users',
       value: stats.totalUsers.toLocaleString(),
       change: `+${stats.weeklyGrowth}%`,
-      changeType: "positive" as const,
+      changeType: 'positive' as const,
       icon: Users,
-      description: "Active community members",
-      onClick: () => navigate("/admin/users")
+      description: 'Active community members',
+      onClick: () => navigate('/admin/users'),
     },
     {
-      title: "Active Venues",
+      title: 'Active Venues',
       value: stats.activeVenues.toLocaleString(),
-      change: "+12%",
-      changeType: "positive" as const,
+      change: '+12%',
+      changeType: 'positive' as const,
       icon: Building,
-      description: "Listed locations",
-      onClick: () => navigate("/admin/venues")
+      description: 'Listed locations',
+      onClick: () => navigate('/admin/venues'),
     },
     {
-      title: "Upcoming Events",
+      title: 'Upcoming Events',
       value: stats.upcomingEvents.toLocaleString(),
-      change: "+8%",
-      changeType: "positive" as const,
+      change: '+8%',
+      changeType: 'positive' as const,
       icon: Calendar,
-      description: "Scheduled events",
-      onClick: () => navigate("/admin/events")
+      description: 'Scheduled events',
+      onClick: () => navigate('/admin/events'),
     },
     {
-      title: "Marketplace Items",
+      title: 'Marketplace Items',
       value: stats.marketplaceItems.toLocaleString(),
-      change: "+5%",
-      changeType: "positive" as const,
+      change: '+5%',
+      changeType: 'positive' as const,
       icon: ShoppingBag,
-      description: "Active listings",
-      onClick: () => navigate("/admin/marketplace")
-    }
+      description: 'Active listings',
+      onClick: () => navigate('/admin/marketplace'),
+    },
   ];
 
   const systemCards = [
     {
-      title: "System Health",
+      title: 'System Health',
       value: systemHealth.status,
       icon: Activity,
-      color: systemHealth.status === 'healthy' ? 'text-green-600' : 
-             systemHealth.status === 'warning' ? 'text-yellow-600' : 'text-red-600'
+      color:
+        systemHealth.status === 'healthy'
+          ? 'text-green-600'
+          : systemHealth.status === 'warning'
+            ? 'text-yellow-600'
+            : 'text-red-600',
     },
     {
-      title: "Uptime",
+      title: 'Uptime',
       value: systemHealth.uptime,
       icon: Globe,
-      color: 'text-blue-600'
+      color: 'text-blue-600',
     },
     {
-      title: "DB Latency",
+      title: 'DB Latency',
       value: `${systemHealth.dbLatency}ms`,
       icon: Activity,
-      color: systemHealth.dbLatency < 100 ? 'text-green-600' : 'text-yellow-600'
+      color: systemHealth.dbLatency < 100 ? 'text-green-600' : 'text-yellow-600',
     },
     {
-      title: "Storage Used",
+      title: 'Storage Used',
       value: `${systemHealth.storageUsed}%`,
       icon: Eye,
-      color: systemHealth.storageUsed < 80 ? 'text-green-600' : 'text-red-600'
-    }
+      color: systemHealth.storageUsed < 80 ? 'text-green-600' : 'text-red-600',
+    },
   ];
 
   if (statsLoading) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' } }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
+          }}
+        >
           {[...Array(4)].map((_, i) => (
-            <Card key={i} sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+            <Card
+              key={i}
+              sx={{
+                '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              }}
+            >
               <CardHeader sx={{ pb: 1 }}>
                 <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: 96 }}></Box>
               </CardHeader>
               <CardContent>
-                <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: 64, mb: 1 }}></Box>
+                <Box
+                  sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: 64, mb: 1 }}
+                ></Box>
                 <Box sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 1, width: 80 }}></Box>
               </CardContent>
             </Card>
@@ -125,35 +154,66 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Key Metrics */}
       <Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <TrendingUp style={{ height: 20, width: 20 }} />
           Key Metrics
         </Typography>
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' } }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
+          }}
+        >
           {overviewCards.map((card) => {
             const Icon = card.icon;
             return (
               <Card
                 key={card.title}
-                sx={{ cursor: 'pointer', '&:hover': { boxShadow: 3 }, transition: 'box-shadow 0.2s' }}
+                sx={{
+                  cursor: 'pointer',
+                  '&:hover': { boxShadow: 3 },
+                  transition: 'box-shadow 0.2s',
+                }}
                 onClick={card.onClick}
               >
-                <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
-                  <CardTitle sx={{ fontSize: 14, fontWeight: 500 }}>
-                    {card.title}
-                  </CardTitle>
+                <CardHeader
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    pb: 1,
+                  }}
+                >
+                  <CardTitle sx={{ fontSize: 14, fontWeight: 500 }}>{card.title}</CardTitle>
                   <Icon style={{ height: 16, width: 16, color: 'rgba(0, 0, 0, 0.6)' }} />
                 </CardHeader>
                 <CardContent>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{card.value}</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12, color: 'text.secondary' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                    {card.value}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      fontSize: 12,
+                      color: 'text.secondary',
+                    }}
+                  >
                     <Badge
-                      variant={card.changeType === "positive" ? "default" : "destructive"}
+                      variant={card.changeType === 'positive' ? 'default' : 'destructive'}
                       sx={{ fontSize: 12 }}
                     >
                       {card.change}
                     </Badge>
-                    <Typography component="span" variant="caption">{card.description}</Typography>
+                    <Typography component="span" variant="caption">
+                      {card.description}
+                    </Typography>
                     <ArrowUpRight style={{ height: 12, width: 12, marginLeft: 'auto' }} />
                   </Box>
                 </CardContent>
@@ -165,11 +225,20 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
 
       {/* System Health */}
       <Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <Activity style={{ height: 20, width: 20 }} />
           System Health
         </Typography>
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' } }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
+          }}
+        >
           {systemCards.map((card) => {
             const Icon = card.icon;
             return (
@@ -180,7 +249,9 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
                       <Icon style={{ height: 16, width: 16, color: card.color }} />
                     </Box>
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>{card.title}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {card.title}
+                      </Typography>
                       <Typography variant="h6" sx={{ fontWeight: 600, color: card.color }}>
                         {card.value}
                       </Typography>
@@ -201,17 +272,18 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
         <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-              <Typography component="span" variant="body2">Used Storage</Typography>
-              <Typography component="span" variant="body2">{systemHealth.storageUsed}% of limit</Typography>
+              <Typography component="span" variant="body2">
+                Used Storage
+              </Typography>
+              <Typography component="span" variant="body2">
+                {systemHealth.storageUsed}% of limit
+              </Typography>
             </Box>
-            <Progress
-              value={systemHealth.storageUsed}
-              sx={{ height: 8 }}
-            />
+            <Progress value={systemHealth.storageUsed} sx={{ height: 8 }} />
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               {systemHealth.storageUsed < 80
-                ? "Storage usage is within normal limits"
-                : "Consider archiving old data or upgrading storage"}
+                ? 'Storage usage is within normal limits'
+                : 'Consider archiving old data or upgrading storage'}
             </Typography>
           </Box>
         </CardContent>

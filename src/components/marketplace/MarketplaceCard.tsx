@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, Heart, MapPin, Globe, Phone, Mail, ExternalLink, Eye, Building } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
@@ -26,10 +26,11 @@ export function MarketplaceCard({
   listing,
   onViewDetails,
   onToggleFavorite,
-  showFavoriteButton = false
+  showFavoriteButton = false,
 }: MarketplaceCardProps) {
   const averageRating = listing.marketplace_reviews?.length
-    ? listing.marketplace_reviews.reduce((sum, review) => sum + review.rating, 0) / listing.marketplace_reviews.length
+    ? listing.marketplace_reviews.reduce((sum, review) => sum + review.rating, 0) /
+      listing.marketplace_reviews.length
     : 0;
 
   const isFavorited = listing.marketplace_favorites && listing.marketplace_favorites.length > 0;
@@ -81,8 +82,14 @@ export function MarketplaceCard({
   };
 
   return (
-    <Card sx={{ position: 'relative', overflow: 'hidden', transition: 'opacity 0.2s', bgcolor: 'background.paper' }}>
-
+    <Card
+      sx={{
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'opacity 0.2s',
+        bgcolor: 'background.paper',
+      }}
+    >
       {showFavoriteButton && (
         <Box sx={{ position: 'absolute', top: 3, right: 3, zIndex: 10 }}>
           <FavoriteButton
@@ -98,9 +105,25 @@ export function MarketplaceCard({
       <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
         {/* Header */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 1.5,
+            }}
+          >
             <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 600,
+                  lineHeight: 1.2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
                 {listing.title}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
@@ -112,18 +135,29 @@ export function MarketplaceCard({
               <Badge variant="secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
                 {listing.category}
               </Badge>
-              {listing.featured && (
-                <Box sx={{ width: 8, height: 8, bgcolor: 'text.primary' }} />
-              )}
+              {listing.featured && <Box sx={{ width: 8, height: 8, bgcolor: 'text.primary' }} />}
             </Box>
           </Box>
 
           {/* Location */}
           {(listing.venues?.name || listing.location) && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.75rem', color: 'text.secondary' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                fontSize: '0.75rem',
+                color: 'text.secondary',
+              }}
+            >
               <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} />
-              <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {listing.venues ? `${listing.venues.name}, ${listing.venues.city}` : listing.location}
+              <Typography
+                variant="caption"
+                sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              >
+                {listing.venues
+                  ? `${listing.venues.name}, ${listing.venues.city}`
+                  : listing.location}
               </Typography>
             </Box>
           )}
@@ -131,7 +165,17 @@ export function MarketplaceCard({
 
         {/* Description */}
         {listing.description && (
-          <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.5 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: 1.5,
+            }}
+          >
             {listing.description}
           </Typography>
         )}
@@ -152,7 +196,9 @@ export function MarketplaceCard({
           {averageRating > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Star style={{ height: 14, width: 14 }} fill="currentColor" />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>{averageRating.toFixed(1)}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {averageRating.toFixed(1)}
+              </Typography>
             </Box>
           )}
         </Box>
@@ -161,21 +207,44 @@ export function MarketplaceCard({
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {listing.website && (
-              <Button size="sm" variant="ghost" sx={{ height: 28, width: 28, p: 0 }} aria-label="Visit website" asChild>
-                <a href={listing.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+              <Button
+                size="sm"
+                variant="ghost"
+                sx={{ height: 28, width: 28, p: 0 }}
+                aria-label="Visit website"
+                asChild
+              >
+                <a
+                  href={listing.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <ExternalLink style={{ height: 12, width: 12 }} />
                 </a>
               </Button>
             )}
             {listing.contact_phone && (
-              <Button size="sm" variant="ghost" sx={{ height: 28, width: 28, p: 0 }} aria-label={`Call ${listing.contact_phone}`} asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                sx={{ height: 28, width: 28, p: 0 }}
+                aria-label={`Call ${listing.contact_phone}`}
+                asChild
+              >
                 <a href={`tel:${listing.contact_phone}`} onClick={(e) => e.stopPropagation()}>
                   <Phone style={{ height: 12, width: 12 }} />
                 </a>
               </Button>
             )}
             {listing.contact_email && (
-              <Button size="sm" variant="ghost" sx={{ height: 28, width: 28, p: 0 }} aria-label={`Email ${listing.contact_email}`} asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                sx={{ height: 28, width: 28, p: 0 }}
+                aria-label={`Email ${listing.contact_email}`}
+                asChild
+              >
                 <a href={`mailto:${listing.contact_email}`} onClick={(e) => e.stopPropagation()}>
                   <Mail style={{ height: 12, width: 12 }} />
                 </a>
@@ -183,7 +252,16 @@ export function MarketplaceCard({
             )}
 
             {listing.views_count && listing.views_count > 0 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  fontSize: '0.75rem',
+                  color: 'text.secondary',
+                  ml: 1,
+                }}
+              >
                 <Eye style={{ height: 12, width: 12 }} />
                 <Typography variant="caption">{listing.views_count}</Typography>
               </Box>

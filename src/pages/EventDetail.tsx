@@ -1,6 +1,21 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Calendar, MapPin, Users, Clock, DollarSign, ExternalLink, Phone, Globe, Share2, Download, ChevronRight, Tag, Music } from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  MapPin,
+  Users,
+  Clock,
+  DollarSign,
+  ExternalLink,
+  Phone,
+  Globe,
+  Share2,
+  Download,
+  ChevronRight,
+  Tag,
+  Music,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,7 +49,12 @@ type Event = Database['public']['Tables']['events']['Row'] & {
     email: string | null;
   } | null;
   cities?: { id: string; name: string } | null;
-  countries?: { id: string; name: string; equality_score: number | null; lgbti_criminalization: Record<string, any> | null } | null;
+  countries?: {
+    id: string;
+    name: string;
+    equality_score: number | null;
+    lgbti_criminalization: Record<string, any> | null;
+  } | null;
   festivals?: { id: string; name: string } | null;
   event_attendees?: Array<{
     id: string;
@@ -61,13 +81,15 @@ export default function EventDetail() {
     try {
       const { data: eventData, error: eventError } = await supabase
         .from('events')
-        .select(`
+        .select(
+          `
           *,
           venues (id, name, address, city, state, country, phone, website, email),
           cities:city_id(id, name),
           countries:country_id(id, name, equality_score, lgbti_criminalization),
           festivals:festival_id(id, name)
-        `)
+        `,
+        )
         .eq('id', id)
         .single();
 
@@ -104,25 +126,36 @@ export default function EventDetail() {
 
   const handleAttendanceUpdate = async (status: 'going' | 'interested' | 'not_going') => {
     if (!user || !event) {
-      toast({ title: "Authentication required", description: "Please sign in to update your attendance", variant: "destructive" });
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to update your attendance',
+        variant: 'destructive',
+      });
       return;
     }
     try {
-      const { error } = await supabase.from('event_attendees').upsert({ event_id: event.id, user_id: user.id, status });
+      const { error } = await supabase
+        .from('event_attendees')
+        .upsert({ event_id: event.id, user_id: user.id, status });
       if (error) throw error;
       setUserAttendance(status);
-      toast({ title: "Attendance updated", description: `You're now marked as ${status.replace('_', ' ')} for this event` });
+      toast({
+        title: 'Attendance updated',
+        description: `You're now marked as ${status.replace('_', ' ')} for this event`,
+      });
       await fetchEventData();
     } catch (error) {
       console.error('Error updating attendance:', error);
-      toast({ title: "Error", description: "Failed to update attendance", variant: "destructive" });
+      toast({ title: 'Error', description: 'Failed to update attendance', variant: 'destructive' });
     }
   };
 
   const handleExportToCalendar = async () => {
     if (!event) return;
     try {
-      const { data, error } = await supabase.functions.invoke('calendar-export', { body: { eventId: event.id } });
+      const { data, error } = await supabase.functions.invoke('calendar-export', {
+        body: { eventId: event.id },
+      });
       if (error) throw error;
       const blob = new Blob([data], { type: 'text/calendar' });
       const url = URL.createObjectURL(blob);
@@ -133,10 +166,17 @@ export default function EventDetail() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast({ title: "Calendar export successful", description: "Event has been exported to your calendar" });
+      toast({
+        title: 'Calendar export successful',
+        description: 'Event has been exported to your calendar',
+      });
     } catch (error) {
       console.error('Error exporting calendar:', error);
-      toast({ title: "Export failed", description: "Failed to export event to calendar", variant: "destructive" });
+      toast({
+        title: 'Export failed',
+        description: 'Failed to export event to calendar',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -146,23 +186,33 @@ export default function EventDetail() {
     if (navigator.share) {
       try {
         await navigator.share({ title: event.title, url: shareUrl });
-      } catch { /* user cancelled */ }
+      } catch {
+        /* user cancelled */
+      }
     } else {
       await navigator.clipboard.writeText(shareUrl);
-      toast({ title: "Link copied", description: "Event link copied to clipboard" });
+      toast({ title: 'Link copied', description: 'Event link copied to clipboard' });
     }
   };
 
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+        <Box
+          sx={{
+            '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
+            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }}
+        >
           <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: '40%', mb: 2 }} />
           <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 3, mb: 3 }} />
           <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '60%', mb: 2 }} />
           <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-            {[1, 2, 3, 4].map(i => (
-              <Box key={i} sx={{ height: 32, width: 80, bgcolor: 'action.hover', borderRadius: 4 }} />
+            {[1, 2, 3, 4].map((i) => (
+              <Box
+                key={i}
+                sx={{ height: 32, width: 80, bgcolor: 'action.hover', borderRadius: 4 }}
+              />
             ))}
           </Box>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
@@ -177,8 +227,12 @@ export default function EventDetail() {
   if (!event) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Event Not Found</Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>The event you're looking for doesn't exist.</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Event Not Found
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          The event you're looking for doesn't exist.
+        </Typography>
         <Link to="/events">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
@@ -189,8 +243,8 @@ export default function EventDetail() {
     );
   }
 
-  const attendeesGoing = event.event_attendees?.filter(a => a.status === 'going') || [];
-  const attendeesInterested = event.event_attendees?.filter(a => a.status === 'interested') || [];
+  const attendeesGoing = event.event_attendees?.filter((a) => a.status === 'going') || [];
+  const attendeesInterested = event.event_attendees?.filter((a) => a.status === 'interested') || [];
 
   const formatEventDate = (startDate: string, endDate?: string | null) => {
     const start = new Date(startDate);
@@ -204,7 +258,9 @@ export default function EventDetail() {
   const getPriceDisplay = () => {
     if (event.is_free) return 'Free';
     if (event.price_min && event.price_max) {
-      return event.price_min === event.price_max ? `$${event.price_min}` : `$${event.price_min} - $${event.price_max}`;
+      return event.price_min === event.price_max
+        ? `$${event.price_min}`
+        : `$${event.price_min} - $${event.price_max}`;
     }
     if (event.price_min) return `From $${event.price_min}`;
     return 'Price TBA';
@@ -221,19 +277,41 @@ export default function EventDetail() {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
-        <Link to="/events" style={{ display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
+        <Link
+          to="/events"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            color: 'inherit',
+            textDecoration: 'none',
+          }}
+        >
           <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Events</Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ '&:hover': { color: 'primary.main' } }}
+          >
+            Events
+          </Typography>
         </Link>
         {countryName && (
           <>
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
             {countryLink ? (
               <Link to={countryLink} style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>{countryName}</Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ '&:hover': { color: 'primary.main' } }}
+                >
+                  {countryName}
+                </Typography>
               </Link>
             ) : (
-              <Typography variant="body2" color="text.secondary">{countryName}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {countryName}
+              </Typography>
             )}
           </>
         )}
@@ -242,26 +320,38 @@ export default function EventDetail() {
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
             {cityLink ? (
               <Link to={cityLink} style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>{cityName}</Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ '&:hover': { color: 'primary.main' } }}
+                >
+                  {cityName}
+                </Typography>
               </Link>
             ) : (
-              <Typography variant="body2" color="text.secondary">{cityName}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {cityName}
+              </Typography>
             )}
           </>
         )}
         <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>{event.title}</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {event.title}
+        </Typography>
       </Box>
 
       {/* Compact Hero Image */}
       {heroImage && (
-        <Box sx={{
-          width: '100%',
-          height: { xs: 160, md: 192 },
-          borderRadius: 3,
-          overflow: 'hidden',
-          mb: 3,
-        }}>
+        <Box
+          sx={{
+            width: '100%',
+            height: { xs: 160, md: 192 },
+            borderRadius: 3,
+            overflow: 'hidden',
+            mb: 3,
+          }}
+        >
           <Box
             component="img"
             src={heroImage}
@@ -283,17 +373,21 @@ export default function EventDetail() {
       )}
 
       {/* Title Row */}
-      <Box sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
-        alignItems: { md: 'flex-start' },
-        justifyContent: { md: 'space-between' },
-        gap: 2,
-        mb: 2,
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { md: 'flex-start' },
+          justifyContent: { md: 'space-between' },
+          gap: 2,
+          mb: 2,
+        }}
+      >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5, flexWrap: 'wrap' }}>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>{event.title}</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {event.title}
+            </Typography>
             {event.featured && (
               <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
             )}
@@ -316,18 +410,37 @@ export default function EventDetail() {
             <MapPin style={{ width: 14, height: 14, color: '#9ca3af', flexShrink: 0 }} />
             <Typography variant="body2" color="text.secondary">
               {event.venues?.id ? (
-                <Link to={`/venues/${event.venues.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                  <Typography component="span" variant="body2" sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}>{event.venues.name}</Typography>
+                <Link
+                  to={`/venues/${event.venues.id}`}
+                  style={{ color: 'inherit', textDecoration: 'none' }}
+                >
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
+                  >
+                    {event.venues.name}
+                  </Typography>
                 </Link>
-              ) : (event.venue_name || '')}
+              ) : (
+                event.venue_name || ''
+              )}
               {cityName && (
                 <>
-                  {(event.venues?.name || event.venue_name) ? ', ' : ''}
+                  {event.venues?.name || event.venue_name ? ', ' : ''}
                   {cityLink ? (
                     <Link to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                      <Typography component="span" variant="body2" sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}>{cityName}</Typography>
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
+                      >
+                        {cityName}
+                      </Typography>
                     </Link>
-                  ) : cityName}
+                  ) : (
+                    cityName
+                  )}
                 </>
               )}
               {countryName && (
@@ -335,19 +448,35 @@ export default function EventDetail() {
                   {', '}
                   {countryLink ? (
                     <Link to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                      <Typography component="span" variant="body2" sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}>{countryName}</Typography>
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
+                      >
+                        {countryName}
+                      </Typography>
                     </Link>
-                  ) : countryName}
+                  ) : (
+                    countryName
+                  )}
                 </>
               )}
             </Typography>
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}
+        >
           <FavoriteButton itemId={event.id} type="event" size="md" />
           <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
-          <AdminEditButton contentType="events" contentId={event.id} contentName={event.title} currentData={event as Record<string, unknown>} onSaved={() => window.location.reload()} />
+          <AdminEditButton
+            contentType="events"
+            contentId={event.id}
+            contentName={event.title}
+            currentData={event as Record<string, unknown>}
+            onSaved={() => window.location.reload()}
+          />
           {event.ticket_url && (
             <Button size="sm" asChild>
               <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
@@ -377,12 +506,20 @@ export default function EventDetail() {
         />
         <Chip
           icon={<Clock style={{ width: 14, height: 14 }} />}
-          label={formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
+          label={formatEventTime(
+            event.start_date,
+            event.end_date,
+            showEventTz ? event.timezone : null,
+          )}
           size="small"
           variant="outlined"
-          onClick={event.timezone ? () => setShowEventTz(prev => !prev) : undefined}
+          onClick={event.timezone ? () => setShowEventTz((prev) => !prev) : undefined}
           sx={event.timezone ? { cursor: 'pointer' } : undefined}
-          title={event.timezone ? `Click to toggle between event timezone and your local time` : undefined}
+          title={
+            event.timezone
+              ? `Click to toggle between event timezone and your local time`
+              : undefined
+          }
         />
         <Chip
           icon={<MapPin style={{ width: 14, height: 14 }} />}
@@ -420,7 +557,9 @@ export default function EventDetail() {
                 <CardTitle>About This Event</CardTitle>
               </CardHeader>
               <CardContent>
-                <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{event.description}</Typography>
+                <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+                  {event.description}
+                </Typography>
               </CardContent>
             </Card>
           )}
@@ -462,36 +601,101 @@ export default function EventDetail() {
               <CardContent>
                 {attendeesGoing.length > 0 && (
                   <Box sx={{ mb: attendeesInterested.length > 0 ? 2 : 0 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Going</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                      Going
+                    </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {attendeesGoing.slice(0, 12).map((attendee) => (
-                        <Box key={attendee.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'action.hover', borderRadius: '9999px', px: 1.5, py: 0.5 }}>
-                          <Box sx={{ width: 24, height: 24, bgcolor: 'primary.main', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'primary.contrastText' }}>
+                        <Box
+                          key={attendee.id}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            bgcolor: 'action.hover',
+                            borderRadius: '9999px',
+                            px: 1.5,
+                            py: 0.5,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              bgcolor: 'primary.main',
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 12,
+                              color: 'primary.contrastText',
+                            }}
+                          >
                             {attendee.profiles?.display_name?.[0] || 'U'}
                           </Box>
-                          <Typography variant="caption">{attendee.profiles?.display_name || 'Anonymous'}</Typography>
+                          <Typography variant="caption">
+                            {attendee.profiles?.display_name || 'Anonymous'}
+                          </Typography>
                         </Box>
                       ))}
                       {attendeesGoing.length > 12 && (
-                        <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, py: 0.5 }}>+{attendeesGoing.length - 12} more</Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ px: 1.5, py: 0.5 }}
+                        >
+                          +{attendeesGoing.length - 12} more
+                        </Typography>
                       )}
                     </Box>
                   </Box>
                 )}
                 {attendeesInterested.length > 0 && (
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Interested</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                      Interested
+                    </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {attendeesInterested.slice(0, 8).map((attendee) => (
-                        <Box key={attendee.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'action.hover', borderRadius: '9999px', px: 1.5, py: 0.5 }}>
-                          <Box sx={{ width: 24, height: 24, bgcolor: 'action.hover', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
+                        <Box
+                          key={attendee.id}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            bgcolor: 'action.hover',
+                            borderRadius: '9999px',
+                            px: 1.5,
+                            py: 0.5,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              bgcolor: 'action.hover',
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 12,
+                            }}
+                          >
                             {attendee.profiles?.display_name?.[0] || 'U'}
                           </Box>
-                          <Typography variant="caption">{attendee.profiles?.display_name || 'Anonymous'}</Typography>
+                          <Typography variant="caption">
+                            {attendee.profiles?.display_name || 'Anonymous'}
+                          </Typography>
                         </Box>
                       ))}
                       {attendeesInterested.length > 8 && (
-                        <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, py: 0.5 }}>+{attendeesInterested.length - 8} more</Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ px: 1.5, py: 0.5 }}
+                        >
+                          +{attendeesInterested.length - 8} more
+                        </Typography>
                       )}
                     </Box>
                   </Box>
@@ -511,15 +715,21 @@ export default function EventDetail() {
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Calendar style={{ width: 16, height: 16, color: '#999999' }} />
-                <Typography variant="body2">{formatEventDate(event.start_date, event.end_date)}</Typography>
+                <Typography variant="body2">
+                  {formatEventDate(event.start_date, event.end_date)}
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Clock style={{ width: 16, height: 16, color: '#999999' }} />
-                <Typography variant="body2">{formatEventTime(event.start_date, event.end_date)}</Typography>
+                <Typography variant="body2">
+                  {formatEventTime(event.start_date, event.end_date)}
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <DollarSign style={{ width: 16, height: 16, color: '#999999' }} />
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>{getPriceDisplay()}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  {getPriceDisplay()}
+                </Typography>
               </Box>
               {event.max_attendees && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -529,16 +739,35 @@ export default function EventDetail() {
               )}
               {event.organizer_name && (
                 <Box sx={{ mt: 1, pt: 1.5, borderTop: 1, borderColor: 'divider' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>Organizer</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                    Organizer
+                  </Typography>
                   <Box
                     component="button"
-                    onClick={() => navigate(`/events?organizer=${encodeURIComponent(event.organizer_name!)}`)}
-                    sx={{ fontSize: 14, color: 'primary.main', '&:hover': { textDecoration: 'underline' }, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', p: 0 }}
+                    onClick={() =>
+                      navigate(`/events?organizer=${encodeURIComponent(event.organizer_name!)}`)
+                    }
+                    sx={{
+                      fontSize: 14,
+                      color: 'primary.main',
+                      '&:hover': { textDecoration: 'underline' },
+                      textAlign: 'left',
+                      border: 'none',
+                      background: 'none',
+                      cursor: 'pointer',
+                      p: 0,
+                    }}
                   >
                     {event.organizer_name}
                   </Box>
                   {event.organizer_contact && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>{event.organizer_contact}</Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: 'block', mt: 0.25 }}
+                    >
+                      {event.organizer_contact}
+                    </Typography>
                   )}
                 </Box>
               )}
@@ -553,7 +782,12 @@ export default function EventDetail() {
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {event.website && (
-                  <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    style={{ width: '100%', justifyContent: 'flex-start' }}
+                    asChild
+                  >
                     <a href={event.website} target="_blank" rel="noopener noreferrer">
                       <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
                       Event Website
@@ -561,7 +795,12 @@ export default function EventDetail() {
                   </Button>
                 )}
                 {event.ticket_url && (
-                  <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    style={{ width: '100%', justifyContent: 'flex-start' }}
+                    asChild
+                  >
                     <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
                       Get Tickets
@@ -579,10 +818,14 @@ export default function EventDetail() {
                 <CardTitle>Venue</CardTitle>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>{event.venues.name}</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {event.venues.name}
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {event.venues.address}<br />
-                  {event.venues.city}{event.venues.state ? `, ${event.venues.state}` : ''} {event.venues.country}
+                  {event.venues.address}
+                  <br />
+                  {event.venues.city}
+                  {event.venues.state ? `, ${event.venues.state}` : ''} {event.venues.country}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                   {event.venues.phone && (
@@ -594,7 +837,9 @@ export default function EventDetail() {
                     </Button>
                   )}
                   <Link to={`/venues/${event.venues.id}`}>
-                    <Button variant="outline" size="sm">View Venue</Button>
+                    <Button variant="outline" size="sm">
+                      View Venue
+                    </Button>
                   </Link>
                 </Box>
               </CardContent>

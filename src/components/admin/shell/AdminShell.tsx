@@ -10,16 +10,8 @@
  * - Negative margins to break out of App.tsx Container maxWidth
  */
 
-import {
-  useState,
-  useCallback,
-  useEffect,
-  lazy,
-  Suspense,
-  createContext,
-  useContext,
-} from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useCallback, useEffect, lazy, Suspense, createContext, useContext } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';

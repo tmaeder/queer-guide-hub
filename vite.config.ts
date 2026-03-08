@@ -1,7 +1,9 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import tsconfigPaths from "vite-tsconfig-paths";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Prevent Cloudflare Rocket Loader from mangling ES module script tags
 function cfRocketLoaderBypass(): Plugin {
@@ -23,20 +25,22 @@ export default defineConfig(({ mode }) => ({
     setupFiles: [],
   },
   server: {
-    host: "::",
+    host: "127.0.0.1",
     port: parseInt(process.env.PORT || "8080"),
   },
   plugins: [
     react(),
-    tsconfigPaths({ root: './' }),
     cfRocketLoaderBypass(),
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "~": path.resolve(__dirname, "./src"),
     },
   },
+  esbuild: mode === 'production' ? {
+    drop: ['console', 'debugger'],
+    legalComments: 'none',
+  } : {},
   build: {
     rollupOptions: {
       output: {
@@ -57,11 +61,17 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/react-force-graph') || id.includes('node_modules/force-graph') || id.includes('node_modules/d3-')) {
             return 'graph';
           }
-          if (id.includes('node_modules/xlsx/')) {
-            return 'xlsx';
+          if (id.includes('node_modules/exceljs/')) {
+            return 'exceljs';
           }
           if (id.includes('node_modules/maplibre-gl/') || id.includes('node_modules/@protomaps/')) {
             return 'maplibre';
+          }
+          if (id.includes('node_modules/@tiptap/') || id.includes('node_modules/lowlight/') || id.includes('node_modules/prosemirror-') || id.includes('node_modules/highlight.js/')) {
+            return 'tiptap';
+          }
+          if (id.includes('node_modules/hls.js/')) {
+            return 'hls';
           }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
@@ -86,26 +96,12 @@ export default defineConfig(({ mode }) => ({
       },
     },
     cssCodeSplit: true,
-    minify: mode === 'production' ? 'terser' : false,
+    minify: mode === 'production' ? 'esbuild' : false,
     // Cloudflare Pages optimization
     target: 'esnext',
     sourcemap: mode === 'development',
     ...(mode === 'production' && {
-      terserOptions: {
-        compress: {
-          drop_console: true,
-          drop_debugger: true,
-          pure_funcs: ['console.log', 'console.info', 'console.debug'],
-          passes: 2,
-        },
-        mangle: {
-          safari10: true,
-        },
-        format: {
-          comments: false,
-        },
-      },
-      reportCompressedSize: false, // Faster builds for Cloudflare
+      reportCompressedSize: false,
       chunkSizeWarningLimit: 1000,
     }),
   },

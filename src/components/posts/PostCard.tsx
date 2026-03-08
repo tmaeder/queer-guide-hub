@@ -17,11 +17,26 @@ import {
   Trash2,
   Edit,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Link } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Link } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { CommunityPost } from '@/hooks/useCommunityPosts';
 import { CommentsSection } from './CommentsSection';
@@ -75,17 +90,23 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
 
   const getVisibilityIcon = () => {
     switch (post.visibility) {
-      case 'friends': return <Users style={{ height: 12, width: 12 }} />;
-      case 'private': return <Lock style={{ height: 12, width: 12 }} />;
-      default: return <Globe style={{ height: 12, width: 12 }} />;
+      case 'friends':
+        return <Users style={{ height: 12, width: 12 }} />;
+      case 'private':
+        return <Lock style={{ height: 12, width: 12 }} />;
+      default:
+        return <Globe style={{ height: 12, width: 12 }} />;
     }
   };
 
   const getVisibilityLabel = () => {
     switch (post.visibility) {
-      case 'friends': return 'Friends';
-      case 'private': return 'Private';
-      default: return 'Public';
+      case 'friends':
+        return 'Friends';
+      case 'private':
+        return 'Private';
+      default:
+        return 'Public';
     }
   };
 
@@ -98,7 +119,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         const mentionRegex = new RegExp(`@${mention.username}`, 'g');
         content = content.replace(
           mentionRegex,
-          `<span class="text-primary font-medium cursor-pointer hover:underline">@${mention.username}</span>`
+          `<span class="text-primary font-medium cursor-pointer hover:underline">@${mention.username}</span>`,
         );
       });
     }
@@ -109,7 +130,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         const tagRegex = new RegExp(`#${tag}`, 'g');
         content = content.replace(
           tagRegex,
-          `<span class="text-primary font-medium cursor-pointer hover:underline">#${tag}</span>`
+          `<span class="text-primary font-medium cursor-pointer hover:underline">#${tag}</span>`,
         );
       });
     }
@@ -117,7 +138,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
     // Generic hashtag handling for tags not in the tags array
     content = content.replace(
       /#(\w+)/g,
-      '<span class="text-primary font-medium cursor-pointer hover:underline">#$1</span>'
+      '<span class="text-primary font-medium cursor-pointer hover:underline">#$1</span>',
     );
 
     const contentElement = (
@@ -132,7 +153,11 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {post.tags && post.tags.length > 0 && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {post.tags.map((tag, index) => (
-              <Badge key={index} variant="secondary" style={{ fontSize: '0.75rem', cursor: 'pointer' }}>
+              <Badge
+                key={index}
+                variant="secondary"
+                style={{ fontSize: '0.75rem', cursor: 'pointer' }}
+              >
                 #{tag}
               </Badge>
             ))}
@@ -143,7 +168,16 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {post.images && post.images.length > 0 && (
           <Box sx={{ display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
             {post.images.slice(0, 4).map((image, index) => (
-              <Box key={index} sx={{ position: 'relative', aspectRatio: '16/9', bgcolor: 'action.hover', borderRadius: 2, overflow: 'hidden' }}>
+              <Box
+                key={index}
+                sx={{
+                  position: 'relative',
+                  aspectRatio: '16/9',
+                  bgcolor: 'action.hover',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                }}
+              >
                 <Box
                   component="img"
                   src={image}
@@ -157,7 +191,17 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               </Box>
             ))}
             {post.images.length > 4 && (
-              <Box sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary' }}>
+              <Box
+                sx={{
+                  aspectRatio: '16/9',
+                  bgcolor: 'action.hover',
+                  borderRadius: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'text.secondary',
+                }}
+              >
                 +{post.images.length - 4} more
               </Box>
             )}
@@ -168,21 +212,70 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {post.post_type === 'link' && post.link_url && (
           <Card style={{ border: '1px solid var(--border)' }}>
             <CardContent style={{ padding: 16 }}>
-              <Box component="a" href={post.link_url} target="_blank" rel="noopener noreferrer" sx={{ display: 'block', m: -2, p: 2, borderRadius: 1, transition: 'background-color 0.2s', '&:hover': { bgcolor: 'action.hover' }, textDecoration: 'none', color: 'inherit' }}>
+              <Box
+                component="a"
+                href={post.link_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  display: 'block',
+                  m: -2,
+                  p: 2,
+                  borderRadius: 1,
+                  transition: 'background-color 0.2s',
+                  '&:hover': { bgcolor: 'action.hover' },
+                  textDecoration: 'none',
+                  color: 'inherit',
+                }}
+              >
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                  <ExternalLink style={{ height: 20, width: 20, color: '#999999', marginTop: 4, flexShrink: 0 }} />
+                  <ExternalLink
+                    style={{ height: 20, width: 20, color: '#999999', marginTop: 4, flexShrink: 0 }}
+                  />
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     {post.link_title && (
-                      <Typography variant="subtitle1" sx={{ fontWeight: 500, color: 'text.primary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 0.5 }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          fontWeight: 500,
+                          color: 'text.primary',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          mb: 0.5,
+                        }}
+                      >
                         {post.link_title}
                       </Typography>
                     )}
                     {post.link_description && (
-                      <Typography variant="body2" sx={{ fontSize: '0.875rem', color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 0.5 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontSize: '0.875rem',
+                          color: 'text.secondary',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          mb: 0.5,
+                        }}
+                      >
                         {post.link_description}
                       </Typography>
                     )}
-                    <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.75rem',
+                        color: 'text.secondary',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        display: 'block',
+                      }}
+                    >
                       {new URL(post.link_url).hostname}
                     </Typography>
                   </Box>
@@ -196,19 +289,38 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {post.post_type === 'poll' && post.poll_options && (
           <Card style={{ border: '1px solid var(--border)' }}>
             <CardContent style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>Poll</Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {(post.poll_options as any)?.options?.map((option: string, index: number) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  style={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', height: 'auto', paddingTop: 12, paddingBottom: 12 }}
-                  disabled
-                >
-                  <span style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid var(--muted-foreground)', marginRight: 12, flexShrink: 0, display: 'inline-block' }}></span>
-                  {option}
-                </Button>
-              )) || []}
+              <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                Poll
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {(post.poll_options as any)?.options?.map((option: string, index: number) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'flex-start',
+                      textAlign: 'left',
+                      height: 'auto',
+                      paddingTop: 12,
+                      paddingBottom: 12,
+                    }}
+                    disabled
+                  >
+                    <span
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        border: '2px solid var(--muted-foreground)',
+                        marginRight: 12,
+                        flexShrink: 0,
+                        display: 'inline-block',
+                      }}
+                    ></span>
+                    {option}
+                  </Button>
+                )) || []}
               </Box>
               <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                 Voting not yet implemented
@@ -240,7 +352,15 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               >
                 {post.profiles?.display_name || 'Unknown User'}
               </Link>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'text.secondary' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  fontSize: '0.875rem',
+                  color: 'text.secondary',
+                }}
+              >
                 <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                 <span>&bull;</span>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -250,7 +370,10 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 {post.post_type !== 'text' && (
                   <>
                     <span>&bull;</span>
-                    <Badge variant="outline" style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>
+                    <Badge
+                      variant="outline"
+                      style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}
+                    >
                       {post.post_type}
                     </Badge>
                   </>
@@ -262,7 +385,12 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
           {(isOwnPost || user) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" style={{ height: 32, width: 32 }} aria-label="More options">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  style={{ height: 32, width: 32 }}
+                  aria-label="More options"
+                >
                   <MoreHorizontal style={{ height: 16, width: 16 }} />
                 </Button>
               </DropdownMenuTrigger>
@@ -282,11 +410,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                     </DropdownMenuItem>
                   </>
                 )}
-                {!isOwnPost && (
-                  <DropdownMenuItem>
-                    Report Post
-                  </DropdownMenuItem>
-                )}
+                {!isOwnPost && <DropdownMenuItem>Report Post</DropdownMenuItem>}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -297,7 +421,16 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {renderPostContent()}
 
         {/* Actions */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            pt: 2,
+            borderTop: 1,
+            borderColor: 'divider',
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <Button
               variant="ghost"
@@ -306,7 +439,14 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               disabled={isLiking || !user}
               style={post.user_liked ? { color: '#ef4444' } : {}}
             >
-              <Heart style={{ height: 16, width: 16, marginRight: 4, ...(post.user_liked ? { fill: 'currentColor' } : {}) }} />
+              <Heart
+                style={{
+                  height: 16,
+                  width: 16,
+                  marginRight: 4,
+                  ...(post.user_liked ? { fill: 'currentColor' } : {}),
+                }}
+              />
               <span>{post.likes_count || 0}</span>
             </Button>
 
@@ -318,7 +458,11 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
             >
               <MessageCircle style={{ height: 16, width: 16, marginRight: 4 }} />
               <span>{post.comments_count || 0}</span>
-              {showComments ? <ChevronUp style={{ height: 16, width: 16, marginLeft: 4 }} /> : <ChevronDown style={{ height: 16, width: 16, marginLeft: 4 }} />}
+              {showComments ? (
+                <ChevronUp style={{ height: 16, width: 16, marginLeft: 4 }} />
+              ) : (
+                <ChevronDown style={{ height: 16, width: 16, marginLeft: 4 }} />
+              )}
             </Button>
           </Box>
 

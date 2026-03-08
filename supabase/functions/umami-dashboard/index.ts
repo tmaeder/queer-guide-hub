@@ -284,7 +284,7 @@ serve(async (req) => {
           sessionQuery = sessionQuery.eq('country', countryFilter);
         }
 
-        let eventQuery = supabase
+        const eventQuery = supabase
           .schema('umami')
           .from('website_event')
           .select('*')

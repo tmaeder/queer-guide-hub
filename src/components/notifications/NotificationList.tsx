@@ -1,19 +1,27 @@
-import { useEffect, useMemo, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, Calendar, Info, CheckCheck, Users, Heart, MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { useEffect, useMemo, useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import {
+  MessageCircle,
+  Calendar,
+  Info,
+  CheckCheck,
+  Users,
+  Heart,
+  MessageSquare,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useNotifications } from "@/hooks/useNotifications";
-import { useMessaging } from "@/hooks/useMessaging";
-import { useGroupNotifications } from "@/hooks/useGroupNotifications";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useNotifications } from '@/hooks/useNotifications';
+import { useMessaging } from '@/hooks/useMessaging';
+import { useGroupNotifications } from '@/hooks/useGroupNotifications';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 const getNotificationIcon = (type: string) => {
   switch (type) {
@@ -71,7 +79,7 @@ export const NotificationList = () => {
           .eq('user_id', user.id)
           .limit(200);
         if (postsErr) throw postsErr;
-        const postIds = (posts || []).map(p => p.id);
+        const postIds = (posts || []).map((p) => p.id);
         if (postIds.length === 0) {
           if (isMounted) {
             setLikes([]);
@@ -88,20 +96,20 @@ export const NotificationList = () => {
           .limit(20);
         let likesEnriched: LikeItem[] = [];
         if (likesData?.length) {
-          const likerIds = [...new Set(likesData.map(l => l.user_id))];
+          const likerIds = [...new Set(likesData.map((l) => l.user_id))];
           const { data: likerProfiles } = await supabase
             .from('profiles')
             .select('user_id, display_name, avatar_url')
             .in('user_id', likerIds);
-          likesEnriched = (likesData || []).map(l => {
-            const p = likerProfiles?.find(x => x.user_id === l.user_id);
+          likesEnriched = (likesData || []).map((l) => {
+            const p = likerProfiles?.find((x) => x.user_id === l.user_id);
             return {
               id: l.id,
               post_id: l.post_id,
               user_id: l.user_id,
               created_at: l.created_at as string,
               user_display_name: p?.display_name || 'Someone',
-              user_avatar_url: p?.avatar_url || null
+              user_avatar_url: p?.avatar_url || null,
             };
           });
         }
@@ -110,7 +118,9 @@ export const NotificationList = () => {
         // Fetch recent comments on user's posts (with profile join)
         const { data: commentsData, error: commentsErr } = await supabase
           .from('post_comments')
-          .select(`id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`)
+          .select(
+            `id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`,
+          )
           .in('post_id', postIds)
           .order('created_at', { ascending: false })
           .limit(20);
@@ -159,14 +169,20 @@ export const NotificationList = () => {
     <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>{label}</Box>
   );
 
-  const isLoadingAll = loading || messagingLoading || groupsLoading || likesLoading || commentsLoading;
+  const isLoadingAll =
+    loading || messagingLoading || groupsLoading || likesLoading || commentsLoading;
 
   const combinedItems = useMemo(() => {
     const items: Array<{ type: string; createdAt: Date; data: any; key: string }> = [];
 
     // App notifications
     notifications.forEach((n: any) => {
-      items.push({ type: 'notification', createdAt: new Date(n.created_at), data: n, key: `notif-${n.id}` });
+      items.push({
+        type: 'notification',
+        createdAt: new Date(n.created_at),
+        data: n,
+        key: `notif-${n.id}`,
+      });
     });
 
     // Direct messages (use last_message_at or updated_at)
@@ -177,7 +193,12 @@ export const NotificationList = () => {
 
     // Group notifications
     groupNotifs.forEach((g: any) => {
-      items.push({ type: 'group', createdAt: new Date(g.created_at), data: g, key: `group-${g.id}` });
+      items.push({
+        type: 'group',
+        createdAt: new Date(g.created_at),
+        data: g,
+        key: `group-${g.id}`,
+      });
     });
 
     // Likes on my posts
@@ -187,7 +208,12 @@ export const NotificationList = () => {
 
     // Comments on my posts
     comments.forEach((c) => {
-      items.push({ type: 'comment', createdAt: new Date(c.created_at), data: c, key: `comment-${c.id}` });
+      items.push({
+        type: 'comment',
+        createdAt: new Date(c.created_at),
+        data: c,
+        key: `comment-${c.id}`,
+      });
     });
 
     return items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -210,24 +236,66 @@ export const NotificationList = () => {
             onClick={() => handleNotificationClick(n)}
           >
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <Box sx={{
-                p: 0.5,
-                borderRadius: 1,
-                ...(n.type === 'message' && { bgcolor: 'primary.main', color: 'primary.contrastText', opacity: 0.1 }),
-                ...(n.type === 'event' && { bgcolor: 'secondary.main', color: 'secondary.contrastText', opacity: 0.1 }),
-                ...(n.type === 'system' && { bgcolor: 'grey.200' }),
-              }}>
+              <Box
+                sx={{
+                  p: 0.5,
+                  borderRadius: 1,
+                  ...(n.type === 'message' && {
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                    opacity: 0.1,
+                  }),
+                  ...(n.type === 'event' && {
+                    bgcolor: 'secondary.main',
+                    color: 'secondary.contrastText',
+                    opacity: 0.1,
+                  }),
+                  ...(n.type === 'system' && { bgcolor: 'grey.200' }),
+                }}
+              >
                 {getNotificationIcon(n.type)}
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" sx={{ fontWeight: !n.read ? 600 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.title}</Typography>
-                  {!n.read && (<Box sx={{ width: 8, height: 8, bgcolor: 'primary.main' }} />)}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: !n.read ? 600 : 500,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {n.title}
+                  </Typography>
+                  {!n.read && <Box sx={{ width: 8, height: 8, bgcolor: 'primary.main' }} />}
                 </Box>
                 {n.content && (
-                  <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{n.content}</Typography>
+                  <Typography
+                    component="p"
+                    sx={{
+                      fontSize: '0.75rem',
+                      color: 'text.secondary',
+                      mt: 0.5,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {n.content}
+                  </Typography>
                 )}
-                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
+                <Typography
+                  component="p"
+                  sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}
+                >
                   {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                 </Typography>
               </Box>
@@ -238,25 +306,59 @@ export const NotificationList = () => {
       case 'dm': {
         const c = item.data;
         const others = (c.participants || []).filter((p: any) => p.user_id !== user?.id);
-        const title = c.title || others.map((o: any) => o.profile?.display_name || 'User').join(', ');
+        const title =
+          c.title || others.map((o: any) => o.profile?.display_name || 'User').join(', ');
         const avatar = others[0]?.profile?.avatar_url || '';
         return (
-          <Box key={item.key} sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate('/messages')}>
+          <Box
+            key={item.key}
+            sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+            onClick={() => navigate('/messages')}
+          >
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={avatar} />
                 <AvatarFallback>{(title || 'U').charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography component="h4" sx={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <Typography
+                    component="h4"
+                    sx={{
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     <MessageCircle style={{ height: 16, width: 16 }} /> {title || 'Conversation'}
                   </Typography>
-                  <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
+                  <Typography
+                    component="span"
+                    sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}
+                  >
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
                   </Typography>
                 </Box>
-                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Tap to open chat</Typography>
+                <Typography
+                  component="p"
+                  sx={{
+                    fontSize: '0.75rem',
+                    color: 'text.secondary',
+                    mt: 0.5,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Tap to open chat
+                </Typography>
               </Box>
             </Box>
           </Box>
@@ -265,23 +367,58 @@ export const NotificationList = () => {
       case 'group': {
         const n = item.data;
         return (
-          <Box key={item.key} sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate('/groups')}>
+          <Box
+            key={item.key}
+            sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+            onClick={() => navigate('/groups')}
+          >
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={n.triggered_by_profile?.avatar_url || ''} />
-                <AvatarFallback>{(n.triggered_by_profile?.display_name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback>
+                  {(n.triggered_by_profile?.display_name || 'U').charAt(0).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography component="h4" sx={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Users style={{ height: 16, width: 16 }} /> {n.community_groups?.name || 'Group'}
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <Typography
+                    component="h4"
+                    sx={{
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
+                    <Users style={{ height: 16, width: 16 }} />{' '}
+                    {n.community_groups?.name || 'Group'}
                   </Typography>
-                  <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
+                  <Typography
+                    component="span"
+                    sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}
+                  >
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
                   </Typography>
                 </Box>
-                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {String(n.notification_type).replace('_', ' ')} • by {n.triggered_by_profile?.display_name || 'Someone'}
+                <Typography
+                  component="p"
+                  sx={{
+                    fontSize: '0.75rem',
+                    color: 'text.secondary',
+                    mt: 0.5,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {String(n.notification_type).replace('_', ' ')} • by{' '}
+                  {n.triggered_by_profile?.display_name || 'Someone'}
                 </Typography>
               </Box>
             </Box>
@@ -291,22 +428,58 @@ export const NotificationList = () => {
       case 'like': {
         const l = item.data as LikeItem;
         return (
-          <Box key={item.key} sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate('/feed')}>
+          <Box
+            key={item.key}
+            sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+            onClick={() => navigate('/feed')}
+          >
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={l.user_avatar_url || ''} />
-                <AvatarFallback>{(l.user_display_name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback>
+                  {(l.user_display_name || 'U').charAt(0).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography component="h4" sx={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Heart style={{ height: 16, width: 16 }} /> {l.user_display_name} liked your post
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <Typography
+                    component="h4"
+                    sx={{
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
+                    <Heart style={{ height: 16, width: 16 }} /> {l.user_display_name} liked your
+                    post
                   </Typography>
-                  <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
+                  <Typography
+                    component="span"
+                    sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}
+                  >
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
                   </Typography>
                 </Box>
-                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Tap to view in feed</Typography>
+                <Typography
+                  component="p"
+                  sx={{
+                    fontSize: '0.75rem',
+                    color: 'text.secondary',
+                    mt: 0.5,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Tap to view in feed
+                </Typography>
               </Box>
             </Box>
           </Box>
@@ -315,22 +488,59 @@ export const NotificationList = () => {
       case 'comment': {
         const c = item.data as CommentItem;
         return (
-          <Box key={item.key} sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate('/feed')}>
+          <Box
+            key={item.key}
+            sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+            onClick={() => navigate('/feed')}
+          >
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={c.user_avatar_url || ''} />
-                <AvatarFallback>{(c.user_display_name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback>
+                  {(c.user_display_name || 'U').charAt(0).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography component="h4" sx={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <MessageSquare style={{ height: 16, width: 16 }} /> {c.user_display_name} commented
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <Typography
+                    component="h4"
+                    sx={{
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
+                    <MessageSquare style={{ height: 16, width: 16 }} /> {c.user_display_name}{' '}
+                    commented
                   </Typography>
-                  <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
+                  <Typography
+                    component="span"
+                    sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}
+                  >
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
                   </Typography>
                 </Box>
-                <Typography component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.content}</Typography>
+                <Typography
+                  component="p"
+                  sx={{
+                    fontSize: '0.75rem',
+                    color: 'text.secondary',
+                    mt: 0.5,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {c.content}
+                </Typography>
               </Box>
             </Box>
           </Box>
@@ -344,7 +554,9 @@ export const NotificationList = () => {
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1 }}>
-        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Recent</Typography>
+        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+          Recent
+        </Typography>
         <Button variant="ghost" size="sm" onClick={markAllAsRead}>
           <CheckCheck style={{ height: 12, width: 12, marginRight: 4 }} />
           Mark all read

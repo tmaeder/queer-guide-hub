@@ -67,7 +67,7 @@ export function useStagingItems(
   filters: StagingFilters = {},
   page: number = 1,
   perPage: number = 50,
-  sort: StagingSort = { field: 'created_at', dir: 'desc' }
+  sort: StagingSort = { field: 'created_at', dir: 'desc' },
 ) {
   return useQuery({
     queryKey: ['staging-items', filters, page, perPage, sort],
@@ -115,7 +115,7 @@ export function useDuplicatePairs(entityType: string | null) {
         .order('confidence', { ascending: false })
         .limit(200);
 
-      if (entityType) {
+      if (entityType && entityType !== 'all') {
         query = query.eq('entity_type', entityType);
       }
 
@@ -126,7 +126,7 @@ export function useDuplicatePairs(entityType: string | null) {
       }
       return (data || []) as DuplicatePair[];
     },
-    enabled: !!entityType,
+    enabled: entityType === 'all' || !!entityType,
     staleTime: 60_000,
     gcTime: 5 * 60_000,
   });
@@ -169,7 +169,7 @@ export function useImportStatistics() {
         console.error('Failed to fetch import stats:', error);
         return null;
       }
-      const raw = data as Record<string, any> || {};
+      const raw = (data as Record<string, any>) || {};
       return {
         total_jobs: raw.total_imports || 0,
         completed_jobs: raw.successful_imports || 0,
@@ -191,7 +191,11 @@ export function useImportStatistics() {
 
 // ==================== Import Jobs (Paginated) ====================
 
-export function useImportJobs(page: number = 1, status: string | null = null, perPage: number = 20) {
+export function useImportJobs(
+  page: number = 1,
+  status: string | null = null,
+  perPage: number = 20,
+) {
   return useQuery({
     queryKey: ['import-jobs', page, status, perPage],
     queryFn: async () => {

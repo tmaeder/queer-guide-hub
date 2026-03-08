@@ -1,6 +1,17 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Star, MapPin, Phone, Globe, Mail, DollarSign, ExternalLink, Wifi, Shield } from 'lucide-react';
+import {
+  ArrowLeft,
+  Star,
+  MapPin,
+  Phone,
+  Globe,
+  Mail,
+  DollarSign,
+  ExternalLink,
+  Wifi,
+  Shield,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -63,7 +74,12 @@ export default function HotelDetail() {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+        <Box
+          sx={{
+            '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
+            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }}
+        >
           <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: '40%', mb: 2 }} />
           <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 3, mb: 3 }} />
           <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '60%', mb: 2 }} />
@@ -75,7 +91,9 @@ export default function HotelDetail() {
   if (!hotel) {
     return (
       <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>Hotel not found</Typography>
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Hotel not found
+        </Typography>
         <Button asChild variant="outline">
           <Link to="/hotels">Back to Hotels</Link>
         </Button>
@@ -90,7 +108,17 @@ export default function HotelDetail() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Breadcrumb */}
-      <Link to="/hotels" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 16, textDecoration: 'none', color: 'inherit' }}>
+      <Link
+        to="/hotels"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          marginBottom: 16,
+          textDecoration: 'none',
+          color: 'inherit',
+        }}
+      >
         <ArrowLeft style={{ width: 16, height: 16 }} />
         <Typography variant="body2">Back to Hotels</Typography>
       </Link>
@@ -107,27 +135,40 @@ export default function HotelDetail() {
       )}
 
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+          gap: 2,
+          mb: 2,
+        }}
+      >
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
             <Typography variant="h4" sx={{ fontWeight: 700 }}>
               {hotel.name}
             </Typography>
-            {hotel.verified && (
-              <Shield style={{ width: 20, height: 20, color: '#10b981' }} />
-            )}
+            {hotel.verified && <Shield style={{ width: 20, height: 20, color: '#10b981' }} />}
           </Box>
           <Typography variant="body1" color="text.secondary">
-            {hotel.hotel_type && (
-              <>{TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type} &middot; </>
-            )}
-            {cityName && countryName ? `${cityName}, ${countryName}` : cityName || countryName || ''}
+            {hotel.hotel_type && <>{TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type} &middot; </>}
+            {cityName && countryName
+              ? `${cityName}, ${countryName}`
+              : cityName || countryName || ''}
           </Typography>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
           <ReportButton contentType="hotels" contentId={hotel.id} contentName={hotel.name} />
-          <AdminEditButton contentType="hotels" contentId={hotel.id} contentName={hotel.name} currentData={hotel as Record<string, unknown>} onSaved={() => window.location.reload()} />
+          <AdminEditButton
+            contentType="hotels"
+            contentId={hotel.id}
+            contentName={hotel.name}
+            currentData={hotel as Record<string, unknown>}
+            onSaved={() => window.location.reload()}
+          />
           {hotel.booking_url && (
             <Button size="sm" asChild>
               <a href={hotel.booking_url} target="_blank" rel="noopener noreferrer">
@@ -137,7 +178,11 @@ export default function HotelDetail() {
             </Button>
           )}
           {hotel.website && (
-            <Button variant="outline" size="sm" onClick={() => window.open(hotel.website!, '_blank')}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open(hotel.website!, '_blank')}
+            >
               <Globe style={{ width: 16, height: 16, marginRight: 6 }} />
               Website
             </Button>
@@ -163,9 +208,7 @@ export default function HotelDetail() {
             variant="outlined"
           />
         )}
-        {hotel.lgbtq_friendly && (
-          <Chip label="LGBTQ+ Friendly" size="small" color="primary" />
-        )}
+        {hotel.lgbtq_friendly && <Chip label="LGBTQ+ Friendly" size="small" color="primary" />}
         {cityName && (
           <Chip
             icon={<MapPin style={{ width: 14, height: 14 }} />}
@@ -186,7 +229,14 @@ export default function HotelDetail() {
         </TabsList>
 
         <TabsContent value="overview">
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3, mt: 2 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' },
+              gap: 3,
+              mt: 2,
+            }}
+          >
             {/* Main Content */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {hotel.description && (
@@ -221,7 +271,13 @@ export default function HotelDetail() {
                   <CardContent>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {hotel.amenities.map((amenity, i) => (
-                        <Chip key={i} label={amenity} size="small" variant="outlined" icon={<Wifi style={{ width: 14, height: 14 }} />} />
+                        <Chip
+                          key={i}
+                          label={amenity}
+                          size="small"
+                          variant="outlined"
+                          icon={<Wifi style={{ width: 14, height: 14 }} />}
+                        />
                       ))}
                     </Box>
                   </CardContent>
@@ -245,13 +301,17 @@ export default function HotelDetail() {
                   {hotel.phone && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Phone style={{ width: 16, height: 16, flexShrink: 0 }} />
-                      <a href={`tel:${hotel.phone}`} style={{ fontSize: '0.875rem' }}>{hotel.phone}</a>
+                      <a href={`tel:${hotel.phone}`} style={{ fontSize: '0.875rem' }}>
+                        {hotel.phone}
+                      </a>
                     </Box>
                   )}
                   {hotel.email && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Mail style={{ width: 16, height: 16, flexShrink: 0 }} />
-                      <a href={`mailto:${hotel.email}`} style={{ fontSize: '0.875rem' }}>{hotel.email}</a>
+                      <a href={`mailto:${hotel.email}`} style={{ fontSize: '0.875rem' }}>
+                        {hotel.email}
+                      </a>
                     </Box>
                   )}
                 </CardContent>
@@ -265,7 +325,9 @@ export default function HotelDetail() {
                   <CardContent>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                       {hotel.tags.map((tag, i) => (
-                        <Badge key={i} variant="outline">{tag}</Badge>
+                        <Badge key={i} variant="outline">
+                          {tag}
+                        </Badge>
                       ))}
                     </Box>
                   </CardContent>

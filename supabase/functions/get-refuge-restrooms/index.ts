@@ -5,93 +5,87 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const REFUGE_API = 'https://www.refugerestrooms.org/api/v1/restrooms'
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const url = new URL(req.url)
-    const lat = url.searchParams.get('lat')
-    const lng = url.searchParams.get('lng')
-    const page = url.searchParams.get('page') || '1'
-    const per_page = url.searchParams.get('per_page') || '100'
+    // Accept params from GET query string or POST body
+    let lat: string | null = null
+    let lng: string | null = null
+    let page = '1'
+    let perPage = '100'
 
-    console.log('Fetching restrooms with params:', { lat, lng, page, per_page })
-
-    // Build the API URL
-    let apiUrl = 'https://www.refugerestrooms.org/api/v1/restrooms'
-    const params = new URLSearchParams({
-      page,
-      per_page
-    })
-
-    // Add location-based search if coordinates provided
-    if (lat && lng) {
-      params.append('lat', lat)
-      params.append('lng', lng)
+    if (req.method === 'GET') {
+      const url = new URL(req.url)
+      lat = url.searchParams.get('lat')
+      lng = url.searchParams.get('lng')
+      page = url.searchParams.get('page') || '1'
+      perPage = url.searchParams.get('per_page') || '100'
+    } else {
+      try {
+        const body = await req.json()
+        lat = body.lat?.toString() ?? null
+        lng = body.lng?.toString() ?? null
+        page = body.page?.toString() ?? '1'
+        perPage = body.per_page?.toString() ?? '100'
+      } catch { /* empty body, use defaults */ }
     }
 
-    apiUrl += `?${params.toString()}`
+    // Use /by_location endpoint when coordinates are provided
+    const hasLocation = lat && lng
+    const basePath = hasLocation ? `${REFUGE_API}/by_location` : REFUGE_API
 
-    console.log('Calling Refuge Restrooms API:', apiUrl)
+    const params = new URLSearchParams({ page, per_page: perPage })
+    if (hasLocation) {
+      params.append('lat', lat!)
+      params.append('lng', lng!)
+    }
+
+    const apiUrl = `${basePath}?${params.toString()}`
+    console.log('Calling Refuge API:', apiUrl)
 
     const response = await fetch(apiUrl, {
-      headers: {
-        'User-Agent': 'Queer Guide App',
-      }
+      headers: { 'User-Agent': 'Queer Guide App' },
     })
 
     if (!response.ok) {
-      console.error('API response not ok:', response.status, response.statusText)
-      throw new Error(`Failed to fetch restrooms: ${response.status}`)
+      throw new Error(`Refuge API error: ${response.status}`)
     }
 
     const data = await response.json()
-    console.log(`Fetched ${data.length} restrooms`)
 
-    // Transform the data to match our needs
-    const restrooms = data.map((restroom: any) => ({
-      id: restroom.id,
-      name: restroom.name,
-      street: restroom.street,
-      city: restroom.city,
-      state: restroom.state,
-      country: restroom.country,
-      latitude: restroom.latitude,
-      longitude: restroom.longitude,
-      accessible: restroom.accessible,
-      unisex: restroom.unisex,
-      changing_table: restroom.changing_table,
-      comment: restroom.comment,
-      directions: restroom.directions,
-      created_at: restroom.created_at,
-      updated_at: restroom.updated_at,
-      upvote: restroom.upvote,
-      downvote: restroom.downvote
+    const restrooms = data.map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      street: r.street,
+      city: r.city,
+      state: r.state,
+      country: r.country,
+      latitude: r.latitude,
+      longitude: r.longitude,
+      accessible: r.accessible,
+      unisex: r.unisex,
+      changing_table: r.changing_table,
+      comment: r.comment,
+      directions: r.directions,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+      upvote: r.upvote,
+      downvote: r.downvote,
     }))
 
-    return new Response(
-      JSON.stringify(restrooms),
-      {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        },
-      },
-    )
+    return new Response(JSON.stringify(restrooms), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   } catch (error) {
     console.error('Error fetching restrooms:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      {
-        status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        },
-      },
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   }
 })

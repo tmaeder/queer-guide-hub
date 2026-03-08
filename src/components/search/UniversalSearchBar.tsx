@@ -1,18 +1,40 @@
-import { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { SearchInputTyped } from "@/components/ui/search-input-typed";
-import { Command, CommandEmpty, CommandList, CommandSeparator, CommandGroup, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Search, X, Clock, MapPin, Calendar, Users, ShoppingBag, Newspaper, Globe, Plane, FileText, SlidersHorizontal, Tag, User } from "lucide-react";
-import { useSearch, SearchResult, SearchFilters } from "@/hooks/useSearch";
-import { useSearchSuggestions, SearchSuggestion } from "@/hooks/useSearchSuggestions";
-import { SearchFiltersPanel } from "./SearchFiltersPanel";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { SearchInputTyped } from '@/components/ui/search-input-typed';
+import {
+  Command,
+  CommandEmpty,
+  CommandList,
+  CommandSeparator,
+  CommandGroup,
+  CommandItem,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Search,
+  X,
+  Clock,
+  MapPin,
+  Calendar,
+  Users,
+  ShoppingBag,
+  Newspaper,
+  Globe,
+  Plane,
+  FileText,
+  SlidersHorizontal,
+  Tag,
+  User,
+} from 'lucide-react';
+import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
+import { useSearchSuggestions, SearchSuggestion } from '@/hooks/useSearchSuggestions';
+import { SearchFiltersPanel } from './SearchFiltersPanel';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const contentTypeIcons: Record<string, any> = {
   venue: MapPin,
@@ -35,32 +57,32 @@ const contentTypeIcons: Record<string, any> = {
   group: Users,
 };
 const contentTypeLabels: Record<string, string> = {
-  venue: "Venues",
-  venues: "Venues",
-  event: "Events",
-  events: "Events",
-  marketplace: "Marketplace",
-  user: "Members",
-  news: "News",
-  location: "Places",
-  cities: "Cities",
-  countries: "Countries",
-  content: "Resources",
-  travel: "Places",
-  ressource: "Resources",
-  personality: "Personalities",
-  personalities: "Personalities",
-  tag: "Tags",
-  tags: "Tags",
-  group: "Groups",
+  venue: 'Venues',
+  venues: 'Venues',
+  event: 'Events',
+  events: 'Events',
+  marketplace: 'Marketplace',
+  user: 'Members',
+  news: 'News',
+  location: 'Places',
+  cities: 'Cities',
+  countries: 'Countries',
+  content: 'Resources',
+  travel: 'Places',
+  ressource: 'Resources',
+  personality: 'Personalities',
+  personalities: 'Personalities',
+  tag: 'Tags',
+  tags: 'Tags',
+  group: 'Groups',
 };
 
 export const UniversalSearchBar = () => {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
-    types: []
+    types: [],
   });
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [isFocused, setIsFocused] = useState(false);
@@ -75,18 +97,18 @@ export const UniversalSearchBar = () => {
     const prevPath = prevPathRef.current;
     prevPathRef.current = location.pathname;
     // Only clear when actually navigating away from search (not on every re-render)
-    if (prevPath !== location.pathname && prevPath.startsWith('/search') && !location.pathname.startsWith('/search')) {
-      setQuery("");
+    if (
+      prevPath !== location.pathname &&
+      prevPath.startsWith('/search') &&
+      !location.pathname.startsWith('/search')
+    ) {
+      setQuery('');
       setIsOpen(false);
       setShowFilters(false);
     }
   }, [location.pathname]);
 
-  const {
-    results,
-    suggestions: searchResults,
-    loading
-  } = useSearch(query, filters);
+  const { results, suggestions: searchResults, loading } = useSearch(query, filters);
 
   const { suggestions, loading: suggestionsLoading } = useSearchSuggestions(query);
 
@@ -105,7 +127,7 @@ export const UniversalSearchBar = () => {
   // Save search to recent searches
   const saveRecentSearch = (searchTerm: string) => {
     if (!searchTerm.trim()) return;
-    const updated = [searchTerm, ...recentSearches.filter(s => s !== searchTerm)].slice(0, 5);
+    const updated = [searchTerm, ...recentSearches.filter((s) => s !== searchTerm)].slice(0, 5);
     setRecentSearches(updated);
     localStorage.setItem('recent-searches', JSON.stringify(updated));
   };
@@ -118,14 +140,15 @@ export const UniversalSearchBar = () => {
     const params = new URLSearchParams({
       q: searchTerm,
       ...(filters.types.length > 0 && {
-        types: filters.types.join(",")
+        types: filters.types.join(','),
       }),
       ...(filters.location && {
-        location: filters.location
+        location: filters.location,
       }),
-      ...(filters.categories && filters.categories.length > 0 && {
-        categories: filters.categories.join(",")
-      })
+      ...(filters.categories &&
+        filters.categories.length > 0 && {
+          categories: filters.categories.join(','),
+        }),
     });
     navigate(`/search?${params}`);
     setIsOpen(false);
@@ -212,15 +235,17 @@ export const UniversalSearchBar = () => {
         navigate(`/groups/${suggestion.id}`);
         break;
       default:
-        navigate(`/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}&direct=true`);
+        navigate(
+          `/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}&direct=true`,
+        );
     }
     setIsOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleSearch();
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       setIsOpen(false);
       inputRef.current?.blur();
     }
@@ -247,10 +272,15 @@ export const UniversalSearchBar = () => {
     if (result.location) parts.push(result.location);
     if (result.price) parts.push(`$${result.price}`);
     if (result.date) parts.push(new Date(result.date).toLocaleDateString());
-    return parts.join(" • ");
+    return parts.join(' • ');
   };
 
-  const activeFiltersCount = filters.types.length + (filters.location ? 1 : 0) + (filters.categories?.length || 0) + (filters.priceRange ? 1 : 0) + (filters.rating ? 1 : 0);
+  const activeFiltersCount =
+    filters.types.length +
+    (filters.location ? 1 : 0) +
+    (filters.categories?.length || 0) +
+    (filters.priceRange ? 1 : 0) +
+    (filters.rating ? 1 : 0);
 
   // Focus input when popover opens
   useEffect(() => {
@@ -264,23 +294,22 @@ export const UniversalSearchBar = () => {
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Box sx={{ position: 'relative' }}>
-            <div
-              style={{
+            <Box
+              component="div"
+              role="search"
+              aria-label="Site search"
+              sx={{
                 display: 'flex',
                 alignItems: 'center',
                 transition: 'all 0.2s',
-                borderRadius: 8,
+                borderRadius: '8px',
                 cursor: 'text',
-                ...(isFocused
-                  ? {
-                      backgroundColor: '#ffffff',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      border: '1px solid rgba(0,0,0,0.2)',
-                    }
-                  : {
-                      backgroundColor: '#ffffff',
-                      border: '1px solid rgba(0,0,0,0.12)',
-                    }),
+                bgcolor: 'background.paper',
+                border: 1,
+                borderColor: isFocused ? 'text.secondary' : 'divider',
+                ...(isFocused && {
+                  boxShadow: 2,
+                }),
               }}
               onClick={() => {
                 setIsOpen(true);
@@ -306,17 +335,19 @@ export const UniversalSearchBar = () => {
               <Box sx={{ flex: 1, position: 'relative' }}>
                 <SearchInputTyped
                   ref={inputRef}
+                  aria-label="Search Queer Guide"
+                  role="searchbox"
                   placeholders={
                     isMobile
-                      ? ["Search..."]
+                      ? ['Search...']
                       : [
-                          "Search venues...",
-                          "Find events...",
-                          "Browse marketplace...",
-                          "Discover people...",
-                          "Read news...",
-                          "Explore resources...",
-                          "Meet personalities...",
+                          'Search venues...',
+                          'Find events...',
+                          'Browse marketplace...',
+                          'Discover people...',
+                          'Read news...',
+                          'Explore resources...',
+                          'Meet personalities...',
                         ]
                   }
                   typingSpeed={75}
@@ -361,7 +392,7 @@ export const UniversalSearchBar = () => {
                       color: '#666666',
                     }}
                     onClick={() => {
-                      setQuery("");
+                      setQuery('');
                       inputRef.current?.focus();
                     }}
                   >
@@ -384,7 +415,9 @@ export const UniversalSearchBar = () => {
                 }}
                 onClick={() => setShowFilters(!showFilters)}
               >
-                <SlidersHorizontal style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }} />
+                <SlidersHorizontal
+                  style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }}
+                />
                 {activeFiltersCount > 0 && (
                   <Badge
                     variant="destructive"
@@ -405,7 +438,7 @@ export const UniversalSearchBar = () => {
                   </Badge>
                 )}
               </Button>
-            </div>
+            </Box>
           </Box>
         </PopoverTrigger>
 
@@ -414,10 +447,6 @@ export const UniversalSearchBar = () => {
             width: isMobile ? 'calc(100vw - 2rem)' : 600,
             padding: 0,
             zIndex: 50,
-            backgroundColor: '#ffffff',
-            backdropFilter: 'blur(4px)',
-            border: '1px solid rgba(0,0,0,0.12)',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
           }}
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
@@ -442,11 +471,16 @@ export const UniversalSearchBar = () => {
                         onSelect={() => handleRecentSearch(search)}
                         style={{ cursor: 'pointer' }}
                       >
-                        <Clock style={{ height: 16, width: 16, marginRight: 8, color: '#666666' }} />
-                        <Box component="span" sx={{ flex: 1 }}>{search}</Box>
+                        <Clock
+                          style={{ height: 16, width: 16, marginRight: 8, color: '#666666' }}
+                        />
+                        <Box component="span" sx={{ flex: 1 }}>
+                          {search}
+                        </Box>
                         <Button
                           variant="ghost"
                           size="sm"
+                          aria-label={`Remove "${search}" from recent searches`}
                           style={{ height: 24, width: 24, padding: 0, marginLeft: 4 }}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -495,7 +529,15 @@ export const UniversalSearchBar = () => {
                               flexShrink: 0,
                             }}
                           />
-                          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'flex-start',
+                              flex: 1,
+                              minWidth: 0,
+                            }}
+                          >
                             <Box
                               component="span"
                               sx={{
@@ -546,23 +588,29 @@ export const UniversalSearchBar = () => {
 
               {/* Group search results by type */}
               {Object.entries(
-                searchResults.reduce((acc, result) => {
-                  if (!acc[result.type]) acc[result.type] = [];
-                  acc[result.type].push(result);
-                  return acc;
-                }, {} as Record<string, SearchResult[]>)
+                searchResults.reduce(
+                  (acc, result) => {
+                    if (!acc[result.type]) acc[result.type] = [];
+                    acc[result.type].push(result);
+                    return acc;
+                  },
+                  {} as Record<string, SearchResult[]>,
+                ),
               ).map(([type, typeResults]) => (
-                <CommandGroup key={type} heading={contentTypeLabels[type as keyof typeof contentTypeLabels]}>
+                <CommandGroup
+                  key={type}
+                  heading={contentTypeLabels[type as keyof typeof contentTypeLabels]}
+                >
                   {typeResults.map((result) => (
                     <CommandItem
                       key={`${result.type}-${result.objectID}`}
                       onSelect={() => handleSelectResult(result)}
                       style={{ cursor: 'pointer', padding: '8px 12px' }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, width: '100%' }}>
-                        <Box sx={{ flexShrink: 0, mt: 0.5 }}>
-                          {getResultIcon(result.type)}
-                        </Box>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, width: '100%' }}
+                      >
+                        <Box sx={{ flexShrink: 0, mt: 0.5 }}>{getResultIcon(result.type)}</Box>
                         {result.imageUrl && (
                           <Box sx={{ flexShrink: 0 }}>
                             <Box
@@ -620,7 +668,14 @@ export const UniversalSearchBar = () => {
                 !loading &&
                 !suggestionsLoading && (
                   <CommandEmpty style={{ padding: '24px 0', textAlign: 'center' }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
                       <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
                       <Typography>No results found for "{query}"</Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -633,7 +688,9 @@ export const UniversalSearchBar = () => {
               {/* Loading state */}
               {(loading || suggestionsLoading) && (
                 <Box sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}
+                  >
                     <CircularProgress size={24} />
                     <Typography variant="body2">Searching...</Typography>
                   </Box>
@@ -647,11 +704,8 @@ export const UniversalSearchBar = () => {
                   <Box sx={{ p: 1.5 }}>
                     <Button
                       onClick={() => handleSearch()}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#333333',
-                        color: '#ffffff',
-                      }}
+                      variant="default"
+                      style={{ width: '100%' }}
                       size="sm"
                     >
                       <Search style={{ height: 16, width: 16, marginRight: 8 }} />

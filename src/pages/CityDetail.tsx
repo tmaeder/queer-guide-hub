@@ -1,30 +1,52 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Globe, Users, Calendar, Building, Star, Heart, ExternalLink, Clock, Thermometer, Mountain, Phone, Plane, Bus, DollarSign, GraduationCap, Landmark, Info, FileText, Shield, Home } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useFavorites } from "@/hooks/useFavorites";
-import { useCityImages } from "@/hooks/useCityImages";
-import { useNews } from "@/hooks/useNews";
-import { useOptimizedVenues } from "@/hooks/useOptimizedVenues";
-import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
-import { useOptimizedCountry } from "@/hooks/useOptimizedDirectory";
-import { NewsCard } from "@/components/news/NewsCard";
-import { VenueCard } from "@/components/venues/VenueCard";
-import { EventCard } from "@/components/events/EventCard";
-import { WeatherForecast } from "@/components/weather/WeatherForecast";
-import { PageLoading, InlineLoading } from "@/components/ui/loading";
-import { TravelDealsSection } from "@/components/travel/TravelDealsSection";
-import EqualityScoreBadge from "@/components/country/EqualityScoreBadge";
-import SafetyAlertBanner from "@/components/country/SafetyAlertBanner";
-import { LocationInfo } from "@/components/location/LocationInfo";
-import LGBTJurisdictionInfo from "@/components/country/LGBTJurisdictionInfo";
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  MapPin,
+  Globe,
+  Users,
+  Calendar,
+  Building,
+  Star,
+  Heart,
+  ExternalLink,
+  Clock,
+  Thermometer,
+  Mountain,
+  Phone,
+  Plane,
+  Bus,
+  DollarSign,
+  GraduationCap,
+  Landmark,
+  Info,
+  FileText,
+  Shield,
+  Home,
+} from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useCityImages } from '@/hooks/useCityImages';
+import { useNews } from '@/hooks/useNews';
+import { useVenues } from '@/hooks/useVenues';
+import { useEvents } from '@/hooks/useEvents';
+import { useOptimizedCountry } from '@/hooks/useOptimizedDirectory';
+import { NewsCard } from '@/components/news/NewsCard';
+import { VenueCard } from '@/components/venues/VenueCard';
+import { EventCard } from '@/components/events/EventCard';
+import { WeatherForecast } from '@/components/weather/WeatherForecast';
+import { PageLoading, InlineLoading } from '@/components/ui/loading';
+import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
+import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
+import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { LocationInfo } from '@/components/location/LocationInfo';
+import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import { VillageCard } from '@/components/villages/VillageCard';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
 import Box from '@mui/material/Box';
@@ -84,34 +106,60 @@ export default function CityDetail() {
   const { articles, loading: newsLoading, fetchArticles } = useNews();
   const [city, setCity] = useState<CityWithCountry | null>(null);
   const [loading, setLoading] = useState(true);
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>('');
 
-  const { venues, loading: venuesLoading } = useOptimizedVenues({ city: city?.name, limit: 12 });
-  const { events, loading: eventsLoading } = useOptimizedEvents({ city: city?.name, limit: 12 });
-  const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(city?.countries?.id || '');
+  const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
+  const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+
+  useEffect(() => {
+    fetchVenues({ city: city?.name, limit: 12 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city?.name]);
+
+  useEffect(() => {
+    fetchEvents({ city: city?.name, limit: 12 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city?.name]);
+  const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(
+    city?.countries?.id || '',
+  );
   const { villages, loading: villagesLoading, fetchVillages } = useQueerVillages(false);
 
-  useEffect(() => { if (id) fetchCityDetails(); }, [id]);
-  useEffect(() => { if (city) { loadCityImage(); loadRelatedContent(); } }, [city]);
-  useEffect(() => { if (city?.id) fetchVillages({ cityId: city.id }); }, [city?.id, fetchVillages]);
+  useEffect(() => {
+    if (id) fetchCityDetails();
+  }, [id]);
+  useEffect(() => {
+    if (city) {
+      loadCityImage();
+      loadRelatedContent();
+    }
+  }, [city]);
+  useEffect(() => {
+    if (city?.id) fetchVillages({ cityId: city.id });
+  }, [city?.id, fetchVillages]);
 
   const loadRelatedContent = async () => {
     if (!city) return;
-    await fetchArticles({ cityIds: [city.id], countryIds: city.countries?.id ? [city.countries.id] : undefined });
+    await fetchArticles({
+      cityIds: [city.id],
+      countryIds: city.countries?.id ? [city.countries.id] : undefined,
+    });
   };
 
   const fetchCityDetails = async () => {
     try {
       const { data, error } = await supabase
         .from('cities')
-        .select(`*, countries (id, name, code, flag_emoji, currency, equality_score, lgbti_criminalization)`)
+        .select(
+          `*, countries (id, name, code, flag_emoji, currency, equality_score, lgbti_criminalization)`,
+        )
         .eq('id', id)
         .single();
       if (error) throw error;
       setCity(data);
     } catch (error) {
       console.error('Error fetching city details:', error);
-      toast({ title: "Error", description: "Failed to load city details", variant: "destructive" });
+      toast({ title: 'Error', description: 'Failed to load city details', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -132,11 +180,11 @@ export default function CityDetail() {
     try {
       await toggleFavorite(city.id);
       toast({
-        title: isFavorited(city.id) ? "Removed from favorites" : "Added to favorites",
-        description: `${city.name} ${isFavorited(city.id) ? 'removed from' : 'added to'} your favorites`
+        title: isFavorited(city.id) ? 'Removed from favorites' : 'Added to favorites',
+        description: `${city.name} ${isFavorited(city.id) ? 'removed from' : 'added to'} your favorites`,
       });
     } catch (error) {
-      toast({ title: "Error", description: "Failed to update favorites", variant: "destructive" });
+      toast({ title: 'Error', description: 'Failed to update favorites', variant: 'destructive' });
     }
   };
 
@@ -152,8 +200,12 @@ export default function CityDetail() {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>City Not Found</Typography>
-          <Typography sx={{ color: 'text.secondary', mb: 3 }}>The city you're looking for doesn't exist.</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+            City Not Found
+          </Typography>
+          <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+            The city you're looking for doesn't exist.
+          </Typography>
           <Link to="/places" style={{ color: 'inherit', fontWeight: 500 }}>
             ← Back to Places
           </Link>
@@ -165,18 +217,35 @@ export default function CityDetail() {
   return (
     <Box sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 3 }}>
       {/* Breadcrumb */}
-      <Box component="nav" sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.875rem', color: 'text.secondary', mb: 2 }}>
-        <Link to="/places" style={{ color: 'inherit', textDecoration: 'none' }}>← Back to Places</Link>
+      <Box
+        component="nav"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+          fontSize: '0.875rem',
+          color: 'text.secondary',
+          mb: 2,
+        }}
+      >
+        <Link to="/places" style={{ color: 'inherit', textDecoration: 'none' }}>
+          ← Back to Places
+        </Link>
         <span>/</span>
         {city.countries && (
           <>
-            <Link to={`/country/${city.countries.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+            <Link
+              to={`/country/${city.countries.id}`}
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
               {city.countries.name}
             </Link>
             <span>/</span>
           </>
         )}
-        <Box component="span" sx={{ color: 'text.primary', fontWeight: 500 }}>{city.name}</Box>
+        <Box component="span" sx={{ color: 'text.primary', fontWeight: 500 }}>
+          {city.name}
+        </Box>
       </Box>
 
       {/* Compact Hero Image */}
@@ -187,17 +256,35 @@ export default function CityDetail() {
             src={imageUrl}
             alt={city.name}
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
           />
         </Box>
       )}
 
       {/* Title Row */}
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, mb: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 2,
+          mb: 1,
+        }}
+      >
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 0.5 }}>
-            <Typography variant="h3" sx={{ fontSize: { xs: '2rem', lg: '2.75rem' }, fontWeight: 700, color: 'text.primary' }}>
-              {city.countries?.flag_emoji && <>{city.countries.flag_emoji}{' '}</>}{city.name}
+            <Typography
+              variant="h3"
+              sx={{
+                fontSize: { xs: '2rem', lg: '2.75rem' },
+                fontWeight: 700,
+                color: 'text.primary',
+              }}
+            >
+              {city.countries?.flag_emoji && <>{city.countries.flag_emoji} </>}
+              {city.name}
             </Typography>
             {city.countries?.equality_score != null && (
               <EqualityScoreBadge score={city.countries.equality_score} size="md" />
@@ -206,7 +293,15 @@ export default function CityDetail() {
           <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary', mb: 1 }}>
             {city.region_name && `${city.region_name}, `}
             {city.countries ? (
-              <Link to={`/country/${city.countries.id}`} style={{ color: 'inherit', textDecoration: 'underline', textDecorationColor: 'currentColor', textUnderlineOffset: '2px' }}>
+              <Link
+                to={`/country/${city.countries.id}`}
+                style={{
+                  color: 'inherit',
+                  textDecoration: 'underline',
+                  textDecorationColor: 'currentColor',
+                  textUnderlineOffset: '2px',
+                }}
+              >
                 {city.countries.name}
               </Link>
             ) : null}
@@ -215,9 +310,22 @@ export default function CityDetail() {
 
         <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, mt: 1 }}>
           <ReportButton contentType="cities" contentId={city.id} contentName={city.name} />
-          <AdminEditButton contentType="cities" contentId={city.id} contentName={city.name} currentData={city as Record<string, unknown>} onSaved={() => window.location.reload()} />
+          <AdminEditButton
+            contentType="cities"
+            contentId={city.id}
+            contentName={city.name}
+            currentData={city as Record<string, unknown>}
+            onSaved={() => window.location.reload()}
+          />
           <Button variant="outline" size="sm" onClick={handleFavoriteToggle}>
-            <Heart style={{ height: 16, width: 16, marginRight: 6, ...(isFavorited(city.id) ? { fill: 'currentColor', color: 'inherit' } : {}) }} />
+            <Heart
+              style={{
+                height: 16,
+                width: 16,
+                marginRight: 6,
+                ...(isFavorited(city.id) ? { fill: 'currentColor', color: 'inherit' } : {}),
+              }}
+            />
             {isFavorited(city.id) ? 'Favorited' : 'Favorite'}
           </Button>
           {city.official_website && (
@@ -234,26 +342,58 @@ export default function CityDetail() {
       {/* Compact Stat Chips */}
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
         {city.is_capital && (
-          <Chip icon={<Building style={{ height: 14, width: 14 }} />} label="Capital City" size="small" variant="outlined" />
+          <Chip
+            icon={<Building style={{ height: 14, width: 14 }} />}
+            label="Capital City"
+            size="small"
+            variant="outlined"
+          />
         )}
         {city.is_major_city && (
-          <Chip icon={<MapPin style={{ height: 14, width: 14 }} />} label="Major City" size="small" variant="outlined" />
+          <Chip
+            icon={<MapPin style={{ height: 14, width: 14 }} />}
+            label="Major City"
+            size="small"
+            variant="outlined"
+          />
         )}
         {city.population && (
-          <Chip icon={<Users style={{ height: 14, width: 14 }} />} label={formatPopulation(city.population)} size="small" variant="outlined" />
+          <Chip
+            icon={<Users style={{ height: 14, width: 14 }} />}
+            label={formatPopulation(city.population)}
+            size="small"
+            variant="outlined"
+          />
         )}
         {city.timezone && (
-          <Chip icon={<Clock style={{ height: 14, width: 14 }} />} label={city.timezone} size="small" variant="outlined" />
+          <Chip
+            icon={<Clock style={{ height: 14, width: 14 }} />}
+            label={city.timezone}
+            size="small"
+            variant="outlined"
+          />
         )}
         {city.major_airport_code && (
-          <Chip icon={<Plane style={{ height: 14, width: 14 }} />} label={city.major_airport_code} size="small" variant="outlined" />
+          <Chip
+            icon={<Plane style={{ height: 14, width: 14 }} />}
+            label={city.major_airport_code}
+            size="small"
+            variant="outlined"
+          />
         )}
         {city.climate_type && (
-          <Chip icon={<Thermometer style={{ height: 14, width: 14 }} />} label={city.climate_type} size="small" variant="outlined" />
+          <Chip
+            icon={<Thermometer style={{ height: 14, width: 14 }} />}
+            label={city.climate_type}
+            size="small"
+            variant="outlined"
+          />
         )}
         {city.lgbt_friendly_rating && (
           <Chip
-            icon={<Star style={{ height: 14, width: 14, fill: 'currentColor', color: 'inherit' }} />}
+            icon={
+              <Star style={{ height: 14, width: 14, fill: 'currentColor', color: 'inherit' }} />
+            }
             label={`${city.lgbt_friendly_rating}/5 LGBTQ+ Friendly`}
             size="small"
             variant="outlined"
@@ -263,45 +403,69 @@ export default function CityDetail() {
 
       {/* Safety Alert Banner */}
       <SafetyAlertBanner
-        criminalization={city.countries?.lgbti_criminalization as Record<string, any> | null | undefined}
+        criminalization={
+          city.countries?.lgbti_criminalization as Record<string, any> | null | undefined
+        }
         countryName={city.countries?.name || ''}
       />
 
       {/* Main Content — Tabs */}
       <Card sx={{ borderColor: 'divider', boxShadow: 1 }}>
         <CardContent sx={{ p: { xs: 2, md: 3 } }}>
-          <Tabs defaultValue="overview" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(6, 1fr)' }}>
+          <Tabs
+            defaultValue="overview"
+            style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
+          >
+            <TabsList
+              style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(6, 1fr)' }}
+            >
               <TabsTrigger value="overview" style={{ fontSize: '0.875rem' }}>
                 <Info style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Overview</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Overview
+                </Box>
               </TabsTrigger>
               <TabsTrigger value="rights" style={{ fontSize: '0.875rem' }}>
                 <Shield style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Rights</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Rights
+                </Box>
               </TabsTrigger>
               <TabsTrigger value="venues" style={{ fontSize: '0.875rem' }}>
                 <Building style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Venues</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Venues
+                </Box>
               </TabsTrigger>
               <TabsTrigger value="events" style={{ fontSize: '0.875rem' }}>
                 <Calendar style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Events</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Events
+                </Box>
               </TabsTrigger>
               <TabsTrigger value="travel" style={{ fontSize: '0.875rem' }}>
                 <Plane style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Travel</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Travel
+                </Box>
               </TabsTrigger>
               <TabsTrigger value="news" style={{ fontSize: '0.875rem' }}>
                 <FileText style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>News</Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  News
+                </Box>
               </TabsTrigger>
             </TabsList>
 
             {/* ═══ OVERVIEW TAB ═══ */}
-            <TabsContent value="overview" style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}>
+            <TabsContent
+              value="overview"
+              style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}
+            >
               {/* About + Quick Facts */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, gap: 3 }}>
+              <Box
+                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, gap: 3 }}
+              >
                 <Card sx={{ borderColor: 'divider' }}>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -311,7 +475,8 @@ export default function CityDetail() {
                   </CardHeader>
                   <CardContent>
                     <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-                      {city.description || `Discover ${city.name} – from local venues and cultural landmarks to upcoming events.`}
+                      {city.description ||
+                        `Discover ${city.name} – from local venues and cultural landmarks to upcoming events.`}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -325,48 +490,128 @@ export default function CityDetail() {
                   </CardHeader>
                   <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {city.countries?.name && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Globe style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Country</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Country
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.countries.name}</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.countries.name}
+                        </Typography>
                       </Box>
                     )}
                     {city.countries?.currency && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <DollarSign style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Currency</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Currency
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.countries.currency}</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.countries.currency}
+                        </Typography>
                       </Box>
                     )}
                     {city.local_language && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Globe style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Language</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Language
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.local_language}</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.local_language}
+                        </Typography>
                       </Box>
                     )}
                     {city.timezone && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Clock style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Timezone</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Timezone
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.timezone}</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.timezone}
+                        </Typography>
                       </Box>
                     )}
                     {city.best_time_to_visit && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Best Time</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Best Time
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700, fontSize: '0.875rem' }}>{city.best_time_to_visit}</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700, fontSize: '0.875rem' }}>
+                          {city.best_time_to_visit}
+                        </Typography>
                       </Box>
                     )}
                   </CardContent>
@@ -378,11 +623,21 @@ export default function CityDetail() {
 
               {/* Weather Forecast */}
               {city.latitude && city.longitude && (
-                <WeatherForecast latitude={city.latitude} longitude={city.longitude} cityName={city.name} />
+                <WeatherForecast
+                  latitude={city.latitude}
+                  longitude={city.longitude}
+                  cityName={city.name}
+                />
               )}
 
               {/* Info Cards Grid */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+                  gap: 3,
+                }}
+              >
                 {/* Basic Information */}
                 <Card sx={{ borderColor: 'divider' }}>
                   <CardHeader>
@@ -393,39 +648,103 @@ export default function CityDetail() {
                   </CardHeader>
                   <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {city.population && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Users style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Population</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Population
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.population.toLocaleString()}</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.population.toLocaleString()}
+                        </Typography>
                       </Box>
                     )}
                     {city.founded_year && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Founded</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Founded
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.founded_year}</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.founded_year}
+                        </Typography>
                       </Box>
                     )}
                     {city.area_km2 && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Mountain style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Area</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Area
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.area_km2} km²</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.area_km2} km²
+                        </Typography>
                       </Box>
                     )}
                     {city.elevation_m && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Mountain style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Elevation</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Elevation
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.elevation_m} m</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.elevation_m} m
+                        </Typography>
                       </Box>
                     )}
                   </CardContent>
@@ -444,18 +763,35 @@ export default function CityDetail() {
                       <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                           <Thermometer style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Climate</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Climate
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.climate_type}</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.climate_type}
+                        </Typography>
                       </Box>
                     )}
                     {city.latitude && city.longitude && (
                       <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                           <MapPin style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Coordinates</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Coordinates
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>{city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}</Typography>
+                        <Typography
+                          component="span"
+                          sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}
+                        >
+                          {city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}
+                        </Typography>
                       </Box>
                     )}
                   </CardContent>
@@ -472,20 +808,39 @@ export default function CityDetail() {
                   <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {city.postal_codes && city.postal_codes.length > 0 && (
                       <Box>
-                        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1, display: 'block' }}>Postal Codes</Typography>
+                        <Typography
+                          component="span"
+                          sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1, display: 'block' }}
+                        >
+                          Postal Codes
+                        </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {city.postal_codes.slice(0, 3).map((code, index) => <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>{code}</Badge>)}
-                          {city.postal_codes.length > 3 && <Badge variant="outline" style={{ fontSize: '0.75rem' }}>+{city.postal_codes.length - 3} more</Badge>}
+                          {city.postal_codes.slice(0, 3).map((code, index) => (
+                            <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                              {code}
+                            </Badge>
+                          ))}
+                          {city.postal_codes.length > 3 && (
+                            <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                              +{city.postal_codes.length - 3} more
+                            </Badge>
+                          )}
                         </Box>
                       </Box>
                     )}
                     {city.area_codes && city.area_codes.length > 0 && (
                       <Box>
-                        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1, display: 'block' }}>Area Codes</Typography>
+                        <Typography
+                          component="span"
+                          sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1, display: 'block' }}
+                        >
+                          Area Codes
+                        </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {city.area_codes.map((code, index) => (
                             <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
-                              <Phone style={{ height: 12, width: 12, marginRight: 4 }} />{code}
+                              <Phone style={{ height: 12, width: 12, marginRight: 4 }} />
+                              {code}
                             </Badge>
                           ))}
                         </Box>
@@ -495,7 +850,12 @@ export default function CityDetail() {
                       <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                           <Plane style={{ height: 16, width: 16, color: '#999999' }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Major Airport</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Major Airport
+                          </Typography>
                         </Box>
                         <Badge variant="outline">{city.major_airport_code}</Badge>
                       </Box>
@@ -514,13 +874,34 @@ export default function CityDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          md: 'repeat(2, 1fr)',
+                          lg: 'repeat(3, 1fr)',
+                        },
+                        gap: 2,
+                      }}
+                    >
                       {Object.entries(city.demographics).map(([key, value]) => (
                         <Box key={key} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, textTransform: 'capitalize', display: 'block', mb: 0.5 }}>
+                          <Typography
+                            component="span"
+                            sx={{
+                              fontSize: '0.875rem',
+                              fontWeight: 500,
+                              textTransform: 'capitalize',
+                              display: 'block',
+                              mb: 0.5,
+                            }}
+                          >
                             {key.replace(/_/g, ' ')}
                           </Typography>
-                          <Typography component="span" sx={{ fontWeight: 700 }}>{String(value)}</Typography>
+                          <Typography component="span" sx={{ fontWeight: 700 }}>
+                            {String(value)}
+                          </Typography>
                         </Box>
                       ))}
                     </Box>
@@ -529,7 +910,13 @@ export default function CityDetail() {
               )}
 
               {/* Economy */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                  gap: 3,
+                }}
+              >
                 {city.economy_sectors && city.economy_sectors.length > 0 && (
                   <Card sx={{ borderColor: 'divider' }}>
                     <CardHeader>
@@ -540,7 +927,11 @@ export default function CityDetail() {
                     </CardHeader>
                     <CardContent>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {city.economy_sectors.map((sector, index) => <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>{sector}</Badge>)}
+                        {city.economy_sectors.map((sector, index) => (
+                          <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                            {sector}
+                          </Badge>
+                        ))}
                       </Box>
                     </CardContent>
                   </Card>
@@ -556,9 +947,30 @@ export default function CityDetail() {
                     <CardContent>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                         {Object.entries(city.cost_of_living).map(([key, value]) => (
-                          <Box key={key} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                            <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, textTransform: 'capitalize' }}>{key.replace(/_/g, ' ')}</Typography>
-                            <Typography component="span" sx={{ fontWeight: 700 }}>{String(value)}</Typography>
+                          <Box
+                            key={key}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              p: 1.5,
+                              borderRadius: 2,
+                              bgcolor: 'action.hover',
+                            }}
+                          >
+                            <Typography
+                              component="span"
+                              sx={{
+                                fontSize: '0.875rem',
+                                fontWeight: 500,
+                                textTransform: 'capitalize',
+                              }}
+                            >
+                              {key.replace(/_/g, ' ')}
+                            </Typography>
+                            <Typography component="span" sx={{ fontWeight: 700 }}>
+                              {String(value)}
+                            </Typography>
                           </Box>
                         ))}
                       </Box>
@@ -577,12 +989,27 @@ export default function CityDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          md: 'repeat(2, 1fr)',
+                          lg: 'repeat(3, 1fr)',
+                        },
+                        gap: 1.5,
+                      }}
+                    >
                       {city.universities.map((university, index) => (
                         <Box key={index} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <GraduationCap style={{ height: 16, width: 16 }} />
-                            <Typography component="span" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{university}</Typography>
+                            <Typography
+                              component="span"
+                              sx={{ fontWeight: 500, fontSize: '0.875rem' }}
+                            >
+                              {university}
+                            </Typography>
                           </Box>
                         </Box>
                       ))}
@@ -592,7 +1019,13 @@ export default function CityDetail() {
               )}
 
               {/* Culture */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                  gap: 3,
+                }}
+              >
                 {city.notable_landmarks && city.notable_landmarks.length > 0 && (
                   <Card sx={{ borderColor: 'divider' }}>
                     <CardHeader>
@@ -604,10 +1037,15 @@ export default function CityDetail() {
                     <CardContent>
                       <Box sx={{ display: 'grid', gap: 1.5 }}>
                         {city.notable_landmarks.map((landmark, index) => (
-                          <Box key={index} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                          <Box
+                            key={index}
+                            sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}
+                          >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Landmark style={{ height: 16, width: 16 }} />
-                              <Typography component="span" sx={{ fontWeight: 500 }}>{landmark}</Typography>
+                              <Typography component="span" sx={{ fontWeight: 500 }}>
+                                {landmark}
+                              </Typography>
                             </Box>
                           </Box>
                         ))}
@@ -626,10 +1064,15 @@ export default function CityDetail() {
                     <CardContent>
                       <Box sx={{ display: 'grid', gap: 1.5 }}>
                         {city.sister_cities.map((sisterCity, index) => (
-                          <Box key={index} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
+                          <Box
+                            key={index}
+                            sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}
+                          >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Globe style={{ height: 16, width: 16 }} />
-                              <Typography component="span" sx={{ fontWeight: 500 }}>{sisterCity}</Typography>
+                              <Typography component="span" sx={{ fontWeight: 500 }}>
+                                {sisterCity}
+                              </Typography>
                             </Box>
                           </Box>
                         ))}
@@ -649,7 +1092,9 @@ export default function CityDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>{city.local_customs}</Typography>
+                    <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+                      {city.local_customs}
+                    </Typography>
                   </CardContent>
                 </Card>
               )}
@@ -664,8 +1109,20 @@ export default function CityDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-                      {villages.map(village => <VillageCard key={village.id} village={village} />)}
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          sm: 'repeat(2, 1fr)',
+                          md: 'repeat(3, 1fr)',
+                        },
+                        gap: 2,
+                      }}
+                    >
+                      {villages.map((village) => (
+                        <VillageCard key={village.id} village={village} />
+                      ))}
                     </Box>
                   </CardContent>
                 </Card>
@@ -673,17 +1130,32 @@ export default function CityDetail() {
             </TabsContent>
 
             {/* ═══ RIGHTS TAB ═══ */}
-            <TabsContent value="rights" style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <TabsContent
+              value="rights"
+              style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}
+            >
+              <Box
+                sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}
+              >
                 <Box>
-                  <Typography variant="h2" sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}>LGBTI Rights</Typography>
+                  <Typography
+                    variant="h2"
+                    sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}
+                  >
+                    LGBTI Rights
+                  </Typography>
                   <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
                     Legal protections and rights status in{' '}
                     {city.countries ? (
-                      <Link to={`/country/${city.countries.id}`} style={{ color: 'inherit', textDecoration: 'underline' }}>
+                      <Link
+                        to={`/country/${city.countries.id}`}
+                        style={{ color: 'inherit', textDecoration: 'underline' }}
+                      >
                         {city.countries.name}
                       </Link>
-                    ) : 'this country'}
+                    ) : (
+                      'this country'
+                    )}
                   </Typography>
                 </Box>
                 {city.countries?.equality_score != null && (
@@ -691,20 +1163,40 @@ export default function CityDetail() {
                 )}
               </Box>
 
-              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'action.hover', border: '1px solid', borderColor: 'divider' }}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: 'action.hover',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
                 <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
-                  The rights information below applies to {city.countries?.name || 'this country'} at the national level. Local laws and enforcement in {city.name} may vary.
+                  The rights information below applies to {city.countries?.name || 'this country'}{' '}
+                  at the national level. Local laws and enforcement in {city.name} may vary.
                 </Typography>
               </Box>
 
               {countryLoading ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 8,
+                    gap: 2,
+                  }}
+                >
                   <InlineLoading text="Loading rights data..." size="md" />
                 </Box>
               ) : fullCountry ? (
                 <LGBTJurisdictionInfo country={fullCountry} />
               ) : (
-                <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>Rights data is not available for this location.</Typography>
+                <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>
+                  Rights data is not available for this location.
+                </Typography>
               )}
             </TabsContent>
 
@@ -713,14 +1205,28 @@ export default function CityDetail() {
               {venuesLoading ? (
                 <InlineLoading text="Loading venues..." size="md" />
               ) : venues.length > 0 ? (
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
-                  {venues.map(venue => <VenueCard key={venue.id} venue={venue} />)}
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                    gap: 2,
+                  }}
+                >
+                  {venues.map((venue) => (
+                    <VenueCard key={venue.id} venue={venue} />
+                  ))}
                 </Box>
               ) : (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <Building style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }} />
-                  <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No venues found yet</Typography>
-                  <Typography sx={{ color: 'text.secondary' }}>Be the first to add venues in {city.name}!</Typography>
+                  <Building
+                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                  />
+                  <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
+                    No venues found yet
+                  </Typography>
+                  <Typography sx={{ color: 'text.secondary' }}>
+                    Be the first to add venues in {city.name}!
+                  </Typography>
                 </Box>
               )}
             </TabsContent>
@@ -730,27 +1236,50 @@ export default function CityDetail() {
               {eventsLoading ? (
                 <InlineLoading text="Loading events..." size="md" />
               ) : events.length > 0 ? (
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
-                  {events.map(event => <EventCard key={event.id} event={event} />)}
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                    gap: 2,
+                  }}
+                >
+                  {events.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
                 </Box>
               ) : (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <Calendar style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }} />
-                  <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No upcoming events</Typography>
-                  <Typography sx={{ color: 'text.secondary' }}>Check back later for events in {city.name}!</Typography>
+                  <Calendar
+                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                  />
+                  <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
+                    No upcoming events
+                  </Typography>
+                  <Typography sx={{ color: 'text.secondary' }}>
+                    Check back later for events in {city.name}!
+                  </Typography>
                 </Box>
               )}
             </TabsContent>
 
             {/* ═══ TRAVEL TAB ═══ */}
-            <TabsContent value="travel" style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}>
+            <TabsContent
+              value="travel"
+              style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}
+            >
               <TravelDealsSection
                 destinationIata={city.major_airport_code}
                 destinationCity={city.name}
                 destinationCountryCode={city.countries?.code}
               />
 
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                  gap: 3,
+                }}
+              >
                 {/* Airports */}
                 <Card sx={{ borderColor: 'divider' }}>
                   <CardHeader>
@@ -764,18 +1293,31 @@ export default function CityDetail() {
                       <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover', mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                           <Plane style={{ height: 16, width: 16 }} />
-                          <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Major Airport</Typography>
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Major Airport
+                          </Typography>
                         </Box>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>{city.major_airport_code}</Typography>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {city.major_airport_code}
+                        </Typography>
                       </Box>
                     )}
                     {city.airport_codes && city.airport_codes.length > 0 && (
                       <Box>
-                        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1.5, display: 'block' }}>All Airport Codes</Typography>
+                        <Typography
+                          component="span"
+                          sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1.5, display: 'block' }}
+                        >
+                          All Airport Codes
+                        </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                           {city.airport_codes.map((code, index) => (
                             <Badge key={index} variant="outline">
-                              <Plane style={{ height: 12, width: 12, marginRight: 4 }} />{code}
+                              <Plane style={{ height: 12, width: 12, marginRight: 4 }} />
+                              {code}
                             </Badge>
                           ))}
                         </Box>
@@ -793,20 +1335,34 @@ export default function CityDetail() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {city.transportation_info && Object.keys(city.transportation_info).length > 0 ? (
+                    {city.transportation_info &&
+                    Object.keys(city.transportation_info).length > 0 ? (
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                         {Object.entries(city.transportation_info).map(([key, value]) => (
                           <Box key={key} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                               <Bus style={{ height: 16, width: 16, color: '#999999' }} />
-                              <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, textTransform: 'capitalize' }}>{key.replace(/_/g, ' ')}</Typography>
+                              <Typography
+                                component="span"
+                                sx={{
+                                  fontSize: '0.875rem',
+                                  fontWeight: 500,
+                                  textTransform: 'capitalize',
+                                }}
+                              >
+                                {key.replace(/_/g, ' ')}
+                              </Typography>
                             </Box>
-                            <Typography component="span" sx={{ fontSize: '0.875rem' }}>{String(value)}</Typography>
+                            <Typography component="span" sx={{ fontSize: '0.875rem' }}>
+                              {String(value)}
+                            </Typography>
                           </Box>
                         ))}
                       </Box>
                     ) : (
-                      <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>No transportation information available.</Typography>
+                      <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>
+                        No transportation information available.
+                      </Typography>
                     )}
                   </CardContent>
                 </Card>
@@ -818,14 +1374,28 @@ export default function CityDetail() {
               {newsLoading ? (
                 <InlineLoading text="Loading news..." size="md" />
               ) : articles.length > 0 ? (
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
-                  {articles.slice(0, 6).map(article => <NewsCard key={article.id} article={article} />)}
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                    gap: 2,
+                  }}
+                >
+                  {articles.slice(0, 6).map((article) => (
+                    <NewsCard key={article.id} article={article} />
+                  ))}
                 </Box>
               ) : (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <FileText style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }} />
-                  <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No news available</Typography>
-                  <Typography sx={{ color: 'text.secondary' }}>Check back later for news about {city.name}!</Typography>
+                  <FileText
+                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                  />
+                  <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
+                    No news available
+                  </Typography>
+                  <Typography sx={{ color: 'text.secondary' }}>
+                    Check back later for news about {city.name}!
+                  </Typography>
                 </Box>
               )}
             </TabsContent>

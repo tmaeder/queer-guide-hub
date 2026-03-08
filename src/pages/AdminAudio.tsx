@@ -11,13 +11,15 @@ export default function AdminAudio() {
 
   const handleUploadComplete = () => {
     // Refresh the audio manager when upload completes
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>Audio Management</Typography>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
+          Audio Management
+        </Typography>
         <Typography variant="body2" color="text.secondary">
           Upload and manage audio with modern codec processing (Opus → AAC → MP3)
         </Typography>

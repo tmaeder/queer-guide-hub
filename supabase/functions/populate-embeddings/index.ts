@@ -94,7 +94,7 @@ serve(async (req) => {
 
     let totalProcessed = 0;
     let totalErrors = 0;
-    let totalSkipped = 0;
+    const totalSkipped = 0;
     let apiFailed = false;
 
     for (const contentType of content_types) {

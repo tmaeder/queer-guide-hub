@@ -17,9 +17,9 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
   const [customUrl, setCustomUrl] = useState('');
   const [showCustom, setShowCustom] = useState(false);
 
-  const categories = ['all', ...new Set(PLATFORM_CONFIGS.map(p => p.category))];
+  const categories = ['all', ...new Set(PLATFORM_CONFIGS.map((p) => p.category))];
 
-  const filteredPlatforms = PLATFORM_CONFIGS.filter(platform => {
+  const filteredPlatforms = PLATFORM_CONFIGS.filter((platform) => {
     const matchesSearch = platform.platform.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || platform.category === selectedCategory;
     return matchesSearch && matchesCategory;
@@ -33,9 +33,9 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
   const handleCustomAdd = () => {
     if (customUrl.trim()) {
       // Auto-detect platform from URL
-      const detectedPlatform = PLATFORM_CONFIGS.find(p => {
+      const detectedPlatform = PLATFORM_CONFIGS.find((p) => {
         try {
-          const regex = new RegExp(p.urlDetectionRegex.replace(/^\(\?\i\)/, ''), 'i');
+          const regex = new RegExp(p.urlDetectionRegex.replace(/^\(\?i\)/, ''), 'i');
           return regex.test(customUrl);
         } catch {
           return false;
@@ -49,21 +49,39 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, border: 1, borderRadius: 2, borderColor: 'divider', bgcolor: 'background.paper' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        p: 2,
+        border: 1,
+        borderRadius: 2,
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+      }}
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" sx={{ fontWeight: 500 }}>Add Platform</Typography>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowCustom(!showCustom)}
-        >
+        <Typography variant="h6" sx={{ fontWeight: 500 }}>
+          Add Platform
+        </Typography>
+        <Button variant="ghost" size="sm" onClick={() => setShowCustom(!showCustom)}>
           <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
           Custom URL
         </Button>
       </Box>
 
       {showCustom && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 1.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+            p: 1.5,
+            bgcolor: 'action.hover',
+            borderRadius: 1.5,
+          }}
+        >
           <Label htmlFor="custom-url">Custom URL</Label>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Input
@@ -81,7 +99,16 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         <Box sx={{ position: 'relative' }}>
-          <Search style={{ position: 'absolute', left: 12, top: 12, width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+          <Search
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: 12,
+              width: 16,
+              height: 16,
+              color: 'var(--muted-foreground)',
+            }}
+          />
           <Input
             placeholder="Search platforms..."
             value={searchTerm}
@@ -103,10 +130,14 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
                 fontWeight: 500,
                 transition: 'colors 0.2s',
                 bgcolor: selectedCategory === category ? 'primary.main' : 'secondary.main',
-                color: selectedCategory === category ? 'primary.contrastText' : 'secondary.contrastText',
-                '&:hover': { bgcolor: selectedCategory === category ? 'primary.main' : 'secondary.dark', opacity: 0.8 },
+                color:
+                  selectedCategory === category ? 'primary.contrastText' : 'secondary.contrastText',
+                '&:hover': {
+                  bgcolor: selectedCategory === category ? 'primary.main' : 'secondary.dark',
+                  opacity: 0.8,
+                },
                 border: 'none',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
               onClick={() => setSelectedCategory(category)}
             >
@@ -116,18 +147,36 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }, gap: 1, maxHeight: 240, overflowY: 'auto' }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' },
+          gap: 1,
+          maxHeight: 240,
+          overflowY: 'auto',
+        }}
+      >
         {filteredPlatforms.map((platform) => {
           const Icon = platform.icon;
           return (
             <Button
               key={platform.platform}
               variant="outline"
-              sx={{ height: 'auto', p: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, '&:hover': { bgcolor: 'action.hover' } }}
+              sx={{
+                height: 'auto',
+                p: 1.5,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 1,
+                '&:hover': { bgcolor: 'action.hover' },
+              }}
               onClick={() => handleQuickAdd(platform)}
             >
               <Icon style={{ width: 20, height: 20 }} />
-              <Typography variant="caption" sx={{ textAlign: 'center' }}>{platform.platform}</Typography>
+              <Typography variant="caption" sx={{ textAlign: 'center' }}>
+                {platform.platform}
+              </Typography>
             </Button>
           );
         })}

@@ -111,6 +111,7 @@ async function callOpenAI(prompt: string, systemPrompt: string): Promise<string>
       ],
       temperature: 0.2,
       max_tokens: 1000,
+      store: false,
     }),
   });
 

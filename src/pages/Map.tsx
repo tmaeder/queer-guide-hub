@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
 import { ExploreMap } from '@/components/map/ExploreMap';
 import type { LayerType, ExploreMapFilters } from '@/hooks/useExploreMapData';
@@ -28,7 +28,9 @@ const MapPage: React.FC = () => {
     try {
       const raw = localStorage.getItem(PREFS_KEY);
       return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }, []);
 
   // Parse URL → saved prefs → defaults

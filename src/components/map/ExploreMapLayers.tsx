@@ -3,15 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Switch from '@mui/material/Switch';
 import Chip from '@mui/material/Chip';
-import {
-  MapPin,
-  Calendar,
-  Building2,
-  Globe,
-  Accessibility,
-  Hotel,
-  Landmark,
-} from 'lucide-react';
+import { MapPin, Calendar, Building2, Globe, Accessibility, Hotel, Landmark } from 'lucide-react';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 
@@ -35,7 +27,7 @@ export const LAYER_DEFS: LayerDef[] = [
   { type: 'countries', label: 'Countries', icon: Globe, defaultOn: false },
   { type: 'restrooms', label: 'Restrooms', icon: Accessibility, defaultOn: false },
   { type: 'hotels', label: 'Hotels', icon: Hotel, defaultOn: false, comingSoon: true },
-  { type: 'neighbourhoods', label: 'Neighbourhoods', icon: Landmark, defaultOn: false, comingSoon: true },
+  { type: 'neighbourhoods', label: 'Neighbourhoods', icon: Landmark, defaultOn: false },
 ];
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -66,7 +58,11 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
       }}
     >
-      <Typography variant="caption" fontWeight={600} sx={{ mb: 0.5, display: 'block', color: '#374151' }}>
+      <Typography
+        variant="caption"
+        fontWeight={600}
+        sx={{ mb: 0.5, display: 'block', color: '#374151' }}
+      >
         Layers
       </Typography>
       {LAYER_DEFS.map(({ type, label, icon: Icon, comingSoon }) => {

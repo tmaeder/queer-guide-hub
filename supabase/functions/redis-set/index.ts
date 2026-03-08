@@ -101,7 +101,7 @@ serve(async (req) => {
     }
 
     // Prepare the Redis command
-    let command = ['SET', key, JSON.stringify(value)] as string[]
+    const command = ['SET', key, JSON.stringify(value)] as string[]
     
     // Add TTL if provided (in seconds)
     if (ttl && ttl > 0) {

@@ -349,7 +349,7 @@ Deno.serve(async (req) => {
 
     let totalImported = 0
     let totalUpdated = 0
-    let totalSkipped = 0
+    const totalSkipped = 0
     
     // Reduced city list
     const allCities = [

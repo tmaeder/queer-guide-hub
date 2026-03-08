@@ -33,8 +33,9 @@ export function useEvents(autoFetch: boolean = true) {
       targetGroups?: string[];
       search?: string;
       nearMe?: { lat: number; lng: number };
+      limit?: number;
     },
-    options?: { page?: number; pageSize?: number; append?: boolean }
+    options?: { page?: number; pageSize?: number; append?: boolean },
   ) => {
     let fetchedCount = 0;
     let totalCount: number | null = null;
@@ -46,7 +47,8 @@ export function useEvents(autoFetch: boolean = true) {
 
       let query = supabase
         .from('events')
-        .select(`
+        .select(
+          `
           *,
           event_attendees(status),
           venues(
@@ -60,7 +62,9 @@ export function useEvents(autoFetch: boolean = true) {
             website,
             email
           )
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' },
+        )
         .eq('status', 'active')
         .gte('start_date', new Date().toISOString())
         .order('featured', { ascending: false })
@@ -92,6 +96,10 @@ export function useEvents(autoFetch: boolean = true) {
         query = query.overlaps('target_groups', filters.targetGroups);
       }
 
+      if (typeof filters?.limit === 'number') {
+        query = query.limit(filters.limit);
+      }
+
       if (filters?.search) {
         query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
       }
@@ -102,34 +110,34 @@ export function useEvents(autoFetch: boolean = true) {
         query = query.range(from, to);
       }
 
-      const { data, error, count } = await queryWithRetry(() => query) as any;
+      const { data, error, count } = (await queryWithRetry(() => query)) as any;
 
       if (error) throw error;
-      
+
       let eventsData = (data as Event[]) || [];
-      
+
       // Filter by distance if nearMe is provided
       if (filters?.nearMe) {
         // Filter events within 50km and add distance
         eventsData = eventsData
-          .filter(event => event.latitude && event.longitude)
-          .map(event => ({
+          .filter((event) => event.latitude && event.longitude)
+          .map((event) => ({
             ...event,
             distance: calculateDistanceKm(
               filters.nearMe!.lat,
               filters.nearMe!.lng,
               event.latitude!,
-              event.longitude!
-            )
+              event.longitude!,
+            ),
           }))
           .filter((event: any) => event.distance <= 50)
           .sort((a: any, b: any) => a.distance - b.distance);
       }
-      
+
       if (options?.append) {
-        setEvents(prev => {
+        setEvents((prev) => {
           const merged = [...prev, ...eventsData];
-          return Array.from(new Map(merged.map(e => [e.id, e])).values());
+          return Array.from(new Map(merged.map((e) => [e.id, e])).values());
         });
       } else {
         setEvents(eventsData);
@@ -158,18 +166,14 @@ export function useEvents(autoFetch: boolean = true) {
 
   const createEvent = async (event: EventInsert) => {
     try {
-      const { data, error } = await supabase
-        .from('events')
-        .insert([event])
-        .select()
-        .single();
+      const { data, error } = await supabase.from('events').insert([event]).select().single();
 
       if (error) throw error;
       return { data, error: null };
     } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Failed to create event' 
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : 'Failed to create event',
       };
     }
   };
@@ -186,55 +190,51 @@ export function useEvents(autoFetch: boolean = true) {
       if (error) throw error;
       return { data, error: null };
     } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Failed to update event' 
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : 'Failed to update event',
       };
     }
   };
 
   const deleteEvent = async (eventId: string) => {
     try {
-      const { error } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', eventId);
+      const { error } = await supabase.from('events').delete().eq('id', eventId);
 
       if (error) throw error;
       return { error: null };
     } catch (err) {
-      return { 
-        error: err instanceof Error ? err.message : 'Failed to delete event' 
+      return {
+        error: err instanceof Error ? err.message : 'Failed to delete event',
       };
     }
   };
 
-  const updateAttendance = async (eventId: string, status: 'going' | 'interested' | 'not_going') => {
+  const updateAttendance = async (
+    eventId: string,
+    status: 'going' | 'interested' | 'not_going',
+  ) => {
     try {
-      const { error } = await supabase
-        .from('event_attendees')
-        .upsert({
-          event_id: eventId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          status
-        });
+      const { error } = await supabase.from('event_attendees').upsert({
+        event_id: eventId,
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+        status,
+      });
 
       if (error) throw error;
 
       // Auto-add to favorites when going or interested
       if (status === 'going' || status === 'interested') {
-        await supabase
-          .from('event_favorites')
-          .upsert({
-            event_id: eventId,
-            user_id: (await supabase.auth.getUser()).data.user?.id
-          });
+        await supabase.from('event_favorites').upsert({
+          event_id: eventId,
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+        });
       }
 
       return { error: null };
     } catch (err) {
-      return { 
-        error: err instanceof Error ? err.message : 'Failed to update attendance' 
+      return {
+        error: err instanceof Error ? err.message : 'Failed to update attendance',
       };
     }
   };
@@ -248,6 +248,7 @@ export function useEvents(autoFetch: boolean = true) {
   return {
     events,
     loading,
+    isFetching: loading,
     loadingTimedOut,
     error,
     hasMore,

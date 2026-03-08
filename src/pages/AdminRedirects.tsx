@@ -1,121 +1,121 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import MuiButton from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TablePagination from '@mui/material/TablePagination';
-import Paper from '@mui/material/Paper';
-import Switch from '@mui/material/Switch';
+import MuiTable from '@mui/material/Table';
+import MuiTableBody from '@mui/material/TableBody';
+import MuiTableCell from '@mui/material/TableCell';
+import MuiTableHead from '@mui/material/TableHead';
+import MuiTableRow from '@mui/material/TableRow';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
-import Tooltip from '@mui/material/Tooltip';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Skeleton from '@mui/material/Skeleton';
-import Snackbar from '@mui/material/Snackbar';
+import Switch from '@mui/material/Switch';
 import InputAdornment from '@mui/material/InputAdornment';
+import Snackbar from '@mui/material/Snackbar';
 import {
-  Plus, Search, Copy, ExternalLink, Download, Upload,
-  Trash2, Edit2, Eye, BarChart3, Link2, ArrowRight, QrCode,
-  AlertTriangle, Clock, X,
+  Plus,
+  Upload,
+  Eye,
+  Copy,
+  ExternalLink,
+  Trash2,
+  Edit2,
+  BarChart3,
+  Link2,
+  ArrowLeft,
+  ArrowRight,
+  Clock,
+  X,
 } from 'lucide-react';
-import { useRedirects, type Redirect, type RedirectFormData, type RedirectType, type QueryMode, type RedirectEvent } from '@/hooks/useRedirects';
-import { validateSlug, validateTarget, validateSourcePath, detectLoop, mergeQueryParams } from '@/lib/redirects/validation';
-import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { AdminDataTable } from '@/components/admin/data-table';
+import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
+import { createColumnHelper } from '@tanstack/react-table';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
-import { exportToExcel, fetchAllRows, formatDateTime, formatBoolean, generateFilename, type ExportColumnDef } from '@/utils/excelExport';
+import {
+  exportToExcel,
+  fetchAllRows,
+  formatDateTime,
+  formatBoolean,
+  generateFilename,
+  type ExportColumnDef,
+} from '@/utils/excelExport';
+import {
+  useRedirects,
+  type Redirect,
+  type RedirectFormData,
+  type RedirectType,
+  type QueryMode,
+  type RedirectEvent,
+} from '@/hooks/useRedirects';
+import {
+  validateSlug,
+  validateTarget,
+  validateSourcePath,
+  detectLoop,
+} from '@/lib/redirects/validation';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 
 const SUPABASE_URL = 'https://xqeacpakadqfxjxjcewc.supabase.co';
 
-// ── Main Page Component ─────────────────────────────────────────────────────
+interface RedirectRow {
+  id: string;
+  type: RedirectType;
+  slug: string | null;
+  source_path: string | null;
+  match_kind: string;
+  target: string;
+  status_code: number;
+  is_enabled: boolean;
+  click_count: number;
+  click_limit: number | null;
+  query_mode: string;
+  notes: string | null;
+  start_at: string | null;
+  end_at: string | null;
+  created_at: string;
+}
+
+const columnHelper = createColumnHelper<RedirectRow>();
 
 export default function AdminRedirects() {
-  const {
-    redirects, loading, total, error,
-    fetchRedirects, createRedirect, updateRedirect, deleteRedirect, toggleEnabled,
-    fetchEvents, bulkImport, exportAll,
-  } = useRedirects();
+  const navigate = useNavigate();
+  const { createRedirect, updateRedirect, deleteRedirect, toggleEnabled, fetchEvents, bulkImport } =
+    useRedirects();
   const { toast } = useToast();
-
-  // Table state
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<RedirectType | ''>('');
-  const [filterEnabled, setFilterEnabled] = useState<boolean | null>(null);
+  const queryClient = useQueryClient();
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [editingRedirect, setEditingRedirect] = useState<Redirect | null>(null);
   const [eventsDialogId, setEventsDialogId] = useState<string | null>(null);
   const [events, setEvents] = useState<RedirectEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(false);
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
-
-  // Snackbar
   const [snackMsg, setSnackMsg] = useState('');
 
-  // Debounced search
-  const searchTimeout = useRef<ReturnType<typeof setTimeout>>();
-
-  const doFetch = useCallback(() => {
-    fetchRedirects(
-      { search: searchQuery, type: filterType || undefined, is_enabled: filterEnabled },
-      page,
-      rowsPerPage,
-    );
-  }, [fetchRedirects, searchQuery, filterType, filterEnabled, page, rowsPerPage]);
-
-  useEffect(() => { doFetch(); }, [doFetch]);
-
-  const handleSearchChange = (val: string) => {
-    setSearchQuery(val);
-    setPage(0);
-    clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => {
-      fetchRedirects(
-        { search: val, type: filterType || undefined, is_enabled: filterEnabled },
-        0,
-        rowsPerPage,
-      );
-    }, 300);
-  };
-
-  // ── Event handlers ──────────────────────────────────────────────────
-
-  const handleToggle = async (r: Redirect) => {
-    const ok = await toggleEnabled(r.id, !r.is_enabled);
-    if (ok) doFetch();
-  };
-
-  const handleDelete = async () => {
-    if (!deleteConfirmId) return;
-    const ok = await deleteRedirect(deleteConfirmId);
-    if (ok) {
-      setSnackMsg('Redirect deleted');
-      doFetch();
-    }
-    setDeleteConfirmId(null);
-  };
+  const doRefresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['admin-table', 'redirects'] });
+  }, [queryClient]);
 
   const handleCopyShortUrl = (slug: string) => {
-    const url = `https://queer.guide/go/${slug}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(`https://queer.guide/go/${slug}`);
     setSnackMsg('Short URL copied!');
   };
 
@@ -127,287 +127,367 @@ export default function AdminRedirects() {
     setEventsLoading(false);
   };
 
-  const handleExportExcel = async () => {
-    const columns: ExportColumnDef<any>[] = [
-      { header: 'Type', accessor: r => r.type },
-      { header: 'Slug', accessor: r => r.slug },
-      { header: 'Source Path', accessor: r => r.source_path },
-      { header: 'Target', accessor: r => r.target },
-      { header: 'Status Code', accessor: r => r.status_code },
-      { header: 'Enabled', accessor: r => formatBoolean(r.is_enabled) },
-      { header: 'Click Count', accessor: r => r.click_count },
-      { header: 'Notes', accessor: r => r.notes },
-      { header: 'Created At', accessor: r => formatDateTime(r.created_at) },
-    ];
-    const allData = await fetchAllRows('redirects', '*', { column: 'created_at', ascending: false });
-    await exportToExcel(allData, columns, generateFilename('redirects'));
+  const handleDelete = async (row: RedirectRow) => {
+    if (!confirm('Delete this redirect? This will also remove all analytics events.')) return;
+    const ok = await deleteRedirect(row.id);
+    if (ok) {
+      toast({ title: 'Redirect deleted' });
+      doRefresh();
+    }
   };
 
-  // ── Render ────────────────────────────────────────────────────────────
+  const handleToggle = async (row: RedirectRow) => {
+    const ok = await toggleEnabled(row.id, !row.is_enabled);
+    if (ok) doRefresh();
+  };
 
-  return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h5" fontWeight={700}>Redirects & Short Links</Typography>
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('type', {
+        header: 'Type',
+        cell: (info) => (
+          <Badge variant={info.getValue() === 'SHORT' ? 'default' : 'secondary'}>
+            {info.getValue() === 'SHORT' ? (
+              <Link2 style={{ height: 12, width: 12, marginRight: 4 }} />
+            ) : (
+              <ArrowRight style={{ height: 12, width: 12, marginRight: 4 }} />
+            )}
+            {info.getValue()}
+          </Badge>
+        ),
+        meta: { serverSortable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('slug', {
+        header: 'Source',
+        cell: (info) => {
+          const row = info.row.original;
+          const source = row.type === 'SHORT' ? `/go/${row.slug}` : row.source_path;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Box
+                component="span"
+                sx={{
+                  fontFamily: 'monospace',
+                  fontSize: '0.8rem',
+                  maxWidth: 200,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {source}
+              </Box>
+              {(row.start_at || row.end_at) && (
+                <Clock style={{ height: 12, width: 12, color: '#888' }} />
+              )}
+            </Box>
+          );
+        },
+        meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('target', {
+        header: 'Target',
+        cell: (info) => (
+          <Box
+            component="span"
+            sx={{
+              fontFamily: 'monospace',
+              fontSize: '0.8rem',
+              maxWidth: 240,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              display: 'block',
+            }}
+          >
+            {info.getValue()}
+          </Box>
+        ),
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('status_code', {
+        header: 'Code',
+        cell: (info) => (
+          <Badge
+            variant="outline"
+            style={{ color: info.getValue() === 301 ? '#16a34a' : '#ca8a04' }}
+          >
+            {info.getValue()}
+          </Badge>
+        ),
+        meta: { serverSortable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('click_count', {
+        header: 'Clicks',
+        cell: (info) => {
+          const row = info.row.original;
+          return (
+            <span>
+              {info.getValue().toLocaleString()}
+              {row.click_limit ? <span style={{ color: '#888' }}> / {row.click_limit}</span> : null}
+            </span>
+          );
+        },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('is_enabled', {
+        header: 'Enabled',
+        cell: (info) => (
+          <Badge variant={info.getValue() ? 'default' : 'secondary'}>
+            {info.getValue() ? 'On' : 'Off'}
+          </Badge>
+        ),
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('created_at', {
+        header: 'Created',
+        cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
+      }),
+    ],
+    [],
+  );
+
+  const tableConfig: AdminTableConfig<RedirectRow> = useMemo(
+    () => ({
+      tableName: 'redirects',
+      select:
+        'id,type,slug,source_path,match_kind,target,status_code,is_enabled,click_count,click_limit,query_mode,notes,start_at,end_at,created_at',
+      columns,
+      defaultSort: { column: 'created_at', direction: 'desc' as const },
+      defaultPageSize: 25,
+      enableSelection: true,
+      enableSearch: true,
+      searchColumns: ['slug', 'source_path', 'target', 'notes'],
+      entityFilters: [
+        {
+          key: 'type',
+          label: 'Type',
+          type: 'select' as const,
+          column: 'type',
+          options: [
+            { label: 'Short Link', value: 'SHORT' },
+            { label: 'Path Redirect', value: 'PATH' },
+          ],
+        },
+        { key: 'is_enabled', label: 'Enabled', type: 'boolean' as const, column: 'is_enabled' },
+      ],
+      bulkEditFields: [
+        { key: 'is_enabled', label: 'Enabled', type: 'boolean' as const, column: 'is_enabled' },
+        {
+          key: 'status_code',
+          label: 'Status Code',
+          type: 'select' as const,
+          column: 'status_code',
+          options: [
+            { label: '301 Permanent', value: '301' },
+            { label: '302 Temporary', value: '302' },
+            { label: '307 Temporary', value: '307' },
+            { label: '308 Permanent', value: '308' },
+          ],
+        },
+      ],
+      rowActions: [
+        {
+          key: 'copy',
+          label: 'Copy Short URL',
+          icon: Copy,
+          visible: (row) => row.type === 'SHORT' && !!row.slug,
+          onClick: (row) => handleCopyShortUrl(row.slug!),
+        },
+        {
+          key: 'test',
+          label: 'Test Redirect',
+          icon: ExternalLink,
+          visible: (row) => row.type === 'SHORT' && !!row.slug,
+          onClick: (row) =>
+            window.open(`${SUPABASE_URL}/functions/v1/redirect-handler?slug=${row.slug}`, '_blank'),
+        },
+        {
+          key: 'analytics',
+          label: 'Analytics',
+          icon: BarChart3,
+          onClick: (row) => handleShowEvents(row.id),
+        },
+        {
+          key: 'edit',
+          label: 'Edit',
+          icon: Edit2,
+          onClick: async (row) => {
+            // Fetch full redirect data for edit dialog
+            const { data } = await supabase.from('redirects').select('*').eq('id', row.id).single();
+            if (data) {
+              setEditingRedirect(data as Redirect);
+              setDialogOpen(true);
+            }
+          },
+        },
+        {
+          key: 'delete',
+          label: 'Delete',
+          icon: Trash2,
+          variant: 'destructive' as const,
+          onClick: handleDelete,
+        },
+      ],
+      toolbarActions: (
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button size="small" variant="outlined" startIcon={<Upload size={16} />} onClick={() => setBulkDialogOpen(true)}>
+          <Button variant="outline" size="sm" onClick={() => setBulkDialogOpen(true)}>
+            <Upload style={{ height: 14, width: 14, marginRight: 4 }} />
             Import
           </Button>
-          <ExportExcelButton onExport={handleExportExcel} />
-          <Button size="small" variant="outlined" startIcon={<Eye size={16} />} onClick={() => setPreviewOpen(true)}>
+          <ExportExcelButton
+            onExport={async () => {
+              const cols: ExportColumnDef<any>[] = [
+                { header: 'Type', accessor: (r) => r.type },
+                { header: 'Slug', accessor: (r) => r.slug },
+                { header: 'Source Path', accessor: (r) => r.source_path },
+                { header: 'Target', accessor: (r) => r.target },
+                { header: 'Status Code', accessor: (r) => r.status_code },
+                { header: 'Enabled', accessor: (r) => formatBoolean(r.is_enabled) },
+                { header: 'Click Count', accessor: (r) => r.click_count },
+                { header: 'Notes', accessor: (r) => r.notes },
+                { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
+              ];
+              const allData = await fetchAllRows('redirects', '*', {
+                column: 'created_at',
+                ascending: false,
+              });
+              await exportToExcel(allData, cols, generateFilename('redirects'));
+            }}
+          />
+          <Button variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
+            <Eye style={{ height: 14, width: 14, marginRight: 4 }} />
             Preview
           </Button>
-          <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => { setEditingId(null); setDialogOpen(true); }}>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingRedirect(null);
+              setDialogOpen(true);
+            }}
+          >
+            <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
             New Redirect
           </Button>
         </Box>
+      ),
+    }),
+    [columns],
+  );
+
+  return (
+    <Box
+      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/admin')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
+        </Button>
+        <div>
+          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
+            Redirects & Short Links
+          </Typography>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            Manage URL redirects, short links, and analytics
+          </p>
+        </div>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-      {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-        <TextField
-          size="small"
-          placeholder="Search slug, path, target, notes..."
-          value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          sx={{ minWidth: 280 }}
-          InputProps={{
-            startAdornment: <InputAdornment position="start"><Search size={16} /></InputAdornment>,
-          }}
-        />
-        <TextField
-          select
-          size="small"
-          label="Type"
-          value={filterType}
-          onChange={(e) => { setFilterType(e.target.value as any); setPage(0); }}
-          sx={{ minWidth: 120 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="SHORT">Short Link</MenuItem>
-          <MenuItem value="PATH">Path Redirect</MenuItem>
-        </TextField>
-        <TextField
-          select
-          size="small"
-          label="Status"
-          value={filterEnabled === null ? '' : filterEnabled ? 'enabled' : 'disabled'}
-          onChange={(e) => {
-            const v = e.target.value;
-            setFilterEnabled(v === '' ? null : v === 'enabled');
-            setPage(0);
-          }}
-          sx={{ minWidth: 120 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="enabled">Enabled</MenuItem>
-          <MenuItem value="disabled">Disabled</MenuItem>
-        </TextField>
-      </Box>
-
-      {/* Table */}
-      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Source</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Target</TableCell>
-              <TableCell sx={{ fontWeight: 600 }} align="center">Code</TableCell>
-              <TableCell sx={{ fontWeight: 600 }} align="center">Clicks</TableCell>
-              <TableCell sx={{ fontWeight: 600 }} align="center">Enabled</TableCell>
-              <TableCell sx={{ fontWeight: 600 }} align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  {Array.from({ length: 7 }).map((_, j) => (
-                    <TableCell key={j}><Skeleton variant="text" /></TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : redirects.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                  No redirects found. Create your first one!
-                </TableCell>
-              </TableRow>
-            ) : (
-              redirects.map((r) => (
-                <TableRow key={r.id} hover sx={{ opacity: r.is_enabled ? 1 : 0.5 }}>
-                  <TableCell>
-                    <Chip
-                      label={r.type}
-                      size="small"
-                      color={r.type === 'SHORT' ? 'primary' : 'secondary'}
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    <Tooltip title={r.type === 'SHORT' ? `/go/${r.slug}` : r.source_path || ''}>
-                      <Box component="span" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                        {r.type === 'SHORT' ? `/go/${r.slug}` : r.source_path}
-                      </Box>
-                    </Tooltip>
-                    {r.start_at || r.end_at ? (
-                      <Tooltip title={`Schedule: ${r.start_at ? format(new Date(r.start_at), 'MMM d') : '∞'} → ${r.end_at ? format(new Date(r.end_at), 'MMM d') : '∞'}`}>
-                        <Clock size={12} style={{ marginLeft: 4, verticalAlign: 'middle', color: '#888' }} />
-                      </Tooltip>
-                    ) : null}
-                  </TableCell>
-                  <TableCell sx={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    <Tooltip title={r.target}>
-                      <Box component="span" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                        {r.target}
-                      </Box>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Chip label={r.status_code} size="small" variant="outlined"
-                      color={r.status_code === 301 ? 'success' : 'warning'}
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box
-                      component="span"
-                      sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                      onClick={() => handleShowEvents(r.id)}
-                    >
-                      {r.click_count.toLocaleString()}
-                      {r.click_limit ? <span style={{ color: '#888' }}> / {r.click_limit}</span> : null}
-                    </Box>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Switch
-                      size="small"
-                      checked={r.is_enabled}
-                      onChange={() => handleToggle(r)}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                      {r.type === 'SHORT' && r.slug && (
-                        <Tooltip title="Copy short URL">
-                          <IconButton size="small" onClick={() => handleCopyShortUrl(r.slug!)}>
-                            <Copy size={14} />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      {r.type === 'SHORT' && r.slug && (
-                        <Tooltip title="Test redirect">
-                          <IconButton
-                            size="small"
-                            component="a"
-                            href={`${SUPABASE_URL}/functions/v1/redirect-handler?slug=${r.slug}`}
-                            target="_blank"
-                            rel="noopener"
-                          >
-                            <ExternalLink size={14} />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      <Tooltip title="Analytics">
-                        <IconButton size="small" onClick={() => handleShowEvents(r.id)}>
-                          <BarChart3 size={14} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Edit">
-                        <IconButton size="small" onClick={() => { setEditingId(r.id); setDialogOpen(true); }}>
-                          <Edit2 size={14} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton size="small" color="error" onClick={() => setDeleteConfirmId(r.id)}>
-                          <Trash2 size={14} />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-        <TablePagination
-          component="div"
-          count={total}
-          page={page}
-          onPageChange={(_, p) => setPage(p)}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-        />
-      </TableContainer>
+      <AdminDataTable config={tableConfig} />
 
       {/* Create / Edit Dialog */}
       <RedirectFormDialog
         open={dialogOpen}
-        editingId={editingId}
-        redirects={redirects}
+        editingRedirect={editingRedirect}
         onClose={() => setDialogOpen(false)}
         onSave={async (formData) => {
-          if (editingId) {
-            const updated = await updateRedirect(editingId, formData);
-            if (updated) { setSnackMsg('Redirect updated'); doFetch(); setDialogOpen(false); }
+          if (editingRedirect) {
+            const updated = await updateRedirect(editingRedirect.id, formData);
+            if (updated) {
+              toast({ title: 'Redirect updated' });
+              doRefresh();
+              setDialogOpen(false);
+            }
           } else {
             const created = await createRedirect(formData);
-            if (created) { setSnackMsg('Redirect created'); doFetch(); setDialogOpen(false); }
+            if (created) {
+              toast({ title: 'Redirect created' });
+              doRefresh();
+              setDialogOpen(false);
+            }
           }
         }}
       />
 
-      {/* Delete confirmation */}
-      <Dialog open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)}>
-        <DialogTitle>Delete Redirect?</DialogTitle>
-        <DialogContent>
-          <Typography>This will permanently delete this redirect and all its analytics events. This action cannot be undone.</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
-          <Button color="error" variant="contained" onClick={handleDelete}>Delete</Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Events / Analytics Dialog */}
-      <Dialog open={!!eventsDialogId} onClose={() => setEventsDialogId(null)} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Dialog
+        open={!!eventsDialogId}
+        onClose={() => setEventsDialogId(null)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
           Click Analytics
-          <IconButton size="small" onClick={() => setEventsDialogId(null)}><X size={18} /></IconButton>
+          <IconButton size="small" onClick={() => setEventsDialogId(null)}>
+            <X size={18} />
+          </IconButton>
         </DialogTitle>
         <DialogContent>
           {eventsLoading ? (
-            <Box sx={{ py: 3 }}><Skeleton variant="rectangular" height={200} /></Box>
+            <Box sx={{ py: 3 }}>
+              <Skeleton variant="rectangular" height={200} />
+            </Box>
           ) : events.length === 0 ? (
-            <Typography color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>No click events recorded yet.</Typography>
+            <Typography color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
+              No click events recorded yet.
+            </Typography>
           ) : (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Time</TableCell>
-                  <TableCell>Country</TableCell>
-                  <TableCell>Referer</TableCell>
-                  <TableCell>Status</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
+            <MuiTable size="small">
+              <MuiTableHead>
+                <MuiTableRow>
+                  <MuiTableCell>Time</MuiTableCell>
+                  <MuiTableCell>Country</MuiTableCell>
+                  <MuiTableCell>Referer</MuiTableCell>
+                  <MuiTableCell>Status</MuiTableCell>
+                </MuiTableRow>
+              </MuiTableHead>
+              <MuiTableBody>
                 {events.map((e) => (
-                  <TableRow key={e.id}>
-                    <TableCell sx={{ fontSize: '0.8rem' }}>
+                  <MuiTableRow key={e.id}>
+                    <MuiTableCell sx={{ fontSize: '0.8rem' }}>
                       {format(new Date(e.ts), 'MMM d, HH:mm:ss')}
-                    </TableCell>
-                    <TableCell>{e.country || '—'}</TableCell>
-                    <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.8rem' }}>
+                    </MuiTableCell>
+                    <MuiTableCell>{e.country || '—'}</MuiTableCell>
+                    <MuiTableCell
+                      sx={{
+                        maxWidth: 200,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.8rem',
+                      }}
+                    >
                       {e.referer || '—'}
-                    </TableCell>
-                    <TableCell><Chip label={e.status} size="small" /></TableCell>
-                  </TableRow>
+                    </MuiTableCell>
+                    <MuiTableCell>
+                      <Chip label={e.status} size="small" />
+                    </MuiTableCell>
+                  </MuiTableRow>
                 ))}
-              </TableBody>
-            </Table>
+              </MuiTableBody>
+            </MuiTable>
           )}
         </DialogContent>
       </Dialog>
@@ -419,8 +499,8 @@ export default function AdminRedirects() {
         onImport={async (items) => {
           const result = await bulkImport(items);
           if (result.success > 0) {
-            setSnackMsg(`Imported ${result.success} redirect(s)`);
-            doFetch();
+            toast({ title: `Imported ${result.success} redirect(s)` });
+            doRefresh();
           }
           return result;
         }}
@@ -429,7 +509,6 @@ export default function AdminRedirects() {
       {/* Preview / Test Dialog */}
       <PreviewDialog open={previewOpen} onClose={() => setPreviewOpen(false)} />
 
-      {/* Snackbar */}
       <Snackbar
         open={!!snackMsg}
         autoHideDuration={3000}
@@ -444,15 +523,12 @@ export default function AdminRedirects() {
 
 interface RedirectFormDialogProps {
   open: boolean;
-  editingId: string | null;
-  redirects: Redirect[];
+  editingRedirect: Redirect | null;
   onClose: () => void;
   onSave: (data: RedirectFormData) => Promise<void>;
 }
 
-function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: RedirectFormDialogProps) {
-  const existing = editingId ? redirects.find(r => r.id === editingId) : null;
-
+function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: RedirectFormDialogProps) {
   const [type, setType] = useState<RedirectType>('SHORT');
   const [slug, setSlug] = useState('');
   const [sourcePath, setSourcePath] = useState('');
@@ -470,23 +546,26 @@ function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: Red
   const [saving, setSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Reset form when dialog opens
   useEffect(() => {
-    if (open && existing) {
-      setType(existing.type);
-      setSlug(existing.slug || '');
-      setSourcePath(existing.source_path || '');
-      setMatchKind(existing.match_kind);
-      setTarget(existing.target);
-      setStatusCode(existing.status_code);
-      setIsEnabled(existing.is_enabled);
-      setQueryMode(existing.query_mode);
-      setQueryOverride(existing.query_override ? JSON.stringify(existing.query_override) : '');
-      setUtmDefaults(existing.utm_defaults ? JSON.stringify(existing.utm_defaults) : '');
-      setStartAt(existing.start_at ? existing.start_at.substring(0, 16) : '');
-      setEndAt(existing.end_at ? existing.end_at.substring(0, 16) : '');
-      setClickLimit(existing.click_limit ? String(existing.click_limit) : '');
-      setNotes(existing.notes || '');
+    if (open && editingRedirect) {
+      setType(editingRedirect.type);
+      setSlug(editingRedirect.slug || '');
+      setSourcePath(editingRedirect.source_path || '');
+      setMatchKind(editingRedirect.match_kind);
+      setTarget(editingRedirect.target);
+      setStatusCode(editingRedirect.status_code);
+      setIsEnabled(editingRedirect.is_enabled);
+      setQueryMode(editingRedirect.query_mode);
+      setQueryOverride(
+        editingRedirect.query_override ? JSON.stringify(editingRedirect.query_override) : '',
+      );
+      setUtmDefaults(
+        editingRedirect.utm_defaults ? JSON.stringify(editingRedirect.utm_defaults) : '',
+      );
+      setStartAt(editingRedirect.start_at ? editingRedirect.start_at.substring(0, 16) : '');
+      setEndAt(editingRedirect.end_at ? editingRedirect.end_at.substring(0, 16) : '');
+      setClickLimit(editingRedirect.click_limit ? String(editingRedirect.click_limit) : '');
+      setNotes(editingRedirect.notes || '');
     } else if (open) {
       setType('SHORT');
       setSlug('');
@@ -504,11 +583,10 @@ function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: Red
       setNotes('');
     }
     setValidationErrors({});
-  }, [open, existing]);
+  }, [open, editingRedirect]);
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
-
     if (type === 'SHORT') {
       const sv = validateSlug(slug);
       if (!sv.valid) errs.slug = sv.error!;
@@ -516,27 +594,26 @@ function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: Red
       const pv = validateSourcePath(sourcePath);
       if (!pv.valid) errs.sourcePath = pv.error!;
     }
-
     const tv = validateTarget(target);
     if (!tv.valid) errs.target = tv.error!;
-
     if (tv.valid) {
-      const loop = detectLoop(
-        type === 'SHORT' ? `/go/${slug}` : sourcePath,
-        target,
-      );
+      const loop = detectLoop(type === 'SHORT' ? `/go/${slug}` : sourcePath, target);
       if (!loop.safe) errs.target = loop.error!;
     }
-
     if (queryOverride) {
-      try { JSON.parse(queryOverride); }
-      catch { errs.queryOverride = 'Must be valid JSON'; }
+      try {
+        JSON.parse(queryOverride);
+      } catch {
+        errs.queryOverride = 'Must be valid JSON';
+      }
     }
     if (utmDefaults) {
-      try { JSON.parse(utmDefaults); }
-      catch { errs.utmDefaults = 'Must be valid JSON'; }
+      try {
+        JSON.parse(utmDefaults);
+      } catch {
+        errs.utmDefaults = 'Must be valid JSON';
+      }
     }
-
     setValidationErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -565,15 +642,20 @@ function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: Red
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{editingId ? 'Edit Redirect' : 'New Redirect'}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
-        {/* Type selector */}
+      <DialogTitle>{editingRedirect ? 'Edit Redirect' : 'New Redirect'}</DialogTitle>
+      <DialogContent
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}
+      >
         <Tabs value={type} onChange={(_, v) => setType(v)} sx={{ mb: 1 }}>
           <Tab value="SHORT" label="Short Link" icon={<Link2 size={16} />} iconPosition="start" />
-          <Tab value="PATH" label="Path Redirect" icon={<ArrowRight size={16} />} iconPosition="start" />
+          <Tab
+            value="PATH"
+            label="Path Redirect"
+            icon={<ArrowRight size={16} />}
+            iconPosition="start"
+          />
         </Tabs>
 
-        {/* Slug or source path */}
         {type === 'SHORT' ? (
           <TextField
             label="Slug"
@@ -581,9 +663,7 @@ function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: Red
             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
             error={!!validationErrors.slug}
             helperText={validationErrors.slug || `Short URL: queer.guide/go/${slug || '...'}`}
-            InputProps={{
-              startAdornment: <InputAdornment position="start">/go/</InputAdornment>,
-            }}
+            InputProps={{ startAdornment: <InputAdornment position="start">/go/</InputAdornment> }}
             fullWidth
           />
         ) : (
@@ -611,18 +691,18 @@ function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: Red
           </Box>
         )}
 
-        {/* Target */}
         <TextField
           label="Target URL"
           value={target}
           onChange={(e) => setTarget(e.target.value)}
           error={!!validationErrors.target}
-          helperText={validationErrors.target || 'Relative path (/page) or allowlisted absolute URL'}
+          helperText={
+            validationErrors.target || 'Relative path (/page) or allowlisted absolute URL'
+          }
           placeholder="/events/pride-zurich-2026"
           fullWidth
         />
 
-        {/* Status code + enabled */}
         <Box sx={{ display: 'flex', gap: 2 }}>
           <TextField
             select
@@ -666,12 +746,11 @@ function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: Red
           value={utmDefaults}
           onChange={(e) => setUtmDefaults(e.target.value)}
           error={!!validationErrors.utmDefaults}
-          helperText={validationErrors.utmDefaults || 'Added if not already present, e.g. {"utm_source":"qr","utm_medium":"print"}'}
+          helperText={validationErrors.utmDefaults || 'Added if not already present'}
           size="small"
           fullWidth
         />
 
-        {/* Schedule */}
         <Box sx={{ display: 'flex', gap: 2 }}>
           <TextField
             label="Start (optional)"
@@ -719,10 +798,10 @@ function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: Red
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSubmit} disabled={saving}>
-          {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
-        </Button>
+        <MuiButton onClick={onClose}>Cancel</MuiButton>
+        <MuiButton variant="contained" onClick={handleSubmit} disabled={saving}>
+          {saving ? 'Saving...' : editingRedirect ? 'Update' : 'Create'}
+        </MuiButton>
       </DialogActions>
     </Dialog>
   );
@@ -733,7 +812,15 @@ function RedirectFormDialog({ open, editingId, redirects, onClose, onSave }: Red
 interface BulkImportDialogProps {
   open: boolean;
   onClose: () => void;
-  onImport: (items: Array<{ slug?: string; source_path?: string; target: string; status_code?: number; is_enabled?: boolean }>) => Promise<{ success: number; errors: string[] }>;
+  onImport: (
+    items: Array<{
+      slug?: string;
+      source_path?: string;
+      target: string;
+      status_code?: number;
+      is_enabled?: boolean;
+    }>,
+  ) => Promise<{ success: number; errors: string[] }>;
 }
 
 function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogProps) {
@@ -745,26 +832,30 @@ function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogProps) {
     setImporting(true);
     setResult(null);
     try {
-      const lines = csvText.trim().split('\n').filter(l => l.trim());
+      const lines = csvText
+        .trim()
+        .split('\n')
+        .filter((l) => l.trim());
       if (lines.length < 2) {
         setResult({ success: 0, errors: ['Need at least a header row and one data row'] });
         return;
       }
-
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-      const items = lines.slice(1).map(line => {
-        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-        const obj: any = {};
-        headers.forEach((h, i) => {
-          if (h === 'slug') obj.slug = values[i];
-          if (h === 'source_path') obj.source_path = values[i];
-          if (h === 'target') obj.target = values[i];
-          if (h === 'status_code') obj.status_code = parseInt(values[i], 10) || 301;
-          if (h === 'is_enabled') obj.is_enabled = values[i] !== 'false' && values[i] !== '0';
-        });
-        return obj;
-      }).filter(item => item.target);
-
+      const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+      const items = lines
+        .slice(1)
+        .map((line) => {
+          const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
+          const obj: any = {};
+          headers.forEach((h, i) => {
+            if (h === 'slug') obj.slug = values[i];
+            if (h === 'source_path') obj.source_path = values[i];
+            if (h === 'target') obj.target = values[i];
+            if (h === 'status_code') obj.status_code = parseInt(values[i], 10) || 301;
+            if (h === 'is_enabled') obj.is_enabled = values[i] !== 'false' && values[i] !== '0';
+          });
+          return obj;
+        })
+        .filter((item) => item.target);
       const res = await onImport(items);
       setResult(res);
     } catch (err: any) {
@@ -794,21 +885,29 @@ function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogProps) {
         {result && (
           <Box sx={{ mt: 2 }}>
             {result.success > 0 && (
-              <Alert severity="success" sx={{ mb: 1 }}>Imported {result.success} redirect(s)</Alert>
+              <Alert severity="success" sx={{ mb: 1 }}>
+                Imported {result.success} redirect(s)
+              </Alert>
             )}
             {result.errors.length > 0 && (
               <Alert severity="error">
-                {result.errors.map((e, i) => <div key={i}>{e}</div>)}
+                {result.errors.map((e, i) => (
+                  <div key={i}>{e}</div>
+                ))}
               </Alert>
             )}
           </Box>
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
-        <Button variant="contained" onClick={handleImport} disabled={importing || !csvText.trim()}>
+        <MuiButton onClick={onClose}>Close</MuiButton>
+        <MuiButton
+          variant="contained"
+          onClick={handleImport}
+          disabled={importing || !csvText.trim()}
+        >
           {importing ? 'Importing...' : 'Import'}
-        </Button>
+        </MuiButton>
       </DialogActions>
     </Dialog>
   );
@@ -821,16 +920,12 @@ function PreviewDialog({ open, onClose }: { open: boolean; onClose: () => void }
   const [previewResult, setPreviewResult] = useState<string | null>(null);
 
   const handlePreview = () => {
-    // Extract slug from /go/ URL or just test a raw slug
     let slug = testUrl.trim();
-    if (slug.includes('/go/')) {
-      slug = slug.split('/go/')[1]?.split('?')[0] || '';
-    }
+    if (slug.includes('/go/')) slug = slug.split('/go/')[1]?.split('?')[0] || '';
     if (!slug) {
       setPreviewResult('Enter a slug or /go/<slug> URL');
       return;
     }
-    // The actual resolution would need a server call; show the edge function URL
     const edgeUrl = `${SUPABASE_URL}/functions/v1/redirect-handler?slug=${encodeURIComponent(slug)}`;
     setPreviewResult(`Edge function URL:\n${edgeUrl}\n\nOpen this URL to test the redirect.`);
   };
@@ -850,19 +945,22 @@ function PreviewDialog({ open, onClose }: { open: boolean; onClose: () => void }
           size="small"
           onKeyDown={(e) => e.key === 'Enter' && handlePreview()}
         />
-        <Button sx={{ mt: 1 }} variant="outlined" onClick={handlePreview}>
+        <MuiButton sx={{ mt: 1 }} variant="outlined" onClick={handlePreview}>
           Test
-        </Button>
+        </MuiButton>
         {previewResult && (
           <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-            <Typography variant="body2" sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '0.8rem' }}>
+            <Typography
+              variant="body2"
+              sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '0.8rem' }}
+            >
               {previewResult}
             </Typography>
           </Box>
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <MuiButton onClick={onClose}>Close</MuiButton>
       </DialogActions>
     </Dialog>
   );

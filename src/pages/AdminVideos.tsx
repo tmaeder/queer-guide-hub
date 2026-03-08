@@ -11,13 +11,15 @@ export default function AdminVideos() {
 
   const handleUploadComplete = () => {
     // Refresh the video manager when upload completes
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>Video Management</Typography>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
+          Video Management
+        </Typography>
         <Typography variant="body2" color="text.secondary">
           Upload and manage videos with modern codec processing (AV1/VP9/H.264)
         </Typography>

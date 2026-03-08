@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 
 interface MetaOptions {
   title?: string;
@@ -18,11 +18,7 @@ const DEFAULT_DESCRIPTION =
   'Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other.';
 const DEFAULT_OG_IMAGE = '/images/og-image.svg';
 
-function setMetaTag(
-  attr: 'name' | 'property',
-  key: string,
-  content: string,
-): void {
+function setMetaTag(attr: 'name' | 'property', key: string, content: string): void {
   let el = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
   if (!el) {
     el = document.createElement('meta');
@@ -44,9 +40,7 @@ function setCanonical(href: string): void {
 
 function setJsonLd(data: Record<string, unknown> | Record<string, unknown>[]): void {
   // Remove any existing JSON-LD we previously injected
-  document
-    .querySelectorAll('script[data-meta-jsonld]')
-    .forEach((el) => el.remove());
+  document.querySelectorAll('script[data-meta-jsonld]').forEach((el) => el.remove());
 
   const items = Array.isArray(data) ? data : [data];
   items.forEach((item) => {
@@ -113,9 +107,7 @@ export function useMeta(options: MetaOptions = {}): void {
       setMetaTag('name', 'twitter:title', DEFAULT_TITLE);
       setMetaTag('name', 'twitter:description', DEFAULT_DESCRIPTION);
       setMetaTag('name', 'twitter:image', DEFAULT_OG_IMAGE);
-      document
-        .querySelectorAll('script[data-meta-jsonld]')
-        .forEach((el) => el.remove());
+      document.querySelectorAll('script[data-meta-jsonld]').forEach((el) => el.remove());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, options.title, options.description, options.canonicalPath]);

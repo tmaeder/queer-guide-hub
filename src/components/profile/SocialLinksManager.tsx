@@ -28,8 +28,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
   const { toast } = useToast();
   const [socialLinks, setSocialLinks] = useState<Record<string, string>>(initialSocialLinks);
   const [customLinks, setCustomLinks] = useState<SocialLink[]>(
-    Object.entries(initialSocialLinks)
-      .map(([platform, url]) => ({ platform, url: url as string }))
+    Object.entries(initialSocialLinks).map(([platform, url]) => ({ platform, url: url as string })),
   );
   const [isSaving, setIsSaving] = useState(false);
   const [showPlatformSelector, setShowPlatformSelector] = useState(false);
@@ -52,7 +51,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
     for (const config of PLATFORM_CONFIGS) {
       try {
         const regexPattern = config.urlDetectionRegex
-          .replace(/^\(\?\i\)/, '')
+          .replace(/^\(\?i\)/, '')
           .replace(/\\\\/g, '\\');
         const regex = new RegExp(regexPattern, 'i');
 
@@ -79,28 +78,28 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
 
     const newLink: SocialLink = {
       platform,
-      url
+      url,
     };
-    setCustomLinks(prev => [...prev, newLink]);
+    setCustomLinks((prev) => [...prev, newLink]);
 
     setQuickAddUrl('');
     setDetectedPlatform('');
 
     toast({
-      title: "Platform added",
-      description: `${platform} profile has been added successfully.`
+      title: 'Platform added',
+      description: `${platform} profile has been added successfully.`,
     });
   };
 
   const handleSocialLinkChange = (platform: string, value: string) => {
-    setSocialLinks(prev => ({
+    setSocialLinks((prev) => ({
       ...prev,
-      [platform]: value
+      [platform]: value,
     }));
   };
 
   const handleCustomLinkChange = (index: number, field: 'platform' | 'url', value: string) => {
-    setCustomLinks(prev => {
+    setCustomLinks((prev) => {
       const newLinks = [...prev];
       newLinks[index] = { ...newLinks[index], [field]: value };
       return newLinks;
@@ -108,20 +107,20 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
   };
 
   const removeCustomLink = (index: number) => {
-    setCustomLinks(prev => prev.filter((_, i) => i !== index));
+    setCustomLinks((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handlePlatformAdd = (platform: string, url: string) => {
     const newLink: SocialLink = {
       platform,
-      url: url === 'username' ? '' : url
+      url: url === 'username' ? '' : url,
     };
-    setCustomLinks(prev => [...prev, newLink]);
+    setCustomLinks((prev) => [...prev, newLink]);
 
     setShowPlatformSelector(false);
     toast({
-      title: "Platform added",
-      description: `${platform} has been added to your profile.`
+      title: 'Platform added',
+      description: `${platform} has been added to your profile.`,
     });
   };
 
@@ -132,11 +131,9 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
     try {
       const allSocialLinks = {
         ...Object.fromEntries(
-          Object.entries(socialLinks).filter(([_, value]) => value.trim() !== '')
+          Object.entries(socialLinks).filter(([_, value]) => value.trim() !== ''),
         ),
-        ...Object.fromEntries(
-          customLinks.map(link => [link.platform, link.url])
-        )
+        ...Object.fromEntries(customLinks.map((link) => [link.platform, link.url])),
       };
 
       const { error } = await supabase
@@ -147,17 +144,17 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
       if (error) throw error;
 
       toast({
-        title: "Social links updated",
-        description: "Your social media profiles have been saved."
+        title: 'Social links updated',
+        description: 'Your social media profiles have been saved.',
       });
 
       onUpdate?.(allSocialLinks);
     } catch (error) {
       console.error('Error saving social links:', error);
       toast({
-        title: "Error",
-        description: "Failed to save social links. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to save social links. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
@@ -185,9 +182,19 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
       <CardContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Quick Add URL Input */}
-          <Box sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
+          <Box
+            sx={{
+              p: 2,
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 2,
+              bgcolor: 'background.paper',
+            }}
+          >
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 500 }}>Add Social Profile</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                Add Social Profile
+              </Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Input
                   placeholder="Paste any social media URL (e.g., https://twitter.com/username)"
@@ -196,10 +203,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
                   onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
                   style={{ flex: 1 }}
                 />
-                <Button
-                  onClick={handleQuickAdd}
-                  disabled={!quickAddUrl.trim()}
-                >
+                <Button onClick={handleQuickAdd} disabled={!quickAddUrl.trim()}>
                   <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
                   Add
                 </Button>
@@ -215,9 +219,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
             </Box>
           </Box>
 
-          {showPlatformSelector && (
-            <PlatformSelector onPlatformSelect={handlePlatformAdd} />
-          )}
+          {showPlatformSelector && <PlatformSelector onPlatformSelect={handlePlatformAdd} />}
 
           <SocialLinksList
             customLinks={customLinks}
@@ -226,12 +228,9 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
           />
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
-            <Button
-              onClick={saveSocialLinks}
-              disabled={isSaving}
-            >
+            <Button onClick={saveSocialLinks} disabled={isSaving}>
               <Save style={{ width: 16, height: 16, marginRight: 8 }} />
-              {isSaving ? "Saving..." : "Save Social Links"}
+              {isSaving ? 'Saving...' : 'Save Social Links'}
             </Button>
           </Box>
         </Box>

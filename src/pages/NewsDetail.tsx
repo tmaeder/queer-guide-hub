@@ -1,6 +1,18 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ExternalLink, Clock, Eye, MapPin, Tag, Newspaper, Share2, Calendar, ChevronRight, User } from 'lucide-react';
+import {
+  ArrowLeft,
+  ExternalLink,
+  Clock,
+  Eye,
+  MapPin,
+  Tag,
+  Newspaper,
+  Share2,
+  Calendar,
+  ChevronRight,
+  User,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,7 +126,9 @@ export default function NewsDetail() {
             .then(({ data: cities }) => {
               if (cities) {
                 const map: Record<string, string> = {};
-                cities.forEach((c: any) => { map[c.id] = c.name; });
+                cities.forEach((c: any) => {
+                  map[c.id] = c.name;
+                });
                 setCityNames(map);
               }
             });
@@ -129,7 +143,9 @@ export default function NewsDetail() {
             .then(({ data: countries }) => {
               if (countries) {
                 const map: Record<string, string> = {};
-                countries.forEach((c: any) => { map[c.id] = c.name; });
+                countries.forEach((c: any) => {
+                  map[c.id] = c.name;
+                });
                 setCountryNames(map);
               }
             });
@@ -165,7 +181,9 @@ export default function NewsDetail() {
     if (navigator.share) {
       try {
         await navigator.share({ title: article?.title, url });
-      } catch { /* cancelled */ }
+      } catch {
+        /* cancelled */
+      }
     } else {
       await navigator.clipboard.writeText(url);
     }
@@ -173,21 +191,42 @@ export default function NewsDetail() {
 
   const getCategoryColor = (category: string) => {
     const map: Record<string, string> = {
-      politics: '#1a73e8', 'human-rights': '#e53935', entertainment: '#8e24aa',
-      culture: '#6d4c41', health: '#43a047', sports: '#fb8c00', business: '#546e7a',
-      technology: '#00897b', lifestyle: '#d81b60', education: '#5c6bc0',
-      legislation: '#5c6bc0', transgender: '#7b1fa2', rights: '#c62828',
-      advocacy: '#ff6f00', news: '#37474f',
+      politics: '#1a73e8',
+      'human-rights': '#e53935',
+      entertainment: '#8e24aa',
+      culture: '#6d4c41',
+      health: '#43a047',
+      sports: '#fb8c00',
+      business: '#546e7a',
+      technology: '#00897b',
+      lifestyle: '#d81b60',
+      education: '#5c6bc0',
+      legislation: '#5c6bc0',
+      transgender: '#7b1fa2',
+      rights: '#c62828',
+      advocacy: '#ff6f00',
+      news: '#37474f',
     };
     return map[category?.toLowerCase()] || '#555555';
   };
 
   const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
-      'human-rights': 'Human Rights', politics: 'Politics', legislation: 'Legislation',
-      transgender: 'Transgender', culture: 'Culture', health: 'Health', sports: 'Sports',
-      education: 'Education', lifestyle: 'Lifestyle', rights: 'Rights', advocacy: 'Advocacy',
-      entertainment: 'Entertainment', business: 'Business', technology: 'Technology', news: 'News',
+      'human-rights': 'Human Rights',
+      politics: 'Politics',
+      legislation: 'Legislation',
+      transgender: 'Transgender',
+      culture: 'Culture',
+      health: 'Health',
+      sports: 'Sports',
+      education: 'Education',
+      lifestyle: 'Lifestyle',
+      rights: 'Rights',
+      advocacy: 'Advocacy',
+      entertainment: 'Entertainment',
+      business: 'Business',
+      technology: 'Technology',
+      news: 'News',
     };
     return labels[category?.toLowerCase()] || category?.replace(/-/g, ' ');
   };
@@ -196,13 +235,21 @@ export default function NewsDetail() {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+        <Box
+          sx={{
+            '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
+            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }}
+        >
           <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: '40%', mb: 2 }} />
           <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 3, mb: 3 }} />
           <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '60%', mb: 2 }} />
           <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-            {[1, 2, 3].map(i => (
-              <Box key={i} sx={{ height: 28, width: 80, bgcolor: 'action.hover', borderRadius: 4 }} />
+            {[1, 2, 3].map((i) => (
+              <Box
+                key={i}
+                sx={{ height: 28, width: 80, bgcolor: 'action.hover', borderRadius: 4 }}
+              />
             ))}
           </Box>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
@@ -222,8 +269,12 @@ export default function NewsDetail() {
   if (!article) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Article Not Found</Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>The article you're looking for doesn't exist.</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Article Not Found
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          The article you're looking for doesn't exist.
+        </Typography>
         <Link to="/news">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
@@ -237,17 +288,35 @@ export default function NewsDetail() {
   const authorName = cleanAuthor(article.author || '');
   const excerptText = cleanExcerpt(article.excerpt || '');
   const contentText = article.content ? cleanContent(article.content) : '';
-  const linkedCities = (article.city_ids || []).map(cid => ({ id: cid, name: cityNames[cid] })).filter(c => c.name);
-  const linkedCountries = (article.country_ids || []).map(cid => ({ id: cid, name: countryNames[cid] })).filter(c => c.name);
+  const linkedCities = (article.city_ids || [])
+    .map((cid) => ({ id: cid, name: cityNames[cid] }))
+    .filter((c) => c.name);
+  const linkedCountries = (article.country_ids || [])
+    .map((cid) => ({ id: cid, name: countryNames[cid] }))
+    .filter((c) => c.name);
   const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
-        <Link to="/news" style={{ display: 'inline-flex', alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
+        <Link
+          to="/news"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            color: 'inherit',
+            textDecoration: 'none',
+          }}
+        >
           <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>News</Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ '&:hover': { color: 'primary.main' } }}
+          >
+            News
+          </Typography>
         </Link>
         {article.category && article.category !== 'general' && (
           <>
@@ -255,7 +324,11 @@ export default function NewsDetail() {
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ cursor: 'pointer', textTransform: 'capitalize', '&:hover': { color: 'primary.main' } }}
+              sx={{
+                cursor: 'pointer',
+                textTransform: 'capitalize',
+                '&:hover': { color: 'primary.main' },
+              }}
               onClick={() => navigate(`/news?category=${article.category}`)}
             >
               {getCategoryLabel(article.category)}
@@ -263,14 +336,31 @@ export default function NewsDetail() {
           </>
         )}
         <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
-        <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 300 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 500,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: 300,
+          }}
+        >
           {decodeHtmlEntities(article.title)}
         </Typography>
       </Box>
 
       {/* Hero image */}
       {article.image_url && (
-        <Box sx={{ width: '100%', height: { xs: 160, md: 240 }, borderRadius: 3, overflow: 'hidden', mb: 3 }}>
+        <Box
+          sx={{
+            width: '100%',
+            height: { xs: 160, md: 240 },
+            borderRadius: 3,
+            overflow: 'hidden',
+            mb: 3,
+          }}
+        >
           <Box
             component="img"
             src={article.image_url}
@@ -284,14 +374,16 @@ export default function NewsDetail() {
       )}
 
       {/* Title Row */}
-      <Box sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
-        alignItems: { md: 'flex-start' },
-        justifyContent: { md: 'space-between' },
-        gap: 2,
-        mb: 2,
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { md: 'flex-start' },
+          justifyContent: { md: 'space-between' },
+          gap: 2,
+          mb: 2,
+        }}
+      >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
             <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
@@ -303,7 +395,15 @@ export default function NewsDetail() {
           </Box>
 
           {/* Meta row */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', flexWrap: 'wrap' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              color: 'text.secondary',
+              flexWrap: 'wrap',
+            }}
+          >
             {authorName && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <User style={{ width: 14, height: 14 }} />
@@ -336,7 +436,9 @@ export default function NewsDetail() {
         </Box>
 
         {/* Action buttons */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}
+        >
           <FavoriteButton itemId={article.id} type="news" />
           <ReportButton contentType="news_article" contentId={article.id} />
           <Button variant="outline" size="sm" onClick={handleShare}>
@@ -353,13 +455,17 @@ export default function NewsDetail() {
       {/* Category & Source badges */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, flexWrap: 'wrap' }}>
         {article.category && article.category !== 'general' && (
-          <Badge style={{ backgroundColor: getCategoryColor(article.category), color: '#fff', textTransform: 'capitalize' }}>
+          <Badge
+            style={{
+              backgroundColor: getCategoryColor(article.category),
+              color: '#fff',
+              textTransform: 'capitalize',
+            }}
+          >
             {getCategoryLabel(article.category)}
           </Badge>
         )}
-        {sourceName && (
-          <Badge variant="outline">{sourceName}</Badge>
-        )}
+        {sourceName && <Badge variant="outline">{sourceName}</Badge>}
       </Box>
 
       {/* 2-Column Layout */}
@@ -387,7 +493,8 @@ export default function NewsDetail() {
                 </Box>
               ) : (
                 <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                  This article is available on the original source. Click "Read Full Article" to read it.
+                  This article is available on the original source. Click "Read Full Article" to
+                  read it.
                 </Typography>
               )}
             </CardContent>
@@ -395,16 +502,23 @@ export default function NewsDetail() {
 
           {/* Read Full Article CTA Card */}
           <Card>
-            <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 3 }}>
+            <CardContent
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 3 }}
+            >
               <Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                   Read the full article
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {sourceName ? `Originally published on ${sourceName}` : 'View on the original source'}
+                  {sourceName
+                    ? `Originally published on ${sourceName}`
+                    : 'View on the original source'}
                 </Typography>
               </Box>
-              <Button onClick={() => window.open(article.url, '_blank')} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Button
+                onClick={() => window.open(article.url, '_blank')}
+                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+              >
                 Open Article
                 <ExternalLink style={{ width: 16, height: 16 }} />
               </Button>
@@ -418,8 +532,14 @@ export default function NewsDetail() {
                 <CardTitle>Related Articles</CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                  {relatedArticles.map(related => (
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                    gap: 2,
+                  }}
+                >
+                  {relatedArticles.map((related) => (
                     <Box
                       key={related.id}
                       component={Link}
@@ -453,13 +573,22 @@ export default function NewsDetail() {
                       <Box sx={{ p: 1.5 }}>
                         <Typography
                           variant="subtitle2"
-                          sx={{ fontWeight: 600, mb: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                          sx={{
+                            fontWeight: 600,
+                            mb: 0.5,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
                         >
                           {decodeHtmlEntities(related.title)}
                         </Typography>
                         {related.published_at && (
                           <Typography variant="caption" color="text.secondary">
-                            {formatDistanceToNow(new Date(related.published_at), { addSuffix: true })}
+                            {formatDistanceToNow(new Date(related.published_at), {
+                              addSuffix: true,
+                            })}
                           </Typography>
                         )}
                       </Box>
@@ -483,7 +612,9 @@ export default function NewsDetail() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Calendar style={{ width: 16, height: 16, color: '#999999', flexShrink: 0 }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Published</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                      Published
+                    </Typography>
                     <Typography sx={{ fontWeight: 500 }}>
                       {format(new Date(article.published_at), 'MMMM d, yyyy')}
                     </Typography>
@@ -494,7 +625,9 @@ export default function NewsDetail() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <User style={{ width: 16, height: 16, color: '#999999', flexShrink: 0 }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Author</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                      Author
+                    </Typography>
                     <Typography sx={{ fontWeight: 500 }}>{authorName}</Typography>
                   </div>
                 </Box>
@@ -503,7 +636,9 @@ export default function NewsDetail() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Newspaper style={{ width: 16, height: 16, color: '#999999', flexShrink: 0 }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Source</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                      Source
+                    </Typography>
                     <Typography sx={{ fontWeight: 500 }}>{sourceName}</Typography>
                   </div>
                 </Box>
@@ -512,7 +647,9 @@ export default function NewsDetail() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Eye style={{ width: 16, height: 16, color: '#999999', flexShrink: 0 }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Views</Typography>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                      Views
+                    </Typography>
                     <Typography sx={{ fontWeight: 500 }}>{article.views_count}</Typography>
                   </div>
                 </Box>
@@ -531,7 +668,7 @@ export default function NewsDetail() {
               </CardHeader>
               <CardContent>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {tags.map(tag => (
+                  {tags.map((tag) => (
                     <Badge
                       key={tag}
                       variant="outline"
@@ -557,22 +694,32 @@ export default function NewsDetail() {
               </CardHeader>
               <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {linkedCities.map(c => (
+                  {linkedCities.map((c) => (
                     <Typography
                       key={c.id}
                       component={Link}
                       to={`/city/${c.id}`}
-                      sx={{ fontWeight: 500, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      sx={{
+                        fontWeight: 500,
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' },
+                      }}
                     >
                       {c.name}
                     </Typography>
                   ))}
-                  {linkedCountries.map(c => (
+                  {linkedCountries.map((c) => (
                     <Typography
                       key={c.id}
                       component={Link}
                       to={`/country/${c.id}`}
-                      sx={{ fontWeight: 500, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      sx={{
+                        fontWeight: 500,
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' },
+                      }}
                     >
                       {c.name}
                     </Typography>
@@ -588,12 +735,22 @@ export default function NewsDetail() {
               <CardTitle>Links</CardTitle>
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => window.open(article.url, '_blank')}>
+              <Button
+                variant="outline"
+                size="sm"
+                style={{ width: '100%', justifyContent: 'flex-start' }}
+                onClick={() => window.open(article.url, '_blank')}
+              >
                 <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
                 Original Article
               </Button>
               {sourceUrl && (
-                <Button variant="outline" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => window.open(sourceUrl, '_blank')}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  style={{ width: '100%', justifyContent: 'flex-start' }}
+                  onClick={() => window.open(sourceUrl, '_blank')}
+                >
                   <Newspaper style={{ width: 16, height: 16, marginRight: 8 }} />
                   {sourceName || 'Source Website'}
                 </Button>

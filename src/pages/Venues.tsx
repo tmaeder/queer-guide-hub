@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
@@ -9,7 +9,13 @@ import { VenueFilters } from '@/components/venues/VenueFilters';
 import { ExploreMap } from '@/components/map/ExploreMap';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -28,7 +34,8 @@ const Venues = () => {
 
   useMeta({
     title: 'Venues',
-    description: 'Discover queer-friendly venues, businesses, and organizations worldwide. Find safe spaces near you.',
+    description:
+      'Discover queer-friendly venues, businesses, and organizations worldwide. Find safe spaces near you.',
     canonicalPath: '/venues',
     jsonLd: {
       '@context': 'https://schema.org',
@@ -50,7 +57,7 @@ const Venues = () => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
-// removed duplicate pagination state
+  // removed duplicate pagination state
   const handleFiltersChange = async (filters: any) => {
     setCurrentFilters(filters);
     setPage(1);
@@ -144,23 +151,30 @@ const Venues = () => {
       setAutoLoadedCount(0);
       await fetchVenues(currentFilters, { page: 1, pageSize: PAGE_SIZE, append: false });
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // IntersectionObserver for infinite scroll with 50 autoload cap
   useEffect(() => {
     if (!sentinelRef.current) return;
     const el = sentinelRef.current;
-    const observer = new IntersectionObserver(async (entries) => {
-      const [entry] = entries;
-      if (entry.isIntersecting && !loading && hasMore && autoLoadedCount < 50) {
-        const nextPage = page + 1;
-        setPage(nextPage);
-        const result: any = await fetchVenues(currentFilters, { page: nextPage, pageSize: PAGE_SIZE, append: true });
-        const fetched = result?.fetched ?? PAGE_SIZE;
-        setAutoLoadedCount((c) => Math.min(50, c + fetched));
-      }
-    }, { rootMargin: '200px' });
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !loading && hasMore && autoLoadedCount < 50) {
+          const nextPage = page + 1;
+          setPage(nextPage);
+          const result: any = await fetchVenues(currentFilters, {
+            page: nextPage,
+            pageSize: PAGE_SIZE,
+            append: true,
+          });
+          const fetched = result?.fetched ?? PAGE_SIZE;
+          setAutoLoadedCount((c) => Math.min(50, c + fetched));
+        }
+      },
+      { rootMargin: '200px' },
+    );
 
     observer.observe(el);
     return () => observer.unobserve(el);
@@ -175,7 +189,15 @@ const Venues = () => {
           center
           actions={
             <Button
-              style={{ display: 'inline-flex', gap: 8, paddingLeft: 24, paddingRight: 24, paddingTop: 12, paddingBottom: 12, fontSize: '1.125rem' }}
+              style={{
+                display: 'inline-flex',
+                gap: 8,
+                paddingLeft: 24,
+                paddingRight: 24,
+                paddingTop: 12,
+                paddingBottom: 12,
+                fontSize: '1.125rem',
+              }}
               onClick={() => navigate('/submit/venue')}
             >
               <Plus style={{ width: 20, height: 20 }} />
@@ -191,7 +213,21 @@ const Venues = () => {
 
         {/* Results Header with Sorting */}
         {!loading && venues.length > 0 && (
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', gap: 2, mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              justifyContent: 'space-between',
+              gap: 2,
+              mb: 3,
+              p: 2,
+              bgcolor: 'background.paper',
+              borderRadius: 2,
+              border: 1,
+              borderColor: 'divider',
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Typography color="text.secondary" sx={{ fontWeight: 500 }}>
                 Found {venues.length} result{venues.length !== 1 ? 's' : ''}
@@ -199,14 +235,17 @@ const Venues = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Filter style={{ width: 16, height: 16 }} />
                 <Typography variant="body2" color="text.secondary">
-                  {Object.keys(currentFilters).length > 0 && `${Object.keys(currentFilters).length} filter${Object.keys(currentFilters).length !== 1 ? 's' : ''} applied`}
+                  {Object.keys(currentFilters).length > 0 &&
+                    `${Object.keys(currentFilters).length} filter${Object.keys(currentFilters).length !== 1 ? 's' : ''} applied`}
                 </Typography>
               </Box>
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2" color="text.secondary">Sort by:</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Sort by:
+                </Typography>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger style={{ width: 128 }}>
                     <SelectValue />
@@ -225,7 +264,11 @@ const Venues = () => {
                   onClick={toggleSortOrder}
                   style={{ paddingLeft: 8, paddingRight: 8 }}
                 >
-                  {sortOrder === 'asc' ? <SortAsc style={{ width: 16, height: 16 }} /> : <SortDesc style={{ width: 16, height: 16 }} />}
+                  {sortOrder === 'asc' ? (
+                    <SortAsc style={{ width: 16, height: 16 }} />
+                  ) : (
+                    <SortDesc style={{ width: 16, height: 16 }} />
+                  )}
                 </Button>
               </Box>
             </Box>
@@ -233,8 +276,21 @@ const Venues = () => {
         )}
 
         {/* Content Tabs */}
-        <Tabs value={viewMode === 'grid' ? 'grid' : 'map'} onValueChange={(value) => setViewMode(value as 'grid' | 'list')}>
-          <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr', marginBottom: 32, maxWidth: 448, marginLeft: 'auto', marginRight: 'auto' }}>
+        <Tabs
+          value={viewMode === 'grid' ? 'grid' : 'map'}
+          onValueChange={(value) => setViewMode(value as 'grid' | 'list')}
+        >
+          <TabsList
+            style={{
+              display: 'grid',
+              width: '100%',
+              gridTemplateColumns: '1fr 1fr',
+              marginBottom: 32,
+              maxWidth: 448,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}
+          >
             <TabsTrigger value="grid" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Grid style={{ width: 16, height: 16 }} />
               Grid View
@@ -260,18 +316,38 @@ const Venues = () => {
                   icon={MapPin}
                   title="No venues found"
                   description="We couldn't find any venues matching your criteria. Try adjusting your filters or be the first to submit a venue in this area!"
-                  primaryAction={{ label: 'Submit a Venue', onClick: () => navigate('/submit/venue') }}
-                  secondaryAction={{ label: 'Clear Filters', onClick: () => handleFiltersChange({}) }}
+                  primaryAction={{
+                    label: 'Submit a Venue',
+                    onClick: () => navigate('/submit/venue'),
+                  }}
+                  secondaryAction={{
+                    label: 'Clear Filters',
+                    onClick: () => handleFiltersChange({}),
+                  }}
                 />
               )}
 
               {/* Venues Grid */}
               {!loading && venues.length > 0 && (
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      md: '1fr 1fr',
+                      lg: 'repeat(3, 1fr)',
+                      xl: 'repeat(4, 1fr)',
+                    },
+                    gap: 3,
+                  }}
+                >
                   {sortedVenues.map((venue, index) => (
                     <Box
                       key={venue.id}
-                      sx={{ '&:hover': { transform: 'scale(1.02)' }, transition: 'transform 200ms' }}
+                      sx={{
+                        '&:hover': { transform: 'scale(1.02)' },
+                        transition: 'transform 200ms',
+                      }}
                     >
                       <VenueCard
                         venue={venue}
@@ -293,12 +369,21 @@ const Venues = () => {
                     <Button
                       variant="outline"
                       size="lg"
-                      style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 12, paddingBottom: 12 }}
+                      style={{
+                        paddingLeft: 32,
+                        paddingRight: 32,
+                        paddingTop: 12,
+                        paddingBottom: 12,
+                      }}
                       onClick={async () => {
                         setAutoLoadedCount(0);
                         const nextPage = page + 1;
                         setPage(nextPage);
-                        await fetchVenues(currentFilters, { page: nextPage, pageSize: PAGE_SIZE, append: true });
+                        await fetchVenues(currentFilters, {
+                          page: nextPage,
+                          pageSize: PAGE_SIZE,
+                          append: true,
+                        });
                       }}
                     >
                       Load More Results
@@ -313,13 +398,17 @@ const Venues = () => {
 
           <TabsContent value="map">
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box sx={{ height: 700, width: '100%', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
-                <ExploreMap
-                  height={700}
-                  defaultLayers={['venues']}
-                  showLayerToggles
-                  showFilters
-                />
+              <Box
+                sx={{
+                  height: 700,
+                  width: '100%',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  border: 1,
+                  borderColor: 'divider',
+                }}
+              >
+                <ExploreMap height={700} defaultLayers={['venues']} showLayerToggles showFilters />
               </Box>
             </Box>
           </TabsContent>

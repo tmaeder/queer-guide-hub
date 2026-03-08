@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
@@ -30,9 +30,16 @@ function VenueRow({ v, onClick }: { v: TagContentResult['venues'][number]; onCli
       component="button"
       onClick={onClick}
       sx={{
-        display: 'flex', alignItems: 'center', gap: 1.5, width: '100%',
-        p: 1, border: 'none', background: 'none', cursor: 'pointer',
-        borderRadius: 1.5, textAlign: 'left',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        width: '100%',
+        p: 1,
+        border: 'none',
+        background: 'none',
+        cursor: 'pointer',
+        borderRadius: 1.5,
+        textAlign: 'left',
         '&:hover': { bgcolor: 'action.hover' },
       }}
     >
@@ -42,18 +49,43 @@ function VenueRow({ v, onClick }: { v: TagContentResult['venues'][number]; onCli
           src={v.image_url}
           alt={v.name}
           sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: 'cover', flexShrink: 0 }}
-          onError={(e: React.SyntheticEvent<HTMLImageElement>) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
         />
       ) : (
-        <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Box
+          sx={{
+            width: 44,
+            height: 44,
+            borderRadius: 1.5,
+            bgcolor: 'action.hover',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
           <MapPin style={{ width: 18, height: 18, opacity: 0.4 }} />
         </Box>
       )}
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 600,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {v.name}
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+        >
           {v.city && <>{v.city}</>}
           {v.city && v.country && <> · </>}
           {v.country && <>{v.country}</>}
@@ -79,9 +111,16 @@ function NewsRow({ n, onClick }: { n: TagContentResult['news'][number]; onClick:
       component="button"
       onClick={onClick}
       sx={{
-        display: 'flex', alignItems: 'center', gap: 1.5, width: '100%',
-        p: 1, border: 'none', background: 'none', cursor: 'pointer',
-        borderRadius: 1.5, textAlign: 'left',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        width: '100%',
+        p: 1,
+        border: 'none',
+        background: 'none',
+        cursor: 'pointer',
+        borderRadius: 1.5,
+        textAlign: 'left',
         '&:hover': { bgcolor: 'action.hover' },
       }}
     >
@@ -91,21 +130,44 @@ function NewsRow({ n, onClick }: { n: TagContentResult['news'][number]; onClick:
           src={n.image_url}
           alt={n.title}
           sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: 'cover', flexShrink: 0 }}
-          onError={(e: React.SyntheticEvent<HTMLImageElement>) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
         />
       ) : (
-        <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Box
+          sx={{
+            width: 44,
+            height: 44,
+            borderRadius: 1.5,
+            bgcolor: 'action.hover',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
           <Newspaper style={{ width: 18, height: 18, opacity: 0.4 }} />
         </Box>
       )}
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 600,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {n.title}
         </Typography>
         <Typography variant="caption" color="text.secondary">
           {n.news_sources?.name && <>{n.news_sources.name}</>}
           {n.news_sources?.name && n.published_at && <> · </>}
-          {n.published_at && <>{formatDistanceToNow(new Date(n.published_at), { addSuffix: true })}</>}
+          {n.published_at && (
+            <>{formatDistanceToNow(new Date(n.published_at), { addSuffix: true })}</>
+          )}
         </Typography>
       </Box>
       {n.url && <ExternalLink style={{ width: 14, height: 14, opacity: 0.3, flexShrink: 0 }} />}
@@ -115,7 +177,11 @@ function NewsRow({ n, onClick }: { n: TagContentResult['news'][number]; onClick:
 
 function EventRow({ e, onClick }: { e: TagContentResult['events'][number]; onClick: () => void }) {
   const dateStr = e.start_date
-    ? new Date(e.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    ? new Date(e.start_date).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
     : null;
 
   return (
@@ -123,9 +189,16 @@ function EventRow({ e, onClick }: { e: TagContentResult['events'][number]; onCli
       component="button"
       onClick={onClick}
       sx={{
-        display: 'flex', alignItems: 'center', gap: 1.5, width: '100%',
-        p: 1, border: 'none', background: 'none', cursor: 'pointer',
-        borderRadius: 1.5, textAlign: 'left',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        width: '100%',
+        p: 1,
+        border: 'none',
+        background: 'none',
+        cursor: 'pointer',
+        borderRadius: 1.5,
+        textAlign: 'left',
         '&:hover': { bgcolor: 'action.hover' },
       }}
     >
@@ -135,15 +208,36 @@ function EventRow({ e, onClick }: { e: TagContentResult['events'][number]; onCli
           src={e.image_url}
           alt={e.title}
           sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: 'cover', flexShrink: 0 }}
-          onError={(e: React.SyntheticEvent<HTMLImageElement>) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
         />
       ) : (
-        <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Box
+          sx={{
+            width: 44,
+            height: 44,
+            borderRadius: 1.5,
+            bgcolor: 'action.hover',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
           <Calendar style={{ width: 18, height: 18, opacity: 0.4 }} />
         </Box>
       )}
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 600,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {e.title}
         </Typography>
         <Typography variant="caption" color="text.secondary">
@@ -162,7 +256,13 @@ function EventRow({ e, onClick }: { e: TagContentResult['events'][number]; onCli
   );
 }
 
-function PersonalityRow({ p, onClick }: { p: TagContentResult['personalities'][number]; onClick: () => void }) {
+function PersonalityRow({
+  p,
+  onClick,
+}: {
+  p: TagContentResult['personalities'][number];
+  onClick: () => void;
+}) {
   const lifespan = p.birth_date
     ? `${new Date(p.birth_date).getFullYear()}${p.death_date ? '–' + new Date(p.death_date).getFullYear() : ''}`
     : null;
@@ -172,9 +272,16 @@ function PersonalityRow({ p, onClick }: { p: TagContentResult['personalities'][n
       component="button"
       onClick={onClick}
       sx={{
-        display: 'flex', alignItems: 'center', gap: 1.5, width: '100%',
-        p: 1, border: 'none', background: 'none', cursor: 'pointer',
-        borderRadius: 1.5, textAlign: 'left',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        width: '100%',
+        p: 1,
+        border: 'none',
+        background: 'none',
+        cursor: 'pointer',
+        borderRadius: 1.5,
+        textAlign: 'left',
         '&:hover': { bgcolor: 'action.hover' },
       }}
     >
@@ -184,15 +291,36 @@ function PersonalityRow({ p, onClick }: { p: TagContentResult['personalities'][n
           src={p.image_url}
           alt={p.name}
           sx={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-          onError={(e: React.SyntheticEvent<HTMLImageElement>) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
         />
       ) : (
-        <Box sx={{ width: 44, height: 44, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Box
+          sx={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            bgcolor: 'action.hover',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
           <User style={{ width: 18, height: 18, opacity: 0.4 }} />
         </Box>
       )}
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 600,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {p.name}
         </Typography>
         <Typography variant="caption" color="text.secondary">
@@ -212,9 +340,16 @@ function GroupRow({ g, onClick }: { g: TagContentResult['groups'][number]; onCli
       component="button"
       onClick={onClick}
       sx={{
-        display: 'flex', alignItems: 'center', gap: 1.5, width: '100%',
-        p: 1, border: 'none', background: 'none', cursor: 'pointer',
-        borderRadius: 1.5, textAlign: 'left',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        width: '100%',
+        p: 1,
+        border: 'none',
+        background: 'none',
+        cursor: 'pointer',
+        borderRadius: 1.5,
+        textAlign: 'left',
         '&:hover': { bgcolor: 'action.hover' },
       }}
     >
@@ -224,15 +359,36 @@ function GroupRow({ g, onClick }: { g: TagContentResult['groups'][number]; onCli
           src={g.avatar_url}
           alt={g.name}
           sx={{ width: 44, height: 44, borderRadius: 1.5, objectFit: 'cover', flexShrink: 0 }}
-          onError={(e: React.SyntheticEvent<HTMLImageElement>) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
         />
       ) : (
-        <Box sx={{ width: 44, height: 44, borderRadius: 1.5, bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Box
+          sx={{
+            width: 44,
+            height: 44,
+            borderRadius: 1.5,
+            bgcolor: 'action.hover',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
           <UsersIcon style={{ width: 18, height: 18, opacity: 0.4 }} />
         </Box>
       )}
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 600,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {g.name}
         </Typography>
         <Typography variant="caption" color="text.secondary">
@@ -269,9 +425,7 @@ function ContentSection({ icon, title, count, children }: SectionProps) {
         </CardTitle>
       </CardHeader>
       <CardContent sx={{ pt: 1 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-          {children}
-        </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>{children}</Box>
       </CardContent>
     </Card>
   );
@@ -317,7 +471,12 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
   if (!data) return null;
 
   const { venues, news, events, personalities, groups } = data;
-  const hasAny = venues.length > 0 || news.length > 0 || events.length > 0 || personalities.length > 0 || groups.length > 0;
+  const hasAny =
+    venues.length > 0 ||
+    news.length > 0 ||
+    events.length > 0 ||
+    personalities.length > 0 ||
+    groups.length > 0;
 
   if (!hasAny) return null;
 

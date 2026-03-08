@@ -13,12 +13,17 @@ export default function AccessibilityHub() {
       {/* Header */}
       <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Accessibility style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" />
+          <Accessibility
+            style={{ width: 48, height: 48 }}
+            color="var(--mui-palette-primary-main)"
+          />
         </Box>
-        <Typography variant="h3" sx={{ fontWeight: 700 }}>Accessibility Hub</Typography>
+        <Typography variant="h3" sx={{ fontWeight: 700 }}>
+          Accessibility Hub
+        </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '42rem', mx: 'auto' }}>
-          Customize your experience with accessibility features designed to make our platform
-          more inclusive and easier to use for everyone.
+          Customize your experience with accessibility features designed to make our platform more
+          inclusive and easier to use for everyone.
         </Typography>
       </Box>
 
@@ -39,7 +44,13 @@ export default function AccessibilityHub() {
               following WCAG 2.1 AA guidelines to ensure equal access for users with disabilities.
             </Typography>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' },
+                gap: 2,
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Badge variant="secondary" sx={{ width: 'fit-content' }}>
                   <Accessibility style={{ width: 12, height: 12, marginRight: 4 }} />
@@ -68,7 +79,9 @@ export default function AccessibilityHub() {
       {/* Accessibility Controls */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>Accessibility Settings</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+            Accessibility Settings
+          </Typography>
           <Typography color="text.secondary">
             Adjust these settings to customize your experience. Your preferences will be saved
             automatically and applied across the entire platform.
@@ -84,24 +97,22 @@ export default function AccessibilityHub() {
       <Card>
         <CardHeader>
           <CardTitle>Additional Resources</CardTitle>
-          <CardDescription>
-            Learn more about accessibility and get support
-          </CardDescription>
+          <CardDescription>Learn more about accessibility and get support</CardDescription>
         </CardHeader>
         <CardContent>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Typography sx={{ fontWeight: 500 }}>Need Help?</Typography>
               <Typography variant="body2" color="text.secondary">
-                If you're experiencing accessibility issues or need assistance,
-                please contact our support team at accessibility@queer.guide
+                If you're experiencing accessibility issues or need assistance, please contact our
+                support team at accessibility@queer.guide
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Typography sx={{ fontWeight: 500 }}>Feedback</Typography>
               <Typography variant="body2" color="text.secondary">
-                We're constantly improving our accessibility features.
-                Share your feedback to help us make the platform better for everyone.
+                We're constantly improving our accessibility features. Share your feedback to help
+                us make the platform better for everyone.
               </Typography>
             </Box>
           </Box>

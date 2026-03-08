@@ -1,11 +1,21 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import ForceGraph2D, { type ForceGraphMethods, type NodeObject, type LinkObject } from 'react-force-graph-2d';
+import ForceGraph2D, {
+  type ForceGraphMethods,
+  type NodeObject,
+  type LinkObject,
+} from 'react-force-graph-2d';
 import { useTagGraph, type GraphNode, type GraphEdge } from '@/hooks/useTagRelationships';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -45,7 +55,7 @@ export default function TagRelationshipGraph({
   const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<ForceGraphMethods | undefined>();
   const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
-  const [minScore, setMinScore] = useState(0.5);
+  const [minScore, setMinScore] = useState(0.8);
   const [internalCategoryFilter, setInternalCategoryFilter] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<ForceNode | null>(null);
 
@@ -96,7 +106,7 @@ export default function TagRelationshipGraph({
         onTagClick({ id: n.id, name: n.name });
       }
     },
-    [onTagClick]
+    [onTagClick],
   );
 
   const handleNodeHover = useCallback((node: NodeObject | null) => {
@@ -142,7 +152,7 @@ export default function TagRelationshipGraph({
           n.x - textWidth / 2 - padding,
           n.y + size + 2 / globalScale,
           textWidth + padding * 2,
-          fontSize + padding * 2
+          fontSize + padding * 2,
         );
 
         // Text
@@ -150,7 +160,7 @@ export default function TagRelationshipGraph({
         ctx.fillText(text, n.x, n.y + size + 2 / globalScale + padding);
       }
     },
-    [hoveredNode]
+    [hoveredNode],
   );
 
   const linkColor = useCallback((link: LinkObject) => {
@@ -187,11 +197,24 @@ export default function TagRelationshipGraph({
               onClick={() => onTagClick({ id: node.id, name: node.name })}
             >
               <CardContent style={{ padding: 12 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {node.name}
                 </Typography>
                 {node.category && (
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block', fontSize: '0.7rem' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 0.5, display: 'block', fontSize: '0.7rem' }}
+                  >
                     {node.category}
                   </Typography>
                 )}
@@ -234,8 +257,8 @@ export default function TagRelationshipGraph({
           <Slider
             value={minScore}
             onChange={(_, val) => setMinScore(val as number)}
-            min={0.3}
-            max={0.8}
+            min={0.7}
+            max={0.95}
             step={0.05}
             size="small"
             valueLabelDisplay="auto"
@@ -294,11 +317,14 @@ export default function TagRelationshipGraph({
             enableNodeDrag
             enableZoomInteraction
             enablePanInteraction
+            autoPauseRedraw={false}
             d3AlphaDecay={0.03}
             d3VelocityDecay={0.4}
           />
         ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
+          >
             <Typography color="text.secondary">
               No relationships found. Try lowering the similarity threshold.
             </Typography>
@@ -337,7 +363,6 @@ export default function TagRelationshipGraph({
           </Box>
         )}
       </Box>
-
     </Box>
   );
 }

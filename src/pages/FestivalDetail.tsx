@@ -1,6 +1,16 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Calendar, MapPin, Music, Globe, ExternalLink, Share2, Clock, Tag } from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  MapPin,
+  Music,
+  Globe,
+  ExternalLink,
+  Share2,
+  Clock,
+  Tag,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,7 +47,7 @@ export default function FestivalDetail() {
     if (!id) return;
     setLoading(true);
     fetchFestivalWithEvents(id)
-      .then(data => setFestival(data))
+      .then((data) => setFestival(data))
       .catch(() => setFestival(null))
       .finally(() => setLoading(false));
   }, [id, fetchFestivalWithEvents]);
@@ -53,8 +63,14 @@ export default function FestivalDetail() {
   if (!festival) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Festival Not Found</Typography>
-        <Link to="/festivals"><Button><ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} /> Back to Festivals</Button></Link>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Festival Not Found
+        </Typography>
+        <Link to="/festivals">
+          <Button>
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} /> Back to Festivals
+          </Button>
+        </Link>
       </Container>
     );
   }
@@ -89,26 +105,57 @@ export default function FestivalDetail() {
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
         <Link to="/festivals" style={{ color: 'inherit', textDecoration: 'none' }}>
-          <Typography variant="body2" color="text.secondary" sx={{ '&:hover': { color: 'primary.main' } }}>Festivals</Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ '&:hover': { color: 'primary.main' } }}
+          >
+            Festivals
+          </Typography>
         </Link>
-        <Typography variant="body2" color="text.secondary">/</Typography>
-        <Typography variant="body2" color="text.primary" fontWeight={500}>{festival.name}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          /
+        </Typography>
+        <Typography variant="body2" color="text.primary" fontWeight={500}>
+          {festival.name}
+        </Typography>
       </Box>
 
       {/* Hero Image */}
       {heroImage && (
         <Box sx={{ borderRadius: 2, overflow: 'hidden', mb: 3, height: { xs: 200, md: 320 } }}>
-          <img src={heroImage} alt={festival.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img
+            src={heroImage}
+            alt={festival.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
         </Box>
       )}
 
       {/* Title Row */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' }, gap: 2, mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { md: 'flex-start' },
+          justifyContent: { md: 'space-between' },
+          gap: 2,
+          mb: 2,
+        }}
+      >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5, flexWrap: 'wrap' }}>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>{festival.name}</Typography>
-            {festival.featured && <Badge style={{ backgroundColor: '#333', color: '#fff' }}>Featured</Badge>}
-            <Chip size="small" icon={<Music style={{ width: 14, height: 14 }} />} label={TYPE_LABELS[festival.festival_type] || festival.festival_type} />
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {festival.name}
+            </Typography>
+            {festival.featured && (
+              <Badge style={{ backgroundColor: '#333', color: '#fff' }}>Featured</Badge>
+            )}
+            <Chip
+              size="small"
+              icon={<Music style={{ width: 14, height: 14 }} />}
+              label={TYPE_LABELS[festival.festival_type] || festival.festival_type}
+            />
           </Box>
           {location && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
@@ -116,17 +163,37 @@ export default function FestivalDetail() {
               <Typography variant="body2" color="text.secondary">
                 {cityLink ? (
                   <Link to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                    <Typography component="span" variant="body2" sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}>{location}</Typography>
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
+                    >
+                      {location}
+                    </Typography>
                   </Link>
-                ) : location}
+                ) : (
+                  location
+                )}
               </Typography>
             </Box>
           )}
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}
+        >
           <FavoriteButton itemId={festival.id} type="event" size="md" />
-          <ReportButton contentType="festivals" contentId={festival.id} contentName={festival.name} />
-          <AdminEditButton contentType="festivals" contentId={festival.id} contentName={festival.name} currentData={festival as Record<string, unknown>} onSaved={() => window.location.reload()} />
+          <ReportButton
+            contentType="festivals"
+            contentId={festival.id}
+            contentName={festival.name}
+          />
+          <AdminEditButton
+            contentType="festivals"
+            contentId={festival.id}
+            contentName={festival.name}
+            currentData={festival as Record<string, unknown>}
+            onSaved={() => window.location.reload()}
+          />
           {festival.ticket_url && (
             <Button size="sm" asChild>
               <a href={festival.ticket_url} target="_blank" rel="noopener noreferrer">
@@ -142,9 +209,23 @@ export default function FestivalDetail() {
 
       {/* Stat Chips */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-        <Chip icon={<Calendar style={{ width: 14, height: 14 }} />} label={dateRange} size="small" variant="outlined" />
-        {eventCount > 0 && <Chip icon={<Clock style={{ width: 14, height: 14 }} />} label={`${eventCount} event${eventCount !== 1 ? 's' : ''}`} size="small" variant="outlined" />}
-        {festival.is_recurring && <Chip label="Recurring" color="info" size="small" variant="outlined" />}
+        <Chip
+          icon={<Calendar style={{ width: 14, height: 14 }} />}
+          label={dateRange}
+          size="small"
+          variant="outlined"
+        />
+        {eventCount > 0 && (
+          <Chip
+            icon={<Clock style={{ width: 14, height: 14 }} />}
+            label={`${eventCount} event${eventCount !== 1 ? 's' : ''}`}
+            size="small"
+            variant="outlined"
+          />
+        )}
+        {festival.is_recurring && (
+          <Chip label="Recurring" color="info" size="small" variant="outlined" />
+        )}
         {festival.website && (
           <Chip
             icon={<Globe style={{ width: 14, height: 14 }} />}
@@ -162,14 +243,24 @@ export default function FestivalDetail() {
       {/* Tags */}
       {festival.tags && festival.tags.length > 0 && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 3 }}>
-          {festival.tags.map(tag => (
-            <Chip key={tag} size="small" icon={<Tag style={{ width: 10, height: 10 }} />} label={tag} variant="outlined" />
+          {festival.tags.map((tag) => (
+            <Chip
+              key={tag}
+              size="small"
+              icon={<Tag style={{ width: 10, height: 10 }} />}
+              label={tag}
+              variant="outlined"
+            />
           ))}
         </Box>
       )}
 
       {/* Tabs */}
-      <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+      <Tabs
+        value={tabIndex}
+        onChange={(_, v) => setTabIndex(v)}
+        sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}
+      >
         <Tab label="Overview" />
         <Tab label={`Schedule (${eventCount})`} />
         {festival.images && festival.images.length > 1 && <Tab label="Photos" />}
@@ -181,9 +272,13 @@ export default function FestivalDetail() {
           <Box>
             {festival.description && (
               <Card sx={{ mb: 3, borderColor: 'divider' }}>
-                <CardHeader><CardTitle>About</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle>About</CardTitle>
+                </CardHeader>
                 <CardContent>
-                  <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>{festival.description}</Typography>
+                  <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+                    {festival.description}
+                  </Typography>
                 </CardContent>
               </Card>
             )}
@@ -192,13 +287,24 @@ export default function FestivalDetail() {
             {eventCount > 0 && (
               <Card sx={{ borderColor: 'divider' }}>
                 <CardHeader>
-                  <CardTitle style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <CardTitle
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <span>Schedule Preview</span>
-                    <Button variant="link" size="sm" onClick={() => setTabIndex(1)}>View Full Schedule</Button>
+                    <Button variant="link" size="sm" onClick={() => setTabIndex(1)}>
+                      View Full Schedule
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <FestivalSchedule events={(festival.events ?? []).slice(0, 10)} timezone={festival.timezone} />
+                  <FestivalSchedule
+                    events={(festival.events ?? []).slice(0, 10)}
+                    timezone={festival.timezone}
+                  />
                 </CardContent>
               </Card>
             )}
@@ -207,32 +313,46 @@ export default function FestivalDetail() {
           {/* Sidebar */}
           <Box>
             <Card sx={{ borderColor: 'divider' }}>
-              <CardHeader><CardTitle>Details</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Details</CardTitle>
+              </CardHeader>
               <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   <Box>
-                    <Typography variant="caption" color="text.secondary">Dates</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Dates
+                    </Typography>
                     <Typography variant="body2">{dateRange}</Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" color="text.secondary">Type</Typography>
-                    <Typography variant="body2">{TYPE_LABELS[festival.festival_type] || festival.festival_type}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Type
+                    </Typography>
+                    <Typography variant="body2">
+                      {TYPE_LABELS[festival.festival_type] || festival.festival_type}
+                    </Typography>
                   </Box>
                   {location && (
                     <Box>
-                      <Typography variant="caption" color="text.secondary">Location</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Location
+                      </Typography>
                       <Typography variant="body2">{location}</Typography>
                     </Box>
                   )}
                   {festival.timezone && (
                     <Box>
-                      <Typography variant="caption" color="text.secondary">Timezone</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Timezone
+                      </Typography>
                       <Typography variant="body2">{festival.timezone}</Typography>
                     </Box>
                   )}
                   {festival.recurrence_pattern && (
                     <Box>
-                      <Typography variant="caption" color="text.secondary">Recurrence</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Recurrence
+                      </Typography>
                       <Typography variant="body2">{festival.recurrence_pattern}</Typography>
                     </Box>
                   )}
@@ -250,10 +370,20 @@ export default function FestivalDetail() {
 
       {/* Photos Tab */}
       {tabIndex === 2 && festival.images && festival.images.length > 1 && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 2,
+          }}
+        >
           {festival.images.map((img, i) => (
             <Box key={i} sx={{ borderRadius: 2, overflow: 'hidden', aspectRatio: '4/3' }}>
-              <img src={img} alt={`${festival.name} photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img
+                src={img}
+                alt={`${festival.name} photo ${i + 1}`}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </Box>
           ))}
         </Box>

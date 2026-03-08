@@ -13,14 +13,29 @@ import {
   Trash2,
   Edit,
   AtSign,
-  Hash
+  Hash,
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useComments, PostComment, CreateCommentData } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -38,7 +53,14 @@ interface CommentItemProps {
   isLiking: boolean;
 }
 
-const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }: CommentItemProps) => {
+const CommentItem = ({
+  comment,
+  onLike,
+  onUnlike,
+  onDelete,
+  onReply,
+  isLiking,
+}: CommentItemProps) => {
   const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -61,18 +83,17 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
         const mentionRegex = new RegExp(`@${mention.username}`, 'g');
         content = content.replace(
           mentionRegex,
-          `<span class="text-primary font-medium">@${mention.username}</span>`
+          `<span class="text-primary font-medium">@${mention.username}</span>`,
         );
       });
     }
 
     // Handle hashtags (simple implementation)
-    content = content.replace(
-      /#(\w+)/g,
-      '<span class="text-primary font-medium">#$1</span>'
-    );
+    content = content.replace(/#(\w+)/g, '<span class="text-primary font-medium">#$1</span>');
 
-    return <ContentSanitizer content={content} allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']} />;
+    return (
+      <ContentSanitizer content={content} allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']} />
+    );
   };
 
   return (
@@ -87,10 +108,7 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
 
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-            <Link
-              to={`/user/${comment.user_id}`}
-              style={{ fontWeight: 500, fontSize: '0.875rem' }}
-            >
+            <Link to={`/user/${comment.user_id}`} style={{ fontWeight: 500, fontSize: '0.875rem' }}>
               {comment.profiles?.display_name || 'Unknown User'}
             </Link>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -108,9 +126,21 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
               size="sm"
               onClick={handleLikeToggle}
               disabled={isLiking || !user}
-              sx={{ height: 24, px: 1, fontSize: '0.75rem', ...(comment.user_liked && { color: 'error.main' }) }}
+              sx={{
+                height: 24,
+                px: 1,
+                fontSize: '0.75rem',
+                ...(comment.user_liked && { color: 'error.main' }),
+              }}
             >
-              <Heart style={{ width: 12, height: 12, marginRight: 4, ...(comment.user_liked && { fill: 'currentColor' }) }} />
+              <Heart
+                style={{
+                  width: 12,
+                  height: 12,
+                  marginRight: 4,
+                  ...(comment.user_liked && { fill: 'currentColor' }),
+                }}
+              />
               {comment.likes_count || 0}
             </Button>
 
@@ -131,7 +161,12 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
         {(isOwnComment || user) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" sx={{ height: 24, width: 24, p: 0 }} aria-label="Comment actions">
+              <Button
+                variant="ghost"
+                size="sm"
+                sx={{ height: 24, width: 24, p: 0 }}
+                aria-label="Comment actions"
+              >
                 <MoreHorizontal style={{ width: 12, height: 12 }} />
               </Button>
             </DropdownMenuTrigger>
@@ -142,19 +177,13 @@ const CommentItem = ({ comment, onLike, onUnlike, onDelete, onReply, isLiking }:
                     <Edit style={{ width: 12, height: 12, marginRight: 8 }} />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setShowDeleteDialog(true)}
-                  >
+                  <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
                     <Trash2 style={{ width: 12, height: 12, marginRight: 8 }} />
                     Delete
                   </DropdownMenuItem>
                 </>
               )}
-              {!isOwnComment && (
-                <DropdownMenuItem>
-                  Report Comment
-                </DropdownMenuItem>
-              )}
+              {!isOwnComment && <DropdownMenuItem>Report Comment</DropdownMenuItem>}
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -196,21 +225,27 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
     likeComment,
     unlikeComment,
     deleteComment,
-    isLikingComment
+    isLikingComment,
   } = useComments(postId);
 
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<{ id: string; username: string } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleReply = useCallback((commentId: string, username: string) => {
-    setReplyingTo({ id: commentId, username });
-    setNewComment(`@${username} `);
-    setTimeout(() => {
-      textareaRef.current?.focus();
-      textareaRef.current?.setSelectionRange(newComment.length + username.length + 2, newComment.length + username.length + 2);
-    }, 100);
-  }, [newComment]);
+  const handleReply = useCallback(
+    (commentId: string, username: string) => {
+      setReplyingTo({ id: commentId, username });
+      setNewComment(`@${username} `);
+      setTimeout(() => {
+        textareaRef.current?.focus();
+        textareaRef.current?.setSelectionRange(
+          newComment.length + username.length + 2,
+          newComment.length + username.length + 2,
+        );
+      }, 100);
+    },
+    [newComment],
+  );
 
   const handleSubmitComment = () => {
     if (!newComment.trim() || !user) return;
@@ -251,11 +286,24 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         <CardContent sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {Array.from({ length: 3 }).map((_, i) => (
-              <Box key={i} sx={{ display: 'flex', gap: 1.5 , animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-                <Box sx={{ height: 32, width: 32, bgcolor: 'action.hover', borderRadius: '50%' }}></Box>
+              <Box
+                key={i}
+                sx={{
+                  display: 'flex',
+                  gap: 1.5,
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                }}
+              >
+                <Box
+                  sx={{ height: 32, width: 32, bgcolor: 'action.hover', borderRadius: '50%' }}
+                ></Box>
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Box sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 1, width: '25%' }}></Box>
-                  <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }}></Box>
+                  <Box
+                    sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 1, width: '25%' }}
+                  ></Box>
+                  <Box
+                    sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }}
+                  ></Box>
                 </Box>
               </Box>
             ))}
@@ -270,7 +318,10 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
       <CardContent sx={{ p: 0 }}>
         {/* Comments Header */}
         <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}
+          >
             <MessageCircle style={{ width: 16, height: 16 }} />
             Comments ({comments.length})
           </Typography>
@@ -280,8 +331,20 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         {user && (
           <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
             {replyingTo && (
-              <Box sx={{ mb: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1, fontSize: '0.75rem', color: 'text.secondary' }}>
-                Replying to <Box component="span" sx={{ fontWeight: 500 }}>{replyingTo.username}</Box>
+              <Box
+                sx={{
+                  mb: 1,
+                  p: 1,
+                  bgcolor: 'action.hover',
+                  borderRadius: 1,
+                  fontSize: '0.75rem',
+                  color: 'text.secondary',
+                }}
+              >
+                Replying to{' '}
+                <Box component="span" sx={{ fontWeight: 500 }}>
+                  {replyingTo.username}
+                </Box>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -315,8 +378,23 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                   maxLength={500}
                 />
 
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.75rem', color: 'text.secondary' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mt: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      fontSize: '0.75rem',
+                      color: 'text.secondary',
+                    }}
+                  >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <AtSign style={{ width: 12, height: 12 }} />
                       <span>mention</span>
@@ -352,7 +430,9 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         <Box sx={{ '& > *': { borderBottom: 1, borderColor: 'divider' } }}>
           {comments.length === 0 ? (
             <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-              <MessageCircle style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+              <MessageCircle
+                style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }}
+              />
               <Typography variant="body2">No comments yet. Be the first to comment!</Typography>
             </Box>
           ) : (

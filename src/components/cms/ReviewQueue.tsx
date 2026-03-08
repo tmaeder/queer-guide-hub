@@ -172,9 +172,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
   // Handle reject action (back to draft with comment requirement)
   const handleReject = useCallback(
     async (item: ReviewQueueItem) => {
-      const comment = window.prompt(
-        'Please provide a reason for requesting changes:',
-      );
+      const comment = window.prompt('Please provide a reason for requesting changes:');
       if (!comment?.trim()) return; // Requires comment per workflow config
 
       setActionLoading(item.metadata.id);
@@ -229,23 +227,9 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
   return (
     <Box>
-      {/* ── Header ──────────────────────────────────────────── */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-          Review Queue
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {items.length} item{items.length !== 1 ? 's' : ''} awaiting review
-        </Typography>
-      </Box>
-
       {/* ── Action error banner ─────────────────────────────── */}
       {actionError && (
-        <Alert
-          severity="error"
-          onClose={() => setActionError(null)}
-          sx={{ mb: 2 }}
-        >
+        <Alert severity="error" onClose={() => setActionError(null)} sx={{ mb: 2 }}>
           {actionError}
         </Alert>
       )}
@@ -262,10 +246,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
         >
           <FormControl size="small" sx={{ minWidth: 180 }}>
             <InputLabel id="review-filter-label">
-              <Box
-                component="span"
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-              >
+              <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Filter style={{ width: 14, height: 14 }} />
                 Content Type
               </Box>
@@ -288,10 +269,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
           <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel id="review-sort-label">
-              <Box
-                component="span"
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-              >
+              <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <ArrowUpDown style={{ width: 14, height: 14 }} />
                 Sort
               </Box>
@@ -338,23 +316,14 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
               boxShadow: (theme) => `0 0 0 8px ${theme.palette.success.main}18`,
             }}
           >
-            <CheckCircle2
-              style={{ width: 40, height: 40, color: '#ffffff' }}
-            />
+            <CheckCircle2 style={{ width: 40, height: 40, color: '#ffffff' }} />
           </Box>
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: 600, mb: 0.5 }}
-          >
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
             All caught up!
           </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ maxWidth: 320 }}
-          >
-            There are no items pending review. New submissions will appear here
-            when editors submit content for approval.
+          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 320 }}>
+            There are no items pending review. New submissions will appear here when editors submit
+            content for approval.
           </Typography>
         </Box>
       ) : displayItems.length === 0 && items.length > 0 ? (
@@ -368,9 +337,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
             textAlign: 'center',
           }}
         >
-          <Inbox
-            style={{ width: 36, height: 36, opacity: 0.3, marginBottom: 8 }}
-          />
+          <Inbox style={{ width: 36, height: 36, opacity: 0.3, marginBottom: 8 }} />
           <Typography variant="body2" color="text.secondary">
             No items match the selected filter.
           </Typography>
@@ -414,8 +381,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                     bgcolor: item.contentTypeColor,
                     border: '2px solid',
                     borderColor: 'background.paper',
-                    boxShadow: (theme) =>
-                      `0 0 0 2px ${theme.palette.divider}`,
+                    boxShadow: (theme) => `0 0 0 2px ${theme.palette.divider}`,
                     zIndex: 1,
                   }}
                 />
@@ -432,13 +398,10 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                     cursor: 'pointer',
                     '&:hover': {
                       borderColor: 'primary.main',
-                      boxShadow: (theme) =>
-                        `0 2px 8px ${theme.palette.action.hover}`,
+                      boxShadow: (theme) => `0 2px 8px ${theme.palette.action.hover}`,
                     },
                   }}
-                  onClick={() =>
-                    onEdit(item.metadata.source_table, item.metadata.source_id)
-                  }
+                  onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
                 >
                   {/* Top row: title + content type badge */}
                   <Box
@@ -491,11 +454,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                       </Typography>
                     )}
                     {item.metadata.last_edited_at && (
-                      <Tooltip
-                        title={new Date(
-                          item.metadata.last_edited_at,
-                        ).toLocaleString()}
-                      >
+                      <Tooltip title={new Date(item.metadata.last_edited_at).toLocaleString()}>
                         <Typography
                           variant="caption"
                           color="text.secondary"
@@ -553,9 +512,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                       color="error"
                       disabled={isActionLoading}
                       onClick={() => handleReject(item)}
-                      startIcon={
-                        <ThumbsDown style={{ width: 14, height: 14 }} />
-                      }
+                      startIcon={<ThumbsDown style={{ width: 14, height: 14 }} />}
                       sx={{
                         textTransform: 'none',
                         fontWeight: 500,
@@ -572,12 +529,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                       <Button
                         size="small"
                         variant="text"
-                        onClick={() =>
-                          onEdit(
-                            item.metadata.source_table,
-                            item.metadata.source_id,
-                          )
-                        }
+                        onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
                         startIcon={<Edit style={{ width: 14, height: 14 }} />}
                         sx={{
                           textTransform: 'none',

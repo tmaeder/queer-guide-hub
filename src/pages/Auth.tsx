@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,6 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
-
 export default function Auth() {
   const navigate = useNavigate();
   const { signIn, user } = useAuth();
@@ -26,11 +25,10 @@ export default function Auth() {
   const [error, setError] = useState<string | null>(null);
   const [showMultiStepSignup, setShowMultiStepSignup] = useState(true);
 
-
   // Login form state
   const [loginData, setLoginData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
 
   // Redirect authenticated users
@@ -61,8 +59,8 @@ export default function Auth() {
         }
       } else {
         toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
+          title: 'Welcome back!',
+          description: 'You have successfully signed in.',
         });
         navigate('/');
       }
@@ -83,21 +81,33 @@ export default function Auth() {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <Container maxWidth="sm" sx={{ px: 3, py: 6 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 6rem)' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 'calc(100vh - 6rem)',
+            }}
+          >
             <Card sx={{ width: '100%' }}>
               <CardHeader sx={{ textAlign: 'center' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                    <Heart style={{ width: 32, height: 32, fill: 'currentcolor' }} color="var(--mui-palette-primary-main)" />
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary' }}>The Queer Guide</Typography>
+                  <Box
+                    sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}
+                  >
+                    <Heart
+                      style={{ width: 32, height: 32, fill: 'currentcolor' }}
+                      color="var(--mui-palette-primary-main)"
+                    />
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                      The Queer Guide
+                    </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <CardTitle>
                       <Typography variant="h5">Welcome Back</Typography>
                     </CardTitle>
-                    <CardDescription>
-                      Sign in to your account to continue
-                    </CardDescription>
+                    <CardDescription>Sign in to your account to continue</CardDescription>
                   </Box>
                 </Box>
               </CardHeader>
@@ -130,10 +140,12 @@ export default function Auth() {
                         <Box sx={{ position: 'relative' }}>
                           <Input
                             id="password"
-                            type={showPassword ? "text" : "password"}
+                            type={showPassword ? 'text' : 'password'}
                             placeholder="Enter your password"
                             value={loginData.password}
-                            onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                            onChange={(e) =>
+                              setLoginData({ ...loginData, password: e.target.value })
+                            }
                             disabled={isLoading}
                             required
                           />
@@ -141,26 +153,70 @@ export default function Auth() {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            sx={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 32, width: 32, p: 0 }}
+                            sx={{
+                              position: 'absolute',
+                              right: 4,
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              height: 32,
+                              width: 32,
+                              p: 0,
+                            }}
                             onClick={() => setShowPassword(!showPassword)}
                             disabled={isLoading}
                           >
-                            {showPassword ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+                            {showPassword ? (
+                              <EyeOff style={{ width: 16, height: 16 }} />
+                            ) : (
+                              <Eye style={{ width: 16, height: 16 }} />
+                            )}
                           </Button>
                         </Box>
                       </Box>
 
                       <Button type="submit" sx={{ width: '100%' }} disabled={isLoading}>
-                        {isLoading && <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />}
+                        {isLoading && (
+                          <Loader2
+                            style={{
+                              width: 16,
+                              height: 16,
+                              marginRight: 8,
+                              animation: 'spin 1s linear infinite',
+                            }}
+                          />
+                        )}
                         Sign In
                       </Button>
 
                       <Box sx={{ position: 'relative' }}>
-                        <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center' }}>
-                          <Box component="span" sx={{ width: '100%', borderTop: 1, borderColor: 'divider' }} />
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Box
+                            component="span"
+                            sx={{ width: '100%', borderTop: 1, borderColor: 'divider' }}
+                          />
                         </Box>
-                        <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-                          <Typography variant="caption" sx={{ bgcolor: 'background.paper', px: 1, color: 'text.secondary', textTransform: 'uppercase' }}>
+                        <Box
+                          sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              bgcolor: 'background.paper',
+                              px: 1,
+                              color: 'text.secondary',
+                              textTransform: 'uppercase',
+                            }}
+                          >
                             Or continue with
                           </Typography>
                         </Box>
@@ -171,10 +227,7 @@ export default function Auth() {
                   </form>
 
                   <Box sx={{ textAlign: 'center', pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                    <Button
-                      variant="ghost"
-                      onClick={() => setShowMultiStepSignup(true)}
-                    >
+                    <Button variant="ghost" onClick={() => setShowMultiStepSignup(true)}>
                       <Typography variant="body2" color="text.secondary">
                         Don't have an account? Create one with our guided signup
                       </Typography>

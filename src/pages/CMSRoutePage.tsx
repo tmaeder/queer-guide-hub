@@ -16,7 +16,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -217,10 +217,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           >
             {parentPage.title}
           </Link>
-          <Typography
-            variant="body2"
-            sx={{ fontWeight: 600, color: 'text.primary' }}
-          >
+          <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
             {page.title}
           </Typography>
         </Breadcrumbs>
@@ -273,7 +270,13 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
               my: 2,
               fontSize: '0.875rem',
             },
-            '& code': { bgcolor: 'action.hover', borderRadius: 0.5, px: 0.75, py: 0.25, fontSize: '0.875em' },
+            '& code': {
+              bgcolor: 'action.hover',
+              borderRadius: 0.5,
+              px: 0.75,
+              py: 0.25,
+              fontSize: '0.875em',
+            },
             '& table': { borderCollapse: 'collapse', width: '100%', my: 2 },
             '& th, & td': { border: 1, borderColor: 'divider', px: 1.5, py: 1, textAlign: 'left' },
             '& th': { bgcolor: 'action.hover', fontWeight: 600 },

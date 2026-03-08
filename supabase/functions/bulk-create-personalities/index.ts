@@ -453,7 +453,8 @@ Return ONLY valid JSON, no additional text.`;
           { role: 'user', content: prompt }
         ],
         max_tokens: 1000,
-        temperature: 0.3
+        temperature: 0.3,
+        store: false,
       }),
     });
 

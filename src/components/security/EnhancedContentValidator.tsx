@@ -49,7 +49,7 @@ export class EnhancedContentValidator {
         identifier: userId,
         max_attempts: 20,
         time_window_minutes: 60,
-        action_type: action
+        action_type: action,
       });
       return data === true;
     } catch (error) {
@@ -58,20 +58,29 @@ export class EnhancedContentValidator {
     }
   }
 
-  private static async logSecurityEvent(eventType: string, metadata: Record<string, any>, severity: string, userId?: string) {
+  private static async logSecurityEvent(
+    eventType: string,
+    metadata: Record<string, any>,
+    severity: string,
+    userId?: string,
+  ) {
     try {
       await supabase.rpc('log_security_event', {
         p_event_type: eventType,
         p_user_id: userId || '',
         p_metadata: metadata,
-        p_severity: severity
+        p_severity: severity,
       });
     } catch (error) {
       console.error('Failed to log security event:', error);
     }
   }
 
-  static async validateContent(content: string, userId?: string, contentType = 'general'): Promise<ContentValidationResult> {
+  static async validateContent(
+    content: string,
+    userId?: string,
+    contentType = 'general',
+  ): Promise<ContentValidationResult> {
     const errors: string[] = [];
 
     // Rate limiting
@@ -94,7 +103,7 @@ export class EnhancedContentValidator {
     }
 
     // XSS pattern detection
-    const suspiciousMatches = this.SUSPICIOUS_PATTERNS.filter(pattern => pattern.test(content));
+    const suspiciousMatches = this.SUSPICIOUS_PATTERNS.filter((pattern) => pattern.test(content));
     if (suspiciousMatches.length > 0) {
       errors.push('Potentially malicious content detected');
       await this.logSecurityEvent(
@@ -102,15 +111,15 @@ export class EnhancedContentValidator {
         {
           content_preview: content.substring(0, 100),
           content_type: contentType,
-          patterns_matched: suspiciousMatches.length
+          patterns_matched: suspiciousMatches.length,
         },
         'high',
-        userId
+        userId,
       );
     }
 
     // SQL injection detection
-    const sqlMatches = this.SQL_INJECTION_PATTERNS.filter(pattern => pattern.test(content));
+    const sqlMatches = this.SQL_INJECTION_PATTERNS.filter((pattern) => pattern.test(content));
     if (sqlMatches.length > 0) {
       errors.push('SQL injection attempt detected');
       await this.logSecurityEvent(
@@ -118,16 +127,17 @@ export class EnhancedContentValidator {
         {
           content_preview: content.substring(0, 100),
           content_type: contentType,
-          patterns_matched: sqlMatches.length
+          patterns_matched: sqlMatches.length,
         },
         'critical',
-        userId
+        userId,
       );
     }
 
     // Basic content sanitization (remove null bytes, control characters)
-    let sanitizedContent = content
+    const sanitizedContent = content
       .replace(/\0/g, '') // Remove null bytes
+      // eslint-disable-next-line no-control-regex
       .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
       .trim();
 
@@ -156,17 +166,17 @@ export class EnhancedContentValidator {
         'CONTENT_VALIDATED',
         {
           content_type: contentType,
-          content_length: content.length
+          content_length: content.length,
         },
         'low',
-        userId
+        userId,
       );
     }
 
     return {
       isValid,
       errors,
-      sanitizedContent: isValid ? sanitizedContent : undefined
+      sanitizedContent: isValid ? sanitizedContent : undefined,
     };
   }
 
@@ -180,7 +190,7 @@ export class EnhancedContentValidator {
       'image/webp',
       'image/svg+xml',
       'application/pdf',
-      'text/plain'
+      'text/plain',
     ];
 
     // Rate limiting for file uploads
@@ -205,10 +215,10 @@ export class EnhancedContentValidator {
         {
           file_type: file.type,
           file_name: file.name,
-          file_size: file.size
+          file_size: file.size,
         },
         'medium',
-        userId
+        userId,
       );
     }
 
@@ -221,10 +231,10 @@ export class EnhancedContentValidator {
         'DANGEROUS_FILE_EXTENSION',
         {
           file_extension: fileExtension,
-          file_name: file.name
+          file_name: file.name,
         },
         'high',
-        userId
+        userId,
       );
     }
 
@@ -235,10 +245,10 @@ export class EnhancedContentValidator {
         'FILE_UPLOAD_VALIDATED',
         {
           file_type: file.type,
-          file_size: file.size
+          file_size: file.size,
         },
         'low',
-        userId
+        userId,
       );
     }
 

@@ -211,7 +211,8 @@ Respond with JSON in this format:
           }
         ],
         temperature: 0.3,
-        max_tokens: 200
+        max_tokens: 200,
+        store: false,
       }),
     });
 
