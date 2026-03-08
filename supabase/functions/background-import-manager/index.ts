@@ -72,9 +72,6 @@ const IMPORT_TYPE_MAPPING: Record<string, string> = {
   'import-google-places-venues': 'import-google-places-venues',
   'import-tomtom-venues': 'import-tomtom-venues',
   
-  // Restroom imports
-  'import-refuge-restrooms': 'import-refuge-restrooms',
-  
   // Tag and category imports
   'tags-csv': 'import-tags-csv',
   'categorize-tags': 'categorize-tags',
@@ -247,7 +244,7 @@ function applyFilters(data: any, filters: any, type: string): any {
   console.log(`Applying filters to ${type}:`, filters);
   
   // Apply location filter for venue/event imports
-  if (filters.location && ['import-foursquare-venues', 'import-tripadvisor-venues', 'import-google-places-venues', 'import-tomtom-venues', 'import-refuge-restrooms', 'import-eventbrite-events', 'import-ticketmaster-events'].includes(type)) {
+  if (filters.location && ['import-foursquare-venues', 'import-tripadvisor-venues', 'import-google-places-venues', 'import-tomtom-venues', 'import-eventbrite-events', 'import-ticketmaster-events'].includes(type)) {
     data = { ...data, location: filters.location };
   }
   
@@ -487,13 +484,6 @@ async function processBatch(supabase: any, type: string, batchData: any, jobId: 
         location: batchData.location || 'San Francisco',
         query: batchData.query || 'lgbt',
         limit: batchData.limit || 50
-      };
-      break;
-    case 'import-refuge-restrooms':
-      payload = {
-        ...batchData,
-        location: batchData.location || 'San Francisco',
-        limit: batchData.limit || 100
       };
       break;
     case 'categorize-tags':

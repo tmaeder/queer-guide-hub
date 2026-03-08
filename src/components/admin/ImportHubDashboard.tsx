@@ -34,6 +34,7 @@ import { ApiKeysManager } from './ApiKeysManager';
 import { DuplicatesPanel } from './import-hub/DuplicatesPanel';
 import { IngestionSourcesManager } from './IngestionSourcesManager';
 import { PipelineMonitor } from './PipelineMonitor';
+import { WebScrapersPanel } from './WebScrapersPanel';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
 
@@ -253,6 +254,11 @@ export const ImportHubDashboard = () => {
             </Box>
           </CardContent>
         </Card>
+      </Box>
+
+      {/* Web Scrapers — always visible */}
+      <Box sx={{ mb: 3 }}>
+        <WebScrapersPanel />
       </Box>
 
       {/* Tabs */}

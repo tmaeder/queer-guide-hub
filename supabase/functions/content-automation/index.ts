@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
       }
 
       const processor = PROCESSORS[slug]
-      let moduleScanned = 0, moduleProposed = 0, moduleAutoApproved = 0, modulePendingReview = 0, moduleErrors = 0
+      let moduleScanned = 0, moduleProposed = 0, moduleAutoApproved = 0, modulePendingReview = 0, moduleErrors = 0, moduleFirstError = ''
 
       // ai-enhancer is excluded from full_scan pagination: it makes real API calls per item
       // and has its own internal "needsWork" filter — runs one batch as normal.
@@ -182,6 +182,9 @@ Deno.serve(async (req) => {
         moduleScanned = result.scanned
         moduleErrors = result.errors
         moduleProposed = result.changes.length
+        moduleFirstError = (result as Record<string, unknown>).firstError as string ?? ''
+        const debugTasks = (result as Record<string, unknown>).debugTasks as string[] ?? []
+        if (debugTasks.length > 0) moduleFirstError = `[tasks: ${debugTasks.join(' | ')}] ${moduleFirstError}`
 
         if (!dryRun && result.changes.length > 0) {
           const batchId = crypto.randomUUID()
@@ -216,6 +219,7 @@ Deno.serve(async (req) => {
         pending_review: modulePendingReview,
         errors: moduleErrors,
         duration_ms: moduleDuration,
+        ...(moduleFirstError ? { first_error: moduleFirstError } : {}),
       }
 
       totalScanned += moduleScanned

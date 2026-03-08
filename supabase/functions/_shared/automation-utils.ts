@@ -159,7 +159,7 @@ export const CONTENT_TYPE_CONFIG: Record<string, ContentTypeConfig> = {
   cities: {
     table: 'cities',
     nameField: 'name',
-    selectFields: 'id, name, description, country',
+    selectFields: 'id, name, description, country_id',
     textFields: ['name', 'description'],
   },
   countries: {
@@ -223,10 +223,14 @@ export async function writeChanges(
 ): Promise<{ autoApproved: number; pendingReview: number }> {
   if (changes.length === 0) return { autoApproved: 0, pendingReview: 0 }
 
+  // Filter out any changes with null/undefined new_value (DB column is NOT NULL)
+  const valid = changes.filter(c => c.new_value != null)
+  if (valid.length === 0) return { autoApproved: 0, pendingReview: 0 }
+
   let autoApproved = 0
   let pendingReview = 0
 
-  const rows = changes.map(c => ({
+  const rows = valid.map(c => ({
     module_id: module.id,
     rule_id: c.rule_id || null,
     workflow_run_id: workflowRunId,
@@ -234,8 +238,8 @@ export async function writeChanges(
     content_id: c.content_id,
     content_name: c.content_name,
     field_name: c.field_name,
-    old_value: c.old_value != null ? JSON.stringify(c.old_value) : null,
-    new_value: JSON.stringify(c.new_value),
+    old_value: c.old_value ?? null,
+    new_value: c.new_value,
     change_type: c.change_type,
     confidence: c.confidence,
     reasoning: c.reasoning,
@@ -341,7 +345,11 @@ export async function writeChangesBatch(
     }
   }
 
-  const rows = changes.map(c => ({
+  // Filter out any changes with null/undefined new_value (DB column is NOT NULL)
+  const valid = changes.filter(c => c.new_value != null)
+  if (valid.length === 0) return { autoApproved: 0, pendingReview: 0 }
+
+  const rows = valid.map(c => ({
     module_id: module.id,
     rule_id: c.rule_id || null,
     workflow_run_id: workflowRunId,
@@ -349,8 +357,8 @@ export async function writeChangesBatch(
     content_id: c.content_id,
     content_name: c.content_name,
     field_name: c.field_name,
-    old_value: c.old_value != null ? JSON.stringify(c.old_value) : null,
-    new_value: JSON.stringify(c.new_value),
+    old_value: c.old_value ?? null,
+    new_value: c.new_value,
     change_type: c.change_type,
     confidence: c.confidence,
     reasoning: c.reasoning,
@@ -367,6 +375,11 @@ export async function writeChangesBatch(
     const { error } = await supabase.from('content_changes').insert(chunk)
 
     if (error) {
+      // 23505 = unique_violation — concurrent duplicate insert, safe to skip
+      if (error.code === '23505') {
+        console.log(`[automation] Skipped ${chunk.length} duplicate changes (concurrent insert)`)
+        continue
+      }
       console.error(`[automation] Insert content_changes failed: code=${error.code} message=${error.message} hint=${error.hint} details=${error.details}`)
       throw new Error(`content_changes insert: [${error.code}] ${error.message}${error.hint ? ' — ' + error.hint : ''}`)
     }

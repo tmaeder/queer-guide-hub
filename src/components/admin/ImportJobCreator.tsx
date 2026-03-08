@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useImportHub } from '@/hooks/useImportHub';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,57 +29,10 @@ import {
   Tag,
   CheckCircle,
   Sliders,
-  Globe,
-  Play,
-  AlertTriangle,
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-
-/* ── Scraper server URL (Node.js trigger server on localhost) ── */
-const SCRAPER_API = 'http://localhost:4400';
-
-/* ── Node.js scraper sources: one-click triggers via local server ── */
-const NODE_SCRAPERS = [
-  { key: 'patroc', label: 'Patroc', url: 'patroc.com', types: 'Venues, Events', icon: MapPin },
-  {
-    key: 'outsavvy',
-    label: 'Outsavvy',
-    url: 'outsavvy.com/guide',
-    types: 'Venues, Events',
-    icon: Calendar,
-  },
-  {
-    key: 'travelgay',
-    label: 'Travel Gay',
-    url: 'travelgay.com',
-    types: 'Venues, Events',
-    icon: MapPin,
-  },
-  {
-    key: 'iglta',
-    label: 'IGLTA Pride Calendar',
-    url: 'iglta.org/events/pride-calendar',
-    types: 'Events',
-    icon: Calendar,
-  },
-  {
-    key: 'misterbandb',
-    label: 'MisterBnB',
-    url: 'misterbandb.com',
-    types: 'Venues, Events, BnBs',
-    icon: MapPin,
-    placeholder: true,
-  },
-  {
-    key: 'wikipedia',
-    label: 'Wikipedia Gay Villages',
-    url: 'en.wikipedia.org/wiki/List_of_gay_villages',
-    types: 'Places',
-    icon: Globe,
-  },
-] as const;
 
 /* ── Import types for CSV/API flows ── */
 const IMPORT_GROUPS = [
@@ -169,10 +121,6 @@ export const ImportJobCreator = () => {
   const [showVenueImportDialog, setShowVenueImportDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Node.js scraper server status
-  const [scraperOnline, setScraperOnline] = useState<boolean | null>(null);
-  const [scraperRunning, setScraperRunning] = useState<Record<string, boolean>>({});
-
   // Edge function scraper state
   const [scraperCities, setScraperCities] = useState<string[]>([
     'berlin',
@@ -214,42 +162,7 @@ export const ImportJobCreator = () => {
       });
   }, []);
 
-  // Check scraper server health on mount
-  useEffect(() => {
-    fetch(`${SCRAPER_API}/health`)
-      .then((r) => r.json())
-      .then((d) => setScraperOnline(d.ok === true))
-      .catch(() => setScraperOnline(false));
-  }, []);
-
   const selected = findImportItem(importType);
-
-  /* ── Node.js scraper trigger ── */
-  const triggerNodeScraper = async (source: string) => {
-    setScraperRunning((prev) => ({ ...prev, [source]: true }));
-    try {
-      const res = await fetch(`${SCRAPER_API}/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-      toast({
-        title: `${source} scraper started`,
-        description: `Scraping ${data.types?.join(', ') || 'all types'}`,
-      });
-    } catch (err) {
-      toast({
-        title: `${source} failed`,
-        description: err instanceof Error ? err.message : 'Unknown error',
-        variant: 'destructive',
-      });
-    } finally {
-      // Keep running indicator for 3s so user knows it was triggered (actual run is async)
-      setTimeout(() => setScraperRunning((prev) => ({ ...prev, [source]: false })), 3000);
-    }
-  };
 
   /* ── CSV/API handlers ── */
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -380,121 +293,6 @@ export const ImportJobCreator = () => {
   /* ── Render ── */
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-      {/* ── Quick Scrapers: one-click triggers ── */}
-      <Card>
-        <CardHeader sx={{ pb: 1 }}>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '1rem' }}>
-            <Globe style={{ height: 18, width: 18 }} />
-            Web Scrapers
-            {scraperOnline === true && (
-              <Badge variant="outline" sx={{ ml: 1, fontSize: '0.7rem', color: 'success.main' }}>
-                Server online
-              </Badge>
-            )}
-            {scraperOnline === false && (
-              <Badge variant="destructive" sx={{ ml: 1, fontSize: '0.7rem' }}>
-                Server offline
-              </Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          {scraperOnline === false && (
-            <Alert variant="destructive" sx={{ py: 1 }}>
-              <AlertTriangle style={{ height: 14, width: 14 }} />
-              <AlertDescription sx={{ fontSize: '0.8rem' }}>
-                Scraper server not running. Start it with:{' '}
-                <code style={{ fontWeight: 600 }}>npm run server</code>
-              </AlertDescription>
-            </Alert>
-          )}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
-            {NODE_SCRAPERS.map((s) => (
-              <Box
-                key={s.key}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  p: 1.5,
-                  border: 1,
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                }}
-              >
-                <s.icon
-                  style={{ height: 16, width: 16, flexShrink: 0, color: 'var(--muted-foreground)' }}
-                />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 600 }}>{s.label}</Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '0.7rem',
-                      color: 'text.secondary',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {s.types} &middot; {s.url}
-                    {'placeholder' in s && s.placeholder && ' (needs API key)'}
-                  </Typography>
-                </Box>
-                <Button
-                  size="sm"
-                  variant={scraperRunning[s.key] ? 'secondary' : 'default'}
-                  sx={{ height: 28, px: 1.5, fontSize: '0.75rem', flexShrink: 0 }}
-                  disabled={scraperOnline !== true || scraperRunning[s.key]}
-                  onClick={() => triggerNodeScraper(s.key)}
-                >
-                  {scraperRunning[s.key] ? (
-                    <>
-                      <RefreshCw
-                        style={{
-                          height: 12,
-                          width: 12,
-                          animation: 'spin 1s linear infinite',
-                          marginRight: 4,
-                        }}
-                      />{' '}
-                      Running
-                    </>
-                  ) : (
-                    <>
-                      <Play style={{ height: 12, width: 12, marginRight: 4 }} /> Run
-                    </>
-                  )}
-                </Button>
-              </Box>
-            ))}
-            {/* Run all button */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                p: 1.5,
-                border: 1,
-                borderColor: 'divider',
-                borderRadius: 1,
-                borderStyle: 'dashed',
-              }}
-            >
-              <Button
-                size="sm"
-                variant="outline"
-                sx={{ fontSize: '0.75rem' }}
-                disabled={scraperOnline !== true || Object.values(scraperRunning).some(Boolean)}
-                onClick={() => triggerNodeScraper('all')}
-              >
-                <Play style={{ height: 12, width: 12, marginRight: 4 }} />
-                Run All Scrapers
-              </Button>
-            </Box>
-          </Box>
-        </CardContent>
-      </Card>
-
       {/* ── CSV / Edge Function Imports ── */}
       <Card>
         <CardHeader sx={{ pb: 2 }}>
