@@ -1,9 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import { Database, Tables } from '@/integrations/supabase/types';
+import { calculateDistanceKm } from '@/utils/calculateDistance';
 
 type Country = Database['public']['Tables']['countries']['Row'];
 type City = Database['public']['Tables']['cities']['Row'];
+
+// Extended types with joins (re-exported for consumers that need them)
+export type { Country, City };
+export type CountryWithRegions = Tables<'countries'> & { regions?: Tables<'regions'> };
+export type CityWithCountry = Tables<'cities'> & { countries?: Tables<'countries'> };
 
 interface PlacesFilters {
   search?: string;
@@ -20,10 +26,7 @@ const STALE_TIME = 15 * 60 * 1000; // 15 minutes
 
 export function useOptimizedCountries(filters?: PlacesFilters) {
   const fetchCountries = async (): Promise<Country[]> => {
-    let query = supabase
-      .from('countries')
-      .select('*')
-      .order('name', { ascending: true });
+    let query = supabase.from('countries').select('*').order('name', { ascending: true });
 
     if (filters?.search) {
       query = query.or(`name.ilike.%${filters.search}%,capital.ilike.%${filters.search}%`);
@@ -54,7 +57,7 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
     isLoading,
     error,
     refetch,
-    isFetching
+    isFetching,
   } = useQuery({
     queryKey: [COUNTRIES_QUERY_KEY, filters],
     queryFn: fetchCountries,
@@ -75,10 +78,7 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
 
 export function useOptimizedCities(filters?: PlacesFilters & { countryId?: string }) {
   const fetchCities = async (): Promise<City[]> => {
-    let query = supabase
-      .from('cities')
-      .select('*')
-      .order('population', { ascending: false });
+    let query = supabase.from('cities').select('*').order('population', { ascending: false });
 
     if (filters?.countryId) {
       query = query.eq('country_id', filters.countryId);
@@ -113,7 +113,7 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
     isLoading,
     error,
     refetch,
-    isFetching
+    isFetching,
   } = useQuery({
     queryKey: [CITIES_QUERY_KEY, filters],
     queryFn: fetchCities,
@@ -148,7 +148,7 @@ export function useOptimizedCountry(countryId: string) {
     data: country,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: [COUNTRIES_QUERY_KEY, countryId],
     queryFn: fetchCountry,
@@ -182,7 +182,7 @@ export function useOptimizedCity(cityId: string) {
     data: city,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: [CITIES_QUERY_KEY, cityId],
     queryFn: fetchCity,
@@ -198,4 +198,52 @@ export function useOptimizedCity(cityId: string) {
     error: error?.message || null,
     refetch,
   };
+}
+
+// Imperative fetch functions (migrated from usePlaces)
+
+export async function fetchCitiesByCountry(countryId: string): Promise<CityWithCountry[]> {
+  const { data, error } = await supabase
+    .from('cities')
+    .select('*, countries (*)')
+    .eq('country_id', countryId)
+    .order('population', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function searchLocations(query: string) {
+  const [countriesResult, citiesResult] = await Promise.all([
+    supabase.from('countries').select('*, regions (*)').ilike('name', `%${query}%`),
+    supabase.from('cities').select('*, countries (*)').ilike('name', `%${query}%`).limit(20),
+  ]);
+  return {
+    countries: countriesResult.data || [],
+    cities: citiesResult.data || [],
+  };
+}
+
+export async function findNearbyCities(userLocation: {
+  latitude: number;
+  longitude: number;
+}): Promise<CityWithCountry[]> {
+  const { data, error } = await supabase
+    .from('cities')
+    .select('*, countries (*)')
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null);
+  if (error) throw error;
+  return (data || [])
+    .map((city) => ({
+      ...city,
+      distance: calculateDistanceKm(
+        userLocation.latitude,
+        userLocation.longitude,
+        Number(city.latitude),
+        Number(city.longitude),
+      ),
+    }))
+    .filter((c: any) => c.distance <= 500)
+    .sort((a: any, b: any) => a.distance - b.distance)
+    .slice(0, 20);
 }

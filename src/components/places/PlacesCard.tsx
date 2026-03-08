@@ -1,7 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from 'lucide-react';
-import { Country, City } from '@/hooks/usePlaces';
+import type {
+  CountryWithRegions as Country,
+  CityWithCountry as City,
+} from '@/hooks/useOptimizedPlaces';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
