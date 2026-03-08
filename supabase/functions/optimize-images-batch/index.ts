@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface OptimizationJob {
   id: string;
@@ -20,23 +15,24 @@ interface OptimizationJob {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
+  try {
     const { action, jobId, batchSize = 10 } = await req.json()
+    const safeBatchSize = Math.min(batchSize || 10, 50);
 
     if (action === 'start') {
       // Get all images from storage
       console.log('🚀 Starting batch image optimization...')
-      
+
       const { data: buckets } = await supabase.storage.listBuckets()
       const allImages: any[] = []
-      
+
       for (const bucket of buckets || []) {
         const { data: files } = await supabase.storage
           .from(bucket.name)
@@ -44,8 +40,8 @@ serve(async (req) => {
 
         const imageFiles = files?.filter(file => {
           const ext = file.name.toLowerCase()
-          return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || 
-                 ext.endsWith('.png') || ext.endsWith('.webp') || 
+          return ext.endsWith('.jpg') || ext.endsWith('.jpeg') ||
+                 ext.endsWith('.png') || ext.endsWith('.webp') ||
                  ext.endsWith('.avif') || ext.endsWith('.gif')
         }) || []
 
@@ -81,20 +77,20 @@ serve(async (req) => {
       // Start background processing
       const backgroundTask = async () => {
         console.log(`🔄 Starting background optimization for job ${jobId}`)
-        await processImagesInBatches(supabase, jobId, allImages, batchSize)
+        await processImagesInBatches(supabase, jobId, allImages, safeBatchSize)
       }
 
       // Use EdgeRuntime.waitUntil to continue processing after response
       EdgeRuntime.waitUntil(backgroundTask())
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           jobId,
           message: `Started optimization job for ${allImages.length} images`,
           totalImages: allImages.length
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -108,7 +104,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, job }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -122,7 +118,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, jobs }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       )
     }
 
@@ -131,31 +127,31 @@ serve(async (req) => {
   } catch (error) {
     console.error('Optimization error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: 'Internal server error'
       }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }
       }
     )
   }
 })
 
 async function processImagesInBatches(
-  supabase: any, 
-  jobId: string, 
-  images: any[], 
+  supabase: any,
+  jobId: string,
+  images: any[],
   batchSize: number
 ) {
   try {
     console.log(`📦 Processing ${images.length} images in batches of ${batchSize}`)
-    
+
     // Update job status to processing
     await supabase
       .from('image_optimization_jobs')
-      .update({ 
+      .update({
         status: 'processing',
         updated_at: new Date().toISOString()
       })
@@ -184,7 +180,7 @@ async function processImagesInBatches(
             fileName: image.name,
             bucket: image.bucket,
             status: 'failed',
-            error: error.message
+            error: error instanceof Error ? error.message : 'Unknown error'
           })
           failCount++
         }
@@ -226,7 +222,7 @@ async function processImagesInBatches(
 
   } catch (error) {
     console.error(`💥 Job ${jobId} failed:`, error)
-    
+
     // Mark job as failed
     await supabase
       .from('image_optimization_jobs')
@@ -248,10 +244,10 @@ async function optimizeImage(supabase: any, image: any) {
   // 5. Return optimization results
 
   console.log(`🖼️  Processing image: ${image.name}`)
-  
+
   // Simulate processing time
   await new Promise(resolve => setTimeout(resolve, 500))
-  
+
   // Mock optimization results
   const originalSize = image.metadata?.size || 100000
   const optimizedSizes = {
@@ -259,14 +255,14 @@ async function optimizeImage(supabase: any, image: any) {
     webp: Math.round(originalSize * 0.5),
     jpeg: Math.round(originalSize * 0.7)
   }
-  
+
   return {
     fileName: image.name,
     bucket: image.bucket,
     status: 'completed',
     originalSize,
     optimizedSizes,
-    generatedFiles: 21, // 7 sizes × 3 formats
+    generatedFiles: 21, // 7 sizes x 3 formats
     savings: Math.round(((originalSize - optimizedSizes.avif) / originalSize) * 100)
   }
 }

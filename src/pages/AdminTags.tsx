@@ -38,6 +38,7 @@ import { TagImageUpload } from '@/components/admin/TagImageUpload';
 import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
 import BatchAutoTagDialog from '@/components/admin/BatchAutoTagDialog';
 import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
+import BulkEnrichDialog from '@/components/admin/BulkEnrichDialog';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';

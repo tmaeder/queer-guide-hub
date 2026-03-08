@@ -69,7 +69,7 @@ export function useCMSEditor({
   const loadContent = useCallback(async () => {
     if (!itemId || !config) return;
 
-    setState(prev => ({ ...prev, isLoading: true }));
+    setState((prev) => ({ ...prev, isLoading: true }));
 
     try {
       // Fetch content from source table
@@ -93,7 +93,7 @@ export function useCMSEditor({
 
       setMetadata(meta as CMSContentMetadata | null);
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         data: { ...data },
         originalData: { ...data },
@@ -104,7 +104,7 @@ export function useCMSEditor({
       }));
     } catch (error) {
       console.error('Error loading content:', error);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
         errors: { _load: 'Failed to load content' },
@@ -115,7 +115,7 @@ export function useCMSEditor({
   // ── Field updates ──────────────────────────────────────────────
 
   const setField = useCallback((name: string, value: unknown) => {
-    setState(prev => {
+    setState((prev) => {
       const newData = { ...prev.data, [name]: value };
       return {
         ...prev,
@@ -126,7 +126,7 @@ export function useCMSEditor({
   }, []);
 
   const setFields = useCallback((fields: Record<string, unknown>) => {
-    setState(prev => {
+    setState((prev) => {
       const newData = { ...prev.data, ...fields };
       return {
         ...prev,
@@ -146,13 +146,15 @@ export function useCMSEditor({
       const result = config.validate(state.data);
       if (!result.isValid) {
         const errorMap: Record<string, string> = {};
-        result.errors.forEach(e => { errorMap[e.field] = e.message; });
-        setState(prev => ({ ...prev, errors: errorMap }));
+        result.errors.forEach((e) => {
+          errorMap[e.field] = e.message;
+        });
+        setState((prev) => ({ ...prev, errors: errorMap }));
         return false;
       }
     }
 
-    setState(prev => ({ ...prev, isSaving: true, errors: {} }));
+    setState((prev) => ({ ...prev, isSaving: true, errors: {} }));
 
     try {
       // Conflict detection: check updated_at hasn't changed
@@ -164,19 +166,19 @@ export function useCMSEditor({
           .single();
 
         if (current?.updated_at && current.updated_at !== serverUpdatedAt.current) {
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             isSaving: false,
-            errors: { _conflict: 'This item was modified by someone else. Please reload and try again.' },
+            errors: {
+              _conflict: 'This item was modified by someone else. Please reload and try again.',
+            },
           }));
           return false;
         }
       }
 
       // Prepare data (strip read-only and system fields)
-      const readOnlyFields = new Set(
-        config.fields.filter(f => f.readOnly).map(f => f.name)
-      );
+      const readOnlyFields = new Set(config.fields.filter((f) => f.readOnly).map((f) => f.name));
       const systemFields = new Set(['id', 'created_at', 'created_by']);
       const saveData: Record<string, unknown> = {};
 
@@ -214,6 +216,29 @@ export function useCMSEditor({
         savedId = inserted.id;
       }
 
+      // Ensure cms_content_metadata exists for ALL content types (workflow support)
+      if (savedId && !metadata) {
+        const { data: newMeta } = await supabase
+          .from('cms_content_metadata' as any)
+          .upsert(
+            {
+              source_table: config.tableName,
+              source_id: savedId,
+              workflow_state: 'draft',
+              visibility_level: 'public',
+              last_edited_by: user.id,
+              last_edited_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'source_table,source_id' },
+          )
+          .select()
+          .maybeSingle();
+
+        if (newMeta) setMetadata(newMeta as CMSContentMetadata);
+      }
+
       // Create revision snapshot
       if (savedId) {
         await createRevision(config.tableName, savedId, state.data, state.originalData);
@@ -221,18 +246,13 @@ export function useCMSEditor({
 
       // Write audit log
       if (savedId) {
-        await writeAuditLog(
-          config.tableName,
-          savedId,
-          itemId ? 'update' : 'create',
-          user.id,
-        );
+        await writeAuditLog(config.tableName, savedId, itemId ? 'update' : 'create', user.id);
       }
 
       // Update server timestamp
       serverUpdatedAt.current = saveData.updated_at as string;
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         itemId: savedId,
         originalData: { ...prev.data },
@@ -243,7 +263,7 @@ export function useCMSEditor({
       return true;
     } catch (error) {
       console.error('Error saving content:', error);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isSaving: false,
         errors: { _save: `Failed to save: ${(error as Error).message}` },
@@ -255,7 +275,7 @@ export function useCMSEditor({
   // ── Reset ──────────────────────────────────────────────────────
 
   const reset = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       data: { ...prev.originalData },
       isDirty: false,
@@ -266,53 +286,56 @@ export function useCMSEditor({
   // ── Group navigation ───────────────────────────────────────────
 
   const setActiveGroup = useCallback((group: FieldGroup) => {
-    setState(prev => ({ ...prev, activeGroup: group }));
+    setState((prev) => ({ ...prev, activeGroup: group }));
   }, []);
 
   // ── Metadata management ────────────────────────────────────────
 
-  const updateMetadata = useCallback(async (updates: Partial<CMSContentMetadata>) => {
-    if (!itemId || !config) return;
+  const updateMetadata = useCallback(
+    async (updates: Partial<CMSContentMetadata>) => {
+      if (!itemId || !config) return;
 
-    try {
-      const metaData = {
-        source_table: config.tableName,
-        source_id: itemId,
-        ...updates,
-        last_edited_by: user?.id,
-        last_edited_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+      try {
+        const metaData = {
+          source_table: config.tableName,
+          source_id: itemId,
+          ...updates,
+          last_edited_by: user?.id,
+          last_edited_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
 
-      if (metadata) {
-        // Update existing
-        const { data, error } = await supabase
-          .from('cms_content_metadata' as any)
-          .update(metaData)
-          .eq('id', metadata.id)
-          .select()
-          .single();
+        if (metadata) {
+          // Update existing
+          const { data, error } = await supabase
+            .from('cms_content_metadata' as any)
+            .update(metaData)
+            .eq('id', metadata.id)
+            .select()
+            .single();
 
-        if (error) throw error;
-        setMetadata(data as CMSContentMetadata);
-      } else {
-        // Insert new
-        const { data, error } = await supabase
-          .from('cms_content_metadata' as any)
-          .insert({
-            ...metaData,
-            created_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
+          if (error) throw error;
+          setMetadata(data as CMSContentMetadata);
+        } else {
+          // Insert new
+          const { data, error } = await supabase
+            .from('cms_content_metadata' as any)
+            .insert({
+              ...metaData,
+              created_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
 
-        if (error) throw error;
-        setMetadata(data as CMSContentMetadata);
+          if (error) throw error;
+          setMetadata(data as CMSContentMetadata);
+        }
+      } catch (error) {
+        console.error('Error updating metadata:', error);
       }
-    } catch (error) {
-      console.error('Error updating metadata:', error);
-    }
-  }, [itemId, config, metadata, user]);
+    },
+    [itemId, config, metadata, user],
+  );
 
   // ── Auto-save ──────────────────────────────────────────────────
 
@@ -372,23 +395,24 @@ async function createRevision(
     }
 
     const changedFields = Object.keys(changes);
-    const summary = changedFields.length > 0
-      ? `Updated ${changedFields.slice(0, 3).join(', ')}${changedFields.length > 3 ? ` and ${changedFields.length - 3} more` : ''}`
-      : 'No changes';
+    const summary =
+      changedFields.length > 0
+        ? `Updated ${changedFields.slice(0, 3).join(', ')}${changedFields.length > 3 ? ` and ${changedFields.length - 3} more` : ''}`
+        : 'No changes';
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    await supabase
-      .from('cms_revisions' as any)
-      .insert({
-        source_table: sourceTable,
-        source_id: sourceId,
-        revision_number: nextNumber,
-        snapshot: currentData,
-        changes,
-        change_summary: summary,
-        created_by: user?.id,
-      });
+    await supabase.from('cms_revisions' as any).insert({
+      source_table: sourceTable,
+      source_id: sourceId,
+      revision_number: nextNumber,
+      snapshot: currentData,
+      changes,
+      change_summary: summary,
+      created_by: user?.id,
+    });
   } catch (error) {
     console.error('Error creating revision:', error);
   }
@@ -401,15 +425,13 @@ async function writeAuditLog(
   actorId: string,
 ) {
   try {
-    await supabase
-      .from('cms_audit_log' as any)
-      .insert({
-        source_table: sourceTable,
-        source_id: sourceId,
-        action,
-        actor_id: actorId,
-        timestamp: new Date().toISOString(),
-      });
+    await supabase.from('cms_audit_log' as any).insert({
+      source_table: sourceTable,
+      source_id: sourceId,
+      action,
+      actor_id: actorId,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error) {
     console.error('Error writing audit log:', error);
   }

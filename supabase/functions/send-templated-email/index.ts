@@ -1,16 +1,18 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
+import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+function escapeHtml(s: string): string {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 interface SendEmailRequest {
   template_key: string;
@@ -20,10 +22,14 @@ interface SendEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const cors = getCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: cors });
   }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   if (!isEmailConfigured()) {
     console.error('Email service not configured');
@@ -31,7 +37,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ error: 'Email service not configured' }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...cors },
       }
     );
   }
@@ -48,7 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Unauthorized email send attempt", authError);
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        { status: 401, headers: { "Content-Type": "application/json", ...cors } }
       );
     }
 
@@ -62,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.warn("Forbidden: non-admin attempted to send templated email", { rolesError });
       return new Response(
         JSON.stringify({ error: "Forbidden" }),
-        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        { status: 403, headers: { "Content-Type": "application/json", ...cors } }
       );
     }
 
@@ -81,7 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.warn("Rate limit exceeded for send-templated-email", { identifier, rlError });
       return new Response(
         JSON.stringify({ error: "Rate limit exceeded" }),
-        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        { status: 429, headers: { "Content-Type": "application/json", ...cors } }
       );
     }
 
@@ -104,7 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ error: `Template '${template_key}' not found or inactive` }),
         {
           status: 404,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: { "Content-Type": "application/json", ...cors },
         }
       );
     }
@@ -118,8 +124,8 @@ const handler = async (req: Request): Promise<Response> => {
     const templateVariables = Array.isArray(template.variables) ? template.variables : [];
     templateVariables.forEach((variable: any) => {
       const value = variables[variable.name] || `{{${variable.name}}}`;
-      const regex = new RegExp(`\\{\\{${variable.name}\\}\\}`, 'g');
-      htmlContent = htmlContent.replace(regex, value);
+      const regex = new RegExp(`\\{\\{${escapeRegExp(variable.name)}\\}\\}`, 'g');
+      htmlContent = htmlContent.replace(regex, escapeHtml(value));
       textContent = textContent.replace(regex, value);
       subject = subject.replace(regex, value);
     });
@@ -168,20 +174,17 @@ const handler = async (req: Request): Promise<Response> => {
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...cors },
       }
     );
 
   } catch (error: any) {
     console.error("Error in send-templated-email function:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'An unexpected error occurred',
-        details: error.toString() 
-      }),
+      JSON.stringify({ error: 'Internal server error' }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...cors },
       }
     );
   }

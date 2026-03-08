@@ -1,13 +1,7 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts';
+import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
+import { chatCompletion } from '../_shared/openai-client.ts';
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = getServiceClient();
 
 // ── Content type registry: maps entity type → DB table + text fields ──
 
@@ -97,40 +91,23 @@ interface AISuggestion {
 }
 
 async function callOpenAI(prompt: string, systemPrompt: string): Promise<string> {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt },
-      ],
-      temperature: 0.2,
-      max_tokens: 1000,
-      store: false,
-    }),
+  const result = await chatCompletion(supabase, {
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: prompt },
+    ],
+    temperature: 0.2,
+    max_tokens: 1000,
   });
-
-  if (!response.ok) {
-    if (response.status === 429) {
-      throw new Error('RATE_LIMIT');
-    }
-    throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.choices[0].message.content;
+  return result.content;
 }
 
 // ── Main handler ────────────────────────────────────────────────────
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -159,18 +136,18 @@ serve(async (req) => {
         error: `Invalid content_type. Must be one of: ${Object.keys(CONTENT_TYPES).join(', ')}`,
       }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
     // ── Pre-load reference data (cached for entire request) ──
 
-    // Top 500 existing tags by usage
+    // Load all active tags for name/slug matching
     const { data: existingTags } = await supabase
       .from('unified_tags')
       .select('id, name, slug')
-      .order('usage_count', { ascending: false })
-      .limit(500);
+      .eq('status', 'active')
+      .order('usage_count', { ascending: false });
 
     const tagMap = new Map<string, { id: string; name: string }>();
     for (const tag of existingTags || []) {
@@ -223,7 +200,7 @@ serve(async (req) => {
           items_processed: 0,
           suggestions: [],
         }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
     } else if (content_id) {
@@ -240,7 +217,7 @@ serve(async (req) => {
           error: `${content_type} with id ${content_id} not found`,
         }), {
           status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
       items = [item];
@@ -250,7 +227,7 @@ serve(async (req) => {
         error: 'Must provide content_id for single mode or batch: true for batch mode',
       }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -284,11 +261,14 @@ serve(async (req) => {
       }
 
       // Build AI prompt
+      const safeEntityName = entityName.replace(/<\/?user_data>/gi, '');
+      const safeEntityText = entityText.replace(/<\/?user_data>/gi, '');
+
       const prompt = `Suggest ${max_tags_per_item > 5 ? '3-' + max_tags_per_item : '2-' + max_tags_per_item} relevant tags for this ${content_type.replace('_', ' ')} item.
 
 ITEM:
-Name: ${entityName}
-Content: ${entityText}
+Name: <user_data>${safeEntityName}</user_data>
+Content: <user_data>${safeEntityText}</user_data>
 
 EXISTING TAGS (strongly prefer these over creating new tags):
 ${existingTagNames.slice(0, 300).join(', ')}
@@ -310,7 +290,7 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
       try {
         aiContent = await callOpenAI(prompt, systemPrompt);
       } catch (err) {
-        if ((err as Error).message === 'RATE_LIMIT') {
+        if ((err as Error).message?.includes('429') || (err as Error).message?.includes('Rate limited')) {
           console.log(`Rate limit hit on item ${i + 1}, waiting 60s...`);
           await new Promise(r => setTimeout(r, 60000));
           try {
@@ -376,6 +356,16 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
             newTagsCreated++;
             // Add to cache for subsequent items
             tagMap.set(slug, { id: newTag.id, name: s.name });
+
+            // Create tag_category_assignment for proper multi-category support
+            if (catId) {
+              await supabase
+                .from('tag_category_assignments')
+                .upsert(
+                  { tag_id: newTag.id, category_id: catId, is_primary: true },
+                  { onConflict: 'tag_id,category_id' }
+                );
+            }
           } else if (createErr) {
             console.error(`Failed to create tag "${s.name}":`, createErr.message);
           }
@@ -453,7 +443,7 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
       total_suggestions: totalSuggestions,
       total_auto_approved: totalAutoApproved,
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
@@ -463,7 +453,7 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
       error: 'Internal server error',
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

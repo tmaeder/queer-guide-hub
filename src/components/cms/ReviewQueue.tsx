@@ -26,7 +26,10 @@ import {
   ArrowUpDown,
   Filter,
   Inbox,
+  CheckCheck,
+  Loader2,
 } from 'lucide-react';
+import Checkbox from '@mui/material/Checkbox';
 import { useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
@@ -80,6 +83,8 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   // Filters and sorting
   const [filterContentType, setFilterContentType] = useState<string>('all');
@@ -193,6 +198,66 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     [transition],
   );
 
+  // ── Selection helpers ──────────────────────────────────────────
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) =>
+      prev.size === items.length ? new Set() : new Set(items.map((i) => i.metadata.id)),
+    );
+  }, [items]);
+
+  // ── Bulk approve ─────────────────────────────────────────────
+
+  const handleBulkApprove = useCallback(async () => {
+    const targets = items.filter((i) => selectedIds.has(i.metadata.id));
+    if (targets.length === 0) return;
+
+    setBulkLoading(true);
+    setActionError(null);
+    let successCount = 0;
+
+    for (const item of targets) {
+      const ok = await transition(item.metadata.source_table, item.metadata.source_id, 'published');
+      if (ok) successCount++;
+    }
+
+    setBulkLoading(false);
+    setSelectedIds(new Set());
+
+    if (successCount > 0) {
+      setItems((prev) => prev.filter((i) => !selectedIds.has(i.metadata.id)));
+    }
+    if (successCount < targets.length) {
+      setActionError(`${targets.length - successCount} item(s) failed to approve.`);
+    }
+  }, [items, selectedIds, transition]);
+
+  const handleApproveAll = useCallback(async () => {
+    if (items.length === 0) return;
+
+    setBulkLoading(true);
+    setActionError(null);
+    let successCount = 0;
+
+    for (const item of items) {
+      const ok = await transition(item.metadata.source_table, item.metadata.source_id, 'published');
+      if (ok) successCount++;
+    }
+
+    setBulkLoading(false);
+    setSelectedIds(new Set());
+    loadQueue();
+  }, [items, transition, loadQueue]);
+
   // Filtered and sorted items
   const displayItems = useMemo(() => {
     let filtered = items;
@@ -227,6 +292,67 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
   return (
     <Box>
+      {/* ── Header ──────────────────────────────────────────── */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 3,
+          flexWrap: 'wrap',
+          gap: 1.5,
+        }}
+      >
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+            Review Queue
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {items.length} item{items.length !== 1 ? 's' : ''} awaiting review
+          </Typography>
+        </Box>
+        {items.length > 0 && (
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {selectedIds.size > 0 && (
+              <Button
+                size="small"
+                variant="contained"
+                color="success"
+                disabled={bulkLoading}
+                onClick={handleBulkApprove}
+                startIcon={
+                  bulkLoading ? (
+                    <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                  ) : (
+                    <CheckCheck size={14} />
+                  )
+                }
+                sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+              >
+                Approve Selected ({selectedIds.size})
+              </Button>
+            )}
+            <Button
+              size="small"
+              variant="outlined"
+              color="success"
+              disabled={bulkLoading}
+              onClick={handleApproveAll}
+              startIcon={
+                bulkLoading ? (
+                  <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                ) : (
+                  <CheckCheck size={14} />
+                )
+              }
+              sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+            >
+              Approve All ({items.length})
+            </Button>
+          </Box>
+        )}
+      </Box>
+
       {/* ── Action error banner ─────────────────────────────── */}
       {actionError && (
         <Alert severity="error" onClose={() => setActionError(null)} sx={{ mb: 2 }}>
@@ -234,7 +360,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
         </Alert>
       )}
 
-      {/* ── Filters / Sort ──────────────────────────────────── */}
+      {/* ── Select All + Filters / Sort ────────────────────── */}
       {items.length > 0 && (
         <Box
           sx={{
@@ -242,8 +368,20 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
             gap: 2,
             mb: 3,
             flexWrap: 'wrap',
+            alignItems: 'center',
           }}
         >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Checkbox
+              size="small"
+              checked={selectedIds.size === displayItems.length && displayItems.length > 0}
+              indeterminate={selectedIds.size > 0 && selectedIds.size < displayItems.length}
+              onChange={toggleSelectAll}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+              {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}
+            </Typography>
+          </Box>
           <FormControl size="small" sx={{ minWidth: 180 }}>
             <InputLabel id="review-filter-label">
               <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -392,7 +530,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                     p: 2,
                     borderRadius: 2,
                     border: '1px solid',
-                    borderColor: 'divider',
+                    borderColor: selectedIds.has(item.metadata.id) ? 'primary.main' : 'divider',
                     bgcolor: 'background.paper',
                     transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
                     cursor: 'pointer',
@@ -403,7 +541,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                   }}
                   onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
                 >
-                  {/* Top row: title + content type badge */}
+                  {/* Top row: checkbox + title + content type badge */}
                   <Box
                     sx={{
                       display: 'flex',
@@ -413,6 +551,13 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                       mb: 1,
                     }}
                   >
+                    <Checkbox
+                      size="small"
+                      checked={selectedIds.has(item.metadata.id)}
+                      onChange={() => toggleSelect(item.metadata.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      sx={{ mt: -0.5, ml: -0.5, mr: -0.5 }}
+                    />
                     <Typography variant="body1" sx={{ fontWeight: 600, flex: 1 }}>
                       {item.title}
                     </Typography>

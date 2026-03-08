@@ -1,23 +1,25 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
 
-serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    // SECURITY: Require admin for sync operations
+    const serviceClient = getServiceClient()
+    const authResult = await requireAdmin(req, serviceClient)
+    if (authResult instanceof Response) return authResult
+
     const { index, operation = 'sync', records } = await req.json()
-    
+
     // Get Algolia credentials
     const algoliaAppId = Deno.env.get('ALGOLIA_APP_ID')
     const algoliaApiKey = Deno.env.get('ALGOLIA_API_KEY') // Admin API key for write operations
-    
+
     if (!algoliaAppId || !algoliaApiKey) {
       return new Response(
         JSON.stringify({ error: 'Algolia credentials not configured' }),
@@ -32,7 +34,7 @@ serve(async (req) => {
 
     // Use fetch-based approach for Deno compatibility
     const algoliaBaseUrl = `https://${algoliaAppId}-dsn.algolia.net/1/indexes`
-    
+
     // Helper function to save objects to an index
     const saveObjectsToIndex = async (indexName: string, records: any[]) => {
       const response = await fetch(`${algoliaBaseUrl}/${indexName}/batch`, {
@@ -49,11 +51,11 @@ serve(async (req) => {
           }))
         })
       })
-      
+
       if (!response.ok) {
         throw new Error(`Algolia sync failed: ${response.statusText}`)
       }
-      
+
       return response.json()
     }
 
@@ -75,7 +77,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Algolia sync error:', error)
     return new Response(
-      JSON.stringify({ error: 'Sync failed', details: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

@@ -1,259 +1,113 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { useToast } from './use-toast';
+import { useToast } from '@/hooks/use-toast';
 
-export type FavoriteType = 'venue' | 'event' | 'tag' | 'marketplace' | 'news' | 'city' | 'country';
+export type FavoriteType =
+  | 'venue'
+  | 'event'
+  | 'city'
+  | 'country'
+  | 'marketplace'
+  | 'news'
+  | 'tag'
+  | 'queer_village';
 
-export const useFavorites = (type: FavoriteType) => {
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(false);
+const tableMap: Record<FavoriteType, { table: string; idColumn: string }> = {
+  venue: { table: 'venue_favorites', idColumn: 'venue_id' },
+  event: { table: 'event_favorites', idColumn: 'event_id' },
+  city: { table: 'city_favorites', idColumn: 'city_id' },
+  country: { table: 'country_favorites', idColumn: 'country_id' },
+  marketplace: { table: 'marketplace_favorites', idColumn: 'listing_id' },
+  news: { table: 'news_favorites', idColumn: 'article_id' },
+  tag: { table: 'tag_favorites', idColumn: 'tag_id' },
+  queer_village: { table: 'venue_favorites', idColumn: 'venue_id' },
+};
+
+export function useFavorites(type: FavoriteType) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
 
-  const fetchFavorites = async () => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      let data, error;
-
-      switch (type) {
-        case 'venue':
-          ({ data, error } = await supabase
-            .from('venue_favorites')
-            .select('venue_id')
-            .eq('user_id', user.id));
-          break;
-        case 'event':
-          ({ data, error } = await supabase
-            .from('event_favorites')
-            .select('event_id')
-            .eq('user_id', user.id));
-          break;
-        case 'tag':
-          ({ data, error } = await supabase
-            .from('tag_favorites')
-            .select('tag_id')
-            .eq('user_id', user.id));
-          break;
-        case 'marketplace':
-          ({ data, error } = await supabase
-            .from('marketplace_favorites')
-            .select('listing_id')
-            .eq('user_id', user.id));
-          break;
-        case 'news':
-          ({ data, error } = await supabase
-            .from('news_favorites')
-            .select('article_id')
-            .eq('user_id', user.id));
-          break;
-        case 'city':
-          ({ data, error } = await supabase
-            .from('city_favorites')
-            .select('city_id')
-            .eq('user_id', user.id));
-          break;
-        case 'country':
-          ({ data, error } = await supabase
-            .from('country_favorites')
-            .select('country_id')
-            .eq('user_id', user.id));
-          break;
-      }
-
-      if (error) throw error;
-
-      const favoriteIds = new Set<string>(
-        data
-          ?.map((item: any) => {
-            switch (type) {
-              case 'venue':
-                return item.venue_id;
-              case 'event':
-                return item.event_id;
-              case 'tag':
-                return item.tag_id;
-              case 'marketplace':
-                return item.listing_id;
-              case 'news':
-                return item.article_id;
-              case 'city':
-                return item.city_id;
-              case 'country':
-                return item.country_id;
-              default:
-                return null;
-            }
-          })
-          .filter(Boolean) || [],
-      );
-
-      setFavorites(favoriteIds);
-    } catch (error) {
-      console.error('Error fetching favorites:', error);
-      toast({
-        title: 'Error loading favorites',
-        description: 'Failed to load your favorites. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleFavorite = async (itemId: string) => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please sign in to save favorites.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const isFavorited = favorites.has(itemId);
-
-    try {
-      if (isFavorited) {
-        let error;
-
-        switch (type) {
-          case 'venue':
-            ({ error } = await supabase
-              .from('venue_favorites')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('venue_id', itemId));
-            break;
-          case 'event':
-            ({ error } = await supabase
-              .from('event_favorites')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('event_id', itemId));
-            break;
-          case 'tag':
-            ({ error } = await supabase
-              .from('tag_favorites')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('tag_id', itemId));
-            break;
-          case 'marketplace':
-            ({ error } = await supabase
-              .from('marketplace_favorites')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('listing_id', itemId));
-            break;
-          case 'news':
-            ({ error } = await supabase
-              .from('news_favorites')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('article_id', itemId));
-            break;
-          case 'city':
-            ({ error } = await supabase
-              .from('city_favorites')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('city_id', itemId));
-            break;
-          case 'country':
-            ({ error } = await supabase
-              .from('country_favorites')
-              .delete()
-              .eq('user_id', user.id)
-              .eq('country_id', itemId));
-            break;
-        }
-
-        if (error) throw error;
-
-        setFavorites((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(itemId);
-          return newSet;
-        });
-
-        toast({
-          title: 'Removed from favorites',
-          description: 'Item removed from your favorites.',
-        });
-      } else {
-        let error;
-
-        switch (type) {
-          case 'venue':
-            ({ error } = await supabase
-              .from('venue_favorites')
-              .insert({ user_id: user.id, venue_id: itemId }));
-            break;
-          case 'event':
-            ({ error } = await supabase
-              .from('event_favorites')
-              .insert({ user_id: user.id, event_id: itemId }));
-            break;
-          case 'tag':
-            ({ error } = await supabase
-              .from('tag_favorites')
-              .insert({ user_id: user.id, tag_id: itemId }));
-            break;
-          case 'marketplace':
-            ({ error } = await supabase
-              .from('marketplace_favorites')
-              .insert({ user_id: user.id, listing_id: itemId }));
-            break;
-          case 'news':
-            ({ error } = await supabase
-              .from('news_favorites')
-              .insert({ user_id: user.id, article_id: itemId }));
-            break;
-          case 'city':
-            ({ error } = await supabase
-              .from('city_favorites')
-              .insert({ user_id: user.id, city_id: itemId }));
-            break;
-          case 'country':
-            ({ error } = await supabase
-              .from('country_favorites')
-              .insert({ user_id: user.id, country_id: itemId }));
-            break;
-        }
-
-        if (error) throw error;
-
-        setFavorites((prev) => new Set(prev).add(itemId));
-
-        toast({
-          title: 'Added to favorites',
-          description: 'Item added to your favorites.',
-        });
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update favorite. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const isFavorited = (itemId: string) => favorites.has(itemId);
+  const config = tableMap[type];
 
   useEffect(() => {
-    fetchFavorites();
-  }, [user, type]);
+    if (!user || !config) return;
 
-  return {
-    favorites,
-    loading,
-    toggleFavorite,
-    isFavorited,
-    refetch: fetchFavorites,
-  };
-};
+    let cancelled = false;
+
+    const fetchFavorites = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from(config.table as any)
+        .select(config.idColumn)
+        .eq('user_id', user.id);
+
+      if (!cancelled) {
+        if (!error && data) {
+          setFavoriteIds(new Set(data.map((row: any) => row[config.idColumn])));
+        }
+        setLoading(false);
+      }
+    };
+
+    fetchFavorites();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, config?.table, config?.idColumn]);
+
+  const isFavorited = useCallback((itemId: string) => favoriteIds.has(itemId), [favoriteIds]);
+
+  const toggleFavorite = useCallback(
+    async (itemId: string) => {
+      if (!user) {
+        toast({ title: 'Sign in to save favorites', variant: 'default' });
+        return;
+      }
+      if (!config) return;
+
+      const currentlyFavorited = favoriteIds.has(itemId);
+
+      // Optimistic update
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (currentlyFavorited) next.delete(itemId);
+        else next.add(itemId);
+        return next;
+      });
+
+      if (currentlyFavorited) {
+        const { error } = await supabase
+          .from(config.table as any)
+          .delete()
+          .eq('user_id', user.id)
+          .eq(config.idColumn, itemId);
+
+        if (error) {
+          // Revert
+          setFavoriteIds((prev) => new Set([...prev, itemId]));
+          toast({ title: 'Failed to remove favorite', variant: 'destructive' });
+        }
+      } else {
+        const { error } = await supabase
+          .from(config.table as any)
+          .insert({ user_id: user.id, [config.idColumn]: itemId } as any);
+
+        if (error) {
+          // Revert
+          setFavoriteIds((prev) => {
+            const next = new Set(prev);
+            next.delete(itemId);
+            return next;
+          });
+          toast({ title: 'Failed to add favorite', variant: 'destructive' });
+        }
+      }
+    },
+    [user, config, favoriteIds, toast],
+  );
+
+  return { isFavorited, toggleFavorite, loading, favoriteIds };
+}

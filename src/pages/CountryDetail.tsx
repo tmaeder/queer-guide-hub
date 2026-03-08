@@ -37,6 +37,10 @@ import CountryHeroImages from '@/components/country/CountryHeroImages';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { WorldBankDataPanel } from '@/components/country/WorldBankDataPanel';
+import { SDGDataPanel } from '@/components/country/SDGDataPanel';
+import { useWorldBankData } from '@/hooks/useWorldBankData';
+import { useSDGData } from '@/hooks/useSDGData';
 import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
 import { ActivitiesWidget } from '@/components/activities/ActivitiesWidget';
 import { useOptimizedCountry, useOptimizedCities } from '@/hooks/useOptimizedDirectory';
@@ -46,6 +50,7 @@ import { useNews } from '@/hooks/useNews';
 import { NewsCard } from '@/components/news/NewsCard';
 import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
 export default function CountryDetail() {
@@ -117,6 +122,8 @@ export default function CountryDetail() {
       .slice(0, 12);
   }, [localNews, country]);
 
+  const worldBankData = useWorldBankData(country);
+  const sdgData = useSDGData(country);
   const loading = countryLoading;
 
   // Fetch weather data for header indicator
@@ -634,150 +641,11 @@ export default function CountryDetail() {
                   </Card>
                 )}
 
-                {/* Demographics & Economy */}
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gap: 3,
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                  }}
-                >
-                  {/* Basic Stats */}
-                  <Card sx={{ borderColor: 'divider' }}>
-                    <CardHeader>
-                      <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Users style={{ height: 20, width: 20 }} />
-                        Demographics
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      {country.population && (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: 'action.hover',
-                          }}
-                        >
-                          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                            Population
-                          </Typography>
-                          <Typography sx={{ fontWeight: 700 }}>
-                            {country.population.toLocaleString()}
-                          </Typography>
-                        </Box>
-                      )}
-                      {country.area_km2 && (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: 'action.hover',
-                          }}
-                        >
-                          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                            Area
-                          </Typography>
-                          <Typography sx={{ fontWeight: 700 }}>
-                            {country.area_km2.toLocaleString()} km²
-                          </Typography>
-                        </Box>
-                      )}
-                      {country.life_expectancy && (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: 'action.hover',
-                          }}
-                        >
-                          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                            Life Expectancy
-                          </Typography>
-                          <Typography sx={{ fontWeight: 700 }}>
-                            {country.life_expectancy} years
-                          </Typography>
-                        </Box>
-                      )}
-                      {country.human_development_index && (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: 'action.hover',
-                          }}
-                        >
-                          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                            HDI
-                          </Typography>
-                          <Typography sx={{ fontWeight: 700 }}>
-                            {country.human_development_index}
-                          </Typography>
-                        </Box>
-                      )}
-                    </CardContent>
-                  </Card>
+                {/* World Bank Data -- Economy, Demographics, Society, Environment */}
+                <WorldBankDataPanel data={worldBankData} countryName={country.name} />
 
-                  {/* Economy */}
-                  <Card sx={{ borderColor: 'divider' }}>
-                    <CardHeader>
-                      <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <TrendingUp style={{ height: 20, width: 20 }} />
-                        Economy
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      {country.gdp_per_capita_usd && (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: 'action.hover',
-                          }}
-                        >
-                          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                            GDP per Capita
-                          </Typography>
-                          <Typography sx={{ fontWeight: 700 }}>
-                            ${country.gdp_per_capita_usd.toLocaleString()}
-                          </Typography>
-                        </Box>
-                      )}
-                      {country.currency && (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: 'action.hover',
-                          }}
-                        >
-                          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                            Currency
-                          </Typography>
-                          <Typography sx={{ fontWeight: 700 }}>{country.currency}</Typography>
-                        </Box>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Box>
+                {/* UN SDG Data -- Sustainable Development Goals */}
+                <SDGDataPanel data={sdgData} countryName={country.name} />
               </TabsContent>
 
               {/* ===== RIGHTS TAB ===== */}

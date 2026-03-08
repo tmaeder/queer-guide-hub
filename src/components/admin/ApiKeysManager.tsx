@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useApiKeys, ApiKey, CreateApiKeyRequest, RequiredKeyStatus } from '@/hooks/useApiKeys';
+import { ChatGPTConnection } from './ChatGPTConnection';
 import {
   Plus,
   Key,
@@ -187,6 +188,9 @@ export const ApiKeysManager = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {/* ChatGPT OAuth Connection */}
+      <ChatGPTConnection />
+
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>

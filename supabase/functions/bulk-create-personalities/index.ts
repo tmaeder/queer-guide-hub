@@ -1,11 +1,7 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+import { fetchOpenSanctionsData, fetchWikidataEntityLabel, formatWikidataDate, fetchTopBook, fetchUpcomingConcerts, WIKIDATA_USER_AGENT } from '../_shared/personality-fetcher.ts'
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
 interface WikidataSearchResult {
   id: string;
@@ -28,15 +24,20 @@ interface PersonalityData {
   next_concerts?: any[] | null;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
+
   try {
     const { names, sources = {} } = await req.json();
-    
+
     if (!names || !Array.isArray(names)) {
       throw new Error('Names array is required');
     }
@@ -54,11 +55,6 @@ serve(async (req) => {
     console.log(`Processing ${names.length} personality names with sources:`, sourceConfig);
     console.log('Input validation passed, starting processing...');
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const results = [];
     const errors = [];
     const batchSize = 10; // Process in smaller batches to avoid rate limiting
@@ -74,7 +70,7 @@ serve(async (req) => {
         console.log(`Processing: ${name}`);
         
         // Fetch personality data using the same logic as fetch-personality-data
-        const personalityData = await fetchPersonalityData(name.trim(), sourceConfig);
+        const personalityData = await fetchPersonalityData(supabase, name.trim(), sourceConfig);
         
         console.log(`Data fetched for ${name}:`, personalityData ? 'success' : 'failed');
         
@@ -173,14 +169,14 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in bulk-create-personalities function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
 
-async function fetchPersonalityData(searchTerm: string, sources: any): Promise<PersonalityData | null> {
+async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: string, sources: any): Promise<PersonalityData | null> {
   try {
     if (!sources.wikidata) {
       console.log(`Wikidata source disabled for: ${searchTerm}`);
@@ -202,7 +198,7 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
     const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchTerm)}&language=en&format=json&limit=1`;
     const searchResponse = await fetch(searchUrl, {
       headers: {
-        'User-Agent': 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
+        'User-Agent': WIKIDATA_USER_AGENT
       }
     });
     
@@ -250,13 +246,7 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
     if (occupationClaim) {
       const occupationId = occupationClaim.mainsnak?.datavalue?.value?.id;
       if (occupationId) {
-        try {
-          const occupationResponse = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${occupationId}&format=json&languages=en`);
-          const occupationData = await occupationResponse.json();
-          occupation = occupationData.entities[occupationId]?.labels?.en?.value || '';
-        } catch (error) {
-          console.error('Error fetching occupation:', error);
-        }
+        occupation = await fetchWikidataEntityLabel(occupationId);
       }
     }
     
@@ -266,29 +256,18 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
     if (nationalityClaim) {
       const nationalityId = nationalityClaim.mainsnak?.datavalue?.value?.id;
       if (nationalityId) {
-        try {
-          const nationalityResponse = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${nationalityId}&format=json&languages=en`);
-          const nationalityData = await nationalityResponse.json();
-          nationality = nationalityData.entities[nationalityId]?.labels?.en?.value || '';
-        } catch (error) {
-          console.error('Error fetching nationality:', error);
-        }
+        nationality = await fetchWikidataEntityLabel(nationalityId);
       }
     }
     
     // Birth place (P19)
     const birthPlaceClaim = claims.P19?.[0];
-    let birthPlace = null;
+    let birthPlace: string | null = null;
     if (birthPlaceClaim) {
       const birthPlaceId = birthPlaceClaim.mainsnak?.datavalue?.value?.id;
       if (birthPlaceId) {
-        try {
-          const birthPlaceResponse = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${birthPlaceId}&format=json&languages=en`);
-          const birthPlaceData = await birthPlaceResponse.json();
-          birthPlace = birthPlaceData.entities[birthPlaceId]?.labels?.en?.value || null;
-        } catch (error) {
-          console.error('Error fetching birth place:', error);
-        }
+        const label = await fetchWikidataEntityLabel(birthPlaceId);
+        birthPlace = label || null;
       }
     }
 
@@ -319,23 +298,6 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
       }
     }
 
-    const formatDate = (dateString: string | null): string | null => {
-      if (!dateString) return null;
-      try {
-        // Wikidata dates are in format +YYYY-MM-DDTHH:mm:ssZ
-        const match = dateString.match(/^\+?(\d{4})-(\d{2})-(\d{2})/);
-        if (match) {
-          const year = match[1];
-          const month = match[2] === '00' ? '01' : match[2];
-          const day = match[3] === '00' ? '01' : match[3];
-          return `${year}-${month}-${day}`;
-        }
-      } catch (error) {
-        console.error('Error formatting date:', error);
-      }
-      return null;
-    };
-
     // Fetch top book if the person is an author and Open Library is enabled
     let topBook = null;
     if (sources.openLibrary && occupation && (occupation.toLowerCase().includes('author') || occupation.toLowerCase().includes('writer') || occupation.toLowerCase().includes('novelist') || occupation.toLowerCase().includes('poet'))) {
@@ -354,15 +316,15 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
     }
 
     // Enhanced AI-powered LGBTI/queer community description generation with all source data
-    const enhancedData = await enhanceWithLGBTIContext({
+    const enhancedData = await enhanceWithLGBTIContext(supabaseClient, {
       name,
       description,
       bio,
       profession: occupation,
       nationality,
       birth_place: birthPlace,
-      birth_date: formatDate(birthDate),
-      death_date: formatDate(deathDate),
+      birth_date: formatWikidataDate(birthDate),
+      death_date: formatWikidataDate(deathDate),
       is_living: !deathDate,
       openSanctionsData: sourceData.openSanctions
     });
@@ -388,11 +350,10 @@ async function fetchPersonalityData(searchTerm: string, sources: any): Promise<P
   }
 }
 
-async function enhanceWithLGBTIContext(basicData: any): Promise<any> {
+async function enhanceWithLGBTIContext(supabaseClient: SupabaseClient, basicData: any): Promise<any> {
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      console.log('OpenAI API key not found, returning basic data');
+    if (!(await isOpenAIAvailable(supabaseClient))) {
+      console.log('OpenAI not available, returning basic data');
       return basicData;
     }
 
@@ -440,37 +401,23 @@ CRITICAL RULES:
 
 Return ONLY valid JSON, no additional text.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          { role: 'system', content: 'You are an expert LGBTI historian and researcher. Provide accurate, factual information about people\'s relationship to the LGBTI/queer community.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 1000,
-        temperature: 0.3,
-        store: false,
-      }),
+    const aiResult = await chatCompletion(supabaseClient, {
+      model: 'gpt-4.1-2025-04-14',
+      messages: [
+        { role: 'system', content: 'You are an expert LGBTI historian and researcher. Provide accurate, factual information about people\'s relationship to the LGBTI/queer community.' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 1000,
+      temperature: 0.3
     });
 
-    if (!response.ok) {
-      console.error(`OpenAI API error: ${response.status}`);
-      return basicData;
-    }
-
-    const aiResponse = await response.json();
-    const enhancedContent = aiResponse.choices[0].message.content;
+    const enhancedContent = aiResult.content;
 
     try {
       // Remove potential markdown code blocks from AI response
       const cleanedResponse = enhancedContent.replace(/^```json\s*|\s*```$/g, '').trim();
       const enhancedData = JSON.parse(cleanedResponse);
-      
+
       // Merge enhanced data with basic data, keeping all original fields
       return {
         ...basicData,
@@ -495,211 +442,3 @@ Return ONLY valid JSON, no additional text.`;
   }
 }
 
-async function fetchOpenSanctionsData(name: string): Promise<any | null> {
-  try {
-    console.log(`Fetching OpenSanctions data for: ${name}`);
-    
-    // Search OpenSanctions API
-    const searchUrl = `https://api.opensanctions.org/search/default?q=${encodeURIComponent(name)}&limit=5`;
-    
-    const response = await fetch(searchUrl, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
-      }
-    });
-
-    if (!response.ok) {
-      console.log(`OpenSanctions API returned ${response.status} for: ${name}`);
-      return null;
-    }
-
-    const data = await response.json();
-    
-    if (!data.results || data.results.length === 0) {
-      console.log(`No OpenSanctions results found for: ${name}`);
-      return null;
-    }
-
-    // Find the best match (exact name match or highest score)
-    let bestMatch = null;
-    let bestScore = 0;
-
-    for (const result of data.results) {
-      const resultName = result.properties?.name?.[0] || '';
-      const score = result.score || 0;
-      
-      // Prefer exact name matches
-      if (resultName.toLowerCase() === name.toLowerCase()) {
-        bestMatch = result;
-        break;
-      }
-      
-      // Otherwise, take the highest scoring result
-      if (score > bestScore) {
-        bestMatch = result;
-        bestScore = score;
-      }
-    }
-
-    if (!bestMatch) {
-      console.log(`No suitable OpenSanctions match found for: ${name}`);
-      return null;
-    }
-
-    console.log(`Found OpenSanctions match for ${name}: ${bestMatch.properties?.name?.[0] || 'Unknown'}`);
-    
-    return {
-      id: bestMatch.id,
-      schema: bestMatch.schema,
-      properties: bestMatch.properties,
-      datasets: bestMatch.datasets || [],
-      first_seen: bestMatch.first_seen,
-      last_seen: bestMatch.last_seen,
-      score: bestMatch.score
-    };
-
-  } catch (error) {
-    console.error(`Error fetching OpenSanctions data for ${name}:`, error);
-    return null;
-  }
-}
-
-async function fetchTopBook(authorName: string): Promise<string | null> {
-  try {
-    // Search for the author in Open Library
-    const searchUrl = `https://openlibrary.org/search/authors.json?q=${encodeURIComponent(authorName)}&limit=1`;
-    const searchResponse = await fetch(searchUrl);
-    const searchData = await searchResponse.json();
-
-    if (!searchData.docs || searchData.docs.length === 0) {
-      console.log(`No Open Library author found for: ${authorName}`);
-      return null;
-    }
-
-    const author = searchData.docs[0];
-    const authorKey = author.key;
-
-    if (!authorKey) {
-      return null;
-    }
-
-    // Get author's works
-    const worksUrl = `https://openlibrary.org/authors/${authorKey}/works.json?limit=50`;
-    const worksResponse = await fetch(worksUrl);
-    const worksData = await worksResponse.json();
-
-    if (!worksData.entries || worksData.entries.length === 0) {
-      console.log(`No works found for author: ${authorName}`);
-      return null;
-    }
-
-    // Find the most popular work (highest edition count or first in list)
-    let topWork = null;
-    let maxEditions = 0;
-
-    for (const work of worksData.entries.slice(0, 20)) { // Check first 20 works
-      const workKey = work.key;
-      
-      try {
-        // Get work details to find edition count
-        const workUrl = `https://openlibrary.org${workKey}.json`;
-        const workResponse = await fetch(workUrl);
-        const workData = await workResponse.json();
-        
-        // Count editions by checking covers or simply use the work if it has a title
-        if (workData.title) {
-          const editionCount = workData.covers ? workData.covers.length : 1;
-          
-          if (editionCount > maxEditions || !topWork) {
-            maxEditions = editionCount;
-            topWork = workData.title;
-          }
-        }
-      } catch (error) {
-        console.log(`Error fetching work details for ${workKey}:`, error);
-        // If we can't get details, just use the first work with a title
-        if (work.title && !topWork) {
-          topWork = work.title;
-        }
-      }
-    }
-
-    if (topWork) {
-      console.log(`Found top book for ${authorName}: ${topWork}`);
-      return topWork;
-    }
-
-    return null;
-  } catch (error) {
-    console.error(`Error fetching top book for ${authorName}:`, error);
-    return null;
-  }
-}
-
-async function fetchUpcomingConcerts(artistName: string): Promise<any[] | null> {
-  try {
-    // Clean artist name for search (remove common suffixes that might interfere)
-    const cleanedName = artistName
-      .replace(/\s*\(.*?\).*$/, '') // Remove parenthetical content
-      .trim();
-
-    console.log(`Searching for concerts for: ${cleanedName}`);
-
-    // Search for the artist on Bandsintown
-    const artistSearchUrl = `https://rest.bandsintown.com/artists/${encodeURIComponent(cleanedName)}?app_id=queer-guide`;
-    const artistResponse = await fetch(artistSearchUrl);
-    
-    if (!artistResponse.ok) {
-      console.log(`No artist found on Bandsintown for: ${cleanedName}`);
-      return null;
-    }
-
-    const artistData = await artistResponse.json();
-    
-    if (!artistData || artistData.error) {
-      console.log(`Artist not found on Bandsintown: ${cleanedName}`);
-      return null;
-    }
-
-    // Get upcoming events for the artist
-    const eventsUrl = `https://rest.bandsintown.com/artists/${encodeURIComponent(cleanedName)}/events?app_id=queer-guide&date=upcoming`;
-    const eventsResponse = await fetch(eventsUrl);
-
-    if (!eventsResponse.ok) {
-      console.log(`No events found for artist: ${cleanedName}`);
-      return null;
-    }
-
-    const eventsData = await eventsResponse.json();
-
-    if (!Array.isArray(eventsData) || eventsData.length === 0) {
-      console.log(`No upcoming events for ${cleanedName}`);
-      return null;
-    }
-
-    // Format the concert data - take first 5 upcoming events
-    const concerts = eventsData.slice(0, 5).map(event => ({
-      id: event.id,
-      datetime: event.datetime,
-      venue: {
-        name: event.venue?.name || 'TBA',
-        city: event.venue?.city || 'TBA',
-        country: event.venue?.country || 'TBA',
-        region: event.venue?.region || '',
-      },
-      lineup: event.lineup || [cleanedName],
-      offers: event.offers || [],
-      url: event.url || event.facebook_rsvp_url || '',
-      description: event.description || '',
-      on_sale_datetime: event.on_sale_datetime || null
-    }));
-
-    console.log(`Found ${concerts.length} upcoming concerts for ${cleanedName}`);
-    return concerts;
-
-  } catch (error) {
-    console.error(`Error fetching concerts for ${artistName}:`, error);
-    return null;
-  }
-}

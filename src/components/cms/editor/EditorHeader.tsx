@@ -19,7 +19,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
-import { Save, X, RotateCcw, Eye, Pencil } from 'lucide-react';
+import { Save, X, RotateCcw, Eye, Pencil, Sparkles, Loader2 } from 'lucide-react';
 import type { ContentTypeConfig, EditorState } from '@/types/cms';
 
 interface EditorHeaderProps {
@@ -28,6 +28,8 @@ interface EditorHeaderProps {
   onSave: () => void;
   onReset: () => void;
   onClose: () => void;
+  onEnrich?: () => void;
+  isEnriching?: boolean;
 }
 
 export function EditorHeader({
@@ -36,6 +38,8 @@ export function EditorHeader({
   onSave,
   onReset,
   onClose,
+  onEnrich,
+  isEnriching,
 }: EditorHeaderProps) {
   const Icon = contentType.icon;
   const titleValue = (state.data[contentType.titleField] as string) ?? '';
@@ -92,9 +96,7 @@ export function EditorHeader({
 
   const handleClose = () => {
     if (state.isDirty) {
-      const confirmed = window.confirm(
-        'You have unsaved changes. Are you sure you want to close?',
-      );
+      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to close?');
       if (!confirmed) return;
     }
     onClose();
@@ -102,8 +104,7 @@ export function EditorHeader({
 
   // Detect platform for shortcut display
   const isMac =
-    typeof navigator !== 'undefined' &&
-    /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+    typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
   const saveShortcut = isMac ? '\u2318S' : 'Ctrl+S';
 
   return (
@@ -268,11 +269,7 @@ export function EditorHeader({
             }}
           >
             <CircularProgress size={16} thickness={5} />
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ fontWeight: 500 }}
-            >
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
               Saving...
             </Typography>
           </Box>
@@ -289,6 +286,42 @@ export function EditorHeader({
           ml: 2,
         }}
       >
+        {/* Enrich with AI button */}
+        {onEnrich && state.itemId && (
+          <Tooltip title="Enrich content with AI suggestions">
+            <span>
+              <Button
+                variant="outlined"
+                size="small"
+                disabled={isEnriching || state.isSaving}
+                onClick={onEnrich}
+                startIcon={
+                  isEnriching ? (
+                    <Loader2
+                      style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }}
+                    />
+                  ) : (
+                    <Sparkles style={{ width: 16, height: 16 }} />
+                  )
+                }
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  display: { xs: 'none', sm: 'inline-flex' },
+                  borderColor: '#8b5cf6',
+                  color: '#8b5cf6',
+                  '&:hover': {
+                    borderColor: '#7c3aed',
+                    bgcolor: 'rgba(139, 92, 246, 0.04)',
+                  },
+                }}
+              >
+                {isEnriching ? 'Enriching...' : 'Enrich'}
+              </Button>
+            </span>
+          </Tooltip>
+        )}
+
         {/* Preview button */}
         <Tooltip title="Preview content">
           <span>

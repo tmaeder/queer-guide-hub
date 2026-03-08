@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getServiceClient, corsHeaders, corsResponse, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
+import { getServiceClient, getCorsHeaders, corsResponse, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return corsResponse();
+  if (req.method === 'OPTIONS') return corsResponse(req);
 
   try {
     let latitude: number, longitude: number;
@@ -17,8 +17,8 @@ serve(async (req) => {
       longitude = body.longitude;
     }
 
-    if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
-      return errorResponse('latitude and longitude are required', 400);
+    if (latitude == null || longitude == null || isNaN(latitude) || isNaN(longitude)) {
+      return errorResponse('latitude and longitude are required', 400, req);
     }
 
     const supabase = getServiceClient();
@@ -41,7 +41,7 @@ serve(async (req) => {
         .limit(1000);
 
       if (fbErr || !fallback?.length) {
-        return errorResponse('Could not find nearest airport');
+        return errorResponse('Could not find nearest airport', 500, req);
       }
 
       // Calculate distance manually
@@ -57,11 +57,11 @@ serve(async (req) => {
         iata: nearest.iata_code,
         city: nearest.city_name,
         country: nearest.country_code,
-      });
+      }, 200, req);
     }
 
     if (!data || (Array.isArray(data) && data.length === 0)) {
-      return jsonResponse({ iata: null, city: null, country: null });
+      return jsonResponse({ iata: null, city: null, country: null }, 200, req);
     }
 
     const result = Array.isArray(data) ? data[0] : data;
@@ -69,11 +69,11 @@ serve(async (req) => {
       iata: result.iata_code,
       city: result.city_name,
       country: result.country_code,
-    });
+    }, 200, req);
 
   } catch (error) {
     console.error('Resolve origin airport error:', error);
-    return errorResponse('Internal server error');
+    return errorResponse('Internal server error', 500, req);
   }
 });
 

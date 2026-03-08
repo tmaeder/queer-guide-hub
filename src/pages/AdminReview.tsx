@@ -3,15 +3,35 @@
  * Accepts ?tab= query param to deep-link to a specific tab.
  */
 
-import { Suspense, lazy, useMemo } from 'react';
+import { Suspense, lazy, useMemo, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Inbox, Flag, FileCheck, Tag, Shield, GitMerge, Zap } from 'lucide-react';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Alert from '@mui/material/Alert';
+import LinearProgress from '@mui/material/LinearProgress';
+import {
+  Inbox,
+  Flag,
+  FileCheck,
+  Tag,
+  Shield,
+  GitMerge,
+  CheckCheck,
+  Loader2,
+  Zap,
+} from 'lucide-react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { useReviewCounts, type ReviewCounts } from '@/hooks/useReviewCounts';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 // Lazy-load tab contents to keep initial bundle small
 const ReviewQueueEnhanced = lazy(() =>
@@ -38,6 +58,11 @@ const AutoCleanDuplicatesTab = lazy(() =>
 const AutomationReviewTab = lazy(() =>
   import('@/components/admin/automation/AutomationReviewTab').then((m) => ({
     default: m.AutomationReviewTab,
+  })),
+);
+const AutoModerationQueue = lazy(() =>
+  import('@/components/admin/AutoModerationQueue').then((m) => ({
+    default: m.AutoModerationQueue,
   })),
 );
 
@@ -120,8 +145,9 @@ const TAB_PRIORITY: TabId[] = [
 export default function AdminReview() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
+  const { user } = useAuth();
 
-  const { data: counts } = useReviewCounts();
+  const { data: counts, refetch: refetchCounts } = useReviewCounts();
   const c = counts ?? {
     staging: 0,
     cmsReview: 0,
@@ -132,6 +158,216 @@ export default function AdminReview() {
     total: 0,
   };
 
+  // ── Master Bulk Actions ──────────────────────────────────────
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<'approve' | 'enrich' | 'dedup' | null>(null);
+  const [bulkProgress, setBulkProgress] = useState(0);
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkResult, setBulkResult] = useState<{ success: number; failed: number } | null>(null);
+
+  const openBulkDialog = (action: 'approve' | 'enrich' | 'dedup') => {
+    setBulkAction(action);
+    setBulkProgress(0);
+    setBulkResult(null);
+    setBulkDialogOpen(true);
+  };
+
+  const handleBulkExecute = useCallback(async () => {
+    if (!bulkAction || !user) return;
+    setBulkRunning(true);
+    setBulkProgress(0);
+    let success = 0;
+    let failed = 0;
+
+    try {
+      if (bulkAction === 'approve') {
+        // Approve all tag suggestions
+        const { data: tags } = await supabase
+          .from('tag_suggestions' as any)
+          .select('id')
+          .eq('status', 'pending')
+          .limit(1000);
+        const tagIds = (tags ?? []).map((t: any) => t.id);
+        if (tagIds.length > 0) {
+          const { error } = await supabase.rpc('approve_tag_suggestions' as any, {
+            p_suggestion_ids: tagIds,
+            p_reviewer_id: user.id,
+          });
+          if (!error) success += tagIds.length;
+          else failed += tagIds.length;
+        }
+        setBulkProgress(33);
+
+        // Approve all CMS content in review
+        const { data: cmsItems } = await supabase
+          .from('cms_content_metadata' as any)
+          .select('id, source_table, source_id')
+          .eq('workflow_state', 'review')
+          .limit(500);
+        for (const item of cmsItems ?? []) {
+          const { error } = await supabase
+            .from('cms_content_metadata' as any)
+            .update({
+              workflow_state: 'published',
+              published_at: new Date().toISOString(),
+              published_by: user.id,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', item.id);
+          if (!error) success++;
+          else failed++;
+        }
+        setBulkProgress(66);
+
+        // Resolve all moderation flags
+        const { data: modFlags } = await supabase
+          .from('moderation_flags' as any)
+          .select('id')
+          .eq('status', 'OPEN')
+          .limit(500);
+        if ((modFlags ?? []).length > 0) {
+          const { error } = await supabase
+            .from('moderation_flags' as any)
+            .update({
+              status: 'RESOLVED',
+              reviewed_by: user.id,
+              reviewed_at: new Date().toISOString(),
+              resolution_note: 'Bulk approved via Review & Moderation',
+            })
+            .in(
+              'id',
+              (modFlags ?? []).map((f: any) => f.id),
+            );
+          if (!error) success += (modFlags ?? []).length;
+          else failed += (modFlags ?? []).length;
+        }
+        setBulkProgress(100);
+      }
+
+      if (bulkAction === 'enrich') {
+        // Apply all automation suggestions
+        const { data: flags } = await supabase
+          .from('content_flags' as any)
+          .select('id, content_type, content_id, suggested_value')
+          .eq('status', 'pending')
+          .not('suggested_value', 'is', null)
+          .limit(500);
+
+        const total = (flags ?? []).length;
+        for (let i = 0; i < total; i++) {
+          const flag = (flags ?? [])[i];
+          const { error: applyError } = await supabase
+            .from(flag.content_type as any)
+            .update(flag.suggested_value)
+            .eq('id', flag.content_id);
+
+          const { error: flagError } = await supabase
+            .from('content_flags' as any)
+            .update({
+              status: 'approved',
+              reviewed_at: new Date().toISOString(),
+              applied_at: new Date().toISOString(),
+            })
+            .eq('id', flag.id);
+
+          if (!applyError && !flagError) success++;
+          else failed++;
+          setBulkProgress(Math.round(((i + 1) / total) * 100));
+        }
+      }
+
+      if (bulkAction === 'dedup') {
+        // Approve all staging items with dedup_status = 'unique'
+        const { data: uniqueItems } = await supabase
+          .from('ingestion_staging' as any)
+          .select('id')
+          .eq('review_status', 'pending_review')
+          .eq('disposition', 'pending')
+          .eq('dedup_status', 'unique')
+          .limit(1000);
+
+        if ((uniqueItems ?? []).length > 0) {
+          const { error } = await supabase
+            .from('ingestion_staging' as any)
+            .update({
+              disposition: 'approved',
+              review_status: 'approved',
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (uniqueItems ?? []).map((i: any) => i.id),
+            );
+          if (!error) success += (uniqueItems ?? []).length;
+          else failed += (uniqueItems ?? []).length;
+        }
+        setBulkProgress(50);
+
+        // Reject all duplicates
+        const { data: dupItems } = await supabase
+          .from('ingestion_staging' as any)
+          .select('id')
+          .eq('review_status', 'pending_review')
+          .eq('disposition', 'pending')
+          .eq('dedup_status', 'duplicate')
+          .limit(1000);
+
+        if ((dupItems ?? []).length > 0) {
+          const { error } = await supabase
+            .from('ingestion_staging' as any)
+            .update({
+              disposition: 'rejected',
+              review_status: 'rejected',
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (dupItems ?? []).map((i: any) => i.id),
+            );
+          if (!error) success += (dupItems ?? []).length;
+          else failed += (dupItems ?? []).length;
+        }
+        setBulkProgress(100);
+      }
+    } catch (err) {
+      console.error('Bulk action error:', err);
+      failed++;
+    }
+
+    setBulkRunning(false);
+    setBulkResult({ success, failed });
+    refetchCounts();
+
+    if (success > 0 && failed === 0) {
+      toast.success(`${success} items processed successfully`);
+    } else if (success > 0) {
+      toast.warning(`${success} succeeded, ${failed} failed`);
+    } else {
+      toast.error('Bulk action failed');
+    }
+  }, [bulkAction, user, refetchCounts]);
+
+  const bulkActionLabels = {
+    approve: {
+      title: 'Approve Everything',
+      desc: `This will approve all ${c.tagSuggestions} tag suggestions, publish all ${c.cmsReview} content items in review, and resolve all ${c.moderation} moderation flags.`,
+      icon: CheckCheck,
+      color: '#10b981',
+    },
+    enrich: {
+      title: 'Apply All Enrichments',
+      desc: `This will apply all ${c.automation} pending automation suggestions to their target content. Suggested values will overwrite current values.`,
+      icon: Zap,
+      color: '#8b5cf6',
+    },
+    dedup: {
+      title: 'Resolve Duplicates',
+      desc: `This will auto-approve all unique staging items and auto-reject all confirmed duplicates from the staging queue.`,
+      icon: Inbox,
+      color: '#ea580c',
+    },
+  };
+
   const defaultTab = useMemo(() => {
     if (!counts) return 'staging';
     return TAB_PRIORITY.find((t) => (counts[TAB_COUNT_KEY[t]] ?? 0) > 0) ?? 'staging';
@@ -140,26 +376,170 @@ export default function AdminReview() {
   const activeTab = isValidTab(tabParam) ? tabParam : defaultTab;
 
   const handleTabChange = (value: string) => {
-    searchParams.set('tab', value);
+    if (value === 'staging') {
+      searchParams.delete('tab');
+    } else {
+      searchParams.set('tab', value);
+    }
     setSearchParams(searchParams, { replace: true });
   };
 
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-          <Shield style={{ height: 24, width: 24, color: '#f59e0b' }} />
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Review & Moderation
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 3,
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+            <Shield style={{ height: 24, width: 24, color: '#f59e0b' }} />
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              Review & Moderation
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            {c.total > 0
+              ? `${c.total.toLocaleString()} item${c.total !== 1 ? 's' : ''} need${c.total === 1 ? 's' : ''} attention`
+              : 'All caught up!'}
           </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary">
-          {c.total > 0
-            ? `${c.total.toLocaleString()} item${c.total !== 1 ? 's' : ''} need${c.total === 1 ? 's' : ''} attention`
-            : 'All caught up!'}
-        </Typography>
+        {c.total > 0 && (
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              onClick={() => openBulkDialog('approve')}
+              startIcon={<CheckCheck size={15} />}
+              sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+            >
+              Approve All
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => openBulkDialog('enrich')}
+              startIcon={<Zap size={15} />}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                borderColor: '#8b5cf6',
+                color: '#8b5cf6',
+              }}
+            >
+              Apply All Enrichments
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => openBulkDialog('dedup')}
+              startIcon={<Inbox size={15} />}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                borderColor: '#ea580c',
+                color: '#ea580c',
+              }}
+            >
+              Resolve Duplicates
+            </Button>
+          </Box>
+        )}
       </Box>
+
+      {/* Bulk Action Confirmation Dialog */}
+      <Dialog
+        open={bulkDialogOpen}
+        onClose={() => !bulkRunning && setBulkDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        {bulkAction && (
+          <>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 700 }}>
+              {(() => {
+                const Info = bulkActionLabels[bulkAction].icon;
+                return <Info size={20} style={{ color: bulkActionLabels[bulkAction].color }} />;
+              })()}
+              {bulkActionLabels[bulkAction].title}
+            </DialogTitle>
+            <DialogContent>
+              {!bulkResult ? (
+                <>
+                  <Alert severity="warning" sx={{ mb: 2 }}>
+                    {bulkActionLabels[bulkAction].desc}
+                  </Alert>
+                  {bulkRunning && (
+                    <Box sx={{ mt: 2 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={bulkProgress}
+                        sx={{ height: 6, borderRadius: 3 }}
+                      />
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mt: 0.5, display: 'block', textAlign: 'center' }}
+                      >
+                        {bulkProgress}% complete...
+                      </Typography>
+                    </Box>
+                  )}
+                </>
+              ) : (
+                <Alert severity={bulkResult.failed === 0 ? 'success' : 'warning'} sx={{ mt: 1 }}>
+                  {bulkResult.success} items processed successfully.
+                  {bulkResult.failed > 0 && ` ${bulkResult.failed} failed.`}
+                </Alert>
+              )}
+            </DialogContent>
+            <DialogActions>
+              {!bulkResult ? (
+                <>
+                  <Button
+                    onClick={() => setBulkDialogOpen(false)}
+                    disabled={bulkRunning}
+                    sx={{ textTransform: 'none' }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={handleBulkExecute}
+                    disabled={bulkRunning}
+                    startIcon={
+                      bulkRunning ? (
+                        <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                      ) : undefined
+                    }
+                    sx={{ textTransform: 'none', fontWeight: 600 }}
+                    color={bulkAction === 'approve' ? 'success' : 'primary'}
+                  >
+                    {bulkRunning ? 'Processing...' : 'Confirm'}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={() => setBulkDialogOpen(false)}
+                  variant="contained"
+                  sx={{ textTransform: 'none' }}
+                >
+                  Done
+                </Button>
+              )}
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
 
       {/* Summary Cards */}
       <Box
@@ -254,6 +634,7 @@ export default function AdminReview() {
 
         <TabsContent value="automation">
           <Suspense fallback={<Loading />}>
+            <AutoModerationQueue />
             <AutomationReviewTab />
           </Suspense>
         </TabsContent>

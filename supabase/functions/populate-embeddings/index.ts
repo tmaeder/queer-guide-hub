@@ -1,9 +1,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { corsHeaders, requireAdmin, errorResponse } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
 
-const CF_ACCOUNT_ID = '7aa3765cc5f50f2b681b782eb4a8d296';
+const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '';
 const CF_EMBEDDINGS_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/v1/embeddings`;
 const CF_MODEL = '@cf/baai/bge-base-en-v1.5';
 const EMBEDDING_DIMENSION = 768;
@@ -61,7 +60,7 @@ function generateFallbackEmbedding(contentText: string): number[] {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -76,21 +75,17 @@ serve(async (req) => {
     const limit = Math.min(Math.max(1, rawLimit), 500);
     const offset = Math.max(0, rawOffset);
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const cfApiToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
 
-    const supabaseForAuth = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = getServiceClient();
 
     // Require admin authentication
-    const authResult = await requireAdmin(req, supabaseForAuth);
+    const authResult = await requireAdmin(req, supabase);
     if (authResult instanceof Response) return authResult;
 
     if (!cfApiToken) {
       console.log('CLOUDFLARE_API_TOKEN not found, will use fallback embeddings');
     }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     let totalProcessed = 0;
     let totalErrors = 0;
@@ -336,10 +331,10 @@ serve(async (req) => {
         model: CF_MODEL,
         dimensions: EMBEDDING_DIMENSION,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
     console.error('Error in populate-embeddings function:', error);
-    return errorResponse('Internal server error');
+    return errorResponse('Internal server error', 500, req);
   }
 });

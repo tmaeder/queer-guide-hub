@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { requireAdmin, corsHeaders } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { enrichVenueWithAI, enrichEventWithAI, enrichPersonalityWithAI, enrichNewsWithAI } from '../_shared/ai-enrichment.ts'
 
 // --- AI Validator (inlined from _shared/ai-validator.ts for edge function compatibility) ---
 
@@ -135,7 +136,7 @@ async function deduplicateItem(supabase: any, targetTable: string, data: Record<
     }
   } catch (error) {
     console.error(`Dedup error for ${targetTable}:`, error)
-    return { status: 'unique', details: { error: (error as Error).message } }
+    return { status: 'unique', details: { error: 'Dedup check failed' } }
   }
 }
 
@@ -171,6 +172,8 @@ async function commitItem(supabase: any, targetTable: string, normalizedData: Re
 // --- Enrichment ---
 
 async function enrichItem(supabase: any, targetTable: string, normalizedData: Record<string, unknown>): Promise<Record<string, unknown> | null> {
+  const enriched: Record<string, unknown> = {}
+
   // For venues: fetch Pexels image if no images
   if (targetTable === 'venues' && (!normalizedData.images || (normalizedData.images as string[]).length === 0)) {
     try {
@@ -183,7 +186,7 @@ async function enrichItem(supabase: any, targetTable: string, normalizedData: Re
         if (resp.ok) {
           const data = await resp.json()
           if (data.photos?.[0]) {
-            return { images: [data.photos[0].src.medium] }
+            enriched.images = [data.photos[0].src.medium]
           }
         }
       }
@@ -191,7 +194,46 @@ async function enrichItem(supabase: any, targetTable: string, normalizedData: Re
       console.warn('Pexels enrichment failed:', e)
     }
   }
-  return null
+
+  // AI enrichment via ChatGPT (optional — gracefully skipped if unavailable)
+  try {
+    let aiEnrichment: Record<string, unknown> | null = null
+
+    switch (targetTable) {
+      case 'venues':
+        aiEnrichment = await enrichVenueWithAI(supabase, normalizedData) as Record<string, unknown> | null
+        break
+      case 'events':
+        aiEnrichment = await enrichEventWithAI(supabase, normalizedData) as Record<string, unknown> | null
+        break
+      case 'personalities':
+        aiEnrichment = await enrichPersonalityWithAI(supabase, normalizedData) as Record<string, unknown> | null
+        break
+      case 'news_articles':
+        aiEnrichment = await enrichNewsWithAI(supabase, normalizedData) as Record<string, unknown> | null
+        break
+    }
+
+    if (aiEnrichment) {
+      // Merge AI enrichment — only fill missing fields
+      for (const [key, value] of Object.entries(aiEnrichment)) {
+        if (value && !normalizedData[key] && !enriched[key]) {
+          enriched[key] = value
+        }
+      }
+      // Always include AI-generated tags if present
+      if (aiEnrichment.suggested_tags) {
+        enriched.ai_suggested_tags = aiEnrichment.suggested_tags
+      }
+    }
+
+    // Rate limit: 200ms between AI calls
+    await new Promise(r => setTimeout(r, 200))
+  } catch (e) {
+    console.warn(`AI enrichment failed for ${targetTable}:`, e)
+  }
+
+  return Object.keys(enriched).length > 0 ? enriched : null
 }
 
 // --- Pipeline stages ---
@@ -241,9 +283,9 @@ async function processAIValidation(supabase: any, jobId: string): Promise<{ proc
     } catch (err) {
       console.error(`AI validation failed for staging item ${item.id}:`, err)
       await supabase.from('ingestion_staging').update({
-        ai_validation_status: 'approved', // On AI failure, approve and let dedup/human review handle it
+        ai_validation_status: 'pending_review', // On AI failure, queue for human review
         ai_confidence_score: 0.5,
-        ai_validation_result: { error: (err as Error).message },
+        ai_validation_result: { error: 'AI validation unavailable' },
         ai_validated_at: new Date().toISOString(),
         review_status: 'pending_review',
       }).eq('id', item.id)
@@ -453,15 +495,14 @@ async function resumeStalledJobs(supabase: any): Promise<{ resumed: number }> {
 // --- Main handler ---
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+    const supabase = getServiceClient()
 
     // SECURITY: Require admin — pipeline writes to DB via service_role
     const authResult = await requireAdmin(req, supabase)

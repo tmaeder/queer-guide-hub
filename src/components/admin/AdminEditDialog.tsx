@@ -1,5 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useAdminEdit } from '@/hooks/useAdminEdit';
 import { toast } from 'sonner';
@@ -17,7 +24,7 @@ import Typography from '@mui/material/Typography';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import { ChevronDown, History, Check, Loader2 } from 'lucide-react';
+import { ChevronDown, History, Check, Loader2, Sparkles } from 'lucide-react';
 import {
   contentTypeRegistry,
   getFieldsByGroup,
@@ -25,8 +32,12 @@ import {
   fieldGroupLabels,
 } from '@/config/contentTypeRegistry';
 import type { FieldConfig, FieldGroup } from '@/types/cms';
-import { LocationAutocomplete, type AddressComponents } from '@/components/ui/location-autocomplete';
+import {
+  LocationAutocomplete,
+  type AddressComponents,
+} from '@/components/ui/location-autocomplete';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AdminEditDialogProps {
   open: boolean;
@@ -59,6 +70,8 @@ export function AdminEditDialog({
   const [editLog, setEditLog] = useState<EditLogEntry[]>([]);
   const [logLoading, setLogLoading] = useState(false);
   const [resolvedFields, setResolvedFields] = useState<Record<string, boolean>>({});
+  const [enriching, setEnriching] = useState(false);
+  const [enrichedFields, setEnrichedFields] = useState<Set<string>>(new Set());
 
   const { resolveAddress, resolveNationality, resolveBirthPlace, resolving } = useAddressResolver();
 
@@ -68,13 +81,13 @@ export function AdminEditDialog({
   // Get editable fields (non-hidden, non-readonly)
   const editableFields = useMemo(() => {
     if (!config) return [];
-    return config.fields.filter(f => !f.hidden);
+    return config.fields.filter((f) => !f.hidden);
   }, [config]);
 
   // Get field groups for this content type
   const groups = useMemo(() => {
     if (!config) return [];
-    return getFieldGroups(contentType).filter(group => {
+    return getFieldGroups(contentType).filter((group) => {
       const groupFields = getFieldsByGroup(contentType, group);
       return groupFields.length > 0;
     });
@@ -115,87 +128,100 @@ export function AdminEditDialog({
   };
 
   /** Apply resolver results to related fields */
-  const applyRelatedFields = useCallback((field: FieldConfig, result: {
-    city_id?: string | null;
-    city_name?: string | null;
-    country_id?: string | null;
-    country_name?: string | null;
-  }) => {
-    if (!field.relatedFields) return;
-    setFormData((prev) => {
-      const updates: Record<string, unknown> = { ...prev };
-      const map = field.relatedFields!;
-      if (map.city_id && result.city_id) updates[map.city_id] = result.city_id;
-      if (map.country_id && result.country_id) updates[map.country_id] = result.country_id;
-      if (map.city && result.city_name) updates[map.city] = result.city_name;
-      if (map.country && result.country_name) updates[map.country] = result.country_name;
-      return updates;
-    });
-    setResolvedFields((prev) => ({ ...prev, [field.name]: true }));
-  }, []);
+  const applyRelatedFields = useCallback(
+    (
+      field: FieldConfig,
+      result: {
+        city_id?: string | null;
+        city_name?: string | null;
+        country_id?: string | null;
+        country_name?: string | null;
+      },
+    ) => {
+      if (!field.relatedFields) return;
+      setFormData((prev) => {
+        const updates: Record<string, unknown> = { ...prev };
+        const map = field.relatedFields!;
+        if (map.city_id && result.city_id) updates[map.city_id] = result.city_id;
+        if (map.country_id && result.country_id) updates[map.country_id] = result.country_id;
+        if (map.city && result.city_name) updates[map.city] = result.city_name;
+        if (map.country && result.country_name) updates[map.country] = result.country_name;
+        return updates;
+      });
+      setResolvedFields((prev) => ({ ...prev, [field.name]: true }));
+    },
+    [],
+  );
 
   /** Handle location autocomplete selection with auto-resolution */
-  const handleLocationChange = useCallback(async (
-    field: FieldConfig,
-    address: string,
-    coordinates?: { lat: number; lng: number },
-    components?: AddressComponents,
-  ) => {
-    // Update the address field itself + auto-fill related fields
-    setFormData((prev) => {
-      const updates: Record<string, unknown> = { ...prev, [field.name]: address };
-      const map = field.relatedFields || {};
-      // Auto-fill text fields from components
-      if (components) {
-        if (map.city && components.city) updates[map.city] = components.city;
-        if (map.state && components.state) updates[map.state] = components.state;
-        if (map.country && components.country) updates[map.country] = components.country;
-        if (map.postal_code && components.postcode) updates[map.postal_code] = components.postcode;
-      }
-      // Auto-populate lat/lng from coordinates
-      if (coordinates) {
-        const latField = map.latitude || 'latitude';
-        const lngField = map.longitude || 'longitude';
-        updates[latField] = coordinates.lat;
-        updates[lngField] = coordinates.lng;
-      }
-      return updates;
-    });
+  const handleLocationChange = useCallback(
+    async (
+      field: FieldConfig,
+      address: string,
+      coordinates?: { lat: number; lng: number },
+      components?: AddressComponents,
+    ) => {
+      // Update the address field itself + auto-fill related fields
+      setFormData((prev) => {
+        const updates: Record<string, unknown> = { ...prev, [field.name]: address };
+        const map = field.relatedFields || {};
+        // Auto-fill text fields from components
+        if (components) {
+          if (map.city && components.city) updates[map.city] = components.city;
+          if (map.state && components.state) updates[map.state] = components.state;
+          if (map.country && components.country) updates[map.country] = components.country;
+          if (map.postal_code && components.postcode)
+            updates[map.postal_code] = components.postcode;
+        }
+        // Auto-populate lat/lng from coordinates
+        if (coordinates) {
+          const latField = map.latitude || 'latitude';
+          const lngField = map.longitude || 'longitude';
+          updates[latField] = coordinates.lat;
+          updates[lngField] = coordinates.lng;
+        }
+        return updates;
+      });
 
-    // Resolve city_id/country_id via edge function
-    if (components?.country) {
-      const result = await resolveAddress(
-        components.city,
-        components.country,
-        coordinates?.lat,
-        coordinates?.lng,
-      );
-      if (result) {
-        applyRelatedFields(field, result);
-        if (result.created) {
-          toast.success(`New city created: ${result.city_name}`);
+      // Resolve city_id/country_id via edge function
+      if (components?.country) {
+        const result = await resolveAddress(
+          components.city,
+          components.country,
+          coordinates?.lat,
+          coordinates?.lng,
+        );
+        if (result) {
+          applyRelatedFields(field, result);
+          if (result.created) {
+            toast.success(`New city created: ${result.city_name}`);
+          }
         }
       }
-    }
-  }, [resolveAddress, applyRelatedFields]);
+    },
+    [resolveAddress, applyRelatedFields],
+  );
 
   /** Handle resolver-typed text fields (nationality, birthplace) on blur */
-  const handleResolverBlur = useCallback(async (field: FieldConfig, value: string) => {
-    if (!value?.trim() || !field.resolverType) return;
+  const handleResolverBlur = useCallback(
+    async (field: FieldConfig, value: string) => {
+      if (!value?.trim() || !field.resolverType) return;
 
-    setResolvedFields((prev) => ({ ...prev, [field.name]: false }));
-    let result = null;
+      setResolvedFields((prev) => ({ ...prev, [field.name]: false }));
+      let result = null;
 
-    if (field.resolverType === 'nationality') {
-      result = await resolveNationality(value);
-    } else if (field.resolverType === 'birthplace') {
-      result = await resolveBirthPlace(value);
-    }
+      if (field.resolverType === 'nationality') {
+        result = await resolveNationality(value);
+      } else if (field.resolverType === 'birthplace') {
+        result = await resolveBirthPlace(value);
+      }
 
-    if (result) {
-      applyRelatedFields(field, result);
-    }
-  }, [resolveNationality, resolveBirthPlace, applyRelatedFields]);
+      if (result) {
+        applyRelatedFields(field, result);
+      }
+    },
+    [resolveNationality, resolveBirthPlace, applyRelatedFields],
+  );
 
   // Collect hidden FK field names set by resolvers (city_id, country_id, etc.)
   const resolverFkFields = useMemo(() => {
@@ -205,7 +231,7 @@ export function AdminEditDialog({
       if (field.relatedFields) {
         for (const target of Object.keys(field.relatedFields)) {
           // Include hidden fields that are FK targets
-          const targetField = config.fields.find(f => f.name === target);
+          const targetField = config.fields.find((f) => f.name === target);
           if (targetField?.hidden) {
             fkNames.add(target);
           }
@@ -236,13 +262,21 @@ export function AdminEditDialog({
       if (field.type === 'json' || field.type === 'tags') {
         // Parse JSON/tags back
         const newStr = newVal == null ? '' : String(newVal).trim();
-        const oldStr = oldVal != null && typeof oldVal === 'object'
-          ? JSON.stringify(oldVal, null, 2)
-          : oldVal == null ? '' : String(oldVal);
+        const oldStr =
+          oldVal != null && typeof oldVal === 'object'
+            ? JSON.stringify(oldVal, null, 2)
+            : oldVal == null
+              ? ''
+              : String(oldVal);
         if (newStr !== oldStr) {
           if (field.type === 'tags' && typeof newStr === 'string') {
             // Tags: parse comma-separated into array
-            changes[field.name] = newStr ? newStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+            changes[field.name] = newStr
+              ? newStr
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              : [];
           } else if (field.type === 'json') {
             try {
               changes[field.name] = newStr ? JSON.parse(newStr) : null;
@@ -277,6 +311,66 @@ export function AdminEditDialog({
     return changes;
   };
 
+  const handleEnrich = async () => {
+    setEnriching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('content-automation', {
+        body: {
+          module: 'ai-content-enhancer',
+          content_type: contentType,
+          content_id: contentId,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.suggestions || Object.keys(data.suggestions).length === 0) {
+        toast.info('No enrichment suggestions available');
+        return;
+      }
+
+      const suggestions = data.suggestions as Record<string, unknown>;
+      const newEnrichedFields = new Set<string>();
+
+      setFormData((prev) => {
+        const updates = { ...prev };
+        for (const [key, value] of Object.entries(suggestions)) {
+          // Only fill fields that are empty or explicitly match an editable field
+          if (key === 'suggested_tags') continue; // Handle tags separately
+          const field = editableFields.find((f) => f.name === key);
+          if (field && !field.readOnly) {
+            const currentVal = prev[key];
+            // Only suggest if current value is empty or we have a clear improvement
+            if (!currentVal || String(currentVal).trim() === '') {
+              updates[key] = value;
+              newEnrichedFields.add(key);
+            } else if (
+              typeof value === 'string' &&
+              typeof currentVal === 'string' &&
+              value.length > currentVal.length * 1.3
+            ) {
+              // Suggest if AI version is significantly longer (30%+ more content)
+              updates[key] = value;
+              newEnrichedFields.add(key);
+            }
+          }
+        }
+        return updates;
+      });
+
+      setEnrichedFields(newEnrichedFields);
+      const count = newEnrichedFields.size;
+      if (count > 0) {
+        toast.success(`AI suggested improvements for ${count} field${count > 1 ? 's' : ''}`);
+      } else {
+        toast.info('Content already looks good — no changes suggested');
+      }
+    } catch (err: unknown) {
+      toast.error(`Enrichment failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setEnriching(false);
+    }
+  };
+
   const handleSubmit = async () => {
     const changes = getChangedFields();
     if (Object.keys(changes).length === 0) {
@@ -299,6 +393,10 @@ export function AdminEditDialog({
   const renderField = (field: FieldConfig) => {
     const value = formData[field.name];
     const isReadOnly = field.readOnly === true;
+    const isEnriched = enrichedFields.has(field.name);
+    const enrichedSx = isEnriched
+      ? { '& .MuiOutlinedInput-root': { borderColor: '#8b5cf6', boxShadow: '0 0 0 1px #8b5cf6' } }
+      : {};
 
     switch (field.type) {
       case 'boolean':
@@ -327,7 +425,9 @@ export function AdminEditDialog({
               onChange={(e) => handleChange(field.name, e.target.value)}
               disabled={isReadOnly}
             >
-              <MenuItem value=""><em>None</em></MenuItem>
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
               {field.options?.map((opt) => (
                 <MenuItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -341,7 +441,7 @@ export function AdminEditDialog({
         return (
           <TextField
             key={field.name}
-            label={field.label}
+            label={isEnriched ? `${field.label} ✨` : field.label}
             multiline
             rows={6}
             value={String(value ?? '')}
@@ -349,8 +449,9 @@ export function AdminEditDialog({
             fullWidth
             size="small"
             disabled={isReadOnly}
-            helperText={field.helpText}
+            helperText={isEnriched ? 'AI-enriched — review before saving' : field.helpText}
             inputProps={{ maxLength: field.maxLength }}
+            sx={enrichedSx}
           />
         );
 
@@ -358,7 +459,7 @@ export function AdminEditDialog({
         return (
           <TextField
             key={field.name}
-            label={field.label}
+            label={isEnriched ? `${field.label} ✨` : field.label}
             multiline
             rows={3}
             value={String(value ?? '')}
@@ -366,8 +467,9 @@ export function AdminEditDialog({
             fullWidth
             size="small"
             disabled={isReadOnly}
-            helperText={field.helpText}
+            helperText={isEnriched ? 'AI-enriched — review before saving' : field.helpText}
             inputProps={{ maxLength: field.maxLength }}
+            sx={enrichedSx}
           />
         );
 
@@ -515,27 +617,45 @@ export function AdminEditDialog({
         return (
           <Box key={field.name} sx={{ position: 'relative' }}>
             <TextField
-              label={field.label}
+              label={isEnriched ? `${field.label} ✨` : field.label}
               value={String(value ?? '')}
               onChange={(e) => {
                 handleChange(field.name, e.target.value);
                 if (hasResolver) setResolvedFields((prev) => ({ ...prev, [field.name]: false }));
               }}
-              onBlur={hasResolver ? () => handleResolverBlur(field, String(value ?? '')) : undefined}
+              onBlur={
+                hasResolver ? () => handleResolverBlur(field, String(value ?? '')) : undefined
+              }
               fullWidth
               size="small"
               disabled={isReadOnly}
               placeholder={field.placeholder}
-              helperText={field.helpText}
+              helperText={isEnriched ? 'AI-enriched — review before saving' : field.helpText}
               inputProps={{ maxLength: field.maxLength }}
-              InputProps={hasResolver ? {
-                endAdornment: (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {resolving && <Loader2 style={{ width: 14, height: 14, color: '#999', animation: 'spin 1s linear infinite' }} />}
-                    {isResolved && <Check style={{ width: 14, height: 14, color: '#22c55e' }} />}
-                  </Box>
-                ),
-              } : undefined}
+              sx={enrichedSx}
+              InputProps={
+                hasResolver
+                  ? {
+                      endAdornment: (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          {resolving && (
+                            <Loader2
+                              style={{
+                                width: 14,
+                                height: 14,
+                                color: '#999',
+                                animation: 'spin 1s linear infinite',
+                              }}
+                            />
+                          )}
+                          {isResolved && (
+                            <Check style={{ width: 14, height: 14, color: '#22c55e' }} />
+                          )}
+                        </Box>
+                      ),
+                    }
+                  : undefined
+              }
             />
             {hasResolver && isResolved && (
               <Typography variant="caption" sx={{ color: '#22c55e', mt: 0.25, display: 'block' }}>
@@ -560,7 +680,9 @@ export function AdminEditDialog({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -591,7 +713,11 @@ export function AdminEditDialog({
                 >
                   <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                     {label}
-                    <Typography component="span" variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      sx={{ ml: 1, color: 'text.secondary' }}
+                    >
                       ({groupFields.length})
                     </Typography>
                   </Typography>
@@ -609,15 +735,16 @@ export function AdminEditDialog({
             <AccordionSummary expandIcon={<ChevronDown style={{ width: 16, height: 16 }} />}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <History style={{ width: 16, height: 16 }} />
-                <Typography variant="body2">
-                  Edit History ({editLog.length})
-                </Typography>
+                <Typography variant="body2">Edit History ({editLog.length})</Typography>
               </Box>
             </AccordionSummary>
             <AccordionDetails>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {editLog.map((entry) => (
-                  <Box key={entry.id} sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <Box
+                    key={entry.id}
+                    sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}
+                  >
                     <Typography variant="caption" color="text.secondary">
                       {new Date(entry.created_at).toLocaleString()}
                     </Typography>
@@ -638,15 +765,32 @@ export function AdminEditDialog({
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={loading || enriching}
+          >
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || changedCount === 0}
-          >
+          <Button variant="outline" onClick={handleEnrich} disabled={loading || enriching}>
+            {enriching ? (
+              <Loader2
+                style={{
+                  width: 14,
+                  height: 14,
+                  marginRight: 4,
+                  animation: 'spin 1s linear infinite',
+                }}
+              />
+            ) : (
+              <Sparkles style={{ width: 14, height: 14, marginRight: 4 }} />
+            )}
+            {enriching ? 'Enriching...' : 'Enrich with AI'}
+          </Button>
+          <Button onClick={handleSubmit} disabled={loading || changedCount === 0}>
             {loading ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
-            Save {changedCount > 0 ? `(${changedCount} field${changedCount > 1 ? 's' : ''})` : 'Changes'}
+            Save{' '}
+            {changedCount > 0 ? `(${changedCount} field${changedCount > 1 ? 's' : ''})` : 'Changes'}
           </Button>
         </DialogFooter>
       </DialogContent>

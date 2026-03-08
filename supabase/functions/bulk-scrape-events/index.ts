@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { DOMParser } from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface FirecrawlPage {
   url: string;
@@ -132,37 +128,39 @@ function dedupeEvents(events: any[]) {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
+
   const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    return new Response(JSON.stringify({ error: 'Missing Supabase service configuration' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
 
   if (!firecrawlApiKey) {
     return new Response(JSON.stringify({ error: 'FIRECRAWL_API_KEY not set in Supabase Function Secrets' }), {
       status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
-
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     const { seeds, limit = 100, dryRun = false } = await req.json();
     if (!seeds || !Array.isArray(seeds) || seeds.length === 0) {
       return new Response(JSON.stringify({ error: 'Provide seeds: string[] of URLs to crawl' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
+
+    if (seeds.length > 20) {
+      return new Response(JSON.stringify({ error: 'Too many seeds. Maximum is 20.' }), {
+        status: 400,
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+      });
+    }
+
+    const safeLimit = Math.min(limit || 100, 500);
 
     let pages: FirecrawlPage[] = [];
     for (const seed of seeds) {
@@ -174,7 +172,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           url: seed,
-          limit,
+          limit: safeLimit,
           scrapeOptions: { formats: ['html', 'markdown'] },
         }),
       });
@@ -273,7 +271,20 @@ serve(async (req) => {
         preview_count: normalized.length,
         preview: normalized.slice(0, 50),
         message: `Dry run: extracted ${normalized.length} unique events`,
-      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }), { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
+    }
+
+    // AI enrichment — enhance events missing descriptions
+    for (const event of normalized) {
+      if (!event.description) {
+        try {
+          const aiEnrichment = await enrichEventWithAI(supabase, event)
+          if (aiEnrichment) {
+            if (aiEnrichment.description) event.description = aiEnrichment.description as string
+            if (aiEnrichment.event_type && !event.event_type) event.event_type = aiEnrichment.event_type as string
+          }
+        } catch (e) { console.warn('AI enrichment skipped:', e) }
+      }
     }
 
     // Insert in chunks
@@ -293,12 +304,12 @@ serve(async (req) => {
       imported: inserted,
       total_extracted: normalized.length,
       message: `Imported ${inserted}/${normalized.length} events`,
-    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }), { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
   } catch (err: any) {
     console.error('bulk-scrape-events error', err);
-    return new Response(JSON.stringify({ error: err?.message || 'Unknown error' }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

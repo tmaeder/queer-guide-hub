@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts';
 
 interface TicketmasterEvent {
   id: string;
@@ -105,15 +102,16 @@ interface TicketmasterResponse {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseClient = getServiceClient();
+    const auth = await requireAdmin(req, supabaseClient);
+    if (auth instanceof Response) return auth;
 
     const { keyword, city, countryCode, classificationName } = await req.json();
     
@@ -238,6 +236,15 @@ serve(async (req) => {
               featured: false
             };
 
+            // AI enrichment — enhance description and classify event type
+            try {
+              const aiEnrichment = await enrichEventWithAI(supabaseClient, eventData)
+              if (aiEnrichment) {
+                if (aiEnrichment.description && !eventData.description) eventData.description = aiEnrichment.description as string
+                if (aiEnrichment.event_type && eventData.event_type === 'other') eventData.event_type = aiEnrichment.event_type as string
+              }
+            } catch (e) { console.warn('AI enrichment skipped:', e) }
+
             console.log('Inserting event:', eventData.title);
 
             const { error } = await supabaseClient
@@ -285,16 +292,15 @@ serve(async (req) => {
   } catch (error) {
     console.error('Import error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: 'Check the function logs for more details'
+      JSON.stringify({
+        error: 'Internal server error'
       }),
-      { 
+      {
         status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     );
   }

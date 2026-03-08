@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 // SECURITY FIX: Proper AES encryption for API keys
 async function secureEncrypt(text: string): Promise<string> {
@@ -17,21 +13,21 @@ async function secureEncrypt(text: string): Promise<string> {
     false,
     ['encrypt']
   );
-  
+
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const data = new TextEncoder().encode(text);
-  
+
   const encrypted = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     key,
     data
   );
-  
+
   // Combine IV and encrypted data
   const combined = new Uint8Array(iv.length + encrypted.byteLength);
   combined.set(iv);
   combined.set(new Uint8Array(encrypted), iv.length);
-  
+
   return btoa(String.fromCharCode(...combined));
 }
 
@@ -45,66 +41,31 @@ async function secureDecrypt(encryptedText: string): Promise<string> {
     false,
     ['decrypt']
   );
-  
+
   const combined = new Uint8Array(atob(encryptedText).split('').map(c => c.charCodeAt(0)));
   const iv = combined.slice(0, 12);
   const data = combined.slice(12);
-  
+
   const decrypted = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv },
     key,
     data
   );
-  
+
   return new TextDecoder().decode(decrypted);
 }
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
+  const supabase = getServiceClient()
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
+
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Verify user is authenticated and is admin
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: user, error: userError } = await supabase.auth.getUser(token);
-    
-    if (userError || !user.user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid authorization' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if user is admin
-    const { data: roleData, error: roleError } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.user.id)
-      .eq('role', 'admin')
-      .single();
-
-    if (roleError || !roleData) {
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const url = new URL(req.url);
     const method = req.method;
     const action = url.searchParams.get('action');
@@ -173,7 +134,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ required_keys: requiredKeys, custom_keys: customKeys || [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -190,7 +151,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ keys }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -200,7 +161,7 @@ serve(async (req) => {
       if (!service_name || !key_name || !key_value) {
         return new Response(
           JSON.stringify({ error: 'Missing required fields' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -214,7 +175,7 @@ serve(async (req) => {
           key_name,
           encrypted_key,
           description,
-          created_by: user.user.id
+          created_by: (auth as { userId: string }).userId
         })
         .select()
         .single();
@@ -223,7 +184,7 @@ serve(async (req) => {
         if (error.code === '23505') { // Unique constraint violation
           return new Response(
             JSON.stringify({ error: 'API key with this service and name already exists' }),
-            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 409, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
           );
         }
         throw error;
@@ -233,7 +194,7 @@ serve(async (req) => {
       const { encrypted_key: _, ...safeData } = data;
       return new Response(
         JSON.stringify({ key: safeData }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -244,7 +205,7 @@ serve(async (req) => {
       if (!keyId) {
         return new Response(
           JSON.stringify({ error: 'Missing key ID' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -270,7 +231,7 @@ serve(async (req) => {
       const { encrypted_key: _, ...safeData } = data;
       return new Response(
         JSON.stringify({ key: safeData }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -280,7 +241,7 @@ serve(async (req) => {
       if (!keyId) {
         return new Response(
           JSON.stringify({ error: 'Missing key ID' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
 
@@ -295,20 +256,20 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 405, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in manage-api-keys function:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

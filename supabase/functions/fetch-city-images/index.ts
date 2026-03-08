@@ -1,9 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 interface ImageResult {
   url: string;
@@ -371,16 +367,21 @@ async function processBatchMode(supabase: any, pexelsApiKey?: string, unsplashAp
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabase = getServiceClient()
+    const auth = await requireAdmin(req, supabase)
+    if (auth instanceof Response) return auth
+
     const requestData: CityImageRequest = await req.json().catch(() => ({}));
     const { cityId, cityName, countryName, batchMode } = requestData;
-    
-    // Initialize clients and validate API keys
-    const supabase = await initializeSupabaseClient();
+
+    // Validate API keys
     const { pexelsApiKey, unsplashApiKey } = await validateApiKeys();
     
     console.log('City image fetch request:', { cityId, cityName, countryName, batchMode });
@@ -426,12 +427,11 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error in fetch-city-images function:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
         error: 'Failed to fetch city images',
-        details: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString()
       }),
       { 
