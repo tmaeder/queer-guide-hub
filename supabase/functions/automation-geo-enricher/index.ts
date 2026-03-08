@@ -179,6 +179,7 @@ async function processItem(
   rules: AutomationRule[],
   supabase: ReturnType<typeof createClient>,
   reverseGeocodeCounter: { count: number; limit: number },
+  rpcCounter: { count: number; limit: number },
 ): Promise<ProposedChange[]> {
   const changes: ProposedChange[] = []
   const contentId = String(item.id)
@@ -308,15 +309,17 @@ async function processItem(
       }
     }
 
-    // ── geo_reverse_fill: reverse geocode lat/lng → state + postal_code ──
+    // ── geo_reverse_fill: reverse geocode lat/lng → city, country, state, postal_code
     if (rule.rule_type === 'geo_reverse_fill') {
       const lat = item.latitude as number | null
       const lng = item.longitude as number | null
       if (!lat || !lng) continue
 
+      const needsCity = geoConfig.cityTextField && !item[geoConfig.cityTextField]
+      const needsCountry = geoConfig.countryTextField && !item[geoConfig.countryTextField]
       const needsState = geoConfig.stateField && !item[geoConfig.stateField]
       const needsPostal = geoConfig.postalCodeField && !item[geoConfig.postalCodeField]
-      if (!needsState && !needsPostal) continue
+      if (!needsCity && !needsCountry && !needsState && !needsPostal) continue
 
       if (reverseGeocodeCounter.count >= reverseGeocodeCounter.limit) continue
       reverseGeocodeCounter.count++
@@ -328,6 +331,34 @@ async function processItem(
           const data = await res.json()
           const props = data.features?.[0]?.properties
           if (props) {
+            if (needsCity && (props.city || props.name)) {
+              changes.push({
+                content_type: contentType,
+                content_id: contentId,
+                content_name: contentName,
+                field_name: geoConfig.cityTextField!,
+                old_value: null,
+                new_value: props.city || props.name,
+                change_type: 'enrich',
+                confidence: 0.85,
+                reasoning: `Reverse geocoded (${lat}, ${lng}) → city: "${props.city || props.name}"`,
+                rule_id: rule.id,
+              })
+            }
+            if (needsCountry && props.country) {
+              changes.push({
+                content_type: contentType,
+                content_id: contentId,
+                content_name: contentName,
+                field_name: geoConfig.countryTextField!,
+                old_value: null,
+                new_value: props.country,
+                change_type: 'enrich',
+                confidence: 0.85,
+                reasoning: `Reverse geocoded (${lat}, ${lng}) → country: "${props.country}"`,
+                rule_id: rule.id,
+              })
+            }
             if (needsState && props.state) {
               changes.push({
                 content_type: contentType,
@@ -371,6 +402,9 @@ async function processItem(
       const lat = item.latitude as number | null
       const lng = item.longitude as number | null
       if (!lat || !lng) continue
+
+      if (rpcCounter.count >= rpcCounter.limit) continue
+      rpcCounter.count++
 
       try {
         const { data: villages } = await supabase.rpc('find_queer_village', {
@@ -417,6 +451,9 @@ Deno.serve(async (req) => {
     if (req.method === 'POST') {
       payload = await req.json().catch(() => ({}))
     }
+    // Allow overriding limits per run (defaults for cron, higher for backfill)
+    const reverseGeocodeLimit = Math.min(Number(payload.reverse_geocode_limit) || 50, 500)
+    const rpcLimit = Math.min(Number(payload.rpc_limit) || 200, 2000)
 
     const config = await loadModuleConfig(supabase, MODULE_SLUG)
     if (!config) return errorResponse('Module disabled or not found', 404)
@@ -447,12 +484,14 @@ Deno.serve(async (req) => {
         .select(ctConfig.selectFields)
         .limit(config.module.batch_size)
 
-      // Fetch items missing any geo data (IDs, state, postal_code, village)
+      // Fetch items missing any geo data (IDs, text fields, state, postal_code, village)
       const geoConfig = GEO_FIELDS[contentType]
       const filterParts = [
         `${geoConfig.countryIdField}.is.null`,
         `${geoConfig.cityIdField}.is.null`,
       ]
+      if (geoConfig.cityTextField) filterParts.push(`${geoConfig.cityTextField}.is.null`)
+      if (geoConfig.countryTextField) filterParts.push(`${geoConfig.countryTextField}.is.null`)
       if (geoConfig.stateField) filterParts.push(`${geoConfig.stateField}.is.null`)
       if (geoConfig.postalCodeField) filterParts.push(`${geoConfig.postalCodeField}.is.null`)
       if (geoConfig.villageIdField) filterParts.push(`${geoConfig.villageIdField}.is.null`)
@@ -466,13 +505,14 @@ Deno.serve(async (req) => {
         continue
       }
 
-      const reverseGeocodeCounter = { count: 0, limit: 50 }
+      const reverseGeocodeCounter = { count: 0, limit: reverseGeocodeLimit }
+      const rpcCounter = { count: 0, limit: rpcLimit }
 
       for (const item of items || []) {
         totalScanned++
         try {
           const name = getContentName(item as Record<string, unknown>, ctConfig)
-          const itemChanges = await processItem(item as Record<string, unknown>, contentType, name, rulesForType, supabase, reverseGeocodeCounter)
+          const itemChanges = await processItem(item as Record<string, unknown>, contentType, name, rulesForType, supabase, reverseGeocodeCounter, rpcCounter)
           allChanges.push(...itemChanges)
         } catch (e) {
           console.error(`[${MODULE_SLUG}] Error processing ${contentType}/${item.id}: ${e}`)
