@@ -135,13 +135,13 @@ export const CONTENT_TYPE_CONFIG: Record<string, ContentTypeConfig> = {
   venues: {
     table: 'venues',
     nameField: 'name',
-    selectFields: 'id, name, description, category, website, city, country, address, phone, email, featured, foursquare_rating, city_id, country_id, latitude, longitude',
+    selectFields: 'id, name, description, category, website, city, country, address, phone, email, featured, foursquare_rating, city_id, country_id, latitude, longitude, state, postal_code, queer_village_id',
     textFields: ['name', 'description', 'category', 'city', 'country', 'address'],
   },
   events: {
     table: 'events',
     nameField: 'title',
-    selectFields: 'id, title, description, event_type, venue_name, venue_id, city, country, website, start_date, end_date, timezone, address, latitude, longitude, city_id, country_id, status',
+    selectFields: 'id, title, description, event_type, venue_name, venue_id, city, country, website, start_date, end_date, timezone, address, latitude, longitude, city_id, country_id, status, queer_village_id',
     textFields: ['title', 'description', 'event_type', 'venue_name', 'city', 'country'],
   },
   personalities: {
@@ -167,6 +167,12 @@ export const CONTENT_TYPE_CONFIG: Record<string, ContentTypeConfig> = {
     nameField: 'name',
     selectFields: 'id, name, description, code',
     textFields: ['name', 'description'],
+  },
+  hotels: {
+    table: 'hotels',
+    nameField: 'name',
+    selectFields: 'id, name, description, website, city, country, address, latitude, longitude, city_id, country_id, queer_village_id',
+    textFields: ['name', 'description', 'city', 'country'],
   },
 }
 

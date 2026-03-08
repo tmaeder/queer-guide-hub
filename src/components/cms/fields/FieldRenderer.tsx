@@ -14,6 +14,8 @@ import { ImagesField } from './ImagesField';
 import { LocationField } from './LocationField';
 import { TagsField } from './TagsField';
 import { JsonField } from './JsonField';
+import { CityAutocompleteField } from './CityAutocompleteField';
+import { CountryAutocompleteField } from './CountryAutocompleteField';
 
 export interface FieldProps {
   field: FieldConfig;
@@ -23,6 +25,8 @@ export interface FieldProps {
   disabled?: boolean;
   /** Batch-set multiple fields at once (used by location fields to set related fields) */
   setFields?: (fields: Record<string, unknown>) => void;
+  /** All current form values (used by fields that depend on sibling field values) */
+  allValues?: Record<string, unknown>;
 }
 
 const FIELD_COMPONENTS: Record<string, React.ComponentType<FieldProps>> = {
@@ -43,13 +47,24 @@ const FIELD_COMPONENTS: Record<string, React.ComponentType<FieldProps>> = {
   location: LocationField,
   tags: TagsField,
   json: JsonField,
+  city_autocomplete: CityAutocompleteField,
+  country_autocomplete: CountryAutocompleteField,
 };
 
 interface FieldRendererProps extends FieldProps {
   setFields?: (fields: Record<string, unknown>) => void;
+  allValues?: Record<string, unknown>;
 }
 
-export function FieldRenderer({ field, value, onChange, error, disabled, setFields }: FieldRendererProps) {
+export function FieldRenderer({
+  field,
+  value,
+  onChange,
+  error,
+  disabled,
+  setFields,
+  allValues,
+}: FieldRendererProps) {
   if (field.hidden) {
     return null;
   }
@@ -74,6 +89,7 @@ export function FieldRenderer({ field, value, onChange, error, disabled, setFiel
       error={error}
       disabled={isDisabled}
       setFields={setFields}
+      allValues={allValues}
     />
   );
 }

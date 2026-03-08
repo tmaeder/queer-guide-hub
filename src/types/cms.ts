@@ -30,9 +30,19 @@ export type FieldType =
   | 'images'
   | 'location'
   | 'tags'
-  | 'json';
+  | 'json'
+  | 'city_autocomplete'
+  | 'country_autocomplete';
 
-export type FieldGroup = 'basic' | 'details' | 'location' | 'media' | 'seo' | 'settings' | 'lgbtq' | 'external';
+export type FieldGroup =
+  | 'basic'
+  | 'details'
+  | 'location'
+  | 'media'
+  | 'seo'
+  | 'settings'
+  | 'lgbtq'
+  | 'external';
 
 export interface SelectOption {
   value: string;
@@ -120,7 +130,9 @@ export interface ContentTypeConfig {
   /** Default values for new items */
   defaults?: Record<string, unknown>;
   /** Custom validator function */
-  validate?: (data: Record<string, unknown>) => import('@/utils/contentValidation').ValidationResult;
+  validate?: (
+    data: Record<string, unknown>,
+  ) => import('@/utils/contentValidation').ValidationResult;
   /** Whether this content type supports rich text body */
   hasRichText?: boolean;
   /** Default field groups order */

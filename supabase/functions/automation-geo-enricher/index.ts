@@ -160,18 +160,26 @@ const GEO_FIELDS: Record<string, {
   cityTextField?: string
   countryIdField: string
   cityIdField: string
+  stateField?: string
+  postalCodeField?: string
+  villageIdField?: string
 }> = {
-  venues: { countryTextField: 'country', cityTextField: 'city', countryIdField: 'country_id', cityIdField: 'city_id' },
-  events: { countryTextField: 'country', cityTextField: 'city', countryIdField: 'country_id', cityIdField: 'city_id' },
+  venues: { countryTextField: 'country', cityTextField: 'city', countryIdField: 'country_id', cityIdField: 'city_id', stateField: 'state', postalCodeField: 'postal_code', villageIdField: 'queer_village_id' },
+  events: { countryTextField: 'country', cityTextField: 'city', countryIdField: 'country_id', cityIdField: 'city_id', villageIdField: 'queer_village_id' },
+  hotels: { countryTextField: 'country', cityTextField: 'city', countryIdField: 'country_id', cityIdField: 'city_id', villageIdField: 'queer_village_id' },
   personalities: { countryTextField: 'nationality', cityTextField: undefined, countryIdField: 'country_id', cityIdField: 'city_id' },
 }
 
-function processItem(
+const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
+
+async function processItem(
   item: Record<string, unknown>,
   contentType: string,
   contentName: string,
   rules: AutomationRule[],
-): ProposedChange[] {
+  supabase: ReturnType<typeof createClient>,
+  reverseGeocodeCounter: { count: number; limit: number },
+): Promise<ProposedChange[]> {
   const changes: ProposedChange[] = []
   const contentId = String(item.id)
   const geoConfig = GEO_FIELDS[contentType]
@@ -181,10 +189,11 @@ function processItem(
     if (rule.content_type !== contentType) continue
     const cfg = rule.rule_config as { source?: string }
 
+    // ── geo_match: link country/city text → IDs ──────────────────────────
     if (rule.rule_type === 'geo_match') {
       if (cfg.source === 'country' && geoConfig.countryTextField) {
         const existingCountryId = item[geoConfig.countryIdField]
-        if (existingCountryId) continue // Already linked
+        if (existingCountryId) continue
 
         const countryText = item[geoConfig.countryTextField] as string | null
         const resolved = resolveCountry(countryText)
@@ -242,7 +251,6 @@ function processItem(
         }
       }
 
-      // For personalities: try nationality → country_id
       if (cfg.source === 'nationality' && contentType === 'personalities') {
         const existingCountryId = item.country_id
         if (existingCountryId) continue
@@ -264,6 +272,128 @@ function processItem(
             rule_id: rule.id,
           })
         }
+      }
+    }
+
+    // ── geo_text_validate: country text must match linked country_id ─────
+    if (rule.rule_type === 'geo_text_validate' && geoConfig.countryTextField) {
+      const existingCountryId = item[geoConfig.countryIdField] as string | null
+      const countryText = item[geoConfig.countryTextField] as string | null
+
+      if (existingCountryId && countryText?.trim()) {
+        const linkedCountry = countryById.get(existingCountryId)
+        if (linkedCountry) {
+          const normalizedText = countryText.trim().toLowerCase()
+          const nameMatch = normalizedText === linkedCountry.name.toLowerCase()
+          const codeMatch = linkedCountry.code && normalizedText === linkedCountry.code.toLowerCase()
+
+          if (!nameMatch && !codeMatch) {
+            const resolved = resolveCountry(countryText)
+            if (!resolved || resolved.id !== existingCountryId) {
+              changes.push({
+                content_type: contentType,
+                content_id: contentId,
+                content_name: contentName,
+                field_name: geoConfig.countryTextField,
+                old_value: countryText,
+                new_value: linkedCountry.name,
+                change_type: 'correct',
+                confidence: 0.88,
+                reasoning: `Country text "${countryText}" doesn't match linked country "${linkedCountry.name}" (${linkedCountry.code}). Correcting.`,
+                rule_id: rule.id,
+              })
+            }
+          }
+        }
+      }
+    }
+
+    // ── geo_reverse_fill: reverse geocode lat/lng → state + postal_code ──
+    if (rule.rule_type === 'geo_reverse_fill') {
+      const lat = item.latitude as number | null
+      const lng = item.longitude as number | null
+      if (!lat || !lng) continue
+
+      const needsState = geoConfig.stateField && !item[geoConfig.stateField]
+      const needsPostal = geoConfig.postalCodeField && !item[geoConfig.postalCodeField]
+      if (!needsState && !needsPostal) continue
+
+      if (reverseGeocodeCounter.count >= reverseGeocodeCounter.limit) continue
+      reverseGeocodeCounter.count++
+      if (reverseGeocodeCounter.count > 1) await delay(200)
+
+      try {
+        const res = await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&limit=1`)
+        if (res.ok) {
+          const data = await res.json()
+          const props = data.features?.[0]?.properties
+          if (props) {
+            if (needsState && props.state) {
+              changes.push({
+                content_type: contentType,
+                content_id: contentId,
+                content_name: contentName,
+                field_name: geoConfig.stateField!,
+                old_value: null,
+                new_value: props.state,
+                change_type: 'enrich',
+                confidence: 0.88,
+                reasoning: `Reverse geocoded (${lat}, ${lng}) → state: "${props.state}"`,
+                rule_id: rule.id,
+              })
+            }
+            if (needsPostal && props.postcode) {
+              changes.push({
+                content_type: contentType,
+                content_id: contentId,
+                content_name: contentName,
+                field_name: geoConfig.postalCodeField!,
+                old_value: null,
+                new_value: props.postcode,
+                change_type: 'enrich',
+                confidence: 0.88,
+                reasoning: `Reverse geocoded (${lat}, ${lng}) → postal_code: "${props.postcode}"`,
+                rule_id: rule.id,
+              })
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`[${MODULE_SLUG}] Reverse geocode failed for ${contentId}: ${e}`)
+      }
+    }
+
+    // ── geo_village_assign: assign queer village from coordinates ────────
+    if (rule.rule_type === 'geo_village_assign') {
+      const villageField = geoConfig.villageIdField
+      if (!villageField || item[villageField]) continue
+
+      const lat = item.latitude as number | null
+      const lng = item.longitude as number | null
+      if (!lat || !lng) continue
+
+      try {
+        const { data: villages } = await supabase.rpc('find_queer_village', {
+          p_lat: lat,
+          p_lng: lng,
+          p_city_id: (item[geoConfig.cityIdField] as string | null) ?? null,
+        })
+        if (villages?.[0]?.village_id) {
+          changes.push({
+            content_type: contentType,
+            content_id: contentId,
+            content_name: contentName,
+            field_name: villageField,
+            old_value: null,
+            new_value: villages[0].village_id,
+            change_type: 'enrich',
+            confidence: 0.90,
+            reasoning: `Assigned queer village "${villages[0].village_name}" (${villages[0].match_type}) at (${lat}, ${lng})`,
+            rule_id: rule.id,
+          })
+        }
+      } catch (e) {
+        console.warn(`[${MODULE_SLUG}] Village assign failed for ${contentId}: ${e}`)
       }
     }
   }
@@ -317,9 +447,16 @@ Deno.serve(async (req) => {
         .select(ctConfig.selectFields)
         .limit(config.module.batch_size)
 
-      // Prioritize unlinked items
+      // Fetch items missing any geo data (IDs, state, postal_code, village)
       const geoConfig = GEO_FIELDS[contentType]
-      query = query.or(`${geoConfig.countryIdField}.is.null,${geoConfig.cityIdField}.is.null`)
+      const filterParts = [
+        `${geoConfig.countryIdField}.is.null`,
+        `${geoConfig.cityIdField}.is.null`,
+      ]
+      if (geoConfig.stateField) filterParts.push(`${geoConfig.stateField}.is.null`)
+      if (geoConfig.postalCodeField) filterParts.push(`${geoConfig.postalCodeField}.is.null`)
+      if (geoConfig.villageIdField) filterParts.push(`${geoConfig.villageIdField}.is.null`)
+      query = query.or(filterParts.join(','))
 
       const { data: items, error: fetchErr } = await query
 
@@ -329,11 +466,13 @@ Deno.serve(async (req) => {
         continue
       }
 
+      const reverseGeocodeCounter = { count: 0, limit: 50 }
+
       for (const item of items || []) {
         totalScanned++
         try {
           const name = getContentName(item as Record<string, unknown>, ctConfig)
-          const itemChanges = processItem(item as Record<string, unknown>, contentType, name, rulesForType)
+          const itemChanges = await processItem(item as Record<string, unknown>, contentType, name, rulesForType, supabase, reverseGeocodeCounter)
           allChanges.push(...itemChanges)
         } catch (e) {
           console.error(`[${MODULE_SLUG}] Error processing ${contentType}/${item.id}: ${e}`)

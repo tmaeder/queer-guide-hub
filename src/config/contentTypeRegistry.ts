@@ -77,24 +77,34 @@ const venueFields: FieldConfig[] = [
       longitude: 'longitude',
       city_id: 'city_id',
       country_id: 'country_id',
+      queer_village_id: 'queer_village_id',
     },
   },
   {
     name: 'city',
     label: 'City',
-    type: 'text',
+    type: 'city_autocomplete',
     required: true,
     group: 'location',
     filterable: true,
+    relatedFields: {
+      city_id: 'city_id',
+      country_id: 'country_id',
+    },
   },
   { name: 'state', label: 'State/Province', type: 'text', group: 'location' },
   {
     name: 'country',
     label: 'Country',
-    type: 'text',
+    type: 'country_autocomplete',
     required: true,
     group: 'location',
     filterable: true,
+    relatedFields: {
+      country_id: 'country_id',
+      city: 'city',
+      city_id: 'city_id',
+    },
   },
   { name: 'postal_code', label: 'Postal Code', type: 'text', group: 'location' },
   {
@@ -168,6 +178,13 @@ const venueFields: FieldConfig[] = [
   { name: 'data_source', label: 'Data Source', type: 'text', group: 'external', readOnly: true },
   { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+  {
+    name: 'queer_village_id',
+    label: 'Queer Village',
+    type: 'text',
+    group: 'external',
+    readOnly: true,
+  },
 ];
 
 // ── Event Fields ───────────────────────────────────────────────────
@@ -245,24 +262,34 @@ const eventFields: FieldConfig[] = [
       longitude: 'longitude',
       city_id: 'city_id',
       country_id: 'country_id',
+      queer_village_id: 'queer_village_id',
     },
   },
   {
     name: 'city',
     label: 'City',
-    type: 'text',
+    type: 'city_autocomplete',
     required: true,
     group: 'location',
     filterable: true,
+    relatedFields: {
+      city_id: 'city_id',
+      country_id: 'country_id',
+    },
   },
   { name: 'state', label: 'State', type: 'text', group: 'location' },
   {
     name: 'country',
     label: 'Country',
-    type: 'text',
+    type: 'country_autocomplete',
     required: true,
     group: 'location',
     filterable: true,
+    relatedFields: {
+      country_id: 'country_id',
+      city: 'city',
+      city_id: 'city_id',
+    },
   },
   {
     name: 'latitude',
@@ -305,6 +332,13 @@ const eventFields: FieldConfig[] = [
   { name: 'venue_id', label: 'Venue Reference', type: 'text', group: 'external', hidden: true },
   { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+  {
+    name: 'queer_village_id',
+    label: 'Queer Village',
+    type: 'text',
+    group: 'external',
+    readOnly: true,
+  },
 ];
 
 // ── Personality Fields ─────────────────────────────────────────────
@@ -787,10 +821,32 @@ const hotelFields: FieldConfig[] = [
       longitude: 'longitude',
       city_id: 'city_id',
       country_id: 'country_id',
+      queer_village_id: 'queer_village_id',
     },
   },
-  { name: 'city', label: 'City', type: 'text', group: 'location', filterable: true },
-  { name: 'country', label: 'Country', type: 'text', group: 'location', filterable: true },
+  {
+    name: 'city',
+    label: 'City',
+    type: 'city_autocomplete',
+    group: 'location',
+    filterable: true,
+    relatedFields: {
+      city_id: 'city_id',
+      country_id: 'country_id',
+    },
+  },
+  {
+    name: 'country',
+    label: 'Country',
+    type: 'country_autocomplete',
+    group: 'location',
+    filterable: true,
+    relatedFields: {
+      country_id: 'country_id',
+      city: 'city',
+      city_id: 'city_id',
+    },
+  },
   {
     name: 'latitude',
     label: 'Latitude',
@@ -837,6 +893,13 @@ const hotelFields: FieldConfig[] = [
   { name: 'tags', label: 'Tags', type: 'tags', group: 'settings' },
   { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+  {
+    name: 'queer_village_id',
+    label: 'Queer Village',
+    type: 'text',
+    group: 'external',
+    readOnly: true,
+  },
 ];
 
 // ── Queer Village Fields ──────────────────────────────────────────
@@ -880,7 +943,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     label: { singular: 'Venue', plural: 'Venues' },
     color: '#8b5cf6',
     fields: venueFields,
-    defaults: { country: 'US', featured: false, verified: false },
+    defaults: { featured: false, verified: false },
     validate: validateVenue,
     fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings', 'external'],
   },
@@ -895,7 +958,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     label: { singular: 'Event', plural: 'Events' },
     color: '#ec4899',
     fields: eventFields,
-    defaults: { country: 'US', featured: false, is_free: false, is_public: true, status: 'active' },
+    defaults: { featured: false, is_free: false, is_public: true, status: 'active' },
     validate: validateEvent,
     fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings'],
   },

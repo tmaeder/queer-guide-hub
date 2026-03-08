@@ -465,6 +465,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
                         error={state.errors[field.name]}
                         disabled={state.isSaving}
                         setFields={setFields}
+                        allValues={state.data}
                       />
                     </Box>
                   </Box>
