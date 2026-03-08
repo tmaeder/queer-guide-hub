@@ -20,10 +20,7 @@ const STALE_TIME = 15 * 60 * 1000; // 15 minutes
 
 export function useOptimizedCountries(filters?: DirectoryFilters) {
   const fetchCountries = async (): Promise<Country[]> => {
-    let query = supabase
-      .from('countries')
-      .select('*')
-      .order('name', { ascending: true });
+    let query = supabase.from('countries').select('*').order('name', { ascending: true });
 
     if (filters?.search) {
       query = query.or(`name.ilike.%${filters.search}%,capital.ilike.%${filters.search}%`);
@@ -35,12 +32,10 @@ export function useOptimizedCountries(filters?: DirectoryFilters) {
         .lte('population', filters.populationRange[1]);
     }
 
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
+    query = query.limit(filters?.limit || 200);
 
     if (filters?.offset) {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1);
+      query = query.range(filters.offset, filters.offset + (filters.limit || 200) - 1);
     }
 
     const { data, error } = await query;
@@ -54,7 +49,7 @@ export function useOptimizedCountries(filters?: DirectoryFilters) {
     isLoading,
     error,
     refetch,
-    isFetching
+    isFetching,
   } = useQuery({
     queryKey: [COUNTRIES_QUERY_KEY, filters],
     queryFn: fetchCountries,
@@ -75,10 +70,7 @@ export function useOptimizedCountries(filters?: DirectoryFilters) {
 
 export function useOptimizedCities(filters?: DirectoryFilters & { countryId?: string }) {
   const fetchCities = async (): Promise<City[]> => {
-    let query = supabase
-      .from('cities')
-      .select('*')
-      .order('population', { ascending: false });
+    let query = supabase.from('cities').select('*').order('population', { ascending: false });
 
     if (filters?.countryId) {
       query = query.eq('country_id', filters.countryId);
@@ -94,9 +86,7 @@ export function useOptimizedCities(filters?: DirectoryFilters & { countryId?: st
         .lte('population', filters.populationRange[1]);
     }
 
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
+    query = query.limit(filters?.limit || 100);
 
     if (filters?.offset) {
       query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1);
@@ -113,7 +103,7 @@ export function useOptimizedCities(filters?: DirectoryFilters & { countryId?: st
     isLoading,
     error,
     refetch,
-    isFetching
+    isFetching,
   } = useQuery({
     queryKey: [CITIES_QUERY_KEY, filters],
     queryFn: fetchCities,
@@ -148,7 +138,7 @@ export function useOptimizedCountry(countryId: string) {
     data: country,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: [COUNTRIES_QUERY_KEY, countryId],
     queryFn: fetchCountry,
@@ -182,7 +172,7 @@ export function useOptimizedCity(cityId: string) {
     data: city,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: [CITIES_QUERY_KEY, cityId],
     queryFn: fetchCity,

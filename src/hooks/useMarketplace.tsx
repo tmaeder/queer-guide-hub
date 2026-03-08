@@ -36,12 +36,14 @@ export function useMarketplace() {
       setError(null);
       let query = supabase
         .from('marketplace_listings')
-        .select(`
+        .select(
+          `
           *,
           marketplace_reviews(rating),
           marketplace_favorites(id),
           venues(name, address, city)
-        `)
+        `,
+        )
         .eq('status', 'active')
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
@@ -63,9 +65,7 @@ export function useMarketplace() {
       }
 
       if (filters?.priceRange) {
-        query = query
-          .gte('price', filters.priceRange.min)
-          .lte('price', filters.priceRange.max);
+        query = query.gte('price', filters.priceRange.min).lte('price', filters.priceRange.max);
       }
 
       if (filters?.tags && filters.tags.length > 0) {
@@ -73,8 +73,12 @@ export function useMarketplace() {
       }
 
       if (filters?.search) {
-        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,business_name.ilike.%${filters.search}%`);
+        query = query.or(
+          `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,business_name.ilike.%${filters.search}%`,
+        );
       }
+
+      query = query.limit(100);
 
       // Fetch listings and broken IDs in parallel
       const [listingsResult, brokenResult] = await Promise.all([
@@ -84,13 +88,11 @@ export function useMarketplace() {
 
       if (listingsResult.error) throw listingsResult.error;
 
-      const brokenIds = new Set<string>(
-        (brokenResult.data ?? []).map((id: string) => id)
-      );
+      const brokenIds = new Set<string>((brokenResult.data ?? []).map((id: string) => id));
 
       // Filter out listings with broken website links
       const filtered = (listingsResult.data || []).filter(
-        (l: MarketplaceListing) => !brokenIds.has(l.id)
+        (l: MarketplaceListing) => !brokenIds.has(l.id),
       );
       setListings(filtered);
     } catch (err) {
@@ -111,9 +113,9 @@ export function useMarketplace() {
       if (error) throw error;
       return { data, error: null };
     } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Failed to create listing' 
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : 'Failed to create listing',
       };
     }
   };
@@ -148,17 +150,17 @@ export function useMarketplace() {
         return { favorited: true, error: null };
       }
     } catch (err) {
-      return { 
+      return {
         favorited: false,
-        error: err instanceof Error ? err.message : 'Failed to toggle favorite' 
+        error: err instanceof Error ? err.message : 'Failed to toggle favorite',
       };
     }
   };
 
   const incrementViews = async (listingId: string) => {
     try {
-      const { error } = await supabase.rpc('increment_listing_views', { 
-        listing_id: listingId 
+      const { error } = await supabase.rpc('increment_listing_views', {
+        listing_id: listingId,
       });
       if (error) console.warn('Failed to increment views:', error);
     } catch (err) {

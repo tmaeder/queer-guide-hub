@@ -38,12 +38,10 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
         .lte('population', filters.populationRange[1]);
     }
 
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
+    query = query.limit(filters?.limit || 200);
 
     if (filters?.offset) {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1);
+      query = query.range(filters.offset, filters.offset + (filters.limit || 200) - 1);
     }
 
     const { data, error } = await query;
@@ -94,12 +92,10 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
         .lte('population', filters.populationRange[1]);
     }
 
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
+    query = query.limit(filters?.limit || 100);
 
     if (filters?.offset) {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1);
+      query = query.range(filters.offset, filters.offset + (filters.limit || 100) - 1);
     }
 
     const { data, error } = await query;

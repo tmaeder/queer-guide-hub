@@ -125,34 +125,18 @@ export const useMessaging = () => {
       try {
         const { data, error } = await supabase
           .from('messages')
-          .select('*')
+          .select(
+            '*, sender:profiles!messages_sender_id_profiles_user_id_fkey(display_name, avatar_url)',
+          )
           .eq('conversation_id', conversationId)
           .order('created_at', { ascending: true });
 
         if (error) throw error;
 
-        // Enrich with sender mini-profiles from public view
-        const senderIds = Array.from(
-          new Set((data || []).map((m: any) => m.sender_id).filter(Boolean)),
-        );
-        const profilesMap: Record<
-          string,
-          { display_name: string | null; avatar_url: string | null }
-        > = {};
-        if (senderIds.length > 0) {
-          const { data: profs } = await supabase
-            .from('profiles')
-            .select('user_id, display_name, avatar_url')
-            .in('user_id', senderIds);
-          (profs || []).forEach((p: any) => {
-            profilesMap[p.user_id] = { display_name: p.display_name, avatar_url: p.avatar_url };
-          });
-        }
-
         const messagesWithStatus =
           (data as any)?.map((msg: any) => ({
             ...msg,
-            sender: profilesMap[msg.sender_id] || null,
+            sender: msg.sender || null,
             status: msg.sender_id === user?.id ? 'sent' : 'delivered',
           })) || [];
 

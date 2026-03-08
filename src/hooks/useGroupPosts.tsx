@@ -60,59 +60,53 @@ export const useGroupPosts = (groupId: string) => {
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['group-posts', groupId],
     queryFn: async () => {
-      // Simple query without complex joins
+      // Fetch posts with author profiles in a single query
       const { data, error } = await supabase
         .from('group_posts')
-        .select('*')
+        .select('*, profiles!group_posts_user_id_fkey(display_name, avatar_url)')
         .eq('group_id', groupId)
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Get user profiles separately
-      const userIds = [...new Set(data?.map(post => post.user_id) || [])];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .in('user_id', userIds);
+      // Fetch user's likes and votes in parallel
+      const postIds = data?.map((post) => post.id) || [];
+      const [likesResult, votesResult] = await Promise.all([
+        supabase
+          .from('group_post_likes')
+          .select('post_id')
+          .in('post_id', postIds)
+          .eq('user_id', user?.id || ''),
+        supabase
+          .from('group_poll_votes')
+          .select('post_id, option_index')
+          .in('post_id', postIds)
+          .eq('user_id', user?.id || ''),
+      ]);
 
-      // Get user likes
-      const postIds = data?.map(post => post.id) || [];
-      const { data: likes } = await supabase
-        .from('group_post_likes')
-        .select('post_id, user_id')
-        .in('post_id', postIds)
-        .eq('user_id', user?.id || '');
+      const likes = likesResult.data;
+      const votes = votesResult.data;
 
-      // Get user votes
-      const { data: votes } = await supabase
-        .from('group_poll_votes')
-        .select('post_id, user_id, option_index')
-        .in('post_id', postIds)
-        .eq('user_id', user?.id || '');
-
-      // Transform data
-      return (data || []).map(post => {
-        const userProfile = profiles?.find(p => p.user_id === post.user_id);
-        const userLiked = likes?.some(like => like.post_id === post.id);
-        const userVote = votes?.find(vote => vote.post_id === post.id);
-
+      return (data || []).map((post) => {
+        const profile = (post as any).profiles;
         return {
           ...post,
           post_type: post.post_type as 'text' | 'announcement' | 'poll',
-          profiles: userProfile ? {
-            display_name: userProfile.display_name || 'Unknown User',
-            avatar_url: userProfile.avatar_url || ''
-          } : { display_name: 'Unknown User', avatar_url: '' },
-          user_liked: userLiked || false,
-          user_vote: userVote?.option_index || null,
+          profiles: profile
+            ? {
+                display_name: profile.display_name || 'Unknown User',
+                avatar_url: profile.avatar_url || '',
+              }
+            : { display_name: 'Unknown User', avatar_url: '' },
+          user_liked: likes?.some((like) => like.post_id === post.id) || false,
+          user_vote: votes?.find((vote) => vote.post_id === post.id)?.option_index || null,
           poll_data: post.poll_data as any,
-          mentions: (post.mentions as any) || []
+          mentions: (post.mentions as any) || [],
         };
       });
     },
-    enabled: !!user && !!groupId
+    enabled: !!user && !!groupId,
   });
 
   // Fetch group members for @mentions and member list
@@ -121,44 +115,42 @@ export const useGroupPosts = (groupId: string) => {
     queryFn: async () => {
       const { data: memberships, error } = await supabase
         .from('group_memberships')
-        .select('user_id, role, joined_at')
+        .select(
+          'user_id, role, joined_at, profiles!group_memberships_user_id_fkey(display_name, avatar_url)',
+        )
         .eq('group_id', groupId)
         .order('role', { ascending: true })
         .order('joined_at', { ascending: true });
 
       if (error) throw error;
 
-      const userIds = memberships?.map(m => m.user_id) || [];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .in('user_id', userIds);
-
-      return memberships?.map(membership => {
-        const profile = profiles?.find(p => p.user_id === membership.user_id);
-        return {
-          user_id: membership.user_id,
-          role: membership.role,
-          joined_at: membership.joined_at,
-          profiles: {
-            display_name: profile?.display_name || 'Unknown User',
-            avatar_url: profile?.avatar_url || '',
-            social_links: {}
-          }
-        };
-      }) || [];
+      return (
+        memberships?.map((membership) => {
+          const profile = (membership as any).profiles;
+          return {
+            user_id: membership.user_id,
+            role: membership.role,
+            joined_at: membership.joined_at,
+            profiles: {
+              display_name: profile?.display_name || 'Unknown User',
+              avatar_url: profile?.avatar_url || '',
+              social_links: {},
+            },
+          };
+        }) || []
+      );
     },
-    enabled: !!user && !!groupId
+    enabled: !!user && !!groupId,
   });
 
   // Create post mutation
   const createPostMutation = useMutation({
-    mutationFn: async ({ 
-      content, 
-      postType = 'text', 
-      isPinned = false, 
+    mutationFn: async ({
+      content,
+      postType = 'text',
+      isPinned = false,
       pollData = null,
-      mentions = []
+      mentions = [],
     }: {
       content: string;
       postType?: 'text' | 'announcement' | 'poll';
@@ -177,7 +169,7 @@ export const useGroupPosts = (groupId: string) => {
           post_type: postType,
           is_pinned: isPinned,
           poll_data: pollData,
-          mentions: mentions
+          mentions: mentions,
         })
         .select()
         .single();
@@ -188,17 +180,17 @@ export const useGroupPosts = (groupId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
       toast({
-        title: "Post created",
-        description: "Your post has been shared with the group."
+        title: 'Post created',
+        description: 'Your post has been shared with the group.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Failed to create post",
+        title: 'Failed to create post',
         description: error.message,
-        variant: "destructive"
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Like post mutation
@@ -206,18 +198,16 @@ export const useGroupPosts = (groupId: string) => {
     mutationFn: async (postId: string) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { error } = await supabase
-        .from('group_post_likes')
-        .insert({
-          post_id: postId,
-          user_id: user.id
-        });
+      const { error } = await supabase.from('group_post_likes').insert({
+        post_id: postId,
+        user_id: user.id,
+      });
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
-    }
+    },
   });
 
   // Unlike post mutation
@@ -235,7 +225,7 @@ export const useGroupPosts = (groupId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
-    }
+    },
   });
 
   // Vote on poll mutation
@@ -243,19 +233,17 @@ export const useGroupPosts = (groupId: string) => {
     mutationFn: async ({ postId, optionIndex }: { postId: string; optionIndex: number }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { error } = await supabase
-        .from('group_poll_votes')
-        .upsert({
-          post_id: postId,
-          user_id: user.id,
-          option_index: optionIndex
-        });
+      const { error } = await supabase.from('group_poll_votes').upsert({
+        post_id: postId,
+        user_id: user.id,
+        option_index: optionIndex,
+      });
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
-    }
+    },
   });
 
   // Pin/unpin post mutation
@@ -271,10 +259,10 @@ export const useGroupPosts = (groupId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
       toast({
-        title: "Post updated",
-        description: "Post pin status has been updated."
+        title: 'Post updated',
+        description: 'Post pin status has been updated.',
       });
-    }
+    },
   });
 
   return {
@@ -289,6 +277,6 @@ export const useGroupPosts = (groupId: string) => {
     voteOnPoll: voteOnPollMutation.mutate,
     isVoting: voteOnPollMutation.isPending,
     togglePin: togglePinMutation.mutate,
-    isTogglingPin: togglePinMutation.isPending
+    isTogglingPin: togglePinMutation.isPending,
   };
 };
