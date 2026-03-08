@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { useUserRoles } from '@/hooks/useUserRoles';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -14,9 +16,11 @@ import {
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
-import { ArrowLeft, Eye, MapPin } from 'lucide-react';
+import { ArrowLeft, Eye, ExternalLink, MapPin, Shield } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { UserStatsCards } from '@/components/admin/users/UserStatsCards';
+import { UserDetailSheet } from '@/components/admin/users/UserDetailSheet';
 
 interface UserRow {
   id: string;
@@ -24,20 +28,33 @@ interface UserRow {
   display_name: string | null;
   first_name: string | null;
   last_name: string | null;
-  email: string | null;
+  avatar_url: string | null;
   location: string | null;
   user_mode: string | null;
   is_online: boolean | null;
+  moderation_status: string;
   profile_completion_percentage: number | null;
+  pronouns: string | null;
   created_at: string;
   last_seen_at: string | null;
+  _roles?: string[];
 }
+
+const ROLE_COLORS: Record<string, string> = {
+  admin: '#ef4444',
+  moderator: '#f97316',
+  editor: '#3b82f6',
+  contributor: '#8b5cf6',
+};
 
 const columnHelper = createColumnHelper<UserRow>();
 
 export default function AdminUsers() {
   const navigate = useNavigate();
   const { isAdmin } = useAdminRoles();
+  const { data: roleMap } = useUserRoles();
+  const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+  const [tableKey, setTableKey] = useState(0);
 
   const columns = useMemo(
     () => [
@@ -47,30 +64,93 @@ export default function AdminUsers() {
           const row = info.row.original;
           const name = info.getValue() || row.first_name || row.last_name || 'Anonymous';
           return (
-            <Box>
-              <Box sx={{ fontWeight: 500 }}>{name}</Box>
-              {row.email && (
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                  {row.email}
-                </Typography>
-              )}
-              {row.user_mode && (
-                <Typography variant="caption" color="text.secondary">
-                  {row.user_mode}
-                </Typography>
-              )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Avatar style={{ width: 32, height: 32, flexShrink: 0 }}>
+                <AvatarImage src={row.avatar_url ?? undefined} alt={name} />
+                <AvatarFallback style={{ fontSize: '0.75rem' }}>
+                  {name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <Box sx={{ minWidth: 0 }}>
+                <Box
+                  sx={{
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {name}
+                </Box>
+                {row.pronouns && (
+                  <Typography variant="caption" color="text.secondary">
+                    {row.pronouns}
+                  </Typography>
+                )}
+              </Box>
             </Box>
           );
         },
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
+      columnHelper.display({
+        id: 'role',
+        header: 'Role',
+        cell: (info) => {
+          const roles = info.row.original._roles;
+          if (!roles || roles.length === 0)
+            return (
+              <Typography variant="caption" color="text.secondary">
+                user
+              </Typography>
+            );
+          const primary = roles.includes('admin') ? 'admin' : roles[0];
+          return (
+            <Badge
+              variant="outline"
+              style={{
+                borderColor: ROLE_COLORS[primary] ?? '#888',
+                color: ROLE_COLORS[primary] ?? '#888',
+                fontSize: '0.7rem',
+              }}
+            >
+              <Shield style={{ height: 10, width: 10, marginRight: 3 }} />
+              {primary}
+            </Badge>
+          );
+        },
+        meta: { hideable: true } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('is_online', {
-        header: 'Status',
+        header: 'Online',
         cell: (info) => (
-          <Badge variant={info.getValue() ? 'default' : 'secondary'}>
-            {info.getValue() ? 'Active' : 'Inactive'}
-          </Badge>
+          <Box
+            sx={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              bgcolor: info.getValue() ? '#22c55e' : '#d1d5db',
+            }}
+            title={info.getValue() ? 'Online' : 'Offline'}
+          />
         ),
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('moderation_status' as any, {
+        id: 'moderation_status',
+        header: 'Status',
+        cell: (info) => {
+          const val = (info.getValue() as string) ?? 'approved';
+          if (val === 'approved') return null;
+          return (
+            <Badge
+              variant={val === 'banned' ? 'destructive' : 'secondary'}
+              style={{ fontSize: '0.7rem' }}
+            >
+              {val}
+            </Badge>
+          );
+        },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('location', {
@@ -79,8 +159,17 @@ export default function AdminUsers() {
           const val = info.getValue();
           return val ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <MapPin style={{ height: 12, width: 12 }} />
-              {val}
+              <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} />
+              <span
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: 150,
+                }}
+              >
+                {val}
+              </span>
             </Box>
           ) : (
             '-'
@@ -92,7 +181,12 @@ export default function AdminUsers() {
         header: 'Mode',
         cell: (info) =>
           info.getValue() ? <Badge variant="outline">{info.getValue()}</Badge> : '-',
-        meta: { serverSortable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          groupable: true,
+          hideable: true,
+          defaultVisible: false,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('profile_completion_percentage', {
         header: 'Profile %',
@@ -133,19 +227,59 @@ export default function AdminUsers() {
     () => ({
       tableName: 'profiles',
       select:
-        'id,user_id,display_name,first_name,last_name,email,location,user_mode,is_online,profile_completion_percentage,created_at,last_seen_at',
+        'id,user_id,display_name,first_name,last_name,avatar_url,location,user_mode,is_online,moderation_status,profile_completion_percentage,pronouns,created_at,last_seen_at',
       columns,
       defaultSort: { column: 'created_at', direction: 'desc' as const },
       defaultPageSize: 25,
-      enableSelection: false,
+      enableSelection: true,
       enableSearch: true,
-      searchColumns: ['display_name', 'email', 'first_name', 'last_name'],
-      entityFilters: [{ key: 'is_online', label: 'Online', type: 'boolean', column: 'is_online' }],
+      searchColumns: ['display_name', 'first_name', 'last_name'],
+      entityFilters: [
+        { key: 'is_online', label: 'Online', type: 'boolean', column: 'is_online' },
+        {
+          key: 'moderation_status',
+          label: 'Status',
+          type: 'select',
+          column: 'moderation_status',
+          options: [
+            { value: 'approved', label: 'Approved' },
+            { value: 'suspended', label: 'Suspended' },
+            { value: 'banned', label: 'Banned' },
+          ],
+        },
+        {
+          key: 'user_mode',
+          label: 'Mode',
+          type: 'select',
+          column: 'user_mode',
+          options: 'dynamic',
+          dynamicSource: { table: 'profiles', column: 'user_mode' },
+        },
+      ],
+      bulkEditFields: [
+        {
+          key: 'moderation_status',
+          label: 'Moderation Status',
+          type: 'select',
+          column: 'moderation_status',
+          options: [
+            { value: 'approved', label: 'Approved' },
+            { value: 'suspended', label: 'Suspended' },
+            { value: 'banned', label: 'Banned' },
+          ],
+        },
+      ],
       rowActions: [
         {
-          key: 'view',
-          label: 'View Profile',
+          key: 'details',
+          label: 'View Details',
           icon: Eye,
+          onClick: (row) => setSelectedUser(row),
+        },
+        {
+          key: 'profile',
+          label: 'View Public Profile',
+          icon: ExternalLink,
           onClick: (row) => navigate(`/profile/${row.user_id}`),
         },
       ],
@@ -154,7 +288,6 @@ export default function AdminUsers() {
           onExport={async () => {
             const cols: ExportColumnDef<any>[] = [
               { header: 'Display Name', accessor: (r) => r.display_name },
-              { header: 'Email', accessor: (r) => r.email },
               { header: 'Location', accessor: (r) => r.location },
               { header: 'User Mode', accessor: (r) => r.user_mode },
               { header: 'Profile %', accessor: (r) => r.profile_completion_percentage },
@@ -194,7 +327,18 @@ export default function AdminUsers() {
         </div>
       </Box>
 
+      <UserStatsCards />
+
       <AdminDataTable config={tableConfig} />
+
+      <UserDetailSheet
+        user={selectedUser}
+        open={!!selectedUser}
+        onOpenChange={(open) => {
+          if (!open) setSelectedUser(null);
+        }}
+        onUserUpdated={() => setTableKey((k) => k + 1)}
+      />
     </Box>
   );
 }
