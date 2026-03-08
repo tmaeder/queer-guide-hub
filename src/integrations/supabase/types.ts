@@ -7648,7 +7648,6 @@ export type Database = {
         Row: {
           category: string | null;
           category_id: string | null;
-          color: string | null;
           created_at: string;
           deprecated_at: string | null;
           deprecation_reason: string | null;
@@ -7666,7 +7665,6 @@ export type Database = {
         Insert: {
           category?: string | null;
           category_id?: string | null;
-          color?: string | null;
           created_at?: string;
           deprecated_at?: string | null;
           deprecation_reason?: string | null;
@@ -7684,7 +7682,6 @@ export type Database = {
         Update: {
           category?: string | null;
           category_id?: string | null;
-          color?: string | null;
           created_at?: string;
           deprecated_at?: string | null;
           deprecation_reason?: string | null;
@@ -9023,7 +9020,6 @@ export type Database = {
           categories: Json | null;
           category: string | null;
           category_id: string | null;
-          color: string | null;
           created_at: string | null;
           deprecated_at: string | null;
           deprecation_reason: string | null;
@@ -9042,7 +9038,6 @@ export type Database = {
           categories?: never;
           category?: string | null;
           category_id?: string | null;
-          color?: string | null;
           created_at?: string | null;
           deprecated_at?: string | null;
           deprecation_reason?: string | null;
@@ -9061,7 +9056,6 @@ export type Database = {
           categories?: never;
           category?: string | null;
           category_id?: string | null;
-          color?: string | null;
           created_at?: string | null;
           deprecated_at?: string | null;
           deprecation_reason?: string | null;

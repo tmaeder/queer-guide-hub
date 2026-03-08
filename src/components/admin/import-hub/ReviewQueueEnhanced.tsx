@@ -38,6 +38,7 @@ import {
   type StagingFilters,
   type StagingSort,
 } from '@/hooks/useImportHubQueries';
+import { supabase } from '@/integrations/supabase/client';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import { SideBySideComparison } from './SideBySideComparison';
 import type { StagingItem } from '@/hooks/useImportHub';
@@ -160,11 +161,23 @@ export function ReviewQueueEnhanced() {
     });
   };
 
-  const toggleSelectAll = () => {
-    if (selectedIds.size === items.length) {
+  const toggleSelectAll = async () => {
+    if (selectedIds.size > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(items.map((i) => i.id)));
+      // Fetch ALL matching IDs across pages
+      let query = supabase
+        .from('ingestion_staging' as any)
+        .select('id')
+        .eq('review_status', 'pending_review')
+        .eq('disposition', 'pending')
+        .limit(5000);
+
+      if (filters.target_table) query = query.eq('target_table', filters.target_table);
+      if (filters.dedup_status) query = query.eq('dedup_status', filters.dedup_status);
+
+      const { data } = await query;
+      setSelectedIds(new Set((data || []).map((i: any) => i.id)));
     }
   };
 
@@ -366,12 +379,14 @@ export function ReviewQueueEnhanced() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1 }}>
             <input
               type="checkbox"
-              checked={selectedIds.size === items.length && items.length > 0}
+              checked={selectedIds.size > 0 && selectedIds.size >= total}
               onChange={toggleSelectAll}
               style={{ width: 16, height: 16, cursor: 'pointer' }}
             />
             <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-              Select all ({items.length} of {total})
+              {selectedIds.size > 0
+                ? `${selectedIds.size} selected (all pages)`
+                : `Select all (${total})`}
             </Typography>
           </Box>
 

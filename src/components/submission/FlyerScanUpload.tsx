@@ -1,5 +1,6 @@
 /**
  * FlyerScanUpload — Camera/upload UI for flyer scanning.
+ * Supports multiple files and document formats (images, PDFs, DOCX).
  * Mobile: opens camera directly. Desktop: file picker with drag-and-drop.
  */
 
@@ -7,23 +8,32 @@ import { useRef, useState, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Camera, Upload, AlertCircle, RotateCcw } from 'lucide-react';
+import { Camera, Upload, AlertCircle, RotateCcw, FileText } from 'lucide-react';
+import { isAcceptedFile } from '@/lib/fileExtractors';
 import type { ScanState } from '@/hooks/useFlyerScan';
+
+const ACCEPTED_TYPES =
+  'image/*,.pdf,.docx,.doc,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain';
 
 interface FlyerScanUploadProps {
   scanState: ScanState;
   error: string | null;
-  onFileSelected: (file: File) => void;
+  currentFileIndex: number;
+  totalFiles: number;
+  onFilesSelected: (files: File[]) => void;
   onReset: () => void;
-  children?: React.ReactNode; // FlyerScanResults rendered here when state === 'results'
+  children?: React.ReactNode;
 }
 
 export function FlyerScanUpload({
   scanState,
   error,
-  onFileSelected,
+  currentFileIndex,
+  totalFiles,
+  onFilesSelected,
   onReset,
   children,
 }: FlyerScanUploadProps) {
@@ -32,26 +42,29 @@ export function FlyerScanUpload({
 
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-  const handleFile = useCallback(
-    (file: File) => {
-      if (!file.type.startsWith('image/')) return;
-      if (file.size > 20 * 1024 * 1024) return;
-      onFileSelected(file);
+  const handleFiles = useCallback(
+    (fileList: FileList | File[]) => {
+      const files = Array.from(fileList).filter(
+        (f) => isAcceptedFile(f) && f.size <= 20 * 1024 * 1024,
+      );
+      if (files.length > 0) onFilesSelected(files);
     },
-    [onFileSelected],
+    [onFilesSelected],
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
+    if (e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
   };
 
   // Results state — render children (FlyerScanResults)
@@ -72,7 +85,7 @@ export function FlyerScanUpload({
               <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
                 Scan failed
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>
                 {error || 'Something went wrong. Please try again.'}
               </Typography>
             </Box>
@@ -93,6 +106,13 @@ export function FlyerScanUpload({
 
   // Uploading / Analyzing state
   if (scanState === 'uploading' || scanState === 'analyzing') {
+    const progressText =
+      totalFiles > 1
+        ? `Processing file ${currentFileIndex + 1} of ${totalFiles}...`
+        : scanState === 'uploading'
+          ? 'Uploading...'
+          : 'Analyzing...';
+
     return (
       <Card sx={{ mb: 2 }}>
         <CardContent sx={{ p: 3 }}>
@@ -101,11 +121,24 @@ export function FlyerScanUpload({
           >
             <CircularProgress size={32} sx={{ color: '#ec4899' }} />
             <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {scanState === 'uploading' ? 'Uploading image...' : 'Analyzing flyer...'}
+              {progressText}
             </Typography>
+            {totalFiles > 1 && (
+              <LinearProgress
+                variant="determinate"
+                value={
+                  ((currentFileIndex + (scanState === 'analyzing' ? 0.5 : 0)) / totalFiles) * 100
+                }
+                sx={{
+                  width: '100%',
+                  borderRadius: 2,
+                  '& .MuiLinearProgress-bar': { bgcolor: '#ec4899' },
+                }}
+              />
+            )}
             {scanState === 'analyzing' && (
               <Typography variant="caption" color="text.secondary">
-                This usually takes 5-10 seconds
+                This usually takes 5-10 seconds per file
               </Typography>
             )}
           </Box>
@@ -138,7 +171,8 @@ export function FlyerScanUpload({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept={ACCEPTED_TYPES}
+          multiple={!isMobile}
           capture={isMobile ? 'environment' : undefined}
           onChange={handleInputChange}
           style={{ display: 'none' }}
@@ -164,14 +198,19 @@ export function FlyerScanUpload({
           </Box>
           <Box>
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {isMobile ? 'Scan a flyer' : 'Upload a flyer'}
+              {isMobile ? 'Scan a flyer' : 'Upload flyers or documents'}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {isMobile
-                ? 'Take a photo or choose from gallery to auto-fill the form'
-                : 'Drag & drop or click to upload an image to auto-fill the form'}
+                ? 'Take a photo or choose files to auto-fill the form'
+                : 'Drag & drop or click to upload images, PDFs, or documents'}
             </Typography>
           </Box>
+          {!isMobile && (
+            <FileText
+              style={{ width: 16, height: 16, color: '#9ca3af', flexShrink: 0, marginLeft: 'auto' }}
+            />
+          )}
         </Box>
       </CardContent>
     </Card>

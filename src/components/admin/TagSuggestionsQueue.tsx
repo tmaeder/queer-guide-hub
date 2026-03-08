@@ -113,9 +113,18 @@ export function TagSuggestionsQueue() {
     });
   };
 
-  const toggleSelectAll = () => {
-    if (selectedIds.size === items.length) setSelectedIds(new Set());
-    else setSelectedIds(new Set(items.map((i) => i.id)));
+  const toggleSelectAll = async () => {
+    if (selectedIds.size > 0) {
+      setSelectedIds(new Set());
+    } else {
+      // Fetch ALL pending suggestion IDs (not just the loaded batch)
+      const { data } = await supabase
+        .from('tag_suggestions' as any)
+        .select('id')
+        .eq('status', 'pending')
+        .limit(5000);
+      setSelectedIds(new Set((data || []).map((i: any) => i.id)));
+    }
   };
 
   const isPending = approveMutation.isPending || rejectMutation.isPending;
@@ -167,12 +176,14 @@ export function TagSuggestionsQueue() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <input
             type="checkbox"
-            checked={selectedIds.size === items.length && items.length > 0}
+            checked={selectedIds.size > 0 && selectedIds.size >= total}
             onChange={toggleSelectAll}
             style={{ width: 16, height: 16, cursor: 'pointer' }}
           />
           <Typography variant="body2" color="text.secondary">
-            {total} pending suggestion{total !== 1 ? 's' : ''}
+            {selectedIds.size > 0
+              ? `${selectedIds.size} selected (all)`
+              : `${total} pending suggestion${total !== 1 ? 's' : ''}`}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>

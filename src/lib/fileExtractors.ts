@@ -1,0 +1,208 @@
+/**
+ * fileExtractors — Client-side content extraction for flyer scan.
+ * Determines whether a file should use the image or text pipeline
+ * and extracts content accordingly.
+ */
+
+export interface ExtractedContent {
+  mode: 'image' | 'text';
+  text?: string;
+  imageBlob?: Blob;
+  fileName: string;
+}
+
+const MAX_PDF_PAGES = 10;
+const MIN_TEXT_LENGTH = 50;
+const MAX_IMAGE_DIM = 1024;
+const JPEG_QUALITY = 0.85;
+
+// ── Image resize ──────────────────────────────────────────────────────
+
+function resizeImage(file: File | Blob, maxDim: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas 2D context unavailable'));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('Canvas resize failed'))),
+        'image/jpeg',
+        JPEG_QUALITY,
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load image'));
+    };
+    img.src = url;
+  });
+}
+
+// ── PDF extraction (lazy-loaded) ──────────────────────────────────────
+
+async function extractPdf(file: File): Promise<ExtractedContent> {
+  const pdfjsLib = await import('pdfjs-dist');
+
+  // Configure worker — use bundled worker via CDN for reliability
+  const version = pdfjsLib.version;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.mjs`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pageCount = Math.min(pdf.numPages, MAX_PDF_PAGES);
+
+  // Try text extraction first
+  const textParts: string[] = [];
+  for (let i = 1; i <= pageCount; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items
+      .map((item: any) => ('str' in item ? item.str : ''))
+      .join(' ')
+      .trim();
+    if (pageText) textParts.push(pageText);
+  }
+
+  const fullText = textParts.join('\n\n');
+
+  if (fullText.length >= MIN_TEXT_LENGTH) {
+    return { mode: 'text', text: fullText, fileName: file.name };
+  }
+
+  // Scanned PDF — render first page to image
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 1 });
+  const scale = Math.min(MAX_IMAGE_DIM / viewport.width, MAX_IMAGE_DIM / viewport.height, 1);
+  const scaledViewport = page.getViewport({ scale });
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(scaledViewport.width);
+  canvas.height = Math.round(scaledViewport.height);
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas 2D context unavailable');
+
+  await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error('PDF page render failed'))),
+      'image/jpeg',
+      JPEG_QUALITY,
+    );
+  });
+
+  return { mode: 'image', imageBlob: blob, fileName: file.name };
+}
+
+// ── DOCX extraction (lazy-loaded) ─────────────────────────────────────
+
+async function extractDocx(file: File): Promise<ExtractedContent> {
+  const mammoth = await import('mammoth');
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer });
+  const text = result.value.trim();
+
+  if (text.length < MIN_TEXT_LENGTH) {
+    throw new Error('Could not extract enough text from this document');
+  }
+
+  return { mode: 'text', text, fileName: file.name };
+}
+
+// ── Plain text extraction ─────────────────────────────────────────────
+
+function extractText(file: File): Promise<ExtractedContent> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = (reader.result as string).trim();
+      if (text.length < MIN_TEXT_LENGTH) {
+        reject(new Error('File contains too little text'));
+        return;
+      }
+      resolve({ mode: 'text', text, fileName: file.name });
+    };
+    reader.onerror = () => reject(new Error('Failed to read text file'));
+    reader.readAsText(file);
+  });
+}
+
+// ── Public API ────────────────────────────────────────────────────────
+
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+const ACCEPTED_EXTENSIONS = [
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.webp',
+  '.heic',
+  '.heif',
+  '.pdf',
+  '.docx',
+  '.doc',
+  '.txt',
+];
+
+export function isAcceptedFile(file: File): boolean {
+  if (ACCEPTED_IMAGE_TYPES.includes(file.type)) return true;
+  if (file.type === 'application/pdf') return true;
+  if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    return true;
+  if (file.type === 'text/plain') return true;
+
+  const ext = '.' + (file.name.split('.').pop()?.toLowerCase() || '');
+  return ACCEPTED_EXTENSIONS.includes(ext);
+}
+
+export async function extractFileContent(file: File): Promise<ExtractedContent> {
+  if (file.size > 20 * 1024 * 1024) {
+    throw new Error('File too large (max 20MB)');
+  }
+
+  const ext = file.name.split('.').pop()?.toLowerCase() || '';
+
+  // Image files
+  if (
+    file.type.startsWith('image/') ||
+    ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'].includes(ext)
+  ) {
+    const blob = await resizeImage(file, MAX_IMAGE_DIM);
+    return { mode: 'image', imageBlob: blob, fileName: file.name };
+  }
+
+  // PDF
+  if (file.type === 'application/pdf' || ext === 'pdf') {
+    return extractPdf(file);
+  }
+
+  // DOCX
+  if (
+    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    ext === 'docx' ||
+    ext === 'doc'
+  ) {
+    return extractDocx(file);
+  }
+
+  // Plain text
+  if (file.type === 'text/plain' || ext === 'txt') {
+    return extractText(file);
+  }
+
+  throw new Error(`Unsupported file format: .${ext}`);
+}

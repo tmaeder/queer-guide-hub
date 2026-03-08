@@ -73,6 +73,12 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/hls.js/')) {
             return 'hls';
           }
+          if (id.includes('node_modules/pdfjs-dist/')) {
+            return 'pdfjs';
+          }
+          if (id.includes('node_modules/mammoth/')) {
+            return 'mammoth';
+          }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
             return 'vendor';

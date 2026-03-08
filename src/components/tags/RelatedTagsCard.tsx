@@ -29,7 +29,15 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {[1, 2, 3, 4, 5].map((i) => (
               <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, height: 28 }}>
-                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'action.hover', flexShrink: 0 }} />
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    bgcolor: 'action.hover',
+                    flexShrink: 0,
+                  }}
+                />
                 <Box sx={{ flex: 1, height: 12, borderRadius: 1, bgcolor: 'action.hover' }} />
                 <Box sx={{ width: 36, height: 12, borderRadius: 1, bgcolor: 'action.hover' }} />
               </Box>
@@ -101,7 +109,7 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
               >
                 <Box
                   sx={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0 }}
-                  style={{ backgroundColor: tag.color || '#6366f1' }}
+                  style={{ backgroundColor: '#6366f1' }}
                 />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
@@ -126,7 +134,7 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
                       mt: 0.25,
                       bgcolor: 'action.hover',
                       '& .MuiLinearProgress-bar': {
-                        bgcolor: tag.color || '#6366f1',
+                        bgcolor: '#6366f1',
                         borderRadius: 1,
                       },
                     }}
@@ -144,7 +152,11 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
           })}
         </Box>
         {similarTags.length > 0 && similarTags[0].relationship_type !== 'category' && (
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5, fontSize: '0.7rem' }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block', mt: 1.5, fontSize: '0.7rem' }}
+          >
             Based on semantic similarity
           </Typography>
         )}

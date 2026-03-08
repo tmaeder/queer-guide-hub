@@ -42,7 +42,6 @@ export interface CentralizedTag {
   category?: string;
   categories?: TagCategoryInfo[];
   description?: string;
-  color?: string;
   usage_count: number;
   image_url?: string;
   slug: string;
@@ -253,9 +252,9 @@ export const useCentralizedTags = () => {
   const createTag = async (tagData: {
     name: string;
     slug: string;
-    category?: string;
-    description?: string;
-    color?: string;
+    category?: string | null;
+    description?: string | null;
+    image_url?: string | null;
   }): Promise<CentralizedTag | null> => {
     try {
       const { data, error } = await supabase

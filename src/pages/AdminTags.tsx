@@ -37,6 +37,7 @@ import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
 import { TagImageUpload } from '@/components/admin/TagImageUpload';
 import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
 import BatchAutoTagDialog from '@/components/admin/BatchAutoTagDialog';
+import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
 import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
 import BulkEnrichDialog from '@/components/admin/BulkEnrichDialog';
 import { AdminDataTable } from '@/components/admin/data-table';
@@ -86,13 +87,19 @@ export default function AdminTags() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const cleanData = {
+        name: formData.name.trim(),
+        category: formData.category?.trim() || null,
+        description: formData.description?.trim() || null,
+        image_url: formData.image_url || null,
+      };
       if (editingTag) {
-        await updateTag(editingTag.id, formData);
+        await updateTag(editingTag.id, cleanData);
         toast({ title: 'Success', description: 'Tag updated successfully' });
       } else {
         await createTag({
-          ...formData,
-          slug: formData.name
+          ...cleanData,
+          slug: cleanData.name
             .toLowerCase()
             .replace(/\s+/g, '-')
             .replace(/[^a-z0-9-]/g, ''),
@@ -405,6 +412,7 @@ export default function AdminTags() {
                   onImageChange={(url) => setFormData((p) => ({ ...p, image_url: url }))}
                   tagName={formData.name}
                 />
+                {editingTag && <TagAliasesSection tagId={editingTag.id} />}
                 <Button type="submit" style={{ width: '100%' }}>
                   {editingTag ? 'Update Tag' : 'Create Tag'}
                 </Button>

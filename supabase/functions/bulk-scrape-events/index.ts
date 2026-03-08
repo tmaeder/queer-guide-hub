@@ -90,7 +90,7 @@ function mapJsonLdToEvent(e: any) {
   return {
     title,
     description,
-    event_type: Array.isArray(e['@type']) ? e['@type'][0] : (e['@type'] || 'event'),
+    event_type: 'other',
     start_date: start ? new Date(start).toISOString() : new Date().toISOString(),
     end_date: end ? new Date(end).toISOString() : null,
     venue_name: locName,

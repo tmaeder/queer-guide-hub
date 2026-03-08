@@ -25,6 +25,10 @@ import {
   CheckCheck,
   Loader2,
   Zap,
+  Clock,
+  XCircle,
+  Sparkles,
+  VolumeX,
 } from 'lucide-react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -160,12 +164,21 @@ export default function AdminReview() {
 
   // ── Master Bulk Actions ──────────────────────────────────────
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
-  const [bulkAction, setBulkAction] = useState<'approve' | 'enrich' | 'dedup' | null>(null);
+  const [bulkAction, setBulkAction] = useState<
+    | 'approve'
+    | 'enrich'
+    | 'dedup'
+    | 'reject_stale'
+    | 'approve_confident'
+    | 'dismiss_low'
+    | 'reject_all'
+    | null
+  >(null);
   const [bulkProgress, setBulkProgress] = useState(0);
   const [bulkRunning, setBulkRunning] = useState(false);
   const [bulkResult, setBulkResult] = useState<{ success: number; failed: number } | null>(null);
 
-  const openBulkDialog = (action: 'approve' | 'enrich' | 'dedup') => {
+  const openBulkDialog = (action: typeof bulkAction & string) => {
     setBulkAction(action);
     setBulkProgress(0);
     setBulkResult(null);
@@ -329,6 +342,317 @@ export default function AdminReview() {
         }
         setBulkProgress(100);
       }
+
+      if (bulkAction === 'reject_stale') {
+        const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        // Reject stale moderation flags
+        const { data: staleFlags } = await supabase
+          .from('moderation_flags' as any)
+          .select('id')
+          .eq('status', 'OPEN')
+          .lt('created_at', cutoff)
+          .limit(500);
+        if ((staleFlags ?? []).length > 0) {
+          const { error } = await supabase
+            .from('moderation_flags' as any)
+            .update({
+              status: 'REJECTED',
+              reviewed_by: user.id,
+              reviewed_at: new Date().toISOString(),
+              resolution_note: 'Auto-rejected: stale (>7 days)',
+            })
+            .in(
+              'id',
+              (staleFlags ?? []).map((f: any) => f.id),
+            );
+          if (!error) success += (staleFlags ?? []).length;
+          else failed += (staleFlags ?? []).length;
+        }
+        setBulkProgress(25);
+
+        // Reject stale tag suggestions
+        const { data: staleTags } = await supabase
+          .from('tag_suggestions' as any)
+          .select('id')
+          .eq('status', 'pending')
+          .lt('created_at', cutoff)
+          .limit(500);
+        if ((staleTags ?? []).length > 0) {
+          const { error } = await supabase
+            .from('tag_suggestions' as any)
+            .update({
+              status: 'rejected',
+              reviewed_by: user.id,
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (staleTags ?? []).map((t: any) => t.id),
+            );
+          if (!error) success += (staleTags ?? []).length;
+          else failed += (staleTags ?? []).length;
+        }
+        setBulkProgress(50);
+
+        // Dismiss stale automation flags
+        const { data: staleAuto } = await supabase
+          .from('content_flags' as any)
+          .select('id')
+          .eq('status', 'pending')
+          .lt('created_at', cutoff)
+          .limit(500);
+        if ((staleAuto ?? []).length > 0) {
+          const { error } = await supabase
+            .from('content_flags' as any)
+            .update({
+              status: 'expired',
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (staleAuto ?? []).map((f: any) => f.id),
+            );
+          if (!error) success += (staleAuto ?? []).length;
+          else failed += (staleAuto ?? []).length;
+        }
+        setBulkProgress(75);
+
+        // Reject stale staging items
+        const { data: staleStaging } = await supabase
+          .from('ingestion_staging' as any)
+          .select('id')
+          .eq('review_status', 'pending_review')
+          .eq('disposition', 'pending')
+          .lt('created_at', cutoff)
+          .limit(500);
+        if ((staleStaging ?? []).length > 0) {
+          const { error } = await supabase
+            .from('ingestion_staging' as any)
+            .update({
+              disposition: 'rejected',
+              review_status: 'rejected',
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (staleStaging ?? []).map((s: any) => s.id),
+            );
+          if (!error) success += (staleStaging ?? []).length;
+          else failed += (staleStaging ?? []).length;
+        }
+        setBulkProgress(100);
+      }
+
+      if (bulkAction === 'approve_confident') {
+        // Approve high-confidence tag suggestions (>= 0.8)
+        const { data: confidentTags } = await supabase
+          .from('tag_suggestions' as any)
+          .select('id')
+          .eq('status', 'pending')
+          .gte('confidence', 0.8)
+          .limit(1000);
+        if ((confidentTags ?? []).length > 0) {
+          const { data: count, error } = await supabase.rpc('approve_tag_suggestions' as any, {
+            p_suggestion_ids: (confidentTags ?? []).map((t: any) => t.id),
+            p_reviewer_id: user.id,
+          });
+          if (!error) success += (confidentTags ?? []).length;
+          else failed += (confidentTags ?? []).length;
+        }
+        setBulkProgress(50);
+
+        // Approve + apply high-confidence automation flags (>= 0.8)
+        const { data: confidentFlags } = await supabase
+          .from('content_flags' as any)
+          .select('id, content_type, content_id, suggested_value')
+          .eq('status', 'pending')
+          .gte('confidence', 0.8)
+          .not('suggested_value', 'is', null)
+          .limit(500);
+        const total = (confidentFlags ?? []).length;
+        for (let i = 0; i < total; i++) {
+          const flag = (confidentFlags ?? [])[i];
+          const { error: applyError } = await supabase
+            .from(flag.content_type as any)
+            .update(flag.suggested_value)
+            .eq('id', flag.content_id);
+          const { error: flagError } = await supabase
+            .from('content_flags' as any)
+            .update({
+              status: 'approved',
+              reviewed_at: new Date().toISOString(),
+              applied_at: new Date().toISOString(),
+            })
+            .eq('id', flag.id);
+          if (!applyError && !flagError) success++;
+          else failed++;
+          setBulkProgress(50 + Math.round(((i + 1) / Math.max(total, 1)) * 50));
+        }
+        if (total === 0) setBulkProgress(100);
+      }
+
+      if (bulkAction === 'dismiss_low') {
+        // Dismiss all info-severity automation flags
+        const { data: infoFlags } = await supabase
+          .from('content_flags' as any)
+          .select('id')
+          .eq('status', 'pending')
+          .eq('severity', 'info')
+          .limit(1000);
+        if ((infoFlags ?? []).length > 0) {
+          const { error } = await supabase
+            .from('content_flags' as any)
+            .update({
+              status: 'rejected',
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (infoFlags ?? []).map((f: any) => f.id),
+            );
+          if (!error) success += (infoFlags ?? []).length;
+          else failed += (infoFlags ?? []).length;
+        }
+        setBulkProgress(50);
+
+        // Dismiss all warning-severity automation flags
+        const { data: warnFlags } = await supabase
+          .from('content_flags' as any)
+          .select('id')
+          .eq('status', 'pending')
+          .eq('severity', 'warning')
+          .limit(1000);
+        if ((warnFlags ?? []).length > 0) {
+          const { error } = await supabase
+            .from('content_flags' as any)
+            .update({
+              status: 'rejected',
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (warnFlags ?? []).map((f: any) => f.id),
+            );
+          if (!error) success += (warnFlags ?? []).length;
+          else failed += (warnFlags ?? []).length;
+        }
+        setBulkProgress(100);
+      }
+
+      if (bulkAction === 'reject_all') {
+        // Reject all moderation flags
+        const { data: openFlags } = await supabase
+          .from('moderation_flags' as any)
+          .select('id')
+          .eq('status', 'OPEN')
+          .limit(500);
+        if ((openFlags ?? []).length > 0) {
+          const { error } = await supabase
+            .from('moderation_flags' as any)
+            .update({
+              status: 'REJECTED',
+              reviewed_by: user.id,
+              reviewed_at: new Date().toISOString(),
+              resolution_note: 'Bulk rejected via Review & Moderation',
+            })
+            .in(
+              'id',
+              (openFlags ?? []).map((f: any) => f.id),
+            );
+          if (!error) success += (openFlags ?? []).length;
+          else failed += (openFlags ?? []).length;
+        }
+        setBulkProgress(20);
+
+        // Reject all tag suggestions
+        const { data: pendingTags } = await supabase
+          .from('tag_suggestions' as any)
+          .select('id')
+          .eq('status', 'pending')
+          .limit(1000);
+        if ((pendingTags ?? []).length > 0) {
+          const { error } = await supabase
+            .from('tag_suggestions' as any)
+            .update({
+              status: 'rejected',
+              reviewed_by: user.id,
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (pendingTags ?? []).map((t: any) => t.id),
+            );
+          if (!error) success += (pendingTags ?? []).length;
+          else failed += (pendingTags ?? []).length;
+        }
+        setBulkProgress(40);
+
+        // Reject CMS review items (back to draft)
+        const { data: cmsItems } = await supabase
+          .from('cms_content_metadata' as any)
+          .select('id')
+          .eq('workflow_state', 'review')
+          .limit(500);
+        for (const item of cmsItems ?? []) {
+          const { error } = await supabase
+            .from('cms_content_metadata' as any)
+            .update({
+              workflow_state: 'draft',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', item.id);
+          if (!error) success++;
+          else failed++;
+        }
+        setBulkProgress(60);
+
+        // Dismiss all automation flags
+        const { data: autoFlags } = await supabase
+          .from('content_flags' as any)
+          .select('id')
+          .eq('status', 'pending')
+          .limit(1000);
+        if ((autoFlags ?? []).length > 0) {
+          const { error } = await supabase
+            .from('content_flags' as any)
+            .update({
+              status: 'rejected',
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (autoFlags ?? []).map((f: any) => f.id),
+            );
+          if (!error) success += (autoFlags ?? []).length;
+          else failed += (autoFlags ?? []).length;
+        }
+        setBulkProgress(80);
+
+        // Reject all staging items
+        const { data: stagingItems } = await supabase
+          .from('ingestion_staging' as any)
+          .select('id')
+          .eq('review_status', 'pending_review')
+          .eq('disposition', 'pending')
+          .limit(1000);
+        if ((stagingItems ?? []).length > 0) {
+          const { error } = await supabase
+            .from('ingestion_staging' as any)
+            .update({
+              disposition: 'rejected',
+              review_status: 'rejected',
+              reviewed_at: new Date().toISOString(),
+            })
+            .in(
+              'id',
+              (stagingItems ?? []).map((s: any) => s.id),
+            );
+          if (!error) success += (stagingItems ?? []).length;
+          else failed += (stagingItems ?? []).length;
+        }
+        setBulkProgress(100);
+      }
     } catch (err) {
       console.error('Bulk action error:', err);
       failed++;
@@ -347,7 +671,16 @@ export default function AdminReview() {
     }
   }, [bulkAction, user, refetchCounts]);
 
-  const bulkActionLabels = {
+  const bulkActionLabels: Record<
+    string,
+    {
+      title: string;
+      desc: string;
+      icon: typeof Inbox;
+      color: string;
+      severity?: 'warning' | 'error';
+    }
+  > = {
     approve: {
       title: 'Approve Everything',
       desc: `This will approve all ${c.tagSuggestions} tag suggestions, publish all ${c.cmsReview} content items in review, and resolve all ${c.moderation} moderation flags.`,
@@ -365,6 +698,31 @@ export default function AdminReview() {
       desc: `This will auto-approve all unique staging items and auto-reject all confirmed duplicates from the staging queue.`,
       icon: Inbox,
       color: '#ea580c',
+    },
+    reject_stale: {
+      title: 'Reject Stale Items',
+      desc: 'This will reject/dismiss all items older than 7 days across moderation flags, tag suggestions, automation flags, and staging items.',
+      icon: Clock,
+      color: '#6b7280',
+    },
+    approve_confident: {
+      title: 'Approve High-Confidence',
+      desc: 'This will approve only tag suggestions and automation flags with confidence >= 80%. Low-confidence items are left for manual review.',
+      icon: Sparkles,
+      color: '#0ea5e9',
+    },
+    dismiss_low: {
+      title: 'Dismiss Low-Severity',
+      desc: 'This will dismiss all info and warning-level automation flags. Error and critical severity flags are kept for manual review.',
+      icon: VolumeX,
+      color: '#a855f7',
+    },
+    reject_all: {
+      title: 'Reject Everything',
+      desc: `This will reject ALL ${c.total} pending items across every queue: moderation flags, tag suggestions, CMS content (back to draft), automation flags, and staging items.`,
+      icon: XCircle,
+      color: '#ef4444',
+      severity: 'error',
     },
   };
 
@@ -425,6 +783,21 @@ export default function AdminReview() {
             <Button
               size="small"
               variant="outlined"
+              onClick={() => openBulkDialog('approve_confident')}
+              startIcon={<Sparkles size={15} />}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                borderColor: '#0ea5e9',
+                color: '#0ea5e9',
+              }}
+            >
+              Approve High-Confidence
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
               onClick={() => openBulkDialog('enrich')}
               startIcon={<Zap size={15} />}
               sx={{
@@ -435,7 +808,7 @@ export default function AdminReview() {
                 color: '#8b5cf6',
               }}
             >
-              Apply All Enrichments
+              Apply Enrichments
             </Button>
             <Button
               size="small"
@@ -451,6 +824,46 @@ export default function AdminReview() {
               }}
             >
               Resolve Duplicates
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => openBulkDialog('dismiss_low')}
+              startIcon={<VolumeX size={15} />}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                borderColor: '#a855f7',
+                color: '#a855f7',
+              }}
+            >
+              Dismiss Low-Severity
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => openBulkDialog('reject_stale')}
+              startIcon={<Clock size={15} />}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                borderColor: '#6b7280',
+                color: '#6b7280',
+              }}
+            >
+              Reject Stale
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              color="error"
+              onClick={() => openBulkDialog('reject_all')}
+              startIcon={<XCircle size={15} />}
+              sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+            >
+              Reject All
             </Button>
           </Box>
         )}
@@ -475,7 +888,10 @@ export default function AdminReview() {
             <DialogContent>
               {!bulkResult ? (
                 <>
-                  <Alert severity="warning" sx={{ mb: 2 }}>
+                  <Alert
+                    severity={bulkActionLabels[bulkAction].severity ?? 'warning'}
+                    sx={{ mb: 2 }}
+                  >
                     {bulkActionLabels[bulkAction].desc}
                   </Alert>
                   {bulkRunning && (
@@ -522,7 +938,13 @@ export default function AdminReview() {
                       ) : undefined
                     }
                     sx={{ textTransform: 'none', fontWeight: 600 }}
-                    color={bulkAction === 'approve' ? 'success' : 'primary'}
+                    color={
+                      bulkAction === 'approve' || bulkAction === 'approve_confident'
+                        ? 'success'
+                        : bulkAction === 'reject_all'
+                          ? 'error'
+                          : 'primary'
+                    }
                   >
                     {bulkRunning ? 'Processing...' : 'Confirm'}
                   </Button>

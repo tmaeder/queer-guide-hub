@@ -38,17 +38,17 @@ interface GooglePlacesResult {
 function mapGooglePlaceTypeToCategory(types: string[]) {
   // Map Google Places types to our venue categories
   const typeMapping = {
-    'night_club': { name: 'Entertainment & Nightlife', slug: 'entertainment-nightlife', category: 'bar' },
+    'night_club': { name: 'Entertainment & Nightlife', slug: 'entertainment-nightlife', category: 'club' },
     'bar': { name: 'Entertainment & Nightlife', slug: 'entertainment-nightlife', category: 'bar' },
     'restaurant': { name: 'Restaurants & Dining', slug: 'restaurants-dining', category: 'restaurant' },
-    'cafe': { name: 'Restaurants & Dining', slug: 'restaurants-dining', category: 'cafe' },
+    'cafe': { name: 'Restaurants & Dining', slug: 'restaurants-dining', category: 'restaurant' },
     'lodging': { name: 'Accommodation', slug: 'accommodation', category: 'hotel' },
-    'spa': { name: 'Health & Wellness', slug: 'health-wellness', category: 'spa' },
-    'gym': { name: 'Health & Wellness', slug: 'health-wellness', category: 'gym' },
-    'shopping_mall': { name: 'Shopping', slug: 'shopping', category: 'shopping' },
-    'store': { name: 'Shopping', slug: 'shopping', category: 'shopping' },
-    'tourist_attraction': { name: 'Tourism & Culture', slug: 'tourism-culture', category: 'attraction' },
-    'museum': { name: 'Tourism & Culture', slug: 'tourism-culture', category: 'museum' }
+    'spa': { name: 'Health & Wellness', slug: 'health-wellness', category: 'sauna' },
+    'gym': { name: 'Health & Wellness', slug: 'health-wellness', category: 'other' },
+    'shopping_mall': { name: 'Shopping', slug: 'shopping', category: 'other' },
+    'store': { name: 'Shopping', slug: 'shopping', category: 'other' },
+    'tourist_attraction': { name: 'Tourism & Culture', slug: 'tourism-culture', category: 'other' },
+    'museum': { name: 'Tourism & Culture', slug: 'tourism-culture', category: 'theater' }
   };
 
   for (const type of types) {

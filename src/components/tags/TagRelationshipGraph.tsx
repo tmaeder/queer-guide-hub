@@ -32,7 +32,6 @@ interface ForceNode extends NodeObject {
   id: string;
   name: string;
   category: string | null;
-  color: string | null;
   usage_count: number;
   slug: string;
 }

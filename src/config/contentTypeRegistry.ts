@@ -90,6 +90,7 @@ const venueFields: FieldConfig[] = [
     relatedFields: {
       city_id: 'city_id',
       country_id: 'country_id',
+      country: 'country',
     },
   },
   { name: 'state', label: 'State/Province', type: 'text', group: 'location' },
@@ -275,6 +276,7 @@ const eventFields: FieldConfig[] = [
     relatedFields: {
       city_id: 'city_id',
       country_id: 'country_id',
+      country: 'country',
     },
   },
   { name: 'state', label: 'State', type: 'text', group: 'location' },
@@ -833,6 +835,7 @@ const hotelFields: FieldConfig[] = [
     relatedFields: {
       city_id: 'city_id',
       country_id: 'country_id',
+      country: 'country',
     },
   },
   {

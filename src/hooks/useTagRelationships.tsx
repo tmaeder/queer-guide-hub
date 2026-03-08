@@ -7,7 +7,6 @@ export interface SimilarTag {
   name: string;
   slug: string;
   category: string | null;
-  color: string | null;
   image_url: string | null;
   usage_count: number;
   similarity_score: number;
@@ -18,7 +17,6 @@ export interface GraphNode {
   id: string;
   name: string;
   category: string | null;
-  color: string | null;
   usage_count: number;
   image_url: string | null;
   slug: string;

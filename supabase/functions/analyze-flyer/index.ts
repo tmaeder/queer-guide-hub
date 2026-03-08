@@ -1,9 +1,10 @@
 /**
- * analyze-flyer — Two-pass AI flyer analysis edge function.
+ * analyze-flyer — AI flyer/document analysis edge function.
  *
- * Pass 1: CF AI Vision (Llama 3.2 11B) describes the image content.
- * Pass 2: OpenAI gpt-4o-mini structures the description into reliable JSON.
- * Then: Entity matching against venues, cities, countries + duplicate detection.
+ * Image mode (image_url): CF AI Vision → gpt-4o-mini structuring → entity matching.
+ * Text mode (text): gpt-4o-mini structuring → entity matching (vision skipped).
+ *
+ * Supports multiple events/venues per document — returns items[].
  *
  * Auth: verify_jwt: true — any authenticated user.
  * Rate limit: 20 scans/hour per user.
@@ -47,7 +48,8 @@ const COUNTRY_ALIASES: Record<string, string> = {
 // ── Types ─────────────────────────────────────────────────────────────────
 
 interface AnalyzeRequest {
-  image_url: string
+  image_url?: string
+  text?: string
   hint_city?: string
   hint_country?: string
 }
@@ -58,11 +60,15 @@ interface ExtractedField {
   source: string
 }
 
-interface ExtractionResult {
+interface ExtractedItem {
   detected_type: 'event' | 'venue'
+  fields: Record<string, ExtractedField>
+}
+
+interface ExtractionResult {
+  items: ExtractedItem[]
   raw_text: string
   language: string
-  fields: Record<string, ExtractedField>
 }
 
 interface VenueCandidate {
@@ -147,59 +153,68 @@ Be thorough and precise. Transcribe all text exactly as shown.`,
 // ── Structuring Pass (gpt-4o-mini) ────────────────────────────────────────
 
 const STRUCTURING_PROMPT = `You are a data extraction assistant for queer.guide, an LGBTQ+ travel and community platform.
-Given a description of a flyer/poster image, extract structured data as JSON.
+Given content from a flyer, poster, or document, extract ALL distinct events and venues as structured JSON.
 
 Return ONLY valid JSON with this exact structure:
 {
-  "detected_type": "event" or "venue",
+  "items": [
+    {
+      "detected_type": "event" or "venue",
+      "event_fields": {
+        "title": {"value": string|null, "confidence": 0.0-1.0},
+        "description": {"value": string|null, "confidence": 0.0-1.0},
+        "event_type": {"value": "party"|"festival"|"pride"|"meetup"|"workshop"|"concert"|"exhibition"|"fundraiser"|"sports"|"community"|"other"|null, "confidence": 0.0-1.0},
+        "date_text": {"value": string|null, "confidence": 0.0-1.0},
+        "start_date": {"value": "ISO8601"|null, "confidence": 0.0-1.0},
+        "end_date": {"value": "ISO8601"|null, "confidence": 0.0-1.0},
+        "venue_name": {"value": string|null, "confidence": 0.0-1.0},
+        "address": {"value": string|null, "confidence": 0.0-1.0},
+        "city": {"value": string|null, "confidence": 0.0-1.0},
+        "country": {"value": string|null, "confidence": 0.0-1.0},
+        "organizer_name": {"value": string|null, "confidence": 0.0-1.0},
+        "organizer_contact": {"value": string|null, "confidence": 0.0-1.0},
+        "ticket_url": {"value": string|null, "confidence": 0.0-1.0},
+        "website": {"value": string|null, "confidence": 0.0-1.0},
+        "is_free": {"value": boolean|null, "confidence": 0.0-1.0},
+        "price_text": {"value": string|null, "confidence": 0.0-1.0},
+        "age_restriction": {"value": string|null, "confidence": 0.0-1.0}
+      },
+      "venue_fields": {
+        "name": {"value": string|null, "confidence": 0.0-1.0},
+        "description": {"value": string|null, "confidence": 0.0-1.0},
+        "category": {"value": "bar"|"club"|"restaurant"|"cafe"|"sauna"|"hotel"|"shop"|"community_center"|"beach"|"cruise_club"|"theater"|"gallery"|"bookstore"|"gym"|"other"|null, "confidence": 0.0-1.0},
+        "address": {"value": string|null, "confidence": 0.0-1.0},
+        "city": {"value": string|null, "confidence": 0.0-1.0},
+        "country": {"value": string|null, "confidence": 0.0-1.0},
+        "postal_code": {"value": string|null, "confidence": 0.0-1.0},
+        "phone": {"value": string|null, "confidence": 0.0-1.0},
+        "email": {"value": string|null, "confidence": 0.0-1.0},
+        "website": {"value": string|null, "confidence": 0.0-1.0},
+        "instagram": {"value": string|null, "confidence": 0.0-1.0},
+        "hours_text": {"value": string|null, "confidence": 0.0-1.0}
+      }
+    }
+  ],
   "language": "ISO 639-1 code",
-  "raw_text": "all visible text transcribed",
-  "event_fields": {
-    "title": {"value": string|null, "confidence": 0.0-1.0},
-    "description": {"value": string|null, "confidence": 0.0-1.0},
-    "event_type": {"value": "party"|"festival"|"pride"|"meetup"|"workshop"|"concert"|"exhibition"|"fundraiser"|"sports"|"community"|"other"|null, "confidence": 0.0-1.0},
-    "date_text": {"value": string|null, "confidence": 0.0-1.0},
-    "start_date": {"value": "ISO8601"|null, "confidence": 0.0-1.0},
-    "end_date": {"value": "ISO8601"|null, "confidence": 0.0-1.0},
-    "venue_name": {"value": string|null, "confidence": 0.0-1.0},
-    "address": {"value": string|null, "confidence": 0.0-1.0},
-    "city": {"value": string|null, "confidence": 0.0-1.0},
-    "country": {"value": string|null, "confidence": 0.0-1.0},
-    "organizer_name": {"value": string|null, "confidence": 0.0-1.0},
-    "organizer_contact": {"value": string|null, "confidence": 0.0-1.0},
-    "ticket_url": {"value": string|null, "confidence": 0.0-1.0},
-    "website": {"value": string|null, "confidence": 0.0-1.0},
-    "is_free": {"value": boolean|null, "confidence": 0.0-1.0},
-    "price_text": {"value": string|null, "confidence": 0.0-1.0},
-    "age_restriction": {"value": string|null, "confidence": 0.0-1.0}
-  },
-  "venue_fields": {
-    "name": {"value": string|null, "confidence": 0.0-1.0},
-    "description": {"value": string|null, "confidence": 0.0-1.0},
-    "category": {"value": "bar"|"club"|"restaurant"|"cafe"|"sauna"|"hotel"|"shop"|"community_center"|"beach"|"cruise_club"|"theater"|"gallery"|"bookstore"|"gym"|"other"|null, "confidence": 0.0-1.0},
-    "address": {"value": string|null, "confidence": 0.0-1.0},
-    "city": {"value": string|null, "confidence": 0.0-1.0},
-    "country": {"value": string|null, "confidence": 0.0-1.0},
-    "postal_code": {"value": string|null, "confidence": 0.0-1.0},
-    "phone": {"value": string|null, "confidence": 0.0-1.0},
-    "email": {"value": string|null, "confidence": 0.0-1.0},
-    "website": {"value": string|null, "confidence": 0.0-1.0},
-    "instagram": {"value": string|null, "confidence": 0.0-1.0},
-    "hours_text": {"value": string|null, "confidence": 0.0-1.0}
-  }
+  "raw_text": "all visible text transcribed"
 }
 
 Rules:
+- If you find MULTIPLE distinct events or venues, return one item per event/venue (max 10 items)
+- If only one event or venue is found, return an array with a single item
+- Do NOT merge separate events into one — each gets its own item
+- Each item should be self-contained with its own location, dates, etc.
 - Set confidence to 0 and value to null for fields you cannot determine
 - For detected_type: "event" if there's a specific date/time; "venue" if it's a business listing/card
 - Parse dates to ISO 8601 when possible (use current year if year not specified)
 - Extract ALL visible text into raw_text
-- Fill BOTH event_fields and venue_fields when possible (a flyer may have both event and venue data)
+- Fill BOTH event_fields and venue_fields per item when possible (an event flyer often has venue data)
 - Do NOT hallucinate — only extract what's actually described`
 
 async function structureExtraction(
-  visionDescription: string,
+  contentText: string,
   openaiKey: string,
+  isTextMode: boolean,
   hintCity?: string,
   hintCountry?: string,
 ): Promise<ExtractionResult> {
@@ -207,6 +222,10 @@ async function structureExtraction(
   if (hintCity) hints.push(`User hint: city is likely "${hintCity}"`)
   if (hintCountry) hints.push(`User hint: country is likely "${hintCountry}"`)
   const hintText = hints.length > 0 ? '\n\n' + hints.join('\n') : ''
+
+  const userMessage = isTextMode
+    ? `Here is text extracted from a document:\n\n${contentText}${hintText}`
+    : `Here is a detailed description of a flyer/poster image:\n\n${contentText}${hintText}`
 
   const response = await fetch(OPENAI_URL, {
     method: 'POST',
@@ -218,13 +237,10 @@ async function structureExtraction(
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: STRUCTURING_PROMPT },
-        {
-          role: 'user',
-          content: `Here is a detailed description of a flyer/poster image:\n\n${visionDescription}${hintText}`,
-        },
+        { role: 'user', content: userMessage },
       ],
       temperature: 0.1,
-      max_tokens: 2000,
+      max_tokens: 4000,
       response_format: { type: 'json_object' },
       store: false,
     }),
@@ -238,34 +254,37 @@ async function structureExtraction(
 
   const data = await response.json()
   const content = data.choices[0].message.content
+  const source = isTextMode ? 'text+refinement' : 'vision+refinement'
 
   try {
     const parsed = JSON.parse(content)
-    const detectedType = parsed.detected_type === 'venue' ? 'venue' : 'event'
-    const fields = detectedType === 'event'
-      ? { ...parsed.event_fields, ...pickVenueFieldsForEvent(parsed.venue_fields) }
-      : parsed.venue_fields || {}
+    const rawItems = Array.isArray(parsed.items) ? parsed.items : [parsed]
+    const items: ExtractedItem[] = rawItems.slice(0, 10).map((item: any) => {
+      const detectedType = item.detected_type === 'venue' ? 'venue' : 'event'
+      const fields = detectedType === 'event'
+        ? { ...item.event_fields, ...pickVenueFieldsForEvent(item.venue_fields) }
+        : item.venue_fields || {}
 
-    // Add source attribution to all fields
-    for (const key of Object.keys(fields)) {
-      if (fields[key] && typeof fields[key] === 'object' && 'confidence' in fields[key]) {
-        fields[key].source = 'vision+refinement'
+      for (const key of Object.keys(fields)) {
+        if (fields[key] && typeof fields[key] === 'object' && 'confidence' in fields[key]) {
+          fields[key].source = source
+        }
       }
-    }
+
+      return { detected_type: detectedType, fields }
+    })
 
     return {
-      detected_type: detectedType,
+      items: items.length > 0 ? items : [{ detected_type: 'event', fields: {} }],
       raw_text: parsed.raw_text || '',
       language: parsed.language || 'en',
-      fields,
     }
   } catch {
     console.error('Failed to parse structuring response:', content?.slice(0, 200))
     return {
-      detected_type: 'event',
-      raw_text: visionDescription,
+      items: [{ detected_type: 'event', fields: {} }],
+      raw_text: contentText,
       language: 'en',
-      fields: {},
     }
   }
 }
@@ -520,80 +539,101 @@ serve(async (req) => {
     if (!withinLimit) return errorResponse('Rate limit exceeded (20 scans/hour)', 429)
 
     // Parse request
-    const { image_url, hint_city, hint_country }: AnalyzeRequest = await req.json()
-    if (!image_url) return errorResponse('image_url is required', 400)
+    const { image_url, text, hint_city, hint_country }: AnalyzeRequest = await req.json()
+    if (!image_url && !text) return errorResponse('Either image_url or text is required', 400)
 
-    console.log(`Analyzing flyer for user ${user.id}: ${image_url.slice(0, 80)}...`)
+    const isTextMode = !!text && !image_url
+    console.log(`Analyzing flyer for user ${user.id} (${isTextMode ? 'text' : 'image'} mode)`)
 
-    // Step 1: Fetch image and convert to base64
-    console.log('Fetching image...')
-    const imageBase64 = await fetchImageAsBase64(image_url)
-    console.log(`Image fetched, base64 length: ${imageBase64.length}`)
+    // Step 1: Get content for structuring
+    let contentForStructuring: string
 
-    // Step 2: CF AI Vision — describe the image (ensure license agreement first)
-    console.log('Pass 1: CF AI Vision analysis...')
-    await ensureMetaLicense(cfToken)
-    const visionDescription = await visionDescribe(imageBase64, cfToken)
-    console.log('Vision description:', visionDescription.slice(0, 200))
+    if (isTextMode) {
+      // Text mode — skip vision, use extracted text directly
+      contentForStructuring = text!
+      console.log(`Text input length: ${contentForStructuring.length}`)
+    } else {
+      // Image mode — fetch + vision
+      console.log('Fetching image...')
+      const imageBase64 = await fetchImageAsBase64(image_url!)
+      console.log(`Image fetched, base64 length: ${imageBase64.length}`)
 
-    // Step 3: gpt-4o-mini — structure into JSON
+      console.log('Pass 1: CF AI Vision analysis...')
+      await ensureMetaLicense(cfToken)
+      contentForStructuring = await visionDescribe(imageBase64, cfToken)
+      console.log('Vision description:', contentForStructuring.slice(0, 200))
+    }
+
+    // Step 2: gpt-4o-mini — structure into JSON (multi-item)
     console.log('Pass 2: Structuring with gpt-4o-mini...')
-    const extraction = await structureExtraction(visionDescription, openaiKey, hint_city, hint_country)
-    console.log(`Detected type: ${extraction.detected_type}, fields: ${Object.keys(extraction.fields).length}`)
+    const extraction = await structureExtraction(contentForStructuring, openaiKey, isTextMode, hint_city, hint_country)
+    console.log(`Extracted ${extraction.items.length} item(s)`)
 
-    // Step 4: Entity matching
+    // Step 3: Per-item entity matching
     console.log('Matching entities...')
+    const itemsWithMatches = await Promise.all(
+      extraction.items.map(async (item) => {
+        const countryName = item.fields.country?.value as string || hint_country
+        const matchedCountry = await resolveCountry(countryName, supabase)
 
-    // Resolve country
-    const countryName = extraction.fields.country?.value as string || hint_country
-    const matchedCountry = await resolveCountry(countryName, supabase)
+        const cityName = item.fields.city?.value as string || hint_city
+        const matchedCity = await resolveCity(cityName, matchedCountry?.id || null, supabase)
 
-    // Resolve city
-    const cityName = extraction.fields.city?.value as string || hint_city
-    const matchedCity = await resolveCity(cityName, matchedCountry?.id || null, supabase)
+        const venueName = item.detected_type === 'event'
+          ? item.fields.venue_name?.value as string
+          : item.fields.name?.value as string
+        const venueCandidates = await matchVenues(venueName, matchedCity?.id || null, supabase)
 
-    // Match venues
-    const venueName = extraction.detected_type === 'event'
-      ? extraction.fields.venue_name?.value as string
-      : extraction.fields.name?.value as string
-    const venueCandidates = await matchVenues(venueName, matchedCity?.id || null, supabase)
+        const duplicateEvents = item.detected_type === 'event'
+          ? await checkEventDuplicates(
+              item.fields.title?.value as string,
+              item.fields.start_date?.value as string,
+              matchedCity?.id || null,
+              supabase,
+            )
+          : []
 
-    // Check duplicates
-    const duplicateEvents = extraction.detected_type === 'event'
-      ? await checkEventDuplicates(
-          extraction.fields.title?.value as string,
-          extraction.fields.start_date?.value as string,
-          matchedCity?.id || null,
-          supabase,
-        )
-      : []
+        const duplicateVenues = item.detected_type === 'venue'
+          ? await checkVenueDuplicates(
+              item.fields.name?.value as string,
+              matchedCity?.id || null,
+              supabase,
+            )
+          : []
 
-    const duplicateVenues = extraction.detected_type === 'venue'
-      ? await checkVenueDuplicates(
-          extraction.fields.name?.value as string,
-          matchedCity?.id || null,
-          supabase,
-        )
-      : []
+        return {
+          detected_type: item.detected_type,
+          fields: item.fields,
+          matches: {
+            venue_candidates: venueCandidates,
+            city: matchedCity,
+            country: matchedCountry,
+            duplicate_events: duplicateEvents,
+            duplicate_venues: duplicateVenues,
+          },
+        }
+      }),
+    )
 
     const processingTime = Date.now() - startTime
+    const primaryItem = itemsWithMatches[0]
 
-    // Step 5: Store audit row
+    // Step 4: Store audit row
     const { data: scanRow, error: insertError } = await supabase
       .from('flyer_scans')
       .insert({
         user_id: user.id,
-        image_url,
-        detected_type: extraction.detected_type,
+        image_url: image_url || `text://${text!.slice(0, 60)}`,
+        detected_type: primaryItem.detected_type,
         raw_extraction: {
-          vision_description: visionDescription,
+          vision_description: isTextMode ? null : contentForStructuring,
           structured: extraction,
         },
-        matched_venue_id: venueCandidates[0]?.id || null,
-        matched_city_id: matchedCity?.id || null,
-        matched_country_id: matchedCountry?.id || null,
-        duplicate_event_id: duplicateEvents[0]?.id || null,
-        model_used: 'cf-llama-3.2-11b-vision + gpt-4o-mini',
+        matched_venue_id: primaryItem.matches.venue_candidates[0]?.id || null,
+        matched_city_id: primaryItem.matches.city?.id || null,
+        matched_country_id: primaryItem.matches.country?.id || null,
+        duplicate_event_id: primaryItem.matches.duplicate_events[0]?.id || null,
+        model_used: isTextMode ? 'gpt-4o-mini' : 'cf-llama-3.2-11b-vision + gpt-4o-mini',
         processing_time_ms: processingTime,
       })
       .select('id')
@@ -603,23 +643,13 @@ serve(async (req) => {
       console.error('Failed to insert audit row:', insertError)
     }
 
-    console.log(`Analysis complete in ${processingTime}ms`)
+    console.log(`Analysis complete in ${processingTime}ms — ${itemsWithMatches.length} item(s)`)
 
     return jsonResponse({
       scan_id: scanRow?.id || null,
-      detected_type: extraction.detected_type,
-      extraction: {
-        raw_text: extraction.raw_text,
-        language: extraction.language,
-        fields: extraction.fields,
-      },
-      matches: {
-        venue_candidates: venueCandidates,
-        city: matchedCity,
-        country: matchedCountry,
-        duplicate_events: duplicateEvents,
-        duplicate_venues: duplicateVenues,
-      },
+      items: itemsWithMatches,
+      raw_text: extraction.raw_text,
+      language: extraction.language,
       processing_time_ms: processingTime,
     })
   } catch (error) {

@@ -276,7 +276,7 @@ async function processItem(
       }
     }
 
-    // ── geo_text_validate: country text must match linked country_id ─────
+    // ── geo_text_validate: country text must be full name (not code) ─────
     if (rule.rule_type === 'geo_text_validate' && geoConfig.countryTextField) {
       const existingCountryId = item[geoConfig.countryIdField] as string | null
       const countryText = item[geoConfig.countryTextField] as string | null
@@ -286,24 +286,21 @@ async function processItem(
         if (linkedCountry) {
           const normalizedText = countryText.trim().toLowerCase()
           const nameMatch = normalizedText === linkedCountry.name.toLowerCase()
-          const codeMatch = linkedCountry.code && normalizedText === linkedCountry.code.toLowerCase()
 
-          if (!nameMatch && !codeMatch) {
-            const resolved = resolveCountry(countryText)
-            if (!resolved || resolved.id !== existingCountryId) {
-              changes.push({
-                content_type: contentType,
-                content_id: contentId,
-                content_name: contentName,
-                field_name: geoConfig.countryTextField,
-                old_value: countryText,
-                new_value: linkedCountry.name,
-                change_type: 'correct',
-                confidence: 0.88,
-                reasoning: `Country text "${countryText}" doesn't match linked country "${linkedCountry.name}" (${linkedCountry.code}). Correcting.`,
-                rule_id: rule.id,
-              })
-            }
+          // Always correct to full name — codes like "US", "DE" should become "United States", "Germany"
+          if (!nameMatch) {
+            changes.push({
+              content_type: contentType,
+              content_id: contentId,
+              content_name: contentName,
+              field_name: geoConfig.countryTextField,
+              old_value: countryText,
+              new_value: linkedCountry.name,
+              change_type: 'correct',
+              confidence: 0.92,
+              reasoning: `Country text "${countryText}" → "${linkedCountry.name}" (correcting to full name)`,
+              rule_id: rule.id,
+            })
           }
         }
       }

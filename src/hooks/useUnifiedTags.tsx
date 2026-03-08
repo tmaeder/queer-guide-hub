@@ -7,7 +7,6 @@ export interface UnifiedTag {
   name: string;
   slug: string;
   description?: string;
-  color: string;
   image_url?: string;
   usage_count: number;
   category?: string;
@@ -53,9 +52,9 @@ export const useUnifiedTags = () => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch tags';
       setError(errorMessage);
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -64,10 +63,7 @@ export const useUnifiedTags = () => {
 
   const searchTags = async (query: string, category?: string): Promise<UnifiedTag[]> => {
     try {
-      let queryBuilder = supabase
-        .from('unified_tags')
-        .select('*')
-        .ilike('name', `%${query}%`);
+      let queryBuilder = supabase.from('unified_tags').select('*').ilike('name', `%${query}%`);
 
       if (category) {
         queryBuilder = queryBuilder.eq('category', category);
@@ -85,14 +81,10 @@ export const useUnifiedTags = () => {
     }
   };
 
-  const createTag = async (tagData: {
-    name: string;
-    description?: string;
-    color?: string;
-    category?: string;
-  }) => {
+  const createTag = async (tagData: { name: string; description?: string; category?: string }) => {
     try {
-      const slug = tagData.name.toLowerCase()
+      const slug = tagData.name
+        .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
@@ -100,29 +92,30 @@ export const useUnifiedTags = () => {
 
       const { data, error } = await supabase
         .from('unified_tags')
-        .insert([{
-          ...tagData,
-          slug,
-          color: tagData.color || '#6366f1'
-        }])
+        .insert([
+          {
+            ...tagData,
+            slug,
+          },
+        ])
         .select()
         .single();
 
       if (error) throw error;
 
-      setTags(prev => [...prev, data]);
+      setTags((prev) => [...prev, data]);
       toast({
-        title: "Success",
-        description: "Tag created successfully",
+        title: 'Success',
+        description: 'Tag created successfully',
       });
 
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create tag';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
       throw err;
     }
@@ -139,19 +132,19 @@ export const useUnifiedTags = () => {
 
       if (error) throw error;
 
-      setTags(prev => prev.map(tag => tag.id === id ? data : tag));
+      setTags((prev) => prev.map((tag) => (tag.id === id ? data : tag)));
       toast({
-        title: "Success",
-        description: "Tag updated successfully",
+        title: 'Success',
+        description: 'Tag updated successfully',
       });
 
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update tag';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
       throw err;
     }
@@ -159,24 +152,21 @@ export const useUnifiedTags = () => {
 
   const deleteTag = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('unified_tags')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('unified_tags').delete().eq('id', id);
 
       if (error) throw error;
 
-      setTags(prev => prev.filter(tag => tag.id !== id));
+      setTags((prev) => prev.filter((tag) => tag.id !== id));
       toast({
-        title: "Success",
-        description: "Tag deleted successfully",
+        title: 'Success',
+        description: 'Tag deleted successfully',
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete tag';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
       throw err;
     }
@@ -186,28 +176,30 @@ export const useUnifiedTags = () => {
     try {
       const { data, error } = await supabase
         .from('unified_tag_assignments')
-        .insert([{
-          tag_id: tagId,
-          entity_id: entityId,
-          entity_type: entityType
-        }])
+        .insert([
+          {
+            tag_id: tagId,
+            entity_id: entityId,
+            entity_type: entityType,
+          },
+        ])
         .select()
         .single();
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Tag assigned successfully",
+        title: 'Success',
+        description: 'Tag assigned successfully',
       });
 
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to assign tag';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
       throw err;
     }
@@ -225,15 +217,15 @@ export const useUnifiedTags = () => {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Tag unassigned successfully",
+        title: 'Success',
+        description: 'Tag unassigned successfully',
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to unassign tag';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
       throw err;
     }
@@ -243,16 +235,18 @@ export const useUnifiedTags = () => {
     try {
       const { data, error } = await supabase
         .from('unified_tag_assignments')
-        .select(`
+        .select(
+          `
           tag_id,
           unified_tags (*)
-        `)
+        `,
+        )
         .eq('entity_id', entityId)
         .eq('entity_type', entityType);
 
       if (error) throw error;
 
-      return data?.map(assignment => (assignment as any).unified_tags).filter(Boolean) || [];
+      return data?.map((assignment) => (assignment as any).unified_tags).filter(Boolean) || [];
     } catch (err) {
       console.error('Failed to fetch entity tags:', err);
       return [];
@@ -270,42 +264,38 @@ export const useUnifiedTags = () => {
 
       // Add new assignments
       if (tagIds.length > 0) {
-        const assignments = tagIds.map(tagId => ({
+        const assignments = tagIds.map((tagId) => ({
           tag_id: tagId,
           entity_id: entityId,
-          entity_type: entityType
+          entity_type: entityType,
         }));
 
-        const { error } = await supabase
-          .from('unified_tag_assignments')
-          .insert(assignments);
+        const { error } = await supabase.from('unified_tag_assignments').insert(assignments);
 
         if (error) throw error;
       }
 
       toast({
-        title: "Success",
-        description: "Tags updated successfully",
+        title: 'Success',
+        description: 'Tags updated successfully',
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update tags';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
       throw err;
     }
   };
 
   const getTagsByCategory = (category: string): UnifiedTag[] => {
-    return tags.filter(tag => tag.category === category);
+    return tags.filter((tag) => tag.category === category);
   };
 
   const getPopularTags = (limit: number = 10): UnifiedTag[] => {
-    return tags
-      .filter(tag => tag.usage_count > 0)
-      .slice(0, limit);
+    return tags.filter((tag) => tag.usage_count > 0).slice(0, limit);
   };
 
   useEffect(() => {
@@ -329,6 +319,6 @@ export const useUnifiedTags = () => {
     getTagsByCategory,
     getPopularTags,
     refresh: () => fetchTags(),
-    refreshTags: () => fetchTags()
+    refreshTags: () => fetchTags(),
   };
 };

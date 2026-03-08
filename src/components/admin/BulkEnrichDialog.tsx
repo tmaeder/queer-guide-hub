@@ -43,17 +43,17 @@ const CONTENT_TYPES = [
 
 const MODULES = [
   {
-    value: 'ai-content-enhancer',
+    value: 'ai-enhancer',
     label: 'AI Content Enhancement',
     description: 'Generate improved descriptions using AI',
   },
   {
-    value: 'content-quality-checker',
+    value: 'content-validator',
     label: 'Quality Check',
     description: 'Find encoding issues, broken HTML, short descriptions',
   },
   {
-    value: 'link-validator',
+    value: 'link-sanitizer',
     label: 'Link Validation',
     description: 'Check for dead links and tracking parameters',
   },
@@ -68,13 +68,13 @@ const MODULES = [
     description: 'Suggest tags based on content analysis',
   },
   {
-    value: 'contact-normalizer',
-    label: 'Contact Normalization',
-    description: 'Validate emails, URLs, and phone numbers',
+    value: 'data-normalizer',
+    label: 'Data Normalization',
+    description: 'Validate emails, URLs, phone numbers, and contacts',
   },
   {
-    value: 'date-normalizer',
-    label: 'Date Normalization',
+    value: 'event-validator',
+    label: 'Event Validation',
     description: 'Detect past events and missing end times',
   },
 ];
@@ -96,7 +96,7 @@ interface BulkEnrichDialogProps {
 export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [moduleName, setModuleName] = useState('ai-content-enhancer');
+  const [moduleName, setModuleName] = useState('ai-enhancer');
   const [result, setResult] = useState<EnrichResult | null>(null);
 
   const selectedModule = MODULES.find((m) => m.value === moduleName);
@@ -106,7 +106,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
     setResult(null);
     try {
       const { data, error } = await supabase.functions.invoke('content-automation', {
-        body: { module: moduleName },
+        body: { module: moduleName, full_scan: true },
       });
 
       if (error) throw error;
@@ -114,15 +114,21 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
 
       setResult({
         items_total: data.items_total ?? 0,
-        items_processed: data.items_processed ?? 0,
-        items_succeeded: data.items_succeeded ?? 0,
-        items_failed: data.items_failed ?? 0,
-        flags_created: data.flags_created ?? 0,
-        auto_approved: data.auto_approved ?? 0,
-        errors: data.errors ?? [],
+        items_processed: data.items_total ?? 0,
+        items_succeeded: (data.items_total ?? 0) - (data.errors ?? 0),
+        items_failed: data.errors ?? 0,
+        flags_created: data.changes_proposed ?? 0,
+        auto_approved: data.changes_auto_approved ?? 0,
+        errors: data.results
+          ? Object.entries(data.results)
+              .filter(([, v]: [string, any]) => v.first_error)
+              .map(([k, v]: [string, any]) => `${k}: ${v.first_error}`)
+          : [],
       });
 
-      toast.success(`Processed ${data.items_processed ?? 0} items`);
+      toast.success(
+        `Scanned ${data.items_total ?? 0} items, ${data.changes_proposed ?? 0} changes proposed`,
+      );
       onComplete?.();
     } catch (err: unknown) {
       toast.error(`Enrichment failed: ${err instanceof Error ? err.message : 'Unknown error'}`);

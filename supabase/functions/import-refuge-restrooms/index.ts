@@ -139,7 +139,7 @@ serve(async (req) => {
           country: r.country || 'US',
           latitude: r.latitude,
           longitude: r.longitude,
-          category: 'toilet',
+          category: 'other',
           amenities: amenities.length > 0 ? amenities : null,
           accessibility_attributes: accessibilityAttrs.length > 0 ? accessibilityAttrs : null,
           data_source: 'refuge_restrooms',

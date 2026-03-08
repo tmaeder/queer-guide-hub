@@ -2,6 +2,11 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
+const VALID_VENUE_CATEGORIES = [
+  'bar', 'club', 'restaurant', 'hotel', 'sauna', 'theater',
+  'community_center', 'organization', 'event-venue', 'gallery', 'other'
+] as const;
+
 interface VenueData {
   name: string;
   description?: string;
@@ -130,6 +135,13 @@ function parseCSV(csvText: string): VenueData[] {
       console.warn(`Skipping row ${i + 1}: missing required fields`);
       continue;
     }
+
+    // Validate category against allowed values
+    if (!VALID_VENUE_CATEGORIES.includes(venueData.category.toLowerCase())) {
+      console.warn(`Skipping row ${i + 1}: invalid category '${venueData.category}'. Allowed: ${VALID_VENUE_CATEGORIES.join(', ')}`);
+      continue;
+    }
+    venueData.category = venueData.category.toLowerCase();
 
     // Set defaults
     venueData.country = venueData.country || 'US';

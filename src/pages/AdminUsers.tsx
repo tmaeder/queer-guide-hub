@@ -16,11 +16,12 @@ import {
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
-import { ArrowLeft, Eye, ExternalLink, MapPin, Shield } from 'lucide-react';
+import { ArrowLeft, Eye, ExternalLink, MapPin, Shield, UserPlus } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { UserStatsCards } from '@/components/admin/users/UserStatsCards';
 import { UserDetailSheet } from '@/components/admin/users/UserDetailSheet';
+import { CreateUserDialog } from '@/components/admin/users/CreateUserDialog';
 
 interface UserRow {
   id: string;
@@ -55,6 +56,7 @@ export default function AdminUsers() {
   const { data: roleMap } = useUserRoles();
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [tableKey, setTableKey] = useState(0);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const columns = useMemo(
     () => [
@@ -284,23 +286,35 @@ export default function AdminUsers() {
         },
       ],
       toolbarActions: (
-        <ExportExcelButton
-          onExport={async () => {
-            const cols: ExportColumnDef<any>[] = [
-              { header: 'Display Name', accessor: (r) => r.display_name },
-              { header: 'Location', accessor: (r) => r.location },
-              { header: 'User Mode', accessor: (r) => r.user_mode },
-              { header: 'Profile %', accessor: (r) => r.profile_completion_percentage },
-              { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
-              { header: 'Last Seen', accessor: (r) => formatDateTime(r.last_seen_at) },
-            ];
-            const allData = await fetchAllRows('profiles', '*', {
-              column: 'display_name',
-              ascending: true,
-            });
-            await exportToExcel(allData, cols, generateFilename('users'));
-          }}
-        />
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {isAdmin && (
+            <Button
+              size="sm"
+              onClick={() => setCreateOpen(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              <UserPlus style={{ height: 14, width: 14 }} />
+              Create User
+            </Button>
+          )}
+          <ExportExcelButton
+            onExport={async () => {
+              const cols: ExportColumnDef<any>[] = [
+                { header: 'Display Name', accessor: (r) => r.display_name },
+                { header: 'Location', accessor: (r) => r.location },
+                { header: 'User Mode', accessor: (r) => r.user_mode },
+                { header: 'Profile %', accessor: (r) => r.profile_completion_percentage },
+                { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
+                { header: 'Last Seen', accessor: (r) => formatDateTime(r.last_seen_at) },
+              ];
+              const allData = await fetchAllRows('profiles', '*', {
+                column: 'display_name',
+                ascending: true,
+              });
+              await exportToExcel(allData, cols, generateFilename('users'));
+            }}
+          />
+        </Box>
       ),
     }),
     [columns],
@@ -339,6 +353,8 @@ export default function AdminUsers() {
         }}
         onUserUpdated={() => setTableKey((k) => k + 1)}
       />
+
+      <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />
     </Box>
   );
 }

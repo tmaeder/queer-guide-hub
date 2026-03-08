@@ -81,24 +81,24 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
   const flyerScan = useFlyerScan();
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
 
-  // Reset venue selection when a new scan starts or scan is reset
-  const handleStartScan = (file: File) => {
+  const handleStartScan = (files: File[]) => {
     setSelectedVenueId(null);
-    flyerScan.startScan(file);
+    flyerScan.startScan(files);
   };
   const handleResetScan = () => {
     setSelectedVenueId(null);
     flyerScan.reset();
   };
 
-  const handleApplyScan = () => {
-    const formData = flyerScan.applyToForm(selectedVenueId ?? undefined);
+  const handleApplyScan = (resultIdx: number, itemIdx: number, detectedType: 'event' | 'venue') => {
+    const formData = flyerScan.applyToForm(resultIdx, itemIdx, selectedVenueId ?? undefined);
     setFields(formData);
 
     // If detected type differs from current form, navigate to correct form
-    if (flyerScan.detectedType && flyerScan.detectedType !== config.id) {
-      navigate(`/submit/${flyerScan.detectedType}`, {
-        state: { prefill: formData, imageUrl: flyerScan.imageUrl },
+    if (detectedType !== config.id) {
+      const imageUrl = flyerScan.results[resultIdx]?.image_url;
+      navigate(`/submit/${detectedType}`, {
+        state: { prefill: formData, imageUrl },
       });
       return;
     }
@@ -210,17 +210,16 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         <FlyerScanUpload
           scanState={flyerScan.scanState}
           error={flyerScan.error}
-          onFileSelected={handleStartScan}
+          currentFileIndex={flyerScan.currentFileIndex}
+          totalFiles={flyerScan.totalFiles}
+          onFilesSelected={handleStartScan}
           onReset={handleResetScan}
         >
-          {flyerScan.result && flyerScan.detectedType && (
+          {flyerScan.results.length > 0 && (
             <FlyerScanResults
-              result={flyerScan.result}
-              detectedType={flyerScan.detectedType}
-              imageUrl={flyerScan.imageUrl}
+              results={flyerScan.results}
               selectedVenueId={selectedVenueId}
               onSelectVenue={setSelectedVenueId}
-              onChangeType={flyerScan.setDetectedType}
               onApply={handleApplyScan}
               onDismiss={flyerScan.reset}
             />
