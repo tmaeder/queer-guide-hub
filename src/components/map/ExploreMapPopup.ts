@@ -46,9 +46,13 @@ export function renderPopupHTML(marker: MapMarker): string {
         ? `Pop. ${Number(marker.meta.population).toLocaleString()}`
         : '';
       const capital = marker.meta?.isCapital ? ' <b style="color:#f59e0b;">★ Capital</b>' : '';
+      const cityPrecision = marker.meta?.precision as string | undefined;
+      const cityBadge = cityPrecision
+        ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:#e2e8f0;color:#475569;font-weight:500;margin-left:6px;">${esc(cityPrecision.charAt(0).toUpperCase() + cityPrecision.slice(1))}</span>`
+        : '';
       return `
         <div style="min-width:160px;padding:6px 2px;">
-          <strong style="font-size:14px;">${esc(marker.name)}</strong>${capital}<br/>
+          <strong style="font-size:14px;">${esc(marker.name)}</strong>${capital}${cityBadge}<br/>
           ${marker.subtitle ? `<span style="font-size:12px;color:#6b7280;">${esc(marker.subtitle)}</span><br/>` : ''}
           ${pop ? `<span style="font-size:11px;color:#9ca3af;">${pop}</span><br/>` : ''}
           ${link}
@@ -77,9 +81,13 @@ export function renderPopupHTML(marker: MapMarker): string {
         ? esc(marker.meta.description).slice(0, 100) +
           (marker.meta.description.length > 100 ? '…' : '')
         : '';
+      const nhPrecision = marker.meta?.precision as string | undefined;
+      const nhBadge = nhPrecision
+        ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:#e2e8f0;color:#475569;font-weight:500;margin-left:6px;">${esc(nhPrecision.charAt(0).toUpperCase() + nhPrecision.slice(1))}</span>`
+        : '';
       return `
         <div style="min-width:180px;padding:6px 2px;">
-          <strong style="font-size:14px;">${esc(marker.name)}</strong><br/>
+          <strong style="font-size:14px;">${esc(marker.name)}</strong>${nhBadge}<br/>
           ${city ? `<span style="font-size:12px;color:#6b7280;">${esc(city)}</span><br/>` : ''}
           ${desc ? `<span style="font-size:11px;color:#9ca3af;">${desc}</span><br/>` : ''}
           ${link}

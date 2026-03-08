@@ -78,6 +78,7 @@ async function fetchVenuesInBbox(
   let query = supabase
     .from('venues')
     .select('id, name, category, latitude, longitude, city, country, featured')
+    .neq('data_source', 'refuge_restrooms')
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
     .gte('latitude', bbox.south)

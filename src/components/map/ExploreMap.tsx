@@ -23,7 +23,11 @@ import { ExploreMapFiltersPanel } from '@/components/map/ExploreMapFilters';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, type Bbox } from '@/utils/mapViewport';
-import { useCountryBoundaries } from '@/hooks/useBoundaryData';
+import {
+  useCountryBoundaries,
+  useCityBoundaries,
+  useNeighbourhoodBoundaries,
+} from '@/hooks/useBoundaryData';
 import { enrichBoundaryFeatures } from '@/utils/boundaryUtils';
 
 // ── Layer classification ─────────────────────────────────────────────────────
@@ -74,6 +78,16 @@ const BOUNDARY_FILL = 'boundary-countries-fill';
 const BOUNDARY_STROKE = 'boundary-countries-stroke';
 const BOUNDARY_LABEL = 'boundary-countries-label';
 
+const CITY_BOUNDARY_SOURCE = 'boundary-cities';
+const CITY_BOUNDARY_FILL = 'boundary-cities-fill';
+const CITY_BOUNDARY_STROKE = 'boundary-cities-stroke';
+const CITY_BOUNDARY_LABEL = 'boundary-cities-label';
+
+const NEIGHBOURHOOD_BOUNDARY_SOURCE = 'boundary-neighbourhoods';
+const NEIGHBOURHOOD_BOUNDARY_FILL = 'boundary-neighbourhoods-fill';
+const NEIGHBOURHOOD_BOUNDARY_STROKE = 'boundary-neighbourhoods-stroke';
+const NEIGHBOURHOOD_BOUNDARY_LABEL = 'boundary-neighbourhoods-label';
+
 // ── MapLibre layer IDs for point data ────────────────────────────────────────
 
 const POINTS_SOURCE = 'points-source';
@@ -116,7 +130,11 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const areaLayerIdsRef = useRef<Set<string>>(new Set());
   const boundaryLayerAddedRef = useRef(false);
+  const cityBoundaryAddedRef = useRef(false);
+  const neighbourhoodBoundaryAddedRef = useRef(false);
   const hoveredBoundaryIdRef = useRef<number | null>(null);
+  const hoveredCityBoundaryIdRef = useRef<number | null>(null);
+  const hoveredNeighbourhoodBoundaryIdRef = useRef<number | null>(null);
   const pointLayersAddedRef = useRef(false);
 
   // ── State ────────────────────────────────────────────────────────────────
@@ -154,9 +172,13 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     onViewportChange,
   } = useViewportPoints({ enabledLayers: pointEnabledLayers, filters });
 
-  // ── Data: country boundary polygons ─────────────────────────────────────
+  // ── Data: boundary polygons ─────────────────────────────────────────────
   const countriesEnabled = enabledLayers.includes('countries');
+  const citiesEnabled = enabledLayers.includes('cities');
+  const neighbourhoodsEnabled = enabledLayers.includes('neighbourhoods');
   const { data: countryBoundaries } = useCountryBoundaries(countriesEnabled, currentZoom);
+  const { data: cityBoundaries } = useCityBoundaries(citiesEnabled);
+  const { data: neighbourhoodBoundaries } = useNeighbourhoodBoundaries(neighbourhoodsEnabled);
 
   // Merged counts for the layer toggle panel
   const layerCounts: Record<LayerType, number> = {
@@ -295,8 +317,10 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    // When boundary polygons are loaded, skip circle rendering for countries
-    const skipCircleTypes = countryBoundaries ? ['countries'] : [];
+    // Skip circle rendering only for countries (large enough at any zoom).
+    // Cities/neighbourhoods keep circles — boundaries are tiny at low zoom.
+    const skipCircleTypes: string[] = [];
+    if (countryBoundaries) skipCircleTypes.push('countries');
     const activeAreaLayers = AREA_LAYERS.filter((t) => !skipCircleTypes.includes(t));
 
     const onlyArea = areaMarkers.filter((m) => activeAreaLayers.includes(m.type));
@@ -657,6 +681,299 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
     boundaryLayerAddedRef.current = true;
   }, [countryBoundaries, countriesEnabled, areaMarkers, mapReady, showPopup]);
+
+  // ── Shared boundary layer setup helper ──────────────────────────────────
+  const addBoundaryLayers = useCallback(
+    (
+      map: maplibregl.Map,
+      opts: {
+        sourceId: string;
+        fillId: string;
+        strokeId: string;
+        labelId: string;
+        enriched: GeoJSON.FeatureCollection;
+        color: string;
+        entityType: LayerType;
+        hoveredRef: React.MutableRefObject<number | null>;
+        minLabelZoom?: number;
+        minLayerZoom?: number;
+      },
+    ) => {
+      const {
+        sourceId,
+        fillId,
+        strokeId,
+        labelId,
+        enriched,
+        color,
+        entityType,
+        hoveredRef,
+        minLabelZoom = 3,
+        minLayerZoom,
+      } = opts;
+
+      const existingSource = map.getSource(sourceId) as GeoJSONSource | undefined;
+      if (existingSource) {
+        existingSource.setData(enriched);
+        return;
+      }
+
+      map.addSource(sourceId, {
+        type: 'geojson',
+        data: enriched,
+        promoteId: 'entityId',
+      });
+
+      map.addLayer({
+        id: fillId,
+        type: 'fill',
+        source: sourceId,
+        ...(minLayerZoom != null && { minzoom: minLayerZoom }),
+        paint: {
+          'fill-color': color,
+          'fill-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            0.35,
+            ['boolean', ['feature-state', 'hovered'], false],
+            0.22,
+            0.1,
+          ],
+          'fill-opacity-transition': { duration: 250 },
+        },
+      });
+
+      map.addLayer({
+        id: strokeId,
+        type: 'line',
+        source: sourceId,
+        ...(minLayerZoom != null && { minzoom: minLayerZoom }),
+        paint: {
+          'line-color': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            '#1e293b',
+            color,
+          ],
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            2.5,
+            ['boolean', ['feature-state', 'hovered'], false],
+            1.8,
+            0.8,
+          ],
+          'line-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            0.8,
+            ['boolean', ['feature-state', 'hovered'], false],
+            0.7,
+            0.5,
+          ],
+          'line-width-transition': { duration: 200 },
+        },
+      });
+
+      map.addLayer({
+        id: labelId,
+        type: 'symbol',
+        source: sourceId,
+        minzoom: minLabelZoom,
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 2, 10, 5, 12, 8, 14],
+          'text-font': ['Noto Sans Medium'],
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+          'text-anchor': 'center',
+        },
+        paint: {
+          'text-color': '#1e293b',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 1.5,
+        },
+      });
+
+      // Hover via feature-state
+      map.on('mousemove', fillId, (e: MapLayerMouseEvent) => {
+        const feat = e.features?.[0];
+        if (!feat) return;
+        map.getCanvas().style.cursor = 'pointer';
+        const numId = feat.id as number | undefined;
+        if (hoveredRef.current !== null && hoveredRef.current !== numId) {
+          map.setFeatureState({ source: sourceId, id: hoveredRef.current }, { hovered: false });
+        }
+        if (numId != null) {
+          map.setFeatureState({ source: sourceId, id: numId }, { hovered: true });
+          hoveredRef.current = numId;
+        }
+        // Tooltip
+        const tip = tooltipRef.current;
+        if (tip && feat.properties) {
+          const props = feat.properties as Record<string, string>;
+          while (tip.firstChild) tip.removeChild(tip.firstChild);
+          const nameEl = document.createElement('strong');
+          nameEl.textContent = props.name ?? '';
+          tip.appendChild(nameEl);
+          const precision = props.precision ?? 'approximate';
+          const badge = document.createElement('span');
+          badge.textContent = precision.charAt(0).toUpperCase() + precision.slice(1);
+          badge.style.cssText =
+            'margin-left:6px;font-size:10px;padding:1px 5px;border-radius:3px;' +
+            'background:#e2e8f0;color:#475569;font-weight:500;';
+          tip.appendChild(badge);
+          tip.style.left = `${e.point.x + 12}px`;
+          tip.style.top = `${e.point.y - 12}px`;
+          tip.style.display = 'block';
+        }
+      });
+
+      map.on('mouseleave', fillId, () => {
+        map.getCanvas().style.cursor = '';
+        if (hoveredRef.current !== null) {
+          map.setFeatureState({ source: sourceId, id: hoveredRef.current }, { hovered: false });
+          hoveredRef.current = null;
+        }
+        if (tooltipRef.current) tooltipRef.current.style.display = 'none';
+      });
+
+      // Click → popup + navigate
+      map.on('click', fillId, (e: MapLayerMouseEvent) => {
+        const feat = e.features?.[0];
+        if (!feat) return;
+        const props = feat.properties as Record<string, string>;
+        const meta: Record<string, any> = {};
+        for (const [k, v] of Object.entries(props)) {
+          if (k.startsWith('meta_')) {
+            try {
+              meta[k.slice(5)] = JSON.parse(v);
+            } catch {
+              meta[k.slice(5)] = v;
+            }
+          }
+        }
+        const marker = areaMarkers.find((m) => m.id === props.entityId);
+        const lngLat = marker ? new maplibregl.LngLat(marker.lng, marker.lat) : e.lngLat;
+        showPopup(map, lngLat, {
+          id: props.entityId,
+          type: entityType,
+          lat: lngLat.lat,
+          lng: lngLat.lng,
+          name: props.name,
+          subtitle: props.subtitle || undefined,
+          color: props.color,
+          linkTo: props.linkTo || undefined,
+          meta,
+        });
+      });
+    },
+    [areaMarkers, showPopup],
+  );
+
+  /** Remove boundary layers + source if present */
+  const removeBoundaryLayers = useCallback(
+    (map: maplibregl.Map, sourceId: string, fillId: string, strokeId: string, labelId: string) => {
+      if (map.getLayer(labelId)) map.removeLayer(labelId);
+      if (map.getLayer(strokeId)) map.removeLayer(strokeId);
+      if (map.getLayer(fillId)) map.removeLayer(fillId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+    },
+    [],
+  );
+
+  // ── City boundary polygon rendering ─────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    if (!cityBoundaries || !citiesEnabled) {
+      removeBoundaryLayers(
+        map,
+        CITY_BOUNDARY_SOURCE,
+        CITY_BOUNDARY_FILL,
+        CITY_BOUNDARY_STROKE,
+        CITY_BOUNDARY_LABEL,
+      );
+      cityBoundaryAddedRef.current = false;
+      return;
+    }
+
+    const cityMarkers = areaMarkers.filter((m) => m.type === 'cities');
+    const enriched = enrichBoundaryFeatures(cityBoundaries, cityMarkers, 'entity_id', 'entityId');
+    if (enriched.features.length === 0) return;
+
+    addBoundaryLayers(map, {
+      sourceId: CITY_BOUNDARY_SOURCE,
+      fillId: CITY_BOUNDARY_FILL,
+      strokeId: CITY_BOUNDARY_STROKE,
+      labelId: CITY_BOUNDARY_LABEL,
+      enriched,
+      color: LAYER_COLORS.cities ?? '#3b82f6',
+      entityType: 'cities',
+      hoveredRef: hoveredCityBoundaryIdRef,
+      minLabelZoom: 4,
+      minLayerZoom: 4,
+    });
+
+    cityBoundaryAddedRef.current = true;
+  }, [
+    cityBoundaries,
+    citiesEnabled,
+    areaMarkers,
+    mapReady,
+    addBoundaryLayers,
+    removeBoundaryLayers,
+  ]);
+
+  // ── Neighbourhood boundary polygon rendering ────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    if (!neighbourhoodBoundaries || !neighbourhoodsEnabled) {
+      removeBoundaryLayers(
+        map,
+        NEIGHBOURHOOD_BOUNDARY_SOURCE,
+        NEIGHBOURHOOD_BOUNDARY_FILL,
+        NEIGHBOURHOOD_BOUNDARY_STROKE,
+        NEIGHBOURHOOD_BOUNDARY_LABEL,
+      );
+      neighbourhoodBoundaryAddedRef.current = false;
+      return;
+    }
+
+    const villageMarkers = areaMarkers.filter((m) => m.type === 'neighbourhoods');
+    const enriched = enrichBoundaryFeatures(
+      neighbourhoodBoundaries,
+      villageMarkers,
+      'entity_id',
+      'entityId',
+    );
+    if (enriched.features.length === 0) return;
+
+    addBoundaryLayers(map, {
+      sourceId: NEIGHBOURHOOD_BOUNDARY_SOURCE,
+      fillId: NEIGHBOURHOOD_BOUNDARY_FILL,
+      strokeId: NEIGHBOURHOOD_BOUNDARY_STROKE,
+      labelId: NEIGHBOURHOOD_BOUNDARY_LABEL,
+      enriched,
+      color: LAYER_COLORS.neighbourhoods ?? '#8b5cf6',
+      entityType: 'neighbourhoods',
+      hoveredRef: hoveredNeighbourhoodBoundaryIdRef,
+      minLabelZoom: 8,
+      minLayerZoom: 8,
+    });
+
+    neighbourhoodBoundaryAddedRef.current = true;
+  }, [
+    neighbourhoodBoundaries,
+    neighbourhoodsEnabled,
+    areaMarkers,
+    mapReady,
+    addBoundaryLayers,
+    removeBoundaryLayers,
+  ]);
 
   // ── Point layers: native MapLibre source with built-in clustering ──────
   useEffect(() => {
