@@ -22,7 +22,7 @@ export interface AiCompletionOptions {
  * Uses @cf/meta/llama-3.1-70b-instruct by default.
  */
 export async function aiComplete(
-  ai: Ai,
+  ai: any,
   opts: AiCompletionOptions,
 ): Promise<string> {
   const messages = [...opts.messages];
@@ -52,7 +52,7 @@ export async function aiComplete(
  * Uses @cf/baai/bge-base-en-v1.5.
  */
 export async function aiEmbed(
-  ai: Ai,
+  ai: any,
   texts: string[],
 ): Promise<number[][]> {
   const result = await ai.run('@cf/baai/bge-base-en-v1.5', {
@@ -67,7 +67,7 @@ export async function aiEmbed(
  * Uses @cf/llava-hf/llava-1.5-7b-hf for image understanding.
  */
 export async function aiVision(
-  ai: Ai,
+  ai: any,
   imageBytes: Uint8Array,
   prompt: string,
 ): Promise<string> {

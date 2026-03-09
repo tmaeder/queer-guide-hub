@@ -27,6 +27,17 @@ export interface Env {
   TRAVELPAYOUTS_API_TOKEN: string;
   PEXELS_API_KEY: string;
   UNSPLASH_ACCESS_KEY: string;
+  STRIPE_PUBLISHABLE_KEY: string;
+
+  // Email
+  RESEND_API_KEY: string;
+  EMAIL_FROM: string;
+
+  // AI
+  AI: any;
+
+  // Mapbox
+  MAPBOX_TOKEN: string;
 
   // Vars
   ALLOWED_ORIGINS: string;

@@ -156,23 +156,10 @@ export const useMailbox = () => {
       if (!user) throw new Error('Not authenticated');
       setSending(true);
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL || 'https://xqeacpakadqfxjxjcewc.supabase.co'}/functions/v1/send-mailbox-email`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session?.access_token}`,
-              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
-            },
-            body: JSON.stringify(params),
-          },
-        );
-        const result = await res.json();
-        if (!res.ok) throw new Error(result.error || 'Failed to send');
+        const { data: result, error } = await supabase.functions.invoke('send-mailbox-email', {
+          body: params,
+        });
+        if (error) throw new Error(error.message || 'Failed to send');
         toast({ title: 'Email sent', description: `To: ${params.to}` });
         return result;
       } catch (err: any) {

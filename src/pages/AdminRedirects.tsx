@@ -71,9 +71,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
-const SUPABASE_URL = 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const WORKERS_URL = import.meta.env.VITE_WORKERS_URL || '';
-const REDIRECT_BASE = WORKERS_URL || `${SUPABASE_URL}/functions/v1`;
+const API_URL = import.meta.env.VITE_API_URL || '';
+const REDIRECT_BASE = API_URL;
 
 interface RedirectRow {
   id: string;
