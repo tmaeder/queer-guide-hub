@@ -100,12 +100,6 @@ const AuditLog = lazy(() =>
 );
 
 // Import Hub components rendered as admin views
-const ImportJobCreator = lazy(() =>
-  import('./components/admin/ImportJobCreator').then((m) => ({ default: m.ImportJobCreator })),
-);
-const ImportWizard = lazy(() =>
-  import('./components/admin/ImportWizard').then((m) => ({ default: m.ImportWizard })),
-);
 const PipelineMonitor = lazy(() =>
   import('./components/admin/PipelineMonitor').then((m) => ({ default: m.PipelineMonitor })),
 );
@@ -371,7 +365,7 @@ const AppRoutes = () => {
 
                 {/* Imports section — unified import hub with all source types */}
                 <Route path="imports" element={<AdminImportHub />} />
-                <Route path="imports/create" element={<ImportWizard />} />
+                <Route path="imports/create" element={<Navigate to="/admin/imports" replace />} />
                 <Route path="imports/pipeline" element={<PipelineMonitor />} />
                 <Route path="imports/history" element={<AdminImportHub />} />
                 {/* Legacy import sub-routes — redirect to unified imports */}

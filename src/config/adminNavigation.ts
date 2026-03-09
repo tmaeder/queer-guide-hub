@@ -231,7 +231,7 @@ export const adminNavSections: AdminNavSection[] = [
         id: 'create-import',
         label: 'New Import',
         icon: Plus,
-        route: '/admin/imports/create',
+        route: '/admin/imports',
         color: '#10b981',
       },
       {
