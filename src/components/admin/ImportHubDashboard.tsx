@@ -1,4 +1,4 @@
-import React, { useState, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { useImportHub, ImportJob } from '@/hooks/useImportHub';
+import { useImportHub, ImportJob, ScrapeSource } from '@/hooks/useImportHub';
 import {
   Upload,
   Database,
@@ -52,6 +52,7 @@ export const ImportHubDashboard = () => {
     cancelImportJob,
     refreshJobs: loadJobs,
     refreshStatistics: loadStatistics,
+    fetchScrapeSources,
   } = useImportHub();
   const { data: reviewCounts } = useReviewCounts();
 
@@ -59,6 +60,11 @@ export const ImportHubDashboard = () => {
   const [activeTab, setActiveTab] = useState('jobs');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [scrapeSources, setScrapeSources] = useState<ScrapeSource[]>([]);
+
+  useEffect(() => {
+    fetchScrapeSources().then(setScrapeSources);
+  }, [fetchScrapeSources]);
 
   const getStatusIcon = (status: ImportJob['status']) => {
     switch (status) {
@@ -189,7 +195,7 @@ export const ImportHubDashboard = () => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
+          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(5, 1fr)' },
           gap: 1.5,
           mb: 3,
         }}
@@ -231,6 +237,23 @@ export const ImportHubDashboard = () => {
               </Typography>
               <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
                 Records
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
+
+        <Card
+          onClick={() => setActiveTab('scraping')}
+          style={{ cursor: 'pointer' }}
+        >
+          <CardContent sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Globe style={{ height: 18, width: 18, color: '#8b5cf6', flexShrink: 0 }} />
+            <Box>
+              <Typography sx={{ fontWeight: 700, lineHeight: 1 }}>
+                {scrapeSources.filter((s) => s.is_enabled).length}/{scrapeSources.length}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
+                Scrapers
               </Typography>
             </Box>
           </CardContent>

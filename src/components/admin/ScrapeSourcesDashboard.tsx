@@ -26,7 +26,7 @@ import HotelIcon from '@mui/icons-material/Hotel';
 import PublicIcon from '@mui/icons-material/Public';
 import ArticleIcon from '@mui/icons-material/Article';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
-import { useScrapeSourcesManager, ScrapeSource, ScrapeRun } from '@/hooks/useScrapeSourcesManager';
+import { useImportHub, ScrapeSource, ScrapeRun } from '@/hooks/useImportHub';
 
 const CONTENT_TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; label: string }> =
   {
@@ -60,8 +60,14 @@ function formatRelativeTime(date: string | null): string {
 }
 
 export const ScrapeSourcesDashboard: React.FC = () => {
-  const { fetchSources, fetchRuns, toggleSource, triggerScrape, triggerAllDue, loading } =
-    useScrapeSourcesManager();
+  const {
+    fetchScrapeSources: fetchSources,
+    fetchScrapeRuns: fetchRuns,
+    toggleScrapeSource: toggleSource,
+    triggerScrape,
+    triggerAllDue,
+    scrapeLoading: loading,
+  } = useImportHub();
   const [sources, setSources] = useState<ScrapeSource[]>([]);
   const [recentRuns, setRecentRuns] = useState<ScrapeRun[]>([]);
   const [loadingSources, setLoadingSources] = useState(true);
