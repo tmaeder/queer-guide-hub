@@ -96,23 +96,14 @@ async function getAuthToken(): Promise<string> {
   return session.access_token;
 }
 
-async function callEdgeFunction(token: string, params: Record<string, any>): Promise<any> {
-  const res = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clean-merge-all-duplicates`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
-    },
-  );
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || `HTTP ${res.status}`);
+async function callEdgeFunction(_token: string, params: Record<string, any>): Promise<any> {
+  const { data, error } = await supabase.functions.invoke('clean-merge-all-duplicates', {
+    body: params,
+  });
+  if (error) {
+    throw new Error(error.message || 'Edge function call failed');
   }
-  return res.json();
+  return data;
 }
 
 // ==================== Hooks ====================
