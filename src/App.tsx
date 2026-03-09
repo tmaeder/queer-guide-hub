@@ -65,15 +65,11 @@ const AdminAccessibilityAttributes = lazy(() => import('./pages/AdminAccessibili
 const AdminTargetGroups = lazy(() => import('./pages/AdminTargetGroups'));
 const AdminEvents = lazy(() => import('./pages/AdminEvents'));
 const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
-const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
 const AdminImportHub = lazy(() => import('./pages/AdminImportHub'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
-const AdminWorkflows = lazy(() => import('./pages/AdminWorkflows'));
 const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
-const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
-const AdminScraping = lazy(() => import('./pages/AdminScraping'));
 
 // New feature pages
 const Hotels = lazyRetry(() => import('./pages/Hotels'));
@@ -110,16 +106,8 @@ const ImportJobCreator = lazy(() =>
 const ImportWizard = lazy(() =>
   import('./components/admin/ImportWizard').then((m) => ({ default: m.ImportWizard })),
 );
-const NewsSourcesManager = lazy(() =>
-  import('./components/admin/NewsSourcesManager').then((m) => ({ default: m.NewsSourcesManager })),
-);
 const PipelineMonitor = lazy(() =>
   import('./components/admin/PipelineMonitor').then((m) => ({ default: m.PipelineMonitor })),
-);
-const VenueImportQuickActions = lazy(() =>
-  import('./components/admin/VenueImportQuickActions').then((m) => ({
-    default: m.VenueImportQuickActions,
-  })),
 );
 const ApiKeysManager = lazy(() =>
   import('./components/admin/ApiKeysManager').then((m) => ({ default: m.ApiKeysManager })),
@@ -381,19 +369,27 @@ const AppRoutes = () => {
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />
 
-                {/* Imports & Data section */}
+                {/* Imports section — unified import hub with all source types */}
                 <Route path="imports" element={<AdminImportHub />} />
                 <Route path="imports/create" element={<ImportWizard />} />
-                <Route path="imports/news-sources" element={<NewsSourcesManager />} />
                 <Route path="imports/pipeline" element={<PipelineMonitor />} />
-                <Route path="imports/venues" element={<VenueImportQuickActions />} />
-                <Route path="imports/email-ingestions" element={<AdminEmailIngestions />} />
                 <Route path="imports/history" element={<AdminImportHub />} />
-                <Route path="workflows" element={<AdminWorkflows />} />
-                <Route path="scraping" element={<AdminScraping />} />
+                {/* Legacy import sub-routes — redirect to unified imports */}
+                <Route
+                  path="imports/news-sources"
+                  element={<Navigate to="/admin/imports" replace />}
+                />
+                <Route path="imports/venues" element={<Navigate to="/admin/imports" replace />} />
+                <Route
+                  path="imports/email-ingestions"
+                  element={<Navigate to="/admin/imports" replace />}
+                />
 
-                {/* Review & Workflow section -- unified dashboard */}
+                {/* Automation section — modules + workflows + image optimization */}
                 <Route path="automation" element={<AdminAutomation />} />
+                {/* Legacy: /admin/workflows and /admin/scraping redirect to unified views */}
+                <Route path="workflows" element={<Navigate to="/admin/automation" replace />} />
+                <Route path="scraping" element={<Navigate to="/admin/imports" replace />} />
                 <Route path="review" element={<AdminReview />} />
                 <Route
                   path="moderation"
@@ -434,7 +430,7 @@ const AppRoutes = () => {
                 <Route path="personalities" element={<AdminPersonalities />} />
                 <Route path="marketplace" element={<AdminMarketplace />} />
                 <Route path="groups" element={<AdminGroups />} />
-                <Route path="news-sources" element={<AdminNewsSources />} />
+                <Route path="news-sources" element={<Navigate to="/admin/imports" replace />} />
                 <Route path="cms" element={<AdminCMS />} />
                 <Route path="import-hub" element={<AdminImportHub />} />
                 <Route path="festivals" element={<Navigate to="/admin/events" replace />} />
