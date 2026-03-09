@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,7 +27,7 @@ export function useSecureTurnstile() {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase.functions.invoke('get-turnstile-config', {
+      const { data, error } = await invokeFunction('get-turnstile-config', {
         headers: {
           Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },

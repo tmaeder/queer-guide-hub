@@ -49,6 +49,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';
 import { NewsCard } from '@/components/news/NewsCard';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -133,7 +134,7 @@ export default function CountryDetail() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
       try {
-        const { data, error } = await supabase.functions.invoke('get-weather-forecast', {
+        const { data, error } = await invokeFunction('get-weather-forecast', {
           body: {
             latitude: country.latitude,
             longitude: country.longitude,

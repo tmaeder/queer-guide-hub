@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 
 export interface TravelDeal {
   origin: string;
@@ -40,7 +40,7 @@ export function useTravelDeals({
       const body: Record<string, any> = { origin, type, currency, limit };
       if (destination) body.destination = destination;
 
-      const { data, error } = await supabase.functions.invoke('travel-deals', { body });
+      const { data, error } = await invokeFunction('travel-deals', { body });
 
       if (error) {
         console.error('Travel deals error:', error);

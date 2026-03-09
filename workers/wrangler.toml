@@ -1,0 +1,34 @@
+# Cloudflare Workers configuration for queer-guide
+# These workers replace Supabase Edge Functions that don't need a database.
+
+name = "queer-guide-workers"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# KV Namespace bindings (replaces Redis/Upstash)
+[[kv_namespaces]]
+binding = "CACHE"
+id = ""           # Set after `wrangler kv namespace create CACHE`
+
+[[kv_namespaces]]
+binding = "REDIRECTS"
+id = ""           # Set after `wrangler kv namespace create REDIRECTS`
+
+# Environment variables (set via `wrangler secret put <NAME>`)
+# CLOUDFLARE_ZONE_ID
+# CLOUDFLARE_ACCOUNT_ID
+# CLOUDFLARE_API_TOKEN
+# TURNSTILE_SITE_KEY
+# TURNSTILE_SECRET_KEY
+# OPENWEATHER_API_KEY
+# TRAVELPAYOUTS_API_TOKEN
+# PEXELS_API_KEY
+# UNSPLASH_ACCESS_KEY
+# MAPBOX_TOKEN
+# GOOGLE_MAPS_KEY
+# SUPABASE_URL            (for admin auth verification only)
+# SUPABASE_SERVICE_ROLE_KEY
+
+[vars]
+ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:5173,http://localhost:3000"

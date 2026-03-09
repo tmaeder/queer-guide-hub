@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 
 interface VisitorOrigin {
@@ -51,7 +51,7 @@ export function useVisitorOrigin(): VisitorOrigin {
     // 3. Resolve nearest airport from coordinates
     (async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('resolve-origin-airport', {
+        const { data, error } = await invokeFunction('resolve-origin-airport', {
           body: { latitude: location.latitude, longitude: location.longitude },
         });
 

@@ -1,4 +1,5 @@
 import { supabase } from './client'
+import { invokeFunction } from '@/integrations/cloudflare-workers'
 
 export interface CloudflareAnalytics {
   success: boolean
@@ -89,7 +90,7 @@ export interface CloudflarePerformanceSettings {
 export class CloudflareAPI {
   private async makeRequest(action: string, params?: Record<string, string>) {
     try {
-      const { data, error } = await supabase.functions.invoke('cloudflare-api', {
+      const { data, error } = await invokeFunction('cloudflare-api', {
         method: 'POST',
         body: { action, params }
       })
