@@ -132,43 +132,30 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
   const [loadedCounts, setLoadedCounts] = useState<Record<string, number>>({});
   const [countsLoading, setCountsLoading] = useState(true);
 
-  // ── Collect all countTable entries across every section ────────
-  const countTables = useMemo(() => {
-    const tables: Array<{ itemId: string; tableName: string }> = [];
-    for (const section of adminNavSections) {
-      for (const item of section.items) {
-        if (item.countTable) {
-          tables.push({ itemId: item.id, tableName: item.countTable });
-        }
-      }
-    }
-    return tables;
-  }, []);
-
-  // ── Load counts from Supabase on mount ────────────────────────
+  // ── Load all counts from Supabase via single RPC ────────────
   const loadCounts = useCallback(async () => {
     setCountsLoading(true);
     try {
-      const counts: Record<string, number> = {};
-      const results = await Promise.allSettled(
-        countTables.map(async ({ itemId, tableName }) => {
-          const { count, error } = await supabase
-            .from(tableName as never)
-            .select('*', { count: 'exact', head: true });
-          if (!error && count !== null) {
-            counts[itemId] = count;
+      const { data, error } = await supabase.rpc('get_admin_counts');
+      if (!error && data) {
+        const raw = data as Record<string, number>;
+        // Map table names back to nav item IDs
+        const counts: Record<string, number> = {};
+        for (const section of adminNavSections) {
+          for (const item of section.items) {
+            if (item.countTable && raw[item.countTable] !== undefined) {
+              counts[item.id] = raw[item.countTable];
+            }
           }
-        }),
-      );
-      // results consumed for resilience (allSettled never throws)
-      void results;
-      setLoadedCounts(counts);
+        }
+        setLoadedCounts(counts);
+      }
     } catch {
       // Fail gracefully
     } finally {
       setCountsLoading(false);
     }
-  }, [countTables]);
+  }, []);
 
   useEffect(() => {
     loadCounts();

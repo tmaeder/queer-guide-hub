@@ -1,6 +1,7 @@
 /**
  * useReviewCounts -- Aggregate badge counts across all review queues.
- * Used by the admin sidebar and unified review dashboard.
+ * Uses a single RPC call instead of multiple HEAD requests to avoid
+ * PostgREST connection pool exhaustion.
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -17,46 +18,27 @@ export interface ReviewCounts {
 }
 
 async function fetchReviewCounts(): Promise<ReviewCounts> {
-  const [stagingRes, cmsRes, modRes, autoRes, tagRes, dupRes] = await Promise.all([
-    // Staging items pending review
-    supabase
-      .from('ingestion_staging' as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('review_status', 'pending_review')
-      .eq('disposition', 'pending'),
-    // CMS content in review state
-    supabase
-      .from('cms_content_metadata' as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('workflow_state', 'review'),
-    // Open moderation flags
-    supabase
-      .from('moderation_flags' as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'OPEN'),
-    // Pending automation flags
-    supabase
-      .from('content_flags' as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending'),
-    // Pending tag suggestions
-    supabase
-      .from('tag_suggestions' as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending'),
-    // Pending duplicate pairs
-    supabase
-      .from('scraper_dedupe_decisions' as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('decision', 'pending'),
-  ]);
+  const { data, error } = await supabase.rpc('get_admin_counts');
 
-  const staging = stagingRes.count ?? 0;
-  const cmsReview = cmsRes.count ?? 0;
-  const moderation = modRes.count ?? 0;
-  const automation = autoRes.count ?? 0;
-  const tagSuggestions = tagRes.count ?? 0;
-  const duplicates = dupRes.count ?? 0;
+  if (error || !data) {
+    return {
+      staging: 0,
+      cmsReview: 0,
+      moderation: 0,
+      automation: 0,
+      tagSuggestions: 0,
+      duplicates: 0,
+      total: 0,
+    };
+  }
+
+  const raw = data as Record<string, number>;
+  const staging = raw.review_staging ?? 0;
+  const cmsReview = raw.review_cms ?? 0;
+  const moderation = raw.review_moderation ?? 0;
+  const automation = 0; // content_flags table does not exist
+  const tagSuggestions = raw.review_tags ?? 0;
+  const duplicates = raw.review_duplicates ?? 0;
 
   return {
     staging,
