@@ -90,21 +90,13 @@ export const WebScrapersPanel = () => {
         return;
       }
 
-      const { data: session } = await supabase.auth.getSession();
-      const token = session?.session?.access_token;
-
-      const ingestRes = await fetch(
-        `https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/ingest-scraper-results`,
+      const { data: ingestData, error: ingestError } = await supabase.functions.invoke(
+        'ingestion-pipeline',
         {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ entities: allEntities }),
+          body: { entities: allEntities },
         },
       );
-      const ingestData = await ingestRes.json();
+      if (ingestError) throw new Error(ingestError.message || 'Ingestion failed');
 
       setResults((prev) => ({
         ...prev,
