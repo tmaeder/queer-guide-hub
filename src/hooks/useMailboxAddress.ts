@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -28,7 +28,7 @@ export const useMailboxAddress = () => {
 
   const checkAvailability = useCallback(
     async (handle: string): Promise<{ available: boolean; reason: string | null }> => {
-      const { data, error } = await supabase.rpc('check_mailbox_availability', {
+      const { data, error } = await api.rpc('check_mailbox_availability', {
         p_address: handle.toLowerCase(),
       });
       if (error) return { available: false, reason: error.message };

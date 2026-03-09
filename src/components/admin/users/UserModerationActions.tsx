@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,7 +67,7 @@ export function UserModerationActions({
 
       if (error) throw error;
 
-      await supabase.rpc('log_security_event', {
+      await api.rpc('log_security_event', {
         p_event_type: `USER_${pendingAction.toUpperCase()}`,
         p_user_id: null,
         p_metadata: {

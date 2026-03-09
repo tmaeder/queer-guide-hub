@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import type { CMSAuditEntry } from '@/types/cms';
 
 interface UseCMSAuditReturn {
@@ -102,7 +102,7 @@ export function useCMSAudit(): UseCMSAuditReturn {
     metadata?: Record<string, unknown>;
   }) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await api.auth.getUser();
 
       await supabase
         .from('cms_audit_log' as any)

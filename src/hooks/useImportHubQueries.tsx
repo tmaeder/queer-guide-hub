@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 import type { StagingItem } from '@/hooks/useImportHub';
 
@@ -72,7 +72,7 @@ export function useStagingItems(
   return useQuery({
     queryKey: ['staging-items', filters, page, perPage, sort],
     queryFn: async (): Promise<StagingPageResult> => {
-      const { data, error } = await supabase.rpc('get_staging_page', {
+      const { data, error } = await api.rpc('get_staging_page', {
         p_target_table: filters.target_table || null,
         p_review_status: filters.review_status || null,
         p_dedup_status: filters.dedup_status || null,
@@ -164,7 +164,7 @@ export function useImportStatistics() {
   return useQuery({
     queryKey: ['import-statistics'],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_import_statistics');
+      const { data, error } = await api.rpc('get_import_statistics');
       if (error) {
         console.error('Failed to fetch import stats:', error);
         return null;
@@ -230,7 +230,7 @@ export function useBatchFindDuplicates() {
 
   return useMutation({
     mutationFn: async (params: { targetTable?: string; batchLimit?: number }) => {
-      const { data, error } = await supabase.rpc('batch_find_duplicates', {
+      const { data, error } = await api.rpc('batch_find_duplicates', {
         p_target_table: params.targetTable || null,
         p_batch_limit: params.batchLimit || 100,
       } as any);
@@ -256,7 +256,7 @@ export function useScanTableDuplicates() {
 
   return useMutation({
     mutationFn: async (params: { entityType: string; threshold?: number; limit?: number }) => {
-      const { data, error } = await supabase.rpc('scan_table_duplicates', {
+      const { data, error } = await api.rpc('scan_table_duplicates', {
         p_entity_type: params.entityType,
         p_threshold: params.threshold || 0.7,
         p_limit: params.limit || 200,
@@ -288,7 +288,7 @@ export function useMergeEntities() {
       removeId: string;
       mergedData?: Record<string, any>;
     }) => {
-      const { data, error } = await supabase.rpc('merge_entities', {
+      const { data, error } = await api.rpc('merge_entities', {
         p_entity_type: params.entityType,
         p_keep_id: params.keepId,
         p_remove_id: params.removeId,
@@ -343,7 +343,7 @@ export function useStagingAction() {
       stagingIds?: string[];
       notes?: string;
     }) => {
-      const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { data, error } = await api.functions.invoke('ingestion-review-api', {
         body: {
           action: params.action,
           staging_id: params.stagingId,

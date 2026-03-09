@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import { api } from '@/integrations/api/client';
+import { Database } from '@/types/database';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
 
@@ -166,7 +166,7 @@ export function useEvents(autoFetch: boolean = true) {
 
   const createEvent = async (event: EventInsert) => {
     try {
-      const { data, error } = await supabase.from('events').insert([event]).select().single();
+      const { data, error } = await api.from('events').insert([event]).select().single();
 
       if (error) throw error;
       return { data, error: null };
@@ -199,7 +199,7 @@ export function useEvents(autoFetch: boolean = true) {
 
   const deleteEvent = async (eventId: string) => {
     try {
-      const { error } = await supabase.from('events').delete().eq('id', eventId);
+      const { error } = await api.from('events').delete().eq('id', eventId);
 
       if (error) throw error;
       return { error: null };
@@ -215,9 +215,9 @@ export function useEvents(autoFetch: boolean = true) {
     status: 'going' | 'interested' | 'not_going',
   ) => {
     try {
-      const { error } = await supabase.from('event_attendees').upsert({
+      const { error } = await api.from('event_attendees').upsert({
         event_id: eventId,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
+        user_id: (await api.auth.getUser()).data.user?.id,
         status,
       });
 
@@ -225,9 +225,9 @@ export function useEvents(autoFetch: boolean = true) {
 
       // Auto-add to favorites when going or interested
       if (status === 'going' || status === 'interested') {
-        await supabase.from('event_favorites').upsert({
+        await api.from('event_favorites').upsert({
           event_id: eventId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: (await api.auth.getUser()).data.user?.id,
         });
       }
 

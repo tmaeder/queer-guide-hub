@@ -21,7 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePersonalities, type Personality } from '@/hooks/usePersonalities';
 import { toast } from '@/hooks/use-toast';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -124,7 +124,7 @@ export default function PersonalityDetail() {
         }
 
         // Fetch similar personalities via embedding similarity
-        const { data: similarData } = await supabase.rpc('get_similar_personalities', {
+        const { data: similarData } = await api.rpc('get_similar_personalities', {
           personality_uuid: id,
           result_limit: 6,
           min_similarity: 0.3,

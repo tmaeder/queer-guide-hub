@@ -48,7 +48,7 @@ import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';
 import { NewsCard } from '@/components/news/NewsCard';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { invokeFunction } from '@/integrations/cloudflare-workers';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ImportJob {
@@ -232,7 +232,7 @@ export const useImportHub = () => {
   // Load statistics
   const loadStatistics = useCallback(async () => {
     try {
-      const { data, error } = await supabase.rpc('get_import_statistics');
+      const { data, error } = await api.rpc('get_import_statistics');
 
       if (error) throw error;
 
@@ -288,7 +288,7 @@ export const useImportHub = () => {
       if (type.startsWith('venues-') && !type.endsWith('-csv') && config.venueImportConfig) {
         const provider = type.replace('venues-', '');
         const functionName = `import-${provider}-venues`;
-        const { data, error } = await supabase.functions.invoke(functionName, {
+        const { data, error } = await api.functions.invoke(functionName, {
           body: { config: config.venueImportConfig }
         });
         
@@ -312,7 +312,7 @@ export const useImportHub = () => {
           .join('');
       }
 
-      const { data: userData } = await supabase.auth.getUser();
+      const { data: userData } = await api.auth.getUser();
       const userId = userData.user?.id;
       
       if (!userId) throw new Error('User not authenticated');
@@ -380,7 +380,7 @@ export const useImportHub = () => {
   // Validate import data
   const validateImportData = useCallback(async (jobId: string): Promise<any> => {
     try {
-      const { data, error } = await supabase.rpc('validate_import_data', {
+      const { data, error } = await api.rpc('validate_import_data', {
         data: { job_id: jobId, validation_rules: {} }
       });
 
@@ -439,7 +439,7 @@ export const useImportHub = () => {
         .from('import_audit_log')
         .insert({
           import_job_id: jobId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: (await api.auth.getUser()).data.user?.id,
           action: 'job_cancelled',
           details: { timestamp: new Date().toISOString() }
         });
@@ -563,7 +563,7 @@ export const useImportHub = () => {
 
   const triggerSource = useCallback(async (source: IngestionSource) => {
     try {
-      const { data, error } = await supabase.functions.invoke(source.edge_function, {
+      const { data, error } = await api.functions.invoke(source.edge_function, {
         body: {}
       });
       if (error) throw error;
@@ -586,7 +586,7 @@ export const useImportHub = () => {
     limit?: number;
   }): Promise<{ items: StagingItem[]; total: number }> => {
     try {
-      const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { data, error } = await api.functions.invoke('ingestion-review-api', {
         body: {
           action: 'list',
           filters: {
@@ -607,7 +607,7 @@ export const useImportHub = () => {
 
   const fetchReviewStats = useCallback(async (): Promise<Record<string, any>> => {
     try {
-      const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { data, error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'stats' }
       });
       if (error) throw error;
@@ -620,7 +620,7 @@ export const useImportHub = () => {
 
   const approveItem = useCallback(async (stagingId: string, notes?: string) => {
     try {
-      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'approve', staging_id: stagingId, notes }
       });
       if (error) throw error;
@@ -633,7 +633,7 @@ export const useImportHub = () => {
 
   const rejectItem = useCallback(async (stagingId: string, notes?: string) => {
     try {
-      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'reject', staging_id: stagingId, notes }
       });
       if (error) throw error;
@@ -646,7 +646,7 @@ export const useImportHub = () => {
 
   const bulkApprove = useCallback(async (stagingIds: string[]) => {
     try {
-      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'bulk_approve', staging_ids: stagingIds }
       });
       if (error) throw error;
@@ -659,7 +659,7 @@ export const useImportHub = () => {
 
   const bulkReject = useCallback(async (stagingIds: string[]) => {
     try {
-      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'bulk_reject', staging_ids: stagingIds }
       });
       if (error) throw error;
@@ -752,7 +752,7 @@ export const useImportHub = () => {
     async (source: ScrapeSource, dryRun = false) => {
       setScrapeLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('scrape-web-sources', {
+        const { data, error } = await api.functions.invoke('scrape-web-sources', {
           body: { source_slug: source.slug, dry_run: dryRun },
         });
 
@@ -788,7 +788,7 @@ export const useImportHub = () => {
         const body: Record<string, unknown> = { mode: 'scheduled' };
         if (contentTypes) body.content_types = contentTypes;
 
-        const { data, error } = await supabase.functions.invoke('scrape-web-sources', { body });
+        const { data, error } = await api.functions.invoke('scrape-web-sources', { body });
         if (error) throw error;
 
         toast({
@@ -895,7 +895,7 @@ export const useImportHub = () => {
   const triggerNewsFetch = useCallback(
     async (sourceId: string) => {
       try {
-        const { error } = await supabase.functions.invoke('fetch-news', {
+        const { error } = await api.functions.invoke('fetch-news', {
           body: { sourceId },
         });
         if (error) throw error;
@@ -935,7 +935,7 @@ export const useImportHub = () => {
     }) => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('background-import-manager', {
+        const { data, error } = await api.functions.invoke('background-import-manager', {
           body: {
             action: 'create',
             import_type: config.source === 'csv' ? `${config.contentType}-csv` : config.source,

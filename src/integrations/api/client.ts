@@ -7,13 +7,13 @@
  * Usage:
  *   import { api } from '@/integrations/api/client';
  *
- *   // Like supabase.from('venues').select('*')
+ *   // Like api.from('venues').select('*')
  *   api.from('venues').select('*').eq('city_id', id).order('name').range(0, 9)
  *
- *   // Like supabase.rpc('increment_views', { article_id: id })
+ *   // Like api.rpc('increment_views', { article_id: id })
  *   api.rpc('increment_views', { article_id: id })
  *
- *   // Like supabase.functions.invoke('fetch-news', { body: { ... } })
+ *   // Like api.functions.invoke('fetch-news', { body: { ... } })
  *   api.functions.invoke('fetch-news', { body: { ... } })
  */
 
@@ -126,7 +126,7 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<Respon
   });
 }
 
-// ─── Query Builder (supabase.from() compatible) ───
+// ─── Query Builder (api.from() compatible) ───
 
 type FilterValue = string | number | boolean | null | string[] | number[];
 
@@ -600,5 +600,3 @@ export const api = {
   functions: functionsClient,
 };
 
-// Re-export for backward compatibility
-export { api as supabase };

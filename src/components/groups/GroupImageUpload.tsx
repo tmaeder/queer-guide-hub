@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 import { useToast } from "@/hooks/use-toast";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -45,7 +45,7 @@ export const GroupImageUpload = ({
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `group-images/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await api.storage
           .from('user-photos')
           .upload(filePath, file);
 
@@ -54,7 +54,7 @@ export const GroupImageUpload = ({
           throw uploadError;
         }
 
-        const { data: { publicUrl } } = supabase.storage
+        const { data: { publicUrl } } = api.storage
           .from('user-photos')
           .getPublicUrl(filePath);
 

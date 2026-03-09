@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 type VenueCheckin = {
@@ -74,7 +74,7 @@ export function useVenueCheckins() {
         .from('venue_checkins')
         .insert({
           venue_id: venueId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: (await api.auth.getUser()).data.user?.id,
           latitude: userLat,
           longitude: userLng,
           distance_meters: distance,
@@ -150,7 +150,7 @@ export function useVenueCheckins() {
   };
 
   const getUserCheckins = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await api.auth.getUser();
     if (!user) return [];
 
     // Use secure function to get user's own check-ins with full access

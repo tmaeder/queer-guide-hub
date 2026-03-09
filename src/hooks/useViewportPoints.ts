@@ -13,7 +13,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { invokeFunction } from '@/integrations/cloudflare-workers';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 import {

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type CMSContent = Database['public']['Tables']['cms_content']['Row'];
 type CMSContentInsert = Database['public']['Tables']['cms_content']['Insert'];

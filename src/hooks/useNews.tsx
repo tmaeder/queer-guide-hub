@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 // Simplified type definitions to avoid TypeScript recursion issues
 type NewsArticle = any;
@@ -171,7 +171,7 @@ export const useNews = () => {
 
   const incrementViews = useCallback(async (articleId: string) => {
     try {
-      const { error } = await supabase.rpc('increment_article_views', {
+      const { error } = await api.rpc('increment_article_views', {
         article_id: articleId,
       });
 

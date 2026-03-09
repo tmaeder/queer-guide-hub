@@ -62,7 +62,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { EnhancedImageUpload } from '@/components/security/EnhancedImageUpload';
@@ -189,7 +189,7 @@ export function MediaLibrary() {
       let hasMore = true;
 
       while (hasMore) {
-        const { data, error } = await supabase.functions.invoke('populate-optimization-status', {
+        const { data, error } = await api.functions.invoke('populate-optimization-status', {
           body: { batchSize, offset }
         });
 
@@ -280,7 +280,7 @@ export function MediaLibrary() {
 
       for (const bucket of buckets) {
         try {
-          const { data: files, error } = await supabase.storage
+          const { data: files, error } = await api.storage
             .from(bucket)
             .list('', {
               limit: 1000,
@@ -467,7 +467,7 @@ export function MediaLibrary() {
         return;
       }
 
-      const { error: storageError } = await supabase.storage
+      const { error: storageError } = await api.storage
         .from('cms-media')
         .remove([item.storage_path]);
 
@@ -503,7 +503,7 @@ export function MediaLibrary() {
 
   const handleDownload = async (item: MediaItem) => {
     try {
-      const { data } = supabase.storage
+      const { data } = api.storage
         .from('cms-media')
         .getPublicUrl(item.storage_path);
 
@@ -557,7 +557,7 @@ export function MediaLibrary() {
   const getImageUrl = (item: MediaItem) => {
     const bucket = (item as any).bucket || 'cms-media';
 
-    const { data } = supabase.storage
+    const { data } = api.storage
       .from(bucket)
       .getPublicUrl(item.storage_path);
     return data.publicUrl;

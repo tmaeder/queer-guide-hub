@@ -68,7 +68,7 @@ import {
   detectLoop,
 } from '@/lib/redirects/validation';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { format } from 'date-fns';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -320,7 +320,7 @@ export default function AdminRedirects() {
           icon: Edit2,
           onClick: async (row) => {
             // Fetch full redirect data for edit dialog
-            const { data } = await supabase.from('redirects').select('*').eq('id', row.id).single();
+            const { data } = await api.from('redirects').select('*').eq('id', row.id).single();
             if (data) {
               setEditingRedirect(data as Redirect);
               setDialogOpen(true);

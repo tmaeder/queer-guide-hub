@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { toast } from 'sonner';
 import { ModernAudioPlayer } from '@/components/ui/modern-audio-player';
 import Box from '@mui/material/Box';
@@ -76,7 +76,7 @@ export function AudioManager() {
     if (!confirm('Are you sure you want to delete this audio file?')) return;
 
     try {
-      const { error } = await supabase.from('audio_files').delete().eq('id', audioId);
+      const { error } = await api.from('audio_files').delete().eq('id', audioId);
 
       if (error) throw error;
 

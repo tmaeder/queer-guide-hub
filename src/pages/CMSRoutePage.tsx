@@ -26,7 +26,7 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import { ChevronRight, FileText } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import DOMPurify from 'dompurify';
 import { useMeta } from '@/hooks/useMeta';
 import type { CMSPage } from '@/types/cms';

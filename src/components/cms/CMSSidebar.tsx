@@ -30,7 +30,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { getContentTypeIds, getContentType } from '@/config/contentTypeRegistry';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 
 export type CMSView =
@@ -582,7 +582,7 @@ export function CMSSidebar({
         <Tooltip title="Sign out">
           <Box
             component="button"
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => api.auth.signOut()}
             sx={{
               p: 0.5,
               borderRadius: '6px',

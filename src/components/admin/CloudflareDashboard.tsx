@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { cloudflareAPI } from '@/integrations/supabase/cloudflare';
+import { cloudflareAPI } from '@/integrations/api/cloudflare';
 import { InlineLoading } from '@/components/ui/loading';
 import {
   Cloud,

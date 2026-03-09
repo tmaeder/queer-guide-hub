@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import { api } from '@/integrations/api/client';
+import { Database } from '@/types/database';
 
 export type QueerVillage = Database['public']['Tables']['queer_villages']['Row'];
 type QueerVillageInsert = Database['public']['Tables']['queer_villages']['Insert'];
@@ -44,7 +44,7 @@ export function useQueerVillages(autoFetch = true) {
   }, []);
 
   const createVillage = useCallback(async (village: QueerVillageInsert) => {
-    const { data, error } = await supabase.from('queer_villages').insert(village).select().single();
+    const { data, error } = await api.from('queer_villages').insert(village).select().single();
     if (error) throw error;
     return data;
   }, []);
@@ -61,7 +61,7 @@ export function useQueerVillages(autoFetch = true) {
   }, []);
 
   const deleteVillage = useCallback(async (id: string) => {
-    const { error } = await supabase.from('queer_villages').delete().eq('id', id);
+    const { error } = await api.from('queer_villages').delete().eq('id', id);
     if (error) throw error;
   }, []);
 

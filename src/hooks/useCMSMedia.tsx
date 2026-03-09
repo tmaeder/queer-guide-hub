@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { CMSMedia, CMSMediaAttachment, MediaRole } from '@/types/cms';
 
@@ -110,7 +110,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
       const storagePath = `uploads/${filename}`;
 
       // Upload to Supabase storage
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await api.storage
         .from(bucket)
         .upload(storagePath, file, {
           cacheControl: '3600',
@@ -169,7 +169,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
 
       if (mediaItem?.storage_path) {
         // Delete from storage
-        await supabase.storage
+        await api.storage
           .from('cms-media')
           .remove([mediaItem.storage_path]);
       }

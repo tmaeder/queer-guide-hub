@@ -32,7 +32,7 @@ import {
   Users,
   Layers,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentTypeIds, getContentType } from '@/config/contentTypeRegistry';
 import type { CMSView } from './CMSSidebar';

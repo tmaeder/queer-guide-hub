@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
+import { api } from "@/integrations/api/client";
+import { Tables } from "@/types/database";
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 
 export type Continent = Tables<"continents">;

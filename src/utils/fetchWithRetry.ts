@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
@@ -42,7 +42,7 @@ function sleep(ms: number): Promise<void> {
  *
  * Usage:
  *   const { data, error, count } = await queryWithRetry(() =>
- *     supabase.from('events').select('*', { count: 'exact' }).order('created_at', { ascending: false })
+ *     api.from('events').select('*', { count: 'exact' }).order('created_at', { ascending: false })
  *   );
  *
  * The `queryBuilder` function is called fresh on each attempt (important: don't
@@ -113,7 +113,7 @@ export async function invokeWithRetry<T = any>(
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const result = await Promise.race([
-        supabase.functions.invoke(functionName, invokeOptions),
+        api.functions.invoke(functionName, invokeOptions),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Request timed out')), timeoutMs)
         ),

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import MuiAutocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 
 const filter = createFilterOptions<string>();
 

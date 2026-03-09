@@ -65,7 +65,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
   const loadMetadata = useCallback(async () => {
     if (!itemId || !config) return;
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
+      const { api } = await import('@/integrations/api/client');
       const { data } = await supabase
         .from('cms_content_metadata' as any)
         .select('workflow_state, visibility_level, published_at')
@@ -129,7 +129,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       setVisibility(newVisibility);
 
       try {
-        const { supabase } = await import('@/integrations/supabase/client');
+        const { api } = await import('@/integrations/api/client');
         await supabase
           .from('cms_content_metadata' as any)
           .upsert(

@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 import { Badge } from "@/components/ui/badge";
 
 interface BulkCreateResult {
@@ -59,7 +59,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('bulk-create-ai-tags', {
+      const { data, error } = await api.functions.invoke('bulk-create-ai-tags', {
         body: { terms: termsList }
       });
 

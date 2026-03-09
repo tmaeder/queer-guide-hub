@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import type { AffiliatePartner } from '@/lib/affiliate';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type PartnerRow = Database['public']['Tables']['affiliate_partners']['Row'];
 type PartnerInsert = Database['public']['Tables']['affiliate_partners']['Insert'];
@@ -36,7 +36,7 @@ export function useAffiliateLinks() {
   }, []);
 
   const createPartner = useCallback(async (partner: PartnerInsert) => {
-    const { data, error } = await supabase.from('affiliate_partners').insert(partner).select().single();
+    const { data, error } = await api.from('affiliate_partners').insert(partner).select().single();
     if (error) throw error;
     return data;
   }, []);
@@ -53,7 +53,7 @@ export function useAffiliateLinks() {
   }, []);
 
   const deletePartner = useCallback(async (id: string) => {
-    const { error } = await supabase.from('affiliate_partners').delete().eq('id', id);
+    const { error } = await api.from('affiliate_partners').delete().eq('id', id);
     if (error) throw error;
   }, []);
 

@@ -5,7 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -205,7 +205,7 @@ async function fetchContentStats(): Promise<ContentStats> {
 
   const results = await Promise.all(
     tables.map(({ table }) =>
-      supabase.from(table as any).select('id', { count: 'exact', head: true }),
+      api.from(table as any).select('id', { count: 'exact', head: true }),
     ),
   );
 

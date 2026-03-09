@@ -33,7 +33,7 @@ import {
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { useReviewCounts, type ReviewCounts } from '@/hooks/useReviewCounts';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -202,7 +202,7 @@ export default function AdminReview() {
           .limit(1000);
         const tagIds = (tags ?? []).map((t: any) => t.id);
         if (tagIds.length > 0) {
-          const { error } = await supabase.rpc('approve_tag_suggestions' as any, {
+          const { error } = await api.rpc('approve_tag_suggestions' as any, {
             p_suggestion_ids: tagIds,
             p_reviewer_id: user.id,
           });
@@ -453,7 +453,7 @@ export default function AdminReview() {
           .gte('confidence', 0.8)
           .limit(1000);
         if ((confidentTags ?? []).length > 0) {
-          const { data: count, error } = await supabase.rpc('approve_tag_suggestions' as any, {
+          const { data: count, error } = await api.rpc('approve_tag_suggestions' as any, {
             p_suggestion_ids: (confidentTags ?? []).map((t: any) => t.id),
             p_reviewer_id: user.id,
           });

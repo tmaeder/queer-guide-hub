@@ -18,7 +18,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useGroupNotifications } from '@/hooks/useGroupNotifications';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';

@@ -30,7 +30,7 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
 import { AuthGate } from '@/components/layout/AuthGate';

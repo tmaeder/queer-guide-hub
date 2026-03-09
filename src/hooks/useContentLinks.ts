@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+import { api } from '@/integrations/api/client';
+import type { Database } from '@/types/database';
 
 export type ContentLink = Database['public']['Tables']['content_links']['Row'] & {
   is_social?: boolean;
@@ -66,7 +66,7 @@ export function useContentLinks() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const { data, error: err } = await supabase.rpc('get_link_health_stats');
+      const { data, error: err } = await api.rpc('get_link_health_stats');
       if (err) throw err;
       const d = data as Record<string, number> | null;
       setStats({
@@ -94,14 +94,14 @@ export function useContentLinks() {
   // --- Mutations ---
 
   const deleteLink = useCallback(async (id: string) => {
-    const { error: err } = await supabase.from('content_links').delete().eq('id', id);
+    const { error: err } = await api.from('content_links').delete().eq('id', id);
     if (err) throw err;
     await refresh();
   }, [refresh]);
 
   const deleteBulk = useCallback(async (ids: string[]) => {
     if (!ids.length) return;
-    const { error: err } = await supabase.from('content_links').delete().in('id', ids);
+    const { error: err } = await api.from('content_links').delete().in('id', ids);
     if (err) throw err;
     await refresh();
   }, [refresh]);
@@ -126,8 +126,8 @@ export function useContentLinks() {
   }, [refresh]);
 
   const recheckLink = useCallback(async (id: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const resp = await supabase.functions.invoke('validate-links', {
+    const { data: { session } } = await api.auth.getSession();
+    const resp = await api.functions.invoke('validate-links', {
       body: { mode: 'single', link_ids: [id] },
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
@@ -138,8 +138,8 @@ export function useContentLinks() {
 
   const recheckBulk = useCallback(async (ids: string[]) => {
     if (!ids.length) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    const resp = await supabase.functions.invoke('validate-links', {
+    const { data: { session } } = await api.auth.getSession();
+    const resp = await api.functions.invoke('validate-links', {
       body: { mode: 'single', link_ids: ids },
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
@@ -149,8 +149,8 @@ export function useContentLinks() {
   }, [refresh]);
 
   const validateLinks = useCallback(async (batchLimit = 50) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const resp = await supabase.functions.invoke('validate-links', {
+    const { data: { session } } = await api.auth.getSession();
+    const resp = await api.functions.invoke('validate-links', {
       body: { mode: 'validate', batch_limit: batchLimit },
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
@@ -213,8 +213,8 @@ export function useContentLinks() {
   }, [refresh]);
 
   const scanLink = useCallback(async (id: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const resp = await supabase.functions.invoke('scan-links', {
+    const { data: { session } } = await api.auth.getSession();
+    const resp = await api.functions.invoke('scan-links', {
       body: { link_ids: [id] },
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
@@ -230,8 +230,8 @@ export function useContentLinks() {
 
   const scanBulk = useCallback(async (ids: string[]) => {
     if (!ids.length) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    const resp = await supabase.functions.invoke('scan-links', {
+    const { data: { session } } = await api.auth.getSession();
+    const resp = await api.functions.invoke('scan-links', {
       body: { link_ids: ids },
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
@@ -242,8 +242,8 @@ export function useContentLinks() {
   }, [refresh]);
 
   const scanBatch = useCallback(async (batchLimit = 10) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const resp = await supabase.functions.invoke('scan-links', {
+    const { data: { session } } = await api.auth.getSession();
+    const resp = await api.functions.invoke('scan-links', {
       body: { batch: true, batch_limit: batchLimit },
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
     });

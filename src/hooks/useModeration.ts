@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import { api } from '@/integrations/api/client';
+import { Database } from '@/types/database';
 
 type ModerationFlag = Database['public']['Tables']['moderation_flags']['Row'];
 type ModerationFlagInsert = Database['public']['Tables']['moderation_flags']['Insert'];
@@ -28,7 +28,7 @@ export function useModeration() {
   const createFlag = useCallback(async (params: CreateFlagParams) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-moderation-flag', {
+      const { data, error } = await api.functions.invoke('create-moderation-flag', {
         body: params,
       });
 
@@ -82,7 +82,7 @@ export function useModeration() {
   ) => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await api.auth.getUser();
       const updates: Record<string, unknown> = {
         status,
         updated_at: new Date().toISOString(),
@@ -117,7 +117,7 @@ export function useModeration() {
   ) => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await api.auth.getUser();
       const updates: Record<string, unknown> = {
         status,
         resolved_by: user?.id || null,

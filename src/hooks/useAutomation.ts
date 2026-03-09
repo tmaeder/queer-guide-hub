@@ -8,7 +8,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
@@ -133,7 +133,7 @@ export function useAutomation() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, [queryClient]);
 
@@ -260,7 +260,7 @@ export function useAutomation() {
 
   const approveChange = useMutation({
     mutationFn: async (changeId: string) => {
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await api.rpc(
         'apply_content_change' as never,
         {
           p_change_id: changeId,
@@ -299,7 +299,7 @@ export function useAutomation() {
 
   const bulkApprove = useMutation({
     mutationFn: async (changeIds: string[]) => {
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await api.rpc(
         'bulk_apply_content_changes' as never,
         {
           p_change_ids: changeIds,
@@ -363,7 +363,7 @@ export function useAutomation() {
       dryRun?: boolean;
       fullScan?: boolean;
     }) => {
-      const { data, error } = await supabase.functions.invoke('content-automation', {
+      const { data, error } = await api.functions.invoke('content-automation', {
         body: { module: slug, dry_run: dryRun, full_scan: fullScan },
       });
       if (error) throw error;
@@ -435,7 +435,7 @@ export function useAutomation() {
 
   const revertChange = useMutation({
     mutationFn: async (changeId: string) => {
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await api.rpc(
         'revert_content_change' as never,
         {
           p_change_id: changeId,

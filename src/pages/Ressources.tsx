@@ -12,7 +12,7 @@ import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { ResourcesFilterBar } from '@/components/resources/ResourcesFilterBar';
 import { TagListRenderer } from '@/components/resources/TagListRenderer';
 import { getCategoryIcon, getCategoryShortName } from '@/components/resources/categoryMeta';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
@@ -394,7 +394,7 @@ export default function Ressources() {
       for (let i = 0; i < allTags.length; i++) {
         const tag = allTags[i];
         try {
-          const { data, error } = await supabase.functions.invoke('store-tag-images', {
+          const { data, error } = await api.functions.invoke('store-tag-images', {
             body: {
               tagId: tag.id,
               tagName: tag.name,
@@ -435,7 +435,7 @@ export default function Ressources() {
   const categorizeAllTags = async () => {
     setCategorizingTags(true);
     try {
-      const { data, error } = await supabase.functions.invoke('categorize-tags');
+      const { data, error } = await api.functions.invoke('categorize-tags');
       if (error) {
         toast({
           title: 'Categorization failed',

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { MapPin, Calendar, Store, Tag, Users, User } from 'lucide-react';
 
 export interface SearchSuggestion {

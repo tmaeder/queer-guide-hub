@@ -18,7 +18,7 @@ import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-
 import { createColumnHelper } from '@tanstack/react-table';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';

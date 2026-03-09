@@ -14,7 +14,7 @@ import {
   Heart,
   Eye,
 } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 import { format } from 'date-fns';
 import { Link } from 'react-router';
 import { formatEventTime } from '@/lib/event-time';

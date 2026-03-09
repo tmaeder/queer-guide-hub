@@ -21,7 +21,7 @@ import TextField from '@mui/material/TextField';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContentLinks, type ContentLink } from '@/hooks/useContentLinks';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { toast } from 'sonner';
 import { EditLinkDialog } from './EditLinkDialog';
 import { ConfirmBulkActionDialog } from './ConfirmBulkActionDialog';
@@ -115,8 +115,8 @@ export function LinkHealthDashboard() {
   const triggerSync = async () => {
     setSyncing(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const resp = await supabase.functions.invoke('sync-content-links', {
+      const { data: { session } } = await api.auth.getSession();
+      const resp = await api.functions.invoke('sync-content-links', {
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
       });
       if (resp.error) throw resp.error;
@@ -172,7 +172,7 @@ export function LinkHealthDashboard() {
       await scanLink(scanResultLink.id);
       toast.success('Scan complete');
       // Refresh the dialog link data
-      const { data } = await supabase.from('content_links').select('*').eq('id', scanResultLink.id).single();
+      const { data } = await api.from('content_links').select('*').eq('id', scanResultLink.id).single();
       if (data) setScanResultLink(data as ContentLink);
     } catch (e: any) {
       toast.error(e.message ?? 'Scan failed');

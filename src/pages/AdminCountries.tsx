@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -90,7 +90,7 @@ export default function AdminCountries() {
   const handleDelete = async (country: CountryRow) => {
     if (!confirm(`Delete "${country.name}"? This will affect related data.`)) return;
     try {
-      const { error } = await supabase.from('countries').delete().eq('id', country.id);
+      const { error } = await api.from('countries').delete().eq('id', country.id);
       if (error) throw error;
       toast({ title: 'Success', description: `${country.name} deleted` });
       invalidateTable();

@@ -5,7 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 export interface ReviewCounts {
   staging: number;
@@ -18,7 +18,7 @@ export interface ReviewCounts {
 }
 
 async function fetchReviewCounts(): Promise<ReviewCounts> {
-  const { data, error } = await supabase.rpc('get_admin_counts');
+  const { data, error } = await api.rpc('get_admin_counts');
 
   if (error || !data) {
     return {

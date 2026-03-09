@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useModeration, ModerationFilters } from '@/hooks/useModeration';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import {
   Flag,
   CheckCircle,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 export interface UnifiedTag {
@@ -63,7 +63,7 @@ export const useUnifiedTags = () => {
 
   const searchTags = async (query: string, category?: string): Promise<UnifiedTag[]> => {
     try {
-      let queryBuilder = supabase.from('unified_tags').select('*').ilike('name', `%${query}%`);
+      let queryBuilder = api.from('unified_tags').select('*').ilike('name', `%${query}%`);
 
       if (category) {
         queryBuilder = queryBuilder.eq('category', category);
@@ -152,7 +152,7 @@ export const useUnifiedTags = () => {
 
   const deleteTag = async (id: string) => {
     try {
-      const { error } = await supabase.from('unified_tags').delete().eq('id', id);
+      const { error } = await api.from('unified_tags').delete().eq('id', id);
 
       if (error) throw error;
 
@@ -270,7 +270,7 @@ export const useUnifiedTags = () => {
           entity_type: entityType,
         }));
 
-        const { error } = await supabase.from('unified_tag_assignments').insert(assignments);
+        const { error } = await api.from('unified_tag_assignments').insert(assignments);
 
         if (error) throw error;
       }

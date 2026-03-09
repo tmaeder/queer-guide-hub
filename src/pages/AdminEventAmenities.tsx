@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -89,11 +89,11 @@ export default function AdminEventAmenities() {
     }
     try {
       if (editingId) {
-        const { error } = await supabase.from('event_amenities').update(form).eq('id', editingId);
+        const { error } = await api.from('event_amenities').update(form).eq('id', editingId);
         if (error) throw error;
         toast({ title: 'Success', description: 'Event amenity updated' });
       } else {
-        const { error } = await supabase.from('event_amenities').insert([form]);
+        const { error } = await api.from('event_amenities').insert([form]);
         if (error) throw error;
         toast({ title: 'Success', description: 'Event amenity created' });
       }
@@ -111,7 +111,7 @@ export default function AdminEventAmenities() {
   const handleDelete = async (row: EventAmenityRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await supabase.from('event_amenities').delete().eq('id', row.id);
+      const { error } = await api.from('event_amenities').delete().eq('id', row.id);
       if (error) throw error;
       toast({ title: 'Success', description: 'Event amenity deleted' });
       invalidateTable();

@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import Checkbox from '@mui/material/Checkbox';
 import { useContext } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';

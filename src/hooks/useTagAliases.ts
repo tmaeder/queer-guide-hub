@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 export interface TagAlias {
   id: string;
@@ -51,7 +51,7 @@ export function useTagAliases(tagId: string | null) {
 
   const deleteAlias = useMutation({
     mutationFn: async (aliasId: string) => {
-      const { error } = await supabase.from('tag_aliases').delete().eq('id', aliasId);
+      const { error } = await api.from('tag_aliases').delete().eq('id', aliasId);
       if (error) throw error;
     },
     onSuccess: () => {

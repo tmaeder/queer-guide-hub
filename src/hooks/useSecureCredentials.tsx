@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 interface SecureCredentials {
   stripePublishableKey?: string;
@@ -23,7 +23,7 @@ export function useSecureCredentials() {
       setLoading(true);
       setError(null);
 
-      const stripeResult = await supabase.functions.invoke('get-stripe-publishable-key').catch(() => ({ data: null, error: null }));
+      const stripeResult = await api.functions.invoke('get-stripe-publishable-key').catch(() => ({ data: null, error: null }));
 
       setCredentials({
         stripePublishableKey: stripeResult.data?.publishable_key || undefined,

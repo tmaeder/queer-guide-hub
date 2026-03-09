@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -97,7 +97,7 @@ export function useLocationPrivacy() {
       setLocationSettings(updatedSettings);
 
       // Log the security event
-      await supabase.rpc('log_sensitive_data_access', {
+      await api.rpc('log_sensitive_data_access', {
         p_user_id: user.id,
         p_target_user_id: user.id,
         p_data_type: 'location_settings',
@@ -154,7 +154,7 @@ export function useLocationPrivacy() {
 
     try {
       setLoading(true);
-      const { error } = await supabase.rpc('anonymize_location_data');
+      const { error } = await api.rpc('anonymize_location_data');
       
       if (error) throw error;
 

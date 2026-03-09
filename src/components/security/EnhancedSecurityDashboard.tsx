@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { Shield, AlertTriangle, CheckCircle, Activity, Users, MapPin, DollarSign } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -113,7 +113,7 @@ export function EnhancedSecurityDashboard() {
 
   const triggerLocationAnonymization = async () => {
     try {
-      const { error } = await supabase.rpc('anonymize_location_data');
+      const { error } = await api.rpc('anonymize_location_data');
       if (error) throw error;
 
       toast({

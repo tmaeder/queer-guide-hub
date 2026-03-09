@@ -2,7 +2,7 @@ import { useState, useMemo, Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useOptimizedCountries, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
 import { useDirectory } from "@/hooks/useDirectory";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import { DirectorySearch, type DirectoryFilters } from "@/components/directory/DirectorySearch";
 import { WeatherForecast } from "@/components/weather/WeatherForecast";

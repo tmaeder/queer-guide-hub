@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -112,7 +112,7 @@ export default function AdminCities() {
   const handleDelete = async (city: CityRow) => {
     if (!confirm(`Delete "${city.name}"?`)) return;
     try {
-      const { error } = await supabase.from('cities').delete().eq('id', city.id);
+      const { error } = await api.from('cities').delete().eq('id', city.id);
       if (error) throw error;
       toast({ title: 'Success', description: 'City deleted' });
       invalidateTable();
@@ -146,11 +146,11 @@ export default function AdminCities() {
 
     try {
       if (editingCity) {
-        const { error } = await supabase.from('cities').update(cityData).eq('id', editingCity.id);
+        const { error } = await api.from('cities').update(cityData).eq('id', editingCity.id);
         if (error) throw error;
         toast({ title: 'Success', description: 'City updated' });
       } else {
-        const { error } = await supabase.from('cities').insert([cityData]);
+        const { error } = await api.from('cities').insert([cityData]);
         if (error) throw error;
         toast({ title: 'Success', description: 'City created' });
       }

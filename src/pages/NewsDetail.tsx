@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
 import { formatDistanceToNow, format } from 'date-fns';
 import Container from '@mui/material/Container';
@@ -88,7 +88,7 @@ export default function NewsDetail() {
         setArticle(data as NewsArticle);
 
         // Increment views
-        supabase.rpc('increment_article_views', { article_id: id }).then(() => {});
+        api.rpc('increment_article_views', { article_id: id }).then(() => {});
 
         // Fetch source name
         if (data.source_id) {

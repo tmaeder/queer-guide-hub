@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 import { Upload, X, ImagePlus } from "lucide-react";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -68,7 +68,7 @@ export const VenueImageUpload = ({
         const fileName = `venue-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `venues/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await api.storage
           .from('city-images')
           .upload(filePath, file);
 
@@ -77,7 +77,7 @@ export const VenueImageUpload = ({
           throw uploadError;
         }
 
-        const { data: { publicUrl } } = supabase.storage
+        const { data: { publicUrl } } = api.storage
           .from('city-images')
           .getPublicUrl(filePath);
 

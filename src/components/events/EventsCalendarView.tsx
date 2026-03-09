@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Clock, MapPin, Users, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Eye, Star, Ticket, ExternalLink } from 'lucide-react';
 import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths } from 'date-fns';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 import { formatEventTime } from '@/lib/event-time';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';

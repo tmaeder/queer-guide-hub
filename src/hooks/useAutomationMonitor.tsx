@@ -7,7 +7,7 @@
 
 import { useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -139,7 +139,7 @@ export function useAutomationMonitor() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, [queryClient]);
 
@@ -378,7 +378,7 @@ export function useAutomationMonitor() {
 
   const triggerModule = useMutation({
     mutationFn: async (moduleName: string) => {
-      const { data, error } = await supabase.functions.invoke('workflow-dispatcher', {
+      const { data, error } = await api.functions.invoke('workflow-dispatcher', {
         body: {
           action: 'enqueue',
           workflow: getWorkflowForModule(moduleName),

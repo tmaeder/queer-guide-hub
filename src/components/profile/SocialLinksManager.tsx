@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Globe, Save, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { SocialLinksList } from './social/SocialLinksList';
 import { PlatformSelector } from './social/PlatformSelector';
 import { PLATFORM_CONFIGS } from './social/platformConfigs';

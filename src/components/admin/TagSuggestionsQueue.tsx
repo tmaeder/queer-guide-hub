@@ -13,7 +13,7 @@ import { Tag, CheckCircle, XCircle, AlertTriangle, Inbox, Bot, Sparkles } from '
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -66,7 +66,7 @@ export function TagSuggestionsQueue() {
 
   const approveMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const { data: count, error } = await supabase.rpc('approve_tag_suggestions', {
+      const { data: count, error } = await api.rpc('approve_tag_suggestions', {
         p_suggestion_ids: ids,
         p_reviewer_id: user?.id,
       });

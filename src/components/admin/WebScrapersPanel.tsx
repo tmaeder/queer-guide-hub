@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Globe, MapPin, Calendar, Play, RefreshCw, AlertTriangle } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 const SCRAPER_API = import.meta.env.DEV
   ? 'http://localhost:4400'
@@ -90,7 +90,7 @@ export const WebScrapersPanel = () => {
         return;
       }
 
-      const { data: ingestData, error: ingestError } = await supabase.functions.invoke(
+      const { data: ingestData, error: ingestError } = await api.functions.invoke(
         'ingestion-pipeline',
         {
           body: { entities: allEntities },

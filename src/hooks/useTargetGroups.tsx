@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 export function useTargetGroups() {
   const [targetGroups, setTargetGroups] = useState<any[]>([]);

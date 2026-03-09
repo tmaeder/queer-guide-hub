@@ -8,7 +8,7 @@ import {
   findNearbyCities,
 } from '@/hooks/useOptimizedPlaces';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { PlacesCard } from '@/components/places/PlacesCard';
 import { VillageCard } from '@/components/villages/VillageCard';
 import { PlacesSearch, type PlacesFilters } from '@/components/places/PlacesSearch';

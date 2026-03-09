@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,7 +33,7 @@ export interface MailboxEmail {
   deleted_at: string | null;
 }
 
-const mailboxTable = () => supabase.from('mailbox_emails' as never);
+const mailboxTable = () => api.from('mailbox_emails' as never);
 
 export const useMailbox = () => {
   const [emails, setEmails] = useState<MailboxEmail[]>([]);
@@ -156,7 +156,7 @@ export const useMailbox = () => {
       if (!user) throw new Error('Not authenticated');
       setSending(true);
       try {
-        const { data: result, error } = await supabase.functions.invoke('send-mailbox-email', {
+        const { data: result, error } = await api.functions.invoke('send-mailbox-email', {
           body: params,
         });
         if (error) throw new Error(error.message || 'Failed to send');
@@ -257,7 +257,7 @@ export const useMailbox = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, [user, selectedFolder, toast]);
 

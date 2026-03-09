@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,9 +55,9 @@ export function SecurityMonitoringDashboard() {
     queryKey: ['system-stats'],
     queryFn: async () => {
       const [failedLogins, captchaVerifications, accessLogs] = await Promise.all([
-        supabase.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
-        supabase.from('captcha_verifications').select('*', { count: 'exact', head: true }),
-        supabase.from('access_logs').select('*', { count: 'exact', head: true }),
+        api.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
+        api.from('captcha_verifications').select('*', { count: 'exact', head: true }),
+        api.from('access_logs').select('*', { count: 'exact', head: true }),
       ]);
 
       return {

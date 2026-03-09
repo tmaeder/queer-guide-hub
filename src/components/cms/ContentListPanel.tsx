@@ -36,7 +36,7 @@ import {
   Inbox,
   X,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useParams } from 'react-router';
 import { getContentType } from '@/config/contentTypeRegistry';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -198,7 +198,7 @@ export const useGroupPosts = (groupId: string) => {
     mutationFn: async (postId: string) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { error } = await supabase.from('group_post_likes').insert({
+      const { error } = await api.from('group_post_likes').insert({
         post_id: postId,
         user_id: user.id,
       });
@@ -233,7 +233,7 @@ export const useGroupPosts = (groupId: string) => {
     mutationFn: async ({ postId, optionIndex }: { postId: string; optionIndex: number }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { error } = await supabase.from('group_poll_votes').upsert({
+      const { error } = await api.from('group_poll_votes').upsert({
         post_id: postId,
         user_id: user.id,
         option_index: optionIndex,

@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { toast } from 'sonner';
 
 interface AudioUploadProps {
@@ -81,7 +81,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       // Upload to storage
       const filePath = `uploads/${audio.id}/${audio.file.name}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await api.storage
         .from('audio')
         .upload(filePath, audio.file);
 
@@ -110,7 +110,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       if (dbError) throw dbError;
 
       // Start processing
-      const { error: processError } = await supabase.functions.invoke('process-audio', {
+      const { error: processError } = await api.functions.invoke('process-audio', {
         body: {
           action: 'start',
           audioId: audio.id,
@@ -144,7 +144,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
   const pollProcessingStatus = async (audioId: string) => {
     const pollInterval = setInterval(async () => {
       try {
-        const { data: job } = await supabase.functions.invoke('process-audio', {
+        const { data: job } = await api.functions.invoke('process-audio', {
           body: { action: 'status', jobId: audioId }
         });
 

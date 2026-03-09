@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { invokeFunction } from '@/integrations/cloudflare-workers';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -51,7 +51,7 @@ import {
 } from 'lucide-react';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
-import { Tables } from '@/integrations/supabase/types';
+import { Tables } from '@/types/database';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -224,7 +224,7 @@ const UserDirectory = () => {
     queryKey: ['user-directory', filters, nearMe, userLocation],
     enabled: !!user,
     queryFn: async () => {
-      let query: any = supabase.from('profiles').select('*');
+      let query: any = api.from('profiles').select('*');
 
       // Search query
       if (filters.searchQuery) {

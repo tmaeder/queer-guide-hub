@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from './useAuth';
 
 export interface GroupNotification {
@@ -122,7 +122,7 @@ export const useGroupNotifications = () => {
     post_url?: string;
   }) => {
     try {
-      const { data: result, error } = await supabase.functions.invoke('send-group-notifications', {
+      const { data: result, error } = await api.functions.invoke('send-group-notifications', {
         body: data
       });
 

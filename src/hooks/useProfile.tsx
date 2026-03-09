@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
+import { api } from "@/integrations/api/client";
+import { Tables } from "@/types/database";
 import { useAuth } from "./useAuth";
 
 export type Profile = Tables<"profiles">;
@@ -100,14 +100,14 @@ export const useProfile = () => {
       const filePath = `avatars/${fileName}`;
 
       // Upload the file
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await api.storage
         .from('avatars')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       // Get the public URL
-      const { data } = supabase.storage
+      const { data } = api.storage
         .from('avatars')
         .getPublicUrl(filePath);
 

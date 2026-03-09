@@ -38,7 +38,7 @@ import {
   type StagingFilters,
   type StagingSort,
 } from '@/hooks/useImportHubQueries';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import { SideBySideComparison } from './SideBySideComparison';
 import type { StagingItem } from '@/hooks/useImportHub';

@@ -6,7 +6,7 @@ import {
   type AddressComponents,
 } from '@/components/ui/location-autocomplete';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -78,7 +78,7 @@ export function LocationField({ field, value, onChange, error, disabled, setFiel
           // Resolve queer village from coordinates
           if (coordinates && map.queer_village_id) {
             try {
-              const { data: villages } = await supabase.rpc('find_queer_village', {
+              const { data: villages } = await api.rpc('find_queer_village', {
                 p_lat: coordinates.lat,
                 p_lng: coordinates.lng,
                 p_city_id: result.city_id ?? null,

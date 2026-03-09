@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 export interface ResolvedLocation {
   city_id: string | null;
@@ -55,7 +55,7 @@ export function useAddressResolver(): UseAddressResolverReturn {
 
     setResolving(true);
     try {
-      const { data, error } = await supabase.functions.invoke('resolve-or-create-city', {
+      const { data, error } = await api.functions.invoke('resolve-or-create-city', {
         body: {
           city_name: cityName?.trim() || null,
           country_name: countryName.trim(),

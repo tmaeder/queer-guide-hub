@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentType } from '@/config/contentTypeRegistry';
 import type { EditorState, CMSContentMetadata, WorkflowState, FieldGroup } from '@/types/cms';
@@ -402,9 +402,9 @@ async function createRevision(
 
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await api.auth.getUser();
 
-    await supabase.from('cms_revisions' as any).insert({
+    await api.from('cms_revisions' as any).insert({
       source_table: sourceTable,
       source_id: sourceId,
       revision_number: nextNumber,
@@ -425,7 +425,7 @@ async function writeAuditLog(
   actorId: string,
 ) {
   try {
-    await supabase.from('cms_audit_log' as any).insert({
+    await api.from('cms_audit_log' as any).insert({
       source_table: sourceTable,
       source_id: sourceId,
       action,

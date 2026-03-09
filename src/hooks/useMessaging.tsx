@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -242,7 +242,7 @@ export const useMessaging = () => {
       if (!user) return;
 
       try {
-        const { data, error } = await supabase.rpc('get_or_create_direct_conversation', {
+        const { data, error } = await api.rpc('get_or_create_direct_conversation', {
           user1_id: user.id,
           user2_id: userId,
         });
@@ -269,7 +269,7 @@ export const useMessaging = () => {
       if (!user) return;
 
       try {
-        const { error } = await supabase.from('message_reactions').upsert({
+        const { error } = await api.from('message_reactions').upsert({
           message_id: messageId,
           user_id: user.id,
           emoji,
@@ -333,7 +333,7 @@ export const useMessaging = () => {
       setIsTyping((prev) => ({ ...prev, [conversationId]: true }));
 
       try {
-        await supabase.channel(`typing-${conversationId}`).send({
+        await api.channel(`typing-${conversationId}`).send({
           type: 'broadcast',
           event: 'typing',
           payload: {
@@ -362,7 +362,7 @@ export const useMessaging = () => {
       setIsTyping((prev) => ({ ...prev, [conversationId]: false }));
 
       try {
-        await supabase.channel(`typing-${conversationId}`).send({
+        await api.channel(`typing-${conversationId}`).send({
           type: 'broadcast',
           event: 'stop_typing',
           payload: {
@@ -438,8 +438,8 @@ export const useMessaging = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(messagesChannel);
-      supabase.removeChannel(conversationsChannel);
+      api.removeChannel(messagesChannel);
+      api.removeChannel(conversationsChannel);
     };
   }, [user, fetchConversations]);
 
@@ -490,7 +490,7 @@ export const useMessaging = () => {
 
     return () => {
       Object.values(channels).forEach((channel) => {
-        supabase.removeChannel(channel);
+        api.removeChannel(channel);
       });
     };
   }, [user, conversations]);

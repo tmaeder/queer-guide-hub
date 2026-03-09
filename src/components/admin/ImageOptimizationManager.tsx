@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { AdminRoleRequest } from './AdminRoleRequest';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -69,7 +69,7 @@ export function ImageOptimizationManager() {
   // Load optimization jobs
   const loadJobs = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
+      const { data, error } = await api.functions.invoke('optimize-images-batch', {
         body: { action: 'list' }
       });
       
@@ -84,7 +84,7 @@ export function ImageOptimizationManager() {
   const checkJobStatus = async (jobId: string) => {
     try {
       console.log('🔍 Checking job status for:', jobId);
-      const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
+      const { data, error } = await api.functions.invoke('optimize-images-batch', {
         body: { action: 'status', jobId }
       });
       
@@ -136,7 +136,7 @@ export function ImageOptimizationManager() {
     
     try {
       // Call the image scanning edge function
-      const { data, error } = await supabase.functions.invoke('scan-project-images');
+      const { data, error } = await api.functions.invoke('scan-project-images');
       
       if (error) throw error;
       
@@ -171,7 +171,7 @@ export function ImageOptimizationManager() {
     
     try {
       console.log('📡 Calling optimize-images-batch edge function...');
-      const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
+      const { data, error } = await api.functions.invoke('optimize-images-batch', {
         body: { action: 'start', batchSize: 10 }
       });
       

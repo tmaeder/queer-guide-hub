@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import { api } from '@/integrations/api/client';
+import { Database } from '@/types/database';
 
 export type Festival = Database['public']['Tables']['festivals']['Row'];
 type FestivalInsert = Database['public']['Tables']['festivals']['Insert'];
@@ -78,7 +78,7 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const createFestival = useCallback(async (festival: FestivalInsert) => {
-    const { data, error } = await supabase.from('festivals').insert(festival).select().single();
+    const { data, error } = await api.from('festivals').insert(festival).select().single();
     if (error) throw error;
     return data;
   }, []);
@@ -95,7 +95,7 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const deleteFestival = useCallback(async (id: string) => {
-    const { error } = await supabase.from('festivals').delete().eq('id', id);
+    const { error } = await api.from('festivals').delete().eq('id', id);
     if (error) throw error;
   }, []);
 

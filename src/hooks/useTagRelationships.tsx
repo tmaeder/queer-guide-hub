@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { toast } from '@/hooks/use-toast';
 
 export interface SimilarTag {
@@ -43,7 +43,7 @@ export function useSimilarTags(tagId: string | null, limit: number = 10) {
     queryFn: async (): Promise<SimilarTag[]> => {
       if (!tagId) return [];
 
-      const { data, error } = await supabase.rpc('get_similar_tags', {
+      const { data, error } = await api.rpc('get_similar_tags', {
         p_tag_id: tagId,
         p_limit: limit,
         p_min_score: 0.7,
@@ -72,7 +72,7 @@ export function useTagGraph(minScore: number = 0.8, categoryFilter: string | nul
       const params: Record<string, any> = { p_min_score: minScore };
       if (categoryFilter) params.p_category_filter = categoryFilter;
 
-      const { data, error } = await supabase.rpc('get_tag_graph_data', params as any);
+      const { data, error } = await api.rpc('get_tag_graph_data', params as any);
 
       if (error) {
         console.error('Error fetching tag graph data:', error);
@@ -98,7 +98,7 @@ export function useComputeTagSimilarities() {
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.rpc('compute_tag_similarities' as any);
+      const { data, error } = await api.rpc('compute_tag_similarities' as any);
 
       if (error) throw error;
       return data as unknown as {

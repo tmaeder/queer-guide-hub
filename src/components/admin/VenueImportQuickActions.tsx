@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 interface VenueSource {
   id: string;
@@ -138,7 +138,7 @@ export const VenueImportQuickActions = () => {
 
         // Fetch API key statuses
         try {
-          const { data: keyData, error: keyError } = await supabase.functions.invoke('manage-api-keys?action=status', {
+          const { data: keyData, error: keyError } = await api.functions.invoke('manage-api-keys?action=status', {
             method: 'GET'
           });
           if (!keyError && keyData?.required_keys) {
@@ -225,7 +225,7 @@ export const VenueImportQuickActions = () => {
       // Scraper — invoke directly
       setLoadingStates(prev => ({ ...prev, [source.slug]: true }));
       try {
-        const { data, error } = await supabase.functions.invoke(source.edge_function, {
+        const { data, error } = await api.functions.invoke(source.edge_function, {
           body: {}
         });
         if (error) throw error;
@@ -251,7 +251,7 @@ export const VenueImportQuickActions = () => {
 
     try {
       const functionName = `import-${importDialog.provider}-venues`;
-      const { data, error } = await supabase.functions.invoke(functionName, {
+      const { data, error } = await api.functions.invoke(functionName, {
         body: { config }
       });
       if (error) throw error;

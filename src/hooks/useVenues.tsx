@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import { api } from '@/integrations/api/client';
+import { Database } from '@/types/database';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
 
@@ -155,7 +155,7 @@ export function useVenues(autoFetch: boolean = true) {
 
   const createVenue = async (venue: VenueInsert) => {
     try {
-      const { data, error } = await supabase.from('venues').insert([venue]).select().single();
+      const { data, error } = await api.from('venues').insert([venue]).select().single();
 
       if (error) throw error;
       return { data, error: null };
@@ -188,7 +188,7 @@ export function useVenues(autoFetch: boolean = true) {
 
   const deleteVenue = async (id: string) => {
     try {
-      const { error } = await supabase.from('venues').delete().eq('id', id);
+      const { error } = await api.from('venues').delete().eq('id', id);
 
       if (error) throw error;
       return { error: null };

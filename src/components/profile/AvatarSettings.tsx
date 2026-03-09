@@ -6,7 +6,7 @@ import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import { AvatarBuilder, generateRandomConfig } from '@/components/profile/AvatarBuilder';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -96,7 +96,7 @@ export const AvatarSettings = ({
         const fileExt = selectedFile.name.split('.').pop();
         const fileName = `${user.id}_${Date.now()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await api.storage
           .from('avatars')
           .upload(fileName, selectedFile, { upsert: true });
 
@@ -106,7 +106,7 @@ export const AvatarSettings = ({
 
         const {
           data: { publicUrl },
-        } = supabase.storage.from('avatars').getPublicUrl(fileName);
+        } = api.storage.from('avatars').getPublicUrl(fileName);
 
         finalAvatarUrl = publicUrl;
       }

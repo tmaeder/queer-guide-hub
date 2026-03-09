@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type PersonalityRow = Database['public']['Tables']['personalities']['Row'];
 type PersonalityInsert = Database['public']['Tables']['personalities']['Insert'];
@@ -277,7 +277,7 @@ export function usePersonalities(filters?: PersonalityFilters) {
 
   const incrementViews = async (personalityId: string) => {
     try {
-      await supabase.rpc('increment_personality_views', {
+      await api.rpc('increment_personality_views', {
         personality_id: personalityId
       });
     } catch (error) {

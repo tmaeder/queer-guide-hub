@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Eye, Edit, Save, X, Plus, Mail, Code, Loader2, FileText, TestTube } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
@@ -143,7 +143,7 @@ export default function EmailTemplates() {
 
     setIsSendingTest(true);
     try {
-      const { error } = await supabase.functions.invoke('send-templated-email', {
+      const { error } = await api.functions.invoke('send-templated-email', {
         body: {
           template_key: selectedTemplate.template_key,
           to_email: testEmail,

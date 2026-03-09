@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
@@ -45,17 +45,17 @@ export function useUniversalCMS() {
   const fetchContentStats = async () => {
     try {
       const [eventsCount, venuesCount, postsCount, personalitiesCount, cmsCount, groupsCount, tagsCount, citiesCount, countriesCount, marketplaceCount, newsCount] = await Promise.all([
-        supabase.from('events').select('*', { count: 'exact', head: true }),
-        supabase.from('venues').select('*', { count: 'exact', head: true }),
-        supabase.from('community_posts').select('*', { count: 'exact', head: true }),
-        supabase.from('personalities').select('*', { count: 'exact', head: true }),
-        supabase.from('cms_content').select('*', { count: 'exact', head: true }).is('deleted_at', null),
-        supabase.from('community_groups').select('*', { count: 'exact', head: true }),
-        supabase.from('unified_tags').select('*', { count: 'exact', head: true }),
-        supabase.from('cities').select('*', { count: 'exact', head: true }),
-        supabase.from('countries').select('*', { count: 'exact', head: true }),
-        supabase.from('marketplace_listings').select('*', { count: 'exact', head: true }),
-        supabase.from('news_articles').select('*', { count: 'exact', head: true })
+        api.from('events').select('*', { count: 'exact', head: true }),
+        api.from('venues').select('*', { count: 'exact', head: true }),
+        api.from('community_posts').select('*', { count: 'exact', head: true }),
+        api.from('personalities').select('*', { count: 'exact', head: true }),
+        api.from('cms_content').select('*', { count: 'exact', head: true }).is('deleted_at', null),
+        api.from('community_groups').select('*', { count: 'exact', head: true }),
+        api.from('unified_tags').select('*', { count: 'exact', head: true }),
+        api.from('cities').select('*', { count: 'exact', head: true }),
+        api.from('countries').select('*', { count: 'exact', head: true }),
+        api.from('marketplace_listings').select('*', { count: 'exact', head: true }),
+        api.from('news_articles').select('*', { count: 'exact', head: true })
       ]);
 
       const stats: ContentTypeStats[] = [
@@ -86,39 +86,39 @@ export function useUniversalCMS() {
       // Use explicit queries for each type to avoid TypeScript issues
       switch (contentType) {
         case 'events': {
-          let query = supabase.from('events').select('*', { count: 'exact' });
+          let query = api.from('events').select('*', { count: 'exact' });
           if (search) query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
           if (status) query = query.eq('status', status);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
         case 'venues': {
-          let query = supabase.from('venues').select('*', { count: 'exact' });
+          let query = api.from('venues').select('*', { count: 'exact' });
           if (search) query = query.ilike('name', `%${search}%`);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
         case 'personalities': {
-          let query = supabase.from('personalities').select('*', { count: 'exact' });
+          let query = api.from('personalities').select('*', { count: 'exact' });
           if (search) query = query.ilike('name', `%${search}%`);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
         case 'community_groups': {
-          let query = supabase.from('community_groups').select('*', { count: 'exact' });
+          let query = api.from('community_groups').select('*', { count: 'exact' });
           if (search) query = query.ilike('name', `%${search}%`);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
         case 'community_posts': {
-          let query = supabase.from('community_posts').select('*', { count: 'exact' });
+          let query = api.from('community_posts').select('*', { count: 'exact' });
           if (search) query = query.ilike('content', `%${search}%`);
           if (status) query = query.eq('visibility', status); // community_posts use visibility, not status
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
         case 'cms_content': {
-          let query = supabase.from('cms_content').select('*', { count: 'exact' }).is('deleted_at', null);
+          let query = api.from('cms_content').select('*', { count: 'exact' }).is('deleted_at', null);
           if (search) query = query.or(`title->>'en'.ilike.%${search}%,description->>'en'.ilike.%${search}%`);
           if (status) {
             // Ensure status is a valid workflow_state value
@@ -131,32 +131,32 @@ export function useUniversalCMS() {
           break;
         }
         case 'tags': {
-          let query = supabase.from('unified_tags').select('*', { count: 'exact' });
+          let query = api.from('unified_tags').select('*', { count: 'exact' });
           if (search) query = query.ilike('name', `%${search}%`);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
         case 'cities': {
-          let query = supabase.from('cities').select('*', { count: 'exact' });
+          let query = api.from('cities').select('*', { count: 'exact' });
           if (search) query = query.ilike('name', `%${search}%`);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
         case 'countries': {
-          let query = supabase.from('countries').select('*', { count: 'exact' });
+          let query = api.from('countries').select('*', { count: 'exact' });
           if (search) query = query.ilike('name', `%${search}%`);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
         case 'marketplace_listings': {
-          let query = supabase.from('marketplace_listings').select('*', { count: 'exact' });
+          let query = api.from('marketplace_listings').select('*', { count: 'exact' });
           if (search) query = query.or(`title.ilike.%${search}%,business_name.ilike.%${search}%`);
           if (status) query = query.eq('status', status);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;
         }
         case 'news_articles': {
-          let query = supabase.from('news_articles').select('*', { count: 'exact' });
+          let query = api.from('news_articles').select('*', { count: 'exact' });
           if (search) query = query.ilike('title', `%${search}%`);
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
           break;

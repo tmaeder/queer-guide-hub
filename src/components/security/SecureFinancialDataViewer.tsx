@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Lock, Eye, DollarSign } from 'lucide-react';
 import Box from '@mui/material/Box';
@@ -87,7 +87,7 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
       setLoading(true);
 
       // Check admin access with enhanced validation
-      const { data: accessApproved, error } = await supabase.rpc('check_financial_data_access', {
+      const { data: accessApproved, error } = await api.rpc('check_financial_data_access', {
         p_user_id: userId,
         p_admin_user_id: user.id,
         p_justification: justification
@@ -104,7 +104,7 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
       }
 
       // Log the admin access
-      await supabase.rpc('audit_admin_sensitive_access', {
+      await api.rpc('audit_admin_sensitive_access', {
         p_admin_id: user.id,
         p_target_user_id: userId,
         p_data_type: 'financial_data',

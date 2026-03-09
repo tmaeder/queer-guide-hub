@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import type { CMSRevision } from '@/types/cms';
 
 interface UseCMSRevisionsReturn {
@@ -106,7 +106,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
       if (updateError) throw updateError;
 
       // Create a new revision marking the restore
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await api.auth.getUser();
 
       const nextNumber = revision.revision_number + 1;
       await supabase
