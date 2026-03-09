@@ -100,9 +100,6 @@ const AuditLog = lazy(() =>
 );
 
 // Import Hub components rendered as admin views
-const PipelineMonitor = lazy(() =>
-  import('./components/admin/PipelineMonitor').then((m) => ({ default: m.PipelineMonitor })),
-);
 const ApiKeysManager = lazy(() =>
   import('./components/admin/ApiKeysManager').then((m) => ({ default: m.ApiKeysManager })),
 );
@@ -363,21 +360,15 @@ const AppRoutes = () => {
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />
 
-                {/* Imports section — unified import hub with all source types */}
+                {/* Imports — unified import hub with all source types */}
                 <Route path="imports" element={<AdminImportHub />} />
-                <Route path="imports/create" element={<Navigate to="/admin/imports" replace />} />
-                <Route path="imports/pipeline" element={<PipelineMonitor />} />
-                <Route path="imports/history" element={<AdminImportHub />} />
                 {/* Legacy import sub-routes — redirect to unified imports */}
-                <Route
-                  path="imports/news-sources"
-                  element={<Navigate to="/admin/imports" replace />}
-                />
+                <Route path="imports/create" element={<Navigate to="/admin/imports" replace />} />
+                <Route path="imports/pipeline" element={<Navigate to="/admin/imports" replace />} />
+                <Route path="imports/history" element={<Navigate to="/admin/imports" replace />} />
+                <Route path="imports/news-sources" element={<Navigate to="/admin/imports" replace />} />
                 <Route path="imports/venues" element={<Navigate to="/admin/imports" replace />} />
-                <Route
-                  path="imports/email-ingestions"
-                  element={<Navigate to="/admin/imports" replace />}
-                />
+                <Route path="imports/email-ingestions" element={<Navigate to="/admin/imports" replace />} />
 
                 {/* Automation section — modules + workflows + image optimization */}
                 <Route path="automation" element={<AdminAutomation />} />
