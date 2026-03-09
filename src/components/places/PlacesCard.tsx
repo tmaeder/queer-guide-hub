@@ -8,6 +8,7 @@ import type {
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { useCityImages } from '@/hooks/useCityImages';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -66,7 +67,7 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
         const specificQuery = countrySpecificQueries[name];
         const query = specificQuery || `${name} famous landmarks architecture cityscape`;
 
-        const { data: imageData, error } = await supabase.functions.invoke('get-pexels-images', {
+        const { data: imageData, error } = await invokeFunction('get-pexels-images', {
           body: { query, type: 'country', page: 1 },
         });
 

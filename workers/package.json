@@ -1,0 +1,20 @@
+{
+  "name": "queer-guide-workers",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "wrangler d1 migrations apply queer-guide-db",
+    "db:migrate:local": "wrangler d1 migrations apply queer-guide-db --local"
+  },
+  "dependencies": {
+    "hono": "^4.7.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241205.0",
+    "typescript": "^5.8.0",
+    "wrangler": "^3.99.0"
+  }
+}

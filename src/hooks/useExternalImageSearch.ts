@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 
 export interface ExternalImage {
   id: string;
@@ -66,7 +66,7 @@ export function useExternalImageSearch(): UseExternalImageSearchReturn {
     setError(null);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('get-pexels-images', {
+      const { data, error: fnError } = await invokeFunction('get-pexels-images', {
         body: { query: query.trim(), page },
       });
 

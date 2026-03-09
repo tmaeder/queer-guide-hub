@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { MapPin, Check, Navigation, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { useToast } from '@/hooks/use-toast';
 
 interface LocationSuggestion {
@@ -67,7 +68,7 @@ export function LocationAutocomplete({
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('mapbox-geocoding', {
+      const { data, error } = await invokeFunction('mapbox-geocoding', {
         body: {
           query,
           types: ['address', 'poi']
@@ -192,7 +193,7 @@ export function LocationAutocomplete({
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('mapbox-geocoding', {
+      const { data, error } = await invokeFunction('mapbox-geocoding', {
         body: {
           query: inputValue,
           types: ['address']
@@ -262,7 +263,7 @@ export function LocationAutocomplete({
 
       const { latitude, longitude } = position.coords;
 
-      const { data, error } = await supabase.functions.invoke('mapbox-geocoding', {
+      const { data, error } = await invokeFunction('mapbox-geocoding', {
         body: {
           query: `${longitude},${latitude}`,
           isReverseGeocode: true

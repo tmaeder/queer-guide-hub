@@ -5,6 +5,7 @@ import { Country, City } from '@/hooks/useDirectory';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { useCityImages } from '@/hooks/useCityImages';
 interface DirectoryCardProps {
   type: 'continent' | 'country' | 'city';
@@ -57,7 +58,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           // Add a small random element to ensure different images for each country
           const randomSeed = Math.floor(Math.random() * 5) + 1;
           const finalQuery = `${query} ${randomSeed}`;
-          const { data: imageData, error } = await supabase.functions.invoke('get-pexels-images', {
+          const { data: imageData, error } = await invokeFunction('get-pexels-images', {
             body: {
               query: finalQuery,
               type: 'country',

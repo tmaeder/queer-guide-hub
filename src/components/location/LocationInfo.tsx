@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Globe, Image as ImageIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 
 interface WikipediaInfo {
   title: string;
@@ -61,7 +62,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
         supabase.functions.invoke('get-wikipedia-info', {
           body: { query: name, type }
         }),
-        supabase.functions.invoke('get-pexels-images', {
+        invokeFunction('get-pexels-images', {
           body: { query: name, type }
         })
       ]);

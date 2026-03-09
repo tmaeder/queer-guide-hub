@@ -72,6 +72,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
 const SUPABASE_URL = 'https://xqeacpakadqfxjxjcewc.supabase.co';
+const WORKERS_URL = import.meta.env.VITE_WORKERS_URL || '';
+const REDIRECT_BASE = WORKERS_URL || `${SUPABASE_URL}/functions/v1`;
 
 interface RedirectRow {
   id: string;
@@ -305,7 +307,7 @@ export default function AdminRedirects() {
           icon: ExternalLink,
           visible: (row) => row.type === 'SHORT' && !!row.slug,
           onClick: (row) =>
-            window.open(`${SUPABASE_URL}/functions/v1/redirect-handler?slug=${row.slug}`, '_blank'),
+            window.open(`${REDIRECT_BASE}/redirect-handler?slug=${row.slug}`, '_blank'),
         },
         {
           key: 'analytics',
@@ -926,7 +928,7 @@ function PreviewDialog({ open, onClose }: { open: boolean; onClose: () => void }
       setPreviewResult('Enter a slug or /go/<slug> URL');
       return;
     }
-    const edgeUrl = `${SUPABASE_URL}/functions/v1/redirect-handler?slug=${encodeURIComponent(slug)}`;
+    const edgeUrl = `${REDIRECT_BASE}/redirect-handler?slug=${encodeURIComponent(slug)}`;
     setPreviewResult(`Edge function URL:\n${edgeUrl}\n\nOpen this URL to test the redirect.`);
   };
 

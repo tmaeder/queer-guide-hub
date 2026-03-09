@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -322,21 +323,16 @@ const UserDirectory = () => {
         // In a real app, you'd want to geocode the user locations or store coordinates
         try {
           // Get user's current city using reverse geocoding
-          const response = await fetch('/functions/v1/mapbox-geocoding', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+          const { data: geoData, error: geoError } = await invokeFunction('mapbox-geocoding', {
+            body: {
               query: `${userLocation.longitude},${userLocation.latitude}`,
               isReverseGeocode: true,
-            }),
+            },
           });
 
-          if (response.ok) {
-            const data = await response.json();
-            if (data.features && data.features.length > 0) {
-              const userCity = data.features[0].place_name;
+          if (geoData && !geoError) {
+            if (geoData.features && geoData.features.length > 0) {
+              const userCity = geoData.features[0].place_name;
               const cityParts = userCity.split(',').map((part) => part.trim().toLowerCase());
 
               // Filter users whose location contains any part of the user's city
