@@ -75,7 +75,6 @@ export const MIGRATED_FUNCTIONS = new Set([
   'get-pexels-images',
   'redirect-handler',
   'get-refuge-restrooms',
-  'algolia-search',
   'resolve-origin-airport',
   'generate-sitemap',
   'calendar-export',

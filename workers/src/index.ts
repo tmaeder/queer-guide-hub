@@ -18,7 +18,6 @@ import { handleGeocoding } from './routes/geocoding';
 import { handlePexelsImages } from './routes/pexels-images';
 import { handleRedirect } from './routes/redirect-handler';
 import { handleRefugeRestrooms } from './routes/refuge-restrooms';
-import { handleAlgoliaSearch } from './routes/algolia-search';
 
 // Route handlers — with Supabase REST
 import { handleOriginAirport } from './routes/origin-airport';
@@ -64,9 +63,6 @@ const routes: Record<string, RouteHandler> = {
 
   // Refuge Restrooms
   '/get-refuge-restrooms': handleRefugeRestrooms,
-
-  // Algolia (deprecated stub)
-  '/algolia-search': handleAlgoliaSearch,
 
   // Airport resolver
   '/resolve-origin-airport': handleOriginAirport,
