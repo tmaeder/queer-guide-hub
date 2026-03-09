@@ -172,7 +172,7 @@ export function MediaLibrary() {
     try {
       setLoading(true);
 
-      const { count: existingCount } = await supabase
+      const { count: existingCount } = await api
         .from('media_optimization_status')
         .select('id', { count: 'exact', head: true });
 
@@ -224,7 +224,7 @@ export function MediaLibrary() {
     try {
       setLoading(true);
 
-      const { data: cmsMediaData, error: cmsError } = await supabase
+      const { data: cmsMediaData, error: cmsError } = await api
         .from('cms_media')
         .select(`
           *,
@@ -239,7 +239,7 @@ export function MediaLibrary() {
         console.error('CMS media error:', cmsError);
       }
 
-      const { data: optimizationData, error: optimizationError } = await supabase
+      const { data: optimizationData, error: optimizationError } = await api
         .from('media_optimization_status')
         .select('*');
 
@@ -475,7 +475,7 @@ export function MediaLibrary() {
         console.error('Storage deletion error:', storageError);
       }
 
-      const { error: dbError } = await supabase
+      const { error: dbError } = await api
         .from('cms_media')
         .delete()
         .eq('id', item.id);

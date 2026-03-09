@@ -195,7 +195,7 @@ export default function AdminReview() {
     try {
       if (bulkAction === 'approve') {
         // Approve all tag suggestions
-        const { data: tags } = await supabase
+        const { data: tags } = await api
           .from('tag_suggestions' as any)
           .select('id')
           .eq('status', 'pending')
@@ -212,13 +212,13 @@ export default function AdminReview() {
         setBulkProgress(33);
 
         // Approve all CMS content in review
-        const { data: cmsItems } = await supabase
+        const { data: cmsItems } = await api
           .from('cms_content_metadata' as any)
           .select('id, source_table, source_id')
           .eq('workflow_state', 'review')
           .limit(500);
         for (const item of cmsItems ?? []) {
-          const { error } = await supabase
+          const { error } = await api
             .from('cms_content_metadata' as any)
             .update({
               workflow_state: 'published',
@@ -233,13 +233,13 @@ export default function AdminReview() {
         setBulkProgress(66);
 
         // Resolve all moderation flags
-        const { data: modFlags } = await supabase
+        const { data: modFlags } = await api
           .from('moderation_flags' as any)
           .select('id')
           .eq('status', 'OPEN')
           .limit(500);
         if ((modFlags ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('moderation_flags' as any)
             .update({
               status: 'RESOLVED',
@@ -259,7 +259,7 @@ export default function AdminReview() {
 
       if (bulkAction === 'enrich') {
         // Apply all automation suggestions
-        const { data: flags } = await supabase
+        const { data: flags } = await api
           .from('content_flags' as any)
           .select('id, content_type, content_id, suggested_value')
           .eq('status', 'pending')
@@ -269,12 +269,12 @@ export default function AdminReview() {
         const total = (flags ?? []).length;
         for (let i = 0; i < total; i++) {
           const flag = (flags ?? [])[i];
-          const { error: applyError } = await supabase
+          const { error: applyError } = await api
             .from(flag.content_type as any)
             .update(flag.suggested_value)
             .eq('id', flag.content_id);
 
-          const { error: flagError } = await supabase
+          const { error: flagError } = await api
             .from('content_flags' as any)
             .update({
               status: 'approved',
@@ -291,7 +291,7 @@ export default function AdminReview() {
 
       if (bulkAction === 'dedup') {
         // Approve all staging items with dedup_status = 'unique'
-        const { data: uniqueItems } = await supabase
+        const { data: uniqueItems } = await api
           .from('ingestion_staging' as any)
           .select('id')
           .eq('review_status', 'pending_review')
@@ -300,7 +300,7 @@ export default function AdminReview() {
           .limit(1000);
 
         if ((uniqueItems ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('ingestion_staging' as any)
             .update({
               disposition: 'approved',
@@ -317,7 +317,7 @@ export default function AdminReview() {
         setBulkProgress(50);
 
         // Reject all duplicates
-        const { data: dupItems } = await supabase
+        const { data: dupItems } = await api
           .from('ingestion_staging' as any)
           .select('id')
           .eq('review_status', 'pending_review')
@@ -326,7 +326,7 @@ export default function AdminReview() {
           .limit(1000);
 
         if ((dupItems ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('ingestion_staging' as any)
             .update({
               disposition: 'rejected',
@@ -347,14 +347,14 @@ export default function AdminReview() {
         const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
         // Reject stale moderation flags
-        const { data: staleFlags } = await supabase
+        const { data: staleFlags } = await api
           .from('moderation_flags' as any)
           .select('id')
           .eq('status', 'OPEN')
           .lt('created_at', cutoff)
           .limit(500);
         if ((staleFlags ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('moderation_flags' as any)
             .update({
               status: 'REJECTED',
@@ -372,14 +372,14 @@ export default function AdminReview() {
         setBulkProgress(25);
 
         // Reject stale tag suggestions
-        const { data: staleTags } = await supabase
+        const { data: staleTags } = await api
           .from('tag_suggestions' as any)
           .select('id')
           .eq('status', 'pending')
           .lt('created_at', cutoff)
           .limit(500);
         if ((staleTags ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('tag_suggestions' as any)
             .update({
               status: 'rejected',
@@ -396,14 +396,14 @@ export default function AdminReview() {
         setBulkProgress(50);
 
         // Dismiss stale automation flags
-        const { data: staleAuto } = await supabase
+        const { data: staleAuto } = await api
           .from('content_flags' as any)
           .select('id')
           .eq('status', 'pending')
           .lt('created_at', cutoff)
           .limit(500);
         if ((staleAuto ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('content_flags' as any)
             .update({
               status: 'expired',
@@ -419,7 +419,7 @@ export default function AdminReview() {
         setBulkProgress(75);
 
         // Reject stale staging items
-        const { data: staleStaging } = await supabase
+        const { data: staleStaging } = await api
           .from('ingestion_staging' as any)
           .select('id')
           .eq('review_status', 'pending_review')
@@ -427,7 +427,7 @@ export default function AdminReview() {
           .lt('created_at', cutoff)
           .limit(500);
         if ((staleStaging ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('ingestion_staging' as any)
             .update({
               disposition: 'rejected',
@@ -446,7 +446,7 @@ export default function AdminReview() {
 
       if (bulkAction === 'approve_confident') {
         // Approve high-confidence tag suggestions (>= 0.8)
-        const { data: confidentTags } = await supabase
+        const { data: confidentTags } = await api
           .from('tag_suggestions' as any)
           .select('id')
           .eq('status', 'pending')
@@ -463,7 +463,7 @@ export default function AdminReview() {
         setBulkProgress(50);
 
         // Approve + apply high-confidence automation flags (>= 0.8)
-        const { data: confidentFlags } = await supabase
+        const { data: confidentFlags } = await api
           .from('content_flags' as any)
           .select('id, content_type, content_id, suggested_value')
           .eq('status', 'pending')
@@ -473,11 +473,11 @@ export default function AdminReview() {
         const total = (confidentFlags ?? []).length;
         for (let i = 0; i < total; i++) {
           const flag = (confidentFlags ?? [])[i];
-          const { error: applyError } = await supabase
+          const { error: applyError } = await api
             .from(flag.content_type as any)
             .update(flag.suggested_value)
             .eq('id', flag.content_id);
-          const { error: flagError } = await supabase
+          const { error: flagError } = await api
             .from('content_flags' as any)
             .update({
               status: 'approved',
@@ -494,14 +494,14 @@ export default function AdminReview() {
 
       if (bulkAction === 'dismiss_low') {
         // Dismiss all info-severity automation flags
-        const { data: infoFlags } = await supabase
+        const { data: infoFlags } = await api
           .from('content_flags' as any)
           .select('id')
           .eq('status', 'pending')
           .eq('severity', 'info')
           .limit(1000);
         if ((infoFlags ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('content_flags' as any)
             .update({
               status: 'rejected',
@@ -517,14 +517,14 @@ export default function AdminReview() {
         setBulkProgress(50);
 
         // Dismiss all warning-severity automation flags
-        const { data: warnFlags } = await supabase
+        const { data: warnFlags } = await api
           .from('content_flags' as any)
           .select('id')
           .eq('status', 'pending')
           .eq('severity', 'warning')
           .limit(1000);
         if ((warnFlags ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('content_flags' as any)
             .update({
               status: 'rejected',
@@ -542,13 +542,13 @@ export default function AdminReview() {
 
       if (bulkAction === 'reject_all') {
         // Reject all moderation flags
-        const { data: openFlags } = await supabase
+        const { data: openFlags } = await api
           .from('moderation_flags' as any)
           .select('id')
           .eq('status', 'OPEN')
           .limit(500);
         if ((openFlags ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('moderation_flags' as any)
             .update({
               status: 'REJECTED',
@@ -566,13 +566,13 @@ export default function AdminReview() {
         setBulkProgress(20);
 
         // Reject all tag suggestions
-        const { data: pendingTags } = await supabase
+        const { data: pendingTags } = await api
           .from('tag_suggestions' as any)
           .select('id')
           .eq('status', 'pending')
           .limit(1000);
         if ((pendingTags ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('tag_suggestions' as any)
             .update({
               status: 'rejected',
@@ -589,13 +589,13 @@ export default function AdminReview() {
         setBulkProgress(40);
 
         // Reject CMS review items (back to draft)
-        const { data: cmsItems } = await supabase
+        const { data: cmsItems } = await api
           .from('cms_content_metadata' as any)
           .select('id')
           .eq('workflow_state', 'review')
           .limit(500);
         for (const item of cmsItems ?? []) {
-          const { error } = await supabase
+          const { error } = await api
             .from('cms_content_metadata' as any)
             .update({
               workflow_state: 'draft',
@@ -608,13 +608,13 @@ export default function AdminReview() {
         setBulkProgress(60);
 
         // Dismiss all automation flags
-        const { data: autoFlags } = await supabase
+        const { data: autoFlags } = await api
           .from('content_flags' as any)
           .select('id')
           .eq('status', 'pending')
           .limit(1000);
         if ((autoFlags ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('content_flags' as any)
             .update({
               status: 'rejected',
@@ -630,14 +630,14 @@ export default function AdminReview() {
         setBulkProgress(80);
 
         // Reject all staging items
-        const { data: stagingItems } = await supabase
+        const { data: stagingItems } = await api
           .from('ingestion_staging' as any)
           .select('id')
           .eq('review_status', 'pending_review')
           .eq('disposition', 'pending')
           .limit(1000);
         if ((stagingItems ?? []).length > 0) {
-          const { error } = await supabase
+          const { error } = await api
             .from('ingestion_staging' as any)
             .update({
               disposition: 'rejected',

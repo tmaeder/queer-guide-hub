@@ -166,7 +166,7 @@ export function ReviewQueueEnhanced() {
       setSelectedIds(new Set());
     } else {
       // Fetch ALL matching IDs across pages
-      let query = supabase
+      let query = api
         .from('ingestion_staging' as any)
         .select('id')
         .eq('review_status', 'pending_review')

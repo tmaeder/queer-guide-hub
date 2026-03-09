@@ -53,7 +53,7 @@ export const useNews = () => {
       const sortField = filters?.sortField || 'published_at';
       const sortOrder = filters?.sortOrder === 'asc';
 
-      let queryBuilder = supabase
+      let queryBuilder = api
         .from('news_articles')
         .select(
           `
@@ -150,7 +150,7 @@ export const useNews = () => {
 
   const fetchSources = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await api
         .from('news_sources')
         .select('*')
         .eq('is_active', true)
@@ -185,7 +185,7 @@ export const useNews = () => {
 
   const getFeaturedArticles = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await api
         .from('news_articles')
         .select(
           `
@@ -212,7 +212,7 @@ export const useNews = () => {
 
   const getTrendingTags = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await api
         .from('unified_tags')
         .select('name, color, usage_count')
         .gt('usage_count', 0)

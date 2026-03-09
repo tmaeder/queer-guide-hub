@@ -34,7 +34,7 @@ export function useMarketplace() {
       setLoading(true);
       setLoadingTimedOut(false);
       setError(null);
-      let query = supabase
+      let query = api
         .from('marketplace_listings')
         .select(
           `
@@ -104,7 +104,7 @@ export function useMarketplace() {
 
   const createListing = async (listing: MarketplaceListingInsert) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('marketplace_listings')
         .insert([listing])
         .select()
@@ -125,7 +125,7 @@ export function useMarketplace() {
       const user = (await api.auth.getUser()).data.user;
       if (!user) throw new Error('Must be logged in to favorite items');
 
-      const { data: existing } = await supabase
+      const { data: existing } = await api
         .from('marketplace_favorites')
         .select('id')
         .eq('listing_id', listingId)
@@ -134,7 +134,7 @@ export function useMarketplace() {
 
       if (existing) {
         // Remove favorite
-        const { error } = await supabase
+        const { error } = await api
           .from('marketplace_favorites')
           .delete()
           .eq('listing_id', listingId)
@@ -143,7 +143,7 @@ export function useMarketplace() {
         return { favorited: false, error: null };
       } else {
         // Add favorite
-        const { error } = await supabase
+        const { error } = await api
           .from('marketplace_favorites')
           .insert({ listing_id: listingId, user_id: user.id });
         if (error) throw error;

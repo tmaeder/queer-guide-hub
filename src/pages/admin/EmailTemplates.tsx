@@ -54,7 +54,7 @@ export default function EmailTemplates() {
 
   const fetchTemplates = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('email_templates')
         .select('*')
         .order('name');
@@ -85,7 +85,7 @@ export default function EmailTemplates() {
 
     setIsSaving(true);
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('email_templates')
         .update({
           name: editingTemplate.name,

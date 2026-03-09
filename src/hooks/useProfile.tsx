@@ -20,7 +20,7 @@ export const useProfile = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
@@ -41,7 +41,7 @@ export const useProfile = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("profiles")
         .update({
           ...updates,
@@ -67,7 +67,7 @@ export const useProfile = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("profiles")
         .update({
           avatar_config: avatarConfig,
@@ -112,7 +112,7 @@ export const useProfile = () => {
         .getPublicUrl(filePath);
 
       // Update profile with new avatar URL
-      const { error: updateError } = await supabase
+      const { error: updateError } = await api
         .from("profiles")
         .update({ 
           avatar_url: data.publicUrl,

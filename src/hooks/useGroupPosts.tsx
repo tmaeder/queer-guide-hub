@@ -61,7 +61,7 @@ export const useGroupPosts = (groupId: string) => {
     queryKey: ['group-posts', groupId],
     queryFn: async () => {
       // Fetch posts with author profiles in a single query
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('group_posts')
         .select('*, profiles!group_posts_user_id_fkey(display_name, avatar_url)')
         .eq('group_id', groupId)
@@ -73,12 +73,12 @@ export const useGroupPosts = (groupId: string) => {
       // Fetch user's likes and votes in parallel
       const postIds = data?.map((post) => post.id) || [];
       const [likesResult, votesResult] = await Promise.all([
-        supabase
+        api
           .from('group_post_likes')
           .select('post_id')
           .in('post_id', postIds)
           .eq('user_id', user?.id || ''),
-        supabase
+        api
           .from('group_poll_votes')
           .select('post_id, option_index')
           .in('post_id', postIds)
@@ -113,7 +113,7 @@ export const useGroupPosts = (groupId: string) => {
   const { data: groupMembers = [] } = useQuery({
     queryKey: ['group-members', groupId],
     queryFn: async () => {
-      const { data: memberships, error } = await supabase
+      const { data: memberships, error } = await api
         .from('group_memberships')
         .select(
           'user_id, role, joined_at, profiles!group_memberships_user_id_fkey(display_name, avatar_url)',
@@ -160,7 +160,7 @@ export const useGroupPosts = (groupId: string) => {
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('group_posts')
         .insert({
           group_id: groupId,
@@ -215,7 +215,7 @@ export const useGroupPosts = (groupId: string) => {
     mutationFn: async (postId: string) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { error } = await supabase
+      const { error } = await api
         .from('group_post_likes')
         .delete()
         .eq('post_id', postId)
@@ -249,7 +249,7 @@ export const useGroupPosts = (groupId: string) => {
   // Pin/unpin post mutation
   const togglePinMutation = useMutation({
     mutationFn: async ({ postId, isPinned }: { postId: string; isPinned: boolean }) => {
-      const { error } = await supabase
+      const { error } = await api
         .from('group_posts')
         .update({ is_pinned: isPinned })
         .eq('id', postId);

@@ -16,7 +16,7 @@ export const useMailboxAddress = () => {
       return;
     }
     (async () => {
-      const { data } = await supabase
+      const { data } = await api
         .from('profiles')
         .select('mailbox_address')
         .eq('user_id', user.id)
@@ -53,7 +53,7 @@ export const useMailboxAddress = () => {
         return false;
       }
 
-      const { error } = await supabase
+      const { error } = await api
         .from('profiles')
         .update({ mailbox_address: normalized } as never)
         .eq('user_id', user.id);

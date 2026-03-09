@@ -73,7 +73,7 @@ export function useCMSEditor({
 
     try {
       // Fetch content from source table
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from(config.tableName as any)
         .select('*')
         .eq(config.primaryKey, itemId)
@@ -84,7 +84,7 @@ export function useCMSEditor({
       serverUpdatedAt.current = data.updated_at || null;
 
       // Fetch CMS metadata if exists
-      const { data: meta } = await supabase
+      const { data: meta } = await api
         .from('cms_content_metadata' as any)
         .select('*')
         .eq('source_table', config.tableName)
@@ -159,7 +159,7 @@ export function useCMSEditor({
     try {
       // Conflict detection: check updated_at hasn't changed
       if (itemId && serverUpdatedAt.current) {
-        const { data: current } = await supabase
+        const { data: current } = await api
           .from(config.tableName as any)
           .select('updated_at')
           .eq(config.primaryKey, itemId)
@@ -195,7 +195,7 @@ export function useCMSEditor({
 
       if (itemId) {
         // UPDATE
-        const { error } = await supabase
+        const { error } = await api
           .from(config.tableName as any)
           .update(saveData)
           .eq(config.primaryKey, itemId);
@@ -206,7 +206,7 @@ export function useCMSEditor({
         if (user) {
           saveData.created_by = user.id;
         }
-        const { data: inserted, error } = await supabase
+        const { data: inserted, error } = await api
           .from(config.tableName as any)
           .insert(saveData)
           .select('id')
@@ -218,7 +218,7 @@ export function useCMSEditor({
 
       // Ensure cms_content_metadata exists for ALL content types (workflow support)
       if (savedId && !metadata) {
-        const { data: newMeta } = await supabase
+        const { data: newMeta } = await api
           .from('cms_content_metadata' as any)
           .upsert(
             {
@@ -307,7 +307,7 @@ export function useCMSEditor({
 
         if (metadata) {
           // Update existing
-          const { data, error } = await supabase
+          const { data, error } = await api
             .from('cms_content_metadata' as any)
             .update(metaData)
             .eq('id', metadata.id)
@@ -318,7 +318,7 @@ export function useCMSEditor({
           setMetadata(data as CMSContentMetadata);
         } else {
           // Insert new
-          const { data, error } = await supabase
+          const { data, error } = await api
             .from('cms_content_metadata' as any)
             .insert({
               ...metaData,
@@ -375,7 +375,7 @@ async function createRevision(
 ) {
   try {
     // Get next revision number
-    const { data: lastRevision } = await supabase
+    const { data: lastRevision } = await api
       .from('cms_revisions' as any)
       .select('revision_number')
       .eq('source_table', sourceTable)

@@ -47,7 +47,7 @@ export function useVenues(autoFetch: boolean = true) {
       const page = options?.page;
       const pageSize = options?.pageSize ?? 24;
 
-      let query = supabase
+      let query = api
         .from('venues')
         .select('*', { count: 'exact' })
         .neq('data_source', 'refuge_restrooms')
@@ -169,7 +169,7 @@ export function useVenues(autoFetch: boolean = true) {
 
   const updateVenue = async (id: string, venue: Partial<VenueInsert>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('venues')
         .update(venue)
         .eq('id', id)

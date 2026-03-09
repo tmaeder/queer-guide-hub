@@ -93,7 +93,7 @@ export default function Ressources() {
   useEffect(() => {
     const loadProfessions = async () => {
       try {
-        const { data } = await supabase
+        const { data } = await api
           .from('personalities')
           .select('profession')
           .not('profession', 'is', null);
@@ -143,7 +143,7 @@ export default function Ressources() {
     // fetch directly from Supabase
     if (allTags.length > 0 || !loading) {
       const fetchTagDirect = async () => {
-        const { data } = await supabase
+        const { data } = await api
           .from('unified_tags')
           .select('*')
           .ilike('name', decodedTagName)
@@ -152,7 +152,7 @@ export default function Ressources() {
           .maybeSingle();
         if (data) {
           // Fetch category info for this tag
-          const { data: catAssignments } = await supabase
+          const { data: catAssignments } = await api
             .from('tag_category_assignments')
             .select(
               'tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)',
@@ -180,7 +180,7 @@ export default function Ressources() {
               .filter((c: any) => c.parent_id)
               .map((c: any) => c.parent_id);
             if (parentIds.length > 0) {
-              const { data: parents } = await supabase
+              const { data: parents } = await api
                 .from('tag_categories')
                 .select('id, name')
                 .in('id', parentIds);

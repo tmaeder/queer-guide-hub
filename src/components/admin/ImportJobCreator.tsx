@@ -150,7 +150,7 @@ export const ImportJobCreator = () => {
   const [citySearch, setCitySearch] = useState('');
 
   useEffect(() => {
-    supabase
+    api
       .from('cities')
       .select('name, countries!inner(name)')
       .order('name')

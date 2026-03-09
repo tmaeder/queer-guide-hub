@@ -41,7 +41,7 @@ export function useConsolidatedSecurity() {
     if (!user) return null;
 
     return withLoading(async () => {
-      const { data: events, error } = await supabase
+      const { data: events, error } = await api
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })

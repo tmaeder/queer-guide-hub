@@ -18,7 +18,7 @@ export const useNotifications = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
@@ -41,7 +41,7 @@ export const useNotifications = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('notifications')
         .update({ read: true })
         .eq('id', notificationId)
@@ -63,7 +63,7 @@ export const useNotifications = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('notifications')
         .update({ read: true })
         .eq('user_id', user.id)
@@ -116,7 +116,7 @@ export const useNotifications = () => {
 
     fetchNotifications();
 
-    const channel = supabase
+    const channel = api
       .channel('notifications-changes')
       .on(
         'postgres_changes',

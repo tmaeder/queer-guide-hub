@@ -41,7 +41,7 @@ export function useLocationPrivacy() {
     if (!user) return;
 
     try {
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await api
         .from('profiles')
         .select('privacy_settings')
         .eq('user_id', user.id)
@@ -71,7 +71,7 @@ export function useLocationPrivacy() {
       const updatedSettings = { ...locationSettings, ...newSettings };
 
       // Get current privacy settings to preserve other settings
-      const { data: currentProfile } = await supabase
+      const { data: currentProfile } = await api
         .from('profiles')
         .select('privacy_settings')
         .eq('user_id', user.id)
@@ -85,7 +85,7 @@ export function useLocationPrivacy() {
         location_anonymization_days: updatedSettings.anonymizationDays
       };
 
-      const { error } = await supabase
+      const { error } = await api
         .from('profiles')
         .update({
           privacy_settings: updatedPrivacySettings

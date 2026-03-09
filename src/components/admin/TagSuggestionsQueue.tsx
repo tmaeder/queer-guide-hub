@@ -39,7 +39,7 @@ const SOURCE_LABELS: Record<string, { label: string; icon: typeof Bot }> = {
 };
 
 async function fetchPendingSuggestions(): Promise<{ items: TagSuggestionRow[]; total: number }> {
-  const { data, count, error } = await supabase
+  const { data, count, error } = await api
     .from('tag_suggestions' as any)
     .select('*', { count: 'exact' })
     .eq('status', 'pending')
@@ -84,7 +84,7 @@ export function TagSuggestionsQueue() {
 
   const rejectMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const { error } = await supabase
+      const { error } = await api
         .from('tag_suggestions' as any)
         .update({
           status: 'rejected',
@@ -118,7 +118,7 @@ export function TagSuggestionsQueue() {
       setSelectedIds(new Set());
     } else {
       // Fetch ALL pending suggestion IDs (not just the loaded batch)
-      const { data } = await supabase
+      const { data } = await api
         .from('tag_suggestions' as any)
         .select('id')
         .eq('status', 'pending')

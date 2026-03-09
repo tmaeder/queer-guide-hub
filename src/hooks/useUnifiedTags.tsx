@@ -34,7 +34,7 @@ export const useUnifiedTags = () => {
       setLoading(true);
       setError(null);
 
-      let query = supabase
+      let query = api
         .from('unified_tags')
         .select('*')
         .eq('status', 'active')
@@ -90,7 +90,7 @@ export const useUnifiedTags = () => {
         .replace(/-+/g, '-')
         .trim();
 
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('unified_tags')
         .insert([
           {
@@ -123,7 +123,7 @@ export const useUnifiedTags = () => {
 
   const updateTag = async (id: string, updates: Partial<UnifiedTag>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('unified_tags')
         .update(updates)
         .eq('id', id)
@@ -174,7 +174,7 @@ export const useUnifiedTags = () => {
 
   const assignTag = async (tagId: string, entityId: string, entityType: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('unified_tag_assignments')
         .insert([
           {
@@ -207,7 +207,7 @@ export const useUnifiedTags = () => {
 
   const unassignTag = async (tagId: string, entityId: string, entityType: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('unified_tag_assignments')
         .delete()
         .eq('tag_id', tagId)
@@ -233,7 +233,7 @@ export const useUnifiedTags = () => {
 
   const getEntityTags = async (entityId: string, entityType: string): Promise<UnifiedTag[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('unified_tag_assignments')
         .select(
           `
@@ -256,7 +256,7 @@ export const useUnifiedTags = () => {
   const assignTagsToEntity = async (entityId: string, entityType: string, tagIds: string[]) => {
     try {
       // Remove existing assignments
-      await supabase
+      await api
         .from('unified_tag_assignments')
         .delete()
         .eq('entity_id', entityId)

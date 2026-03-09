@@ -53,7 +53,7 @@ export function VideoManager() {
   const loadVideos = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('videos')
         .select(
           `

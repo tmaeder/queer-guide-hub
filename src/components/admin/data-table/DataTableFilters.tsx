@@ -76,7 +76,7 @@ function SelectFilter({ config, value, onChange }: SelectFilterProps) {
       if (!config.dynamicSource) return [];
       const { table, column, labelColumn } = config.dynamicSource;
       const selectCols = labelColumn ? `${column}, ${labelColumn}` : column;
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from(table as 'venues')
         .select(selectCols)
         .not(column, 'is', null)

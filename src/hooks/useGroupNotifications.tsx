@@ -34,7 +34,7 @@ export const useGroupNotifications = () => {
       if (!user?.id) return [];
 
       // Simple query without complex joins
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('group_notifications')
         .select('*')
         .eq('user_id', user.id)
@@ -47,12 +47,12 @@ export const useGroupNotifications = () => {
       const groupIds = [...new Set(data?.map(n => n.group_id) || [])];
       const userIds = [...new Set(data?.map(n => n.triggered_by_user_id) || [])];
 
-      const { data: groups } = await supabase
+      const { data: groups } = await api
         .from('community_groups')
         .select('id, name')
         .in('id', groupIds);
 
-      const { data: profiles } = await supabase
+      const { data: profiles } = await api
         .from('profiles')
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
@@ -81,7 +81,7 @@ export const useGroupNotifications = () => {
   // Mark notification as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: string) => {
-      const { error } = await supabase
+      const { error } = await api
         .from('group_notifications')
         .update({ read_at: new Date().toISOString() })
         .eq('id', notificationId)
@@ -97,7 +97,7 @@ export const useGroupNotifications = () => {
   // Mark all notifications as read mutation
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
+      const { error } = await api
         .from('group_notifications')
         .update({ read_at: new Date().toISOString() })
         .eq('user_id', user?.id)

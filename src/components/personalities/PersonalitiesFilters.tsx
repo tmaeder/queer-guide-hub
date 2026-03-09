@@ -45,7 +45,7 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
     const fetchProfessions = async () => {
       setLoadingProfessions(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('personalities')
           .select('profession')
           .not('profession', 'is', null)

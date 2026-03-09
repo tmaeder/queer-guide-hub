@@ -116,7 +116,7 @@ export function useWorkflowMonitor() {
 
   // ── Realtime subscription ───────────────────────────────────────────────────
   useEffect(() => {
-    const channel = supabase
+    const channel = api
       .channel('workflow-runs-realtime')
       .on(
         'postgres_changes',
@@ -141,7 +141,7 @@ export function useWorkflowMonitor() {
   } = useQuery({
     queryKey: QUERY_KEYS.definitions,
     queryFn: async (): Promise<WorkflowDefinition[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('workflow_definitions' as never)
         .select('*')
         .order('priority', { ascending: true });
@@ -159,7 +159,7 @@ export function useWorkflowMonitor() {
     queryKey: QUERY_KEYS.runs,
     queryFn: async (): Promise<WorkflowRun[]> => {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('workflow_runs' as never)
         .select('*')
         .gte('created_at', since)

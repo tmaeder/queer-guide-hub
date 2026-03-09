@@ -179,7 +179,7 @@ export function CMSSidebar({
       const counts: Record<string, number> = {};
       const promises = contentTypes.map(async (ct) => {
         try {
-          const { count, error } = await supabase
+          const { count, error } = await api
             .from(ct.tableName as any)
             .select('*', { count: 'exact', head: true });
           if (!error && count !== null) {

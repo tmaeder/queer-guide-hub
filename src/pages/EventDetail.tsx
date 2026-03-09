@@ -80,7 +80,7 @@ export default function EventDetail() {
   const fetchEventData = async () => {
     if (!id) return;
     try {
-      const { data: eventData, error: eventError } = await supabase
+      const { data: eventData, error: eventError } = await api
         .from('events')
         .select(
           `
@@ -97,7 +97,7 @@ export default function EventDetail() {
       if (eventError) throw eventError;
 
       if (user) {
-        const { data: attendeesData } = await supabase
+        const { data: attendeesData } = await api
           .from('event_attendees')
           .select(`id, status, user_id, profiles:user_id (display_name, avatar_url)`)
           .eq('event_id', id);
@@ -135,7 +135,7 @@ export default function EventDetail() {
       return;
     }
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('event_attendees')
         .upsert({ event_id: event.id, user_id: user.id, status });
       if (error) throw error;

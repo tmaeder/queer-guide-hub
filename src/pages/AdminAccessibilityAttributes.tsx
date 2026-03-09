@@ -95,7 +95,7 @@ export default function AdminAccessibilityAttributes() {
     }
     try {
       if (editingId) {
-        const { error } = await supabase
+        const { error } = await api
           .from('accessibility_attributes')
           .update(form)
           .eq('id', editingId);

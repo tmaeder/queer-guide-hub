@@ -14,7 +14,7 @@ export function useOptimizedProfileData() {
         queryKey: queryKeys.profiles(user?.id),
         queryFn: async () => {
           if (!user?.id) return null;
-          const { data, error } = await supabase
+          const { data, error } = await api
             .from('profiles')
             .select('*')
             .eq('user_id', user.id)
@@ -29,7 +29,7 @@ export function useOptimizedProfileData() {
         queryKey: ['user_roles', user?.id],
         queryFn: async () => {
           if (!user?.id) return [];
-          const { data, error } = await supabase
+          const { data, error } = await api
             .from('user_roles')
             .select('*')
             .eq('user_id', user.id);
@@ -43,7 +43,7 @@ export function useOptimizedProfileData() {
         queryKey: queryKeys.notifications(user?.id),
         queryFn: async () => {
           if (!user?.id) return [];
-          const { data, error } = await supabase
+          const { data, error } = await api
             .from('notifications')
             .select('*')
             .eq('user_id', user.id)
@@ -59,7 +59,7 @@ export function useOptimizedProfileData() {
         queryKey: queryKeys.conversations(user?.id),
         queryFn: async () => {
           if (!user?.id) return [];
-          const { data, error } = await supabase
+          const { data, error } = await api
             .from('conversations')
             .select(`
               *,
@@ -84,7 +84,7 @@ export function useOptimizedProfileData() {
         queryKey: ['group_notifications', user?.id],
         queryFn: async () => {
           if (!user?.id) return [];
-          const { data, error } = await supabase
+          const { data, error } = await api
             .from('group_notifications')
             .select('*')
             .eq('user_id', user.id)
@@ -100,7 +100,7 @@ export function useOptimizedProfileData() {
         queryKey: ['user_posts_count', user?.id],
         queryFn: async () => {
           if (!user?.id) return 0;
-          const { data, error } = await supabase
+          const { data, error } = await api
             .from('community_posts')
             .select('id', { count: 'exact', head: true })
             .eq('user_id', user.id);

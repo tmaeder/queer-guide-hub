@@ -78,7 +78,7 @@ export default function QueerVillageDetail() {
 
   const fetchVillage = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('queer_villages')
         .select('*, cities:city_id(id, name), countries:country_id(id, name, flag_emoji)')
         .eq('slug', slug)

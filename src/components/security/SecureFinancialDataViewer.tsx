@@ -53,7 +53,7 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('donations')
         .select('id, amount_encrypted, status, created_at, donor_name, email')
         .eq('user_id', userId)

@@ -121,7 +121,7 @@ export const useBackgroundImports = () => {
     if (!isPolling) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('import_jobs')
         .select('*')
         .order('created_at', { ascending: false })

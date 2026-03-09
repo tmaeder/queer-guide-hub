@@ -31,7 +31,7 @@ export function useFestivals(autoFetch = true) {
       setLoading(true);
       setError(null);
 
-      let query = supabase
+      let query = api
         .from('festivals')
         .select('*, cities:city_id(id, name), countries:country_id(id, name)')
         .order('start_date', { ascending: false, nullsFirst: false });
@@ -60,7 +60,7 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const fetchFestivalWithEvents = useCallback(async (id: string): Promise<FestivalWithEvents | null> => {
-    const { data: festival, error: festErr } = await supabase
+    const { data: festival, error: festErr } = await api
       .from('festivals')
       .select('*, cities:city_id(id, name), countries:country_id(id, name)')
       .eq('id', id)
@@ -68,7 +68,7 @@ export function useFestivals(autoFetch = true) {
     if (festErr) throw festErr;
     if (!festival) return null;
 
-    const { data: events } = await supabase
+    const { data: events } = await api
       .from('events')
       .select('*, venues:venue_id(id, name)')
       .eq('festival_id', id)
@@ -84,7 +84,7 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const updateFestival = useCallback(async (id: string, changes: Partial<FestivalInsert>) => {
-    const { data, error } = await supabase
+    const { data, error } = await api
       .from('festivals')
       .update({ ...changes, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -100,7 +100,7 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const linkEventToFestival = useCallback(async (eventId: string, festivalId: string) => {
-    const { error } = await supabase
+    const { error } = await api
       .from('events')
       .update({ festival_id: festivalId })
       .eq('id', eventId);
@@ -108,7 +108,7 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const unlinkEvent = useCallback(async (eventId: string) => {
-    const { error } = await supabase
+    const { error } = await api
       .from('events')
       .update({ festival_id: null })
       .eq('id', eventId);

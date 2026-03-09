@@ -108,7 +108,7 @@ export function useDuplicatePairs(entityType: string | null) {
   return useQuery({
     queryKey: ['duplicate-pairs', entityType],
     queryFn: async (): Promise<DuplicatePair[]> => {
-      let query = supabase
+      let query = api
         .from('scraper_dedupe_decisions')
         .select('*')
         .eq('decision', 'pending')
@@ -140,7 +140,7 @@ export function useEntityById(entityType: string | null, entityId: string | null
     queryFn: async (): Promise<Record<string, any> | null> => {
       if (!entityType || !entityId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from(entityType as any)
         .select('*')
         .eq('id', entityId)
@@ -199,7 +199,7 @@ export function useImportJobs(
   return useQuery({
     queryKey: ['import-jobs', page, status, perPage],
     queryFn: async () => {
-      let query = supabase
+      let query = api
         .from('import_jobs_enhanced')
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
@@ -320,7 +320,7 @@ export function useDismissDuplicate() {
 
   return useMutation({
     mutationFn: async (decisionId: string) => {
-      const { error } = await supabase
+      const { error } = await api
         .from('scraper_dedupe_decisions')
         .update({ decision: 'not_duplicate' })
         .eq('id', decisionId);
@@ -375,7 +375,7 @@ export function useMergeHistory(limit: number = 50) {
   return useQuery({
     queryKey: ['merge-history', limit],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('import_audit_log')
         .select('*')
         .eq('action', 'entity_merged')

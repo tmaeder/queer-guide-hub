@@ -34,7 +34,7 @@ export function useAdminRoles() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('user_roles')
         .select('*')
         .eq('user_id', user.id);

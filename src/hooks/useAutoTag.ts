@@ -158,7 +158,7 @@ export function useAutoTag() {
         if (error) throw error;
       } else {
         // Just reject
-        const { error } = await supabase
+        const { error } = await api
           .from('tag_suggestions' as any)
           .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
           .eq('id', suggestionId);
@@ -230,7 +230,7 @@ export function useAutoTag() {
     limit: number = 100,
   ) => {
     try {
-      let query = supabase
+      let query = api
         .from('tag_suggestions' as any)
         .select('*')
         .eq('status', 'pending')

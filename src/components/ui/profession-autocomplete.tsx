@@ -29,7 +29,7 @@ export function ProfessionAutocomplete({
     const fetchProfessions = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('personalities')
           .select('profession')
           .not('profession', 'is', null)

@@ -118,7 +118,7 @@ export default function News() {
 
     const fetchNames = async () => {
       if (allCityIds.size > 0) {
-        const { data } = await supabase
+        const { data } = await api
           .from('cities')
           .select('id, name')
           .in('id', Array.from(allCityIds));
@@ -129,7 +129,7 @@ export default function News() {
         }
       }
       if (allCountryIds.size > 0) {
-        const { data } = await supabase
+        const { data } = await api
           .from('countries')
           .select('id, name')
           .in('id', Array.from(allCountryIds));

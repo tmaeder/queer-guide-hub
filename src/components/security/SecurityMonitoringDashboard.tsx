@@ -36,7 +36,7 @@ export function SecurityMonitoringDashboard() {
   const fetchSecurityEvents = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('security_monitoring')
         .select('*')
         .order('created_at', { ascending: false })

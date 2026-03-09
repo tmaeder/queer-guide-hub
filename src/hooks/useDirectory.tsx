@@ -21,7 +21,7 @@ export const useDirectory = () => {
 
   const fetchContinents = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("continents")
         .select("*")
         .order("name");
@@ -35,7 +35,7 @@ export const useDirectory = () => {
 
   const fetchCountriesByContinent = async (continentId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("countries")
         .select(`
           *,
@@ -54,7 +54,7 @@ export const useDirectory = () => {
 
   const fetchAllCountries = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("countries")
         .select(`
           *,
@@ -71,7 +71,7 @@ export const useDirectory = () => {
 
   const fetchCitiesByCountry = async (countryId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("cities")
         .select(`
           *,
@@ -90,7 +90,7 @@ export const useDirectory = () => {
 
   const fetchMajorCities = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("cities")
         .select(`
           *,
@@ -111,18 +111,18 @@ export const useDirectory = () => {
       setLoading(true);
       
       const [continentsResult, countriesResult, citiesResult] = await Promise.all([
-        supabase
+        api
           .from("continents")
           .select("*")
           .ilike("name", `%${query}%`),
-        supabase
+        api
           .from("countries")
           .select(`
             *,
             regions (*)
           `)
           .ilike("name", `%${query}%`),
-        supabase
+        api
           .from("cities")
           .select(`
             *,
@@ -150,7 +150,7 @@ export const useDirectory = () => {
       setLoading(true);
       
       // Fetch all cities with coordinates
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("cities")
         .select(`
           *,

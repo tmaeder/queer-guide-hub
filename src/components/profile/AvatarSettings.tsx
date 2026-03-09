@@ -119,7 +119,7 @@ export const AvatarSettings = ({
         updated_at: new Date().toISOString(),
       };
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await api
         .from('profiles')
         .update(profileUpdate)
         .eq('user_id', user.id);

@@ -17,7 +17,7 @@ export function useTagAliases(tagId: string | null) {
     queryKey: ['tag-aliases', tagId],
     queryFn: async (): Promise<TagAlias[]> => {
       if (!tagId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('tag_aliases')
         .select('*')
         .eq('canonical_tag_id', tagId)
@@ -36,7 +36,7 @@ export function useTagAliases(tagId: string | null) {
         .toLowerCase()
         .replace(/\s+/g, '-')
         .replace(/[^a-z0-9-]/g, '');
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('tag_aliases')
         .insert([{ canonical_tag_id: tagId, alias_name, alias_slug, alias_type }])
         .select()

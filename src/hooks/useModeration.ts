@@ -50,7 +50,7 @@ export function useModeration() {
   ) => {
     setLoading(true);
     try {
-      let query = supabase
+      let query = api
         .from('moderation_flags')
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
@@ -93,7 +93,7 @@ export function useModeration() {
         if (resolution_note) updates.resolution_note = resolution_note;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('moderation_flags')
         .update(updates)
         .eq('id', flagId)
@@ -126,7 +126,7 @@ export function useModeration() {
       };
       if (resolution_note) updates.resolution_note = resolution_note;
 
-      const { error } = await supabase
+      const { error } = await api
         .from('moderation_flags')
         .update(updates)
         .in('id', flagIds);

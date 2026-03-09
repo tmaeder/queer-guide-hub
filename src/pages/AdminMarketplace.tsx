@@ -312,7 +312,7 @@ export default function AdminMarketplace() {
           onClick: async (row) => {
             if (!confirm(`Delete "${row.title}"?`)) return;
             try {
-              const { error } = await supabase
+              const { error } = await api
                 .from('marketplace_listings')
                 .delete()
                 .eq('id', row.id);

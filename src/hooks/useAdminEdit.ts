@@ -23,7 +23,7 @@ export function useAdminEdit() {
     setLoading(true);
     try {
       // 1. Fetch current row for before_data snapshot
-      const { data: before, error: fetchErr } = await supabase
+      const { data: before, error: fetchErr } = await api
         .from(contentType as any)
         .select('*')
         .eq('id', contentId)
@@ -32,7 +32,7 @@ export function useAdminEdit() {
       if (fetchErr) throw new Error(`Failed to fetch current data: ${fetchErr.message}`);
 
       // 2. Update the target table directly
-      const { data: record, error: updateErr } = await supabase
+      const { data: record, error: updateErr } = await api
         .from(contentType as any)
         .update(changes)
         .eq('id', contentId)
@@ -67,7 +67,7 @@ export function useAdminEdit() {
     contentId: string,
   ): Promise<EditLogEntry[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('admin_edit_log')
         .select('*')
         .eq('content_type', contentType)

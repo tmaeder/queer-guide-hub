@@ -41,7 +41,7 @@ export function CountryAutocomplete({
     const fetchCountries = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('countries')
           .select('id, name, code, flag_emoji')
           .order('name');

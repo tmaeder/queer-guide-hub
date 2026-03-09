@@ -52,7 +52,7 @@ export function CityAutocompleteField({
     const fetchCities = async () => {
       setLoading(true);
       try {
-        let query = supabase
+        let query = api
           .from('cities')
           .select('id, name, country_id, countries!inner(name)')
           .order('name');

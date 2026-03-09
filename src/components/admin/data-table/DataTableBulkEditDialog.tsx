@@ -69,7 +69,7 @@ export function DataTableBulkEditDialog({
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from(tableName as 'venues')
         .update(updates)
         .in('id', Array.from(selectedIds));

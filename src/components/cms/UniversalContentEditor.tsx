@@ -86,7 +86,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       // Add updated_at timestamp
       changes['updated_at'] = new Date().toISOString();
 
-      const { error } = await supabase
+      const { error } = await api
         .from(tableName)
         .update(changes)
         .eq('id', content.id);

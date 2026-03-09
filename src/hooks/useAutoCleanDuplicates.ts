@@ -113,7 +113,7 @@ export function useDuplicateCounts() {
   return useQuery({
     queryKey: ['duplicate-counts'],
     queryFn: async (): Promise<DuplicateCounts> => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('scraper_dedupe_decisions' as any)
         .select('entity_type')
         .eq('decision', 'pending');

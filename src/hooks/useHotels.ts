@@ -35,7 +35,7 @@ export function useHotels(autoFetch = true) {
       setLoading(true);
       setError(null);
 
-      let query = supabase
+      let query = api
         .from('hotels')
         .select('*', { count: 'exact' })
         .order('featured', { ascending: false })
@@ -91,7 +91,7 @@ export function useHotels(autoFetch = true) {
   }, []);
 
   const createHotel = useCallback(async (hotel: HotelInsert) => {
-    const { data, error } = await supabase
+    const { data, error } = await api
       .from('hotels')
       .insert(hotel)
       .select()
@@ -101,7 +101,7 @@ export function useHotels(autoFetch = true) {
   }, []);
 
   const updateHotel = useCallback(async (id: string, changes: Partial<HotelInsert>) => {
-    const { data, error } = await supabase
+    const { data, error } = await api
       .from('hotels')
       .update({ ...changes, updated_at: new Date().toISOString() })
       .eq('id', id)

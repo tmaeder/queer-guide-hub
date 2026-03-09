@@ -72,7 +72,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
       if (uploadError) throw uploadError;
 
       // Create video record
-      const { data: videoRecord, error: dbError } = await supabase
+      const { data: videoRecord, error: dbError } = await api
         .from('videos')
         .insert([{
           id: video.id,

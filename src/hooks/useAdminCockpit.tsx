@@ -67,7 +67,7 @@ export interface CockpitData {
 
 async function fetchSystemHealth(): Promise<SystemHealth> {
   const start = performance.now();
-  const { error } = await supabase
+  const { error } = await api
     .from('venues' as any)
     .select('id', { count: 'exact', head: true })
     .limit(1);
@@ -83,24 +83,24 @@ async function fetchSystemHealth(): Promise<SystemHealth> {
 
 async function fetchReviewSummary(): Promise<ReviewSummary> {
   const [stagingRes, cmsRes, modRes, autoRes, tagRes] = await Promise.all([
-    supabase
+    api
       .from('ingestion_staging' as any)
       .select('id', { count: 'exact', head: true })
       .eq('review_status', 'pending_review')
       .eq('disposition', 'pending'),
-    supabase
+    api
       .from('cms_content_metadata' as any)
       .select('id', { count: 'exact', head: true })
       .eq('workflow_state', 'review'),
-    supabase
+    api
       .from('moderation_flags' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'OPEN'),
-    supabase
+    api
       .from('content_flags' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending'),
-    supabase
+    api
       .from('tag_suggestions' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending'),
@@ -128,16 +128,16 @@ async function fetchImportSummary(): Promise<ImportSummary> {
   const todayISO = today.toISOString();
 
   const [activeRes, completedRes, failedRes] = await Promise.all([
-    supabase
+    api
       .from('import_jobs' as any)
       .select('id', { count: 'exact', head: true })
       .in('status', ['processing', 'validating', 'pending']),
-    supabase
+    api
       .from('import_jobs' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'completed')
       .gte('completed_at', todayISO),
-    supabase
+    api
       .from('import_jobs' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'failed')
@@ -159,12 +159,12 @@ async function fetchImportSummary(): Promise<ImportSummary> {
 
 async function fetchQualityIndex(): Promise<QualityIndex> {
   const [warningRes, criticalRes] = await Promise.all([
-    supabase
+    api
       .from('content_flags' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending')
       .in('severity', ['warning', 'info']),
-    supabase
+    api
       .from('content_flags' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending')

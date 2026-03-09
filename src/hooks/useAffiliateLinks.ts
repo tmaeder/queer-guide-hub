@@ -22,7 +22,7 @@ export function useAffiliateLinks() {
     try {
       setLoading(true);
       setError(null);
-      const { data, error: err } = await supabase
+      const { data, error: err } = await api
         .from('affiliate_partners')
         .select('*')
         .order('partner_name');
@@ -42,7 +42,7 @@ export function useAffiliateLinks() {
   }, []);
 
   const updatePartner = useCallback(async (id: string, changes: Partial<PartnerInsert>) => {
-    const { data, error } = await supabase
+    const { data, error } = await api
       .from('affiliate_partners')
       .update({ ...changes, updated_at: new Date().toISOString() })
       .eq('id', id)

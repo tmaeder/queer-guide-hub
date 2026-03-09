@@ -21,7 +21,7 @@ export function SecurityMonitoringDashboard() {
   const { data: recentEvents = [], isLoading } = useQuery({
     queryKey: ['security-events'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })
@@ -40,7 +40,7 @@ export function SecurityMonitoringDashboard() {
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('user_role_audit_log')
         .select('id, admin_user_id, target_user_id, action, role_name, timestamp')
         .order('timestamp', { ascending: false })
@@ -71,7 +71,7 @@ export function SecurityMonitoringDashboard() {
   const { data: recentFailedLogins = [] } = useQuery({
     queryKey: ['recent-failed-logins'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('failed_login_attempts')
         .select('*')
         .order('created_at', { ascending: false })

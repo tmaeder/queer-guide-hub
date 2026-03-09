@@ -54,7 +54,7 @@ export const NewsCard = ({
 
       setIsLoadingTags(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('unified_tag_assignments')
           .select('unified_tags!inner(name, color)')
           .eq('entity_type', 'news')

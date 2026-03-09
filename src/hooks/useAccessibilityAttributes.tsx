@@ -8,7 +8,7 @@ export function useAccessibilityAttributes() {
   const fetchAccessibilityAttributes = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('accessibility_attributes')
         .select('*')
         .eq('is_active', true)

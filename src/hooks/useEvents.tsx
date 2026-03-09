@@ -45,7 +45,7 @@ export function useEvents(autoFetch: boolean = true) {
       const page = options?.page;
       const pageSize = options?.pageSize ?? 24;
 
-      let query = supabase
+      let query = api
         .from('events')
         .select(
           `
@@ -180,7 +180,7 @@ export function useEvents(autoFetch: boolean = true) {
 
   const updateEvent = async (eventId: string, eventData: Partial<EventInsert>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('events')
         .update(eventData)
         .eq('id', eventId)

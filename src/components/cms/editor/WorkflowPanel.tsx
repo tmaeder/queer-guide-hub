@@ -66,7 +66,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
     if (!itemId || !config) return;
     try {
       const { api } = await import('@/integrations/api/client');
-      const { data } = await supabase
+      const { data } = await api
         .from('cms_content_metadata' as any)
         .select('workflow_state, visibility_level, published_at')
         .eq('source_table', config.tableName)
@@ -130,7 +130,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
 
       try {
         const { api } = await import('@/integrations/api/client');
-        await supabase
+        await api
           .from('cms_content_metadata' as any)
           .upsert(
             {

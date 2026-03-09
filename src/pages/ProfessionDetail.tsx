@@ -31,7 +31,7 @@ export default function ProfessionDetail() {
       try {
         const decodedProfession = decodeURIComponent(professionName);
 
-        const { data: personalities, error: personalitiesError } = await supabase
+        const { data: personalities, error: personalitiesError } = await api
           .from('personalities')
           .select('*')
           .not('profession', 'is', null)

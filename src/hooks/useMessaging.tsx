@@ -86,7 +86,7 @@ export const useMessaging = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('conversations')
         .select(
           `
@@ -123,7 +123,7 @@ export const useMessaging = () => {
   const fetchMessages = useCallback(
     async (conversationId: string) => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('messages')
           .select(
             '*, sender:profiles!messages_sender_id_profiles_user_id_fkey(display_name, avatar_url)',
@@ -192,7 +192,7 @@ export const useMessaging = () => {
 
       setSendingMessage(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('messages')
           .insert({
             conversation_id: conversationId,
@@ -302,7 +302,7 @@ export const useMessaging = () => {
       if (!user) return;
 
       try {
-        const { error } = await supabase
+        const { error } = await api
           .from('conversation_participants')
           .update({ last_read_at: new Date().toISOString() })
           .eq('conversation_id', conversationId)
@@ -382,7 +382,7 @@ export const useMessaging = () => {
     if (!user) return;
 
     // Subscribe to new messages
-    const messagesChannel = supabase
+    const messagesChannel = api
       .channel('messages-changes')
       .on(
         'postgres_changes',
@@ -397,7 +397,7 @@ export const useMessaging = () => {
           // Only update if it's not from the current user (to avoid duplicates)
           if (newMessage.sender_id !== user.id) {
             // Fetch the sender profile for the new message
-            const { data: senderData } = await supabase
+            const { data: senderData } = await api
               .from('profiles')
               .select('display_name, avatar_url')
               .eq('user_id', newMessage.sender_id)
@@ -422,7 +422,7 @@ export const useMessaging = () => {
       .subscribe();
 
     // Subscribe to conversation updates
-    const conversationsChannel = supabase
+    const conversationsChannel = api
       .channel('conversations-changes')
       .on(
         'postgres_changes',
@@ -451,7 +451,7 @@ export const useMessaging = () => {
 
     // Set up typing channels for each conversation
     conversations.forEach((conversation) => {
-      const channel = supabase
+      const channel = api
         .channel(`typing-${conversation.id}`)
         .on('broadcast', { event: 'typing' }, (payload) => {
           const typingData = payload.payload as TypingIndicator;

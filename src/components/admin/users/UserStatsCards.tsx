@@ -14,15 +14,15 @@ function useUserStats() {
 
       const [total, newThisWeek, activeNow, modIssues] = await Promise.all([
         api.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase
+        api
           .from('profiles')
           .select('id', { count: 'exact', head: true })
           .gte('created_at', weekAgo),
-        supabase
+        api
           .from('profiles')
           .select('id', { count: 'exact', head: true })
           .eq('is_online', true),
-        supabase
+        api
           .from('profiles')
           .select('id', { count: 'exact', head: true })
           .neq('moderation_status' as any, 'approved'),

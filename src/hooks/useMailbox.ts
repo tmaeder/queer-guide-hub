@@ -179,7 +179,7 @@ export const useMailbox = () => {
   const saveDraft = useCallback(
     async (params: { to?: string; subject?: string; body_html?: string; body_text?: string }) => {
       if (!user) return;
-      const { data: profile } = await supabase
+      const { data: profile } = await api
         .from('profiles')
         .select('mailbox_address, display_name')
         .eq('user_id', user.id)
@@ -226,7 +226,7 @@ export const useMailbox = () => {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
+    const channel = api
       .channel('mailbox-realtime')
       .on(
         'postgres_changes',

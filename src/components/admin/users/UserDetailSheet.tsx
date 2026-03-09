@@ -117,7 +117,7 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
 
   const fetchFullProfile = async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data } = await api
       .from('profiles')
       .select('bio, gender_identity, pronouns, sexual_orientation, location, date_of_birth')
       .eq('user_id', user.user_id)

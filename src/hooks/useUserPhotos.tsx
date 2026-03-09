@@ -24,7 +24,7 @@ export function useUserPhotos(userId: string) {
   const { data: photos, isLoading } = useQuery({
     queryKey: ['user-photos', userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('user_photos')
         .select('*')
         .eq('user_id', userId)
@@ -50,7 +50,7 @@ export function useUserPhotos(userId: string) {
       if (uploadError) throw uploadError;
 
       // Save metadata to database
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('user_photos')
         .insert({
           user_id: userId,
@@ -96,7 +96,7 @@ export function useUserPhotos(userId: string) {
       if (storageError) throw storageError;
 
       // Delete from database
-      const { error } = await supabase
+      const { error } = await api
         .from('user_photos')
         .delete()
         .eq('id', photoId);
@@ -121,7 +121,7 @@ export function useUserPhotos(userId: string) {
 
   const updateCaption = useMutation({
     mutationFn: async ({ photoId, caption }: { photoId: string; caption: string }) => {
-      const { error } = await supabase
+      const { error } = await api
         .from('user_photos')
         .update({ caption })
         .eq('id', photoId);

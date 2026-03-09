@@ -148,7 +148,7 @@ export default function CityDetail() {
 
   const fetchCityDetails = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('cities')
         .select(
           `*, countries (id, name, code, flag_emoji, currency, equality_score, lgbti_criminalization)`,

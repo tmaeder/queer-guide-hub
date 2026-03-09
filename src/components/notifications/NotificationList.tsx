@@ -73,7 +73,7 @@ export const NotificationList = () => {
         setLikesLoading(true);
         setCommentsLoading(true);
         // Fetch user's post IDs
-        const { data: posts, error: postsErr } = await supabase
+        const { data: posts, error: postsErr } = await api
           .from('community_posts')
           .select('id')
           .eq('user_id', user.id)
@@ -88,7 +88,7 @@ export const NotificationList = () => {
           return;
         }
         // Fetch recent likes on user's posts
-        const { data: likesData } = await supabase
+        const { data: likesData } = await api
           .from('post_likes')
           .select('id, post_id, user_id, created_at')
           .in('post_id', postIds)
@@ -97,7 +97,7 @@ export const NotificationList = () => {
         let likesEnriched: LikeItem[] = [];
         if (likesData?.length) {
           const likerIds = [...new Set(likesData.map((l) => l.user_id))];
-          const { data: likerProfiles } = await supabase
+          const { data: likerProfiles } = await api
             .from('profiles')
             .select('user_id, display_name, avatar_url')
             .in('user_id', likerIds);
@@ -116,7 +116,7 @@ export const NotificationList = () => {
         if (isMounted) setLikes(likesEnriched);
 
         // Fetch recent comments on user's posts (with profile join)
-        const { data: commentsData, error: commentsErr } = await supabase
+        const { data: commentsData, error: commentsErr } = await api
           .from('post_comments')
           .select(
             `id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`,

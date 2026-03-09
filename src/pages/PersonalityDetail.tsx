@@ -57,7 +57,7 @@ export default function PersonalityDetail() {
       try {
         setLoading(true);
 
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('personalities')
           .select('*')
           .eq('id', id)
@@ -115,7 +115,7 @@ export default function PersonalityDetail() {
 
         // Look up country ID for nationality link
         if (transformedData.nationality) {
-          const { data: countryData } = await supabase
+          const { data: countryData } = await api
             .from('countries')
             .select('id')
             .eq('name', transformedData.nationality)

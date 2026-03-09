@@ -80,14 +80,14 @@ export default function AdminQueerVillages() {
   const [countries, setCountries] = useState<CountryOption[]>([]);
 
   useEffect(() => {
-    supabase
+    api
       .from('cities')
       .select('id, name')
       .order('name')
       .then(({ data }) => {
         if (data) setCities(data);
       });
-    supabase
+    api
       .from('countries')
       .select('id, name')
       .order('name')

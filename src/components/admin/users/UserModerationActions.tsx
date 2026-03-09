@@ -60,7 +60,7 @@ export function UserModerationActions({
 
     try {
       setLoading(true);
-      const { error } = await supabase
+      const { error } = await api
         .from('profiles')
         .update({ moderation_status: pendingAction } as any)
         .eq('user_id', userId);

@@ -130,7 +130,7 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
 
 export function useOptimizedCountry(countryId: string) {
   const fetchCountry = async (): Promise<Country | null> => {
-    const { data, error } = await supabase
+    const { data, error } = await api
       .from('countries')
       .select('*')
       .eq('id', countryId)
@@ -164,7 +164,7 @@ export function useOptimizedCountry(countryId: string) {
 
 export function useOptimizedCity(cityId: string) {
   const fetchCity = async (): Promise<City | null> => {
-    const { data, error } = await supabase
+    const { data, error } = await api
       .from('cities')
       .select('*')
       .eq('id', cityId)
@@ -199,7 +199,7 @@ export function useOptimizedCity(cityId: string) {
 // Imperative fetch functions (migrated from usePlaces)
 
 export async function fetchCitiesByCountry(countryId: string): Promise<CityWithCountry[]> {
-  const { data, error } = await supabase
+  const { data, error } = await api
     .from('cities')
     .select('*, countries (*)')
     .eq('country_id', countryId)
@@ -223,7 +223,7 @@ export async function findNearbyCities(userLocation: {
   latitude: number;
   longitude: number;
 }): Promise<CityWithCountry[]> {
-  const { data, error } = await supabase
+  const { data, error } = await api
     .from('cities')
     .select('*, countries (*)')
     .not('latitude', 'is', null)

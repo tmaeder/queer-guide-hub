@@ -66,7 +66,7 @@ export default function VenueDetail() {
       try {
         setLoading(true);
 
-        const { data: venueData, error: venueError } = await supabase
+        const { data: venueData, error: venueError } = await api
           .from('venues')
           .select(
             '*, cities:city_id(id, name), countries:country_id(id, name, equality_score, lgbti_criminalization)',
@@ -77,7 +77,7 @@ export default function VenueDetail() {
         if (venueError) throw venueError;
         setVenue(venueData);
 
-        const { data: reviewsData, error: reviewsError } = await supabase
+        const { data: reviewsData, error: reviewsError } = await api
           .from('venue_reviews')
           .select(
             `

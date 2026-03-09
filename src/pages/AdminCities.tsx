@@ -76,7 +76,7 @@ export default function AdminCities() {
   const [countries, setCountries] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    supabase
+    api
       .from('countries')
       .select('id, name')
       .order('name')

@@ -214,23 +214,23 @@ export function useGeoLink() {
     try {
       const [venuesRes, eventsRes, personalitiesRes, newsLinkedRes, newsTotalRes] =
         await Promise.all([
-          supabase
+          api
             .from('venues')
             .select('id', { count: 'exact', head: true })
             .or('city_id.is.null,country_id.is.null'),
-          supabase
+          api
             .from('events')
             .select('id', { count: 'exact', head: true })
             .or('city_id.is.null,country_id.is.null'),
-          supabase
+          api
             .from('personalities')
             .select('id', { count: 'exact', head: true })
             .or('city_id.is.null,country_id.is.null')
             .or('nationality.neq.,birth_place.neq.'),
-          supabase
+          api
             .from('news_article_countries')
             .select('article_id'),
-          supabase
+          api
             .from('news_articles')
             .select('id', { count: 'exact', head: true }),
         ]);

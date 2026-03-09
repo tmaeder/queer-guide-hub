@@ -406,7 +406,7 @@ export function useUniversalCMS() {
       
       switch (contentType) {
         case 'cms_content':
-          result = await supabase
+          result = await api
             .from('cms_content')
             .update({
               deleted_at: new Date().toISOString(),
@@ -415,7 +415,7 @@ export function useUniversalCMS() {
             .eq('id', id);
           break;
         case 'community_posts':
-          result = await supabase
+          result = await api
             .from('community_posts')
             .delete()
             .eq('id', id);

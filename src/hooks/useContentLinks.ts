@@ -45,7 +45,7 @@ export function useContentLinks() {
       setLoading(true);
       setError(null);
       lastFilters.current = filters;
-      let query = supabase
+      let query = api
         .from('content_links')
         .select('*')
         .order('last_checked_at', { ascending: true, nullsFirst: true });
@@ -107,7 +107,7 @@ export function useContentLinks() {
   }, [refresh]);
 
   const dismissLink = useCallback(async (id: string) => {
-    const { error: err } = await supabase
+    const { error: err } = await api
       .from('content_links')
       .update({ status: 'DISMISSED' })
       .eq('id', id);
@@ -117,7 +117,7 @@ export function useContentLinks() {
 
   const dismissBulk = useCallback(async (ids: string[]) => {
     if (!ids.length) return;
-    const { error: err } = await supabase
+    const { error: err } = await api
       .from('content_links')
       .update({ status: 'DISMISSED' })
       .in('id', ids);
@@ -161,14 +161,14 @@ export function useContentLinks() {
 
   const updateSourceUrl = useCallback(async (link: ContentLink, newUrl: string) => {
     // 1. Update the source content table (e.g. venues.website, events.ticket_url)
-    const { error: srcErr } = await supabase
+    const { error: srcErr } = await api
       .from(link.content_type as any)
       .update({ [link.field_name]: newUrl })
       .eq('id', link.content_id);
     if (srcErr) throw srcErr;
 
     // 2. Update the content_links row
-    const { error: linkErr } = await supabase
+    const { error: linkErr } = await api
       .from('content_links')
       .update({ original_url: newUrl, status: 'PENDING', last_checked_at: null, http_status: null })
       .eq('id', link.id);
@@ -181,14 +181,14 @@ export function useContentLinks() {
     if (!link.final_url) throw new Error('No redirect URL available');
 
     // 1. Update source content to use the final URL
-    const { error: srcErr } = await supabase
+    const { error: srcErr } = await api
       .from(link.content_type as any)
       .update({ [link.field_name]: link.final_url })
       .eq('id', link.content_id);
     if (srcErr) throw srcErr;
 
     // 2. Update content_links to reflect the new URL and mark OK
-    const { error: linkErr } = await supabase
+    const { error: linkErr } = await api
       .from('content_links')
       .update({ original_url: link.final_url, status: 'OK', last_checked_at: new Date().toISOString() })
       .eq('id', link.id);
@@ -200,11 +200,11 @@ export function useContentLinks() {
   const applyRedirectBulk = useCallback(async (linksToApply: ContentLink[]) => {
     for (const link of linksToApply) {
       if (!link.final_url) continue;
-      await supabase
+      await api
         .from(link.content_type as any)
         .update({ [link.field_name]: link.final_url })
         .eq('id', link.content_id);
-      await supabase
+      await api
         .from('content_links')
         .update({ original_url: link.final_url, status: 'OK', last_checked_at: new Date().toISOString() })
         .eq('id', link.id);

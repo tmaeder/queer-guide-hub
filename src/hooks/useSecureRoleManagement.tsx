@@ -80,7 +80,7 @@ export function useSecureRoleManagement() {
       setLoading(true);
       
       // Remove role by deleting from user_roles table
-      const { error } = await supabase
+      const { error } = await api
         .from('user_roles')
         .delete()
         .eq('user_id', userId)
@@ -109,7 +109,7 @@ export function useSecureRoleManagement() {
 
   const fetchAuditLogs = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('user_role_audit_log')
         .select(`
           *,

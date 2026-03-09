@@ -52,7 +52,7 @@ export function AudioManager() {
   const loadAudios = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('audio_files')
         .select(
           `

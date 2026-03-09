@@ -33,7 +33,7 @@ export function SecurityMonitoring() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })

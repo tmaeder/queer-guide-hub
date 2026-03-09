@@ -108,7 +108,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     setLoading(true);
     setActionError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('cms_content_metadata' as any)
         .select('*')
         .eq('workflow_state', 'review')
@@ -124,7 +124,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
         const config = getContentType(meta.source_table);
         if (!config) continue;
 
-        const { data: record } = await supabase
+        const { data: record } = await api
           .from(config.tableName as any)
           .select(config.titleField)
           .eq(config.primaryKey, meta.source_id)

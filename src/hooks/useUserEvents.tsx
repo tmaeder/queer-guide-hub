@@ -34,7 +34,7 @@ export function useUserEvents() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('event_attendees')
         .select(`
           id,

@@ -58,7 +58,7 @@ export function useGranularRoles(): GranularRolesReturn {
 
     async function fetchPermissions() {
       try {
-        const { data } = await supabase
+        const { data } = await api
           .from('user_role_permissions' as any)
           .select('*')
           .eq('user_id', user!.id);

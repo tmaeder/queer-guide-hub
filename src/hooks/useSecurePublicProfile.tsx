@@ -45,7 +45,7 @@ export function useSecurePublicProfile(targetUserId?: string) {
 
       // If viewing own profile, get full data
       if (user?.id === userId) {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('profiles')
           .select('*')
           .eq('user_id', userId)

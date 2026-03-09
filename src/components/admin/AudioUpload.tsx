@@ -92,7 +92,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       ));
 
       // Create audio record
-      const { data: audioRecord, error: dbError } = await supabase
+      const { data: audioRecord, error: dbError } = await api
         .from('audio_files')
         .insert([{
           id: audio.id,

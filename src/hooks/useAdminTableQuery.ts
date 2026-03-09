@@ -77,7 +77,7 @@ export function useAdminTableQuery<T = Record<string, unknown>>(
     queryKey,
     queryFn: async () => {
       // Count query
-      const countBuilder = supabase
+      const countBuilder = api
         .from(tableName as 'venues')
         .select(select, { count: 'exact', head: true });
       const filtered = applyFilters(countBuilder as any, state, searchColumns, baseFilters);

@@ -134,7 +134,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
     try {
       // Fetch the page
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('cms_pages' as any)
         .select('*')
         .eq('slug', pageSlug)
@@ -151,7 +151,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
       // If page has a parent, fetch it for breadcrumb
       if (pageData.parent_slug) {
-        const { data: parent } = await supabase
+        const { data: parent } = await api
           .from('cms_pages' as any)
           .select('slug, title, subtitle')
           .eq('slug', pageData.parent_slug)
@@ -164,7 +164,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
       }
 
       // Check if this page is a hub (has children)
-      const { data: children } = await supabase
+      const { data: children } = await api
         .from('cms_pages' as any)
         .select('slug, title, subtitle, excerpt, category')
         .eq('parent_slug', pageSlug)

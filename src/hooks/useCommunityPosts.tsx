@@ -36,7 +36,7 @@ export const useCommunityPosts = (userId?: string) => {
   const { data: posts = [], isLoading, error } = useQuery({
     queryKey: ['community-posts', userId],
     queryFn: async () => {
-      let query = supabase
+      let query = api
         .from('community_posts')
         .select(`
           *,
@@ -63,7 +63,7 @@ export const useCommunityPosts = (userId?: string) => {
       // Check which posts the current user has liked
       if (user && data?.length) {
         const postIds = data.map(post => post.id);
-        const { data: likes } = await supabase
+        const { data: likes } = await api
           .from('post_likes')
           .select('post_id')
           .in('post_id', postIds)
@@ -87,7 +87,7 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postData: CreatePostData) => {
       if (!user) throw new Error('Must be logged in to create posts');
 
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('community_posts')
         .insert({
           user_id: user.id,
@@ -129,7 +129,7 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postId: string) => {
       if (!user) throw new Error('Must be logged in to like posts');
 
-      const { error } = await supabase
+      const { error } = await api
         .from('post_likes')
         .insert({
           post_id: postId,
@@ -151,7 +151,7 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postId: string) => {
       if (!user) throw new Error('Must be logged in to unlike posts');
 
-      const { error } = await supabase
+      const { error } = await api
         .from('post_likes')
         .delete()
         .eq('post_id', postId)
@@ -172,7 +172,7 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postId: string) => {
       if (!user) throw new Error('Must be logged in to delete posts');
 
-      const { error } = await supabase
+      const { error } = await api
         .from('community_posts')
         .delete()
         .eq('id', postId)
@@ -198,7 +198,7 @@ export const useCommunityPosts = (userId?: string) => {
 
   // Set up real-time subscriptions
   useEffect(() => {
-    const channel = supabase
+    const channel = api
       .channel('community-posts-changes')
       .on(
         'postgres_changes',

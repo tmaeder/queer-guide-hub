@@ -53,7 +53,7 @@ export default function HotelDetail() {
     const fetchHotel = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('hotels')
           .select('*, cities:city_id(id, name), countries:country_id(id, name)')
           .eq('id', id)

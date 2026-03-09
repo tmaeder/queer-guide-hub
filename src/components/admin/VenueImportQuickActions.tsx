@@ -87,7 +87,7 @@ export const VenueImportQuickActions = () => {
         setLoadingData(true);
 
         // Fetch venue-related ingestion sources
-        const { data: sources, error: sourcesError } = await supabase
+        const { data: sources, error: sourcesError } = await api
           .from('ingestion_sources')
           .select('id, name, slug, source_type, is_enabled, requires_api_key, edge_function, last_run_at, last_success_at, last_error, total_items_fetched, total_items_approved')
           .eq('target_table', 'venues')
@@ -120,7 +120,7 @@ export const VenueImportQuickActions = () => {
 
         // Fetch venue counts grouped by data_source using RPC or aggregation
         // Use a count query per data_source to avoid fetching all rows
-        const { data: allVenues, error: venueError } = await supabase
+        const { data: allVenues, error: venueError } = await api
           .from('venues')
           .select('data_source');
 

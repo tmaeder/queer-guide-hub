@@ -31,7 +31,7 @@ export default function Page() {
     setNotFound(false);
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('cms_pages' as any)
         .select('*')
         .eq('slug', pageSlug)

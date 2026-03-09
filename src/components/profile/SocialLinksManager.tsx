@@ -136,7 +136,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
         ...Object.fromEntries(customLinks.map((link) => [link.platform, link.url])),
       };
 
-      const { error } = await supabase
+      const { error } = await api
         .from('profiles')
         .update({ social_links: allSocialLinks })
         .eq('user_id', user.id);

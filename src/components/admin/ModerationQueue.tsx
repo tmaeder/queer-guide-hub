@@ -101,7 +101,7 @@ export function ModerationQueue() {
       setSelectAllCount(0);
     } else {
       // Fetch ALL matching IDs across pages
-      let query = supabase
+      let query = api
         .from('moderation_flags')
         .select('id')
         .order('created_at', { ascending: false })

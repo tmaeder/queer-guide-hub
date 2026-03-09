@@ -52,7 +52,7 @@ export function SecurityDashboard() {
       setLoading(true);
 
       // Load recent security events
-      const { data: eventsData } = await supabase
+      const { data: eventsData } = await api
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })

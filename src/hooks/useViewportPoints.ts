@@ -76,7 +76,7 @@ async function fetchVenuesInBbox(
   bbox: Bbox,
   filters: ExploreMapFilters | undefined,
 ): Promise<PointFeature[]> {
-  let query = supabase
+  let query = api
     .from('venues')
     .select('id, name, category, latitude, longitude, city, country, featured')
     .neq('data_source', 'refuge_restrooms')
@@ -123,7 +123,7 @@ async function fetchEventsInBbox(
   bbox: Bbox,
   filters: ExploreMapFilters | undefined,
 ): Promise<PointFeature[]> {
-  let query = supabase
+  let query = api
     .from('events')
     .select(
       'id, title, start_date, event_type, latitude, longitude, city, venue_id, venues(name, latitude, longitude)',

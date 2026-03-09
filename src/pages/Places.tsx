@@ -59,7 +59,7 @@ export default function Places() {
   useEffect(() => {
     const fetchContinents = async () => {
       try {
-        const { data: continentsData, error } = await supabase
+        const { data: continentsData, error } = await api
           .from('continents')
           .select('*')
           .order('name');

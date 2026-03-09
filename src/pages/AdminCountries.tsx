@@ -102,7 +102,7 @@ export default function AdminCountries() {
   const handleSave = async () => {
     if (!editingCountry) return;
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('countries')
         .update({
           name: formData.name,

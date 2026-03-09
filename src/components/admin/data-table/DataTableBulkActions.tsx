@@ -47,7 +47,7 @@ export function DataTableBulkActions({
   const handleBulkDelete = async () => {
     setDeleting(true);
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from(tableName as 'venues')
         .delete()
         .in('id', Array.from(selectedIds));

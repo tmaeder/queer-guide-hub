@@ -372,7 +372,7 @@ export function ContentListPanel({
     // Map sort field to actual DB column
     const dbSortField = sortField === 'title' ? ct.titleField : 'updated_at';
 
-    let query = supabase
+    let query = api
       .from(ct.tableName as any)
       .select('*', { count: 'exact' })
       .order(dbSortField, { ascending: sortDir === 'asc' })
@@ -420,7 +420,7 @@ export function ContentListPanel({
       .filter(Boolean) as ContentTypeConfig[];
 
     for (const ct of configs) {
-      let query = supabase
+      let query = api
         .from(ct.tableName as any)
         .select('*', { count: 'exact' })
         .order('updated_at', { ascending: false })

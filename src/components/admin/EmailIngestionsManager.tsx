@@ -79,7 +79,7 @@ export function EmailIngestionsManager() {
   const fetchIngestions = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('email_ingestions' as never)
         .select('*')
         .order('received_at', { ascending: false })

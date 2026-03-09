@@ -42,7 +42,7 @@ export default function Friends() {
       if (!user || friends.length === 0) return [];
 
       const friendIds = friends.map((f) => (f.user_id === user.id ? f.target_user_id : f.user_id));
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('profiles')
         .select('user_id, display_name, avatar_url, location')
         .in('user_id', friendIds);
@@ -59,7 +59,7 @@ export default function Friends() {
       if (!user || pendingRequests.length === 0) return [];
 
       const requestIds = pendingRequests.map((r) => r.user_id);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('profiles')
         .select('user_id, display_name, avatar_url, location')
         .in('user_id', requestIds);

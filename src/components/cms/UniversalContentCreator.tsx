@@ -184,7 +184,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
           break;
       }
 
-      const { error } = await supabase
+      const { error } = await api
         .from(tableName as keyof typeof validTables)
         .insert([insertData]);
 
