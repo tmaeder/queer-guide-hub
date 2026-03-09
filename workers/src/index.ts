@@ -31,17 +31,15 @@ import { umamiDashboard } from './routes/umami-dashboard';
 
 // Legacy route handlers (stateless proxies — migrated from previous Workers)
 import { handleCloudflareApi } from './routes/cloudflare-api';
-import { handleGetTurnstileConfig, handleVerifyTurnstile } from './routes/turnstile';
+import { handleGetTurnstileConfig } from './routes/turnstile';
 import { handleWeatherForecast } from './routes/weather';
-import { handleCurrentWeather } from './routes/current-weather';
 import { handleTravelDeals } from './routes/travel-deals';
 import { handleGeocoding } from './routes/geocoding';
 import { handlePexelsImages } from './routes/pexels-images';
 import { handleRedirect } from './routes/redirect-handler';
 import { handleRefugeRestrooms } from './routes/refuge-restrooms';
 import { handleOriginAirport } from './routes/origin-airport';
-import { handleSitemap } from './routes/sitemap';
-import { handleCalendarExport, handleCalendarToken, handleCalendarFeed } from './routes/calendar';
+import { handleCalendarExport, handleCalendarToken } from './routes/calendar';
 import { handleUmamiAnalytics } from './routes/umami';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -61,13 +59,8 @@ app.route('/rpc', rpc);
 // ── Storage (replaces supabase.storage) ──
 app.route('/storage', storage);
 
-// ── KV Cache (replaces Redis) ──
+// ── KV Cache ──
 app.route('/cache', kv);
-// Backward-compatible Redis paths
-app.route('/redis-get', kv);
-app.route('/redis-set', kv);
-app.route('/redis-delete', kv);
-app.route('/redis-keys', kv);
 
 // ── Feature modules (migrated from Supabase edge functions) ──
 app.route('/admin', admin);
@@ -90,24 +83,21 @@ function wrap(handler: (req: Request, env: Env) => Promise<Response>) {
 
 app.all('/cloudflare-api', wrap(handleCloudflareApi));
 app.all('/get-turnstile-config', wrap(handleGetTurnstileConfig));
-app.all('/verify-turnstile', wrap(handleVerifyTurnstile));
 app.all('/get-weather-forecast', wrap(handleWeatherForecast));
-app.all('/get-current-weather', wrap(handleCurrentWeather));
 app.all('/travel-deals', wrap(handleTravelDeals));
 app.all('/mapbox-geocoding', wrap(handleGeocoding));
 app.all('/get-pexels-images', wrap(handlePexelsImages));
 app.all('/redirect-handler', wrap(handleRedirect));
 app.all('/get-refuge-restrooms', wrap(handleRefugeRestrooms));
 app.all('/resolve-origin-airport', wrap(handleOriginAirport));
-app.all('/generate-sitemap', wrap(handleSitemap));
 app.all('/calendar-export', wrap(handleCalendarExport));
 app.all('/calendar-token', wrap(handleCalendarToken));
-app.all('/calendar-feed', wrap(handleCalendarFeed));
 app.all('/umami-analytics', wrap(handleUmamiAnalytics));
 
 // ── Backward-compatible function-name routes ──
-// Maps old Supabase edge function names (used by supabase.functions.invoke())
+// Maps old edge function names (used by api.functions.invoke())
 // to the new grouped route modules via proxy.
+// TODO: Migrate frontend callers to use grouped paths directly, then remove these.
 
 function proxy(targetPath: string) {
   return async (c: { req: { raw: Request }; env: Env }) => {
@@ -124,12 +114,6 @@ app.all('/secure-passkey-operations', proxy('/admin/passkey'));
 
 // Automation
 app.all('/content-automation', proxy('/automation/content'));
-app.all('/automation-ai-enhancer', proxy('/automation/ai-enhance'));
-app.all('/automation-auto-tagger', proxy('/automation/auto-tag'));
-app.all('/automation-content-validator', proxy('/automation/validate'));
-app.all('/automation-data-normalizer', proxy('/automation/normalize'));
-app.all('/automation-geo-enricher', proxy('/automation/geo-enrich'));
-app.all('/automation-link-sanitizer', proxy('/automation/sanitize-links'));
 app.all('/categorize-tags', proxy('/automation/categorize-tags'));
 app.all('/auto-tag-content', proxy('/automation/auto-tag-content'));
 app.all('/workflow-dispatcher', proxy('/automation/workflow'));
@@ -138,16 +122,12 @@ app.all('/workflow-dispatcher', proxy('/automation/workflow'));
 app.all('/enrich-venue', proxy('/enrichment/venue'));
 app.all('/fetch-wikipedia-data', proxy('/enrichment/fetch-wikipedia'));
 app.all('/fetch-personality-data', proxy('/enrichment/fetch-personality'));
-app.all('/fetch-city-images', proxy('/enrichment/fetch-city-images'));
 app.all('/fetch-and-store-city-images', proxy('/enrichment/fetch-city-images'));
-app.all('/fetch-ilga-data', proxy('/enrichment/fetch-ilga'));
 app.all('/fetch-news', proxy('/enrichment/fetch-news'));
 app.all('/geo-link-content', proxy('/enrichment/geo-link'));
 app.all('/link-locations', proxy('/enrichment/link-locations'));
 app.all('/resolve-or-create-city', proxy('/enrichment/resolve-city'));
-app.all('/populate-embeddings', proxy('/enrichment/populate-embeddings'));
 app.all('/populate-optimization-status', proxy('/enrichment/populate-optimization-status'));
-app.all('/update-musician-concerts', proxy('/enrichment/update-concerts'));
 
 // Imports
 app.all('/import-venues-csv', proxy('/imports/csv'));
@@ -157,14 +137,12 @@ app.all('/import-personalities-csv', proxy('/imports/csv'));
 app.all('/import-adult-models-csv', proxy('/imports/csv'));
 app.all('/import-city-data', proxy('/imports/cities'));
 app.all('/import-country-data', proxy('/imports/countries'));
-app.all('/import-airports-data', proxy('/imports/airports'));
 app.all('/import-foursquare-venues', proxy('/imports/foursquare-venues'));
 app.all('/import-google-places-venues', proxy('/imports/google-places-venues'));
 app.all('/import-tripadvisor-venues', proxy('/imports/tripadvisor-venues'));
 app.all('/import-tomtom-venues', proxy('/imports/tomtom-venues'));
 app.all('/import-eventbrite-events', proxy('/imports/eventbrite-events'));
 app.all('/import-ticketmaster-events', proxy('/imports/ticketmaster-events'));
-app.all('/import-refuge-restrooms', proxy('/imports/refuge-restrooms'));
 app.all('/import-ilga-data', proxy('/imports/ilga-data'));
 app.all('/import-awin-products', proxy('/imports/awin-products'));
 app.all('/background-import-manager', proxy('/imports/background'));
@@ -195,11 +173,9 @@ app.all('/reimport-personality-images', proxy('/media/reimport-personality-image
 // Email
 app.all('/send-mailbox-email', proxy('/email/send-mailbox'));
 app.all('/send-templated-email', proxy('/email/send-templated'));
-app.all('/send-bulk-email', proxy('/email/send-bulk'));
 app.all('/send-group-notifications', proxy('/email/send-group-notification'));
 
 // API Keys
-app.all('/get-api-key', proxy('/api-keys/get'));
 app.all('/manage-api-keys', proxy('/api-keys/manage'));
 
 // Misc function aliases
