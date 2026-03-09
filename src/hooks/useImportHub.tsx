@@ -162,6 +162,33 @@ export interface ScrapeRun {
   created_at: string;
 }
 
+export interface NewsSource {
+  id: string;
+  name: string;
+  url: string;
+  source_type: string;
+  category: string;
+  is_active: boolean;
+  fetch_frequency: number;
+  status: string | null;
+  last_error: string | null;
+  articles_fetched: number | null;
+  keywords: string[] | null;
+  created_at: string;
+  updated_at: string;
+  last_fetched_at: string | null;
+}
+
+export interface NewsSourceFormData {
+  name: string;
+  url: string;
+  category: string;
+  source_type: string;
+  fetch_frequency: number;
+  is_active: boolean;
+  keywords?: string[];
+}
+
 export const useImportHub = () => {
   const [jobs, setJobs] = useState<ImportJob[]>([]);
   const [statistics, setStatistics] = useState<ImportStatistics>({
@@ -784,6 +811,195 @@ export const useImportHub = () => {
     [toast],
   );
 
+  // ========== News Sources ==========
+  const fetchNewsSources = useCallback(async (): Promise<NewsSource[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('news_sources')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as NewsSource[];
+    } catch (error) {
+      console.error('Failed to fetch news sources:', error);
+      toast({ title: 'Error', description: 'Failed to fetch news sources', variant: 'destructive' });
+      return [];
+    }
+  }, [toast]);
+
+  const saveNewsSource = useCallback(
+    async (formData: NewsSourceFormData, editingId?: string) => {
+      try {
+        if (editingId) {
+          const { error } = await supabase
+            .from('news_sources')
+            .update(formData)
+            .eq('id', editingId);
+          if (error) throw error;
+          toast({ title: 'Success', description: 'News source updated successfully' });
+        } else {
+          const { error } = await supabase
+            .from('news_sources')
+            .insert([formData]);
+          if (error) throw error;
+          toast({ title: 'Success', description: 'News source created successfully' });
+        }
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to save news source',
+          variant: 'destructive',
+        });
+        throw error;
+      }
+    },
+    [toast],
+  );
+
+  const deleteNewsSource = useCallback(
+    async (sourceId: string) => {
+      try {
+        const { error } = await supabase
+          .from('news_sources')
+          .delete()
+          .eq('id', sourceId);
+        if (error) throw error;
+        toast({ title: 'Success', description: 'News source deleted successfully' });
+      } catch (error) {
+        toast({ title: 'Error', description: 'Failed to delete news source', variant: 'destructive' });
+        throw error;
+      }
+    },
+    [toast],
+  );
+
+  const toggleNewsSource = useCallback(
+    async (sourceId: string, isActive: boolean) => {
+      try {
+        const { error } = await supabase
+          .from('news_sources')
+          .update({ is_active: !isActive })
+          .eq('id', sourceId);
+        if (error) throw error;
+        toast({
+          title: 'Success',
+          description: `News source ${!isActive ? 'activated' : 'deactivated'}`,
+        });
+      } catch (error) {
+        toast({ title: 'Error', description: 'Failed to update news source', variant: 'destructive' });
+      }
+    },
+    [toast],
+  );
+
+  const triggerNewsFetch = useCallback(
+    async (sourceId: string) => {
+      try {
+        const { error } = await supabase.functions.invoke('fetch-news', {
+          body: { sourceId },
+        });
+        if (error) throw error;
+        toast({ title: 'Success', description: 'News fetch triggered successfully' });
+      } catch (error) {
+        toast({ title: 'Error', description: 'Failed to trigger news fetch', variant: 'destructive' });
+      }
+    },
+    [toast],
+  );
+
+  const updateNewsKeywords = useCallback(
+    async (sourceId: string, keywords: string[]) => {
+      try {
+        const { error } = await supabase
+          .from('news_sources')
+          .update({ keywords })
+          .eq('id', sourceId);
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Keywords updated successfully' });
+      } catch (error) {
+        toast({ title: 'Error', description: 'Failed to update keywords', variant: 'destructive' });
+        throw error;
+      }
+    },
+    [toast],
+  );
+
+  // ========== Import Wizard ==========
+  const startImportWizardJob = useCallback(
+    async (config: {
+      source: string;
+      contentType: string;
+      duplicateStrategy: string;
+      options: Record<string, string>;
+      sourceType: string;
+    }) => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('background-import-manager', {
+          body: {
+            action: 'create',
+            import_type: config.source === 'csv' ? `${config.contentType}-csv` : config.source,
+            content_type: config.contentType,
+            config: {
+              ...config.options,
+              duplicate_strategy: config.duplicateStrategy,
+              source_type: config.sourceType,
+            },
+          },
+        });
+
+        if (error) throw error;
+
+        toast({ title: 'Import Started', description: 'Import job has been created and is processing.' });
+        await loadJobs();
+        await loadStatistics();
+        return data?.job_id ?? null;
+      } catch (error) {
+        toast({
+          title: 'Import Failed',
+          description: error instanceof Error ? error.message : 'Failed to start import',
+          variant: 'destructive',
+        });
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [toast, loadJobs, loadStatistics],
+  );
+
+  const pollImportProgress = useCallback(
+    async (jobId: string, onUpdate: (data: { progress: number; status: string; stats: { total: number; valid: number; invalid: number; duplicates: number } }) => void) => {
+      const interval = setInterval(async () => {
+        const { data } = await supabase
+          .from('import_jobs_enhanced')
+          .select('status, progress_percentage, total_records, valid_records, invalid_records, duplicate_records')
+          .eq('id', jobId)
+          .maybeSingle();
+
+        if (!data) return;
+
+        onUpdate({
+          progress: data.progress_percentage ?? 0,
+          status: data.status ?? 'processing',
+          stats: {
+            total: data.total_records ?? 0,
+            valid: data.valid_records ?? 0,
+            invalid: data.invalid_records ?? 0,
+            duplicates: data.duplicate_records ?? 0,
+          },
+        });
+
+        if (['completed', 'failed', 'cancelled'].includes(data.status)) {
+          clearInterval(interval);
+        }
+      }, 3000);
+
+      return () => clearInterval(interval);
+    },
+    [],
+  );
+
   // Get venue import stats by data source
   const getVenueImportStats = useCallback(async () => {
     try {
@@ -848,5 +1064,17 @@ export const useImportHub = () => {
     triggerScrape,
     triggerAllDue,
     scrapeLoading,
+
+    // News Sources
+    fetchNewsSources,
+    saveNewsSource,
+    deleteNewsSource,
+    toggleNewsSource,
+    triggerNewsFetch,
+    updateNewsKeywords,
+
+    // Import Wizard
+    startImportWizardJob,
+    pollImportProgress,
   };
 };

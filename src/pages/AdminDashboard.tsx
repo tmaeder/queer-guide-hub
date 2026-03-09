@@ -481,7 +481,7 @@ function QuickActionsBar() {
   const navigate = useNavigate();
   const actions = [
     { label: 'New Content', icon: Plus, route: '/admin/content', color: '#8b5cf6' },
-    { label: 'Import Data', icon: Download, route: '/admin/imports/create', color: '#10b981' },
+    { label: 'Import Data', icon: Download, route: '/admin/imports', color: '#10b981' },
     { label: 'Review Queue', icon: ClipboardCheck, route: '/admin/review', color: '#f59e0b' },
     { label: 'Automation', icon: Zap, route: '/admin/automation', color: '#f59e0b' },
   ];

@@ -26,7 +26,6 @@ import {
   FileText,
   Image,
   Download,
-  Activity,
   ClipboardCheck,
   Settings,
   Key,
@@ -39,7 +38,6 @@ import {
   Hotel,
   Home,
   History,
-  Plus,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -222,31 +220,10 @@ export const adminNavSections: AdminNavSection[] = [
     items: [
       {
         id: 'import-dashboard',
-        label: 'Imports',
+        label: 'Import Hub',
         icon: Download,
         route: '/admin/imports',
         color: '#10b981',
-      },
-      {
-        id: 'create-import',
-        label: 'New Import',
-        icon: Plus,
-        route: '/admin/imports/create',
-        color: '#10b981',
-      },
-      {
-        id: 'pipeline',
-        label: 'Pipeline',
-        icon: Activity,
-        route: '/admin/imports/pipeline',
-        color: '#f59e0b',
-      },
-      {
-        id: 'import-history',
-        label: 'History',
-        icon: History,
-        route: '/admin/imports/history',
-        color: '#6366f1',
       },
     ],
   },
