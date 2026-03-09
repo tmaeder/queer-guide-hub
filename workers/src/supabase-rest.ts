@@ -1,96 +1,106 @@
 /**
- * Lightweight Supabase REST helper for Workers.
- * Allows Workers to query Supabase tables and RPCs without the full SDK.
+ * Supabase REST compatibility layer — queries D1 instead of Supabase REST API.
+ * Legacy routes that used supabaseRest/supabaseRpc now hit D1 directly.
  */
 import type { Env } from './types';
+import { verifyToken } from './lib/jwt';
 
 interface RestOptions {
-  /** HTTP method (GET, POST, PATCH, DELETE). Defaults to GET. */
   method?: string;
-  /** Additional query parameters appended to the URL. */
   params?: URLSearchParams | Record<string, string>;
-  /** JSON body for POST/PATCH. */
   body?: unknown;
-  /** Extra headers (e.g. Prefer). */
   headers?: Record<string, string>;
 }
 
 /**
- * Execute a Supabase REST API query.
- * @param env Worker environment with SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
- * @param path REST path, e.g. `/rest/v1/airports?iata_code=eq.JFK` or `/rest/v1/rpc/find_nearest_airport`
+ * Query D1 database (replaces Supabase REST API calls).
+ * For simple table lookups, pass the table path like `/rest/v1/airports?iata_code=eq.JFK`
  */
 export async function supabaseRest<T = unknown>(
   env: Env,
   path: string,
   options?: RestOptions,
 ): Promise<{ data: T | null; error: string | null }> {
-  const method = options?.method ?? 'GET';
-  let url = `${env.SUPABASE_URL}${path}`;
-
-  if (options?.params) {
-    const qs = options.params instanceof URLSearchParams
-      ? options.params
-      : new URLSearchParams(options.params);
-    const sep = url.includes('?') ? '&' : '?';
-    url += sep + qs.toString();
-  }
-
   try {
-    const resp = await fetch(url, {
-      method,
-      headers: {
-        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      body: options?.body ? JSON.stringify(options.body) : undefined,
-    });
+    // Parse the path to extract table name and filters
+    const url = new URL(path, 'https://placeholder');
+    const tablePath = url.pathname.replace('/rest/v1/', '');
 
-    if (!resp.ok) {
-      const text = await resp.text();
-      return { data: null, error: `Supabase REST ${resp.status}: ${text}` };
+    if (options?.method === 'POST' && tablePath.startsWith('rpc/')) {
+      const funcName = tablePath.replace('rpc/', '');
+      return supabaseRpc<T>(env, funcName, options.body as Record<string, unknown>);
     }
 
-    const data = (await resp.json()) as T;
-    return { data, error: null };
+    // Build simple SELECT query
+    const table = tablePath.replace(/[^a-zA-Z0-9_]/g, '');
+    const conditions: string[] = [];
+    const values: unknown[] = [];
+
+    for (const [key, val] of url.searchParams.entries()) {
+      if (key === 'select' || key === 'order' || key === 'limit') continue;
+      const match = val.match(/^eq\.(.*)$/);
+      if (match) {
+        conditions.push(`${key.replace(/[^a-zA-Z0-9_]/g, '')} = ?`);
+        values.push(match[1]);
+      }
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const select = url.searchParams.get('select') || '*';
+    const limit = url.searchParams.get('limit') || '100';
+
+    const result = await env.DB.prepare(
+      `SELECT ${select} FROM ${table} ${where} LIMIT ?`
+    ).bind(...values, parseInt(limit)).all();
+
+    return { data: result.results as T, error: null };
   } catch (err) {
     return { data: null, error: String(err) };
   }
 }
 
 /**
- * Call a Supabase RPC function.
+ * Call an RPC-style function against D1.
  */
 export async function supabaseRpc<T = unknown>(
   env: Env,
   functionName: string,
   params: Record<string, unknown>,
 ): Promise<{ data: T | null; error: string | null }> {
-  return supabaseRest<T>(env, `/rest/v1/rpc/${functionName}`, {
-    method: 'POST',
-    body: params,
-  });
+  // Handle known RPC functions by mapping to D1 queries
+  try {
+    switch (functionName) {
+      case 'find_nearest_airport': {
+        const { lat, lng } = params;
+        const result = await env.DB.prepare(
+          `SELECT *, (
+            (latitude - ?) * (latitude - ?) + (longitude - ?) * (longitude - ?)
+          ) AS dist
+          FROM airports
+          ORDER BY dist
+          LIMIT 1`
+        ).bind(lat, lat, lng, lng).first();
+        return { data: result as T, error: null };
+      }
+      default:
+        return { data: null, error: `RPC '${functionName}' not implemented` };
+    }
+  } catch (err) {
+    return { data: null, error: String(err) };
+  }
 }
 
 /**
- * Verify a JWT and return the user object, or null.
+ * Verify a JWT and return the user, or null.
  */
 export async function getUser(
   env: Env,
   token: string,
 ): Promise<{ id: string; email?: string } | null> {
   try {
-    const resp = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-      },
-    });
-    if (!resp.ok) return null;
-    const user = (await resp.json()) as { id?: string; email?: string };
-    return user?.id ? { id: user.id, email: user.email } : null;
+    const payload = await verifyToken(token, env.JWT_SECRET);
+    if (!payload) return null;
+    return { id: payload.sub, email: payload.email };
   } catch {
     return null;
   }

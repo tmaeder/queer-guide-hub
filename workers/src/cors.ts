@@ -1,3 +1,7 @@
+/**
+ * Legacy CORS helpers — re-exported for backward compatibility with
+ * existing route handlers that haven't been migrated to Hono yet.
+ */
 import type { Env } from './types';
 
 const DEFAULT_ORIGINS = new Set([

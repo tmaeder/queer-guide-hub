@@ -162,34 +162,25 @@ export async function handleRedirect(
     return performRedirect(req, env, redirect, incomingQuery, slug);
   }
 
-  // Fallback: resolve from Supabase RPC
+  // Resolve from D1
   try {
-    const resp = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/resolve_short_redirect`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-      },
-      body: JSON.stringify({ p_slug: slug }),
-    });
+    const row = await env.DB.prepare(
+      `SELECT id, slug, target_url as target, 302 as status_code,
+              1 as preserve_query, 'PRESERVE' as query_mode,
+              NULL as query_override, NULL as utm_defaults,
+              NULL as click_limit, COALESCE(click_count, 0) as click_count
+       FROM redirects WHERE slug = ? AND is_active = 1`
+    ).bind(slug).first<RedirectData>();
 
-    if (!resp.ok) {
+    if (!row) {
       await env.REDIRECTS.put(slug, '__404__', { expirationTtl: 30 });
       return notFoundResponse(slug);
     }
 
-    const data = (await resp.json()) as RedirectData[];
-    if (!data || data.length === 0) {
-      await env.REDIRECTS.put(slug, '__404__', { expirationTtl: 30 });
-      return notFoundResponse(slug);
-    }
-
-    const redirect = data[0];
     // Cache in KV for 2 minutes
-    await env.REDIRECTS.put(slug, JSON.stringify(redirect), { expirationTtl: 120 });
+    await env.REDIRECTS.put(slug, JSON.stringify(row), { expirationTtl: 120 });
 
-    return performRedirect(req, env, redirect, incomingQuery, slug);
+    return performRedirect(req, env, row, incomingQuery, slug);
   } catch (err) {
     console.error('Redirect resolve error:', err);
     return notFoundResponse(slug);
@@ -224,32 +215,13 @@ async function performRedirect(
     locationUrl = `https://queer.guide${finalUrl}`;
   }
 
-  // Record click asynchronously via Supabase (non-blocking)
-  const ip = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  const ipHash = await hashIp(ip);
-
-  // Use waitUntil-style: fire and forget the analytics call
+  // Record click in D1 (non-blocking)
   try {
-    fetch(`${env.SUPABASE_URL}/rest/v1/rpc/record_redirect_click`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-      },
-      body: JSON.stringify({
-        p_redirect_id: redirect.id,
-        p_path: `/go/${slug}`,
-        p_query: incomingQuery,
-        p_referer: req.headers.get('referer'),
-        p_user_agent: req.headers.get('user-agent')?.substring(0, 256),
-        p_country: req.headers.get('cf-ipcountry'),
-        p_ip_hash: ipHash,
-        p_status: redirect.status_code,
-      }),
-    }).catch(() => {}); // Analytics failure is non-critical
+    env.DB.prepare(
+      'UPDATE redirects SET click_count = COALESCE(click_count, 0) + 1 WHERE id = ?'
+    ).bind(redirect.id).run().catch(() => {});
   } catch {
-    // Ignore analytics errors
+    // Analytics failure is non-critical
   }
 
   return new Response(null, {

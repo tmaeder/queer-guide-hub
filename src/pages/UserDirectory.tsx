@@ -344,6 +344,7 @@ const UserDirectory = () => {
                 );
               });
             }
+          }
         } catch (error) {
           console.error('Error getting user city for near me filter:', error);
           // If geocoding fails, fall back to showing all users

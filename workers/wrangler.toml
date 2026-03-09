@@ -1,26 +1,38 @@
-# Cloudflare Workers configuration for queer-guide
-# Migrates Supabase Edge Functions to Cloudflare Workers.
-# Functions that are pure API proxies run directly on Workers.
-# Functions that need light DB access use Supabase REST API.
+# Cloudflare Workers — queer-guide
+# Full Supabase replacement: D1 (database), R2 (storage), KV (cache)
 
 name = "queer-guide-workers"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-# KV Namespace bindings (replaces Redis/Upstash)
-# Create with: npx wrangler kv namespace create CACHE
-#              npx wrangler kv namespace create REDIRECTS
-# Then replace the IDs below, or use the deploy workflow which auto-creates them.
+# ── D1 Database (replaces Supabase PostgreSQL) ──
+[[d1_databases]]
+binding = "DB"
+database_name = "queer-guide-db"
+database_id = "${D1_DATABASE_ID}"
+migrations_dir = "migrations"
+
+# ── R2 Storage (replaces Supabase Storage) ──
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "queer-guide-storage"
+
+# ── KV Namespaces (replaces Redis/Upstash) ──
 [[kv_namespaces]]
 binding = "CACHE"
 id = "${CACHE_KV_ID}"
 
 [[kv_namespaces]]
+binding = "SESSIONS"
+id = "${SESSIONS_KV_ID}"
+
+[[kv_namespaces]]
 binding = "REDIRECTS"
 id = "${REDIRECTS_KV_ID}"
 
-# Secrets (set via `wrangler secret put <NAME>` or GitHub Actions secrets)
+# ── Secrets (set via `wrangler secret put <NAME>`) ──
+# JWT_SECRET              — signing key for auth tokens
 # CLOUDFLARE_ZONE_ID
 # CLOUDFLARE_ACCOUNT_ID
 # CLOUDFLARE_API_TOKEN
@@ -30,8 +42,6 @@ id = "${REDIRECTS_KV_ID}"
 # TRAVELPAYOUTS_API_TOKEN
 # PEXELS_API_KEY
 # UNSPLASH_ACCESS_KEY
-# SUPABASE_URL
-# SUPABASE_SERVICE_ROLE_KEY
 
 [vars]
 ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:5173,http://localhost:3000"

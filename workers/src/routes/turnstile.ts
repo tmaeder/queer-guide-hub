@@ -7,19 +7,15 @@ export async function handleGetTurnstileConfig(
 ): Promise<Response> {
   if (req.method === 'OPTIONS') return corsResponse(req, env);
 
-  // Verify authentication via Supabase (lightweight check)
+  // Verify authentication via JWT
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) return errorResponse('Authentication required', 401, req, env);
 
   const token = authHeader.replace('Bearer ', '');
   try {
-    const userResp = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-      },
-    });
-    if (!userResp.ok) return errorResponse('Invalid authentication', 401, req, env);
+    const { verifyToken } = await import('../lib/jwt');
+    const payload = await verifyToken(token, env.JWT_SECRET);
+    if (!payload) return errorResponse('Invalid authentication', 401, req, env);
   } catch {
     return errorResponse('Authentication failed', 401, req, env);
   }

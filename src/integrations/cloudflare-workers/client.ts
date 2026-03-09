@@ -1,27 +1,10 @@
 /**
- * Cloudflare Workers client.
- *
- * Functions migrated from Supabase Edge Functions to Cloudflare Workers
- * use this client instead of `supabase.functions.invoke()`.
- *
- * Set VITE_WORKERS_URL in your .env to the Workers deployment URL.
- * Falls back to Supabase Edge Functions when VITE_WORKERS_URL is not set,
- * so the migration is gradual and non-breaking.
+ * Cloudflare Workers client — now delegates to the unified API client.
+ * Kept for backward compatibility.
  */
 
-const WORKERS_BASE_URL = import.meta.env.VITE_WORKERS_URL || '';
+export const workersEnabled = true;
 
-/**
- * Whether Workers are enabled (VITE_WORKERS_URL is set).
- */
-export const workersEnabled = !!WORKERS_BASE_URL;
-
-/**
- * Invoke a Cloudflare Worker function.
- *
- * The API mirrors `supabase.functions.invoke()` so call-sites require
- * minimal changes.
- */
 export async function invokeWorker<T = unknown>(
   functionName: string,
   options?: {
@@ -30,55 +13,13 @@ export async function invokeWorker<T = unknown>(
     method?: string;
   },
 ): Promise<{ data: T | null; error: Error | null }> {
-  const url = `${WORKERS_BASE_URL}/${functionName}`;
-  const method = options?.method || (options?.body ? 'POST' : 'GET');
-
-  try {
-    const resp = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options?.headers || {}),
-      },
-      body: options?.body ? JSON.stringify(options.body) : undefined,
-    });
-
-    const data = (await resp.json()) as T;
-
-    if (!resp.ok) {
-      const errMsg = (data as any)?.error || `Worker returned ${resp.status}`;
-      return { data: null, error: new Error(errMsg) };
-    }
-
-    return { data, error: null };
-  } catch (err) {
-    return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
-  }
+  const { api } = await import('@/integrations/api/client');
+  const result = await api.functions.invoke(functionName, options);
+  return {
+    data: result.data as T | null,
+    error: result.error ? new Error((result.error as any).message || String(result.error)) : null,
+  };
 }
 
-/**
- * List of function names that have been migrated to Workers.
- * Used by the smart invoker to decide whether to call Workers or Supabase.
- */
-export const MIGRATED_FUNCTIONS = new Set([
-  'cloudflare-api',
-  'get-turnstile-config',
-  'verify-turnstile',
-  'redis-get',
-  'redis-set',
-  'redis-delete',
-  'redis-keys',
-  'get-weather-forecast',
-  'get-current-weather',
-  'travel-deals',
-  'mapbox-geocoding',
-  'get-pexels-images',
-  'redirect-handler',
-  'get-refuge-restrooms',
-  'resolve-origin-airport',
-  'generate-sitemap',
-  'calendar-export',
-  'calendar-token',
-  'calendar-feed',
-  'umami-analytics',
-]);
+/** All functions are now on Workers — this set is no longer checked */
+export const MIGRATED_FUNCTIONS = new Set<string>();

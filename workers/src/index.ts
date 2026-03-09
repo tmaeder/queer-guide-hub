@@ -1,16 +1,23 @@
 /**
- * Queer Guide — Cloudflare Workers
+ * Queer Guide — Cloudflare Workers API
  *
- * Replaces Supabase Edge Functions that don't need the database,
- * or that only need light REST API access to Supabase.
+ * Full Supabase replacement using D1, R2, and KV.
+ * Built with Hono for routing.
  */
+import { Hono } from 'hono';
 import type { Env } from './types';
-import { corsResponse, errorResponse } from './cors';
+import { corsMiddleware } from './middleware/cors';
 
-// Route handlers — stateless proxies
+// Route modules
+import { auth } from './routes/auth';
+import { crud } from './routes/crud';
+import { rpc } from './routes/rpc';
+import { storage } from './routes/storage';
+import { kv } from './routes/kv';
+
+// Legacy route handlers (stateless proxies — migrated from previous Workers)
 import { handleCloudflareApi } from './routes/cloudflare-api';
 import { handleGetTurnstileConfig, handleVerifyTurnstile } from './routes/turnstile';
-import { handleCacheGet, handleCacheSet, handleCacheDelete, handleCacheKeys } from './routes/kv-cache';
 import { handleWeatherForecast } from './routes/weather';
 import { handleCurrentWeather } from './routes/current-weather';
 import { handleTravelDeals } from './routes/travel-deals';
@@ -18,102 +25,67 @@ import { handleGeocoding } from './routes/geocoding';
 import { handlePexelsImages } from './routes/pexels-images';
 import { handleRedirect } from './routes/redirect-handler';
 import { handleRefugeRestrooms } from './routes/refuge-restrooms';
-
-// Route handlers — with Supabase REST
 import { handleOriginAirport } from './routes/origin-airport';
 import { handleSitemap } from './routes/sitemap';
 import { handleCalendarExport, handleCalendarToken, handleCalendarFeed } from './routes/calendar';
 import { handleUmamiAnalytics } from './routes/umami';
 
-type RouteHandler = (req: Request, env: Env) => Promise<Response>;
+const app = new Hono<{ Bindings: Env }>();
 
-const routes: Record<string, RouteHandler> = {
-  // Cloudflare API proxy (admin only)
-  '/cloudflare-api': handleCloudflareApi,
+// Global CORS middleware
+app.use('*', corsMiddleware);
 
-  // Turnstile CAPTCHA
-  '/get-turnstile-config': handleGetTurnstileConfig,
-  '/verify-turnstile': handleVerifyTurnstile,
+// ── Auth routes ──
+app.route('/auth', auth);
 
-  // KV Cache (replaces Redis/Upstash)
-  '/cache/get': handleCacheGet,
-  '/cache/set': handleCacheSet,
-  '/cache/delete': handleCacheDelete,
-  '/cache/keys': handleCacheKeys,
-  '/redis-get': handleCacheGet,
-  '/redis-set': handleCacheSet,
-  '/redis-delete': handleCacheDelete,
-  '/redis-keys': handleCacheKeys,
+// ── CRUD (replaces supabase.from()) ──
+app.route('/rest', crud);
 
-  // Weather
-  '/get-weather-forecast': handleWeatherForecast,
-  '/get-current-weather': handleCurrentWeather,
+// ── RPC (replaces supabase.rpc()) ──
+app.route('/rpc', rpc);
 
-  // Travel
-  '/travel-deals': handleTravelDeals,
+// ── Storage (replaces supabase.storage) ──
+app.route('/storage', storage);
 
-  // Geocoding
-  '/mapbox-geocoding': handleGeocoding,
+// ── KV Cache (replaces Redis) ──
+app.route('/cache', kv);
+// Backward-compatible Redis paths
+app.route('/redis-get', kv);
+app.route('/redis-set', kv);
+app.route('/redis-delete', kv);
+app.route('/redis-keys', kv);
 
-  // Image search
-  '/get-pexels-images': handlePexelsImages,
+// ── Legacy proxy routes (wrapped for Hono) ──
+function wrap(handler: (req: Request, env: Env) => Promise<Response>) {
+  return (c: { req: { raw: Request }; env: Env }) => handler(c.req.raw, c.env);
+}
 
-  // Short URL redirect
-  '/redirect-handler': handleRedirect,
+app.all('/cloudflare-api', wrap(handleCloudflareApi));
+app.all('/get-turnstile-config', wrap(handleGetTurnstileConfig));
+app.all('/verify-turnstile', wrap(handleVerifyTurnstile));
+app.all('/get-weather-forecast', wrap(handleWeatherForecast));
+app.all('/get-current-weather', wrap(handleCurrentWeather));
+app.all('/travel-deals', wrap(handleTravelDeals));
+app.all('/mapbox-geocoding', wrap(handleGeocoding));
+app.all('/get-pexels-images', wrap(handlePexelsImages));
+app.all('/redirect-handler', wrap(handleRedirect));
+app.all('/get-refuge-restrooms', wrap(handleRefugeRestrooms));
+app.all('/resolve-origin-airport', wrap(handleOriginAirport));
+app.all('/generate-sitemap', wrap(handleSitemap));
+app.all('/calendar-export', wrap(handleCalendarExport));
+app.all('/calendar-token', wrap(handleCalendarToken));
+app.all('/calendar-feed', wrap(handleCalendarFeed));
+app.all('/umami-analytics', wrap(handleUmamiAnalytics));
 
-  // Refuge Restrooms
-  '/get-refuge-restrooms': handleRefugeRestrooms,
+// ── Health check ──
+app.get('/', (c) =>
+  c.json({
+    status: 'ok',
+    service: 'queer-guide-workers',
+    version: '2.0.0',
+  }),
+);
 
-  // Airport resolver
-  '/resolve-origin-airport': handleOriginAirport,
+app.get('/health', (c) => c.json({ status: 'ok' }));
 
-  // Sitemap
-  '/generate-sitemap': handleSitemap,
-
-  // Calendar
-  '/calendar-export': handleCalendarExport,
-  '/calendar-token': handleCalendarToken,
-  '/calendar-feed': handleCalendarFeed,
-
-  // Analytics
-  '/umami-analytics': handleUmamiAnalytics,
-};
-
-export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-
-    // Handle CORS preflight for any path
-    if (request.method === 'OPTIONS') {
-      return corsResponse(request, env);
-    }
-
-    // Strip trailing slash
-    const pathname = url.pathname.replace(/\/$/, '') || '/';
-
-    // Match route
-    const handler = routes[pathname];
-    if (handler) {
-      try {
-        return await handler(request, env);
-      } catch (err) {
-        console.error(`Unhandled error on ${pathname}:`, err);
-        return errorResponse('Internal server error', 500, request, env);
-      }
-    }
-
-    // Health check
-    if (pathname === '/' || pathname === '/health') {
-      return new Response(
-        JSON.stringify({
-          status: 'ok',
-          service: 'queer-guide-workers',
-          routes: Object.keys(routes).filter((r) => !r.startsWith('/redis-')),
-        }),
-        { headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    return new Response('Not Found', { status: 404 });
-  },
-};
+export default app;

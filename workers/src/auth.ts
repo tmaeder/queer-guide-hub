@@ -1,10 +1,10 @@
-import type { Env } from './types';
-
 /**
- * Verify the request comes from an authenticated admin user.
- * Calls Supabase Auth to validate the JWT and checks user_roles.
- * Returns null if authorized, or an error message string.
+ * Legacy auth helper — re-exported for backward compatibility.
+ * New code should use middleware/auth.ts instead.
  */
+import type { Env } from './types';
+import { verifyToken } from './lib/jwt';
+
 export async function requireAdmin(
   req: Request,
   env: Env,
@@ -16,38 +16,20 @@ export async function requireAdmin(
   if (!token) return 'Invalid token';
 
   try {
-    // Verify user via Supabase Auth
-    const userResp = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-      },
-    });
+    const payload = await verifyToken(token, env.JWT_SECRET);
+    if (!payload) return 'Invalid authentication';
 
-    if (!userResp.ok) return 'Invalid authentication';
-    const user = (await userResp.json()) as { id?: string };
-    if (!user?.id) return 'Invalid user';
+    // Check admin role in D1
+    const roles = await env.DB.prepare(
+      'SELECT role FROM user_roles WHERE user_id = ?'
+    ).bind(payload.sub).all<{ role: string }>();
 
-    // Check admin role
-    const rolesResp = await fetch(
-      `${env.SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${user.id}&select=role`,
-      {
-        headers: {
-          Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-        },
-      },
-    );
-
-    if (!rolesResp.ok) return 'Failed to verify permissions';
-
-    const roles = (await rolesResp.json()) as Array<{ role: string }>;
-    const isAdmin = roles.some(
+    const isAdmin = roles.results?.some(
       (r) => r.role === 'admin' || r.role === 'canManageContent',
     );
     if (!isAdmin) return 'Admin access required';
 
-    return null; // Authorized
+    return null;
   } catch (err) {
     console.error('Auth error:', err);
     return 'Authentication failed';
