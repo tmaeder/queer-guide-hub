@@ -36,7 +36,7 @@ import { useCityImages } from '@/hooks/useCityImages';
 import { useNews } from '@/hooks/useNews';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
-import { useOptimizedCountry } from '@/hooks/useOptimizedDirectory';
+import { useOptimizedCountry } from '@/hooks/useOptimizedPlaces';
 import { NewsCard } from '@/components/news/NewsCard';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
