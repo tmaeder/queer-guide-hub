@@ -13,8 +13,6 @@ export interface Env {
   TRAVELPAYOUTS_API_TOKEN: string;
   PEXELS_API_KEY: string;
   UNSPLASH_ACCESS_KEY: string;
-  MAPBOX_TOKEN: string;
-  GOOGLE_MAPS_KEY: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
 

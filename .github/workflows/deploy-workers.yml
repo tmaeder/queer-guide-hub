@@ -98,8 +98,6 @@ jobs:
             TRAVELPAYOUTS_API_TOKEN
             PEXELS_API_KEY
             UNSPLASH_ACCESS_KEY
-            MAPBOX_TOKEN
-            GOOGLE_MAPS_KEY
             SUPABASE_URL
             SUPABASE_SERVICE_ROLE_KEY
         env:
@@ -111,7 +109,5 @@ jobs:
           TRAVELPAYOUTS_API_TOKEN: ${{ secrets.TRAVELPAYOUTS_API_TOKEN }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
-          MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
-          GOOGLE_MAPS_KEY: ${{ secrets.GOOGLE_MAPS_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
