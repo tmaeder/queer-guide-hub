@@ -1,29 +1,34 @@
 /**
- * AutomationDashboard — Module configuration and run history dashboard.
+ * AutomationDashboard — Unified automation hub.
  *
- * Review queue has moved to the unified Review & Moderation page.
- * Tabs: Overview · History · Settings
+ * Combines automation modules, workflow orchestration, and image optimization
+ * into a single dashboard. Review queue has moved to the unified Review & Moderation page.
+ * Tabs: Overview · History · Workflows · Images · Settings
  */
 
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
-import { Activity, Clock, Settings, ScanSearch } from 'lucide-react';
+import { Activity, Clock, Settings, ScanSearch, Workflow, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutomation, type AutomationModule } from '@/hooks/useAutomation';
 import { AutomationStats } from './AutomationStats';
 import { ModuleCard } from './ModuleCard';
 import { RunHistoryTable } from './RunHistoryTable';
 import { ModuleSettingsDialog } from './ModuleSettingsDialog';
+import { WorkflowDashboard } from '../WorkflowDashboard';
+import { ImageOptimizationManager } from '../ImageOptimizationManager';
 
 // ── Tab Definitions ─────────────────────────────────────────────────────────────
 
-type Tab = 'overview' | 'history' | 'settings';
+type Tab = 'overview' | 'history' | 'workflows' | 'images' | 'settings';
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
   { key: 'overview', label: 'Overview', icon: Activity },
   { key: 'history', label: 'History', icon: Clock },
+  { key: 'workflows', label: 'Workflows', icon: Workflow },
+  { key: 'images', label: 'Images', icon: ImageIcon },
   { key: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -167,6 +172,10 @@ export function AutomationDashboard() {
       )}
 
       {activeTab === 'history' && <RunHistoryTable runs={runHistory} modules={modules} />}
+
+      {activeTab === 'workflows' && <WorkflowDashboard />}
+
+      {activeTab === 'images' && <ImageOptimizationManager />}
 
       {activeTab === 'settings' && (
         <SettingsTab
