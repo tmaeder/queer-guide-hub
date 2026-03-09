@@ -1,5 +1,6 @@
 import { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { supabase } from '@/integrations/supabase/client';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
@@ -224,7 +225,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   const { data: rawRestrooms = [], isFetching: restroomsFetching } = useQuery({
     queryKey: ['restrooms_map', Math.round(lat * 10) / 10, Math.round(lng * 10) / 10],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('get-refuge-restrooms', {
+      const { data, error } = await invokeFunction('get-refuge-restrooms', {
         body: { lat, lng, per_page: 100 },
       });
       if (error) throw error;

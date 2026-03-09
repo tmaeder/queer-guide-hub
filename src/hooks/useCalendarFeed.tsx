@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useCalendarFeed = () => {
@@ -22,7 +23,12 @@ export const useCalendarFeed = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('calendar-token', { body: {} });
+      const { data, error } = await invokeFunction('calendar-token', {
+        body: {},
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
       if (error || !data?.url) throw error || new Error('Failed to get calendar URL');
       return data.url as string;
     } catch (error) {

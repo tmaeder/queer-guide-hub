@@ -1,22 +1,30 @@
 /**
  * Queer Guide — Cloudflare Workers
  *
- * Replaces Supabase Edge Functions that don't need the database.
- * Routes are mapped to match the old /functions/v1/<name> paths for
- * a seamless frontend migration: just change the base URL.
+ * Replaces Supabase Edge Functions that don't need the database,
+ * or that only need light REST API access to Supabase.
  */
 import type { Env } from './types';
 import { corsResponse, errorResponse } from './cors';
 
-// Route handlers
+// Route handlers — stateless proxies
 import { handleCloudflareApi } from './routes/cloudflare-api';
 import { handleGetTurnstileConfig, handleVerifyTurnstile } from './routes/turnstile';
 import { handleCacheGet, handleCacheSet, handleCacheDelete, handleCacheKeys } from './routes/kv-cache';
 import { handleWeatherForecast } from './routes/weather';
+import { handleCurrentWeather } from './routes/current-weather';
 import { handleTravelDeals } from './routes/travel-deals';
 import { handleGeocoding } from './routes/geocoding';
 import { handlePexelsImages } from './routes/pexels-images';
 import { handleRedirect } from './routes/redirect-handler';
+import { handleRefugeRestrooms } from './routes/refuge-restrooms';
+import { handleAlgoliaSearch } from './routes/algolia-search';
+
+// Route handlers — with Supabase REST
+import { handleOriginAirport } from './routes/origin-airport';
+import { handleSitemap } from './routes/sitemap';
+import { handleCalendarExport, handleCalendarToken, handleCalendarFeed } from './routes/calendar';
+import { handleUmamiAnalytics } from './routes/umami';
 
 type RouteHandler = (req: Request, env: Env) => Promise<Response>;
 
@@ -33,7 +41,6 @@ const routes: Record<string, RouteHandler> = {
   '/cache/set': handleCacheSet,
   '/cache/delete': handleCacheDelete,
   '/cache/keys': handleCacheKeys,
-  // Backward-compatible aliases for old redis-* function names
   '/redis-get': handleCacheGet,
   '/redis-set': handleCacheSet,
   '/redis-delete': handleCacheDelete,
@@ -41,18 +48,39 @@ const routes: Record<string, RouteHandler> = {
 
   // Weather
   '/get-weather-forecast': handleWeatherForecast,
+  '/get-current-weather': handleCurrentWeather,
 
   // Travel
   '/travel-deals': handleTravelDeals,
 
-  // Geocoding (Photon / Mapbox-compatible)
+  // Geocoding
   '/mapbox-geocoding': handleGeocoding,
 
-  // Image search (Pexels + Unsplash)
+  // Image search
   '/get-pexels-images': handlePexelsImages,
 
-  // Short URL redirect handler
+  // Short URL redirect
   '/redirect-handler': handleRedirect,
+
+  // Refuge Restrooms
+  '/get-refuge-restrooms': handleRefugeRestrooms,
+
+  // Algolia (deprecated stub)
+  '/algolia-search': handleAlgoliaSearch,
+
+  // Airport resolver
+  '/resolve-origin-airport': handleOriginAirport,
+
+  // Sitemap
+  '/generate-sitemap': handleSitemap,
+
+  // Calendar
+  '/calendar-export': handleCalendarExport,
+  '/calendar-token': handleCalendarToken,
+  '/calendar-feed': handleCalendarFeed,
+
+  // Analytics
+  '/umami-analytics': handleUmamiAnalytics,
 };
 
 export default {

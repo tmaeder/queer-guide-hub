@@ -1,0 +1,117 @@
+name: Deploy Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'workers/**'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: workers
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create KV namespaces (if needed)
+        uses: cloudflare/wrangler-action@v3
+        id: kv-setup
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers
+          command: |
+            kv namespace list --json | node -e "
+              const ns = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+              const cache = ns.find(n => n.title === 'queer-guide-workers-CACHE');
+              const redirects = ns.find(n => n.title === 'queer-guide-workers-REDIRECTS');
+              if (cache) console.log('CACHE_ID=' + cache.id);
+              if (redirects) console.log('REDIRECTS_ID=' + redirects.id);
+            " >> $GITHUB_OUTPUT || true
+
+      - name: Create CACHE namespace
+        if: ${{ !contains(steps.kv-setup.outputs.*, 'CACHE_ID=') }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers
+          command: kv namespace create CACHE
+
+      - name: Create REDIRECTS namespace
+        if: ${{ !contains(steps.kv-setup.outputs.*, 'REDIRECTS_ID=') }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers
+          command: kv namespace create REDIRECTS
+
+      - name: Resolve KV namespace IDs and update wrangler.toml
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers
+          command: |
+            kv namespace list --json | node -e "
+              const fs = require('fs');
+              const ns = JSON.parse(fs.readFileSync('/dev/stdin','utf8'));
+              const cache = ns.find(n => n.title === 'queer-guide-workers-CACHE');
+              const redirects = ns.find(n => n.title === 'queer-guide-workers-REDIRECTS');
+              let toml = fs.readFileSync('wrangler.toml', 'utf8');
+              if (cache) toml = toml.replace(/id = .*CACHE.*/, 'id = \"' + cache.id + '\"');
+              if (redirects) toml = toml.replace(/id = .*REDIRECTS.*/, 'id = \"' + redirects.id + '\"');
+              fs.writeFileSync('wrangler.toml', toml);
+              console.log('Updated wrangler.toml with KV IDs');
+            "
+
+      - name: Deploy Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers
+          command: deploy
+          secrets: |
+            CLOUDFLARE_ZONE_ID
+            CLOUDFLARE_API_TOKEN
+            TURNSTILE_SITE_KEY
+            TURNSTILE_SECRET_KEY
+            OPENWEATHER_API_KEY
+            TRAVELPAYOUTS_API_TOKEN
+            PEXELS_API_KEY
+            UNSPLASH_ACCESS_KEY
+            MAPBOX_TOKEN
+            GOOGLE_MAPS_KEY
+            SUPABASE_URL
+            SUPABASE_SERVICE_ROLE_KEY
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          TRAVELPAYOUTS_API_TOKEN: ${{ secrets.TRAVELPAYOUTS_API_TOKEN }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
+          GOOGLE_MAPS_KEY: ${{ secrets.GOOGLE_MAPS_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

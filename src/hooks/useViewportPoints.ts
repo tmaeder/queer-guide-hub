@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { supabase } from '@/integrations/supabase/client';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
@@ -182,7 +183,7 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
   const lat = (bbox.south + bbox.north) / 2;
   const lng = (bbox.west + bbox.east) / 2;
 
-  const { data, error } = await supabase.functions.invoke('get-refuge-restrooms', {
+  const { data, error } = await invokeFunction('get-refuge-restrooms', {
     body: { lat, lng, per_page: 500 },
   });
   if (error) throw error;

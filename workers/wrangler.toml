@@ -1,5 +1,7 @@
 # Cloudflare Workers configuration for queer-guide
-# These workers replace Supabase Edge Functions that don't need a database.
+# Migrates Supabase Edge Functions to Cloudflare Workers.
+# Functions that are pure API proxies run directly on Workers.
+# Functions that need light DB access use Supabase REST API.
 
 name = "queer-guide-workers"
 main = "src/index.ts"
@@ -7,15 +9,18 @@ compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
 # KV Namespace bindings (replaces Redis/Upstash)
+# Create with: npx wrangler kv namespace create CACHE
+#              npx wrangler kv namespace create REDIRECTS
+# Then replace the IDs below, or use the deploy workflow which auto-creates them.
 [[kv_namespaces]]
 binding = "CACHE"
-id = ""           # Set after `wrangler kv namespace create CACHE`
+id = "${CACHE_KV_ID}"
 
 [[kv_namespaces]]
 binding = "REDIRECTS"
-id = ""           # Set after `wrangler kv namespace create REDIRECTS`
+id = "${REDIRECTS_KV_ID}"
 
-# Environment variables (set via `wrangler secret put <NAME>`)
+# Secrets (set via `wrangler secret put <NAME>` or GitHub Actions secrets)
 # CLOUDFLARE_ZONE_ID
 # CLOUDFLARE_ACCOUNT_ID
 # CLOUDFLARE_API_TOKEN
@@ -27,7 +32,7 @@ id = ""           # Set after `wrangler kv namespace create REDIRECTS`
 # UNSPLASH_ACCESS_KEY
 # MAPBOX_TOKEN
 # GOOGLE_MAPS_KEY
-# SUPABASE_URL            (for admin auth verification only)
+# SUPABASE_URL
 # SUPABASE_SERVICE_ROLE_KEY
 
 [vars]

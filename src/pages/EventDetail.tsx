@@ -27,6 +27,7 @@ import { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
 import { getTimezoneAbbr } from '@/utils/timezone';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
@@ -153,7 +154,7 @@ export default function EventDetail() {
   const handleExportToCalendar = async () => {
     if (!event) return;
     try {
-      const { data, error } = await supabase.functions.invoke('calendar-export', {
+      const { data, error } = await invokeFunction('calendar-export', {
         body: { eventId: event.id },
       });
       if (error) throw error;
