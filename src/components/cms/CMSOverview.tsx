@@ -32,7 +32,7 @@ import {
   Users,
   Layers,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentTypeIds, getContentType } from '@/config/contentTypeRegistry';
 import type { CMSView } from './CMSSidebar';
@@ -207,7 +207,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         const config = getContentType(id);
         if (!config) continue;
 
-        const { count } = await supabase
+        const { count } = await api
           .from(config.tableName as any)
           .select('*', { count: 'exact', head: true });
 
@@ -221,7 +221,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       }
 
       // Pages count
-      const { count: pagesCount } = await supabase
+      const { count: pagesCount } = await api
         .from('cms_pages' as any)
         .select('*', { count: 'exact', head: true });
 
@@ -237,7 +237,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       }
 
       // Review queue count
-      const { count: revCount } = await supabase
+      const { count: revCount } = await api
         .from('cms_content_metadata' as any)
         .select('*', { count: 'exact', head: true })
         .eq('workflow_state', 'review');
@@ -253,7 +253,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
 
   async function loadRecentActivity() {
     try {
-      const { data: entries, error } = await supabase
+      const { data: entries, error } = await api
         .from('cms_audit_log' as any)
         .select('id, action, actor_id, source_table, source_id, timestamp')
         .order('timestamp', { ascending: false })
@@ -276,7 +276,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       // Batch-fetch actor emails
       let actorMap: Record<string, string> = {};
       if (actorIds.length > 0) {
-        const { data: profiles } = await supabase
+        const { data: profiles } = await api
           .from('profiles')
           .select('id, email')
           .in('id', actorIds);

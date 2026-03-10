@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Tables } from '@/integrations/supabase/types';
+import { Tables } from '@/types/database';
 
 export type PostComment = Tables<'post_comments'> & {
   profiles?: {
@@ -29,7 +29,7 @@ export const useComments = (postId: string) => {
   const { data: comments = [], isLoading, error } = useQuery({
     queryKey: ['post-comments', postId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('post_comments')
         .select(`
           *,
@@ -47,7 +47,7 @@ export const useComments = (postId: string) => {
       // Check which comments the current user has liked
       if (user && data?.length) {
         const commentIds = data.map(comment => comment.id);
-        const { data: likes } = await supabase
+        const { data: likes } = await api
           .from('comment_likes')
           .select('comment_id')
           .in('comment_id', commentIds)
@@ -71,7 +71,7 @@ export const useComments = (postId: string) => {
     mutationFn: async (commentData: CreateCommentData) => {
       if (!user) throw new Error('Must be logged in to comment');
 
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('post_comments')
         .insert({
           post_id: postId,
@@ -86,7 +86,7 @@ export const useComments = (postId: string) => {
       if (error) throw error;
 
       // Increment comments count on post
-      await supabase.rpc('increment_post_comments', { post_id: postId });
+      await api.rpc('increment_post_comments', { post_id: postId });
 
       return data;
     },
@@ -112,7 +112,7 @@ export const useComments = (postId: string) => {
     mutationFn: async (commentId: string) => {
       if (!user) throw new Error('Must be logged in to like comments');
 
-      const { error } = await supabase
+      const { error } = await api
         .from('comment_likes')
         .insert({
           comment_id: commentId,
@@ -122,7 +122,7 @@ export const useComments = (postId: string) => {
       if (error) throw error;
 
       // Increment likes count
-      await supabase.rpc('increment_comment_likes', { comment_id: commentId });
+      await api.rpc('increment_comment_likes', { comment_id: commentId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post-comments', postId] });
@@ -134,7 +134,7 @@ export const useComments = (postId: string) => {
     mutationFn: async (commentId: string) => {
       if (!user) throw new Error('Must be logged in to unlike comments');
 
-      const { error } = await supabase
+      const { error } = await api
         .from('comment_likes')
         .delete()
         .eq('comment_id', commentId)
@@ -143,7 +143,7 @@ export const useComments = (postId: string) => {
       if (error) throw error;
 
       // Decrement likes count
-      await supabase.rpc('decrement_comment_likes', { comment_id: commentId });
+      await api.rpc('decrement_comment_likes', { comment_id: commentId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['post-comments', postId] });
@@ -155,7 +155,7 @@ export const useComments = (postId: string) => {
     mutationFn: async (commentId: string) => {
       if (!user) throw new Error('Must be logged in to delete comments');
 
-      const { error } = await supabase
+      const { error } = await api
         .from('post_comments')
         .delete()
         .eq('id', commentId)
@@ -182,7 +182,7 @@ export const useComments = (postId: string) => {
 
   // Set up real-time subscriptions for comments
   useEffect(() => {
-    const channel = supabase
+    const channel = api
       .channel(`post-comments-${postId}`)
       .on(
         'postgres_changes',
@@ -210,7 +210,7 @@ export const useComments = (postId: string) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, [postId, queryClient]);
 

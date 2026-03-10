@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 
 interface PublicProfileData {
@@ -45,7 +45,7 @@ export function useSecurePublicProfile(targetUserId?: string) {
 
       // If viewing own profile, get full data
       if (user?.id === userId) {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('profiles')
           .select('*')
           .eq('user_id', userId)
@@ -62,7 +62,7 @@ export function useSecurePublicProfile(targetUserId?: string) {
       }
 
       // For public profiles, use the secure function
-      const { data, error } = await supabase.rpc('get_public_profile_safe', {
+      const { data, error } = await api.rpc('get_public_profile_safe', {
         target_user_id: userId
       });
 

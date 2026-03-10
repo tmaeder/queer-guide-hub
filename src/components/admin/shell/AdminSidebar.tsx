@@ -26,7 +26,7 @@ import { ChevronDown, LogOut, Layers, Shield } from 'lucide-react';
 
 import { adminNavSections } from '@/config/adminNavigation';
 import type { AdminNavItem } from '@/config/adminNavigation';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 
@@ -136,7 +136,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
   const loadCounts = useCallback(async () => {
     setCountsLoading(true);
     try {
-      const { data, error } = await supabase.rpc('get_admin_counts');
+      const { data, error } = await api.rpc('get_admin_counts');
       if (!error && data) {
         const raw = data as Record<string, number>;
         // Map table names back to nav item IDs
@@ -452,7 +452,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
         <Tooltip title="Sign out">
           <Box
             component="button"
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => api.auth.signOut()}
             sx={{
               p: 0.5,
               borderRadius: '6px',

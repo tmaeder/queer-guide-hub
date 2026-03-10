@@ -1,6 +1,6 @@
 import type { Env } from '../types';
 import { requireAdmin } from '../auth';
-import { jsonResponse, errorResponse, corsResponse } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 
 async function makeCloudflareRequest(
   endpoint: string,
@@ -22,15 +22,13 @@ export async function handleCloudflareApi(
   req: Request,
   env: Env,
 ): Promise<Response> {
-  if (req.method === 'OPTIONS') return corsResponse(req, env);
-
   const authErr = await requireAdmin(req, env);
-  if (authErr) return errorResponse(authErr, 401, req, env);
+  if (authErr) return errorResponse(authErr, 401);
 
   const { CLOUDFLARE_ZONE_ID: zoneId, CLOUDFLARE_ACCOUNT_ID: accountId, CLOUDFLARE_API_TOKEN: apiToken } = env;
 
   if (!zoneId || !accountId || !apiToken) {
-    return errorResponse('Cloudflare API not configured', 503, req, env);
+    return errorResponse('Cloudflare API not configured', 503);
   }
 
   let body: Record<string, unknown> = {};
@@ -38,7 +36,7 @@ export async function handleCloudflareApi(
     const raw = await req.text();
     if (raw) body = JSON.parse(raw);
   } catch {
-    return errorResponse('Invalid request body', 400, req, env);
+    return errorResponse('Invalid request body', 400);
   }
 
   const { action, params = {} } = body as {
@@ -166,14 +164,12 @@ export async function handleCloudflareApi(
         return errorResponse(
           'Invalid action. Available: zone-info, analytics, dns-records, page-rules, cache-stats, security-settings, performance-settings, bandwidth-stats, threat-analytics, edge-certificates, workers, account-info',
           400,
-          req,
-          env,
         );
     }
 
-    return jsonResponse(result, 200, req, env);
+    return jsonResponse(result, 200);
   } catch (err) {
     console.error('Cloudflare API error:', err);
-    return errorResponse('Internal server error', 500, req, env);
+    return errorResponse('Internal server error', 500);
   }
 }

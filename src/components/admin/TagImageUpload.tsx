@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 import { Upload, X, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -55,7 +55,7 @@ export const TagImageUpload = ({
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
       // Upload to Supabase storage
-      const { data, error } = await supabase.storage
+      const { data, error } = await api.storage
         .from('tag-images')
         .upload(fileName, file, {
           cacheControl: '3600',
@@ -65,7 +65,7 @@ export const TagImageUpload = ({
       if (error) throw error;
 
       // Get public URL
-      const { data: urlData } = supabase.storage
+      const { data: urlData } = api.storage
         .from('tag-images')
         .getPublicUrl(data.path);
 
@@ -98,7 +98,7 @@ export const TagImageUpload = ({
         const fileName = urlParts[urlParts.length - 1];
 
         // Delete from storage
-        await supabase.storage
+        await api.storage
           .from('tag-images')
           .remove([fileName]);
       } catch (error) {

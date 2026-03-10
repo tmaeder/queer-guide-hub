@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 export interface TagVenue {
   id: string;
@@ -75,7 +75,7 @@ function toSlug(name: string): string {
 async function fetchTagContent(tagId: string, tagName: string): Promise<TagContentResult> {
   const slug = toSlug(tagName);
 
-  const { data, error } = await supabase.rpc('get_tag_linked_content', {
+  const { data, error } = await api.rpc('get_tag_linked_content', {
     p_tag_id: tagId,
     p_tag_name: tagName,
     p_tag_slug: slug,

@@ -3,7 +3,7 @@
  * Uses Supabase REST for DB reads/writes.
  */
 import type { Env } from '../types';
-import { jsonResponse, errorResponse, buildCorsHeaders, getOrigin } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 import { supabaseRest, getUser } from '../supabase-rest';
 
 // ─── iCal Utilities ──────────────────────────────────────────
@@ -73,17 +73,17 @@ interface EventRow {
 }
 
 export async function handleCalendarExport(req: Request, env: Env): Promise<Response> {
-  if (req.method !== 'POST') return errorResponse('Method not allowed', 405, req, env);
+  if (req.method !== 'POST') return errorResponse('Method not allowed', 405);
 
   const { eventId } = await req.json<{ eventId?: string }>();
-  if (!eventId) return errorResponse('Event ID is required', 400, req, env);
+  if (!eventId) return errorResponse('Event ID is required', 400);
 
   const { data, error } = await supabaseRest<EventRow[]>(
     env,
     `/rest/v1/events?id=eq.${eventId}&select=*,venues(name,address,city,state)&limit=1`,
   );
 
-  if (error || !data?.length) return errorResponse('Event not found', 404, req, env);
+  if (error || !data?.length) return errorResponse('Event not found', 404);
   const event = data[0];
 
   const location = [
@@ -105,11 +105,9 @@ export async function handleCalendarExport(req: Request, env: Env): Promise<Resp
   });
 
   const ics = wrapICalendar([vevent], event.title);
-  const cors = buildCorsHeaders(getOrigin(req), env);
 
   return new Response(ics, {
     headers: {
-      ...cors,
       'Content-Type': 'text/calendar',
       'Content-Disposition': `attachment; filename="${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics"`,
     },
@@ -118,14 +116,14 @@ export async function handleCalendarExport(req: Request, env: Env): Promise<Resp
 
 // ─── calendar-token ──────────────────────────────────────────
 export async function handleCalendarToken(req: Request, env: Env): Promise<Response> {
-  if (req.method !== 'POST') return errorResponse('Method not allowed', 405, req, env);
+  if (req.method !== 'POST') return errorResponse('Method not allowed', 405);
 
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader) return errorResponse('Unauthorized', 401, req, env);
+  if (!authHeader) return errorResponse('Unauthorized', 401);
 
   const token = authHeader.replace('Bearer ', '');
   const user = await getUser(env, token);
-  if (!user) return errorResponse('Unauthorized', 401, req, env);
+  if (!user) return errorResponse('Unauthorized', 401);
 
   // Check for existing token
   const { data: existing } = await supabaseRest<Array<{ token: string }>>(
@@ -153,17 +151,16 @@ export async function handleCalendarToken(req: Request, env: Env): Promise<Respo
   const workerUrl = new URL(req.url).origin;
   const feedUrl = `${workerUrl}/calendar-feed?token=${feedToken}`;
 
-  return jsonResponse({ url: feedUrl, token: feedToken }, 200, req, env);
+  return jsonResponse({ url: feedUrl, token: feedToken }, 200);
 }
 
 // ─── calendar-feed ───────────────────────────────────────────
 export async function handleCalendarFeed(req: Request, env: Env): Promise<Response> {
   const url = new URL(req.url);
   const token = url.searchParams.get('token');
-  const cors = buildCorsHeaders(getOrigin(req), env);
 
   if (!token) {
-    return new Response('Missing token', { status: 400, headers: cors });
+    return new Response('Missing token', { status: 400 });
   }
 
   // Validate token
@@ -173,7 +170,7 @@ export async function handleCalendarFeed(req: Request, env: Env): Promise<Respon
   );
 
   if (!tokenRows?.length || tokenRows[0].revoked) {
-    return new Response('Invalid token', { status: 401, headers: cors });
+    return new Response('Invalid token', { status: 401 });
   }
 
   const userId = tokenRows[0].user_id;
@@ -194,7 +191,6 @@ export async function handleCalendarFeed(req: Request, env: Env): Promise<Respon
     const empty = wrapICalendar([], 'My Favorite Events');
     return new Response(empty, {
       headers: {
-        ...cors,
         'Content-Type': 'text/calendar; charset=utf-8',
         'Content-Disposition': 'attachment; filename="favorites-calendar.ics"',
         'Cache-Control': 'public, max-age=3600',
@@ -235,7 +231,6 @@ export async function handleCalendarFeed(req: Request, env: Env): Promise<Respon
 
   return new Response(ical, {
     headers: {
-      ...cors,
       'Content-Type': 'text/calendar; charset=utf-8',
       'Content-Disposition': 'attachment; filename="favorites-calendar.ics"',
       'Cache-Control': 'public, max-age=3600',

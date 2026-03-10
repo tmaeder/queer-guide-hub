@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
+import { api } from "@/integrations/api/client";
+import { Tables } from "@/types/database";
 import { useAuth } from "./useAuth";
 
 export type Profile = Tables<"profiles">;
@@ -20,7 +20,7 @@ export const useProfile = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
@@ -41,7 +41,7 @@ export const useProfile = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("profiles")
         .update({
           ...updates,
@@ -67,7 +67,7 @@ export const useProfile = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("profiles")
         .update({
           avatar_config: avatarConfig,
@@ -100,19 +100,19 @@ export const useProfile = () => {
       const filePath = `avatars/${fileName}`;
 
       // Upload the file
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await api.storage
         .from('avatars')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       // Get the public URL
-      const { data } = supabase.storage
+      const { data } = api.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
       // Update profile with new avatar URL
-      const { error: updateError } = await supabase
+      const { error: updateError } = await api
         .from("profiles")
         .update({ 
           avatar_url: data.publicUrl,

@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { Upload, X, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Box from '@mui/material/Box';
@@ -33,7 +33,7 @@ export function EnhancedImageUpload({
     setValidationErrors([]);
 
     // Call database validation function
-    const { data: validation, error } = await supabase.rpc('validate_file_upload', {
+    const { data: validation, error } = await api.rpc('validate_file_upload', {
       file_name: file.name,
       file_size: file.size,
       mime_type: file.type
@@ -72,7 +72,7 @@ export function EnhancedImageUpload({
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { data, error } = await api.storage
         .from(bucket)
         .upload(fileName, file, {
           cacheControl: '3600',
@@ -84,7 +84,7 @@ export function EnhancedImageUpload({
       }
 
       // Get public URL
-      const { data: urlData } = supabase.storage
+      const { data: urlData } = api.storage
         .from(bucket)
         .getPublicUrl(data.path);
 
@@ -125,7 +125,7 @@ export function EnhancedImageUpload({
         const fileName = pathParts[pathParts.length - 1];
 
         if (fileName) {
-          await supabase.storage.from(bucket).remove([fileName]);
+          await api.storage.from(bucket).remove([fileName]);
         }
 
         onRemove();

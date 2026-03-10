@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Tables } from "@/integrations/supabase/types";
+import { Tables } from "@/types/database";
 
 type Notification = Tables<'notifications'>;
 
@@ -18,7 +18,7 @@ export const useNotifications = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
@@ -41,7 +41,7 @@ export const useNotifications = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('notifications')
         .update({ read: true })
         .eq('id', notificationId)
@@ -63,7 +63,7 @@ export const useNotifications = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('notifications')
         .update({ read: true })
         .eq('user_id', user.id)
@@ -89,7 +89,7 @@ export const useNotifications = () => {
     metadata?: any
   ) => {
     try {
-      const { data, error } = await supabase.rpc('create_notification', {
+      const { data, error } = await api.rpc('create_notification', {
         user_id: targetUserId,
         type: type,
         message: title,
@@ -116,7 +116,7 @@ export const useNotifications = () => {
 
     fetchNotifications();
 
-    const channel = supabase
+    const channel = api
       .channel('notifications-changes')
       .on(
         'postgres_changes',
@@ -141,7 +141,7 @@ export const useNotifications = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, [user, toast]);
 

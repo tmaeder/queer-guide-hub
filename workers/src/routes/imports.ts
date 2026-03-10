@@ -13,6 +13,8 @@ import { Hono } from 'hono';
 import type { Env, AuthUser } from '../types';
 import { requireAuth, requireAdmin } from '../middleware/auth';
 import { chatCompletion } from '../lib/openai';
+import { parseCSV } from '../lib/csv';
+import { sanitizeIdentifier } from '../lib/text-utils';
 
 const imports = new Hono<{ Bindings: Env; Variables: { user: AuthUser } }>();
 
@@ -23,61 +25,7 @@ imports.use('*', requireAuth as any, requireAdmin as any);
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Simple CSV parser that handles quoted fields and newlines within quotes. */
-function parseCSV(csv: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = '';
-  let inQuotes = false;
-  let i = 0;
-
-  while (i < csv.length) {
-    const ch = csv[i];
-
-    if (inQuotes) {
-      if (ch === '"') {
-        // Check for escaped quote ("")
-        if (i + 1 < csv.length && csv[i + 1] === '"') {
-          field += '"';
-          i += 2;
-          continue;
-        }
-        // End of quoted field
-        inQuotes = false;
-        i++;
-        continue;
-      }
-      field += ch;
-      i++;
-    } else {
-      if (ch === '"') {
-        inQuotes = true;
-        i++;
-      } else if (ch === ',') {
-        row.push(field.trim());
-        field = '';
-        i++;
-      } else if (ch === '\n' || (ch === '\r' && i + 1 < csv.length && csv[i + 1] === '\n')) {
-        row.push(field.trim());
-        field = '';
-        if (row.some((f) => f !== '')) rows.push(row);
-        row = [];
-        i += ch === '\r' ? 2 : 1;
-      } else {
-        field += ch;
-        i++;
-      }
-    }
-  }
-
-  // Push last field/row
-  if (field || row.length) {
-    row.push(field.trim());
-    if (row.some((f) => f !== '')) rows.push(row);
-  }
-
-  return rows;
-}
+const sanitizeId = sanitizeIdentifier;
 
 /** Convert CSV rows (with header row) to array of objects. */
 function csvToObjects(csv: string): Record<string, string>[] {
@@ -91,11 +39,6 @@ function csvToObjects(csv: string): Record<string, string>[] {
     });
     return obj;
   });
-}
-
-/** Sanitize a SQL identifier to prevent injection. */
-function sanitizeId(name: string): string {
-  return name.replace(/[^a-zA-Z0-9_]/g, '');
 }
 
 /** Check if a venue/event with the same name exists within ~100m radius. */

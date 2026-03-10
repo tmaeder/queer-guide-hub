@@ -1,5 +1,5 @@
 import type { Env } from '../types';
-import { jsonResponse, errorResponse, corsResponse } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 
 function getCountrySpecificKeywords(countryName: string): string {
   const country = countryName.toLowerCase();
@@ -60,8 +60,6 @@ export async function handlePexelsImages(
   req: Request,
   env: Env,
 ): Promise<Response> {
-  if (req.method === 'OPTIONS') return corsResponse(req, env);
-
   try {
     const { query, type, page = 1 } = await req.json<{
       query?: string;
@@ -69,10 +67,10 @@ export async function handlePexelsImages(
       page?: number;
     }>();
 
-    if (!query) return errorResponse('Query parameter is required', 400, req, env);
+    if (!query) return errorResponse('Query parameter is required', 400);
 
     if (!env.PEXELS_API_KEY && !env.UNSPLASH_ACCESS_KEY) {
-      return errorResponse('No image API keys configured', 500, req, env);
+      return errorResponse('No image API keys configured', 500);
     }
 
     let searchQuery = query;
@@ -136,9 +134,9 @@ export async function handlePexelsImages(
       }
     }
 
-    return jsonResponse({ success: true, images: allImages, total: allImages.length }, 200, req, env);
+    return jsonResponse({ success: true, images: allImages, total: allImages.length }, 200);
   } catch (err) {
     console.error('Image search error:', err);
-    return errorResponse('Internal server error', 500, req, env);
+    return errorResponse('Internal server error', 500);
   }
 }

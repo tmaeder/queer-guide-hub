@@ -3,11 +3,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Eye, Clock, MapPin, Tag, Newspaper } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { Tables } from '@/integrations/supabase/types';
+import { Tables } from '@/types/database';
 import { Link, useNavigate } from 'react-router';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
@@ -54,7 +54,7 @@ export const NewsCard = ({
 
       setIsLoadingTags(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('unified_tag_assignments')
           .select('unified_tags!inner(name, color)')
           .eq('entity_type', 'news')

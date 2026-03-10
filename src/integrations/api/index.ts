@@ -1,1 +1,1 @@
-export { api, supabase } from './client';
+export { api } from './client';

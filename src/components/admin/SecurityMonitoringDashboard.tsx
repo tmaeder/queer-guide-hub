@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,7 @@ export function SecurityMonitoringDashboard() {
   const { data: recentEvents = [], isLoading } = useQuery({
     queryKey: ['security-events'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })
@@ -40,7 +40,7 @@ export function SecurityMonitoringDashboard() {
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('user_role_audit_log')
         .select('id, admin_user_id, target_user_id, action, role_name, timestamp')
         .order('timestamp', { ascending: false })
@@ -55,9 +55,9 @@ export function SecurityMonitoringDashboard() {
     queryKey: ['system-stats'],
     queryFn: async () => {
       const [failedLogins, captchaVerifications, accessLogs] = await Promise.all([
-        supabase.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
-        supabase.from('captcha_verifications').select('*', { count: 'exact', head: true }),
-        supabase.from('access_logs').select('*', { count: 'exact', head: true }),
+        api.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
+        api.from('captcha_verifications').select('*', { count: 'exact', head: true }),
+        api.from('access_logs').select('*', { count: 'exact', head: true }),
       ]);
 
       return {
@@ -71,7 +71,7 @@ export function SecurityMonitoringDashboard() {
   const { data: recentFailedLogins = [] } = useQuery({
     queryKey: ['recent-failed-logins'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('failed_login_attempts')
         .select('*')
         .order('created_at', { ascending: false })

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { Box, Typography } from '@mui/material';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import {
   Mail,
   RefreshCw,
@@ -79,7 +79,7 @@ export function EmailIngestionsManager() {
   const fetchIngestions = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('email_ingestions' as never)
         .select('*')
         .order('received_at', { ascending: false })

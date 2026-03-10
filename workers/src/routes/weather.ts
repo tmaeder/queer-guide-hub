@@ -1,12 +1,10 @@
 import type { Env } from '../types';
-import { jsonResponse, errorResponse, corsResponse } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 
 export async function handleWeatherForecast(
   req: Request,
   env: Env,
 ): Promise<Response> {
-  if (req.method === 'OPTIONS') return corsResponse(req, env);
-
   try {
     const body = await req.json<{
       lat?: number;
@@ -22,18 +20,18 @@ export async function handleWeatherForecast(
     const cityName = body.cityName;
 
     if (lat == null || lon == null) {
-      return errorResponse('Latitude and longitude are required', 400, req, env);
+      return errorResponse('Latitude and longitude are required', 400);
     }
 
     if (!env.OPENWEATHER_API_KEY) {
-      return errorResponse('Weather API key not configured', 500, req, env);
+      return errorResponse('Weather API key not configured', 500);
     }
 
     // Check cache first (5 min TTL)
     const cacheKey = `weather:${lat.toFixed(2)}:${lon.toFixed(2)}`;
     const cached = await env.CACHE.get(cacheKey);
     if (cached) {
-      return jsonResponse(JSON.parse(cached), 200, req, env, {
+      return jsonResponse(JSON.parse(cached), 200, {
         'Cache-Control': 'public, max-age=300',
       });
     }
@@ -42,7 +40,7 @@ export async function handleWeatherForecast(
     const response = await fetch(forecastUrl);
 
     if (!response.ok) {
-      return errorResponse('Failed to fetch weather data', response.status, req, env);
+      return errorResponse('Failed to fetch weather data', response.status);
     }
 
     const data = await response.json<{
@@ -83,11 +81,11 @@ export async function handleWeatherForecast(
     // Cache for 5 minutes
     await env.CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: 300 });
 
-    return jsonResponse(result, 200, req, env, {
+    return jsonResponse(result, 200, {
       'Cache-Control': 'public, max-age=300',
     });
   } catch (err) {
     console.error('Weather forecast error:', err);
-    return errorResponse('Internal server error', 500, req, env);
+    return errorResponse('Internal server error', 500);
   }
 }

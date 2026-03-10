@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Wand2, Loader2, CheckCircle, AlertTriangle, FileText, Zap } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { toast } from 'sonner';
 
 const CONTENT_TYPES = [
@@ -105,7 +105,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
     setLoading(true);
     setResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke('content-automation', {
+      const { data, error } = await api.functions.invoke('content-automation', {
         body: { module: moduleName, full_scan: true },
       });
 

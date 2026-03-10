@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type CMSContent = Database['public']['Tables']['cms_content']['Row'];
 type CMSContentInsert = Database['public']['Tables']['cms_content']['Insert'];
@@ -31,7 +31,7 @@ export function useCMS() {
   }) => {
     try {
       setLoading(true);
-      let query = supabase
+      let query = api
         .from('cms_content')
         .select(`
           *,
@@ -87,7 +87,7 @@ export function useCMS() {
     }
 
     try {
-      const { data, error: createError } = await supabase
+      const { data, error: createError } = await api
         .from('cms_content')
         .insert({
           ...contentData,
@@ -129,7 +129,7 @@ export function useCMS() {
     }
 
     try {
-      const { data, error: updateError } = await supabase
+      const { data, error: updateError } = await api
         .from('cms_content')
         .update({
           ...updates,
@@ -171,7 +171,7 @@ export function useCMS() {
     }
 
     try {
-      const { error: publishError } = await supabase
+      const { error: publishError } = await api
         .from('cms_content')
         .update({
           workflow_state: 'published',
@@ -214,7 +214,7 @@ export function useCMS() {
     }
 
     try {
-      const { error: archiveError } = await supabase
+      const { error: archiveError } = await api
         .from('cms_content')
         .update({
           workflow_state: 'archived',
@@ -254,7 +254,7 @@ export function useCMS() {
     }
 
     try {
-      const { error: deleteError } = await supabase
+      const { error: deleteError } = await api
         .from('cms_content')
         .update({
           deleted_at: new Date().toISOString(),
@@ -286,7 +286,7 @@ export function useCMS() {
   // Get content by ID
   const getContentById = async (id: string) => {
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await api
         .from('cms_content')
         .select(`
           *,

@@ -10,6 +10,7 @@
 import { Hono } from 'hono';
 import type { Env, AuthUser } from '../types';
 import { requireAuth, requireAdmin } from '../middleware/auth';
+import { normalizeRecord } from '../lib/text-utils';
 
 const ingestion = new Hono<{ Bindings: Env; Variables: { user: AuthUser } }>();
 
@@ -40,30 +41,6 @@ interface IngestionRecord {
 interface IngestionOptions {
   skip_dedup?: boolean;
   auto_approve?: boolean;
-}
-
-function normalizeRecord(record: Record<string, unknown>): Record<string, unknown> {
-  const normalized: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(record)) {
-    if (typeof value === 'string') {
-      let v = value.trim();
-      // Lowercase emails
-      if (key === 'email' || key.endsWith('_email')) {
-        v = v.toLowerCase();
-      }
-      // Format dates — ensure ISO format
-      if (key.endsWith('_date') || key === 'start_date' || key === 'end_date' || key === 'date') {
-        const parsed = new Date(v);
-        if (!isNaN(parsed.getTime())) {
-          v = parsed.toISOString();
-        }
-      }
-      normalized[key] = v;
-    } else {
-      normalized[key] = value;
-    }
-  }
-  return normalized;
 }
 
 function validateRecord(record: IngestionRecord): string[] {

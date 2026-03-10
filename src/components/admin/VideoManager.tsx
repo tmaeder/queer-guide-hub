@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { toast } from 'sonner';
 import { ModernVideoPlayer } from '@/components/ui/modern-video-player';
 import Box from '@mui/material/Box';
@@ -53,7 +53,7 @@ export function VideoManager() {
   const loadVideos = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('videos')
         .select(
           `
@@ -78,7 +78,7 @@ export function VideoManager() {
 
     try {
       // Delete from database (cascades to renditions)
-      const { error } = await supabase.from('videos').delete().eq('id', videoId);
+      const { error } = await api.from('videos').delete().eq('id', videoId);
 
       if (error) throw error;
 

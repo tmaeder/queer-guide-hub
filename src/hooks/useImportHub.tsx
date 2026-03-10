@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ImportJob {
@@ -210,7 +210,7 @@ export const useImportHub = () => {
     if (!isPolling) return;
     
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('import_jobs_enhanced')
         .select('*')
         .order('created_at', { ascending: false })
@@ -232,7 +232,7 @@ export const useImportHub = () => {
   // Load statistics
   const loadStatistics = useCallback(async () => {
     try {
-      const { data, error } = await supabase.rpc('get_import_statistics');
+      const { data, error } = await api.rpc('get_import_statistics');
 
       if (error) throw error;
 
@@ -288,7 +288,7 @@ export const useImportHub = () => {
       if (type.startsWith('venues-') && !type.endsWith('-csv') && config.venueImportConfig) {
         const provider = type.replace('venues-', '');
         const functionName = `import-${provider}-venues`;
-        const { data, error } = await supabase.functions.invoke(functionName, {
+        const { data, error } = await api.functions.invoke(functionName, {
           body: { config: config.venueImportConfig }
         });
         
@@ -312,12 +312,12 @@ export const useImportHub = () => {
           .join('');
       }
 
-      const { data: userData } = await supabase.auth.getUser();
+      const { data: userData } = await api.auth.getUser();
       const userId = userData.user?.id;
       
       if (!userId) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('import_jobs_enhanced')
         .insert({
           user_id: userId,
@@ -341,7 +341,7 @@ export const useImportHub = () => {
       if (error) throw error;
 
       // Log audit event
-      await supabase
+      await api
         .from('import_audit_log')
         .insert({
           import_job_id: data.id,
@@ -380,7 +380,7 @@ export const useImportHub = () => {
   // Validate import data
   const validateImportData = useCallback(async (jobId: string): Promise<any> => {
     try {
-      const { data, error } = await supabase.rpc('validate_import_data', {
+      const { data, error } = await api.rpc('validate_import_data', {
         data: { job_id: jobId, validation_rules: {} }
       });
 
@@ -402,7 +402,7 @@ export const useImportHub = () => {
   // Get validation results for a job
   const getValidationResults = useCallback(async (jobId: string): Promise<ValidationResult[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('import_validation_results')
         .select('*')
         .eq('import_job_id', jobId)
@@ -424,7 +424,7 @@ export const useImportHub = () => {
   // Cancel import job
   const cancelImportJob = useCallback(async (jobId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('import_jobs_enhanced')
         .update({ 
           status: 'cancelled',
@@ -435,11 +435,11 @@ export const useImportHub = () => {
       if (error) throw error;
 
       // Log audit event
-      await supabase
+      await api
         .from('import_audit_log')
         .insert({
           import_job_id: jobId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: (await api.auth.getUser()).data.user?.id,
           action: 'job_cancelled',
           details: { timestamp: new Date().toISOString() }
         });
@@ -532,7 +532,7 @@ export const useImportHub = () => {
   // ========== Ingestion Sources ==========
   const fetchSources = useCallback(async (): Promise<IngestionSource[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('ingestion_sources')
         .select('*')
         .order('name');
@@ -546,7 +546,7 @@ export const useImportHub = () => {
 
   const toggleSource = useCallback(async (sourceId: string, enabled: boolean) => {
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('ingestion_sources')
         .update({ is_enabled: enabled, updated_at: new Date().toISOString() })
         .eq('id', sourceId);
@@ -563,7 +563,7 @@ export const useImportHub = () => {
 
   const triggerSource = useCallback(async (source: IngestionSource) => {
     try {
-      const { data, error } = await supabase.functions.invoke(source.edge_function, {
+      const { data, error } = await api.functions.invoke(source.edge_function, {
         body: {}
       });
       if (error) throw error;
@@ -586,7 +586,7 @@ export const useImportHub = () => {
     limit?: number;
   }): Promise<{ items: StagingItem[]; total: number }> => {
     try {
-      const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { data, error } = await api.functions.invoke('ingestion-review-api', {
         body: {
           action: 'list',
           filters: {
@@ -607,7 +607,7 @@ export const useImportHub = () => {
 
   const fetchReviewStats = useCallback(async (): Promise<Record<string, any>> => {
     try {
-      const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { data, error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'stats' }
       });
       if (error) throw error;
@@ -620,7 +620,7 @@ export const useImportHub = () => {
 
   const approveItem = useCallback(async (stagingId: string, notes?: string) => {
     try {
-      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'approve', staging_id: stagingId, notes }
       });
       if (error) throw error;
@@ -633,7 +633,7 @@ export const useImportHub = () => {
 
   const rejectItem = useCallback(async (stagingId: string, notes?: string) => {
     try {
-      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'reject', staging_id: stagingId, notes }
       });
       if (error) throw error;
@@ -646,7 +646,7 @@ export const useImportHub = () => {
 
   const bulkApprove = useCallback(async (stagingIds: string[]) => {
     try {
-      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'bulk_approve', staging_ids: stagingIds }
       });
       if (error) throw error;
@@ -659,7 +659,7 @@ export const useImportHub = () => {
 
   const bulkReject = useCallback(async (stagingIds: string[]) => {
     try {
-      const { error } = await supabase.functions.invoke('ingestion-review-api', {
+      const { error } = await api.functions.invoke('ingestion-review-api', {
         body: { action: 'bulk_reject', staging_ids: stagingIds }
       });
       if (error) throw error;
@@ -673,7 +673,7 @@ export const useImportHub = () => {
   // ========== Pipeline Monitor ==========
   const fetchPipelineJobs = useCallback(async (): Promise<PipelineJob[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('import_jobs_enhanced')
         .select('id, type, source_type, status, pipeline_stage, items_fetched, items_ai_approved, items_ai_rejected, items_needs_review, items_deduplicated, items_committed, ai_cost_usd, created_at, updated_at, completed_at')
         .in('status', ['processing', 'pending'])
@@ -690,7 +690,7 @@ export const useImportHub = () => {
   // ========== Scrape Sources ==========
   const fetchScrapeSources = useCallback(async (): Promise<ScrapeSource[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('scrape_sources')
         .select('*')
         .order('priority', { ascending: true });
@@ -704,7 +704,7 @@ export const useImportHub = () => {
 
   const fetchScrapeRuns = useCallback(async (sourceId?: string, limit = 20): Promise<ScrapeRun[]> => {
     try {
-      let query = supabase
+      let query = api
         .from('scrape_runs')
         .select('*')
         .order('created_at', { ascending: false })
@@ -726,7 +726,7 @@ export const useImportHub = () => {
   const toggleScrapeSource = useCallback(
     async (sourceId: string, enabled: boolean) => {
       try {
-        const { error } = await supabase
+        const { error } = await api
           .from('scrape_sources')
           .update({ is_enabled: enabled })
           .eq('id', sourceId);
@@ -752,7 +752,7 @@ export const useImportHub = () => {
     async (source: ScrapeSource, dryRun = false) => {
       setScrapeLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('scrape-web-sources', {
+        const { data, error } = await api.functions.invoke('scrape-web-sources', {
           body: { source_slug: source.slug, dry_run: dryRun },
         });
 
@@ -788,7 +788,7 @@ export const useImportHub = () => {
         const body: Record<string, unknown> = { mode: 'scheduled' };
         if (contentTypes) body.content_types = contentTypes;
 
-        const { data, error } = await supabase.functions.invoke('scrape-web-sources', { body });
+        const { data, error } = await api.functions.invoke('scrape-web-sources', { body });
         if (error) throw error;
 
         toast({
@@ -814,7 +814,7 @@ export const useImportHub = () => {
   // ========== News Sources ==========
   const fetchNewsSources = useCallback(async (): Promise<NewsSource[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('news_sources')
         .select('*')
         .order('created_at', { ascending: false });
@@ -831,14 +831,14 @@ export const useImportHub = () => {
     async (formData: NewsSourceFormData, editingId?: string) => {
       try {
         if (editingId) {
-          const { error } = await supabase
+          const { error } = await api
             .from('news_sources')
             .update(formData)
             .eq('id', editingId);
           if (error) throw error;
           toast({ title: 'Success', description: 'News source updated successfully' });
         } else {
-          const { error } = await supabase
+          const { error } = await api
             .from('news_sources')
             .insert([formData]);
           if (error) throw error;
@@ -859,7 +859,7 @@ export const useImportHub = () => {
   const deleteNewsSource = useCallback(
     async (sourceId: string) => {
       try {
-        const { error } = await supabase
+        const { error } = await api
           .from('news_sources')
           .delete()
           .eq('id', sourceId);
@@ -876,7 +876,7 @@ export const useImportHub = () => {
   const toggleNewsSource = useCallback(
     async (sourceId: string, isActive: boolean) => {
       try {
-        const { error } = await supabase
+        const { error } = await api
           .from('news_sources')
           .update({ is_active: !isActive })
           .eq('id', sourceId);
@@ -895,7 +895,7 @@ export const useImportHub = () => {
   const triggerNewsFetch = useCallback(
     async (sourceId: string) => {
       try {
-        const { error } = await supabase.functions.invoke('fetch-news', {
+        const { error } = await api.functions.invoke('fetch-news', {
           body: { sourceId },
         });
         if (error) throw error;
@@ -910,7 +910,7 @@ export const useImportHub = () => {
   const updateNewsKeywords = useCallback(
     async (sourceId: string, keywords: string[]) => {
       try {
-        const { error } = await supabase
+        const { error } = await api
           .from('news_sources')
           .update({ keywords })
           .eq('id', sourceId);
@@ -935,7 +935,7 @@ export const useImportHub = () => {
     }) => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('background-import-manager', {
+        const { data, error } = await api.functions.invoke('background-import-manager', {
           body: {
             action: 'create',
             import_type: config.source === 'csv' ? `${config.contentType}-csv` : config.source,
@@ -971,7 +971,7 @@ export const useImportHub = () => {
   const pollImportProgress = useCallback(
     async (jobId: string, onUpdate: (data: { progress: number; status: string; stats: { total: number; valid: number; invalid: number; duplicates: number } }) => void) => {
       const interval = setInterval(async () => {
-        const { data } = await supabase
+        const { data } = await api
           .from('import_jobs_enhanced')
           .select('status, progress_percentage, total_records, valid_records, invalid_records, duplicate_records')
           .eq('id', jobId)
@@ -1003,7 +1003,7 @@ export const useImportHub = () => {
   // Get venue import stats by data source
   const getVenueImportStats = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('venues')
         .select('data_source')
         .in('data_source', ['foursquare', 'google_places', 'tomtom', 'tripadvisor']);

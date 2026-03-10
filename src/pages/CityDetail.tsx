@@ -29,14 +29,14 @@ import {
   Shield,
   Home,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
 import { useNews } from '@/hooks/useNews';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
-import { useOptimizedCountry } from '@/hooks/useOptimizedDirectory';
+import { useOptimizedCountry } from '@/hooks/useOptimizedPlaces';
 import { NewsCard } from '@/components/news/NewsCard';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
@@ -148,7 +148,7 @@ export default function CityDetail() {
 
   const fetchCityDetails = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('cities')
         .select(
           `*, countries (id, name, code, flag_emoji, currency, equality_score, lgbti_criminalization)`,

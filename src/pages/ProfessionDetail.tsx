@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +31,7 @@ export default function ProfessionDetail() {
       try {
         const decodedProfession = decodeURIComponent(professionName);
 
-        const { data: personalities, error: personalitiesError } = await supabase
+        const { data: personalities, error: personalitiesError } = await api
           .from('personalities')
           .select('*')
           .not('profession', 'is', null)

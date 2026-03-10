@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 export interface TagCategoryInfo {
   id: string;
@@ -69,17 +69,17 @@ interface CentralizedTagsData {
 async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
   // Run independent queries in parallel
   const [tagsResult, catAssignmentsResult, allCatsResult, treeResult] = await Promise.all([
-    supabase
+    api
       .from('unified_tags')
       .select('*')
       .eq('status', 'active')
       .order('usage_count', { ascending: false })
       .limit(10000),
-    supabase
+    api
       .from('tag_category_assignments')
       .select('tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)'),
-    supabase.from('tag_categories').select('id, name, slug, level, parent_id'),
-    supabase.rpc('get_category_tree'),
+    api.from('tag_categories').select('id, name, slug, level, parent_id'),
+    api.rpc('get_category_tree'),
   ]);
 
   if (tagsResult.error) throw tagsResult.error;
@@ -192,7 +192,7 @@ export const useCentralizedTags = () => {
       const sanitized = query.replace(/[,%()\\]/g, '');
       if (!sanitized) return [];
 
-      let queryBuilder = supabase
+      let queryBuilder = api
         .from('unified_tags')
         .select('*')
         .eq('status', 'active')
@@ -257,7 +257,7 @@ export const useCentralizedTags = () => {
     image_url?: string | null;
   }): Promise<CentralizedTag | null> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('unified_tags')
         .insert([
           {
@@ -279,7 +279,7 @@ export const useCentralizedTags = () => {
 
   const updateTag = async (id: string, updates: Partial<CentralizedTag>): Promise<void> => {
     try {
-      const { error } = await supabase.from('unified_tags').update(updates).eq('id', id);
+      const { error } = await api.from('unified_tags').update(updates).eq('id', id);
 
       if (error) throw error;
       refreshTags();
@@ -291,7 +291,7 @@ export const useCentralizedTags = () => {
 
   const deleteTag = async (id: string): Promise<void> => {
     try {
-      const { error } = await supabase.from('unified_tags').delete().eq('id', id);
+      const { error } = await api.from('unified_tags').delete().eq('id', id);
 
       if (error) throw error;
       refreshTags();
@@ -331,14 +331,14 @@ export function useTagUsageCounts() {
   return useQuery({
     queryKey: ['tag-usage-counts'],
     queryFn: async (): Promise<Record<string, number>> => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('tag_usage_summary' as any)
         .select('name, usage_count, venue_count, event_count, group_count');
 
       if (error) {
         console.error('Error fetching tag usage counts:', error);
         // Fallback: use usage_count from unified_tags
-        const { data: tags } = await supabase
+        const { data: tags } = await api
           .from('unified_tags')
           .select('name, usage_count')
           .eq('status', 'active');

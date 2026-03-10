@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 export function useTargetGroups() {
   const [targetGroups, setTargetGroups] = useState<any[]>([]);
@@ -8,7 +8,7 @@ export function useTargetGroups() {
   const fetchTargetGroups = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('target_groups')
         .select('*')
         .eq('is_active', true)

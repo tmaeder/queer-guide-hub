@@ -3,21 +3,9 @@
  * Light DB usage: single RPC call with fallback to a table scan.
  */
 import type { Env } from '../types';
-import { jsonResponse, errorResponse } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 import { supabaseRpc, supabaseRest } from '../supabase-rest';
-
-function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+import { haversineKm } from '../lib/geo';
 
 interface Airport {
   iata_code: string;
@@ -42,7 +30,7 @@ export async function handleOriginAirport(req: Request, env: Env): Promise<Respo
   }
 
   if (latitude == null || longitude == null || isNaN(latitude) || isNaN(longitude)) {
-    return errorResponse('latitude and longitude are required', 400, req, env);
+    return errorResponse('latitude and longitude are required', 400);
   }
 
   // Try RPC first
@@ -58,8 +46,6 @@ export async function handleOriginAirport(req: Request, env: Env): Promise<Respo
       return jsonResponse(
         { iata: result.iata_code, city: result.city_name, country: result.country_code },
         200,
-        req,
-        env,
       );
     }
   }
@@ -71,12 +57,12 @@ export async function handleOriginAirport(req: Request, env: Env): Promise<Respo
   );
 
   if (fetchError || !airports?.length) {
-    return errorResponse('Could not find nearest airport', 500, req, env);
+    return errorResponse('Could not find nearest airport', 500);
   }
 
   let best: (Airport & { dist: number }) | null = null;
   for (const airport of airports) {
-    const dist = haversine(latitude, longitude, airport.latitude, airport.longitude);
+    const dist = haversineKm(latitude, longitude, airport.latitude, airport.longitude);
     if (!best || dist < best.dist) {
       best = { ...airport, dist };
     }
@@ -85,7 +71,5 @@ export async function handleOriginAirport(req: Request, env: Env): Promise<Respo
   return jsonResponse(
     { iata: best!.iata_code, city: best!.city_name, country: best!.country_code },
     200,
-    req,
-    env,
   );
 }

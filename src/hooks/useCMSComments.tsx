@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { CMSReviewComment, CommentType } from '@/types/cms';
 
@@ -39,7 +39,7 @@ export function useCMSComments(): UseCMSCommentsReturn {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await api
         .from('cms_review_comments' as any)
         .select('*')
         .eq('source_table', sourceTable)
@@ -53,7 +53,7 @@ export function useCMSComments(): UseCMSCommentsReturn {
       let profileMap = new Map<string, { display_name?: string; email?: string }>();
 
       if (actorIds.length > 0) {
-        const { data: profiles } = await supabase
+        const { data: profiles } = await api
           .from('profiles' as any)
           .select('id, display_name, email')
           .in('id', actorIds);
@@ -104,7 +104,7 @@ export function useCMSComments(): UseCMSCommentsReturn {
     if (!user || !body.trim()) return false;
 
     try {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await api
         .from('cms_review_comments' as any)
         .insert({
           source_table: sourceTable,
@@ -131,7 +131,7 @@ export function useCMSComments(): UseCMSCommentsReturn {
     if (!user) return false;
 
     try {
-      const { error: updateError } = await supabase
+      const { error: updateError } = await api
         .from('cms_review_comments' as any)
         .update({
           resolved: true,
@@ -152,7 +152,7 @@ export function useCMSComments(): UseCMSCommentsReturn {
 
   const unresolveComment = useCallback(async (commentId: string): Promise<boolean> => {
     try {
-      const { error: updateError } = await supabase
+      const { error: updateError } = await api
         .from('cms_review_comments' as any)
         .update({
           resolved: false,

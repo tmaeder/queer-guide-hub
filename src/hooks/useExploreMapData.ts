@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { invokeFunction } from '@/integrations/cloudflare-workers';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useOptimizedCities, useOptimizedCountries } from '@/hooks/useOptimizedPlaces';
@@ -270,7 +270,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   const { data: rawVillages = [], isFetching: villagesFetching } = useQuery({
     queryKey: ['queer_villages_map', filters?.search],
     queryFn: async () => {
-      let query = supabase
+      let query = api
         .from('queer_villages')
         .select('id, name, slug, latitude, longitude, description, featured, cities:city_id(name)')
         .not('latitude', 'is', null)

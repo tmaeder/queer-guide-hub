@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useSecureRoleManagement } from '@/hooks/useSecureRoleManagement';
 import {
@@ -48,7 +48,7 @@ import {
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -108,7 +108,7 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
     if (!user) return;
     setRolesLoading(true);
     try {
-      const { data } = await supabase.from('user_roles').select('role').eq('user_id', user.user_id);
+      const { data } = await api.from('user_roles').select('role').eq('user_id', user.user_id);
       setUserRoles((data ?? []).map((r) => r.role));
     } finally {
       setRolesLoading(false);
@@ -117,7 +117,7 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
 
   const fetchFullProfile = async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data } = await api
       .from('profiles')
       .select('bio, gender_identity, pronouns, sexual_orientation, location, date_of_birth')
       .eq('user_id', user.user_id)

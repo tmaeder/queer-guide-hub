@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type PersonalityRow = Database['public']['Tables']['personalities']['Row'];
 type PersonalityInsert = Database['public']['Tables']['personalities']['Insert'];
@@ -59,7 +59,7 @@ export function usePersonalities(filters?: PersonalityFilters) {
       setError(null);
 
       // First get total count
-      let countQuery = supabase
+      let countQuery = api
         .from('personalities')
         .select('*', { count: 'exact', head: true })
         .eq('visibility', 'public');
@@ -92,7 +92,7 @@ export function usePersonalities(filters?: PersonalityFilters) {
       setTotalCount(count || 0);
 
       // Then get the actual data
-      let query = supabase
+      let query = api
         .from('personalities')
         .select('*')
         .eq('visibility', 'public')
@@ -210,7 +210,7 @@ export function usePersonalities(filters?: PersonalityFilters) {
 
       console.log('Insert data prepared:', insertData);
 
-      const { error } = await supabase
+      const { error } = await api
         .from('personalities')
         .insert(insertData);
 
@@ -244,7 +244,7 @@ export function usePersonalities(filters?: PersonalityFilters) {
 
   const updatePersonality = async (id: string, updates: Partial<Personality>) => {
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('personalities')
         .update(updates)
         .eq('id', id);
@@ -277,7 +277,7 @@ export function usePersonalities(filters?: PersonalityFilters) {
 
   const incrementViews = async (personalityId: string) => {
     try {
-      await supabase.rpc('increment_personality_views', {
+      await api.rpc('increment_personality_views', {
         personality_id: personalityId
       });
     } catch (error) {

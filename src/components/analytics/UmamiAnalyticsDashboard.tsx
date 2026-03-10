@@ -44,7 +44,7 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { UmamiMap } from './UmamiMap';
 
 interface UmamiSession {
@@ -195,9 +195,9 @@ export const UmamiAnalyticsDashboard = () => {
       // Get current session for auth header
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await api.auth.getSession();
 
-      const { data: analyticsData, error } = await supabase.functions.invoke('umami-dashboard', {
+      const { data: analyticsData, error } = await api.functions.invoke('umami-dashboard', {
         body: {
           action: 'get_enhanced_stats',
           dateRange,
@@ -238,8 +238,8 @@ export const UmamiAnalyticsDashboard = () => {
       // Get current session for auth header
       const {
         data: { session },
-      } = await supabase.auth.getSession();
-      const { data } = await supabase.functions.invoke('umami-dashboard', {
+      } = await api.auth.getSession();
+      const { data } = await api.functions.invoke('umami-dashboard', {
         body: {
           action: 'export_data',
           dateRange,

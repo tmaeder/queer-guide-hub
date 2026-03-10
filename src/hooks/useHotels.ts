@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import { api } from '@/integrations/api/client';
+import { Database } from '@/types/database';
 
 export type Hotel = Database['public']['Tables']['hotels']['Row'];
 type HotelInsert = Database['public']['Tables']['hotels']['Insert'];
@@ -35,7 +35,7 @@ export function useHotels(autoFetch = true) {
       setLoading(true);
       setError(null);
 
-      let query = supabase
+      let query = api
         .from('hotels')
         .select('*', { count: 'exact' })
         .order('featured', { ascending: false })
@@ -91,7 +91,7 @@ export function useHotels(autoFetch = true) {
   }, []);
 
   const createHotel = useCallback(async (hotel: HotelInsert) => {
-    const { data, error } = await supabase
+    const { data, error } = await api
       .from('hotels')
       .insert(hotel)
       .select()
@@ -101,7 +101,7 @@ export function useHotels(autoFetch = true) {
   }, []);
 
   const updateHotel = useCallback(async (id: string, changes: Partial<HotelInsert>) => {
-    const { data, error } = await supabase
+    const { data, error } = await api
       .from('hotels')
       .update({ ...changes, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -112,7 +112,7 @@ export function useHotels(autoFetch = true) {
   }, []);
 
   const deleteHotel = useCallback(async (id: string) => {
-    const { error } = await supabase.from('hotels').delete().eq('id', id);
+    const { error } = await api.from('hotels').delete().eq('id', id);
     if (error) throw error;
   }, []);
 

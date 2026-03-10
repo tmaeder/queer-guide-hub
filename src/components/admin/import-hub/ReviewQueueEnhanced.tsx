@@ -38,7 +38,7 @@ import {
   type StagingFilters,
   type StagingSort,
 } from '@/hooks/useImportHubQueries';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import { SideBySideComparison } from './SideBySideComparison';
 import type { StagingItem } from '@/hooks/useImportHub';
@@ -166,7 +166,7 @@ export function ReviewQueueEnhanced() {
       setSelectedIds(new Set());
     } else {
       // Fetch ALL matching IDs across pages
-      let query = supabase
+      let query = api
         .from('ingestion_staging' as any)
         .select('id')
         .eq('review_status', 'pending_review')

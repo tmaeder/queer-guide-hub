@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -68,7 +68,7 @@ export const useGroupEvents = (groupId: string) => {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['group-events', groupId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('events')
         .select(`
           *,
@@ -92,7 +92,7 @@ export const useGroupEvents = (groupId: string) => {
   // Create event mutation
   const createEventMutation = useMutation({
     mutationFn: async (eventData: CreateGroupEventData) => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('events')
         .insert({
           ...eventData,
@@ -126,7 +126,7 @@ export const useGroupEvents = (groupId: string) => {
   // Join event mutation
   const joinEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('event_attendees')
         .insert({
           event_id: eventId,
@@ -157,7 +157,7 @@ export const useGroupEvents = (groupId: string) => {
   // Leave event mutation
   const leaveEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
-      const { error } = await supabase
+      const { error } = await api
         .from('event_attendees')
         .delete()
         .eq('event_id', eventId)
@@ -185,7 +185,7 @@ export const useGroupEvents = (groupId: string) => {
   // Delete event mutation
   const deleteEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
-      const { error } = await supabase
+      const { error } = await api
         .from('events')
         .delete()
         .eq('id', eventId)

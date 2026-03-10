@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import DOMPurify from 'dompurify';
 import type { CMSPage } from '@/types/cms';
 
@@ -31,7 +31,7 @@ export default function Page() {
     setNotFound(false);
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('cms_pages' as any)
         .select('*')
         .eq('slug', pageSlug)

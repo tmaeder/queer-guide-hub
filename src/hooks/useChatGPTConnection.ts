@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/components/ui/use-toast';
 
 export interface ChatGPTConnectionStatus {
@@ -20,7 +20,7 @@ export function useChatGPTConnection() {
   const fetchStatus = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('chatgpt-oauth', {
+      const { data, error } = await api.functions.invoke('chatgpt-oauth', {
         body: { action: 'status' },
       });
 
@@ -36,7 +36,7 @@ export function useChatGPTConnection() {
 
   const connect = useCallback(async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('chatgpt-oauth', {
+      const { data, error } = await api.functions.invoke('chatgpt-oauth', {
         body: { action: 'authorize' },
       });
 
@@ -76,7 +76,7 @@ export function useChatGPTConnection() {
 
   const disconnect = useCallback(async () => {
     try {
-      const { error } = await supabase.functions.invoke('chatgpt-oauth', {
+      const { error } = await api.functions.invoke('chatgpt-oauth', {
         body: { action: 'disconnect' },
       });
 
@@ -100,7 +100,7 @@ export function useChatGPTConnection() {
   const testConnection = useCallback(async () => {
     try {
       setTesting(true);
-      const { data, error } = await supabase.functions.invoke('chatgpt-oauth', {
+      const { data, error } = await api.functions.invoke('chatgpt-oauth', {
         body: { action: 'test' },
       });
 

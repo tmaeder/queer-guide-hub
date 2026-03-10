@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import type { EntityFilterConfig } from './types';
 
 interface DataTableFiltersProps {
@@ -76,7 +76,7 @@ function SelectFilter({ config, value, onChange }: SelectFilterProps) {
       if (!config.dynamicSource) return [];
       const { table, column, labelColumn } = config.dynamicSource;
       const selectCols = labelColumn ? `${column}, ${labelColumn}` : column;
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from(table as 'venues')
         .select(selectCols)
         .not(column, 'is', null)

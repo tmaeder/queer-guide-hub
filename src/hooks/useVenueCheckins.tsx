@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 type VenueCheckin = {
@@ -48,7 +48,7 @@ export function useVenueCheckins() {
       const userLng = position.coords.longitude;
       
       // Use secure distance calculation without exposing coordinates
-      const { data: distanceData, error: distanceError } = await supabase
+      const { data: distanceData, error: distanceError } = await api
         .rpc('calculate_secure_venue_distance', {
           venue_id: venueId,
           user_lat: userLat,
@@ -70,11 +70,11 @@ export function useVenueCheckins() {
       }
 
       // Create check-in record with enhanced privacy controls
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('venue_checkins')
         .insert({
           venue_id: venueId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: (await api.auth.getUser()).data.user?.id,
           latitude: userLat,
           longitude: userLng,
           distance_meters: distance,
@@ -125,7 +125,7 @@ export function useVenueCheckins() {
 
   const getVenueCheckins = async (venueId: string) => {
     // SECURITY: Use secure function that applies proper privacy controls
-    const { data, error } = await supabase
+    const { data, error } = await api
       .rpc('get_secure_venue_checkins', {
         venue_id: venueId
       });
@@ -150,11 +150,11 @@ export function useVenueCheckins() {
   };
 
   const getUserCheckins = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await api.auth.getUser();
     if (!user) return [];
 
     // Use secure function to get user's own check-ins with full access
-    const { data, error } = await supabase
+    const { data, error } = await api
       .rpc('get_secure_venue_checkins', {
         venue_id: null // Get all venues
       });
@@ -170,7 +170,7 @@ export function useVenueCheckins() {
     
     if (venueIds.length === 0) return [];
 
-    const { data: venues, error: venueError } = await supabase
+    const { data: venues, error: venueError } = await api
       .from('venues')
       .select('id, name, address, city')
       .in('id', venueIds);

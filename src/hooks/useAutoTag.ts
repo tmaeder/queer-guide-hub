@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -72,7 +72,7 @@ export function useAutoTag() {
     setSuggestions(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('auto-tag-content', {
+      const { data, error } = await api.functions.invoke('auto-tag-content', {
         body: {
           content_type: contentType,
           content_id: contentId,
@@ -109,7 +109,7 @@ export function useAutoTag() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('auto-tag-content', {
+      const { data, error } = await api.functions.invoke('auto-tag-content', {
         body: {
           content_type: contentType,
           content_id: contentId,
@@ -152,13 +152,13 @@ export function useAutoTag() {
     try {
       if (approve) {
         // Use the DB function to atomically approve + insert assignment
-        const { error } = await supabase.rpc('approve_tag_suggestions', {
+        const { error } = await api.rpc('approve_tag_suggestions', {
           p_suggestion_ids: [suggestionId],
         });
         if (error) throw error;
       } else {
         // Just reject
-        const { error } = await supabase
+        const { error } = await api
           .from('tag_suggestions' as any)
           .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
           .eq('id', suggestionId);
@@ -185,7 +185,7 @@ export function useAutoTag() {
     setBatchProgress({ total: 0, processed: 0, status: 'running' });
 
     try {
-      const { data, error } = await supabase.functions.invoke('auto-tag-content', {
+      const { data, error } = await api.functions.invoke('auto-tag-content', {
         body: {
           content_type: contentType,
           batch: true,
@@ -230,7 +230,7 @@ export function useAutoTag() {
     limit: number = 100,
   ) => {
     try {
-      let query = supabase
+      let query = api
         .from('tag_suggestions' as any)
         .select('*')
         .eq('status', 'pending')

@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import type { CMSAuditEntry } from '@/types/cms';
 
 interface UseCMSAuditReturn {
@@ -37,7 +37,7 @@ export function useCMSAudit(): UseCMSAuditReturn {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await api
         .from('cms_audit_log' as any)
         .select('*')
         .eq('source_table', sourceTable)
@@ -69,7 +69,7 @@ export function useCMSAudit(): UseCMSAuditReturn {
     setError(null);
 
     try {
-      let query = supabase
+      let query = api
         .from('cms_audit_log' as any)
         .select('*', { count: 'exact' })
         .order('timestamp', { ascending: false })
@@ -102,9 +102,9 @@ export function useCMSAudit(): UseCMSAuditReturn {
     metadata?: Record<string, unknown>;
   }) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await api.auth.getUser();
 
-      await supabase
+      await api
         .from('cms_audit_log' as any)
         .insert({
           source_table: entry.sourceTable,
@@ -138,7 +138,7 @@ async function enrichWithActors(entries: any[]): Promise<CMSAuditEntry[]> {
 
   if (actorIds.length === 0) return entries as CMSAuditEntry[];
 
-  const { data: profiles } = await supabase
+  const { data: profiles } = await api
     .from('profiles' as any)
     .select('id, display_name, email')
     .in('id', actorIds);

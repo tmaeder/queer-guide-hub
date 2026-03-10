@@ -7,7 +7,7 @@
 
 import { useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -130,7 +130,7 @@ export function useAutomationMonitor() {
 
   // ── Realtime subscription for content_flags ─────────────────────────────
   useEffect(() => {
-    const channel = supabase
+    const channel = api
       .channel('content-flags-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'content_flags' }, () => {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.flags });
@@ -139,7 +139,7 @@ export function useAutomationMonitor() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      api.removeChannel(channel);
     };
   }, [queryClient]);
 
@@ -147,7 +147,7 @@ export function useAutomationMonitor() {
   const { data: modules = [], isLoading: modulesLoading } = useQuery({
     queryKey: QUERY_KEYS.modules,
     queryFn: async (): Promise<AutomationModule[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('automation_modules' as never)
         .select('*')
         .order('priority', { ascending: true });
@@ -161,7 +161,7 @@ export function useAutomationMonitor() {
   const { data: pendingFlags = [], isLoading: flagsLoading } = useQuery({
     queryKey: QUERY_KEYS.flags,
     queryFn: async (): Promise<ContentFlag[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('content_flags' as never)
         .select('*')
         .eq('status', 'pending')
@@ -178,15 +178,15 @@ export function useAutomationMonitor() {
     queryKey: QUERY_KEYS.flagStats,
     queryFn: async () => {
       const [pending, applied, rejected] = await Promise.all([
-        supabase
+        api
           .from('content_flags' as never)
           .select('*', { count: 'exact', head: true })
           .eq('status', 'pending'),
-        supabase
+        api
           .from('content_flags' as never)
           .select('*', { count: 'exact', head: true })
           .eq('status', 'applied'),
-        supabase
+        api
           .from('content_flags' as never)
           .select('*', { count: 'exact', head: true })
           .eq('status', 'rejected'),
@@ -204,7 +204,7 @@ export function useAutomationMonitor() {
   const { data: deadLinks = [], isLoading: linksLoading } = useQuery({
     queryKey: QUERY_KEYS.links,
     queryFn: async (): Promise<LinkValidation[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('link_validations' as never)
         .select('*')
         .eq('is_alive', false)
@@ -220,7 +220,7 @@ export function useAutomationMonitor() {
   const { data: geoMismatches = [], isLoading: geoLoading } = useQuery({
     queryKey: QUERY_KEYS.geo,
     queryFn: async (): Promise<GeoValidation[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('geo_validations' as never)
         .select('*')
         .eq('has_mismatch', true)
@@ -250,7 +250,7 @@ export function useAutomationMonitor() {
 
   const toggleModule = useMutation({
     mutationFn: async ({ moduleId, enabled }: { moduleId: string; enabled: boolean }) => {
-      const { error } = await supabase
+      const { error } = await api
         .from('automation_modules' as never)
         .update({ is_enabled: enabled } as never)
         .eq('id', moduleId as never);
@@ -275,7 +275,7 @@ export function useAutomationMonitor() {
       moduleId: string;
       updates: Partial<AutomationModule>;
     }) => {
-      const { error } = await supabase
+      const { error } = await api
         .from('automation_modules' as never)
         .update(updates as never)
         .eq('id', moduleId as never);
@@ -299,7 +299,7 @@ export function useAutomationMonitor() {
       if (action === 'approved') {
         updates.applied_at = new Date().toISOString();
       }
-      const { error } = await supabase
+      const { error } = await api
         .from('content_flags' as never)
         .update(updates as never)
         .eq('id', flagId as never);
@@ -309,7 +309,7 @@ export function useAutomationMonitor() {
       if (action === 'approved') {
         const flag = pendingFlags.find((f) => f.id === flagId);
         if (flag?.suggested_value) {
-          const { error: applyError } = await supabase
+          const { error: applyError } = await api
             .from(flag.content_type as never)
             .update(flag.suggested_value as never)
             .eq('id', flag.content_id as never);
@@ -344,7 +344,7 @@ export function useAutomationMonitor() {
       if (action === 'approved') {
         updates.applied_at = new Date().toISOString();
       }
-      const { error } = await supabase
+      const { error } = await api
         .from('content_flags' as never)
         .update(updates as never)
         .in('id', flagIds as never);
@@ -355,7 +355,7 @@ export function useAutomationMonitor() {
         for (const flagId of flagIds) {
           const flag = pendingFlags.find((f) => f.id === flagId);
           if (flag?.suggested_value) {
-            await supabase
+            await api
               .from(flag.content_type as never)
               .update(flag.suggested_value as never)
               .eq('id', flag.content_id as never);
@@ -378,7 +378,7 @@ export function useAutomationMonitor() {
 
   const triggerModule = useMutation({
     mutationFn: async (moduleName: string) => {
-      const { data, error } = await supabase.functions.invoke('workflow-dispatcher', {
+      const { data, error } = await api.functions.invoke('workflow-dispatcher', {
         body: {
           action: 'enqueue',
           workflow: getWorkflowForModule(moduleName),

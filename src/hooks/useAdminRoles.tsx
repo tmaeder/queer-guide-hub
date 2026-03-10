@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type UserRole = Database['public']['Tables']['user_roles']['Row'];
 type AppRole = Database['public']['Enums']['app_role'];
@@ -34,7 +34,7 @@ export function useAdminRoles() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('user_roles')
         .select('*')
         .eq('user_id', user.id);

@@ -18,8 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
-import { Database } from '@/integrations/supabase/types';
-import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/types/database';
+import { api } from '@/integrations/api/client';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -53,7 +53,7 @@ export default function HotelDetail() {
     const fetchHotel = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('hotels')
           .select('*, cities:city_id(id, name), countries:country_id(id, name)')
           .eq('id', id)

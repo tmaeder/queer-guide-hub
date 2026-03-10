@@ -24,8 +24,8 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
-import { Database } from '@/integrations/supabase/types';
-import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/types/database';
+import { api } from '@/integrations/api/client';
 import { toast } from '@/hooks/use-toast';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -52,7 +52,7 @@ export default function MarketplaceItemDetail() {
       try {
         setLoading(true);
 
-        const { data: listingData, error: listingError } = await supabase
+        const { data: listingData, error: listingError } = await api
           .from('marketplace_listings')
           .select('*')
           .eq('id', id)
@@ -63,7 +63,7 @@ export default function MarketplaceItemDetail() {
 
         await incrementViews(id);
 
-        const { data: reviewsData, error: reviewsError } = await supabase
+        const { data: reviewsData, error: reviewsError } = await api
           .from('marketplace_reviews')
           .select(
             `
@@ -81,7 +81,7 @@ export default function MarketplaceItemDetail() {
         setReviews(reviewsData || []);
 
         if (user) {
-          const { data: favoriteData } = await supabase
+          const { data: favoriteData } = await api
             .from('marketplace_favorites')
             .select('id')
             .eq('listing_id', id)
@@ -115,7 +115,7 @@ export default function MarketplaceItemDetail() {
 
     try {
       if (isFavorited) {
-        const { error } = await supabase
+        const { error } = await api
           .from('marketplace_favorites')
           .delete()
           .eq('listing_id', listing.id)
@@ -125,7 +125,7 @@ export default function MarketplaceItemDetail() {
         setIsFavorited(false);
         toast({ title: 'Removed from favorites' });
       } else {
-        const { error } = await supabase
+        const { error } = await api
           .from('marketplace_favorites')
           .insert({ listing_id: listing.id, user_id: user.id });
 

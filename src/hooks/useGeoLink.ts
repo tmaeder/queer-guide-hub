@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -70,7 +70,7 @@ export function useGeoLink() {
     setResult(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('geo-link-content', {
+      const { data, error } = await api.functions.invoke('geo-link-content', {
         body: {
           content_type: contentType,
           content_id: contentId,
@@ -127,7 +127,7 @@ export function useGeoLink() {
     setResult(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('geo-link-content', {
+      const { data, error } = await api.functions.invoke('geo-link-content', {
         body: {
           content_type: contentType,
           batch: true,
@@ -169,7 +169,7 @@ export function useGeoLink() {
     setBatchAllResult(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('geo-link-content', {
+      const { data, error } = await api.functions.invoke('geo-link-content', {
         body: {
           batch_all: true,
           batch_limit: limit,
@@ -214,23 +214,23 @@ export function useGeoLink() {
     try {
       const [venuesRes, eventsRes, personalitiesRes, newsLinkedRes, newsTotalRes] =
         await Promise.all([
-          supabase
+          api
             .from('venues')
             .select('id', { count: 'exact', head: true })
             .or('city_id.is.null,country_id.is.null'),
-          supabase
+          api
             .from('events')
             .select('id', { count: 'exact', head: true })
             .or('city_id.is.null,country_id.is.null'),
-          supabase
+          api
             .from('personalities')
             .select('id', { count: 'exact', head: true })
             .or('city_id.is.null,country_id.is.null')
             .or('nationality.neq.,birth_place.neq.'),
-          supabase
+          api
             .from('news_article_countries')
             .select('article_id'),
-          supabase
+          api
             .from('news_articles')
             .select('id', { count: 'exact', head: true }),
         ]);

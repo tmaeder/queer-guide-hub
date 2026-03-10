@@ -37,7 +37,7 @@ import {
   type AddressComponents,
 } from '@/components/ui/location-autocomplete';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 interface AdminEditDialogProps {
   open: boolean;
@@ -314,7 +314,7 @@ export function AdminEditDialog({
   const handleEnrich = async () => {
     setEnriching(true);
     try {
-      const { data, error } = await supabase.functions.invoke('content-automation', {
+      const { data, error } = await api.functions.invoke('content-automation', {
         body: {
           module: 'ai-content-enhancer',
           content_type: contentType,

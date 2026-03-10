@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
 import { formatDistanceToNow, format } from 'date-fns';
 import Container from '@mui/material/Container';
@@ -74,7 +74,7 @@ export default function NewsDetail() {
     const fetchArticle = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from('news_articles')
           .select('*')
           .eq('id', id)
@@ -88,11 +88,11 @@ export default function NewsDetail() {
         setArticle(data as NewsArticle);
 
         // Increment views
-        supabase.rpc('increment_article_views', { article_id: id }).then(() => {});
+        api.rpc('increment_article_views', { article_id: id }).then(() => {});
 
         // Fetch source name
         if (data.source_id) {
-          supabase
+          api
             .from('news_sources')
             .select('name, url')
             .eq('id', data.source_id)
@@ -106,7 +106,7 @@ export default function NewsDetail() {
         }
 
         // Fetch tags
-        supabase
+        api
           .from('unified_tag_assignments')
           .select('unified_tags!inner(name)')
           .eq('entity_type', 'news')
@@ -119,7 +119,7 @@ export default function NewsDetail() {
 
         // Resolve city names
         if (data.city_ids?.length) {
-          supabase
+          api
             .from('cities')
             .select('id, name')
             .in('id', data.city_ids)
@@ -136,7 +136,7 @@ export default function NewsDetail() {
 
         // Resolve country names
         if (data.country_ids?.length) {
-          supabase
+          api
             .from('countries')
             .select('id, name')
             .in('id', data.country_ids)
@@ -153,7 +153,7 @@ export default function NewsDetail() {
 
         // Fetch related articles (same category, excluding current)
         if (data.category) {
-          supabase
+          api
             .from('news_articles')
             .select('id, title, excerpt, image_url, published_at, category')
             .eq('category', data.category)

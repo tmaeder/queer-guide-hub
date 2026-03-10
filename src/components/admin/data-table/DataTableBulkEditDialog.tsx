@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { toast } from 'sonner';
 import type { BulkEditFieldConfig } from './types';
 
@@ -69,7 +69,7 @@ export function DataTableBulkEditDialog({
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from(tableName as 'venues')
         .update(updates)
         .in('id', Array.from(selectedIds));

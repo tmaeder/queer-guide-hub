@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 
 export interface Tag {
   id?: string;
@@ -31,14 +31,14 @@ export const useTags = () => {
       setLoading(true);
       
       // First, try to get tags from the centralized tags table
-      const { data: centralizedTags, error: centralizedError } = await supabase
+      const { data: centralizedTags, error: centralizedError } = await api
         .from("unified_tags")
         .select("*")
         .eq("status", "active")
         .gt("usage_count", 0);
 
       // Fetch multi-category assignments
-      const { data: catAssignments } = await supabase
+      const { data: catAssignments } = await api
         .from("tag_category_assignments")
         .select("tag_id, category_id, is_primary, tag_categories(id, name)");
 
@@ -85,15 +85,15 @@ export const useTags = () => {
 
       // Fallback to legacy tag aggregation if no centralized tags
       const [eventsResult, venuesResult, marketplaceResult] = await Promise.all([
-        supabase
+        api
           .from("events")
           .select("tags")
           .not("tags", "is", null),
-        supabase
+        api
           .from("venues")
           .select("tags")
           .not("tags", "is", null),
-        supabase
+        api
           .from("marketplace_listings")
           .select("tags")
           .not("tags", "is", null)
@@ -180,7 +180,7 @@ export const useTags = () => {
 
       // Use unified tag system for detailed information
       const [assignments] = await Promise.all([
-        supabase
+        api
           .from("unified_tag_assignments")
           .select(`
             entity_id,

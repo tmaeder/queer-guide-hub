@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Download, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 
 interface ImportResult {
   success: boolean;
@@ -48,7 +48,7 @@ export function AdultModelsCsvImport({ onImportComplete }: { onImportComplete?: 
       const formData = new FormData();
       formData.append('file', file);
 
-      const { data, error } = await supabase.functions.invoke('import-adult-models-csv', {
+      const { data, error } = await api.functions.invoke('import-adult-models-csv', {
         body: formData
       });
 

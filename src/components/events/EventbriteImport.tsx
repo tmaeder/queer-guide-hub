@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/api/client";
 import { Calendar, Loader2 } from "lucide-react";
 import Box from '@mui/material/Box';
 
@@ -51,7 +51,7 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('import-eventbrite-events', {
+      const { data, error } = await api.functions.invoke('import-eventbrite-events', {
         body: {
           query: query.trim(),
           location: location.trim() || undefined,

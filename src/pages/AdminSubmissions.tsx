@@ -18,7 +18,7 @@ import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-
 import { createColumnHelper } from '@tanstack/react-table';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
@@ -101,14 +101,14 @@ export default function AdminSubmissions() {
       }
       if ('featured' in cleanData === false) cleanData.featured = false;
 
-      const { data: promoted, error: insertError } = await supabase
+      const { data: promoted, error: insertError } = await api
         .from(config.targetTable as any)
         .insert(cleanData)
         .select('id')
         .single();
       if (insertError) throw insertError;
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await api
         .from('community_submissions' as any)
         .update({
           status: 'approved',
@@ -139,7 +139,7 @@ export default function AdminSubmissions() {
   const handleReject = async (submission: SubmissionRow) => {
     setActionLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await api
         .from('community_submissions' as any)
         .update({
           status: 'rejected',

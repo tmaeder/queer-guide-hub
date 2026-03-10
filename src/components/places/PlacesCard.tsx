@@ -7,7 +7,7 @@ import type {
 } from '@/hooks/useOptimizedPlaces';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { useCityImages } from '@/hooks/useCityImages';
 import Box from '@mui/material/Box';
@@ -83,7 +83,7 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
         setCountryImage(imageUrl);
 
         // Save to DB so future visits don't need Pexels
-        supabase.from('countries').update({ image_url: imageUrl }).eq('id', data.id).then();
+        api.from('countries').update({ image_url: imageUrl }).eq('id', data.id).then();
       } catch (err) {
         // Silently fail — fallback image handles it
       } finally {

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 export const useCityImages = () => {
   const [loading, setLoading] = useState(false);
@@ -12,7 +12,7 @@ export const useCityImages = () => {
     try {
       console.log('Fetching image for city:', { cityId, cityName, countryName });
       
-      const { data, error: functionError } = await supabase.functions.invoke('fetch-and-store-city-images', {
+      const { data, error: functionError } = await api.functions.invoke('fetch-and-store-city-images', {
         body: {
           cityId,
           cityName,

@@ -3,7 +3,7 @@
  * Completely stateless, no DB needed.
  */
 import type { Env } from '../types';
-import { jsonResponse, errorResponse } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 
 const REFUGE_API = 'https://www.refugerestrooms.org/api/v1/restrooms';
 
@@ -42,7 +42,7 @@ export async function handleRefugeRestrooms(req: Request, env: Env): Promise<Res
   });
 
   if (!response.ok) {
-    return errorResponse(`Refuge API error: ${response.status}`, response.status, req, env);
+    return errorResponse(`Refuge API error: ${response.status}`, response.status);
   }
 
   const data = (await response.json()) as any[];
@@ -67,5 +67,5 @@ export async function handleRefugeRestrooms(req: Request, env: Env): Promise<Res
     downvote: r.downvote,
   }));
 
-  return jsonResponse(restrooms, 200, req, env);
+  return jsonResponse(restrooms, 200);
 }

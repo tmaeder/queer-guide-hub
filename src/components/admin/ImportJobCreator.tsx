@@ -16,7 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useImportHub } from '@/hooks/useImportHub';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import {
   Upload,
   Eye,
@@ -150,7 +150,7 @@ export const ImportJobCreator = () => {
   const [citySearch, setCitySearch] = useState('');
 
   useEffect(() => {
-    supabase
+    api
       .from('cities')
       .select('name, countries!inner(name)')
       .order('name')
@@ -238,7 +238,7 @@ export const ImportJobCreator = () => {
           };
           desc = `Spartacus scraper: ${spartacusCountries.length} countries`;
         }
-        const { error } = await supabase.functions.invoke(importType, { body });
+        const { error } = await api.functions.invoke(importType, { body });
         if (error) throw error;
         toast({ title: 'Scraper started', description: desc });
         resetForm();

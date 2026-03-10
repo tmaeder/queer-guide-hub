@@ -30,7 +30,7 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
 import { AuthGate } from '@/components/layout/AuthGate';
@@ -83,14 +83,14 @@ export default function Favorites() {
     setLoading(true);
     try {
       // Fetch venue favorites
-      const { data: venueFavorites } = await supabase
+      const { data: venueFavorites } = await api
         .from('venue_favorites')
         .select('venue_id')
         .eq('user_id', user.id);
       const venueIds = venueFavorites?.map((f) => f.venue_id) || [];
       const { data: venueData } =
         venueIds.length > 0
-          ? await supabase
+          ? await api
               .from('venues')
               .select('id, name, description, image_url, location, rating, category')
               .in('id', venueIds)
@@ -99,14 +99,14 @@ export default function Favorites() {
             };
 
       // Fetch event favorites
-      const { data: eventFavorites } = await supabase
+      const { data: eventFavorites } = await api
         .from('event_favorites')
         .select('event_id')
         .eq('user_id', user.id);
       const eventIds = eventFavorites?.map((f) => f.event_id) || [];
       const { data: eventData } =
         eventIds.length > 0
-          ? await supabase
+          ? await api
               .from('events')
               .select(
                 'id, title, description, images, city, state, country, start_date, price_min, event_type',
@@ -117,14 +117,14 @@ export default function Favorites() {
             };
 
       // Fetch marketplace favorites
-      const { data: marketplaceFavorites } = await supabase
+      const { data: marketplaceFavorites } = await api
         .from('marketplace_favorites')
         .select('listing_id')
         .eq('user_id', user.id);
       const listingIds = marketplaceFavorites?.map((f) => f.listing_id) || [];
       const { data: marketplaceData } =
         listingIds.length > 0
-          ? await supabase
+          ? await api
               .from('marketplace_listings')
               .select('id, title, description, images, location, price, category, business_name')
               .in('id', listingIds)
@@ -133,14 +133,14 @@ export default function Favorites() {
             };
 
       // Fetch news favorites
-      const { data: newsFavorites } = await supabase
+      const { data: newsFavorites } = await api
         .from('news_favorites')
         .select('article_id')
         .eq('user_id', user.id);
       const articleIds = newsFavorites?.map((f) => f.article_id) || [];
       const { data: newsData } =
         articleIds.length > 0
-          ? await supabase
+          ? await api
               .from('news_articles')
               .select('id, title, excerpt, image_url, category, published_at, views_count')
               .in('id', articleIds)

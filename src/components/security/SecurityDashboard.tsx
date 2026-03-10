@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle, CheckCircle, Eye, Lock, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -52,7 +52,7 @@ export function SecurityDashboard() {
       setLoading(true);
 
       // Load recent security events
-      const { data: eventsData } = await supabase
+      const { data: eventsData } = await api
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })

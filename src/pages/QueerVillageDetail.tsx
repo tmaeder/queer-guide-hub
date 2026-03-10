@@ -19,7 +19,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { PageLoading } from '@/components/ui/loading';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
 import { useVenues } from '@/hooks/useVenues';
@@ -78,7 +78,7 @@ export default function QueerVillageDetail() {
 
   const fetchVillage = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from('queer_villages')
         .select('*, cities:city_id(id, name), countries:country_id(id, name, flag_emoji)')
         .eq('slug', slug)

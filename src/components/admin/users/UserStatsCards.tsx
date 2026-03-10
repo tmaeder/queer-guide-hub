@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -13,16 +13,16 @@ function useUserStats() {
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
       const [total, newThisWeek, activeNow, modIssues] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase
+        api.from('profiles').select('id', { count: 'exact', head: true }),
+        api
           .from('profiles')
           .select('id', { count: 'exact', head: true })
           .gte('created_at', weekAgo),
-        supabase
+        api
           .from('profiles')
           .select('id', { count: 'exact', head: true })
           .eq('is_online', true),
-        supabase
+        api
           .from('profiles')
           .select('id', { count: 'exact', head: true })
           .neq('moderation_status' as any, 'approved'),

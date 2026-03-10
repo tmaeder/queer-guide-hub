@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 
 // Simplified type definitions to avoid TypeScript recursion issues
 type NewsArticle = any;
@@ -53,7 +53,7 @@ export const useNews = () => {
       const sortField = filters?.sortField || 'published_at';
       const sortOrder = filters?.sortOrder === 'asc';
 
-      let queryBuilder = supabase
+      let queryBuilder = api
         .from('news_articles')
         .select(
           `
@@ -150,7 +150,7 @@ export const useNews = () => {
 
   const fetchSources = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await api
         .from('news_sources')
         .select('*')
         .eq('is_active', true)
@@ -171,7 +171,7 @@ export const useNews = () => {
 
   const incrementViews = useCallback(async (articleId: string) => {
     try {
-      const { error } = await supabase.rpc('increment_article_views', {
+      const { error } = await api.rpc('increment_article_views', {
         article_id: articleId,
       });
 
@@ -185,7 +185,7 @@ export const useNews = () => {
 
   const getFeaturedArticles = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await api
         .from('news_articles')
         .select(
           `
@@ -212,7 +212,7 @@ export const useNews = () => {
 
   const getTrendingTags = useCallback(async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await api
         .from('unified_tags')
         .select('name, color, usage_count')
         .gt('usage_count', 0)

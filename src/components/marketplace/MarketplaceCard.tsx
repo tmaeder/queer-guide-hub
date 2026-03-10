@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, Heart, MapPin, Globe, Phone, Mail, ExternalLink, Eye, Building } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 import { Link } from 'react-router';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 

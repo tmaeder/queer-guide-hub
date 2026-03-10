@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import type { WorkflowState, CMSContentMetadata, WorkflowTransition } from '@/types/cms';
@@ -106,7 +106,7 @@ export function useCMSWorkflow(currentState?: WorkflowState): UseCMSWorkflowRetu
       }
 
       // Upsert cms_content_metadata
-      const { error: metaError } = await supabase
+      const { error: metaError } = await api
         .from('cms_content_metadata' as any)
         .upsert({
           source_table: sourceTable,
@@ -125,7 +125,7 @@ export function useCMSWorkflow(currentState?: WorkflowState): UseCMSWorkflowRetu
           : toState === 'draft' && currentState === 'review' ? 'change_request'
           : 'comment';
 
-        await supabase
+        await api
           .from('cms_review_comments' as any)
           .insert({
             source_table: sourceTable,
@@ -137,7 +137,7 @@ export function useCMSWorkflow(currentState?: WorkflowState): UseCMSWorkflowRetu
       }
 
       // Write audit log
-      await supabase
+      await api
         .from('cms_audit_log' as any)
         .insert({
           source_table: sourceTable,

@@ -7,13 +7,13 @@
  * Usage:
  *   import { api } from '@/integrations/api/client';
  *
- *   // Like supabase.from('venues').select('*')
+ *   // Like api.from('venues').select('*')
  *   api.from('venues').select('*').eq('city_id', id).order('name').range(0, 9)
  *
- *   // Like supabase.rpc('increment_views', { article_id: id })
+ *   // Like api.rpc('increment_views', { article_id: id })
  *   api.rpc('increment_views', { article_id: id })
  *
- *   // Like supabase.functions.invoke('fetch-news', { body: { ... } })
+ *   // Like api.functions.invoke('fetch-news', { body: { ... } })
  *   api.functions.invoke('fetch-news', { body: { ... } })
  */
 
@@ -126,7 +126,7 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<Respon
   });
 }
 
-// ─── Query Builder (supabase.from() compatible) ───
+// ─── Query Builder (api.from() compatible) ───
 
 type FilterValue = string | number | boolean | null | string[] | number[];
 
@@ -532,6 +532,75 @@ const authClient = {
 
 // ─── Functions client (edge function invocations) ───
 
+/** Maps legacy edge-function names to grouped API paths. */
+const ROUTE_MAP: Record<string, string> = {
+  // Admin
+  'admin-create-user': 'admin/create-user',
+  'secure-passkey-operations': 'admin/passkey',
+  // Automation
+  'content-automation': 'automation/content',
+  'categorize-tags': 'automation/categorize-tags',
+  'auto-tag-content': 'automation/auto-tag-content',
+  'workflow-dispatcher': 'automation/workflow',
+  'clean-merge-all-duplicates': 'automation/clean-merge-duplicates',
+  'create-moderation-flag': 'automation/create-moderation-flag',
+  'sync-content-links': 'automation/sync-content-links',
+  // Enrichment
+  'enrich-venue': 'enrichment/venue',
+  'fetch-wikipedia-data': 'enrichment/fetch-wikipedia',
+  'fetch-personality-data': 'enrichment/fetch-personality',
+  'fetch-and-store-city-images': 'enrichment/fetch-city-images',
+  'fetch-news': 'enrichment/fetch-news',
+  'geo-link-content': 'enrichment/geo-link',
+  'link-locations': 'enrichment/link-locations',
+  'resolve-or-create-city': 'enrichment/resolve-city',
+  'populate-optimization-status': 'enrichment/populate-optimization-status',
+  'get-wikipedia-info': 'enrichment/fetch-wikipedia',
+  // Imports
+  'import-venues-csv': 'imports/csv',
+  'import-events-csv': 'imports/csv',
+  'import-tags-csv': 'imports/csv',
+  'import-personalities-csv': 'imports/csv',
+  'import-adult-models-csv': 'imports/csv',
+  'import-city-data': 'imports/cities',
+  'import-country-data': 'imports/countries',
+  'import-foursquare-venues': 'imports/foursquare-venues',
+  'import-google-places-venues': 'imports/google-places-venues',
+  'import-tripadvisor-venues': 'imports/tripadvisor-venues',
+  'import-tomtom-venues': 'imports/tomtom-venues',
+  'import-eventbrite-events': 'imports/eventbrite-events',
+  'import-ticketmaster-events': 'imports/ticketmaster-events',
+  'import-ilga-data': 'imports/ilga-data',
+  'import-awin-products': 'imports/awin-products',
+  'background-import-manager': 'imports/background',
+  'bulk-create-personalities': 'imports/bulk-personalities',
+  'bulk-create-ai-tags': 'imports/bulk-ai-tags',
+  'bulk-scrape-events': 'imports/bulk-scrape-events',
+  // Ingestion
+  'ingestion-pipeline': 'ingestion/pipeline',
+  'ingestion-review-api': 'ingestion/review',
+  // Scraping
+  'scrape-web-sources': 'scraping/web-sources',
+  'scrape-gaycities-events': 'scraping/gaycities-events',
+  'scrape-spartacus': 'scraping/spartacus',
+  'scan-links': 'scraping/scan-links',
+  'validate-links': 'scraping/validate-links',
+  'scan-project-images': 'scraping/scan-project-images',
+  // Media
+  'analyze-flyer': 'media/analyze-flyer',
+  'optimize-images-batch': 'media/optimize-images',
+  'process-audio': 'media/process-audio',
+  'process-video': 'media/process-video',
+  'store-tag-images': 'media/store-tag-images',
+  'reimport-personality-images': 'media/reimport-personality-images',
+  // Email
+  'send-mailbox-email': 'email/send-mailbox',
+  'send-templated-email': 'email/send-templated',
+  'send-group-notifications': 'email/send-group-notification',
+  // API Keys
+  'manage-api-keys': 'api-keys/manage',
+};
+
 const functionsClient = {
   async invoke(
     functionName: string,
@@ -541,6 +610,7 @@ const functionsClient = {
       method?: string;
     },
   ) {
+    const resolvedPath = ROUTE_MAP[functionName] || functionName;
     const method = options?.method || (options?.body ? 'POST' : 'GET');
     const token = await getAccessToken();
 
@@ -553,7 +623,7 @@ const functionsClient = {
     }
 
     try {
-      const resp = await fetch(`${API_URL}/${functionName}`, {
+      const resp = await fetch(`${API_URL}/${resolvedPath}`, {
         method,
         headers,
         body: options?.body ? JSON.stringify(options.body) : undefined,
@@ -599,6 +669,3 @@ export const api = {
   storage: storageClient,
   functions: functionsClient,
 };
-
-// Re-export for backward compatibility
-export { api as supabase };

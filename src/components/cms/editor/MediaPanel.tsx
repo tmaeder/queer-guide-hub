@@ -30,7 +30,7 @@ import {
   Music,
 } from 'lucide-react';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import type { CMSMediaAttachment, MediaRole } from '@/types/cms';
 import MediaPickerDialog from '../media/MediaPickerDialog';
 
@@ -54,7 +54,7 @@ function getThumbnailUrl(storagePath: string, externalSource?: string): string {
   if (externalSource) {
     return storagePath;
   }
-  const { data } = supabase.storage.from('cms-media').getPublicUrl(storagePath);
+  const { data } = api.storage.from('cms-media').getPublicUrl(storagePath);
   return data.publicUrl;
 }
 
@@ -141,7 +141,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
     );
 
     // Persist to DB
-    const { error: updateError } = await supabase
+    const { error: updateError } = await api
       .from('cms_media_attachments' as any)
       .update({ media_role: newRole })
       .eq('id', attachmentId);

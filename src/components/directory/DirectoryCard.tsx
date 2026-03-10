@@ -4,7 +4,7 @@ import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from 'luci
 import { Country, City } from '@/hooks/useDirectory';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { invokeFunction } from '@/integrations/cloudflare-workers';
 import { useCityImages } from '@/hooks/useCityImages';
 interface DirectoryCardProps {

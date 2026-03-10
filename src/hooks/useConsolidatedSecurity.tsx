@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/integrations/api/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 import { useLoadingState } from './useLoadingState';
@@ -41,7 +41,7 @@ export function useConsolidatedSecurity() {
     if (!user) return null;
 
     return withLoading(async () => {
-      const { data: events, error } = await supabase
+      const { data: events, error } = await api
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })
@@ -87,7 +87,7 @@ export function useConsolidatedSecurity() {
     if (!user) return;
 
     try {
-      await supabase.rpc('log_security_event', {
+      await api.rpc('log_security_event', {
         p_event_type: action.type,
         p_user_id: user.id,
         p_metadata: action.metadata || {},
@@ -107,7 +107,7 @@ export function useConsolidatedSecurity() {
     metadata?: Record<string, any>
   ) => {
     try {
-      await supabase.rpc('log_security_event', {
+      await api.rpc('log_security_event', {
         p_event_type: incidentType,
         p_severity: severity,
         p_metadata: metadata || {},
@@ -133,7 +133,7 @@ export function useConsolidatedSecurity() {
 
   const anonymizeLocationData = useCallback(async () => {
     return withLoading(async () => {
-      const { error } = await supabase.rpc('anonymize_location_data');
+      const { error } = await api.rpc('anonymize_location_data');
       if (error) throw error;
 
       await logSecurityAction({ 

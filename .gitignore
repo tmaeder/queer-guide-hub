@@ -33,3 +33,7 @@ dist-ssr
 
 # Supabase CLI temp files
 supabase/.temp/
+
+# Rust/Wasm build artifacts
+workers/wasm/target/
+workers/wasm/pkg/
