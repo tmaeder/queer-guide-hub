@@ -251,10 +251,12 @@ class QueryBuilder<T = unknown> {
   }
 
   // Ordering
-  order(column: string, opts?: { ascending?: boolean }) {
+  order(column: string, opts?: { ascending?: boolean; nullsFirst?: boolean }) {
     const existing = this.params.get('order');
     const dir = opts?.ascending === false ? 'desc' : 'asc';
-    const entry = `${column}.${dir}`;
+    let entry = `${column}.${dir}`;
+    if (opts?.nullsFirst === true) entry += '.nullsfirst';
+    else if (opts?.nullsFirst === false) entry += '.nullslast';
     this.params.set('order', existing ? `${existing},${entry}` : entry);
     return this;
   }
@@ -645,6 +647,36 @@ const functionsClient = {
   },
 };
 
+// ─── Realtime channel stub (not yet supported on Cloudflare Workers) ───
+
+let realtimeWarned = false;
+
+interface ChannelStub {
+  on(event: string, filter: unknown, callback: (...args: unknown[]) => void): ChannelStub;
+  subscribe(callback?: (status: string) => void): ChannelStub;
+  unsubscribe(): void;
+  send(payload: unknown): Promise<void>;
+}
+
+function createChannelStub(_name: string): ChannelStub {
+  if (!realtimeWarned) {
+    console.warn('[API] Realtime channels are not yet supported. channel() calls are no-ops.');
+    realtimeWarned = true;
+  }
+  const stub: ChannelStub = {
+    on() {
+      return stub;
+    },
+    subscribe(callback) {
+      if (callback) setTimeout(() => callback('SUBSCRIBED'), 0);
+      return stub;
+    },
+    unsubscribe() {},
+    async send() {},
+  };
+  return stub;
+}
+
 // ─── Main API object (drop-in replacement for supabase client) ───
 
 export const api = {
@@ -663,6 +695,14 @@ export const api = {
       data: json.data,
       error: json.error ? new Error(json.error) : null,
     };
+  },
+
+  channel(name: string): ChannelStub {
+    return createChannelStub(name);
+  },
+
+  removeChannel(_channel: ChannelStub) {
+    // no-op
   },
 
   auth: authClient,
