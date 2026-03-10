@@ -240,13 +240,16 @@ class QueryBuilder<T = unknown> {
   }
 
   overlaps(column: string, value: unknown[]) {
-    // D1 doesn't have array overlap; use LIKE as approximation
-    this.params.set(column, `like.%${JSON.stringify(value)}%`);
+    this.params.set(column, `ov.{${value.join(',')}}`);
     return this;
   }
 
   contains(column: string, value: unknown) {
-    this.params.set(column, `like.%${typeof value === 'string' ? value : JSON.stringify(value)}%`);
+    if (Array.isArray(value)) {
+      this.params.set(column, `cs.{${value.join(',')}}`);
+    } else {
+      this.params.set(column, `cs.{${typeof value === 'string' ? value : JSON.stringify(value)}}`);
+    }
     return this;
   }
 
@@ -316,19 +319,16 @@ class QueryBuilder<T = unknown> {
         headers: this.extraHeaders,
       };
     } else if (this.method === 'PATCH') {
-      // Find ID from eq filter
-      const idParam = this.params.get('id');
-      const id = idParam?.replace('eq.', '') || '';
-      path = `/rest/${this.table}/${id}`;
+      const qs = this.params.toString();
+      path = `/rest/${this.table}${qs ? `?${qs}` : ''}`;
       fetchOpts = {
         method: 'PATCH',
         body: JSON.stringify(this.body),
       };
     } else {
       // DELETE
-      const idParam = this.params.get('id');
-      const id = idParam?.replace('eq.', '') || '';
-      path = `/rest/${this.table}/${id}`;
+      const qs = this.params.toString();
+      path = `/rest/${this.table}${qs ? `?${qs}` : ''}`;
       fetchOpts = { method: 'DELETE' };
     }
 

@@ -45,6 +45,15 @@ const ADMIN_ONLY_TABLES = new Set([
 // Columns that should not be sent to non-owner users
 const SENSITIVE_COLUMNS = new Set(['encrypted_password', 'ip_address']);
 
+/** Singularize a table name for FK column inference (e.g. "cities" → "city") */
+function singularize(word: string): string {
+  if (word.endsWith('ies')) return word.slice(0, -3) + 'y';  // cities → city
+  if (word.endsWith('ses')) return word.slice(0, -2);          // addresses → address
+  if (word.endsWith('ves')) return word.slice(0, -3) + 'f';   // wolves → wolf
+  if (word.endsWith('s') && !word.endsWith('ss')) return word.slice(0, -1); // events → event
+  return word;
+}
+
 function sanitizeIdentifier(name: string): string {
   // Only allow alphanumeric and underscores
   return name.replace(/[^a-zA-Z0-9_]/g, '');
@@ -56,7 +65,7 @@ function parseCondition(
   value: string,
   values: unknown[],
 ): string | null {
-  const match = value.match(/^(eq|neq|gt|gte|lt|lte|like|ilike|is|in|cs|cd|not)\.(.*)$/);
+  const match = value.match(/^(eq|neq|gt|gte|lt|lte|like|ilike|is|in|cs|cd|ov|not)\.(.*)$/);
   if (!match) return null;
 
   const [, op, val] = match;
@@ -82,6 +91,33 @@ function parseCondition(
       const placeholders = items.map(() => '?').join(',');
       values.push(...items);
       return `${col} IN (${placeholders})`;
+    }
+    case 'ov': {
+      // overlaps — check if JSON array column shares any values with the given set
+      const items = val.replace(/^\{|\}$/g, '').split(',').filter(Boolean);
+      if (items.length === 0) return null;
+      const placeholders = items.map(() => '?').join(',');
+      values.push(...items);
+      return `EXISTS (SELECT 1 FROM json_each(${col}) je WHERE je.value IN (${placeholders}))`;
+    }
+    case 'cs': {
+      // contains — check if JSON array column contains ALL given values
+      const items = val.replace(/^\{|\}$/g, '').split(',').filter(Boolean);
+      if (items.length === 0) return null;
+      const parts: string[] = [];
+      for (const item of items) {
+        values.push(item);
+        parts.push(`EXISTS (SELECT 1 FROM json_each(${col}) je WHERE je.value = ?)`);
+      }
+      return parts.join(' AND ');
+    }
+    case 'cd': {
+      // contained_by — not commonly used, approximate with overlaps
+      const items = val.replace(/^\{|\}$/g, '').split(',').filter(Boolean);
+      if (items.length === 0) return null;
+      const placeholders = items.map(() => '?').join(',');
+      values.push(...items);
+      return `NOT EXISTS (SELECT 1 FROM json_each(${col}) je WHERE je.value NOT IN (${placeholders}))`;
     }
     case 'not': {
       const innerMatch = val.match(/^(eq|is|in)\.(.*)$/);
@@ -339,7 +375,7 @@ async function executeWithJoins(
 
   // For each join, fetch related data and nest it
   for (const join of joins) {
-    const fkCol = join.fkColumn || `${join.joinTable.replace(/s$/, '')}_id`;
+    const fkCol = join.fkColumn || `${singularize(join.joinTable)}_id`;
     const fkValues = [...new Set(rows.map((r) => r[fkCol]).filter((v) => v != null))];
 
     if (fkValues.length === 0) {
@@ -398,19 +434,34 @@ crud.get('/:table', optionalAuth, async (c) => {
   const limit = parseInt(params.get('limit') || '100', 10);
   const offset = parseInt(params.get('offset') || '0', 10);
 
-  // Count query if requested
-  let count: number | undefined;
-  const countParam = params.get('count');
-  if (countParam === 'exact') {
-    const countResult = await c.env.DB.prepare(
-      `SELECT COUNT(*) as total FROM ${table} ${where}`
-    ).bind(...values).first<{ total: number }>();
-    count = countResult?.total ?? 0;
-  }
-
   const results = await executeWithJoins(
     c.env.DB, table, columns, joins, where, values, order, limit, offset,
   );
+
+  // Count query if requested — runs after joins so inner joins are accounted for
+  let count: number | undefined;
+  const countParam = params.get('count');
+  if (countParam === 'exact') {
+    const innerJoins = joins.filter((j) => j.isInner);
+    if (innerJoins.length > 0) {
+      // Build count with inner joins to get accurate filtered count
+      let countSql = `SELECT COUNT(*) as total FROM ${table}`;
+      const countValues = [...values];
+      for (const join of innerJoins) {
+        const fkCol = join.fkColumn || `${singularize(join.joinTable)}_id`;
+        const joinTableSafe = sanitizeIdentifier(join.joinTable);
+        countSql += ` INNER JOIN ${joinTableSafe} ON ${table}.${fkCol} = ${joinTableSafe}.id`;
+      }
+      countSql += ` ${where}`;
+      const countResult = await c.env.DB.prepare(countSql).bind(...countValues).first<{ total: number }>();
+      count = countResult?.total ?? 0;
+    } else {
+      const countResult = await c.env.DB.prepare(
+        `SELECT COUNT(*) as total FROM ${table} ${where}`
+      ).bind(...values).first<{ total: number }>();
+      count = countResult?.total ?? 0;
+    }
+  }
 
   const headers: Record<string, string> = {};
   if (count !== undefined) {
@@ -494,6 +545,82 @@ crud.post('/:table', requireAuth as any, async (c) => {
   return c.json({ data: results.length === 1 ? results[0] : results, error: null }, 201);
 });
 
+/** PATCH /rest/:table — bulk update with query-param-based WHERE */
+crud.patch('/:table', requireAuth as any, async (c) => {
+  const table = sanitizeIdentifier(c.req.param('table')!);
+  const user = c.get('user') as AuthUser;
+
+  if (ADMIN_ONLY_TABLES.has(table) && !user.roles.some((r) => r === 'admin')) {
+    return c.json({ error: 'Admin access required' }, 403);
+  }
+
+  const params = new URL(c.req.url).searchParams;
+  const { sql: where, values: whereValues } = buildWhereClause(params);
+
+  // If an `id` filter resolves to a single eq, also support the legacy path
+  // But primarily this handles bulk updates via query params
+
+  const body = await c.req.json();
+  body.updated_at = new Date().toISOString();
+
+  const cols = Object.keys(body).map(sanitizeIdentifier);
+  const setClauses = cols.map((col) => `${col} = ?`).join(', ');
+  const setValues = Object.values(body).map((v) =>
+    typeof v === 'object' && v !== null ? JSON.stringify(v) : v,
+  );
+
+  if (!where) {
+    return c.json({ error: 'WHERE clause required for bulk update' }, 400);
+  }
+
+  await c.env.DB.prepare(
+    `UPDATE ${table} SET ${setClauses} ${where}`
+  ).bind(...setValues, ...whereValues).run();
+
+  // Return updated rows if select param is present
+  const selectParam = params.get('select');
+  if (selectParam) {
+    const selectCols = selectParam === '*' ? '*' : selectParam.split(',').map((s) => sanitizeIdentifier(s.trim())).join(', ');
+    const result = await c.env.DB.prepare(
+      `SELECT ${selectCols} FROM ${table} ${where}`
+    ).bind(...whereValues).all();
+    return c.json({ data: result.results, error: null });
+  }
+
+  return c.json({ data: null, error: null });
+});
+
+/** DELETE /rest/:table — bulk delete with query-param-based WHERE */
+crud.delete('/:table', requireAuth as any, async (c) => {
+  const table = sanitizeIdentifier(c.req.param('table')!);
+  const user = c.get('user') as AuthUser;
+
+  if (ADMIN_ONLY_TABLES.has(table) && !user.roles.some((r) => r === 'admin')) {
+    return c.json({ error: 'Admin access required' }, 403);
+  }
+
+  const params = new URL(c.req.url).searchParams;
+  const { sql: where, values: whereValues } = buildWhereClause(params);
+
+  if (!where) {
+    return c.json({ error: 'WHERE clause required for bulk delete' }, 400);
+  }
+
+  // Optionally return deleted rows before deleting
+  const selectParam = params.get('select');
+  let deletedRows: unknown[] | null = null;
+  if (selectParam) {
+    const selectCols = selectParam === '*' ? '*' : selectParam.split(',').map((s) => sanitizeIdentifier(s.trim())).join(', ');
+    const result = await c.env.DB.prepare(
+      `SELECT ${selectCols} FROM ${table} ${where}`
+    ).bind(...whereValues).all();
+    deletedRows = result.results;
+  }
+
+  await c.env.DB.prepare(`DELETE FROM ${table} ${where}`).bind(...whereValues).run();
+  return c.json({ data: deletedRows, error: null });
+});
+
 /** PATCH /rest/:table/:id */
 crud.patch('/:table/:id', requireAuth as any, async (c) => {
   const table = sanitizeIdentifier(c.req.param('table')!);
@@ -516,6 +643,17 @@ crud.patch('/:table/:id', requireAuth as any, async (c) => {
   await c.env.DB.prepare(
     `UPDATE ${table} SET ${setClauses} WHERE id = ?`
   ).bind(...values, id).run();
+
+  // Return updated row if select param is present
+  const params = new URL(c.req.url).searchParams;
+  const selectParam = params.get('select');
+  if (selectParam) {
+    const selectCols = selectParam === '*' ? '*' : selectParam.split(',').map((s) => sanitizeIdentifier(s.trim())).join(', ');
+    const row = await c.env.DB.prepare(
+      `SELECT ${selectCols} FROM ${table} WHERE id = ?`
+    ).bind(id).first();
+    return c.json({ data: row, error: null });
+  }
 
   return c.json({ data: { id, ...body }, error: null });
 });
