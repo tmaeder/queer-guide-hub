@@ -123,8 +123,14 @@ fn remove_post_artifacts(text: &str) -> String {
     result
 }
 
-/// Normalize a JSON record's string fields: trim whitespace, lowercase emails, format dates.
+/// Normalize a JSON record's string fields: trim whitespace, lowercase emails, parse dates.
 /// Takes JSON string input, returns JSON string output.
+///
+/// Matches the TypeScript fallback behavior:
+/// - Trims all string values
+/// - Lowercases fields named "email" or ending with "_email"
+/// - Parses date fields (ending with "_date", or named "start_date", "end_date", "date")
+///   to ISO 8601 format when they contain a recognizable date string
 #[wasm_bindgen]
 pub fn normalize_record_fields(json: &str) -> String {
     let parsed: serde_json::Value = match serde_json::from_str(json) {
@@ -148,6 +154,13 @@ pub fn normalize_record_fields(json: &str) -> String {
                 v = v.to_lowercase();
             }
 
+            // Parse date fields to ISO 8601
+            if is_date_field(key) && !v.is_empty() {
+                if let Some(iso) = try_parse_date(&v) {
+                    v = iso;
+                }
+            }
+
             normalized.insert(key.clone(), serde_json::Value::String(v));
         } else {
             normalized.insert(key.clone(), value.clone());
@@ -156,6 +169,44 @@ pub fn normalize_record_fields(json: &str) -> String {
 
     serde_json::to_string(&serde_json::Value::Object(normalized))
         .unwrap_or_else(|_| json.to_string())
+}
+
+/// Check if a field name represents a date.
+fn is_date_field(key: &str) -> bool {
+    key == "date" || key == "start_date" || key == "end_date" || key.ends_with("_date")
+}
+
+/// Try to parse a date string into ISO 8601 format.
+/// Supports: "YYYY-MM-DD", "MM/DD/YYYY", and strings already containing time components.
+fn try_parse_date(input: &str) -> Option<String> {
+    let s = input.trim();
+    let bytes = s.as_bytes();
+
+    // ISO-style: YYYY-MM-DD...
+    if s.len() >= 10 && bytes.get(4) == Some(&b'-') && bytes.get(7) == Some(&b'-') {
+        let year: u32 = s[0..4].parse().ok()?;
+        let month: u32 = s[5..7].parse().ok()?;
+        let day: u32 = s[8..10].parse().ok()?;
+        if (1..=12).contains(&month) && (1..=31).contains(&day) && (1900..=2100).contains(&year) {
+            if s.len() > 10 && (s.contains('T') || s.contains(' ')) {
+                // Already has time component — return as-is
+                return Some(s.to_string());
+            }
+            return Some(format!("{:04}-{:02}-{:02}T00:00:00.000Z", year, month, day));
+        }
+    }
+
+    // US-style: MM/DD/YYYY
+    if s.len() >= 10 && bytes.get(2) == Some(&b'/') && bytes.get(5) == Some(&b'/') {
+        let month: u32 = s[0..2].parse().ok()?;
+        let day: u32 = s[3..5].parse().ok()?;
+        let year: u32 = s[6..10].parse().ok()?;
+        if (1..=12).contains(&month) && (1..=31).contains(&day) && (1900..=2100).contains(&year) {
+            return Some(format!("{:04}-{:02}-{:02}T00:00:00.000Z", year, month, day));
+        }
+    }
+
+    None
 }
 
 #[cfg(test)]
@@ -220,5 +271,45 @@ mod tests {
         let input = "line1\n\n\n\nline2";
         let result = clean_html_entities(input);
         assert_eq!(result, "line1\n\nline2");
+    }
+
+    #[test]
+    fn normalize_parses_iso_date() {
+        let input = r#"{"start_date":"2024-06-15"}"#;
+        let result = normalize_record_fields(input);
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert_eq!(parsed["start_date"], "2024-06-15T00:00:00.000Z");
+    }
+
+    #[test]
+    fn normalize_parses_us_date() {
+        let input = r#"{"end_date":"06/15/2024"}"#;
+        let result = normalize_record_fields(input);
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert_eq!(parsed["end_date"], "2024-06-15T00:00:00.000Z");
+    }
+
+    #[test]
+    fn normalize_preserves_iso_with_time() {
+        let input = r#"{"date":"2024-06-15T10:30:00Z"}"#;
+        let result = normalize_record_fields(input);
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert_eq!(parsed["date"], "2024-06-15T10:30:00Z");
+    }
+
+    #[test]
+    fn normalize_skips_non_date_fields() {
+        let input = r#"{"name":"2024-06-15","title":"something"}"#;
+        let result = normalize_record_fields(input);
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert_eq!(parsed["name"], "2024-06-15");
+    }
+
+    #[test]
+    fn normalize_handles_custom_date_suffix() {
+        let input = r#"{"created_date":"2024-01-01"}"#;
+        let result = normalize_record_fields(input);
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert_eq!(parsed["created_date"], "2024-01-01T00:00:00.000Z");
     }
 }
