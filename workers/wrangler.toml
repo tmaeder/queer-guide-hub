@@ -43,5 +43,11 @@ id = "${REDIRECTS_KV_ID}"
 # PEXELS_API_KEY
 # UNSPLASH_ACCESS_KEY
 
+# ── Wasm modules (built via `npm run build:wasm`) ──
+# Rust/Wasm crates in wasm/ are compiled to wasm32-unknown-unknown and
+# post-processed by wasm-bindgen. The resulting .wasm + .js files in
+# wasm/pkg/ are automatically bundled by Wrangler's esbuild pipeline
+# when imported from TypeScript source files (no explicit config needed).
+
 [vars]
 ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:5173,http://localhost:3000"

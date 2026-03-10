@@ -1,6 +1,14 @@
 /**
  * Shared geospatial utilities.
+ * Uses Rust/Wasm for batch operations when available, falls back to TypeScript.
  */
+
+import {
+  haversine_km as wasmHaversineKm,
+  batch_nearest as wasmBatchNearest,
+  point_in_polygon as wasmPointInPolygon,
+} from '../../wasm/pkg/geo_wasm/geo_wasm';
+import { clean_html_entities as wasmCleanHtmlEntities } from '../../wasm/pkg/text_utils_wasm/text_utils_wasm';
 
 /** Haversine distance in km between two lat/lng points. */
 export function haversineKm(
@@ -9,6 +17,14 @@ export function haversineKm(
   lat2: number,
   lon2: number,
 ): number {
+  try {
+    return wasmHaversineKm(lat1, lon1, lat2, lon2);
+  } catch {
+    return haversineKmFallback(lat1, lon1, lat2, lon2);
+  }
+}
+
+function haversineKmFallback(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -18,6 +34,63 @@ export function haversineKm(
       Math.cos((lat2 * Math.PI) / 180) *
       Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Find the nearest N points from an origin.
+ * Returns array of [index, distance_km] pairs sorted by distance.
+ *
+ * Uses Wasm for batch processing (avoids per-point FFI overhead).
+ * Falls back to TS if Wasm is unavailable.
+ */
+export function batchNearest(
+  originLat: number,
+  originLon: number,
+  points: Array<{ lat: number; lon: number }>,
+  limit: number,
+): Array<[number, number]> {
+  try {
+    const pointsJson = JSON.stringify(points.map((p) => [p.lat, p.lon]));
+    const result = wasmBatchNearest(originLat, originLon, pointsJson, limit);
+    return JSON.parse(result);
+  } catch {
+    // TS fallback
+    const distances = points.map((p, i) => ({
+      index: i,
+      distance: haversineKmFallback(originLat, originLon, p.lat, p.lon),
+    }));
+    distances.sort((a, b) => a.distance - b.distance);
+    return distances.slice(0, limit).map((d) => [d.index, d.distance]);
+  }
+}
+
+/**
+ * Check if a point is inside a polygon (ray casting algorithm).
+ */
+export function pointInPolygon(
+  lat: number,
+  lon: number,
+  polygon: Array<{ lat: number; lon: number }>,
+): boolean {
+  try {
+    const polygonJson = JSON.stringify(polygon.map((p) => [p.lat, p.lon]));
+    return wasmPointInPolygon(lat, lon, polygonJson);
+  } catch {
+    // TS fallback
+    const n = polygon.length;
+    if (n < 3) return false;
+    let inside = false;
+    let j = n - 1;
+    for (let i = 0; i < n; i++) {
+      const yi = polygon[i].lat, xi = polygon[i].lon;
+      const yj = polygon[j].lat, xj = polygon[j].lon;
+      if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
+        inside = !inside;
+      }
+      j = i;
+    }
+    return inside;
+  }
 }
 
 /** Normalize common country name variants, 2-letter codes, and demonyms. */
@@ -52,9 +125,17 @@ export function resolveCountryName(raw: string): string {
   return COUNTRY_ALIASES[raw.trim().toLowerCase()] || raw.trim();
 }
 
-/** Clean HTML entities from content text. */
+/** Clean HTML entities from content text. Uses Wasm when available. */
 export function cleanContentText(raw: string): string {
   if (!raw) return '';
+  try {
+    return wasmCleanHtmlEntities(raw);
+  } catch {
+    return cleanContentTextFallback(raw);
+  }
+}
+
+function cleanContentTextFallback(raw: string): string {
   let text = raw;
   text = text
     .replace(/&#8217;|&#x2019;/g, '\u2019')

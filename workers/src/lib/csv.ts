@@ -1,9 +1,21 @@
 /**
  * Shared CSV parsing utility.
+ * Uses Rust/Wasm implementation when available, falls back to TypeScript.
  */
+
+import { parse_csv as wasmParseCsv } from '../../wasm/pkg/csv_parser/csv_parser';
 
 /** Parse a CSV string into a 2D array of strings. Handles quoted fields and escaped quotes. */
 export function parseCSV(csv: string): string[][] {
+  try {
+    return wasmParseCsv(csv);
+  } catch {
+    return parseCSVFallback(csv);
+  }
+}
+
+/** TypeScript fallback implementation. */
+function parseCSVFallback(csv: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
   let field = '';

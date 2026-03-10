@@ -1,6 +1,9 @@
 /**
  * Shared text and data normalization utilities.
+ * Uses Rust/Wasm for normalize_record_fields when available, falls back to TypeScript.
  */
+
+import { normalize_record_fields as wasmNormalizeRecordFields } from '../../wasm/pkg/text_utils_wasm/text_utils_wasm';
 
 /** Sanitize a string for use as a SQL identifier (table/column name). */
 export function sanitizeIdentifier(name: string): string {
@@ -9,6 +12,15 @@ export function sanitizeIdentifier(name: string): string {
 
 /** Normalize a record's string fields: trim whitespace, lowercase emails, format dates. */
 export function normalizeRecord(record: Record<string, unknown>): Record<string, unknown> {
+  try {
+    const result = wasmNormalizeRecordFields(JSON.stringify(record));
+    return JSON.parse(result);
+  } catch {
+    return normalizeRecordFallback(record);
+  }
+}
+
+function normalizeRecordFallback(record: Record<string, unknown>): Record<string, unknown> {
   const normalized: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     if (typeof value === 'string') {

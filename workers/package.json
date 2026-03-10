@@ -6,6 +6,8 @@
     "build:wasm": "cd wasm && cargo build --release --target wasm32-unknown-unknown && wasm-bindgen --target bundler --out-dir pkg/csv_parser target/wasm32-unknown-unknown/release/csv_parser.wasm && wasm-bindgen --target bundler --out-dir pkg/geo_wasm target/wasm32-unknown-unknown/release/geo_wasm.wasm && wasm-bindgen --target bundler --out-dir pkg/text_utils_wasm target/wasm32-unknown-unknown/release/text_utils_wasm.wasm",
     "dev": "npm run build:wasm && wrangler dev",
     "deploy": "npm run build:wasm && wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "db:migrate": "wrangler d1 migrations apply queer-guide-db",
     "db:migrate:local": "wrangler d1 migrations apply queer-guide-db --local"
@@ -16,6 +18,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241205.0",
     "typescript": "^5.8.0",
+    "vitest": "^4.0.18",
     "wrangler": "^3.99.0"
   }
 }

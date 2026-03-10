@@ -29,7 +29,7 @@ import { functionMonitor } from './routes/function-monitor';
 import { chatgptOauth } from './routes/chatgpt-oauth';
 import { umamiDashboard } from './routes/umami-dashboard';
 
-// Legacy route handlers (stateless proxies — migrated from previous Workers)
+// Stateless route handlers (external API proxies)
 import { handleCloudflareApi } from './routes/cloudflare-api';
 import { handleGetTurnstileConfig } from './routes/turnstile';
 import { handleWeatherForecast } from './routes/weather';
@@ -41,6 +41,7 @@ import { handleRefugeRestrooms } from './routes/refuge-restrooms';
 import { handleOriginAirport } from './routes/origin-airport';
 import { handleCalendarExport, handleCalendarToken } from './routes/calendar';
 import { handleUmamiAnalytics } from './routes/umami';
+import type { Context } from 'hono';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -76,23 +77,24 @@ app.route('/function-monitor', functionMonitor);
 app.route('/chatgpt-oauth', chatgptOauth);
 app.route('/umami-dashboard', umamiDashboard);
 
-// ── Stateless route handlers (wrapped for Hono) ──
-function wrap(handler: (req: Request, env: Env) => Promise<Response>) {
-  return (c: { req: { raw: Request }; env: Env }) => handler(c.req.raw, c.env);
-}
+// ── Stateless route handlers (external API proxies) ──
+// These use raw Request/Response; adapter passes through Hono context.
+type RawHandler = (req: Request, env: Env) => Promise<Response>;
+const raw = (handler: RawHandler) => (c: Context<{ Bindings: Env }>) =>
+  handler(c.req.raw, c.env);
 
-app.all('/cloudflare-api', wrap(handleCloudflareApi));
-app.all('/get-turnstile-config', wrap(handleGetTurnstileConfig));
-app.all('/get-weather-forecast', wrap(handleWeatherForecast));
-app.all('/travel-deals', wrap(handleTravelDeals));
-app.all('/mapbox-geocoding', wrap(handleGeocoding));
-app.all('/get-pexels-images', wrap(handlePexelsImages));
-app.all('/redirect-handler', wrap(handleRedirect));
-app.all('/get-refuge-restrooms', wrap(handleRefugeRestrooms));
-app.all('/resolve-origin-airport', wrap(handleOriginAirport));
-app.all('/calendar-export', wrap(handleCalendarExport));
-app.all('/calendar-token', wrap(handleCalendarToken));
-app.all('/umami-analytics', wrap(handleUmamiAnalytics));
+app.all('/cloudflare-api', raw(handleCloudflareApi));
+app.all('/get-turnstile-config', raw(handleGetTurnstileConfig));
+app.all('/get-weather-forecast', raw(handleWeatherForecast));
+app.all('/travel-deals', raw(handleTravelDeals));
+app.all('/mapbox-geocoding', raw(handleGeocoding));
+app.all('/get-pexels-images', raw(handlePexelsImages));
+app.all('/redirect-handler', raw(handleRedirect));
+app.all('/get-refuge-restrooms', raw(handleRefugeRestrooms));
+app.all('/resolve-origin-airport', raw(handleOriginAirport));
+app.all('/calendar-export', raw(handleCalendarExport));
+app.all('/calendar-token', raw(handleCalendarToken));
+app.all('/umami-analytics', raw(handleUmamiAnalytics));
 
 // Stub handlers for credential/config endpoints
 app.all('/get-stripe-publishable-key', async (c) => {
