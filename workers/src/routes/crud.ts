@@ -40,6 +40,7 @@ const ADMIN_ONLY_TABLES = new Set([
   'user_roles', 'admin_api_keys', 'admin_edit_log', 'failed_login_attempts',
   'captcha_verifications', 'moderation_flags', 'cms_audit_log',
   'audio_files', 'content_links', 'access_logs',
+  'content_changes', 'automation_modules',
 ]);
 
 // Columns that should not be sent to non-owner users

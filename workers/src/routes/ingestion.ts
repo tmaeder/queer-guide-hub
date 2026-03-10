@@ -225,6 +225,99 @@ ingestion.post('/pipeline', requireAuth as any, async (c) => {
   return c.json({ data: results, error: null });
 });
 
+// ── POST /ingestion/review — action-based dispatch for frontend calls ────────
+
+ingestion.post('/review', requireAuth as any, requireAdmin as any, async (c) => {
+  const body = await c.req.json<{
+    action: string;
+    filters?: Record<string, unknown>;
+    staging_id?: string;
+    staging_ids?: string[];
+    notes?: string;
+  }>();
+  const { action } = body;
+  const user = c.get('user') as AuthUser;
+  const now = new Date().toISOString();
+
+  if (action === 'list') {
+    const filters = body.filters || {};
+    const type = filters.type as string | undefined;
+    const status = (filters.status as string) || 'pending';
+    const page = (filters.page as number) || 1;
+    const limit = Math.min((filters.limit as number) || 50, 200);
+    const offset = (page - 1) * limit;
+
+    const conditions: string[] = ['status = ?'];
+    const values: unknown[] = [status];
+    if (type) { conditions.push('record_type = ?'); values.push(type); }
+    const where = `WHERE ${conditions.join(' AND ')}`;
+
+    const [countResult, dataResult] = await Promise.all([
+      c.env.DB.prepare(`SELECT COUNT(*) as total FROM ingestion_review_queue ${where}`).bind(...values).first<{ total: number }>(),
+      c.env.DB.prepare(
+        `SELECT * FROM ingestion_review_queue ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+      ).bind(...values, limit, offset).all(),
+    ]);
+
+    const results = (dataResult.results || []).map((row: Record<string, unknown>) => ({
+      ...row,
+      data: typeof row.data === 'string' ? JSON.parse(row.data as string) : row.data,
+    }));
+
+    return c.json({ data: results, error: null, count: countResult?.total ?? 0, page, limit });
+  }
+
+  if (action === 'stats') {
+    const [total, pending, approved, rejected] = await Promise.all([
+      c.env.DB.prepare('SELECT COUNT(*) as count FROM ingestion_review_queue').first<{ count: number }>(),
+      c.env.DB.prepare("SELECT COUNT(*) as count FROM ingestion_review_queue WHERE status = 'pending'").first<{ count: number }>(),
+      c.env.DB.prepare("SELECT COUNT(*) as count FROM ingestion_review_queue WHERE status = 'approved'").first<{ count: number }>(),
+      c.env.DB.prepare("SELECT COUNT(*) as count FROM ingestion_review_queue WHERE status = 'rejected'").first<{ count: number }>(),
+    ]);
+    return c.json({
+      data: {
+        total: total?.count ?? 0,
+        pending: pending?.count ?? 0,
+        approved: approved?.count ?? 0,
+        rejected: rejected?.count ?? 0,
+      },
+      error: null,
+    });
+  }
+
+  if (action === 'approve' && body.staging_id) {
+    await c.env.DB.prepare(
+      `UPDATE ingestion_review_queue SET status = 'approved', reviewed_by = ?, reviewed_at = ?, notes = ? WHERE id = ?`
+    ).bind(user.id, now, body.notes || null, body.staging_id).run();
+    return c.json({ data: { approved: 1 }, error: null });
+  }
+
+  if (action === 'reject' && body.staging_id) {
+    await c.env.DB.prepare(
+      `UPDATE ingestion_review_queue SET status = 'rejected', reviewed_by = ?, reviewed_at = ?, notes = ? WHERE id = ?`
+    ).bind(user.id, now, body.notes || null, body.staging_id).run();
+    return c.json({ data: { rejected: 1 }, error: null });
+  }
+
+  if (action === 'bulk_approve' && body.staging_ids?.length) {
+    const placeholders = body.staging_ids.map(() => '?').join(',');
+    await c.env.DB.prepare(
+      `UPDATE ingestion_review_queue SET status = 'approved', reviewed_by = ?, reviewed_at = ? WHERE id IN (${placeholders})`
+    ).bind(user.id, now, ...body.staging_ids).run();
+    return c.json({ data: { approved: body.staging_ids.length }, error: null });
+  }
+
+  if (action === 'bulk_reject' && body.staging_ids?.length) {
+    const placeholders = body.staging_ids.map(() => '?').join(',');
+    await c.env.DB.prepare(
+      `UPDATE ingestion_review_queue SET status = 'rejected', reviewed_by = ?, reviewed_at = ? WHERE id IN (${placeholders})`
+    ).bind(user.id, now, ...body.staging_ids).run();
+    return c.json({ data: { rejected: body.staging_ids.length }, error: null });
+  }
+
+  return c.json({ error: `Unknown action: ${action}` }, 400);
+});
+
 // ── GET /ingestion/review ────────────────────────────────────────────────────
 
 ingestion.get('/review', requireAuth as any, requireAdmin as any, async (c) => {

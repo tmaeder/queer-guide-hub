@@ -108,8 +108,11 @@ rpc.post('/decrement_comment_likes', async (c) => {
 });
 
 rpc.post('/find_queer_village', async (c) => {
-  const { search_lat, search_lng, search_radius } = await c.req.json();
-  const radius = search_radius || 50;
+  const body = await c.req.json();
+  // Support both parameter naming conventions (p_lat/p_lng from frontend, search_lat/search_lng legacy)
+  const search_lat = body.p_lat ?? body.search_lat;
+  const search_lng = body.p_lng ?? body.search_lng;
+  const radius = body.search_radius || 50;
   // Haversine approximation for SQLite
   const result = await c.env.DB.prepare(
     `SELECT *, (
@@ -129,7 +132,8 @@ rpc.post('/find_queer_village', async (c) => {
 
 rpc.post('/get_or_create_direct_conversation', requireAuth as any, async (c) => {
   const user = c.get('user') as AuthUser;
-  const { other_user_id } = await c.req.json();
+  const body = await c.req.json();
+  const other_user_id = body.other_user_id ?? body.user2_id;
 
   // Check existing conversation
   const existing = await c.env.DB.prepare(
@@ -164,23 +168,32 @@ rpc.post('/get_or_create_direct_conversation', requireAuth as any, async (c) => 
 
 rpc.post('/create_notification', requireAuth as any, async (c) => {
   const body = await c.req.json();
+  // Support both parameter naming: p_-prefixed and direct names from frontend
+  const userId = body.p_user_id ?? body.user_id;
+  const type = body.p_type ?? body.type;
+  const title = body.p_title ?? body.title ?? '';
+  const message = body.p_message ?? body.message ?? '';
+  const data = body.p_data ?? body.data ?? {};
   await c.env.DB.prepare(
     `INSERT INTO notifications (id, user_id, type, title, message, data, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     crypto.randomUUID(),
-    body.p_user_id,
-    body.p_type,
-    body.p_title,
-    body.p_message,
-    JSON.stringify(body.p_data || {}),
+    userId,
+    type,
+    title,
+    message,
+    JSON.stringify(data),
     new Date().toISOString(),
   ).run();
   return c.json({ data: null, error: null });
 });
 
 rpc.post('/validate_file_upload', async (c) => {
-  const { p_file_name, p_file_size, p_mime_type } = await c.req.json();
+  const body = await c.req.json();
+  const p_file_name = body.p_file_name ?? body.file_name;
+  const p_file_size = body.p_file_size ?? body.file_size;
+  const p_mime_type = body.p_mime_type ?? body.mime_type;
   const maxSize = 50 * 1024 * 1024; // 50MB
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf',
     'video/mp4', 'audio/mpeg', 'audio/mp3'];
@@ -193,34 +206,40 @@ rpc.post('/validate_file_upload', async (c) => {
 });
 
 rpc.post('/check_rate_limit_enhanced', async (c) => {
-  const { p_identifier, p_action, p_max_attempts, p_window_minutes } = await c.req.json();
-  const key = `ratelimit:${p_action}:${p_identifier}`;
+  const body = await c.req.json();
+  const identifier = body.p_identifier ?? body.identifier;
+  const action = body.p_action ?? body.action_type ?? 'general';
+  const maxAttempts = body.p_max_attempts ?? body.max_attempts ?? 10;
+  const windowMinutes = body.p_window_minutes ?? body.time_window_minutes ?? 15;
+  const key = `ratelimit:${action}:${identifier}`;
   const current = parseInt(await c.env.CACHE.get(key) || '0', 10);
-  const allowed = current < (p_max_attempts || 10);
+  const allowed = current < maxAttempts;
 
   if (allowed) {
     await c.env.CACHE.put(key, String(current + 1), {
-      expirationTtl: (p_window_minutes || 15) * 60,
+      expirationTtl: windowMinutes * 60,
     });
   }
 
   return c.json({
-    data: { allowed, remaining: Math.max(0, (p_max_attempts || 10) - current - 1) },
+    data: { allowed, remaining: Math.max(0, maxAttempts - current - 1) },
     error: null,
   });
 });
 
 rpc.post('/get_public_profile_safe', async (c) => {
-  const { p_user_id } = await c.req.json();
+  const body = await c.req.json();
+  const userId = body.p_user_id ?? body.target_user_id;
   const profile = await c.env.DB.prepare(
     `SELECT p.id, p.display_name, p.bio, p.avatar_url, p.pronouns, p.location, p.is_business, p.created_at
      FROM profiles p WHERE p.user_id = ?`
-  ).bind(p_user_id).first();
+  ).bind(userId).first();
   return c.json({ data: profile, error: null });
 });
 
 rpc.post('/validate_password_enhanced', async (c) => {
-  const { p_password } = await c.req.json();
+  const body = await c.req.json();
+  const p_password = body.p_password ?? body.password_text;
   const issues: string[] = [];
   if (p_password.length < 8) issues.push('Password must be at least 8 characters');
   if (!/[A-Z]/.test(p_password)) issues.push('Include at least one uppercase letter');
@@ -716,6 +735,131 @@ rpc.post('/check_financial_data_access', requireAuth as any, async (c) => {
     JSON.stringify({ target_user_id: p_user_id, justification: p_justification }),
     new Date().toISOString(),
   ).run();
+
+  return c.json({ data: true, error: null });
+});
+
+// ── Content change management ──
+rpc.post('/apply_content_change', requireAuth as any, async (c) => {
+  const user = c.get('user') as AuthUser;
+  const { p_change_id } = await c.req.json();
+  const now = new Date().toISOString();
+
+  const change = await c.env.DB.prepare(
+    'SELECT * FROM content_changes WHERE id = ?'
+  ).bind(p_change_id).first<Record<string, unknown>>();
+
+  if (!change) {
+    return c.json({ data: null, error: 'Change not found' }, 404);
+  }
+
+  if (change.status !== 'pending') {
+    return c.json({ data: null, error: `Change already ${change.status}` }, 400);
+  }
+
+  const table = (change.target_table as string).replace(/[^a-zA-Z0-9_]/g, '');
+  const entityId = change.entity_id as string;
+  const newData = typeof change.new_data === 'string' ? JSON.parse(change.new_data) : change.new_data;
+
+  if (newData && typeof newData === 'object') {
+    const cols = Object.keys(newData as Record<string, unknown>).map((k) => k.replace(/[^a-zA-Z0-9_]/g, ''));
+    const setClauses = cols.map((col) => `${col} = ?`).join(', ');
+    const values = Object.values(newData as Record<string, unknown>).map((v) =>
+      typeof v === 'object' && v !== null ? JSON.stringify(v) : v,
+    );
+
+    await c.env.DB.prepare(
+      `UPDATE ${table} SET ${setClauses}, updated_at = ? WHERE id = ?`
+    ).bind(...values, now, entityId).run();
+  }
+
+  await c.env.DB.prepare(
+    `UPDATE content_changes SET status = 'approved', reviewed_by = ?, reviewed_at = ? WHERE id = ?`
+  ).bind(user.id, now, p_change_id).run();
+
+  return c.json({ data: true, error: null });
+});
+
+rpc.post('/bulk_apply_content_changes', requireAuth as any, async (c) => {
+  const user = c.get('user') as AuthUser;
+  const { p_change_ids } = await c.req.json();
+
+  if (!Array.isArray(p_change_ids) || p_change_ids.length === 0) {
+    return c.json({ data: { applied: 0 }, error: null });
+  }
+
+  const now = new Date().toISOString();
+  let applied = 0;
+
+  for (const changeId of p_change_ids) {
+    const change = await c.env.DB.prepare(
+      'SELECT * FROM content_changes WHERE id = ? AND status = ?'
+    ).bind(changeId, 'pending').first<Record<string, unknown>>();
+
+    if (!change) continue;
+
+    const table = (change.target_table as string).replace(/[^a-zA-Z0-9_]/g, '');
+    const entityId = change.entity_id as string;
+    const newData = typeof change.new_data === 'string' ? JSON.parse(change.new_data) : change.new_data;
+
+    if (newData && typeof newData === 'object') {
+      const cols = Object.keys(newData as Record<string, unknown>).map((k) => k.replace(/[^a-zA-Z0-9_]/g, ''));
+      const setClauses = cols.map((col) => `${col} = ?`).join(', ');
+      const values = Object.values(newData as Record<string, unknown>).map((v) =>
+        typeof v === 'object' && v !== null ? JSON.stringify(v) : v,
+      );
+
+      await c.env.DB.prepare(
+        `UPDATE ${table} SET ${setClauses}, updated_at = ? WHERE id = ?`
+      ).bind(...values, now, entityId).run();
+    }
+
+    await c.env.DB.prepare(
+      `UPDATE content_changes SET status = 'approved', reviewed_by = ?, reviewed_at = ? WHERE id = ?`
+    ).bind(user.id, now, changeId).run();
+
+    applied++;
+  }
+
+  return c.json({ data: { applied }, error: null });
+});
+
+rpc.post('/revert_content_change', requireAuth as any, async (c) => {
+  const user = c.get('user') as AuthUser;
+  const { p_change_id } = await c.req.json();
+  const now = new Date().toISOString();
+
+  const change = await c.env.DB.prepare(
+    'SELECT * FROM content_changes WHERE id = ?'
+  ).bind(p_change_id).first<Record<string, unknown>>();
+
+  if (!change) {
+    return c.json({ data: null, error: 'Change not found' }, 404);
+  }
+
+  if (change.status !== 'approved') {
+    return c.json({ data: null, error: 'Only approved changes can be reverted' }, 400);
+  }
+
+  const table = (change.target_table as string).replace(/[^a-zA-Z0-9_]/g, '');
+  const entityId = change.entity_id as string;
+  const oldData = typeof change.old_data === 'string' ? JSON.parse(change.old_data) : change.old_data;
+
+  if (oldData && typeof oldData === 'object') {
+    const cols = Object.keys(oldData as Record<string, unknown>).map((k) => k.replace(/[^a-zA-Z0-9_]/g, ''));
+    const setClauses = cols.map((col) => `${col} = ?`).join(', ');
+    const values = Object.values(oldData as Record<string, unknown>).map((v) =>
+      typeof v === 'object' && v !== null ? JSON.stringify(v) : v,
+    );
+
+    await c.env.DB.prepare(
+      `UPDATE ${table} SET ${setClauses}, updated_at = ? WHERE id = ?`
+    ).bind(...values, now, entityId).run();
+  }
+
+  await c.env.DB.prepare(
+    `UPDATE content_changes SET status = 'reverted', reviewed_by = ?, reviewed_at = ? WHERE id = ?`
+  ).bind(user.id, now, p_change_id).run();
 
   return c.json({ data: true, error: null });
 });

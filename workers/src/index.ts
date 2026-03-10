@@ -98,7 +98,7 @@ app.all('/umami-analytics', raw(handleUmamiAnalytics));
 
 // Stub handlers for credential/config endpoints
 app.all('/get-stripe-publishable-key', async (c) => {
-  return c.json({ key: c.env.STRIPE_PUBLISHABLE_KEY || '' });
+  return c.json({ publishable_key: c.env.STRIPE_PUBLISHABLE_KEY || '' });
 });
 
 // ── Health check ──
