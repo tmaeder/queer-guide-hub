@@ -157,7 +157,10 @@ export const ImportJobCreator = () => {
       .then(({ data }) => {
         if (data)
           setAllCities(
-            data.map((c: any) => ({ name: c.name, country: (c.countries as any)?.name || '' })),
+            data.map((c: { name: string; countries: { name: string } | null }) => ({
+              name: c.name,
+              country: c.countries?.name || '',
+            })),
           );
       });
   }, []);

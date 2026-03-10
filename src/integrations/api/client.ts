@@ -240,21 +240,26 @@ class QueryBuilder<T = unknown> {
   }
 
   overlaps(column: string, value: unknown[]) {
-    // D1 doesn't have array overlap; use LIKE as approximation
-    this.params.set(column, `like.%${JSON.stringify(value)}%`);
+    this.params.set(column, `ov.{${value.join(',')}}`);
     return this;
   }
 
   contains(column: string, value: unknown) {
-    this.params.set(column, `like.%${typeof value === 'string' ? value : JSON.stringify(value)}%`);
+    if (Array.isArray(value)) {
+      this.params.set(column, `cs.{${value.join(',')}}`);
+    } else {
+      this.params.set(column, `cs.{${typeof value === 'string' ? value : JSON.stringify(value)}}`);
+    }
     return this;
   }
 
   // Ordering
-  order(column: string, opts?: { ascending?: boolean }) {
+  order(column: string, opts?: { ascending?: boolean; nullsFirst?: boolean }) {
     const existing = this.params.get('order');
     const dir = opts?.ascending === false ? 'desc' : 'asc';
-    const entry = `${column}.${dir}`;
+    let entry = `${column}.${dir}`;
+    if (opts?.nullsFirst === true) entry += '.nullsfirst';
+    else if (opts?.nullsFirst === false) entry += '.nullslast';
     this.params.set('order', existing ? `${existing},${entry}` : entry);
     return this;
   }
@@ -314,19 +319,16 @@ class QueryBuilder<T = unknown> {
         headers: this.extraHeaders,
       };
     } else if (this.method === 'PATCH') {
-      // Find ID from eq filter
-      const idParam = this.params.get('id');
-      const id = idParam?.replace('eq.', '') || '';
-      path = `/rest/${this.table}/${id}`;
+      const qs = this.params.toString();
+      path = `/rest/${this.table}${qs ? `?${qs}` : ''}`;
       fetchOpts = {
         method: 'PATCH',
         body: JSON.stringify(this.body),
       };
     } else {
       // DELETE
-      const idParam = this.params.get('id');
-      const id = idParam?.replace('eq.', '') || '';
-      path = `/rest/${this.table}/${id}`;
+      const qs = this.params.toString();
+      path = `/rest/${this.table}${qs ? `?${qs}` : ''}`;
       fetchOpts = { method: 'DELETE' };
     }
 
@@ -562,14 +564,14 @@ const ROUTE_MAP: Record<string, string> = {
   'import-tags-csv': 'imports/csv',
   'import-personalities-csv': 'imports/csv',
   'import-adult-models-csv': 'imports/csv',
-  'import-city-data': 'imports/cities',
-  'import-country-data': 'imports/countries',
-  'import-foursquare-venues': 'imports/foursquare-venues',
-  'import-google-places-venues': 'imports/google-places-venues',
-  'import-tripadvisor-venues': 'imports/tripadvisor-venues',
-  'import-tomtom-venues': 'imports/tomtom-venues',
-  'import-eventbrite-events': 'imports/eventbrite-events',
-  'import-ticketmaster-events': 'imports/ticketmaster-events',
+  'import-city-data': 'imports/city-data',
+  'import-country-data': 'imports/country-data',
+  'import-foursquare-venues': 'imports/foursquare',
+  'import-google-places-venues': 'imports/google-places',
+  'import-tripadvisor-venues': 'imports/tripadvisor',
+  'import-tomtom-venues': 'imports/tomtom',
+  'import-eventbrite-events': 'imports/eventbrite',
+  'import-ticketmaster-events': 'imports/ticketmaster',
   'import-ilga-data': 'imports/ilga-data',
   'import-awin-products': 'imports/awin-products',
   'background-import-manager': 'imports/background',
@@ -645,6 +647,36 @@ const functionsClient = {
   },
 };
 
+// ─── Realtime channel stub (not yet supported on Cloudflare Workers) ───
+
+let realtimeWarned = false;
+
+interface ChannelStub {
+  on(event: string, filter: unknown, callback: (...args: unknown[]) => void): ChannelStub;
+  subscribe(callback?: (status: string) => void): ChannelStub;
+  unsubscribe(): void;
+  send(payload: unknown): Promise<void>;
+}
+
+function createChannelStub(_name: string): ChannelStub {
+  if (!realtimeWarned) {
+    console.warn('[API] Realtime channels are not yet supported. channel() calls are no-ops.');
+    realtimeWarned = true;
+  }
+  const stub: ChannelStub = {
+    on() {
+      return stub;
+    },
+    subscribe(callback) {
+      if (callback) setTimeout(() => callback('SUBSCRIBED'), 0);
+      return stub;
+    },
+    unsubscribe() {},
+    async send() {},
+  };
+  return stub;
+}
+
 // ─── Main API object (drop-in replacement for supabase client) ───
 
 export const api = {
@@ -663,6 +695,14 @@ export const api = {
       data: json.data,
       error: json.error ? new Error(json.error) : null,
     };
+  },
+
+  channel(name: string): ChannelStub {
+    return createChannelStub(name);
+  },
+
+  removeChannel(_channel: ChannelStub) {
+    // no-op
   },
 
   auth: authClient,

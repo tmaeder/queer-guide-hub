@@ -9,8 +9,8 @@ pub fn parse_csv(csv: &str) -> JsValue {
 }
 
 fn parse(csv: &str) -> Vec<Vec<String>> {
-    let bytes = csv.as_bytes();
-    let len = bytes.len();
+    let chars: Vec<char> = csv.chars().collect();
+    let len = chars.len();
     let mut rows: Vec<Vec<String>> = Vec::new();
     let mut row: Vec<String> = Vec::new();
     let mut field = String::new();
@@ -18,11 +18,11 @@ fn parse(csv: &str) -> Vec<Vec<String>> {
     let mut i = 0;
 
     while i < len {
-        let ch = bytes[i];
+        let ch = chars[i];
 
         if in_quotes {
-            if ch == b'"' {
-                if i + 1 < len && bytes[i + 1] == b'"' {
+            if ch == '"' {
+                if i + 1 < len && chars[i + 1] == '"' {
                     field.push('"');
                     i += 2;
                     continue;
@@ -31,20 +31,20 @@ fn parse(csv: &str) -> Vec<Vec<String>> {
                 i += 1;
                 continue;
             }
-            field.push(ch as char);
+            field.push(ch);
             i += 1;
         } else {
             match ch {
-                b'"' => {
+                '"' => {
                     in_quotes = true;
                     i += 1;
                 }
-                b',' => {
+                ',' => {
                     row.push(field.trim().to_string());
                     field = String::new();
                     i += 1;
                 }
-                b'\n' => {
+                '\n' => {
                     row.push(field.trim().to_string());
                     field = String::new();
                     if row.iter().any(|f| !f.is_empty()) {
@@ -53,7 +53,7 @@ fn parse(csv: &str) -> Vec<Vec<String>> {
                     row = Vec::new();
                     i += 1;
                 }
-                b'\r' if i + 1 < len && bytes[i + 1] == b'\n' => {
+                '\r' if i + 1 < len && chars[i + 1] == '\n' => {
                     row.push(field.trim().to_string());
                     field = String::new();
                     if row.iter().any(|f| !f.is_empty()) {
@@ -63,7 +63,7 @@ fn parse(csv: &str) -> Vec<Vec<String>> {
                     i += 2;
                 }
                 _ => {
-                    field.push(ch as char);
+                    field.push(ch);
                     i += 1;
                 }
             }
@@ -130,5 +130,23 @@ mod tests {
     fn no_trailing_newline() {
         let result = parse("a,b\n1,2");
         assert_eq!(result, vec![vec!["a", "b"], vec!["1", "2"]]);
+    }
+
+    #[test]
+    fn multibyte_utf8_characters() {
+        let result = parse("café,naïve\nBüro,日本語\n");
+        assert_eq!(
+            result,
+            vec![
+                vec!["café", "naïve"],
+                vec!["Büro", "日本語"],
+            ]
+        );
+    }
+
+    #[test]
+    fn quoted_multibyte_with_comma() {
+        let result = parse("\"São Paulo, Brazil\",\"München\"\n");
+        assert_eq!(result, vec![vec!["São Paulo, Brazil", "München"]]);
     }
 }
