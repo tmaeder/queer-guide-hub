@@ -77,12 +77,25 @@ export function VideoManager() {
     if (!confirm('Are you sure you want to delete this video?')) return;
 
     try {
+      // Collect storage paths before DB deletion (cascades renditions)
+      const video = videos.find((v) => v.id === videoId);
+      const storagePaths: string[] = [];
+      if (video?.storage_path) storagePaths.push(video.storage_path);
+      if (video?.poster_image_path) storagePaths.push(video.poster_image_path);
+      if (video?.captions_path) storagePaths.push(video.captions_path);
+      video?.renditions.forEach((r) => {
+        if (r.file_path) storagePaths.push(r.file_path);
+      });
+
       // Delete from database (cascades to renditions)
       const { error } = await api.from('videos').delete().eq('id', videoId);
-
       if (error) throw error;
 
-      // TODO: Delete files from storage
+      // Delete files from storage
+      if (storagePaths.length > 0) {
+        await api.storage.from('videos').remove(storagePaths);
+      }
+
       toast.success('Video deleted successfully');
       loadVideos();
     } catch (error) {

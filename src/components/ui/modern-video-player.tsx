@@ -68,7 +68,6 @@ export function ModernVideoPlayer({
       hlsRef.current = hls;
       hls.loadSource(getVideoUrl(hlsRendition.file_path));
       hls.attachMedia(videoElement);
-      console.log('🎬 Using HLS adaptive streaming');
     } else {
       // Progressive fallback with codec preference - secure clearing
       while (videoElement.firstChild) {

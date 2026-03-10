@@ -32,7 +32,7 @@ export default function Page() {
 
     try {
       const { data, error } = await api
-        .from('cms_pages' as any)
+        .from('cms_pages')
         .select('*')
         .eq('slug', pageSlug)
         .eq('workflow_state', 'published')

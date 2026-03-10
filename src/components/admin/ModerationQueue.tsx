@@ -113,7 +113,7 @@ export function ModerationQueue() {
       if (filters.source) query = query.eq('source', filters.source);
 
       const { data } = await query;
-      const allIds = (data || []).map((f: any) => f.id);
+      const allIds = (data || []).map((f: { id: string }) => f.id);
       setSelectedIds(allIds);
       setSelectAllCount(allIds.length);
     }

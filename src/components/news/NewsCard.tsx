@@ -47,6 +47,7 @@ export const NewsCard = ({
   const navigate = useNavigate();
   const [tags, setTags] = useState<string[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -66,7 +67,9 @@ export const NewsCard = ({
         }
 
         if (data) {
-          const tagNames = data.map((item: any) => item.unified_tags.name);
+          const tagNames = data.map(
+            (item: { unified_tags: { name: string } }) => item.unified_tags.name,
+          );
           setTags(tagNames);
         }
       } catch (error) {
@@ -139,10 +142,10 @@ export const NewsCard = ({
   // Resolve city/country names from IDs
   const linkedCities = (article.city_ids || [])
     .map((id: string) => ({ id, name: cityNames[id] }))
-    .filter((c: any) => c.name);
+    .filter((c): c is { id: string; name: string } => Boolean(c.name));
   const linkedCountries = (article.country_ids || [])
     .map((id: string) => ({ id, name: countryNames[id] }))
-    .filter((c: any) => c.name);
+    .filter((c): c is { id: string; name: string } => Boolean(c.name));
   const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
 
   return (
@@ -157,7 +160,7 @@ export const NewsCard = ({
     >
       <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
-          {article.image_url ? (
+          {article.image_url && !imgError ? (
             <img
               src={article.image_url}
               alt={decodeHtmlEntities(article.title)}
@@ -167,20 +170,7 @@ export const NewsCard = ({
                 objectFit: 'cover',
                 transition: 'transform 0.3s',
               }}
-              onError={(e) => {
-                const target = e.currentTarget;
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent && !parent.querySelector('.news-img-fallback')) {
-                  const fallback = document.createElement('div');
-                  fallback.className = 'news-img-fallback';
-                  fallback.style.cssText =
-                    'width:100%;height:192px;display:flex;align-items:center;justify-content:center;background:#f3f4f6';
-                  fallback.innerHTML =
-                    '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>';
-                  parent.insertBefore(fallback, target);
-                }
-              }}
+              onError={() => setImgError(true)}
             />
           ) : (
             <Box
@@ -390,7 +380,7 @@ export const NewsCard = ({
             onClick={(e) => e.stopPropagation()}
           >
             <MapPin style={{ height: 14, width: 14, flexShrink: 0 }} />
-            {linkedCities.map((city: any, i: number) => (
+            {linkedCities.map((city, i) => (
               <span key={city.id}>
                 <Link
                   to={`/city/${city.id}`}
@@ -401,7 +391,7 @@ export const NewsCard = ({
                 {(i < linkedCities.length - 1 || linkedCountries.length > 0) && ', '}
               </span>
             ))}
-            {linkedCountries.map((country: any, i: number) => (
+            {linkedCountries.map((country, i) => (
               <span key={country.id}>
                 <Link
                   to={`/country/${country.id}`}

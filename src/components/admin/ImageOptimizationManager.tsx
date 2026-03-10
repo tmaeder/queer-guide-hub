@@ -6,20 +6,20 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Play, 
-  RefreshCw, 
-  Download, 
-  FileImage, 
-  HardDrive, 
-  Zap, 
-  CheckCircle, 
+import {
+  Play,
+  RefreshCw,
+  Download,
+  FileImage,
+  HardDrive,
+  Zap,
+  CheckCircle,
   AlertCircle,
   FolderOpen,
   Trash2,
   Eye,
   Clock,
-  Server
+  Server,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -62,7 +62,7 @@ export function ImageOptimizationManager() {
   const [jobs, setJobs] = useState<OptimizationJob[]>([]);
   const [currentJob, setCurrentJob] = useState<OptimizationJob | null>(null);
   const [selectedTab, setSelectedTab] = useState('scan');
-  
+
   const { toast } = useToast();
   const { isAdmin } = useAdminRoles();
 
@@ -70,9 +70,9 @@ export function ImageOptimizationManager() {
   const loadJobs = async () => {
     try {
       const { data, error } = await api.functions.invoke('optimize-images-batch', {
-        body: { action: 'list' }
+        body: { action: 'list' },
       });
-      
+
       if (error) throw error;
       setJobs(data.jobs || []);
     } catch (error) {
@@ -83,32 +83,24 @@ export function ImageOptimizationManager() {
   // Check job status
   const checkJobStatus = async (jobId: string) => {
     try {
-      console.log('🔍 Checking job status for:', jobId);
       const { data, error } = await api.functions.invoke('optimize-images-batch', {
-        body: { action: 'status', jobId }
+        body: { action: 'status', jobId },
       });
-      
-      console.log('📡 Status check response:', { data, error });
-      
+
       if (error) throw error;
-      
+
       const job = data?.job;
-      if (!job) {
-        console.warn('⚠️ No job data received for jobId:', jobId);
-        return null;
-      }
-      
-      console.log('✅ Job status updated:', job);
+      if (!job) return null;
+
       setCurrentJob(job);
-      
+
       // If job is completed or failed, reload the jobs list
       if (job.status === 'completed' || job.status === 'failed') {
         await loadJobs();
       }
-      
+
       return job;
-    } catch (error) {
-      console.error('💥 Failed to check job status:', error);
+    } catch {
       return null;
     }
   };
@@ -133,33 +125,34 @@ export function ImageOptimizationManager() {
 
   const scanForImages = async () => {
     setIsScanning(true);
-    
+
     try {
       // Call the image scanning edge function
       const { data, error } = await api.functions.invoke('scan-project-images');
-      
+
       if (error) throw error;
-      
-      const foundImages: ImageFile[] = data.images.map((img: any) => ({
-        fileName: img.fileName,
-        baseName: img.baseName,
-        originalSize: img.size,
-        bucket: img.bucket,
-        status: 'pending' as const
-      }));
-      
+
+      const foundImages: ImageFile[] = data.images.map(
+        (img: { fileName: string; baseName: string; size: number; bucket: string }) => ({
+          fileName: img.fileName,
+          baseName: img.baseName,
+          originalSize: img.size,
+          bucket: img.bucket,
+          status: 'pending' as const,
+        }),
+      );
+
       setImages(foundImages);
       toast({
-        title: "Scan Complete",
+        title: 'Scan Complete',
         description: `Found ${foundImages.length} images ready for optimization`,
       });
-      
     } catch (error) {
       console.error('Scan error:', error);
       toast({
-        title: "Scan Failed",
-        description: "Failed to scan for images",
-        variant: "destructive",
+        title: 'Scan Failed',
+        description: 'Failed to scan for images',
+        variant: 'destructive',
       });
     } finally {
       setIsScanning(false);
@@ -167,21 +160,13 @@ export function ImageOptimizationManager() {
   };
 
   const startOptimizationJob = async () => {
-    console.log('🚀 Starting optimization job...');
-    
     try {
-      console.log('📡 Calling optimize-images-batch edge function...');
       const { data, error } = await api.functions.invoke('optimize-images-batch', {
-        body: { action: 'start', batchSize: 10 }
+        body: { action: 'start', batchSize: 10 },
       });
-      
-      console.log('📡 Edge function response:', { data, error });
-      
-      if (error) {
-        console.error('❌ Edge function error:', error);
-        throw error;
-      }
-      
+
+      if (error) throw error;
+
       const job = {
         id: data.jobId,
         status: 'pending' as const,
@@ -190,25 +175,21 @@ export function ImageOptimizationManager() {
         successful_images: 0,
         failed_images: 0,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
-      
-      console.log('✅ Job created:', job);
-      
+
       setCurrentJob(job);
       setSelectedTab('jobs');
-      
+
       toast({
-        title: "Optimization Started!",
+        title: 'Optimization Started!',
         description: `Background optimization job started for ${data.totalImages} images. You can close this page and it will continue processing.`,
       });
-      
     } catch (error) {
-      console.error('💥 Failed to start optimization job:', error);
       toast({
-        title: "Failed to Start Optimization",
-        description: `Could not start the optimization job: ${error.message}`,
-        variant: "destructive",
+        title: 'Failed to Start Optimization',
+        description: `Could not start the optimization job: ${error instanceof Error ? error.message : String(error)}`,
+        variant: 'destructive',
       });
     }
   };
@@ -223,11 +204,25 @@ export function ImageOptimizationManager() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />;
-      case 'processing': return <RefreshCw style={{ height: 16, width: 16, color: '#3b82f6', animation: 'spin 1s linear infinite' }} />;
-      case 'failed': return <AlertCircle style={{ height: 16, width: 16, color: '#ef4444' }} />;
-      case 'pending': return <Clock style={{ height: 16, width: 16, color: '#eab308' }} />;
-      default: return <FileImage style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />;
+      case 'completed':
+        return <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />;
+      case 'processing':
+        return (
+          <RefreshCw
+            style={{
+              height: 16,
+              width: 16,
+              color: '#3b82f6',
+              animation: 'spin 1s linear infinite',
+            }}
+          />
+        );
+      case 'failed':
+        return <AlertCircle style={{ height: 16, width: 16, color: '#ef4444' }} />;
+      case 'pending':
+        return <Clock style={{ height: 16, width: 16, color: '#eab308' }} />;
+      default:
+        return <FileImage style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />;
     }
   };
 
@@ -245,22 +240,19 @@ export function ImageOptimizationManager() {
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>🖼️ Image Optimization Manager</Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>Optimize all existing images for better performance</p>
+          <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+            🖼️ Image Optimization Manager
+          </Typography>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            Optimize all existing images for better performance
+          </p>
         </div>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button 
-            variant="outline" 
-            onClick={scanForImages}
-            disabled={isScanning}
-          >
+          <Button variant="outline" onClick={scanForImages} disabled={isScanning}>
             <FolderOpen style={{ height: 16, width: 16, marginRight: 8 }} />
             {isScanning ? 'Scanning...' : 'Scan Images'}
           </Button>
-          <Button 
-            onClick={startOptimizationJob}
-            disabled={currentJob?.status === 'processing'}
-          >
+          <Button onClick={startOptimizationJob} disabled={currentJob?.status === 'processing'}>
             <Server style={{ height: 16, width: 16, marginRight: 8 }} />
             Start Background Optimization
           </Button>
@@ -277,7 +269,14 @@ export function ImageOptimizationManager() {
                 <span>{getJobProgress(currentJob)}%</span>
               </Box>
               <Progress value={getJobProgress(currentJob)} style={{ height: 8 }} />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '0.75rem',
+                  color: 'text.secondary',
+                }}
+              >
                 <span>{currentJob.processed_images} processed</span>
                 <span>{currentJob.successful_images} successful</span>
                 <span>{currentJob.failed_images} failed</span>
@@ -287,7 +286,11 @@ export function ImageOptimizationManager() {
         </Card>
       )}
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Tabs
+        value={selectedTab}
+        onValueChange={setSelectedTab}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+      >
         <TabsList>
           <TabsTrigger value="scan">Images Found ({images.length})</TabsTrigger>
           <TabsTrigger value="jobs">Background Jobs ({jobs.length})</TabsTrigger>
@@ -298,9 +301,20 @@ export function ImageOptimizationManager() {
           {images.length === 0 ? (
             <Card>
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <FileImage style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Images Found</Typography>
-                <Typography sx={{ color: 'text.secondary', mb: 2 }}>Click "Scan Images" to find images in your project</Typography>
+                <FileImage
+                  style={{
+                    height: 48,
+                    width: 48,
+                    margin: '0 auto 16px',
+                    color: 'var(--muted-foreground)',
+                  }}
+                />
+                <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
+                  No Images Found
+                </Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 2 }}>
+                  Click "Scan Images" to find images in your project
+                </Typography>
                 <Button onClick={scanForImages} disabled={isScanning}>
                   <FolderOpen style={{ height: 16, width: 16, marginRight: 8 }} />
                   {isScanning ? 'Scanning...' : 'Scan for Images'}
@@ -316,8 +330,12 @@ export function ImageOptimizationManager() {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <FileImage style={{ height: 20, width: 20, color: '#3b82f6' }} />
                       <div>
-                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{images.length}</Typography>
-                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Images</Typography>
+                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                          {images.length}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                          Total Images
+                        </Typography>
                       </div>
                     </Box>
                   </CardContent>
@@ -331,7 +349,9 @@ export function ImageOptimizationManager() {
                         <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
                           {formatFileSize(images.reduce((sum, img) => sum + img.originalSize, 0))}
                         </Typography>
-                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Total Size</Typography>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                          Total Size
+                        </Typography>
                       </div>
                     </Box>
                   </CardContent>
@@ -343,9 +363,11 @@ export function ImageOptimizationManager() {
                       <Server style={{ height: 20, width: 20, color: '#22c55e' }} />
                       <div>
                         <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-                          {jobs.filter(job => job.status === 'completed').length}
+                          {jobs.filter((job) => job.status === 'completed').length}
                         </Typography>
-                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Completed Jobs</Typography>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                          Completed Jobs
+                        </Typography>
                       </div>
                     </Box>
                   </CardContent>
@@ -357,7 +379,9 @@ export function ImageOptimizationManager() {
                       <Zap style={{ height: 20, width: 20, color: '#f97316' }} />
                       <div>
                         <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>21</Typography>
-                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Files per Image</Typography>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                          Files per Image
+                        </Typography>
                       </div>
                     </Box>
                   </CardContent>
@@ -368,13 +392,26 @@ export function ImageOptimizationManager() {
               <Card>
                 <CardHeader>
                   <CardTitle>Image Files</CardTitle>
-                  <CardDescription>Images found in storage buckets ready for optimization</CardDescription>
+                  <CardDescription>
+                    Images found in storage buckets ready for optimization
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ScrollArea sx={{ height: 384 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                       {images.map((image, index) => (
-                        <Box key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+                        <Box
+                          key={index}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            p: 1.5,
+                            border: 1,
+                            borderColor: 'divider',
+                            borderRadius: 2,
+                          }}
+                        >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             {getStatusIcon(image.status)}
                             <div>
@@ -404,9 +441,20 @@ export function ImageOptimizationManager() {
           {jobs.length === 0 ? (
             <Card>
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Server style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-                <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Background Jobs</Typography>
-                <Typography sx={{ color: 'text.secondary', mb: 2 }}>Start an optimization job to see it here</Typography>
+                <Server
+                  style={{
+                    height: 48,
+                    width: 48,
+                    margin: '0 auto 16px',
+                    color: 'var(--muted-foreground)',
+                  }}
+                />
+                <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
+                  No Background Jobs
+                </Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 2 }}>
+                  Start an optimization job to see it here
+                </Typography>
                 <Button onClick={startOptimizationJob}>
                   <Server style={{ height: 16, width: 16, marginRight: 8 }} />
                   Start Background Optimization
@@ -418,16 +466,30 @@ export function ImageOptimizationManager() {
               {jobs.map((job, index) => (
                 <Card key={index}>
                   <CardHeader>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {getStatusIcon(job.status)}
-                        <CardTitle sx={{ fontSize: '1.125rem' }}>Job {job.id.slice(0, 8)}</CardTitle>
+                        <CardTitle sx={{ fontSize: '1.125rem' }}>
+                          Job {job.id.slice(0, 8)}
+                        </CardTitle>
                       </Box>
-                      <Badge variant={
-                        job.status === 'completed' ? 'default' :
-                        job.status === 'processing' ? 'secondary' :
-                        job.status === 'failed' ? 'destructive' : 'outline'
-                      }>
+                      <Badge
+                        variant={
+                          job.status === 'completed'
+                            ? 'default'
+                            : job.status === 'processing'
+                              ? 'secondary'
+                              : job.status === 'failed'
+                                ? 'destructive'
+                                : 'outline'
+                        }
+                      >
                         {job.status}
                       </Badge>
                     </Box>
@@ -440,7 +502,13 @@ export function ImageOptimizationManager() {
                       {/* Progress bar for active jobs */}
                       {(job.status === 'processing' || job.status === 'pending') && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              fontSize: '0.875rem',
+                            }}
+                          >
                             <span>Processing {job.total_images} images...</span>
                             <span>{getJobProgress(job)}%</span>
                           </Box>
@@ -449,32 +517,57 @@ export function ImageOptimizationManager() {
                       )}
 
                       {/* Stats */}
-                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, textAlign: 'center' }}>
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(4, 1fr)',
+                          gap: 2,
+                          textAlign: 'center',
+                        }}
+                      >
                         <div>
-                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{job.total_images}</Typography>
-                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Total</Typography>
+                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                            {job.total_images}
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                            Total
+                          </Typography>
                         </div>
                         <div>
-                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#2563eb' }}>{job.processed_images}</Typography>
-                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Processed</Typography>
+                          <Typography
+                            sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#2563eb' }}
+                          >
+                            {job.processed_images}
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                            Processed
+                          </Typography>
                         </div>
                         <div>
-                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}>{job.successful_images}</Typography>
-                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Success</Typography>
+                          <Typography
+                            sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}
+                          >
+                            {job.successful_images}
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                            Success
+                          </Typography>
                         </div>
                         <div>
-                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#dc2626' }}>{job.failed_images}</Typography>
-                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Failed</Typography>
+                          <Typography
+                            sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#dc2626' }}
+                          >
+                            {job.failed_images}
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                            Failed
+                          </Typography>
                         </div>
                       </Box>
 
                       {/* Actions */}
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => checkJobStatus(job.id)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => checkJobStatus(job.id)}>
                           <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
                           Refresh
                         </Button>
@@ -503,31 +596,58 @@ export function ImageOptimizationManager() {
               <Alert>
                 <Server style={{ height: 16, width: 16 }} />
                 <AlertDescription>
-                  Optimization runs on the server and continues even if you close this page or refresh.
-                  Jobs process images in batches of 10 to prevent system overload.
+                  Optimization runs on the server and continues even if you close this page or
+                  refresh. Jobs process images in batches of 10 to prevent system overload.
                 </AlertDescription>
               </Alert>
-              
+
               <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
                 <div>
-                  <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>AVIF Quality</Box>
-                  <Box component="input" type="range" min="20" max="80" defaultValue="50" sx={{ width: '100%' }} />
-                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Lower = smaller files, higher = better quality</Typography>
+                  <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                    AVIF Quality
+                  </Box>
+                  <Box
+                    component="input"
+                    type="range"
+                    min="20"
+                    max="80"
+                    defaultValue="50"
+                    sx={{ width: '100%' }}
+                  />
+                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                    Lower = smaller files, higher = better quality
+                  </Typography>
                 </div>
                 <div>
-                  <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>WebP Quality</Box>
-                  <Box component="input" type="range" min="50" max="90" defaultValue="75" sx={{ width: '100%' }} />
-                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Lower = smaller files, higher = better quality</Typography>
+                  <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                    WebP Quality
+                  </Box>
+                  <Box
+                    component="input"
+                    type="range"
+                    min="50"
+                    max="90"
+                    defaultValue="75"
+                    sx={{ width: '100%' }}
+                  />
+                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                    Lower = smaller files, higher = better quality
+                  </Typography>
                 </div>
               </Box>
 
               <div>
-                <Box component="label" sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'block', mb: 1 }}>Responsive Breakpoints</Box>
+                <Box
+                  component="label"
+                  sx={{ fontSize: '0.875rem', fontWeight: 500, display: 'block', mb: 1 }}
+                >
+                  Responsive Breakpoints
+                </Box>
                 <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1 }}>
                   Current: 320px, 640px, 768px, 1024px, 1280px, 1440px, 1920px (21 files per image)
                 </Typography>
               </div>
-              
+
               <Button sx={{ width: '100%' }}>Save Settings</Button>
             </CardContent>
           </Card>

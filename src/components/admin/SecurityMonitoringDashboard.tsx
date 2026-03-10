@@ -13,7 +13,23 @@ interface SecurityEvent {
   id: string;
   user_id: string | null;
   event_type: string;
-  details: any;
+  details: Record<string, unknown>;
+  created_at: string;
+}
+
+interface AuditLog {
+  id: string;
+  admin_user_id: string | null;
+  target_user_id: string | null;
+  action: string;
+  role_name: string;
+  timestamp: string;
+}
+
+interface FailedLoginAttempt {
+  id: string;
+  attempt_type: string;
+  ip_address: string;
   created_at: string;
 }
 
@@ -31,7 +47,6 @@ export function SecurityMonitoringDashboard() {
         console.error('Error fetching security events:', error);
         throw error;
       }
-      console.log('Security events fetched:', data?.length || 0);
       return data as SecurityEvent[];
     },
     refetchInterval: 30000,
@@ -47,7 +62,7 @@ export function SecurityMonitoringDashboard() {
         .limit(20);
 
       if (error) throw error;
-      return data;
+      return data as AuditLog[];
     },
   });
 
@@ -78,7 +93,7 @@ export function SecurityMonitoringDashboard() {
         .limit(10);
 
       if (error) throw error;
-      return data;
+      return data as FailedLoginAttempt[];
     },
   });
 
@@ -292,7 +307,7 @@ export function SecurityMonitoringDashboard() {
                 overflowY: 'auto',
               }}
             >
-              {auditLogs.map((log: any) => (
+              {auditLogs.map((log) => (
                 <Box
                   key={log.id}
                   sx={{
@@ -353,7 +368,7 @@ export function SecurityMonitoringDashboard() {
                 overflowY: 'auto',
               }}
             >
-              {recentFailedLogins.map((attempt: any) => (
+              {recentFailedLogins.map((attempt) => (
                 <Box
                   key={attempt.id}
                   sx={{
