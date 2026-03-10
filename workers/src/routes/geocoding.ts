@@ -1,5 +1,5 @@
 import type { Env } from '../types';
-import { jsonResponse, errorResponse, corsResponse, getAllowedOrigins, getOrigin } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 
 function buildPlaceName(props: Record<string, any>): string {
   const parts: string[] = [];
@@ -41,11 +41,12 @@ export async function handleGeocoding(
   req: Request,
   env: Env,
 ): Promise<Response> {
-  if (req.method === 'OPTIONS') return corsResponse(req, env);
-
-  const origin = getOrigin(req);
-  if (!getAllowedOrigins(env).has(origin)) {
-    return errorResponse('Origin not allowed', 403, req, env);
+  const origin = req.headers.get('Origin') || '';
+  const allowedOrigins = env.ALLOWED_ORIGINS
+    ? new Set(env.ALLOWED_ORIGINS.split(',').map((s) => s.trim()))
+    : new Set(['https://queer.guide', 'https://www.queer.guide', 'http://localhost:5173', 'http://localhost:3000']);
+  if (!allowedOrigins.has(origin)) {
+    return errorResponse('Origin not allowed', 403);
   }
 
   try {
@@ -56,7 +57,7 @@ export async function handleGeocoding(
     }>();
 
     if (!query) {
-      return errorResponse('Query parameter is required', 400, req, env);
+      return errorResponse('Query parameter is required', 400);
     }
 
     let photonUrl: string;
@@ -78,11 +79,9 @@ export async function handleGeocoding(
     return jsonResponse(
       { type: 'FeatureCollection', features: transformedFeatures },
       200,
-      req,
-      env,
     );
   } catch (err) {
     console.error('Geocoding error:', err);
-    return errorResponse('Internal server error', 500, req, env);
+    return errorResponse('Internal server error', 500);
   }
 }

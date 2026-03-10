@@ -1,5 +1,5 @@
 import type { Env } from '../types';
-import { jsonResponse, errorResponse, corsResponse, buildCorsHeaders, getOrigin } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 
 const MARKER = '452012';
 const IATA_RE = /^[A-Z]{3}$/;
@@ -152,8 +152,6 @@ export async function handleTravelDeals(
   req: Request,
   env: Env,
 ): Promise<Response> {
-  if (req.method === 'OPTIONS') return corsResponse(req, env);
-
   try {
     let origin: string, destination: string | undefined, type: string, currency: string, limit: number;
 
@@ -174,13 +172,13 @@ export async function handleTravelDeals(
     }
 
     if (!origin || !IATA_RE.test(origin.toUpperCase().trim())) {
-      return errorResponse('Valid origin IATA code is required (e.g. "ZRH")', 400, req, env);
+      return errorResponse('Valid origin IATA code is required (e.g. "ZRH")', 400);
     }
     origin = origin.toUpperCase().trim();
     if (destination) destination = destination.toUpperCase().trim();
 
     if (!env.TRAVELPAYOUTS_API_TOKEN) {
-      return errorResponse('Internal server error', 500, req, env);
+      return errorResponse('Internal server error', 500);
     }
 
     let deals: any[];
@@ -190,16 +188,11 @@ export async function handleTravelDeals(
       deals = await fetchFlightDeals(env.TRAVELPAYOUTS_API_TOKEN, origin, destination, currency, limit);
     }
 
-    return new Response(JSON.stringify({ success: true, deals, origin, destination }), {
-      status: 200,
-      headers: {
-        ...buildCorsHeaders(getOrigin(req), env),
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=1800, s-maxage=1800',
-      },
+    return jsonResponse({ success: true, deals, origin, destination }, 200, {
+      'Cache-Control': 'public, max-age=1800, s-maxage=1800',
     });
   } catch (err) {
     console.error('Travel deals error:', err);
-    return errorResponse('Internal server error', 500, req, env);
+    return errorResponse('Internal server error', 500);
   }
 }

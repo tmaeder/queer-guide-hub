@@ -3,7 +3,7 @@
  * Light DB usage: single RPC call with fallback to a table scan.
  */
 import type { Env } from '../types';
-import { jsonResponse, errorResponse } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 import { supabaseRpc, supabaseRest } from '../supabase-rest';
 import { haversineKm } from '../lib/geo';
 
@@ -30,7 +30,7 @@ export async function handleOriginAirport(req: Request, env: Env): Promise<Respo
   }
 
   if (latitude == null || longitude == null || isNaN(latitude) || isNaN(longitude)) {
-    return errorResponse('latitude and longitude are required', 400, req, env);
+    return errorResponse('latitude and longitude are required', 400);
   }
 
   // Try RPC first
@@ -46,8 +46,6 @@ export async function handleOriginAirport(req: Request, env: Env): Promise<Respo
       return jsonResponse(
         { iata: result.iata_code, city: result.city_name, country: result.country_code },
         200,
-        req,
-        env,
       );
     }
   }
@@ -59,7 +57,7 @@ export async function handleOriginAirport(req: Request, env: Env): Promise<Respo
   );
 
   if (fetchError || !airports?.length) {
-    return errorResponse('Could not find nearest airport', 500, req, env);
+    return errorResponse('Could not find nearest airport', 500);
   }
 
   let best: (Airport & { dist: number }) | null = null;
@@ -73,7 +71,5 @@ export async function handleOriginAirport(req: Request, env: Env): Promise<Respo
   return jsonResponse(
     { iata: best!.iata_code, city: best!.city_name, country: best!.country_code },
     200,
-    req,
-    env,
   );
 }

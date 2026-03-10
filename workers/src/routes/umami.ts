@@ -3,7 +3,7 @@
  * Records page views and custom events to the umami schema.
  */
 import type { Env } from '../types';
-import { jsonResponse, errorResponse, buildCorsHeaders, getOrigin } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 import { supabaseRpc, supabaseRest } from '../supabase-rest';
 
 interface AnalyticsPayload {
@@ -22,13 +22,12 @@ interface AnalyticsPayload {
 }
 
 export async function handleUmamiAnalytics(req: Request, env: Env): Promise<Response> {
-  if (req.method !== 'POST') return errorResponse('Method not allowed', 405, req, env);
+  if (req.method !== 'POST') return errorResponse('Method not allowed', 405);
 
   // Check origin is allowed
-  const origin = getOrigin(req);
-  const cors = buildCorsHeaders(origin, env);
-  if (!origin || !cors['Access-Control-Allow-Origin']) {
-    return jsonResponse({ success: false, error: 'Forbidden' }, 403, req, env);
+  const origin = req.headers.get('Origin') || '';
+  if (!origin) {
+    return jsonResponse({ success: false, error: 'Forbidden' }, 403);
   }
 
   try {
@@ -42,7 +41,7 @@ export async function handleUmamiAnalytics(req: Request, env: Env): Promise<Resp
     );
 
     if (!websites?.length) {
-      return errorResponse('Website not found', 500, req, env);
+      return errorResponse('Website not found', 500);
     }
 
     const websiteId = websites[0].website_id;
@@ -64,7 +63,7 @@ export async function handleUmamiAnalytics(req: Request, env: Env): Promise<Resp
     );
 
     if (sessionError) {
-      return errorResponse('Failed to create session', 500, req, env);
+      return errorResponse('Failed to create session', 500);
     }
 
     // Parse URL
@@ -111,7 +110,7 @@ export async function handleUmamiAnalytics(req: Request, env: Env): Promise<Resp
     );
 
     if (eventError) {
-      return errorResponse('Failed to create event', 500, req, env);
+      return errorResponse('Failed to create event', 500);
     }
 
     // Store custom event data
@@ -145,9 +144,9 @@ export async function handleUmamiAnalytics(req: Request, env: Env): Promise<Resp
       });
     }
 
-    return jsonResponse({ success: true, eventId }, 200, req, env);
+    return jsonResponse({ success: true, eventId }, 200);
   } catch (err) {
     console.error('Umami analytics error:', err);
-    return errorResponse('Failed to process analytics event', 500, req, env);
+    return errorResponse('Failed to process analytics event', 500);
   }
 }

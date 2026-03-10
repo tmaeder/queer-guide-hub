@@ -1,47 +1,43 @@
 import type { Env } from '../types';
-import { jsonResponse, errorResponse, corsResponse } from '../cors';
+import { jsonResponse, errorResponse } from '../lib/response';
 
 export async function handleGetTurnstileConfig(
   req: Request,
   env: Env,
 ): Promise<Response> {
-  if (req.method === 'OPTIONS') return corsResponse(req, env);
-
   // Verify authentication via JWT
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader) return errorResponse('Authentication required', 401, req, env);
+  if (!authHeader) return errorResponse('Authentication required', 401);
 
   const token = authHeader.replace('Bearer ', '');
   try {
     const { verifyToken } = await import('../lib/jwt');
     const payload = await verifyToken(token, env.JWT_SECRET);
-    if (!payload) return errorResponse('Invalid authentication', 401, req, env);
+    if (!payload) return errorResponse('Invalid authentication', 401);
   } catch {
-    return errorResponse('Authentication failed', 401, req, env);
+    return errorResponse('Authentication failed', 401);
   }
 
   if (!env.TURNSTILE_SITE_KEY) {
-    return errorResponse('Turnstile not configured', 500, req, env);
+    return errorResponse('Turnstile not configured', 500);
   }
 
-  return jsonResponse({ siteKey: env.TURNSTILE_SITE_KEY, version: '1.0' }, 200, req, env);
+  return jsonResponse({ siteKey: env.TURNSTILE_SITE_KEY, version: '1.0' }, 200);
 }
 
 export async function handleVerifyTurnstile(
   req: Request,
   env: Env,
 ): Promise<Response> {
-  if (req.method === 'OPTIONS') return corsResponse(req, env);
-
   try {
     const { token, action = 'login' } = await req.json<{ token?: string; action?: string }>();
 
     if (!token) {
-      return jsonResponse({ success: false, error: 'Token is required' }, 400, req, env);
+      return jsonResponse({ success: false, error: 'Token is required' }, 400);
     }
 
     if (!env.TURNSTILE_SECRET_KEY) {
-      return jsonResponse({ success: false, error: 'Turnstile not configured' }, 500, req, env);
+      return jsonResponse({ success: false, error: 'Turnstile not configured' }, 500);
     }
 
     const clientIP =
@@ -70,19 +66,15 @@ export async function handleVerifyTurnstile(
       return jsonResponse(
         { success: true, message: 'Captcha verified successfully', action: verifyResult.action },
         200,
-        req,
-        env,
       );
     }
 
     return jsonResponse(
       { success: false, error: 'Captcha verification failed', errorCodes: verifyResult['error-codes'] },
       400,
-      req,
-      env,
     );
   } catch (err) {
     console.error('Turnstile verification error:', err);
-    return jsonResponse({ success: false, error: 'Internal server error' }, 500, req, env);
+    return jsonResponse({ success: false, error: 'Internal server error' }, 500);
   }
 }
