@@ -15,36 +15,38 @@ import Switch from '@mui/material/Switch';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import ErrorIcon from '@mui/icons-material/Error';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import EventIcon from '@mui/icons-material/Event';
-import HotelIcon from '@mui/icons-material/Hotel';
-import PublicIcon from '@mui/icons-material/Public';
-import ArticleIcon from '@mui/icons-material/Article';
-import LocationCityIcon from '@mui/icons-material/LocationCity';
+import {
+  Play,
+  RefreshCw,
+  Clock,
+  AlertCircle,
+  CheckCircle2,
+  Store,
+  Calendar,
+  Hotel,
+  Globe,
+  FileText,
+  Building2,
+} from 'lucide-react';
 import { useImportHub, ScrapeSource, ScrapeRun } from '@/hooks/useImportHub';
 
 const CONTENT_TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; label: string }> =
   {
-    products: { icon: <StorefrontIcon fontSize="small" />, color: '#9c27b0', label: 'Products' },
-    events: { icon: <EventIcon fontSize="small" />, color: '#2196f3', label: 'Events' },
+    products: { icon: <Store size={16} />, color: '#9c27b0', label: 'Products' },
+    events: { icon: <Calendar size={16} />, color: '#2196f3', label: 'Events' },
     accommodations: {
-      icon: <HotelIcon fontSize="small" />,
+      icon: <Hotel size={16} />,
       color: '#ff9800',
       label: 'Accommodations',
     },
-    cities: { icon: <LocationCityIcon fontSize="small" />, color: '#4caf50', label: 'Cities' },
+    cities: { icon: <Building2 size={16} />, color: '#4caf50', label: 'Cities' },
     queer_villages: {
-      icon: <LocationCityIcon fontSize="small" />,
+      icon: <Building2 size={16} />,
       color: '#00bcd4',
       label: 'Queer Villages',
     },
-    news: { icon: <ArticleIcon fontSize="small" />, color: '#f44336', label: 'News' },
-    countries: { icon: <PublicIcon fontSize="small" />, color: '#607d8b', label: 'Countries' },
+    news: { icon: <FileText size={16} />, color: '#f44336', label: 'News' },
+    countries: { icon: <Globe size={16} />, color: '#607d8b', label: 'Countries' },
   };
 
 function formatRelativeTime(date: string | null): string {
@@ -141,12 +143,17 @@ export const ScrapeSourcesDashboard: React.FC = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={loadData} size="small">
+          <Button
+            variant="outlined"
+            startIcon={<RefreshCw size={16} />}
+            onClick={loadData}
+            size="small"
+          >
             Refresh
           </Button>
           <Button
             variant="contained"
-            startIcon={loading ? <CircularProgress size={16} /> : <ScheduleIcon />}
+            startIcon={loading ? <CircularProgress size={16} /> : <Clock size={16} />}
             onClick={handleTriggerAll}
             disabled={loading}
             size="small"
@@ -260,7 +267,7 @@ export const ScrapeSourcesDashboard: React.FC = () => {
                     {hasError ? (
                       <Tooltip title={source.last_error || 'Unknown error'}>
                         <Chip
-                          icon={<ErrorIcon />}
+                          icon={<AlertCircle size={16} />}
                           label={`${source.consecutive_failures} fails`}
                           size="small"
                           color="error"
@@ -270,7 +277,7 @@ export const ScrapeSourcesDashboard: React.FC = () => {
                       </Tooltip>
                     ) : source.last_success_at ? (
                       <Chip
-                        icon={<CheckCircleIcon />}
+                        icon={<CheckCircle2 size={16} />}
                         label="OK"
                         size="small"
                         color="success"
@@ -303,7 +310,7 @@ export const ScrapeSourcesDashboard: React.FC = () => {
                         {triggeringSlug === source.slug ? (
                           <CircularProgress size={16} />
                         ) : (
-                          <PlayArrowIcon fontSize="small" />
+                          <Play size={16} />
                         )}
                       </IconButton>
                     </Tooltip>

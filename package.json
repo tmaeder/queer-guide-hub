@@ -33,7 +33,6 @@
     "@bigheads/core": "^0.3.3",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.7",
     "@protomaps/basemaps": "^5.7.0",
     "@radix-ui/react-slot": "^1.1.0",

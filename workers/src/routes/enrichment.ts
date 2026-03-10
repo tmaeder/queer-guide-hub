@@ -9,6 +9,7 @@ import type { Env, AuthUser } from '../types';
 import { requireAuth, requireAdmin } from '../middleware/auth';
 import { chatCompletion } from '../lib/openai';
 import { haversineKm, cleanContentText, resolveCountryName } from '../lib/geo';
+import { sanitizeIdentifier } from '../lib/text-utils';
 
 type AppEnv = { Bindings: Env; Variables: { user: AuthUser } };
 
@@ -18,10 +19,6 @@ const enrichment = new Hono<AppEnv>();
 enrichment.use('*', requireAuth as any, requireAdmin as any);
 
 // ─── Helpers ──────────────────────────────────────────────────────────
-
-function sanitizeIdentifier(name: string): string {
-  return name.replace(/[^a-zA-Z0-9_]/g, '');
-}
 
 const resolveCountryAlias = resolveCountryName;
 
