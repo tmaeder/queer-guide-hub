@@ -17,7 +17,10 @@
  *   api.functions.invoke('fetch-news', { body: { ... } })
  */
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const SUPABASE_URL = 'https://xqeacpakadqfxjxjcewc.supabase.co';
+const SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxZWFjcGFrYWRxZnhqeGpjZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0Mzk1MDQsImV4cCI6MjA2ODAxNTUwNH0.o38QZPRBDyi52MWrMHT2qMvByx1z_u_Ox_r5rmRBxK8';
+const API_URL = import.meta.env.VITE_API_URL || SUPABASE_URL;
 
 // ─── Session management ───
 
@@ -77,23 +80,42 @@ loadSession();
 
 // ─── HTTP helpers ───
 
+const isSupabase = API_URL.includes('supabase.co');
+
 async function getAccessToken(): Promise<string | null> {
   if (!currentSession) return null;
 
   // Refresh if token is about to expire (within 60s)
   if (currentSession.expires_at < Date.now() + 60_000) {
     try {
-      const resp = await fetch(`${API_URL}/auth/refresh`, {
+      const refreshUrl = isSupabase
+        ? `${API_URL}/auth/v1/token?grant_type=refresh_token`
+        : `${API_URL}/auth/refresh`;
+      const refreshHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (isSupabase) refreshHeaders['apikey'] = SUPABASE_ANON_KEY;
+      const resp = await fetch(refreshUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: refreshHeaders,
         body: JSON.stringify({ refresh_token: currentSession.refresh_token }),
       });
       if (resp.ok) {
-        const { data } = await resp.json();
-        const newSession: Session = {
-          ...data.session,
-          expires_at: Date.now() + data.session.expires_in * 1000,
-        };
+        const json = await resp.json();
+        let newSession: Session;
+        if (isSupabase) {
+          // Supabase returns {access_token, refresh_token, expires_in, ...} directly
+          newSession = {
+            access_token: json.access_token,
+            refresh_token: json.refresh_token,
+            expires_in: json.expires_in,
+            expires_at: Date.now() + json.expires_in * 1000,
+          };
+          if (json.user) currentUser = json.user;
+        } else {
+          newSession = {
+            ...json.data.session,
+            expires_at: Date.now() + json.data.session.expires_in * 1000,
+          };
+        }
         saveSession(newSession, currentUser);
         notifyListeners('TOKEN_REFRESHED');
       } else {
@@ -116,7 +138,10 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<Respon
     'Content-Type': 'application/json',
     ...((options.headers as Record<string, string>) || {}),
   };
-  if (token) {
+  if (isSupabase) {
+    headers['apikey'] = SUPABASE_ANON_KEY;
+    headers['Authorization'] = `Bearer ${token || SUPABASE_ANON_KEY}`;
+  } else if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
@@ -137,6 +162,7 @@ class QueryBuilder<T = unknown> {
   private body: unknown = undefined;
   private singleRow = false;
   private headOnly = false;
+  private countMode: string | null = null;
   private extraHeaders: Record<string, string> = {};
 
   constructor(table: string) {
@@ -148,7 +174,7 @@ class QueryBuilder<T = unknown> {
     opts?: { count?: 'exact' | 'planned' | 'estimated'; head?: boolean },
   ) {
     this.params.set('select', columns);
-    if (opts?.count) this.params.set('count', opts.count);
+    if (opts?.count) this.countMode = opts.count;
     if (opts?.head) this.headOnly = true;
     return this;
   }
@@ -234,8 +260,9 @@ class QueryBuilder<T = unknown> {
   }
 
   or(filters: string) {
-    // Simplified — pass through as a query param
-    this.params.set('or', filters);
+    // PostgREST expects or=(filter1,filter2) with parentheses
+    const wrapped = filters.startsWith('(') ? filters : `(${filters})`;
+    this.params.set('or', wrapped);
     return this;
   }
 
@@ -303,46 +330,114 @@ class QueryBuilder<T = unknown> {
   }
 
   private async execute(): Promise<{ data: T | T[] | null; error: Error | null; count?: number }> {
-    let path: string;
+    const restPrefix = isSupabase ? '/rest/v1' : '/rest';
+    const qs = this.params.toString();
+    const path = `${restPrefix}/${this.table}${qs ? `?${qs}` : ''}`;
+
+    // Build Prefer header parts for Supabase
+    const preferParts: string[] = [];
+    if (isSupabase && this.countMode) {
+      preferParts.push(`count=${this.countMode}`);
+    }
+    // Include any Prefer value already set in extraHeaders (e.g., upsert's resolution=merge-duplicates)
+    if (this.extraHeaders['Prefer']) {
+      preferParts.push(this.extraHeaders['Prefer']);
+      delete this.extraHeaders['Prefer'];
+    }
+
     let fetchOpts: RequestInit;
 
-    if (this.method === 'GET') {
-      const qs = this.params.toString();
-      path = `/rest/${this.table}${qs ? `?${qs}` : ''}`;
-      fetchOpts = { method: 'GET' };
+    if (this.headOnly && isSupabase) {
+      // HEAD request for count-only queries
+      fetchOpts = {
+        method: 'HEAD',
+        headers: {
+          ...this.extraHeaders,
+          ...(preferParts.length ? { Prefer: preferParts.join(', ') } : {}),
+        },
+      };
+    } else if (this.method === 'GET') {
+      fetchOpts = {
+        method: 'GET',
+        headers: {
+          ...this.extraHeaders,
+          ...(preferParts.length ? { Prefer: preferParts.join(', ') } : {}),
+        },
+      };
     } else if (this.method === 'POST') {
-      const qs = this.params.toString();
-      path = `/rest/${this.table}${qs ? `?${qs}` : ''}`;
+      if (isSupabase) preferParts.push('return=representation');
       fetchOpts = {
         method: 'POST',
         body: JSON.stringify(this.body),
-        headers: this.extraHeaders,
+        headers: {
+          ...this.extraHeaders,
+          ...(preferParts.length ? { Prefer: preferParts.join(', ') } : {}),
+        },
       };
     } else if (this.method === 'PATCH') {
-      const qs = this.params.toString();
-      path = `/rest/${this.table}${qs ? `?${qs}` : ''}`;
+      if (isSupabase) preferParts.push('return=representation');
       fetchOpts = {
         method: 'PATCH',
         body: JSON.stringify(this.body),
+        headers: {
+          ...this.extraHeaders,
+          ...(preferParts.length ? { Prefer: preferParts.join(', ') } : {}),
+        },
       };
     } else {
       // DELETE
-      const qs = this.params.toString();
-      path = `/rest/${this.table}${qs ? `?${qs}` : ''}`;
-      fetchOpts = { method: 'DELETE' };
+      fetchOpts = { method: 'DELETE', headers: this.extraHeaders };
     }
 
     const resp = await apiFetch(path, fetchOpts);
+
+    if (!resp.ok) {
+      const errorBody = (await resp.json().catch(() => ({}))) as Record<string, string>;
+      return {
+        data: null,
+        error: new Error(errorBody?.message || errorBody?.error || `HTTP ${resp.status}`),
+      };
+    }
+
+    if (isSupabase) {
+      // Parse count from Content-Range header (e.g., "0-9/100" or "*/100")
+      const contentRange = resp.headers.get('content-range');
+      let count: number | undefined;
+      if (contentRange) {
+        const total = contentRange.split('/')[1];
+        if (total && total !== '*') {
+          count = parseInt(total, 10);
+          if (Number.isNaN(count)) count = undefined;
+        }
+      }
+
+      // HEAD requests return no body
+      if (this.headOnly) {
+        return { data: null, error: null, count };
+      }
+
+      // Supabase PostgREST returns raw arrays/objects directly
+      const raw = (await resp.json()) as T | T[];
+      let data = raw;
+
+      if (this.singleRow && Array.isArray(data)) {
+        data = data.length > 0 ? (data[0] as T) : (null as T);
+      }
+
+      return { data, error: null, count };
+    }
+
+    // Workers backend returns {data, error, count} wrapper
     const json = (await resp.json()) as {
       data: T | T[] | null;
       error: string | null;
       count?: number;
     };
 
-    if (!resp.ok || json.error) {
+    if (json.error) {
       return {
         data: null,
-        error: new Error(json.error || `HTTP ${resp.status}`),
+        error: new Error(json.error),
         count: json.count,
       };
     }
@@ -360,41 +455,68 @@ class QueryBuilder<T = unknown> {
 
 const storageClient = {
   from(bucket: string) {
+    const storageBase = isSupabase ? `${API_URL}/storage/v1/object` : `${API_URL}/storage`;
+
+    function storageHeaders(token: string | null): Record<string, string> {
+      const h: Record<string, string> = {};
+      if (isSupabase) h['apikey'] = SUPABASE_ANON_KEY;
+      if (token) h['Authorization'] = `Bearer ${token}`;
+      else if (isSupabase) h['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+      return h;
+    }
+
     return {
       async upload(path: string, file: File | Blob) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('path', path);
+        if (!isSupabase) formData.append('path', path);
 
         const token = await getAccessToken();
-        const resp = await fetch(`${API_URL}/storage/${bucket}/upload`, {
+        const uploadUrl = isSupabase
+          ? `${storageBase}/${bucket}/${path}`
+          : `${storageBase}/${bucket}/upload`;
+        const resp = await fetch(uploadUrl, {
           method: 'POST',
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: storageHeaders(token),
           body: formData,
         });
 
-        const json = (await resp.json()) as { data: unknown; error: string | null };
+        const json = (await resp.json()) as { data?: unknown; error?: string; Key?: string };
         return {
-          data: json.data,
-          error: json.error ? new Error(json.error) : null,
+          data: json.data || json.Key || null,
+          error: json.error
+            ? new Error(json.error)
+            : !resp.ok
+              ? new Error(`HTTP ${resp.status}`)
+              : null,
         };
       },
 
       getPublicUrl(path: string) {
-        return {
-          data: {
-            publicUrl: `${API_URL}/storage/${bucket}/public/${path}`,
-          },
-        };
+        const publicUrl = isSupabase
+          ? `${API_URL}/storage/v1/object/public/${bucket}/${path}`
+          : `${storageBase}/${bucket}/public/${path}`;
+        return { data: { publicUrl } };
       },
 
       async remove(paths: string[]) {
         const token = await getAccessToken();
+        if (isSupabase) {
+          const resp = await fetch(`${storageBase}/${bucket}`, {
+            method: 'DELETE',
+            headers: { ...storageHeaders(token), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prefixes: paths }),
+          });
+          return {
+            data: null,
+            error: !resp.ok ? new Error('Failed to delete some files') : null,
+          };
+        }
         const results = await Promise.all(
           paths.map((p) =>
-            fetch(`${API_URL}/storage/${bucket}/${p}`, {
+            fetch(`${storageBase}/${bucket}/${p}`, {
               method: 'DELETE',
-              headers: token ? { Authorization: `Bearer ${token}` } : {},
+              headers: storageHeaders(token),
             }),
           ),
         );
@@ -407,8 +529,11 @@ const storageClient = {
 
       async download(path: string) {
         const token = await getAccessToken();
-        const resp = await fetch(`${API_URL}/storage/${bucket}/${path}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        const downloadUrl = isSupabase
+          ? `${storageBase}/${bucket}/${path}`
+          : `${storageBase}/${bucket}/${path}`;
+        const resp = await fetch(downloadUrl, {
+          headers: storageHeaders(token),
         });
         if (!resp.ok) {
           return { data: null, error: new Error(`Download failed: ${resp.status}`) };
@@ -441,70 +566,102 @@ const authClient = {
     password: string;
     options?: { data?: Record<string, unknown>; emailRedirectTo?: string };
   }) {
-    const resp = await fetch(`${API_URL}/auth/signup`, {
+    const signupUrl = isSupabase ? `${API_URL}/auth/v1/signup` : `${API_URL}/auth/signup`;
+    const signupHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (isSupabase) signupHeaders['apikey'] = SUPABASE_ANON_KEY;
+    const resp = await fetch(signupUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: signupHeaders,
       body: JSON.stringify({
         email: credentials.email,
         password: credentials.password,
-        metadata: credentials.options?.data,
+        ...(isSupabase
+          ? { data: credentials.options?.data }
+          : { metadata: credentials.options?.data }),
       }),
     });
 
-    const json = (await resp.json()) as {
-      data?: { user: AuthUser; session: Session };
-      error?: string;
-    };
+    const json = await resp.json();
 
     if (!resp.ok || json.error) {
       return {
         data: { user: null, session: null },
-        error: { message: json.error || 'Signup failed' },
+        error: { message: json.error || json.error_description || json.msg || 'Signup failed' },
       };
     }
 
-    const session = {
-      ...json.data!.session,
-      expires_at: Date.now() + json.data!.session.expires_in * 1000,
-    };
-    saveSession(session, json.data!.user);
+    let user: AuthUser;
+    let session: Session;
+    if (isSupabase) {
+      // Supabase returns {access_token, refresh_token, expires_in, user, ...} directly
+      user = json.user;
+      session = {
+        access_token: json.access_token,
+        refresh_token: json.refresh_token,
+        expires_in: json.expires_in,
+        expires_at: Date.now() + json.expires_in * 1000,
+      };
+    } else {
+      user = json.data!.user;
+      session = {
+        ...json.data!.session,
+        expires_at: Date.now() + json.data!.session.expires_in * 1000,
+      };
+    }
+    saveSession(session, user);
     notifyListeners('SIGNED_IN');
 
-    return { data: { user: json.data!.user, session }, error: null };
+    return { data: { user, session }, error: null };
   },
 
   async signInWithPassword(credentials: { email: string; password: string }) {
-    const resp = await fetch(`${API_URL}/auth/signin`, {
+    const signinUrl = isSupabase
+      ? `${API_URL}/auth/v1/token?grant_type=password`
+      : `${API_URL}/auth/signin`;
+    const signinHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (isSupabase) signinHeaders['apikey'] = SUPABASE_ANON_KEY;
+    const resp = await fetch(signinUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: signinHeaders,
       body: JSON.stringify(credentials),
     });
 
-    const json = (await resp.json()) as {
-      data?: { user: AuthUser; session: Session };
-      error?: string;
-    };
+    const json = await resp.json();
 
     if (!resp.ok || json.error) {
       return {
         data: { user: null, session: null },
-        error: { message: json.error || 'Login failed' },
+        error: { message: json.error || json.error_description || json.msg || 'Login failed' },
       };
     }
 
-    const session = {
-      ...json.data!.session,
-      expires_at: Date.now() + json.data!.session.expires_in * 1000,
-    };
-    saveSession(session, json.data!.user);
+    let user: AuthUser;
+    let session: Session;
+    if (isSupabase) {
+      user = json.user;
+      session = {
+        access_token: json.access_token,
+        refresh_token: json.refresh_token,
+        expires_in: json.expires_in,
+        expires_at: Date.now() + json.expires_in * 1000,
+      };
+    } else {
+      user = json.data!.user;
+      session = {
+        ...json.data!.session,
+        expires_at: Date.now() + json.data!.session.expires_in * 1000,
+      };
+    }
+    saveSession(session, user);
     notifyListeners('SIGNED_IN');
 
-    return { data: { user: json.data!.user, session }, error: null };
+    return { data: { user, session }, error: null };
   },
 
   async signOut() {
     if (currentSession) {
-      await apiFetch('/auth/signout', { method: 'POST' }).catch(() => {});
+      const signoutPath = isSupabase ? '/auth/v1/logout' : '/auth/signout';
+      await apiFetch(signoutPath, { method: 'POST' }).catch(() => {});
     }
     saveSession(null, null);
     notifyListeners('SIGNED_OUT');
@@ -612,7 +769,11 @@ const functionsClient = {
       method?: string;
     },
   ) {
-    const resolvedPath = ROUTE_MAP[functionName] || functionName;
+    // For Supabase, use the original function name via /functions/v1/
+    // For Workers, use the ROUTE_MAP to resolve grouped paths
+    const resolvedPath = isSupabase
+      ? `functions/v1/${functionName}`
+      : ROUTE_MAP[functionName] || functionName;
     const method = options?.method || (options?.body ? 'POST' : 'GET');
     const token = await getAccessToken();
 
@@ -620,7 +781,10 @@ const functionsClient = {
       'Content-Type': 'application/json',
       ...(options?.headers || {}),
     };
-    if (token && !headers['Authorization']) {
+    if (isSupabase) {
+      headers['apikey'] = SUPABASE_ANON_KEY;
+      headers['Authorization'] = `Bearer ${token || SUPABASE_ANON_KEY}`;
+    } else if (token && !headers['Authorization']) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
@@ -685,10 +849,24 @@ export const api = {
   },
 
   async rpc(functionName: string, params?: Record<string, unknown>) {
-    const resp = await apiFetch(`/rpc/${functionName}`, {
+    const rpcPrefix = isSupabase ? '/rest/v1/rpc' : '/rpc';
+    const resp = await apiFetch(`${rpcPrefix}/${functionName}`, {
       method: 'POST',
       body: JSON.stringify(params || {}),
     });
+
+    if (!resp.ok) {
+      const errorBody = (await resp.json().catch(() => ({}))) as Record<string, string>;
+      return {
+        data: null,
+        error: new Error(errorBody?.message || errorBody?.error || `HTTP ${resp.status}`),
+      };
+    }
+
+    if (isSupabase) {
+      const data = await resp.json();
+      return { data, error: null };
+    }
 
     const json = (await resp.json()) as { data: unknown; error: string | null };
     return {
