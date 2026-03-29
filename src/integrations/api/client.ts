@@ -162,6 +162,7 @@ class QueryBuilder<T = unknown> {
   private body: unknown = undefined;
   private singleRow = false;
   private headOnly = false;
+  private countMode: string | null = null;
   private extraHeaders: Record<string, string> = {};
 
   constructor(table: string) {
@@ -173,7 +174,7 @@ class QueryBuilder<T = unknown> {
     opts?: { count?: 'exact' | 'planned' | 'estimated'; head?: boolean },
   ) {
     this.params.set('select', columns);
-    if (opts?.count) this.params.set('count', opts.count);
+    if (opts?.count) this.countMode = opts.count;
     if (opts?.head) this.headOnly = true;
     return this;
   }
@@ -259,8 +260,9 @@ class QueryBuilder<T = unknown> {
   }
 
   or(filters: string) {
-    // Simplified — pass through as a query param
-    this.params.set('or', filters);
+    // PostgREST expects or=(filter1,filter2) with parentheses
+    const wrapped = filters.startsWith('(') ? filters : `(${filters})`;
+    this.params.set('or', wrapped);
     return this;
   }
 
@@ -329,37 +331,62 @@ class QueryBuilder<T = unknown> {
 
   private async execute(): Promise<{ data: T | T[] | null; error: Error | null; count?: number }> {
     const restPrefix = isSupabase ? '/rest/v1' : '/rest';
-    let path: string;
+    const qs = this.params.toString();
+    const path = `${restPrefix}/${this.table}${qs ? `?${qs}` : ''}`;
+
+    // Build Prefer header parts for Supabase
+    const preferParts: string[] = [];
+    if (isSupabase && this.countMode) {
+      preferParts.push(`count=${this.countMode}`);
+    }
+    // Include any Prefer value already set in extraHeaders (e.g., upsert's resolution=merge-duplicates)
+    if (this.extraHeaders['Prefer']) {
+      preferParts.push(this.extraHeaders['Prefer']);
+      delete this.extraHeaders['Prefer'];
+    }
+
     let fetchOpts: RequestInit;
 
-    if (this.method === 'GET') {
-      const qs = this.params.toString();
-      path = `${restPrefix}/${this.table}${qs ? `?${qs}` : ''}`;
-      fetchOpts = { method: 'GET' };
+    if (this.headOnly && isSupabase) {
+      // HEAD request for count-only queries
+      fetchOpts = {
+        method: 'HEAD',
+        headers: {
+          ...this.extraHeaders,
+          ...(preferParts.length ? { Prefer: preferParts.join(', ') } : {}),
+        },
+      };
+    } else if (this.method === 'GET') {
+      fetchOpts = {
+        method: 'GET',
+        headers: {
+          ...this.extraHeaders,
+          ...(preferParts.length ? { Prefer: preferParts.join(', ') } : {}),
+        },
+      };
     } else if (this.method === 'POST') {
-      const qs = this.params.toString();
-      path = `${restPrefix}/${this.table}${qs ? `?${qs}` : ''}`;
+      if (isSupabase) preferParts.push('return=representation');
       fetchOpts = {
         method: 'POST',
         body: JSON.stringify(this.body),
         headers: {
           ...this.extraHeaders,
-          ...(isSupabase ? { Prefer: 'return=representation' } : {}),
+          ...(preferParts.length ? { Prefer: preferParts.join(', ') } : {}),
         },
       };
     } else if (this.method === 'PATCH') {
-      const qs = this.params.toString();
-      path = `${restPrefix}/${this.table}${qs ? `?${qs}` : ''}`;
+      if (isSupabase) preferParts.push('return=representation');
       fetchOpts = {
         method: 'PATCH',
         body: JSON.stringify(this.body),
-        headers: isSupabase ? { Prefer: 'return=representation' } : {},
+        headers: {
+          ...this.extraHeaders,
+          ...(preferParts.length ? { Prefer: preferParts.join(', ') } : {}),
+        },
       };
     } else {
       // DELETE
-      const qs = this.params.toString();
-      path = `${restPrefix}/${this.table}${qs ? `?${qs}` : ''}`;
-      fetchOpts = { method: 'DELETE' };
+      fetchOpts = { method: 'DELETE', headers: this.extraHeaders };
     }
 
     const resp = await apiFetch(path, fetchOpts);
@@ -373,17 +400,31 @@ class QueryBuilder<T = unknown> {
     }
 
     if (isSupabase) {
+      // Parse count from Content-Range header (e.g., "0-9/100" or "*/100")
+      const contentRange = resp.headers.get('content-range');
+      let count: number | undefined;
+      if (contentRange) {
+        const total = contentRange.split('/')[1];
+        if (total && total !== '*') {
+          count = parseInt(total, 10);
+          if (Number.isNaN(count)) count = undefined;
+        }
+      }
+
+      // HEAD requests return no body
+      if (this.headOnly) {
+        return { data: null, error: null, count };
+      }
+
       // Supabase PostgREST returns raw arrays/objects directly
       const raw = (await resp.json()) as T | T[];
       let data = raw;
-      const countHeader = resp.headers.get('content-range');
-      const count = countHeader ? parseInt(countHeader.split('/')[1], 10) : undefined;
 
       if (this.singleRow && Array.isArray(data)) {
         data = data.length > 0 ? (data[0] as T) : (null as T);
       }
 
-      return { data, error: null, count: Number.isNaN(count) ? undefined : count };
+      return { data, error: null, count };
     }
 
     // Workers backend returns {data, error, count} wrapper
