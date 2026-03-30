@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -86,11 +86,11 @@ export default function AdminVenueCategories() {
     }
     try {
       if (editingId) {
-        const { error } = await api.from('venue_categories').update(form).eq('id', editingId);
+        const { error } = await supabase.from('venue_categories').update(form).eq('id', editingId);
         if (error) throw error;
         toast.success('Category updated');
       } else {
-        const { error } = await api.from('venue_categories').insert([form]);
+        const { error } = await supabase.from('venue_categories').insert([form]);
         if (error) throw error;
         toast.success('Category created');
       }
@@ -104,7 +104,7 @@ export default function AdminVenueCategories() {
   const handleDelete = async (row: CategoryRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await api.from('venue_categories').delete().eq('id', row.id);
+      const { error } = await supabase.from('venue_categories').delete().eq('id', row.id);
       if (error) throw error;
       toast.success('Category deleted');
       invalidateTable();

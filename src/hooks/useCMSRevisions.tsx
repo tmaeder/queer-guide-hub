@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import type { CMSRevision } from '@/types/cms';
 
 interface UseCMSRevisionsReturn {
@@ -38,7 +38,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await api
+      const { data, error: fetchError } = await supabase
         .from('cms_revisions' as any)
         .select('*')
         .eq('source_table', sourceTable)
@@ -53,7 +53,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
         (data || []).map(async (rev: any) => {
           let author;
           if (rev.created_by) {
-            const { data: profile } = await api
+            const { data: profile } = await supabase
               .from('profiles' as any)
               .select('display_name, email')
               .eq('id', rev.created_by)
@@ -75,7 +75,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
 
   const getRevision = useCallback(async (revisionId: string): Promise<CMSRevision | null> => {
     try {
-      const { data, error: fetchError } = await api
+      const { data, error: fetchError } = await supabase
         .from('cms_revisions' as any)
         .select('*')
         .eq('id', revisionId)
@@ -98,7 +98,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
       const { id, created_at, created_by, ...restoreData } = snapshot as any;
       restoreData.updated_at = new Date().toISOString();
 
-      const { error: updateError } = await api
+      const { error: updateError } = await supabase
         .from(revision.source_table as any)
         .update(restoreData)
         .eq('id', revision.source_id);
@@ -106,10 +106,10 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
       if (updateError) throw updateError;
 
       // Create a new revision marking the restore
-      const { data: { user } } = await api.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
 
       const nextNumber = revision.revision_number + 1;
-      await api
+      await supabase
         .from('cms_revisions' as any)
         .insert({
           source_table: revision.source_table,

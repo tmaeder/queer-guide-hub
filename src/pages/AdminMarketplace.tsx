@@ -19,7 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Trash2, ArrowLeft, Download, RefreshCw, Star, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -162,7 +162,7 @@ export default function AdminMarketplace() {
   const handleAwinImport = async () => {
     setIsImporting(true);
     try {
-      const { data, error } = await api.functions.invoke('import-awin-products', {
+      const { data, error } = await supabase.functions.invoke('import-awin-products', {
         body: importParams,
       });
       if (error) throw error;
@@ -312,7 +312,7 @@ export default function AdminMarketplace() {
           onClick: async (row) => {
             if (!confirm(`Delete "${row.title}"?`)) return;
             try {
-              const { error } = await api
+              const { error } = await supabase
                 .from('marketplace_listings')
                 .delete()
                 .eq('id', row.id);

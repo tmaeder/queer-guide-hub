@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface ValidationResult {
@@ -38,7 +38,7 @@ export function useSecurityValidation() {
     setIsValidating(true);
     
     try {
-      const { data, error } = await api.rpc('validate_content_security', {
+      const { data, error } = await supabase.rpc('validate_content_security', {
         content_text: content,
         content_type: contentType
       });
@@ -85,7 +85,7 @@ export function useSecurityValidation() {
     setIsValidating(true);
     
     try {
-      const { data, error } = await api.rpc('validate_password_enhanced', {
+      const { data, error } = await supabase.rpc('validate_password_enhanced', {
         password_text: password
       });
 
@@ -117,7 +117,7 @@ export function useSecurityValidation() {
     setIsValidating(true);
     
     try {
-      const { data, error } = await api.rpc('validate_file_upload', {
+      const { data, error } = await supabase.rpc('validate_file_upload', {
         file_name: fileName,
         file_size: fileSize,
         mime_type: mimeType
@@ -159,7 +159,7 @@ export function useSecurityValidation() {
     timeWindowMinutes: number = 60
   ): Promise<boolean> => {
     try {
-      const { data, error } = await api.rpc('check_rate_limit_enhanced', {
+      const { data, error } = await supabase.rpc('check_rate_limit_enhanced', {
         identifier: 'user_action', // Will be replaced with user ID server-side
         max_attempts: maxAttempts,
         time_window_minutes: timeWindowMinutes,

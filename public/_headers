@@ -1,7 +1,11 @@
 # Cloudflare Pages Headers for Security and Performance
 
-# Global security headers for ALL paths (must be first for widest match)
+# Global security headers and default cache for ALL paths (must be first for widest match)
+# SPA routes (e.g. /places, /events) are served as HTML via _redirects catch-all.
+# They must not be cached by the CDN, so the default is max-age=0.
+# More-specific rules below override this for static assets.
 /*
+  Cache-Control: public, max-age=0, must-revalidate
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   X-XSS-Protection: 1; mode=block
@@ -65,10 +69,6 @@
 /manifest.json
   Cache-Control: public, max-age=86400
 
-# HTML files - no cache for SPA routing
+# HTML files - explicit override (redundant with /* but kept for clarity)
 /*.html
-  Cache-Control: public, max-age=0, must-revalidate
-
-# Root HTML
-/
   Cache-Control: public, max-age=0, must-revalidate

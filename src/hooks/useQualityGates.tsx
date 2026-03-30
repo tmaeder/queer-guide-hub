@@ -5,7 +5,7 @@
  */
 
 import { useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -187,7 +187,7 @@ export function useQualityGates(thresholds?: Partial<QualityThresholds>) {
 
       // Record the quality assessment
       try {
-        await api.from('content_flags' as any).insert({
+        await supabase.from('content_flags' as any).insert({
           module_name: 'quality-gate',
           content_type: contentType,
           content_id: stagingId,

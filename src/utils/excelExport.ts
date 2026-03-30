@@ -1,4 +1,4 @@
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
 // ---------- Types ----------
@@ -65,7 +65,7 @@ export async function fetchAllRows<T>(
   let hasMore = true;
 
   while (hasMore) {
-    let query = api
+    let query = supabase
       .from(table)
       .select(select)
       .range(offset, offset + batchSize - 1);

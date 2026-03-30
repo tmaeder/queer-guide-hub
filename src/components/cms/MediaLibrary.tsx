@@ -62,7 +62,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { EnhancedImageUpload } from '@/components/security/EnhancedImageUpload';
@@ -172,7 +172,7 @@ export function MediaLibrary() {
     try {
       setLoading(true);
 
-      const { count: existingCount } = await api
+      const { count: existingCount } = await supabase
         .from('media_optimization_status')
         .select('id', { count: 'exact', head: true });
 
@@ -189,7 +189,7 @@ export function MediaLibrary() {
       let hasMore = true;
 
       while (hasMore) {
-        const { data, error } = await api.functions.invoke('populate-optimization-status', {
+        const { data, error } = await supabase.functions.invoke('populate-optimization-status', {
           body: { batchSize, offset }
         });
 
@@ -224,7 +224,7 @@ export function MediaLibrary() {
     try {
       setLoading(true);
 
-      const { data: cmsMediaData, error: cmsError } = await api
+      const { data: cmsMediaData, error: cmsError } = await supabase
         .from('cms_media')
         .select(`
           *,
@@ -239,7 +239,7 @@ export function MediaLibrary() {
         console.error('CMS media error:', cmsError);
       }
 
-      const { data: optimizationData, error: optimizationError } = await api
+      const { data: optimizationData, error: optimizationError } = await supabase
         .from('media_optimization_status')
         .select('*');
 
@@ -280,7 +280,7 @@ export function MediaLibrary() {
 
       for (const bucket of buckets) {
         try {
-          const { data: files, error } = await api.storage
+          const { data: files, error } = await supabase.storage
             .from(bucket)
             .list('', {
               limit: 1000,
@@ -467,7 +467,7 @@ export function MediaLibrary() {
         return;
       }
 
-      const { error: storageError } = await api.storage
+      const { error: storageError } = await supabase.storage
         .from('cms-media')
         .remove([item.storage_path]);
 
@@ -475,7 +475,7 @@ export function MediaLibrary() {
         console.error('Storage deletion error:', storageError);
       }
 
-      const { error: dbError } = await api
+      const { error: dbError } = await supabase
         .from('cms_media')
         .delete()
         .eq('id', item.id);
@@ -503,7 +503,7 @@ export function MediaLibrary() {
 
   const handleDownload = async (item: MediaItem) => {
     try {
-      const { data } = api.storage
+      const { data } = supabase.storage
         .from('cms-media')
         .getPublicUrl(item.storage_path);
 
@@ -557,7 +557,7 @@ export function MediaLibrary() {
   const getImageUrl = (item: MediaItem) => {
     const bucket = (item as any).bucket || 'cms-media';
 
-    const { data } = api.storage
+    const { data } = supabase.storage
       .from(bucket)
       .getPublicUrl(item.storage_path);
     return data.publicUrl;

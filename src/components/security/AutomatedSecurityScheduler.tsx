@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Clock, Calendar, Shield, Database, AlertCircle } from 'lucide-react';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -121,7 +121,7 @@ export function AutomatedSecurityScheduler() {
       setLoading(true);
 
       if (taskName.includes('Location Data Anonymization')) {
-        const { error } = await api.rpc('anonymize_location_data');
+        const { error } = await supabase.rpc('anonymize_location_data');
         if (error) throw error;
       }
 

@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import { FieldWrapper } from './FieldWrapper';
 import type { FieldProps } from './FieldRenderer';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { toast } from 'sonner';
 
@@ -52,7 +52,7 @@ export function CityAutocompleteField({
     const fetchCities = async () => {
       setLoading(true);
       try {
-        let query = api
+        let query = supabase
           .from('cities')
           .select('id, name, country_id, countries!inner(name)')
           .order('name');

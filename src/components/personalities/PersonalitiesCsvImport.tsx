@@ -13,7 +13,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, FileText, Download, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ImportResult {
   success: boolean;
@@ -52,7 +52,7 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
       const formData = new FormData();
       formData.append('file', file);
 
-      const { data, error } = await api.functions.invoke('import-personalities-csv', {
+      const { data, error } = await supabase.functions.invoke('import-personalities-csv', {
         body: formData
       });
 

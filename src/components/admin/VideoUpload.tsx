@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface VideoUploadProps {
@@ -65,14 +65,14 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
       // Upload to storage
       const filePath = `uploads/${video.id}/${video.file.name}`;
 
-      const { data: uploadData, error: uploadError } = await api.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('videos')
         .upload(filePath, video.file);
 
       if (uploadError) throw uploadError;
 
       // Create video record
-      const { data: videoRecord, error: dbError } = await api
+      const { data: videoRecord, error: dbError } = await supabase
         .from('videos')
         .insert([{
           id: video.id,
@@ -88,7 +88,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
       if (dbError) throw dbError;
 
       // Start processing
-      const { error: processError } = await api.functions.invoke('process-video', {
+      const { error: processError } = await supabase.functions.invoke('process-video', {
         body: {
           action: 'start',
           videoId: video.id,
@@ -128,7 +128,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
   const pollProcessingStatus = async (videoId: string) => {
     const pollInterval = setInterval(async () => {
       try {
-        const { data: job } = await api.functions.invoke('process-video', {
+        const { data: job } = await supabase.functions.invoke('process-video', {
           body: { action: 'status', jobId: videoId }
         });
 

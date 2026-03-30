@@ -1,14 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Box, Typography } from "@mui/material";
-import { useImportHub, NewsSource } from "@/hooks/useImportHub";
+import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
 import {
   Plus,
   Edit2,
@@ -17,21 +20,17 @@ import {
   Globe,
   Play,
   Tags,
+  Settings2,
   ChevronDown,
   ChevronUp
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { validateNewsSource } from "@/utils/contentValidation";
 
+type NewsSource = Tables<'news_sources'>;
+
 export function NewsSourcesManager() {
-  const {
-    fetchNewsSources,
-    saveNewsSource,
-    deleteNewsSource: deleteSource,
-    toggleNewsSource,
-    triggerNewsFetch,
-    updateNewsKeywords,
-  } = useImportHub();
+  const { toast } = useToast();
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -51,19 +50,29 @@ export function NewsSourcesManager() {
     keywords: [] as string[]
   });
 
-  const loadSources = useCallback(async () => {
-    setLoading(true);
+  useEffect(() => {
+    fetchSources();
+  }, []);
+
+  const fetchSources = async () => {
     try {
-      const data = await fetchNewsSources();
-      setSources(data);
+      const { data, error } = await supabase
+        .from('news_sources')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSources(data || []);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch news sources",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
-  }, [fetchNewsSources]);
-
-  useEffect(() => {
-    loadSources();
-  }, [loadSources]);
+  };
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -78,17 +87,50 @@ export function NewsSourcesManager() {
         fieldErrors[err.field] = err.message;
       });
       setValidationErrors(fieldErrors);
+      toast({
+        title: "Validation Error",
+        description: result.errors[0]?.message || "Please fix the highlighted fields",
+        variant: "destructive",
+      });
       return;
     }
     setValidationErrors({});
 
     try {
-      await saveNewsSource(formData, editingSource?.id);
+      if (editingSource) {
+        const { error } = await supabase
+          .from('news_sources')
+          .update(formData)
+          .eq('id', editingSource.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "News source updated successfully",
+        });
+      } else {
+        const { error } = await supabase
+          .from('news_sources')
+          .insert([formData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "News source created successfully",
+        });
+      }
+
       setDialogOpen(false);
       resetForm();
-      loadSources();
-    } catch {
-      // handled by hook
+      fetchSources();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
     }
   };
 
@@ -121,21 +163,73 @@ export function NewsSourcesManager() {
 
   const handleDelete = async (sourceId: string) => {
     if (!confirm("Are you sure you want to delete this news source?")) return;
+
     try {
-      await deleteSource(sourceId);
-      loadSources();
-    } catch {
-      // handled by hook
+      const { error } = await supabase
+        .from('news_sources')
+        .delete()
+        .eq('id', sourceId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "News source deleted successfully",
+      });
+
+      fetchSources();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete news source",
+        variant: "destructive",
+      });
     }
   };
 
   const handleToggleActive = async (sourceId: string, isActive: boolean) => {
-    await toggleNewsSource(sourceId, isActive);
-    loadSources();
+    try {
+      const { error } = await supabase
+        .from('news_sources')
+        .update({ is_active: !isActive })
+        .eq('id', sourceId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `News source ${!isActive ? 'activated' : 'deactivated'}`,
+      });
+
+      fetchSources();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update news source",
+        variant: "destructive",
+      });
+    }
   };
 
   const triggerFetch = async (sourceId: string) => {
-    await triggerNewsFetch(sourceId);
+    try {
+      const { error } = await supabase.functions.invoke('fetch-news', {
+        body: { sourceId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "News fetch triggered successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to trigger news fetch",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleKeywordsEdit = (source: NewsSource) => {
@@ -157,14 +251,30 @@ export function NewsSourcesManager() {
 
   const saveKeywords = async () => {
     if (!editingSource) return;
+
     try {
-      await updateNewsKeywords(editingSource.id, editingKeywords);
+      const { error } = await supabase
+        .from('news_sources')
+        .update({ keywords: editingKeywords })
+        .eq('id', editingSource.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Keywords updated successfully",
+      });
+
       setKeywordsDialogOpen(false);
       setEditingSource(null);
       setEditingKeywords([]);
-      loadSources();
-    } catch {
-      // handled by hook
+      fetchSources();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update keywords",
+        variant: "destructive",
+      });
     }
   };
 

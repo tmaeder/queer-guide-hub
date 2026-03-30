@@ -6,7 +6,7 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import type { SubmissionTypeConfig } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 
@@ -123,7 +123,7 @@ export function useSubmission(config: SubmissionTypeConfig) {
 
     setIsSubmitting(true);
     try {
-      const { error } = await api.from('community_submissions' as any).insert({
+      const { error } = await supabase.from('community_submissions' as any).insert({
         content_type: config.id,
         data: data,
         submitted_by: user.id,

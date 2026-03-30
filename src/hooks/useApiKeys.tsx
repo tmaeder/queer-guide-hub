@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
 export interface ApiKey {
@@ -49,7 +49,7 @@ export function useApiKeys() {
   const loadKeyStatus = async () => {
     try {
       setLoading(true);
-      const { data, error } = await api.functions.invoke('manage-api-keys?action=status', {
+      const { data, error } = await supabase.functions.invoke('manage-api-keys?action=status', {
         method: 'GET',
       });
 
@@ -71,7 +71,7 @@ export function useApiKeys() {
 
   const createApiKey = async (keyData: CreateApiKeyRequest) => {
     try {
-      const { data, error } = await api.functions.invoke('manage-api-keys', {
+      const { data, error } = await supabase.functions.invoke('manage-api-keys', {
         method: 'POST',
         body: keyData,
       });
@@ -98,7 +98,7 @@ export function useApiKeys() {
 
   const updateApiKey = async (id: string, updateData: UpdateApiKeyRequest) => {
     try {
-      const { data, error } = await api.functions.invoke('manage-api-keys', {
+      const { data, error } = await supabase.functions.invoke('manage-api-keys', {
         method: 'PUT',
         body: { ...updateData, id },
       });
@@ -125,7 +125,7 @@ export function useApiKeys() {
 
   const deleteApiKey = async (id: string) => {
     try {
-      const { error } = await api.functions.invoke('manage-api-keys', {
+      const { error } = await supabase.functions.invoke('manage-api-keys', {
         method: 'DELETE',
         body: { id },
       });

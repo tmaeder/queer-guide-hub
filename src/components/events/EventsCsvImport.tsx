@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -48,7 +48,7 @@ export const EventsCsvImport = ({ onImportComplete }: EventsCsvImportProps) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const { data, error } = await api.functions.invoke('import-events-csv', {
+      const { data, error } = await supabase.functions.invoke('import-events-csv', {
         body: formData
       });
 

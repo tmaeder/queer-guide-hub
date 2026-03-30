@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +45,7 @@ export function PersonalitiesFilters({ filters, onFiltersChange }: Personalities
     const fetchProfessions = async () => {
       setLoadingProfessions(true);
       try {
-        const { data, error } = await api
+        const { data, error } = await supabase
           .from('personalities')
           .select('profession')
           .not('profession', 'is', null)

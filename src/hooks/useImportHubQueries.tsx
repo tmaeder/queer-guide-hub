@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { StagingItem } from '@/hooks/useImportHub';
 
@@ -72,7 +72,7 @@ export function useStagingItems(
   return useQuery({
     queryKey: ['staging-items', filters, page, perPage, sort],
     queryFn: async (): Promise<StagingPageResult> => {
-      const { data, error } = await api.rpc('get_staging_page', {
+      const { data, error } = await supabase.rpc('get_staging_page', {
         p_target_table: filters.target_table || null,
         p_review_status: filters.review_status || null,
         p_dedup_status: filters.dedup_status || null,
@@ -108,7 +108,7 @@ export function useDuplicatePairs(entityType: string | null) {
   return useQuery({
     queryKey: ['duplicate-pairs', entityType],
     queryFn: async (): Promise<DuplicatePair[]> => {
-      let query = api
+      let query = supabase
         .from('scraper_dedupe_decisions')
         .select('*')
         .eq('decision', 'pending')
@@ -140,7 +140,7 @@ export function useEntityById(entityType: string | null, entityId: string | null
     queryFn: async (): Promise<Record<string, any> | null> => {
       if (!entityType || !entityId) return null;
 
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from(entityType as any)
         .select('*')
         .eq('id', entityId)
@@ -164,7 +164,7 @@ export function useImportStatistics() {
   return useQuery({
     queryKey: ['import-statistics'],
     queryFn: async () => {
-      const { data, error } = await api.rpc('get_import_statistics');
+      const { data, error } = await supabase.rpc('get_import_statistics');
       if (error) {
         console.error('Failed to fetch import stats:', error);
         return null;
@@ -199,7 +199,7 @@ export function useImportJobs(
   return useQuery({
     queryKey: ['import-jobs', page, status, perPage],
     queryFn: async () => {
-      let query = api
+      let query = supabase
         .from('import_jobs_enhanced')
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
@@ -230,7 +230,7 @@ export function useBatchFindDuplicates() {
 
   return useMutation({
     mutationFn: async (params: { targetTable?: string; batchLimit?: number }) => {
-      const { data, error } = await api.rpc('batch_find_duplicates', {
+      const { data, error } = await supabase.rpc('batch_find_duplicates', {
         p_target_table: params.targetTable || null,
         p_batch_limit: params.batchLimit || 100,
       } as any);
@@ -256,7 +256,7 @@ export function useScanTableDuplicates() {
 
   return useMutation({
     mutationFn: async (params: { entityType: string; threshold?: number; limit?: number }) => {
-      const { data, error } = await api.rpc('scan_table_duplicates', {
+      const { data, error } = await supabase.rpc('scan_table_duplicates', {
         p_entity_type: params.entityType,
         p_threshold: params.threshold || 0.7,
         p_limit: params.limit || 200,
@@ -288,7 +288,7 @@ export function useMergeEntities() {
       removeId: string;
       mergedData?: Record<string, any>;
     }) => {
-      const { data, error } = await api.rpc('merge_entities', {
+      const { data, error } = await supabase.rpc('merge_entities', {
         p_entity_type: params.entityType,
         p_keep_id: params.keepId,
         p_remove_id: params.removeId,
@@ -320,7 +320,7 @@ export function useDismissDuplicate() {
 
   return useMutation({
     mutationFn: async (decisionId: string) => {
-      const { error } = await api
+      const { error } = await supabase
         .from('scraper_dedupe_decisions')
         .update({ decision: 'not_duplicate' })
         .eq('id', decisionId);
@@ -343,7 +343,7 @@ export function useStagingAction() {
       stagingIds?: string[];
       notes?: string;
     }) => {
-      const { data, error } = await api.functions.invoke('ingestion-review-api', {
+      const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
         body: {
           action: params.action,
           staging_id: params.stagingId,
@@ -375,7 +375,7 @@ export function useMergeHistory(limit: number = 50) {
   return useQuery({
     queryKey: ['merge-history', limit],
     queryFn: async () => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('import_audit_log')
         .select('*')
         .eq('action', 'entity_merged')

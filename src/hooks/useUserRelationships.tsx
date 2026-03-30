@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -28,7 +28,7 @@ export function useUserRelationships() {
     
     setLoading(true);
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('user_relationships')
         .select('*')
         .or(`user_id.eq.${user.id},target_user_id.eq.${user.id}`);
@@ -52,7 +52,7 @@ export function useUserRelationships() {
     if (!user) return { error: 'Not authenticated' };
 
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from('user_relationships')
         .insert({
           user_id: user.id,
@@ -86,7 +86,7 @@ export function useUserRelationships() {
     if (!user) return { error: 'Not authenticated' };
 
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from('user_relationships')
         .insert({
           user_id: user.id,
@@ -118,7 +118,7 @@ export function useUserRelationships() {
   // Accept friend request
   const acceptFriendRequest = async (relationshipId: string) => {
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from('user_relationships')
         .update({ status: 'accepted' })
         .eq('id', relationshipId);
@@ -146,7 +146,7 @@ export function useUserRelationships() {
   // Reject friend request
   const rejectFriendRequest = async (relationshipId: string) => {
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from('user_relationships')
         .update({ status: 'rejected' })
         .eq('id', relationshipId);
@@ -176,7 +176,7 @@ export function useUserRelationships() {
     if (!user) return { error: 'Not authenticated' };
 
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from('user_relationships')
         .delete()
         .eq('user_id', user.id)

@@ -12,7 +12,7 @@ import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { ResourcesFilterBar } from '@/components/resources/ResourcesFilterBar';
 import { TagListRenderer } from '@/components/resources/TagListRenderer';
 import { getCategoryIcon, getCategoryShortName } from '@/components/resources/categoryMeta';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
@@ -93,7 +93,7 @@ export default function Ressources() {
   useEffect(() => {
     const loadProfessions = async () => {
       try {
-        const { data } = await api
+        const { data } = await supabase
           .from('personalities')
           .select('profession')
           .not('profession', 'is', null);
@@ -143,7 +143,7 @@ export default function Ressources() {
     // fetch directly from Supabase
     if (allTags.length > 0 || !loading) {
       const fetchTagDirect = async () => {
-        const { data } = await api
+        const { data } = await supabase
           .from('unified_tags')
           .select('*')
           .ilike('name', decodedTagName)
@@ -152,7 +152,7 @@ export default function Ressources() {
           .maybeSingle();
         if (data) {
           // Fetch category info for this tag
-          const { data: catAssignments } = await api
+          const { data: catAssignments } = await supabase
             .from('tag_category_assignments')
             .select(
               'tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)',
@@ -180,7 +180,7 @@ export default function Ressources() {
               .filter((c: any) => c.parent_id)
               .map((c: any) => c.parent_id);
             if (parentIds.length > 0) {
-              const { data: parents } = await api
+              const { data: parents } = await supabase
                 .from('tag_categories')
                 .select('id, name')
                 .in('id', parentIds);
@@ -394,7 +394,7 @@ export default function Ressources() {
       for (let i = 0; i < allTags.length; i++) {
         const tag = allTags[i];
         try {
-          const { data, error } = await api.functions.invoke('store-tag-images', {
+          const { data, error } = await supabase.functions.invoke('store-tag-images', {
             body: {
               tagId: tag.id,
               tagName: tag.name,
@@ -435,7 +435,7 @@ export default function Ressources() {
   const categorizeAllTags = async () => {
     setCategorizingTags(true);
     try {
-      const { data, error } = await api.functions.invoke('categorize-tags');
+      const { data, error } = await supabase.functions.invoke('categorize-tags');
       if (error) {
         toast({
           title: 'Categorization failed',

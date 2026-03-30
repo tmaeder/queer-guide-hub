@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Database } from '@/types/database';
+import { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
 type AuditLog = Database['public']['Tables']['user_role_audit_log']['Row'];
@@ -15,7 +15,7 @@ export function useSecureRoleManagement() {
       setLoading(true);
       
       // Use the new secure function
-      const { error } = await api.rpc('assign_user_role', {
+      const { error } = await supabase.rpc('assign_user_role', {
         user_id: userId,
         role_name: role
       });
@@ -24,7 +24,7 @@ export function useSecureRoleManagement() {
 
       // Log successful role assignment
       try {
-        await api.rpc('log_security_event', {
+        await supabase.rpc('log_security_event', {
           p_event_type: 'ROLE_ASSIGNMENT_SUCCESS',
           p_user_id: null,
           p_metadata: {
@@ -49,7 +49,7 @@ export function useSecureRoleManagement() {
       
       // Log failed role assignment attempt
       try {
-        await api.rpc('log_security_event', {
+        await supabase.rpc('log_security_event', {
           p_event_type: 'ROLE_ASSIGNMENT_FAILED',
           p_user_id: null,
           p_metadata: {
@@ -80,7 +80,7 @@ export function useSecureRoleManagement() {
       setLoading(true);
       
       // Remove role by deleting from user_roles table
-      const { error } = await api
+      const { error } = await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', userId)
@@ -109,7 +109,7 @@ export function useSecureRoleManagement() {
 
   const fetchAuditLogs = async () => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('user_role_audit_log')
         .select(`
           *,

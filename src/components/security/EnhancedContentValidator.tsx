@@ -1,5 +1,5 @@
 import React from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ContentValidationResult {
   isValid: boolean;
@@ -45,7 +45,7 @@ export class EnhancedContentValidator {
 
   private static async rateLimitCheck(userId: string, action: string): Promise<boolean> {
     try {
-      const { data } = await api.rpc('check_rate_limit_enhanced', {
+      const { data } = await supabase.rpc('check_rate_limit_enhanced', {
         identifier: userId,
         max_attempts: 20,
         time_window_minutes: 60,
@@ -65,7 +65,7 @@ export class EnhancedContentValidator {
     userId?: string,
   ) {
     try {
-      await api.rpc('log_security_event', {
+      await supabase.rpc('log_security_event', {
         p_event_type: eventType,
         p_user_id: userId || '',
         p_metadata: metadata,

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
-import type { Database } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -8,7 +8,7 @@ export function useUserRoles() {
   return useQuery({
     queryKey: ['admin-user-roles'],
     queryFn: async () => {
-      const { data, error } = await api.from('user_roles').select('user_id, role');
+      const { data, error } = await supabase.from('user_roles').select('user_id, role');
 
       if (error) throw error;
 

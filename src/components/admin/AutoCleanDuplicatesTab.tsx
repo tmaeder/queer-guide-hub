@@ -98,7 +98,7 @@ export function AutoCleanDuplicatesTab() {
         }}
       >
         {ENTITY_TYPES.map(({ key, label, icon: Icon, color }) => {
-          const count = counts[key as keyof typeof counts] ?? 0;
+          const count = (counts as any)?.[key] ?? 0;
           const bg = count === 0 ? '#10b98115' : count <= 5 ? '#f59e0b15' : '#ef444415';
           const border = count === 0 ? '#10b98130' : count <= 5 ? '#f59e0b30' : '#ef444430';
           return (

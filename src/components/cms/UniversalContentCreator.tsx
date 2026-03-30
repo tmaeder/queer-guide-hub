@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ImageUpload } from '@/components/ui/image-upload';
@@ -184,7 +184,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
           break;
       }
 
-      const { error } = await api
+      const { error } = await supabase
         .from(tableName as keyof typeof validTables)
         .insert([insertData]);
 

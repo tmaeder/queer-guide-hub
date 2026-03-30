@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -160,7 +160,7 @@ export default function AdminGroups() {
   const handleDelete = async (row: GroupRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await api.from('community_groups').delete().eq('id', row.id);
+      const { error } = await supabase.from('community_groups').delete().eq('id', row.id);
       if (error) throw error;
       toast({ title: 'Success', description: 'Group deleted' });
     } catch {

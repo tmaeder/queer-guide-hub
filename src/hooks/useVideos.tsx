@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface VideoRendition {
@@ -40,7 +40,7 @@ export function useVideos() {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await api
+      const { data, error: fetchError } = await supabase
         .from('videos')
         .select(`
           *,
@@ -63,7 +63,7 @@ export function useVideos() {
 
   const getVideo = async (id: string): Promise<Video | null> => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('videos')
         .select(`
           *,
@@ -82,7 +82,7 @@ export function useVideos() {
 
   const deleteVideo = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from('videos')
         .delete()
         .eq('id', id);
@@ -101,7 +101,7 @@ export function useVideos() {
 
   const updateVideo = async (id: string, updates: Partial<Pick<Video, 'title' | 'description'>>): Promise<boolean> => {
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from('videos')
         .update(updates)
         .eq('id', id);

@@ -3,11 +3,13 @@
  */
 
 import React from 'react';
+import { Link as RouterLink } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Switch from '@mui/material/Switch';
-import { Play, Settings, CheckCircle2, Clock, AlertTriangle, XCircle } from 'lucide-react';
+import MuiLink from '@mui/material/Link';
+import { Play, Settings, CheckCircle2, Clock, AlertTriangle, XCircle, Link2, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AutomationModule } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';
@@ -155,6 +157,34 @@ export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: P
         <Button size="sm" variant="ghost" onClick={() => onSettings(module)}>
           <Settings size={14} />
         </Button>
+      </Box>
+
+      {/* Contextual links */}
+      <Box sx={{ display: 'flex', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
+        {module.slug === 'link-sanitizer' && (
+          <MuiLink
+            component={RouterLink}
+            to="/admin/links"
+            variant="caption"
+            underline="hover"
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
+            <Link2 size={12} />
+            Link Health
+          </MuiLink>
+        )}
+        {module.total_changes_proposed > 0 && (
+          <MuiLink
+            component={RouterLink}
+            to="/admin/review?tab=automation"
+            variant="caption"
+            underline="hover"
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
+            <ClipboardCheck size={12} />
+            View pending changes
+          </MuiLink>
+        )}
       </Box>
     </Box>
   );

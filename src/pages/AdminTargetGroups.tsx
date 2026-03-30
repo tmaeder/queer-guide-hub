@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -80,11 +80,11 @@ export default function AdminTargetGroups() {
     }
     try {
       if (editingId) {
-        const { error } = await api.from('target_groups').update(form).eq('id', editingId);
+        const { error } = await supabase.from('target_groups').update(form).eq('id', editingId);
         if (error) throw error;
         toast({ title: 'Success', description: 'Target group updated' });
       } else {
-        const { error } = await api.from('target_groups').insert([form]);
+        const { error } = await supabase.from('target_groups').insert([form]);
         if (error) throw error;
         toast({ title: 'Success', description: 'Target group created' });
       }
@@ -102,7 +102,7 @@ export default function AdminTargetGroups() {
   const handleDelete = async (row: TargetGroupRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await api.from('target_groups').delete().eq('id', row.id);
+      const { error } = await supabase.from('target_groups').delete().eq('id', row.id);
       if (error) throw error;
       toast({ title: 'Success', description: 'Target group deleted' });
       invalidateTable();

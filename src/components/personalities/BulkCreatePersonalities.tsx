@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plus, AlertCircle, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
@@ -112,7 +112,7 @@ export const BulkCreatePersonalities = () => {
 
       let data, error;
       try {
-        const response = await api.functions.invoke('bulk-create-personalities', {
+        const response = await supabase.functions.invoke('bulk-create-personalities', {
           body: { names: validNames, sources }
         });
         data = response.data;

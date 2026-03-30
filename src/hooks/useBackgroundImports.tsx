@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export interface BackgroundJob {
@@ -121,7 +121,7 @@ export const useBackgroundImports = () => {
     if (!isPolling) return;
 
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('import_jobs')
         .select('*')
         .order('created_at', { ascending: false })
@@ -185,7 +185,7 @@ export const useBackgroundImports = () => {
 
       setLoading(true);
       try {
-        const { data: result, error } = await api.functions.invoke(
+        const { data: result, error } = await supabase.functions.invoke(
           'background-import-manager',
           {
             body: {
@@ -239,7 +239,7 @@ export const useBackgroundImports = () => {
 
       setLoading(true);
       try {
-        const { data: result, error } = await api.functions.invoke(
+        const { data: result, error } = await supabase.functions.invoke(
           'background-import-manager',
           {
             body: {
@@ -285,7 +285,7 @@ export const useBackgroundImports = () => {
   const retryJob = useCallback(
     async (jobId: string) => {
       try {
-        const { error } = await api.functions.invoke('background-import-manager', {
+        const { error } = await supabase.functions.invoke('background-import-manager', {
           body: {
             action: 'retry',
             jobId,
@@ -316,7 +316,7 @@ export const useBackgroundImports = () => {
   const pauseJob = useCallback(
     async (jobId: string) => {
       try {
-        const { error } = await api.functions.invoke('background-import-manager', {
+        const { error } = await supabase.functions.invoke('background-import-manager', {
           body: {
             action: 'pause',
             jobId,
@@ -341,7 +341,7 @@ export const useBackgroundImports = () => {
   const resumeJob = useCallback(
     async (jobId: string) => {
       try {
-        const { error } = await api.functions.invoke('background-import-manager', {
+        const { error } = await supabase.functions.invoke('background-import-manager', {
           body: {
             action: 'resume',
             jobId,
@@ -366,7 +366,7 @@ export const useBackgroundImports = () => {
   const cancelJob = useCallback(
     async (jobId: string) => {
       try {
-        const { error } = await api.functions.invoke('background-import-manager', {
+        const { error } = await supabase.functions.invoke('background-import-manager', {
           body: {
             action: 'cancel',
             jobId,
@@ -390,7 +390,7 @@ export const useBackgroundImports = () => {
   // Clean up old jobs
   const cleanupOldJobs = useCallback(async () => {
     try {
-      const { error } = await api.functions.invoke('background-import-manager', {
+      const { error } = await supabase.functions.invoke('background-import-manager', {
         body: {
           action: 'cleanup',
         },

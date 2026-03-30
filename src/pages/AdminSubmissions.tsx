@@ -18,7 +18,7 @@ import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-
 import { createColumnHelper } from '@tanstack/react-table';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
@@ -74,8 +74,41 @@ const formatDate = (iso: string) => {
   }
 };
 
+/** Embeddable content for use as a tab inside AdminReview */
+export function AdminSubmissionsContent() {
+  return <SubmissionsCore />;
+}
+
 export default function AdminSubmissions() {
   const navigate = useNavigate();
+  return (
+    <Box
+      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/admin')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
+        </Button>
+        <div>
+          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
+            Community Submissions
+          </Typography>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            Review and manage community-submitted content
+          </p>
+        </div>
+      </Box>
+      <SubmissionsCore />
+    </Box>
+  );
+}
+
+function SubmissionsCore() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -101,14 +134,14 @@ export default function AdminSubmissions() {
       }
       if ('featured' in cleanData === false) cleanData.featured = false;
 
-      const { data: promoted, error: insertError } = await api
+      const { data: promoted, error: insertError } = await supabase
         .from(config.targetTable as any)
         .insert(cleanData)
         .select('id')
         .single();
       if (insertError) throw insertError;
 
-      const { error: updateError } = await api
+      const { error: updateError } = await supabase
         .from('community_submissions' as any)
         .update({
           status: 'approved',
@@ -139,7 +172,7 @@ export default function AdminSubmissions() {
   const handleReject = async (submission: SubmissionRow) => {
     setActionLoading(true);
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from('community_submissions' as any)
         .update({
           status: 'rejected',
@@ -302,28 +335,7 @@ export default function AdminSubmissions() {
   );
 
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
-        </Button>
-        <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-            Community Submissions
-          </Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>
-            Review and manage community-submitted content
-          </p>
-        </div>
-      </Box>
-
+    <>
       <AdminDataTable config={tableConfig} />
 
       {/* Detail / Review Dialog */}
@@ -466,6 +478,6 @@ export default function AdminSubmissions() {
           )}
         </DialogContent>
       </Dialog>
-    </Box>
+    </>
   );
 }

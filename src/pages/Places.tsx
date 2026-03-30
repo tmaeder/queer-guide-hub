@@ -8,7 +8,7 @@ import {
   findNearbyCities,
 } from '@/hooks/useOptimizedPlaces';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { PlacesCard } from '@/components/places/PlacesCard';
 import { VillageCard } from '@/components/villages/VillageCard';
 import { PlacesSearch, type PlacesFilters } from '@/components/places/PlacesSearch';
@@ -26,6 +26,21 @@ import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown, Landmark } from
 
 // Lazy load the map component
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
+
+// Extracted style constants to avoid creating new objects on every render
+const ICON_SM: React.CSSProperties = { height: 16, width: 16 };
+const ICON_MD: React.CSSProperties = { height: 20, width: 20 };
+const ICON_LG: React.CSSProperties = { height: 32, width: 32 };
+const ICON_XL: React.CSSProperties = { height: 48, width: 48, margin: '0 auto 16px', color: '#999999' };
+const BACK_BTN_STYLE: React.CSSProperties = { marginBottom: 16, transition: 'all 200ms' };
+const BACK_ICON_STYLE: React.CSSProperties = { height: 16, width: 16, marginRight: 8 };
+const TABS_STYLE: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 32 };
+const TABS_LIST_STYLE: React.CSSProperties = { display: 'grid', width: '100%', maxWidth: 600, gridTemplateColumns: 'repeat(4, 1fr)' };
+const TAB_CONTENT_STYLE: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24 };
+const BADGE_STYLE: React.CSSProperties = { paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 };
+const LINK_STYLE: React.CSSProperties = { display: 'block' };
+const CARD_HEADER_STYLE: React.CSSProperties = { paddingTop: 0 };
+const MAP_ICON_STYLE: React.CSSProperties = { height: 32, width: 32, margin: '0 auto', color: 'text.secondary' };
 
 type ViewMode = 'overview' | 'country' | 'city' | 'search';
 
@@ -59,7 +74,7 @@ export default function Places() {
   useEffect(() => {
     const fetchContinents = async () => {
       try {
-        const { data: continentsData, error } = await api
+        const { data: continentsData, error } = await supabase
           .from('continents')
           .select('*')
           .order('name');
@@ -240,9 +255,9 @@ export default function Places() {
                 <Button
                   variant="ghost"
                   onClick={handleBack}
-                  style={{ marginBottom: 16, transition: 'all 200ms' }}
+                  style={BACK_BTN_STYLE}
                 >
-                  <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+                  <ArrowLeft style={BACK_ICON_STYLE} />
                   Back
                 </Button>
               </Box>
@@ -362,32 +377,27 @@ export default function Places() {
           {viewMode === 'overview' && (
             <Tabs
               defaultValue="countries"
-              style={{ display: 'flex', flexDirection: 'column', gap: 32 }}
+              style={TABS_STYLE}
             >
               {/* Enhanced Tab Navigation */}
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <TabsList
-                  style={{
-                    display: 'grid',
-                    width: '100%',
-                    maxWidth: 600,
-                    gridTemplateColumns: 'repeat(4, 1fr)',
-                  }}
+                  style={TABS_LIST_STYLE}
                 >
                   <TabsTrigger value="countries">
-                    <MapPin style={{ height: 16, width: 16 }} />
+                    <MapPin style={ICON_SM} />
                     <span>Countries</span>
                   </TabsTrigger>
                   <TabsTrigger value="cities">
-                    <Building2 style={{ height: 16, width: 16 }} />
+                    <Building2 style={ICON_SM} />
                     <span>Cities</span>
                   </TabsTrigger>
                   <TabsTrigger value="neighborhoods">
-                    <Landmark style={{ height: 16, width: 16 }} />
+                    <Landmark style={ICON_SM} />
                     <span>Neighborhoods</span>
                   </TabsTrigger>
                   <TabsTrigger value="map">
-                    <Map style={{ height: 16, width: 16 }} />
+                    <Map style={ICON_SM} />
                     <span>Map</span>
                   </TabsTrigger>
                 </TabsList>
@@ -403,15 +413,15 @@ export default function Places() {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <MapPin style={{ height: 16, width: 16 }} />
+                    <MapPin style={ICON_SM} />
                     <span>{countries.length} countries</span>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Building2 style={{ height: 16, width: 16 }} />
+                    <Building2 style={ICON_SM} />
                     <span>{cities.length} cities</span>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Landmark style={{ height: 16, width: 16 }} />
+                    <Landmark style={ICON_SM} />
                     <span>{villages.length} neighborhoods</span>
                   </Box>
                 </Box>
@@ -419,7 +429,7 @@ export default function Places() {
 
               <TabsContent
                 value="countries"
-                style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
+                style={TAB_CONTENT_STYLE}
               >
                 <Box
                   sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
@@ -430,13 +440,7 @@ export default function Places() {
                     </Typography>
                     <Badge
                       variant="secondary"
-                      style={{
-                        paddingLeft: 12,
-                        paddingRight: 12,
-                        paddingTop: 4,
-                        paddingBottom: 4,
-                        fontWeight: 500,
-                      }}
+                      style={BADGE_STYLE}
                     >
                       {filteredCountries.length} found
                     </Badge>
@@ -495,7 +499,7 @@ export default function Places() {
                           >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                               <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.selected' }}>
-                                <Globe style={{ height: 20, width: 20 }} />
+                                <Globe style={ICON_MD} />
                               </Box>
                               <Box>
                                 <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
@@ -566,7 +570,7 @@ export default function Places() {
 
               <TabsContent
                 value="cities"
-                style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
+                style={TAB_CONTENT_STYLE}
               >
                 <Box
                   sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
@@ -577,13 +581,7 @@ export default function Places() {
                     </Typography>
                     <Badge
                       variant="secondary"
-                      style={{
-                        paddingLeft: 12,
-                        paddingRight: 12,
-                        paddingTop: 4,
-                        paddingBottom: 4,
-                        fontWeight: 500,
-                      }}
+                      style={BADGE_STYLE}
                     >
                       {filteredCities.length} found
                     </Badge>
@@ -619,7 +617,7 @@ export default function Places() {
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.selected' }}>
-                              <Building2 style={{ height: 20, width: 20 }} />
+                              <Building2 style={ICON_MD} />
                             </Box>
                             <Box>
                               <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
@@ -664,7 +662,7 @@ export default function Places() {
 
               <TabsContent
                 value="neighborhoods"
-                style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
+                style={TAB_CONTENT_STYLE}
               >
                 <Box
                   sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
@@ -675,13 +673,7 @@ export default function Places() {
                     </Typography>
                     <Badge
                       variant="secondary"
-                      style={{
-                        paddingLeft: 12,
-                        paddingRight: 12,
-                        paddingTop: 4,
-                        paddingBottom: 4,
-                        fontWeight: 500,
-                      }}
+                      style={BADGE_STYLE}
                     >
                       {villages.length} found
                     </Badge>
@@ -725,7 +717,7 @@ export default function Places() {
                 ) : (
                   <Box sx={{ textAlign: 'center', py: 6 }}>
                     <Landmark
-                      style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }}
+                      style={ICON_XL}
                     />
                     <Typography color="text.secondary">No neighborhoods found yet</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -757,14 +749,7 @@ export default function Places() {
                           gap: 1,
                         }}
                       >
-                        <Map
-                          style={{
-                            height: 32,
-                            width: 32,
-                            margin: '0 auto',
-                            color: 'text.secondary',
-                          }}
-                        />
+                        <Map style={MAP_ICON_STYLE} />
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                           Loading map...
                         </Typography>
@@ -814,13 +799,7 @@ export default function Places() {
                   </Typography>
                   <Badge
                     variant="secondary"
-                    style={{
-                      paddingLeft: 12,
-                      paddingRight: 12,
-                      paddingTop: 4,
-                      paddingBottom: 4,
-                      fontWeight: 500,
-                    }}
+                    style={BADGE_STYLE}
                   >
                     {countryCities.length} cities
                   </Badge>
@@ -854,7 +833,7 @@ export default function Places() {
                 ) : (
                   <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
                     <Building2
-                      style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }}
+                      style={ICON_XL}
                     />
                     <Typography>No cities found in this country</Typography>
                   </Box>
@@ -898,13 +877,7 @@ export default function Places() {
                     </Typography>
                     <Badge
                       variant="secondary"
-                      style={{
-                        paddingLeft: 12,
-                        paddingRight: 12,
-                        paddingTop: 4,
-                        paddingBottom: 4,
-                        fontWeight: 500,
-                      }}
+                      style={BADGE_STYLE}
                     >
                       {searchResults.countries.length} found
                     </Badge>
@@ -944,13 +917,7 @@ export default function Places() {
                     </Typography>
                     <Badge
                       variant="secondary"
-                      style={{
-                        paddingLeft: 12,
-                        paddingRight: 12,
-                        paddingTop: 4,
-                        paddingBottom: 4,
-                        fontWeight: 500,
-                      }}
+                      style={BADGE_STYLE}
                     >
                       {searchResults.cities.length} found
                     </Badge>

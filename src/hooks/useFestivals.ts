@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
-import { Database } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 
 export type Festival = Database['public']['Tables']['festivals']['Row'];
 type FestivalInsert = Database['public']['Tables']['festivals']['Insert'];
@@ -31,7 +31,7 @@ export function useFestivals(autoFetch = true) {
       setLoading(true);
       setError(null);
 
-      let query = api
+      let query = supabase
         .from('festivals')
         .select('*, cities:city_id(id, name), countries:country_id(id, name)')
         .order('start_date', { ascending: false, nullsFirst: false });
@@ -60,7 +60,7 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const fetchFestivalWithEvents = useCallback(async (id: string): Promise<FestivalWithEvents | null> => {
-    const { data: festival, error: festErr } = await api
+    const { data: festival, error: festErr } = await supabase
       .from('festivals')
       .select('*, cities:city_id(id, name), countries:country_id(id, name)')
       .eq('id', id)
@@ -68,7 +68,7 @@ export function useFestivals(autoFetch = true) {
     if (festErr) throw festErr;
     if (!festival) return null;
 
-    const { data: events } = await api
+    const { data: events } = await supabase
       .from('events')
       .select('*, venues:venue_id(id, name)')
       .eq('festival_id', id)
@@ -78,13 +78,13 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const createFestival = useCallback(async (festival: FestivalInsert) => {
-    const { data, error } = await api.from('festivals').insert(festival).select().single();
+    const { data, error } = await supabase.from('festivals').insert(festival).select().single();
     if (error) throw error;
     return data;
   }, []);
 
   const updateFestival = useCallback(async (id: string, changes: Partial<FestivalInsert>) => {
-    const { data, error } = await api
+    const { data, error } = await supabase
       .from('festivals')
       .update({ ...changes, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -95,12 +95,12 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const deleteFestival = useCallback(async (id: string) => {
-    const { error } = await api.from('festivals').delete().eq('id', id);
+    const { error } = await supabase.from('festivals').delete().eq('id', id);
     if (error) throw error;
   }, []);
 
   const linkEventToFestival = useCallback(async (eventId: string, festivalId: string) => {
-    const { error } = await api
+    const { error } = await supabase
       .from('events')
       .update({ festival_id: festivalId })
       .eq('id', eventId);
@@ -108,7 +108,7 @@ export function useFestivals(autoFetch = true) {
   }, []);
 
   const unlinkEvent = useCallback(async (eventId: string) => {
-    const { error } = await api
+    const { error } = await supabase
       .from('events')
       .update({ festival_id: null })
       .eq('id', eventId);

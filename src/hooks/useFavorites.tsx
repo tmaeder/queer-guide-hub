@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export type FavoriteType =
@@ -39,7 +39,7 @@ export function useFavorites(type: FavoriteType) {
 
     const fetchFavorites = async () => {
       setLoading(true);
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from(config.table as any)
         .select(config.idColumn)
         .eq('user_id', user.id);
@@ -79,7 +79,7 @@ export function useFavorites(type: FavoriteType) {
       });
 
       if (currentlyFavorited) {
-        const { error } = await api
+        const { error } = await supabase
           .from(config.table as any)
           .delete()
           .eq('user_id', user.id)
@@ -91,7 +91,7 @@ export function useFavorites(type: FavoriteType) {
           toast({ title: 'Failed to remove favorite', variant: 'destructive' });
         }
       } else {
-        const { error } = await api
+        const { error } = await supabase
           .from(config.table as any)
           .insert({ user_id: user.id, [config.idColumn]: itemId } as any);
 

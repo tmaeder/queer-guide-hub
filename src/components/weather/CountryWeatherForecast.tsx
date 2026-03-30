@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Cloud, Sun, CloudRain, Thermometer } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { invokeFunction } from '@/integrations/cloudflare-workers';
+import { supabase } from "@/integrations/supabase/client";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -49,7 +49,7 @@ export default function CountryWeatherForecast({
       setLoading(true);
       setError(null);
 
-      const { data, error } = await invokeFunction('get-weather-forecast', {
+      const { data, error } = await supabase.functions.invoke('get-weather-forecast', {
         body: {
           lat: latitude,
           lon: longitude,

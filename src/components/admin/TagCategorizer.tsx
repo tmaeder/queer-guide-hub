@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Tag, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 export function TagCategorizer() {
   const [isRunning, setIsRunning] = useState(false);
@@ -23,7 +23,7 @@ export function TagCategorizer() {
 
     try {
       // Call the categorize-tags edge function
-      const { data, error } = await api.functions.invoke('categorize-tags', {
+      const { data, error } = await supabase.functions.invoke('categorize-tags', {
         method: 'POST'
       });
 

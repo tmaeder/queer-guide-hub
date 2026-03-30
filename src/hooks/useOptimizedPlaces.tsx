@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
-import { Database, Tables } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import { Database, Tables } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 
 type Country = Database['public']['Tables']['countries']['Row'];
@@ -26,7 +26,7 @@ const STALE_TIME = 15 * 60 * 1000; // 15 minutes
 
 export function useOptimizedCountries(filters?: PlacesFilters) {
   const fetchCountries = async (): Promise<Country[]> => {
-    let query = api.from('countries').select('*').order('name', { ascending: true });
+    let query = supabase.from('countries').select('*').order('name', { ascending: true });
 
     if (filters?.search) {
       query = query.or(`name.ilike.%${filters.search}%,capital.ilike.%${filters.search}%`);
@@ -76,7 +76,7 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
 
 export function useOptimizedCities(filters?: PlacesFilters & { countryId?: string }) {
   const fetchCities = async (): Promise<City[]> => {
-    let query = api.from('cities').select('*').order('population', { ascending: false });
+    let query = supabase.from('cities').select('*').order('population', { ascending: false });
 
     if (filters?.countryId) {
       query = query.eq('country_id', filters.countryId);
@@ -130,9 +130,9 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
 
 export function useOptimizedCountry(countryId: string) {
   const fetchCountry = async (): Promise<Country | null> => {
-    const { data, error } = await api
+    const { data, error } = await supabase
       .from('countries')
-      .select('*')
+      .select('*, continents(name), regions(name)')
       .eq('id', countryId)
       .maybeSingle();
 
@@ -164,7 +164,7 @@ export function useOptimizedCountry(countryId: string) {
 
 export function useOptimizedCity(cityId: string) {
   const fetchCity = async (): Promise<City | null> => {
-    const { data, error } = await api
+    const { data, error } = await supabase
       .from('cities')
       .select('*')
       .eq('id', cityId)
@@ -199,7 +199,7 @@ export function useOptimizedCity(cityId: string) {
 // Imperative fetch functions (migrated from usePlaces)
 
 export async function fetchCitiesByCountry(countryId: string): Promise<CityWithCountry[]> {
-  const { data, error } = await api
+  const { data, error } = await supabase
     .from('cities')
     .select('*, countries (*)')
     .eq('country_id', countryId)
@@ -210,8 +210,8 @@ export async function fetchCitiesByCountry(countryId: string): Promise<CityWithC
 
 export async function searchLocations(query: string) {
   const [countriesResult, citiesResult] = await Promise.all([
-    api.from('countries').select('*, regions (*)').ilike('name', `%${query}%`),
-    api.from('cities').select('*, countries (*)').ilike('name', `%${query}%`).limit(20),
+    supabase.from('countries').select('*, regions (*)').ilike('name', `%${query}%`),
+    supabase.from('cities').select('*, countries (*)').ilike('name', `%${query}%`).limit(20),
   ]);
   return {
     countries: countriesResult.data || [],
@@ -223,7 +223,7 @@ export async function findNearbyCities(userLocation: {
   latitude: number;
   longitude: number;
 }): Promise<CityWithCountry[]> {
-  const { data, error } = await api
+  const { data, error } = await supabase
     .from('cities')
     .select('*, countries (*)')
     .not('latitude', 'is', null)

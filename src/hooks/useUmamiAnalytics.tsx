@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { invokeFunction } from '@/integrations/cloudflare-workers';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UmamiEventData {
   name: string;
@@ -44,7 +44,7 @@ export const useUmamiAnalytics = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
       
-      const { error } = await invokeFunction('umami-analytics', {
+      const { error } = await supabase.functions.invoke('umami-analytics', {
         body: {
           name: eventData.name,
           data: eventData.data,
@@ -80,7 +80,7 @@ export const useUmamiAnalytics = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
       
-      const { error } = await invokeFunction('umami-analytics', {
+      const { error } = await supabase.functions.invoke('umami-analytics', {
         body: {
           url: url || window.location.pathname + window.location.search,
           title: title || document.title,

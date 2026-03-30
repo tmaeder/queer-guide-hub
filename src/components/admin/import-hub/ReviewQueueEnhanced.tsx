@@ -38,7 +38,7 @@ import {
   type StagingFilters,
   type StagingSort,
 } from '@/hooks/useImportHubQueries';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import { SideBySideComparison } from './SideBySideComparison';
 import type { StagingItem } from '@/hooks/useImportHub';
@@ -165,19 +165,16 @@ export function ReviewQueueEnhanced() {
     if (selectedIds.size > 0) {
       setSelectedIds(new Set());
     } else {
-      // Fetch ALL matching IDs across pages
-      let query = api
-        .from('ingestion_staging' as any)
-        .select('id')
-        .eq('review_status', 'pending_review')
-        .eq('disposition', 'pending')
-        .limit(5000);
-
-      if (filters.target_table) query = query.eq('target_table', filters.target_table);
-      if (filters.dedup_status) query = query.eq('dedup_status', filters.dedup_status);
-
-      const { data } = await query;
-      setSelectedIds(new Set((data || []).map((i: any) => i.id)));
+      // Use lightweight RPC returning JSON array (bypasses PostgREST row limit)
+      const { data } = await supabase.rpc('get_staging_ids', {
+        p_target_table: filters.target_table || null,
+        p_dedup_status: filters.dedup_status || null,
+        p_search: filters.search || null,
+        p_limit: 50000,
+        p_review_status: filters.review_status || null,
+      } as any);
+      const ids: string[] = Array.isArray(data) ? data : [];
+      setSelectedIds(new Set(ids));
     }
   };
 

@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -102,11 +102,11 @@ export default function AdminVenueAmenities() {
     }
     try {
       if (editingId) {
-        const { error } = await api.from('venue_amenities').update(form).eq('id', editingId);
+        const { error } = await supabase.from('venue_amenities').update(form).eq('id', editingId);
         if (error) throw error;
         toast.success('Amenity updated');
       } else {
-        const { error } = await api.from('venue_amenities').insert([form]);
+        const { error } = await supabase.from('venue_amenities').insert([form]);
         if (error) throw error;
         toast.success('Amenity created');
       }
@@ -120,7 +120,7 @@ export default function AdminVenueAmenities() {
   const handleDelete = async (row: AmenityRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await api.from('venue_amenities').delete().eq('id', row.id);
+      const { error } = await supabase.from('venue_amenities').delete().eq('id', row.id);
       if (error) throw error;
       toast.success('Amenity deleted');
       invalidateTable();

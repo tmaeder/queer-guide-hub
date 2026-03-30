@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import { format, parseISO } from 'date-fns';
 import { formatEventTime } from '@/lib/event-time';
-import type { Database } from '@/types/database';
+import type { Database } from '@/integrations/supabase/types';
 
 type EventRow = Database['public']['Tables']['events']['Row'] & {
   venues?: { id: string; name: string } | null;

@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { DataTableBulkEditDialog } from './DataTableBulkEditDialog';
 import type { BulkEditFieldConfig } from './types';
@@ -47,7 +47,7 @@ export function DataTableBulkActions({
   const handleBulkDelete = async () => {
     setDeleting(true);
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from(tableName as 'venues')
         .delete()
         .in('id', Array.from(selectedIds));

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export interface UserPhoto {
@@ -24,7 +24,7 @@ export function useUserPhotos(userId: string) {
   const { data: photos, isLoading } = useQuery({
     queryKey: ['user-photos', userId],
     queryFn: async () => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('user_photos')
         .select('*')
         .eq('user_id', userId)
@@ -43,14 +43,14 @@ export function useUserPhotos(userId: string) {
       const filePath = `${userId}/${fileName}`;
 
       // Upload file to storage
-      const { error: uploadError } = await api.storage
+      const { error: uploadError } = await supabase.storage
         .from('user-photos')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       // Save metadata to database
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('user_photos')
         .insert({
           user_id: userId,
@@ -89,14 +89,14 @@ export function useUserPhotos(userId: string) {
       if (!photo) throw new Error('Photo not found');
 
       // Delete from storage
-      const { error: storageError } = await api.storage
+      const { error: storageError } = await supabase.storage
         .from('user-photos')
         .remove([photo.storage_path]);
 
       if (storageError) throw storageError;
 
       // Delete from database
-      const { error } = await api
+      const { error } = await supabase
         .from('user_photos')
         .delete()
         .eq('id', photoId);
@@ -121,7 +121,7 @@ export function useUserPhotos(userId: string) {
 
   const updateCaption = useMutation({
     mutationFn: async ({ photoId, caption }: { photoId: string; caption: string }) => {
-      const { error } = await api
+      const { error } = await supabase
         .from('user_photos')
         .update({ caption })
         .eq('id', photoId);
@@ -145,14 +145,14 @@ export function useUserPhotos(userId: string) {
   });
 
   const getPhotoUrl = (storagePath: string) => {
-    const { data } = api.storage
+    const { data } = supabase.storage
       .from('user-photos')
       .getPublicUrl(storagePath);
     return data.publicUrl;
   };
 
   const getSignedPhotoUrl = async (storagePath: string, expiresIn: number = 3600) => {
-    const { data, error } = await api.storage
+    const { data, error } = await supabase.storage
       .from('user-photos')
       .createSignedUrl(storagePath, expiresIn);
     if (error) return null;

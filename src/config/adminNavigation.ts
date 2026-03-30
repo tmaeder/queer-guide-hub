@@ -1,11 +1,8 @@
 /**
  * Admin Navigation Configuration
- * Simplified 6-section layout: Dashboard, Content, Imports, Automation, Moderation, System.
+ * Simplified 4-section layout: Cockpit, Content, Import & Review, System (Review & Moderation merged into Import & Review).
  * Central config for the unified admin sidebar. Each section groups related nav items.
  * Used by AdminSidebar to render the navigation tree.
- *
- * Refactored: merged scraping/email/news into Imports, merged workflows into Automation,
- * removed duplicated nav items, eliminated redundant sections.
  */
 
 import {
@@ -26,18 +23,20 @@ import {
   FileText,
   Image,
   Download,
+  Rss,
+  Activity,
   ClipboardCheck,
   Settings,
   Key,
   Mail,
   Link2,
-  LinkIcon,
   Handshake,
-  Inbox,
+  Workflow,
   Zap,
   Hotel,
   Home,
   History,
+  Plus,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -70,10 +69,10 @@ export interface AdminNavSection {
 // ── Navigation Sections ────────────────────────────────────────────────────────
 
 export const adminNavSections: AdminNavSection[] = [
-  // ── Dashboard ─────────────────────────────────────────────────
+  // ── Cockpit (unified dashboard) ─────────────────────────────────
   {
-    id: 'dashboard',
-    label: 'Dashboard',
+    id: 'cockpit',
+    label: 'Cockpit',
     icon: LayoutDashboard,
     color: '#8b5cf6',
     items: [
@@ -209,53 +208,14 @@ export const adminNavSections: AdminNavSection[] = [
     ],
   },
 
-  // ── Imports (unified: CSV, scraping, email, news, venues) ────
+  // ── Import & Review (combined pipeline) ─────────────────────────
   {
-    id: 'imports',
-    label: 'Imports',
+    id: 'import-review',
+    label: 'Import & Review',
     icon: Download,
     color: '#10b981',
     collapsible: true,
     defaultExpanded: true,
-    items: [
-      {
-        id: 'import-dashboard',
-        label: 'Import Hub',
-        icon: Download,
-        route: '/admin/imports',
-        color: '#10b981',
-      },
-    ],
-  },
-
-  // ── Automation (modules + workflows + image optimization) ─────
-  {
-    id: 'automation',
-    label: 'Automation',
-    icon: Zap,
-    color: '#f59e0b',
-    collapsible: true,
-    defaultExpanded: false,
-    items: [
-      {
-        id: 'automation-dashboard',
-        label: 'Automation',
-        icon: Zap,
-        route: '/admin/automation',
-        adminOnly: true,
-        color: '#f59e0b',
-      },
-    ],
-  },
-
-  // ── Moderation (review, audit, links, submissions) ────────────
-  {
-    id: 'moderation',
-    label: 'Moderation',
-    icon: ClipboardCheck,
-    color: '#f59e0b',
-    collapsible: true,
-    defaultExpanded: false,
     items: [
       {
         id: 'review-queue',
@@ -265,27 +225,80 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#f59e0b',
       },
       {
-        id: 'audit-log',
-        label: 'Audit Log',
+        id: 'import-dashboard',
+        label: 'Imports',
+        icon: Download,
+        route: '/admin/imports',
+        color: '#10b981',
+      },
+      {
+        id: 'create-import',
+        label: 'New Import',
+        icon: Plus,
+        route: '/admin/imports/create',
+        color: '#10b981',
+      },
+      {
+        id: 'news-sources',
+        label: 'Sources',
+        icon: Rss,
+        route: '/admin/imports/news-sources',
+        color: '#3b82f6',
+      },
+      {
+        id: 'email-ingestions',
+        label: 'Email Ingestions',
+        icon: Mail,
+        route: '/admin/imports/email-ingestions',
+        countTable: 'email_ingestions',
+        color: '#ec4899',
+      },
+      {
+        id: 'pipeline',
+        label: 'Pipeline',
+        icon: Activity,
+        route: '/admin/imports/pipeline',
+        color: '#f59e0b',
+      },
+      {
+        id: 'venue-import',
+        label: 'Venue Import',
+        icon: MapPin,
+        route: '/admin/imports/venues',
+        color: '#8b5cf6',
+      },
+      {
+        id: 'import-history',
+        label: 'History',
         icon: History,
-        route: '/admin/audit',
+        route: '/admin/imports/history',
         color: '#6366f1',
       },
       {
-        id: 'link-health',
-        label: 'Link Health',
-        icon: LinkIcon,
-        route: '/admin/links',
-        countTable: 'content_links',
-        color: '#0ea5e9',
+        id: 'workflows',
+        label: 'Workflows',
+        icon: Workflow,
+        route: '/admin/workflows',
+        countTable: 'workflow_runs',
+        adminOnly: true,
+        color: '#8b5cf6',
       },
       {
-        id: 'submissions',
-        label: 'Submissions',
-        icon: Inbox,
-        route: '/admin/submissions',
-        countTable: 'community_submissions',
-        color: '#3b82f6',
+        id: 'automation',
+        label: 'Automation',
+        icon: Zap,
+        route: '/admin/automation',
+        adminOnly: true,
+        color: '#f59e0b',
+      },
+      {
+        id: 'scraping',
+        label: 'Web Scraping',
+        icon: Globe,
+        route: '/admin/scraping',
+        countTable: 'scrape_sources',
+        adminOnly: true,
+        color: '#0ea5e9',
       },
     ],
   },
@@ -365,6 +378,14 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#64748b',
       },
       {
+        id: 'audit-log',
+        label: 'Audit Log',
+        icon: History,
+        route: '/admin/audit',
+        adminOnly: true,
+        color: '#6366f1',
+      },
+      {
         id: 'settings',
         label: 'Settings',
         icon: Settings,
@@ -402,7 +423,7 @@ export function getBreadcrumbsForRoute(pathname: string): Array<{ label: string;
   for (const section of adminNavSections) {
     for (const item of section.items) {
       if (item.route === pathname) {
-        if (section.id !== 'dashboard') {
+        if (section.id !== 'cockpit') {
           const sectionRoute = section.items[0]?.route;
           crumbs.push({ label: section.label, route: sectionRoute });
         }
@@ -416,7 +437,7 @@ export function getBreadcrumbsForRoute(pathname: string): Array<{ label: string;
   for (const section of adminNavSections) {
     for (const item of section.items) {
       if (pathname.startsWith(item.route) && item.route !== '/admin') {
-        if (section.id !== 'dashboard') {
+        if (section.id !== 'cockpit') {
           const sectionRoute = section.items[0]?.route;
           crumbs.push({ label: section.label, route: sectionRoute });
         }

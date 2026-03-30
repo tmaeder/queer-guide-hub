@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ export function SecurityMonitoring() {
 
     try {
       setLoading(true);
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })

@@ -39,7 +39,7 @@ import {
   FolderOpen,
 } from 'lucide-react';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import type { CMSMedia } from '@/types/cms';
 import type { ExternalImage } from '@/hooks/useExternalImageSearch';
 import MediaUploader from './MediaUploader';
@@ -75,7 +75,7 @@ function getMediaThumbnailUrl(media: CMSMedia): string {
   if (media.external_source) {
     return media.storage_path;
   }
-  const { data } = api.storage.from('cms-media').getPublicUrl(media.storage_path);
+  const { data } = supabase.storage.from('cms-media').getPublicUrl(media.storage_path);
   return data.publicUrl;
 }
 

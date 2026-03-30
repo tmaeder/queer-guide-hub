@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,7 +33,7 @@ export interface MailboxEmail {
   deleted_at: string | null;
 }
 
-const mailboxTable = () => api.from('mailbox_emails' as never);
+const mailboxTable = () => supabase.from('mailbox_emails' as never);
 
 export const useMailbox = () => {
   const [emails, setEmails] = useState<MailboxEmail[]>([]);
@@ -156,10 +156,23 @@ export const useMailbox = () => {
       if (!user) throw new Error('Not authenticated');
       setSending(true);
       try {
-        const { data: result, error } = await api.functions.invoke('send-mailbox-email', {
-          body: params,
-        });
-        if (error) throw new Error(error.message || 'Failed to send');
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL || 'https://xqeacpakadqfxjxjcewc.supabase.co'}/functions/v1/send-mailbox-email`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session?.access_token}`,
+              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+            },
+            body: JSON.stringify(params),
+          },
+        );
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Failed to send');
         toast({ title: 'Email sent', description: `To: ${params.to}` });
         return result;
       } catch (err: any) {
@@ -179,7 +192,7 @@ export const useMailbox = () => {
   const saveDraft = useCallback(
     async (params: { to?: string; subject?: string; body_html?: string; body_text?: string }) => {
       if (!user) return;
-      const { data: profile } = await api
+      const { data: profile } = await supabase
         .from('profiles')
         .select('mailbox_address, display_name')
         .eq('user_id', user.id)
@@ -226,7 +239,7 @@ export const useMailbox = () => {
   useEffect(() => {
     if (!user) return;
 
-    const channel = api
+    const channel = supabase
       .channel('mailbox-realtime')
       .on(
         'postgres_changes',
@@ -257,7 +270,7 @@ export const useMailbox = () => {
       .subscribe();
 
     return () => {
-      api.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, [user, selectedFolder, toast]);
 

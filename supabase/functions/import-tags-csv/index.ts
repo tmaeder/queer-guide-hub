@@ -1,0 +1,272 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts';
+
+interface TagRow {
+  name: string;
+  category: string;
+  description?: string;
+}
+
+serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: corsHeaders
+    });
+  }
+
+  try {
+    const supabase = getServiceClient();
+    const auth = await requireAdmin(req, supabase);
+    if (auth instanceof Response) return auth;
+
+    const supabaseClient = supabase;
+
+    const formData = await req.formData();
+    const file = formData.get('file') as File;
+    
+    if (!file) {
+      return new Response(JSON.stringify({ error: 'No file provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const csvText = await file.text();
+    console.log('CSV content length:', csvText.length);
+
+    // Parse CSV content - Handle different line endings
+    const lines = csvText.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    if (lines.length === 0) {
+      return new Response(JSON.stringify({ error: 'Empty CSV file' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Parse header row - improved parsing to handle quotes
+    const headerLine = lines[0];
+    console.log('Raw header line:', headerLine);
+    
+    const headers = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < headerLine.length; i++) {
+      const char = headerLine[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        headers.push(current.trim().toLowerCase().replace(/"/g, ''));
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    headers.push(current.trim().toLowerCase().replace(/"/g, ''));
+    
+    console.log('CSV headers:', headers);
+
+    // Validate required headers
+    const requiredHeaders = ['name'];
+    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+    
+    if (missingHeaders.length > 0) {
+      return new Response(JSON.stringify({ 
+        error: `Missing required headers: ${missingHeaders.join(', ')}. Required: name. Optional: category, description` 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Parse data rows
+    const tags: TagRow[] = [];
+    const errors: string[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      console.log(`Processing row ${i}: ${line}`);
+
+      // Better CSV parsing that handles quoted fields with commas
+      const values: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          values.push(current.trim().replace(/^"(.*)"$/, '$1'));
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      values.push(current.trim().replace(/^"(.*)"$/, '$1'));
+
+      console.log(`Row ${i} values:`, values);
+
+      // Create tag object
+      const tag: TagRow = {
+        name: '',
+        category: 'general' // Default category
+      };
+
+      headers.forEach((header, index) => {
+        const value = (values[index] || '').trim();
+        console.log(`Setting ${header} = ${value}`);
+        
+        switch (header) {
+          case 'name':
+            tag.name = value;
+            break;
+          case 'category':
+            if (value) tag.category = value;
+            break;
+          case 'description':
+            if (value) tag.description = value;
+            break;
+        }
+      });
+
+      // Validate tag
+      if (!tag.name.trim()) {
+        errors.push(`Row ${i + 1}: Missing tag name`);
+        console.log(`Row ${i + 1}: Missing tag name, tag object:`, tag);
+        continue;
+      }
+
+      // Ensure category has a default value if empty
+      if (!tag.category.trim()) {
+        tag.category = 'general';
+      }
+
+      console.log(`Row ${i + 1}: Valid tag:`, tag);
+
+      tags.push(tag);
+    }
+
+    console.log(`Parsed ${tags.length} tags with ${errors.length} errors`);
+
+    if (tags.length === 0) {
+      return new Response(JSON.stringify({
+        error: 'No valid tags found in CSV'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Prepare tags for insertion
+    const tagsToInsert = tags.map(tag => ({
+      name: tag.name.trim(),
+      slug: tag.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      category: tag.category.trim().toLowerCase().replace(/\s+/g, '-'),
+      description: tag.description?.trim() || null
+    }));
+
+    console.log('Processing tags:', tagsToInsert.length);
+
+    // Check for existing tags and split into new vs existing
+    const existingSlugs = tagsToInsert.map(tag => tag.slug);
+    const { data: existingTags } = await supabaseClient
+      .from('unified_tags')
+      .select('id, slug, name, category, description')
+      .in('slug', existingSlugs);
+
+    const existingTagsMap = new Map(existingTags?.map(tag => [tag.slug, tag]) || []);
+    
+    // Split tags into new and existing for updates
+    const newTags = tagsToInsert.filter(tag => !existingTagsMap.has(tag.slug));
+    const existingTagsToUpdate = tagsToInsert.filter(tag => existingTagsMap.has(tag.slug));
+
+    console.log('New tags to insert:', newTags.length);
+    console.log('Existing tags to update:', existingTagsToUpdate.length);
+
+    let insertedTags = [];
+    const updatedTags = [];
+    let insertError = null;
+    let updateError = null;
+
+    // Insert new tags
+    if (newTags.length > 0) {
+      const result = await supabaseClient
+        .from('unified_tags')
+        .insert(newTags)
+        .select();
+      
+      insertedTags = result.data || [];
+      insertError = result.error;
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        return new Response(JSON.stringify({
+          error: 'Internal server error'
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Update existing tags
+    if (existingTagsToUpdate.length > 0) {
+      for (const tag of existingTagsToUpdate) {
+        const existingTag = existingTagsMap.get(tag.slug);
+        if (existingTag) {
+          const { data: updated, error: updateErr } = await supabaseClient
+            .from('unified_tags')
+            .update({
+              name: tag.name,
+              category: tag.category,
+              description: tag.description
+            })
+            .eq('id', existingTag.id)
+            .select();
+
+          if (updateErr) {
+            console.error('Update error for tag:', tag.name, updateErr);
+            updateError = updateErr;
+          } else if (updated) {
+            updatedTags.push(...updated);
+          }
+        }
+      }
+    }
+
+    const result = {
+      success: true,
+      imported: insertedTags?.length || 0,
+      updated: updatedTags?.length || 0,
+      total_parsed: tags.length,
+      errors: errors.length > 0 ? errors : undefined
+    };
+
+    console.log('Import completed:', result);
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    console.error('Import error:', error);
+    return new Response(JSON.stringify({
+      error: 'Internal server error'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});

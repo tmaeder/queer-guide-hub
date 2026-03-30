@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { invokeFunction } from '@/integrations/cloudflare-workers';
+import { supabase } from "@/integrations/supabase/client";
 import Box from '@mui/material/Box';
 
 interface CountryImage {
@@ -28,7 +28,7 @@ export default function CountryHeroImages({ countryName, className = "" }: Count
     try {
       setLoading(true);
 
-      const { data, error } = await invokeFunction('get-pexels-images', {
+      const { data, error } = await supabase.functions.invoke('get-pexels-images', {
         body: {
           query: `${countryName} famous landmarks architecture cityscape national symbols capital`,
           type: 'country',

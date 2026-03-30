@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -28,7 +28,7 @@ import {
   useCityBoundaries,
   useNeighbourhoodBoundaries,
 } from '@/hooks/useBoundaryData';
-import { enrichBoundaryFeatures } from '@/utils/boundaryUtils';
+import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
 
 // ── Layer classification ─────────────────────────────────────────────────────
 
@@ -37,56 +37,17 @@ export const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'
 
 /** Circle radius interpolation stops per area type: [zoom, radiusPx][] */
 const AREA_RADIUS: Record<string, [number, number][]> = {
-  countries: [
-    [1, 8],
-    [3, 18],
-    [5, 40],
-    [7, 80],
-    [9, 150],
-    [12, 280],
-  ],
-  cities: [
-    [2, 4],
-    [4, 8],
-    [6, 16],
-    [8, 28],
-    [10, 45],
-    [14, 75],
-  ],
-  neighbourhoods: [
-    [2, 3],
-    [4, 6],
-    [6, 12],
-    [8, 22],
-    [10, 38],
-    [14, 60],
-  ],
+  countries: [[1, 8], [3, 18], [5, 40], [7, 80], [9, 150], [12, 280]],
+  cities: [[2, 4], [4, 8], [6, 16], [8, 28], [10, 45], [14, 75]],
+  neighbourhoods: [[2, 3], [4, 6], [6, 12], [8, 22], [10, 38], [14, 60]],
 };
 
 /** Circle style per area type */
-const AREA_STYLE: Record<string, { opacity: number; strokeOpacity: number; minLabelZoom: number }> =
-  {
-    countries: { opacity: 0.2, strokeOpacity: 0.55, minLabelZoom: 1 },
-    cities: { opacity: 0.25, strokeOpacity: 0.6, minLabelZoom: 3 },
-    neighbourhoods: { opacity: 0.3, strokeOpacity: 0.7, minLabelZoom: 6 },
-  };
-
-// ── Boundary polygon layer IDs ───────────────────────────────────────────────
-
-const BOUNDARY_SOURCE = 'boundary-countries';
-const BOUNDARY_FILL = 'boundary-countries-fill';
-const BOUNDARY_STROKE = 'boundary-countries-stroke';
-const BOUNDARY_LABEL = 'boundary-countries-label';
-
-const CITY_BOUNDARY_SOURCE = 'boundary-cities';
-const CITY_BOUNDARY_FILL = 'boundary-cities-fill';
-const CITY_BOUNDARY_STROKE = 'boundary-cities-stroke';
-const CITY_BOUNDARY_LABEL = 'boundary-cities-label';
-
-const NEIGHBOURHOOD_BOUNDARY_SOURCE = 'boundary-neighbourhoods';
-const NEIGHBOURHOOD_BOUNDARY_FILL = 'boundary-neighbourhoods-fill';
-const NEIGHBOURHOOD_BOUNDARY_STROKE = 'boundary-neighbourhoods-stroke';
-const NEIGHBOURHOOD_BOUNDARY_LABEL = 'boundary-neighbourhoods-label';
+const AREA_STYLE: Record<string, { opacity: number; strokeOpacity: number; minLabelZoom: number }> = {
+  countries: { opacity: 0.2, strokeOpacity: 0.55, minLabelZoom: 1 },
+  cities: { opacity: 0.25, strokeOpacity: 0.6, minLabelZoom: 3 },
+  neighbourhoods: { opacity: 0.3, strokeOpacity: 0.7, minLabelZoom: 6 },
+};
 
 // ── MapLibre layer IDs for point data ────────────────────────────────────────
 
@@ -94,6 +55,34 @@ const POINTS_SOURCE = 'points-source';
 const CLUSTERS_LAYER = 'clusters';
 const CLUSTER_COUNT_LAYER = 'cluster-count';
 const UNCLUSTERED_LAYER = 'unclustered-point';
+
+// ── Boundary configs ─────────────────────────────────────────────────────────
+
+const COUNTRY_BOUNDARY_CONFIG: BoundaryLayerConfig = {
+  key: 'countries',
+  entityType: 'countries',
+  matchKey: 'ISO_A2',
+  matchMode: 'code',
+  minLabelZoom: 1,
+};
+
+const CITY_BOUNDARY_CONFIG: BoundaryLayerConfig = {
+  key: 'cities',
+  entityType: 'cities',
+  matchKey: 'entity_id',
+  matchMode: 'entityId',
+  minLabelZoom: 4,
+  minLayerZoom: 4,
+};
+
+const NEIGHBOURHOOD_BOUNDARY_CONFIG: BoundaryLayerConfig = {
+  key: 'neighbourhoods',
+  entityType: 'neighbourhoods',
+  matchKey: 'entity_id',
+  matchMode: 'entityId',
+  minLabelZoom: 8,
+  minLayerZoom: 8,
+};
 
 // ── Default props ──────────────────────────────────────────────────────────────
 
@@ -108,6 +97,12 @@ export interface ExploreMapProps {
   showFilters?: boolean;
   linkToFullMap?: string;
   className?: string;
+  /** Initial center override [lng, lat] */
+  initialCenter?: [number, number];
+  /** Initial zoom override */
+  initialZoom?: number;
+  /** Skip visitor geo auto-fly */
+  skipAutoFly?: boolean;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -120,6 +115,9 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   showFilters = true,
   linkToFullMap,
   className,
+  initialCenter,
+  initialZoom,
+  skipAutoFly = false,
 }) => {
   const navigate = useNavigate();
 
@@ -129,27 +127,20 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const areaLayerIdsRef = useRef<Set<string>>(new Set());
-  const boundaryLayerAddedRef = useRef(false);
-  const cityBoundaryAddedRef = useRef(false);
-  const neighbourhoodBoundaryAddedRef = useRef(false);
-  const hoveredBoundaryIdRef = useRef<number | null>(null);
-  const hoveredCityBoundaryIdRef = useRef<number | null>(null);
-  const hoveredNeighbourhoodBoundaryIdRef = useRef<number | null>(null);
   const pointLayersAddedRef = useRef(false);
 
   // ── State ────────────────────────────────────────────────────────────────
   const [mapReady, setMapReady] = useState(false);
   const [locating, setLocating] = useState(false);
-  const [currentZoom, setCurrentZoom] = useState(DEFAULT_ZOOM);
+  const [currentZoom, setCurrentZoom] = useState(initialZoom ?? DEFAULT_ZOOM);
 
   const [enabledLayers, setEnabledLayers] = useState<LayerType[]>(
-    () =>
-      defaultLayers ?? LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
+    () => defaultLayers ?? LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
   );
 
   const [viewport, setViewport] = useState<MapViewport>({
-    center: DEFAULT_CENTER,
-    zoom: DEFAULT_ZOOM,
+    center: initialCenter ?? DEFAULT_CENTER,
+    zoom: initialZoom ?? DEFAULT_ZOOM,
   });
 
   const [filters, setFilters] = useState<ExploreMapFilters>(defaultFilters ?? {});
@@ -206,11 +197,10 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   const { location: visitorGeo } = useVisitorLocation();
 
   useEffect(() => {
-    if (visitorGeo) {
-      setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
-      flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
-    }
-  }, [visitorGeo, flyToLocation]);
+    if (skipAutoFly || initialCenter || !visitorGeo) return;
+    setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
+    flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
+  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter]);
 
   const handleLocateMe = useCallback(() => {
     if (!('geolocation' in navigator)) return;
@@ -270,8 +260,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: mapStyle,
-      center: viewport.center,
-      zoom: viewport.zoom,
+      center: initialCenter ?? viewport.center,
+      zoom: initialZoom ?? viewport.zoom,
       attributionControl: false,
     });
 
@@ -283,13 +273,10 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     map.on('load', () => {
       setMapReady(true);
       mapRef.current = map;
-
-      // Fire initial viewport fetch
       const bbox = getMapBbox(map);
       onViewportChange(bbox, map.getZoom());
     });
 
-    // Track viewport on move/zoom for point data fetching + boundary resolution
     map.on('moveend', () => {
       const bbox = getMapBbox(map);
       const z = map.getZoom();
@@ -300,7 +287,6 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     return () => {
       mapRef.current = null;
       pointLayersAddedRef.current = false;
-      boundaryLayerAddedRef.current = false;
       map.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -308,17 +294,54 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   // Fly to initial viewport once map is ready (e.g. from IP geo)
   useEffect(() => {
-    if (!mapRef.current || !mapReady) return;
+    if (!mapRef.current || !mapReady || initialCenter) return;
     mapRef.current.flyTo({ center: viewport.center, zoom: viewport.zoom, speed: 1.2 });
-  }, [viewport, mapReady]);
+  }, [viewport, mapReady, initialCenter]);
 
-  // ── Area layer rendering (circles + labels, skips countries when polygons available) ──
+  // ── Boundary polygon rendering via shared hook ─────────────────────────
+  const countryMarkers = useMemo(() => areaMarkers.filter((m) => m.type === 'countries'), [areaMarkers]);
+  const cityMarkers = useMemo(() => areaMarkers.filter((m) => m.type === 'cities'), [areaMarkers]);
+  const villageMarkers = useMemo(() => areaMarkers.filter((m) => m.type === 'neighbourhoods'), [areaMarkers]);
+
+  useMapBoundaryLayers({
+    map: mapRef.current,
+    mapReady,
+    config: COUNTRY_BOUNDARY_CONFIG,
+    boundaries: countryBoundaries,
+    markers: countryMarkers,
+    enabled: countriesEnabled,
+    tooltipEl: tooltipRef.current,
+    onPopup: showPopup,
+  });
+
+  useMapBoundaryLayers({
+    map: mapRef.current,
+    mapReady,
+    config: CITY_BOUNDARY_CONFIG,
+    boundaries: cityBoundaries,
+    markers: cityMarkers,
+    enabled: citiesEnabled,
+    tooltipEl: tooltipRef.current,
+    onPopup: showPopup,
+  });
+
+  useMapBoundaryLayers({
+    map: mapRef.current,
+    mapReady,
+    config: NEIGHBOURHOOD_BOUNDARY_CONFIG,
+    boundaries: neighbourhoodBoundaries,
+    markers: villageMarkers,
+    enabled: neighbourhoodsEnabled,
+    tooltipEl: tooltipRef.current,
+    onPopup: showPopup,
+  });
+
+  // ── Area layer rendering (circles + labels) ─────────────────────────────
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    // Skip circle rendering only for countries (large enough at any zoom).
-    // Cities/neighbourhoods keep circles — boundaries are tiny at low zoom.
+    // Skip circles for types that have polygon boundaries
     const skipCircleTypes: string[] = [];
     if (countryBoundaries) skipCircleTypes.push('countries');
     const activeAreaLayers = AREA_LAYERS.filter((t) => !skipCircleTypes.includes(t));
@@ -328,7 +351,6 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     for (const type of AREA_LAYERS) grouped[type] = onlyArea.filter((m) => m.type === type);
 
     const activeIds = new Set<string>();
-    let layersChanged = false;
 
     for (const type of AREA_LAYERS) {
       const items = grouped[type] ?? [];
@@ -337,18 +359,9 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       const labelLayerId = `area-label-${type}`;
 
       if (items.length === 0) {
-        if (map.getLayer(labelLayerId)) {
-          map.removeLayer(labelLayerId);
-          layersChanged = true;
-        }
-        if (map.getLayer(circleLayerId)) {
-          map.removeLayer(circleLayerId);
-          layersChanged = true;
-        }
-        if (map.getSource(sourceId)) {
-          map.removeSource(sourceId);
-          layersChanged = true;
-        }
+        if (map.getLayer(labelLayerId)) map.removeLayer(labelLayerId);
+        if (map.getLayer(circleLayerId)) map.removeLayer(circleLayerId);
+        if (map.getSource(sourceId)) map.removeSource(sourceId);
         areaLayerIdsRef.current.delete(sourceId);
         continue;
       }
@@ -422,23 +435,15 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
             'text-halo-color': '#ffffff',
             'text-halo-width': 1.5,
             'text-opacity': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              style.minLabelZoom,
-              0,
-              style.minLabelZoom + 0.5,
-              1,
+              'interpolate', ['linear'], ['zoom'],
+              style.minLabelZoom, 0,
+              style.minLabelZoom + 0.5, 1,
             ],
           },
         });
 
-        map.on('mouseenter', circleLayerId, () => {
-          map.getCanvas().style.cursor = 'pointer';
-        });
-        map.on('mouseleave', circleLayerId, () => {
-          map.getCanvas().style.cursor = '';
-        });
+        map.on('mouseenter', circleLayerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+        map.on('mouseleave', circleLayerId, () => { map.getCanvas().style.cursor = ''; });
         map.on('click', circleLayerId, (e: MapLayerMouseEvent) => {
           const feat = e.features?.[0];
           if (!feat || feat.geometry.type !== 'Point') return;
@@ -446,11 +451,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
           const meta: Record<string, any> = {};
           for (const [k, v] of Object.entries(props)) {
             if (k.startsWith('meta_')) {
-              try {
-                meta[k.slice(5)] = JSON.parse(v);
-              } catch {
-                meta[k.slice(5)] = v;
-              }
+              try { meta[k.slice(5)] = JSON.parse(v); } catch { meta[k.slice(5)] = v; }
             }
           }
           showPopup(map, e.lngLat, {
@@ -467,10 +468,10 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
         });
 
         areaLayerIdsRef.current.add(sourceId);
-        layersChanged = true;
       }
     }
 
+    // Clean up stale area layers
     for (const oldId of [...areaLayerIdsRef.current]) {
       if (!activeIds.has(oldId)) {
         const t = oldId.replace('area-source-', '');
@@ -478,509 +479,15 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
         if (map.getLayer(`area-circle-${t}`)) map.removeLayer(`area-circle-${t}`);
         if (map.getSource(oldId)) map.removeSource(oldId);
         areaLayerIdsRef.current.delete(oldId);
-        layersChanged = true;
       }
     }
-
-    if (layersChanged) map.triggerRepaint();
   }, [areaMarkers, mapReady, showPopup, countryBoundaries]);
-
-  // ── Country boundary polygon rendering ─────────────────────────────────
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapReady) return;
-
-    // If no boundary data or countries layer disabled, remove layers if present
-    if (!countryBoundaries || !countriesEnabled) {
-      if (map.getLayer(BOUNDARY_LABEL)) map.removeLayer(BOUNDARY_LABEL);
-      if (map.getLayer(BOUNDARY_STROKE)) map.removeLayer(BOUNDARY_STROKE);
-      if (map.getLayer(BOUNDARY_FILL)) map.removeLayer(BOUNDARY_FILL);
-      if (map.getSource(BOUNDARY_SOURCE)) map.removeSource(BOUNDARY_SOURCE);
-      boundaryLayerAddedRef.current = false;
-      return;
-    }
-
-    // Enrich boundary features with entity data from markers
-    const countryMarkers = areaMarkers.filter((m) => m.type === 'countries');
-    const enriched = enrichBoundaryFeatures(countryBoundaries, countryMarkers);
-
-    if (enriched.features.length === 0) return;
-
-    const color = LAYER_COLORS.countries ?? '#dc2626';
-
-    // Update existing source or create from scratch
-    const existingSource = map.getSource(BOUNDARY_SOURCE) as GeoJSONSource | undefined;
-    if (existingSource) {
-      existingSource.setData(enriched);
-      return;
-    }
-
-    // Add source with promoteId for feature-state
-    map.addSource(BOUNDARY_SOURCE, {
-      type: 'geojson',
-      data: enriched,
-      promoteId: 'entityId',
-    });
-
-    // Fill layer — opacity driven by feature-state for hover/select
-    map.addLayer({
-      id: BOUNDARY_FILL,
-      type: 'fill',
-      source: BOUNDARY_SOURCE,
-      paint: {
-        'fill-color': color,
-        'fill-opacity': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          0.35,
-          ['boolean', ['feature-state', 'hovered'], false],
-          0.22,
-          0.1,
-        ],
-        'fill-opacity-transition': { duration: 250 },
-      },
-    });
-
-    // Stroke layer
-    map.addLayer({
-      id: BOUNDARY_STROKE,
-      type: 'line',
-      source: BOUNDARY_SOURCE,
-      paint: {
-        'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#1e293b', color],
-        'line-width': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          2.5,
-          ['boolean', ['feature-state', 'hovered'], false],
-          1.8,
-          0.8,
-        ],
-        'line-opacity': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          0.8,
-          ['boolean', ['feature-state', 'hovered'], false],
-          0.7,
-          0.5,
-        ],
-        'line-width-transition': { duration: 200 },
-      },
-    });
-
-    // Label layer
-    map.addLayer({
-      id: BOUNDARY_LABEL,
-      type: 'symbol',
-      source: BOUNDARY_SOURCE,
-      layout: {
-        'text-field': ['get', 'name'],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 2, 10, 5, 12, 8, 14],
-        'text-font': ['Noto Sans Medium'],
-        'text-allow-overlap': false,
-        'text-ignore-placement': false,
-        'text-anchor': 'center',
-      },
-      paint: {
-        'text-color': '#1e293b',
-        'text-halo-color': '#ffffff',
-        'text-halo-width': 1.5,
-      },
-    });
-
-    // ── Hover interactivity via feature-state ─────────────────────────
-    map.on('mousemove', BOUNDARY_FILL, (e: MapLayerMouseEvent) => {
-      const feat = e.features?.[0];
-      if (!feat) return;
-      map.getCanvas().style.cursor = 'pointer';
-
-      const id = feat.properties?.entityId as string | undefined;
-      const numId = feat.id as number | undefined;
-
-      // Clear previous hover
-      if (hoveredBoundaryIdRef.current !== null && hoveredBoundaryIdRef.current !== numId) {
-        map.setFeatureState(
-          { source: BOUNDARY_SOURCE, id: hoveredBoundaryIdRef.current },
-          { hovered: false },
-        );
-      }
-
-      if (numId != null) {
-        map.setFeatureState({ source: BOUNDARY_SOURCE, id: numId }, { hovered: true });
-        hoveredBoundaryIdRef.current = numId;
-      }
-
-      // Update tooltip using safe DOM methods
-      const tip = tooltipRef.current;
-      if (tip && id) {
-        const props = feat.properties as Record<string, string>;
-        // Clear previous content
-        while (tip.firstChild) tip.removeChild(tip.firstChild);
-        // Name
-        const nameEl = document.createElement('strong');
-        nameEl.textContent = props.name ?? '';
-        tip.appendChild(nameEl);
-        // Precision badge
-        const precision = props.precision ?? 'approximate';
-        const badge = document.createElement('span');
-        badge.textContent = precision.charAt(0).toUpperCase() + precision.slice(1);
-        badge.style.cssText =
-          'margin-left:6px;font-size:10px;padding:1px 5px;border-radius:3px;' +
-          'background:#e2e8f0;color:#475569;font-weight:500;';
-        tip.appendChild(badge);
-        // Position
-        tip.style.left = `${e.point.x + 12}px`;
-        tip.style.top = `${e.point.y - 12}px`;
-        tip.style.display = 'block';
-      }
-    });
-
-    map.on('mouseleave', BOUNDARY_FILL, () => {
-      map.getCanvas().style.cursor = '';
-      if (hoveredBoundaryIdRef.current !== null) {
-        map.setFeatureState(
-          { source: BOUNDARY_SOURCE, id: hoveredBoundaryIdRef.current },
-          { hovered: false },
-        );
-        hoveredBoundaryIdRef.current = null;
-      }
-      if (tooltipRef.current) tooltipRef.current.style.display = 'none';
-    });
-
-    // Click → show popup + navigate
-    map.on('click', BOUNDARY_FILL, (e: MapLayerMouseEvent) => {
-      const feat = e.features?.[0];
-      if (!feat) return;
-      const props = feat.properties as Record<string, string>;
-      const meta: Record<string, any> = {};
-      for (const [k, v] of Object.entries(props)) {
-        if (k.startsWith('meta_')) {
-          try {
-            meta[k.slice(5)] = JSON.parse(v);
-          } catch {
-            meta[k.slice(5)] = v;
-          }
-        }
-      }
-      // Find centroid for popup from the matching marker
-      const marker = areaMarkers.find((m) => m.id === props.entityId);
-      const lngLat = marker ? new maplibregl.LngLat(marker.lng, marker.lat) : e.lngLat;
-
-      showPopup(map, lngLat, {
-        id: props.entityId,
-        type: 'countries' as LayerType,
-        lat: lngLat.lat,
-        lng: lngLat.lng,
-        name: props.name,
-        subtitle: props.subtitle || undefined,
-        color: props.color,
-        linkTo: props.linkTo || undefined,
-        meta,
-      });
-    });
-
-    boundaryLayerAddedRef.current = true;
-  }, [countryBoundaries, countriesEnabled, areaMarkers, mapReady, showPopup]);
-
-  // ── Shared boundary layer setup helper ──────────────────────────────────
-  const addBoundaryLayers = useCallback(
-    (
-      map: maplibregl.Map,
-      opts: {
-        sourceId: string;
-        fillId: string;
-        strokeId: string;
-        labelId: string;
-        enriched: GeoJSON.FeatureCollection;
-        color: string;
-        entityType: LayerType;
-        hoveredRef: React.MutableRefObject<number | null>;
-        minLabelZoom?: number;
-        minLayerZoom?: number;
-      },
-    ) => {
-      const {
-        sourceId,
-        fillId,
-        strokeId,
-        labelId,
-        enriched,
-        color,
-        entityType,
-        hoveredRef,
-        minLabelZoom = 3,
-        minLayerZoom,
-      } = opts;
-
-      const existingSource = map.getSource(sourceId) as GeoJSONSource | undefined;
-      if (existingSource) {
-        existingSource.setData(enriched);
-        return;
-      }
-
-      map.addSource(sourceId, {
-        type: 'geojson',
-        data: enriched,
-        promoteId: 'entityId',
-      });
-
-      map.addLayer({
-        id: fillId,
-        type: 'fill',
-        source: sourceId,
-        ...(minLayerZoom != null && { minzoom: minLayerZoom }),
-        paint: {
-          'fill-color': color,
-          'fill-opacity': [
-            'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            0.35,
-            ['boolean', ['feature-state', 'hovered'], false],
-            0.22,
-            0.1,
-          ],
-          'fill-opacity-transition': { duration: 250 },
-        },
-      });
-
-      map.addLayer({
-        id: strokeId,
-        type: 'line',
-        source: sourceId,
-        ...(minLayerZoom != null && { minzoom: minLayerZoom }),
-        paint: {
-          'line-color': [
-            'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            '#1e293b',
-            color,
-          ],
-          'line-width': [
-            'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            2.5,
-            ['boolean', ['feature-state', 'hovered'], false],
-            1.8,
-            0.8,
-          ],
-          'line-opacity': [
-            'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            0.8,
-            ['boolean', ['feature-state', 'hovered'], false],
-            0.7,
-            0.5,
-          ],
-          'line-width-transition': { duration: 200 },
-        },
-      });
-
-      map.addLayer({
-        id: labelId,
-        type: 'symbol',
-        source: sourceId,
-        minzoom: minLabelZoom,
-        layout: {
-          'text-field': ['get', 'name'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 2, 10, 5, 12, 8, 14],
-          'text-font': ['Noto Sans Medium'],
-          'text-allow-overlap': false,
-          'text-ignore-placement': false,
-          'text-anchor': 'center',
-        },
-        paint: {
-          'text-color': '#1e293b',
-          'text-halo-color': '#ffffff',
-          'text-halo-width': 1.5,
-        },
-      });
-
-      // Hover via feature-state
-      map.on('mousemove', fillId, (e: MapLayerMouseEvent) => {
-        const feat = e.features?.[0];
-        if (!feat) return;
-        map.getCanvas().style.cursor = 'pointer';
-        const numId = feat.id as number | undefined;
-        if (hoveredRef.current !== null && hoveredRef.current !== numId) {
-          map.setFeatureState({ source: sourceId, id: hoveredRef.current }, { hovered: false });
-        }
-        if (numId != null) {
-          map.setFeatureState({ source: sourceId, id: numId }, { hovered: true });
-          hoveredRef.current = numId;
-        }
-        // Tooltip
-        const tip = tooltipRef.current;
-        if (tip && feat.properties) {
-          const props = feat.properties as Record<string, string>;
-          while (tip.firstChild) tip.removeChild(tip.firstChild);
-          const nameEl = document.createElement('strong');
-          nameEl.textContent = props.name ?? '';
-          tip.appendChild(nameEl);
-          const precision = props.precision ?? 'approximate';
-          const badge = document.createElement('span');
-          badge.textContent = precision.charAt(0).toUpperCase() + precision.slice(1);
-          badge.style.cssText =
-            'margin-left:6px;font-size:10px;padding:1px 5px;border-radius:3px;' +
-            'background:#e2e8f0;color:#475569;font-weight:500;';
-          tip.appendChild(badge);
-          tip.style.left = `${e.point.x + 12}px`;
-          tip.style.top = `${e.point.y - 12}px`;
-          tip.style.display = 'block';
-        }
-      });
-
-      map.on('mouseleave', fillId, () => {
-        map.getCanvas().style.cursor = '';
-        if (hoveredRef.current !== null) {
-          map.setFeatureState({ source: sourceId, id: hoveredRef.current }, { hovered: false });
-          hoveredRef.current = null;
-        }
-        if (tooltipRef.current) tooltipRef.current.style.display = 'none';
-      });
-
-      // Click → popup + navigate
-      map.on('click', fillId, (e: MapLayerMouseEvent) => {
-        const feat = e.features?.[0];
-        if (!feat) return;
-        const props = feat.properties as Record<string, string>;
-        const meta: Record<string, any> = {};
-        for (const [k, v] of Object.entries(props)) {
-          if (k.startsWith('meta_')) {
-            try {
-              meta[k.slice(5)] = JSON.parse(v);
-            } catch {
-              meta[k.slice(5)] = v;
-            }
-          }
-        }
-        const marker = areaMarkers.find((m) => m.id === props.entityId);
-        const lngLat = marker ? new maplibregl.LngLat(marker.lng, marker.lat) : e.lngLat;
-        showPopup(map, lngLat, {
-          id: props.entityId,
-          type: entityType,
-          lat: lngLat.lat,
-          lng: lngLat.lng,
-          name: props.name,
-          subtitle: props.subtitle || undefined,
-          color: props.color,
-          linkTo: props.linkTo || undefined,
-          meta,
-        });
-      });
-    },
-    [areaMarkers, showPopup],
-  );
-
-  /** Remove boundary layers + source if present */
-  const removeBoundaryLayers = useCallback(
-    (map: maplibregl.Map, sourceId: string, fillId: string, strokeId: string, labelId: string) => {
-      if (map.getLayer(labelId)) map.removeLayer(labelId);
-      if (map.getLayer(strokeId)) map.removeLayer(strokeId);
-      if (map.getLayer(fillId)) map.removeLayer(fillId);
-      if (map.getSource(sourceId)) map.removeSource(sourceId);
-    },
-    [],
-  );
-
-  // ── City boundary polygon rendering ─────────────────────────────────────
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapReady) return;
-
-    if (!cityBoundaries || !citiesEnabled) {
-      removeBoundaryLayers(
-        map,
-        CITY_BOUNDARY_SOURCE,
-        CITY_BOUNDARY_FILL,
-        CITY_BOUNDARY_STROKE,
-        CITY_BOUNDARY_LABEL,
-      );
-      cityBoundaryAddedRef.current = false;
-      return;
-    }
-
-    const cityMarkers = areaMarkers.filter((m) => m.type === 'cities');
-    const enriched = enrichBoundaryFeatures(cityBoundaries, cityMarkers, 'entity_id', 'entityId');
-    if (enriched.features.length === 0) return;
-
-    addBoundaryLayers(map, {
-      sourceId: CITY_BOUNDARY_SOURCE,
-      fillId: CITY_BOUNDARY_FILL,
-      strokeId: CITY_BOUNDARY_STROKE,
-      labelId: CITY_BOUNDARY_LABEL,
-      enriched,
-      color: LAYER_COLORS.cities ?? '#3b82f6',
-      entityType: 'cities',
-      hoveredRef: hoveredCityBoundaryIdRef,
-      minLabelZoom: 4,
-      minLayerZoom: 4,
-    });
-
-    cityBoundaryAddedRef.current = true;
-  }, [
-    cityBoundaries,
-    citiesEnabled,
-    areaMarkers,
-    mapReady,
-    addBoundaryLayers,
-    removeBoundaryLayers,
-  ]);
-
-  // ── Neighbourhood boundary polygon rendering ────────────────────────────
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapReady) return;
-
-    if (!neighbourhoodBoundaries || !neighbourhoodsEnabled) {
-      removeBoundaryLayers(
-        map,
-        NEIGHBOURHOOD_BOUNDARY_SOURCE,
-        NEIGHBOURHOOD_BOUNDARY_FILL,
-        NEIGHBOURHOOD_BOUNDARY_STROKE,
-        NEIGHBOURHOOD_BOUNDARY_LABEL,
-      );
-      neighbourhoodBoundaryAddedRef.current = false;
-      return;
-    }
-
-    const villageMarkers = areaMarkers.filter((m) => m.type === 'neighbourhoods');
-    const enriched = enrichBoundaryFeatures(
-      neighbourhoodBoundaries,
-      villageMarkers,
-      'entity_id',
-      'entityId',
-    );
-    if (enriched.features.length === 0) return;
-
-    addBoundaryLayers(map, {
-      sourceId: NEIGHBOURHOOD_BOUNDARY_SOURCE,
-      fillId: NEIGHBOURHOOD_BOUNDARY_FILL,
-      strokeId: NEIGHBOURHOOD_BOUNDARY_STROKE,
-      labelId: NEIGHBOURHOOD_BOUNDARY_LABEL,
-      enriched,
-      color: LAYER_COLORS.neighbourhoods ?? '#8b5cf6',
-      entityType: 'neighbourhoods',
-      hoveredRef: hoveredNeighbourhoodBoundaryIdRef,
-      minLabelZoom: 8,
-      minLayerZoom: 8,
-    });
-
-    neighbourhoodBoundaryAddedRef.current = true;
-  }, [
-    neighbourhoodBoundaries,
-    neighbourhoodsEnabled,
-    areaMarkers,
-    mapReady,
-    addBoundaryLayers,
-    removeBoundaryLayers,
-  ]);
 
   // ── Point layers: native MapLibre source with built-in clustering ──────
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    // If no point layers are enabled, clean up and hide
     if (pointEnabledLayers.length === 0) {
       if (map.getLayer(CLUSTER_COUNT_LAYER)) map.removeLayer(CLUSTER_COUNT_LAYER);
       if (map.getLayer(CLUSTERS_LAYER)) map.removeLayer(CLUSTERS_LAYER);
@@ -990,7 +497,6 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       return;
     }
 
-    // Filter GeoJSON to only include enabled point types
     const filteredGeoJSON: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
       features: pointsGeoJSON.features.filter((f) =>
@@ -1000,12 +506,10 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
     const existingSource = map.getSource(POINTS_SOURCE) as GeoJSONSource | undefined;
     if (existingSource) {
-      // Update data — layers stay, no flicker
       existingSource.setData(filteredGeoJSON);
       return;
     }
 
-    // First time: add source + layers
     map.addSource(POINTS_SOURCE, {
       type: 'geojson',
       data: filteredGeoJSON,
@@ -1013,55 +517,27 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       clusterMaxZoom: CLUSTER_MAX_ZOOM,
       clusterRadius: CLUSTER_RADIUS,
       clusterProperties: {
-        // Aggregate counts per type inside clusters
         venue_count: ['+', ['case', ['==', ['get', 'pointType'], 'venues'], 1, 0]],
         event_count: ['+', ['case', ['==', ['get', 'pointType'], 'events'], 1, 0]],
         restroom_count: ['+', ['case', ['==', ['get', 'pointType'], 'restrooms'], 1, 0]],
       },
     });
 
-    // ── Cluster circles ───────────────────────────────────────────────────
     map.addLayer({
       id: CLUSTERS_LAYER,
       type: 'circle',
       source: POINTS_SOURCE,
       filter: ['has', 'point_count'],
       paint: {
-        // Size scales with point count
-        'circle-radius': [
-          'step',
-          ['get', 'point_count'],
-          16, // < 10 points
-          10,
-          20, // 10-49
-          50,
-          26, // 50-99
-          100,
-          32, // 100-499
-          500,
-          40, // 500+
-        ],
-        // Color darkens with density
-        'circle-color': [
-          'step',
-          ['get', 'point_count'],
-          '#818cf8', // light indigo (few)
-          10,
-          '#6366f1', // indigo
-          50,
-          '#4f46e5', // darker
-          100,
-          '#4338ca', // deep indigo
-          500,
-          '#3730a3', // very deep
-        ],
+        'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 26, 100, 32, 500, 40],
+        'circle-color': ['step', ['get', 'point_count'],
+          '#818cf8', 10, '#6366f1', 50, '#4f46e5', 100, '#4338ca', 500, '#3730a3'],
         'circle-opacity': 0.85,
         'circle-stroke-width': 2,
         'circle-stroke-color': '#ffffff',
       },
     });
 
-    // ── Cluster count labels ──────────────────────────────────────────────
     map.addLayer({
       id: CLUSTER_COUNT_LAYER,
       type: 'symbol',
@@ -1073,12 +549,9 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
         'text-size': 13,
         'text-allow-overlap': true,
       },
-      paint: {
-        'text-color': '#ffffff',
-      },
+      paint: { 'text-color': '#ffffff' },
     });
 
-    // ── Unclustered individual points ─────────────────────────────────────
     map.addLayer({
       id: UNCLUSTERED_LAYER,
       type: 'circle',
@@ -1093,9 +566,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       },
     });
 
-    // ── Interactivity ─────────────────────────────────────────────────────
-
-    // Cluster click → zoom into cluster
+    // Cluster click → zoom
     map.on('click', CLUSTERS_LAYER, async (e) => {
       const feat = e.features?.[0];
       if (!feat) return;
@@ -1109,7 +580,6 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
           speed: 1.5,
         });
       } catch {
-        // Fallback: zoom in by 2 levels
         map.flyTo({
           center: (feat.geometry as GeoJSON.Point).coordinates as [number, number],
           zoom: map.getZoom() + 2,
@@ -1124,11 +594,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       if (!feat || feat.geometry.type !== 'Point') return;
       const props = feat.properties as Record<string, any>;
       let meta: Record<string, any> = {};
-      try {
-        meta = JSON.parse(props.meta ?? '{}');
-      } catch {
-        /* ignore malformed JSON */
-      }
+      try { meta = JSON.parse(props.meta ?? '{}'); } catch { /* ignore */ }
 
       showPopup(map, e.lngLat, {
         id: props.id,
@@ -1143,19 +609,10 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       });
     });
 
-    // Cursor changes
-    map.on('mouseenter', CLUSTERS_LAYER, () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', CLUSTERS_LAYER, () => {
-      map.getCanvas().style.cursor = '';
-    });
-    map.on('mouseenter', UNCLUSTERED_LAYER, () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', UNCLUSTERED_LAYER, () => {
-      map.getCanvas().style.cursor = '';
-    });
+    map.on('mouseenter', CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ''; });
+    map.on('mouseenter', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ''; });
 
     pointLayersAddedRef.current = true;
   }, [pointsGeoJSON, pointEnabledLayers, mapReady, showPopup]);
@@ -1205,6 +662,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
           enabledLayers={enabledLayers}
           onToggle={toggleLayer}
           layerCounts={layerCounts}
+          compact={!!linkToFullMap}
         />
       )}
 
@@ -1229,7 +687,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       >
         {isFetching && <CircularProgress size={12} />}
         <Typography variant="caption" color="text.secondary">
-          {isFetching ? 'Loading…' : `${pointsTotalCount.toLocaleString()} results in view`}
+          {isFetching ? 'Loading...' : `${pointsTotalCount.toLocaleString()} results in view`}
         </Typography>
       </Box>
 

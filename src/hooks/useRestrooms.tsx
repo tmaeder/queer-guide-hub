@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { invokeFunction } from '@/integrations/cloudflare-workers';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Restroom {
   id: number;
@@ -32,7 +32,7 @@ export function useRestrooms() {
         setLoading(true);
         setError(null);
 
-        const { data, error: fnError } = await invokeFunction('get-refuge-restrooms', {
+        const { data, error: fnError } = await supabase.functions.invoke('get-refuge-restrooms', {
           body: {
             lat: params?.lat,
             lng: params?.lng,

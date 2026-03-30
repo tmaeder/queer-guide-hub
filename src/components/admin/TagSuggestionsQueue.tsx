@@ -13,7 +13,7 @@ import { Tag, CheckCircle, XCircle, AlertTriangle, Inbox, Bot, Sparkles } from '
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -39,7 +39,7 @@ const SOURCE_LABELS: Record<string, { label: string; icon: typeof Bot }> = {
 };
 
 async function fetchPendingSuggestions(): Promise<{ items: TagSuggestionRow[]; total: number }> {
-  const { data, count, error } = await api
+  const { data, count, error } = await supabase
     .from('tag_suggestions' as any)
     .select('*', { count: 'exact' })
     .eq('status', 'pending')
@@ -66,7 +66,7 @@ export function TagSuggestionsQueue() {
 
   const approveMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const { data: count, error } = await api.rpc('approve_tag_suggestions', {
+      const { data: count, error } = await supabase.rpc('approve_tag_suggestions', {
         p_suggestion_ids: ids,
         p_reviewer_id: user?.id,
       });
@@ -84,7 +84,7 @@ export function TagSuggestionsQueue() {
 
   const rejectMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const { error } = await api
+      const { error } = await supabase
         .from('tag_suggestions' as any)
         .update({
           status: 'rejected',
@@ -118,7 +118,7 @@ export function TagSuggestionsQueue() {
       setSelectedIds(new Set());
     } else {
       // Fetch ALL pending suggestion IDs (not just the loaded batch)
-      const { data } = await api
+      const { data } = await supabase
         .from('tag_suggestions' as any)
         .select('id')
         .eq('status', 'pending')

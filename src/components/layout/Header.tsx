@@ -600,6 +600,8 @@ export function Header() {
                   />
                   <Box
                     component="span"
+                    role="status"
+                    aria-live="polite"
                     sx={{
                       position: 'absolute',
                       width: 1,

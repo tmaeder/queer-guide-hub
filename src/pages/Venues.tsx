@@ -20,7 +20,7 @@ import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptySta
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { MapPin, Plus, Grid, Map, SortAsc, SortDesc, Filter } from 'lucide-react';
-import { Database } from '@/types/database';
+import { Database } from '@/integrations/supabase/types';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';

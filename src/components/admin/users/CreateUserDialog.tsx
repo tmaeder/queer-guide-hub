@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -90,7 +90,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
       if (form.pronouns.trim()) body.pronouns = form.pronouns.trim();
       if (form.location.trim()) body.location = form.location.trim();
 
-      const { data, error } = await api.functions.invoke('admin-create-user', { body });
+      const { data, error } = await supabase.functions.invoke('admin-create-user', { body });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EditLogEntry {
   id: string;
@@ -23,7 +23,7 @@ export function useAdminEdit() {
     setLoading(true);
     try {
       // 1. Fetch current row for before_data snapshot
-      const { data: before, error: fetchErr } = await api
+      const { data: before, error: fetchErr } = await supabase
         .from(contentType as any)
         .select('*')
         .eq('id', contentId)
@@ -32,7 +32,7 @@ export function useAdminEdit() {
       if (fetchErr) throw new Error(`Failed to fetch current data: ${fetchErr.message}`);
 
       // 2. Update the target table directly
-      const { data: record, error: updateErr } = await api
+      const { data: record, error: updateErr } = await supabase
         .from(contentType as any)
         .update(changes)
         .eq('id', contentId)
@@ -42,9 +42,9 @@ export function useAdminEdit() {
       if (updateErr) throw new Error(`Failed to update: ${updateErr.message}`);
 
       // 3. Insert audit log entry
-      const { data: { user } } = await api.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await api.from('admin_edit_log').insert({
+        await supabase.from('admin_edit_log').insert({
           content_type: contentType,
           content_id: contentId,
           editor_id: user.id,
@@ -67,7 +67,7 @@ export function useAdminEdit() {
     contentId: string,
   ): Promise<EditLogEntry[]> => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('admin_edit_log')
         .select('*')
         .eq('content_type', contentType)

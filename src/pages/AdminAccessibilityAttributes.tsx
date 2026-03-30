@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -95,14 +95,14 @@ export default function AdminAccessibilityAttributes() {
     }
     try {
       if (editingId) {
-        const { error } = await api
+        const { error } = await supabase
           .from('accessibility_attributes')
           .update(form)
           .eq('id', editingId);
         if (error) throw error;
         toast({ title: 'Success', description: 'Attribute updated' });
       } else {
-        const { error } = await api.from('accessibility_attributes').insert([form]);
+        const { error } = await supabase.from('accessibility_attributes').insert([form]);
         if (error) throw error;
         toast({ title: 'Success', description: 'Attribute created' });
       }
@@ -120,7 +120,7 @@ export default function AdminAccessibilityAttributes() {
   const handleDelete = async (row: AccessibilityRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await api.from('accessibility_attributes').delete().eq('id', row.id);
+      const { error } = await supabase.from('accessibility_attributes').delete().eq('id', row.id);
       if (error) throw error;
       toast({ title: 'Success', description: 'Attribute deleted' });
       invalidateTable();

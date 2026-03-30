@@ -5,7 +5,7 @@
  * Step 3: Review (staging items, bulk approve)
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -35,7 +35,7 @@ import {
   Loader2,
   Play,
 } from 'lucide-react';
-import { useImportHub } from '@/hooks/useImportHub';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -401,7 +401,6 @@ function ReviewStep({ jobId }: { jobId: string | null }) {
 // ── Main Wizard ─────────────────────────────────────────────────────
 
 export function ImportWizard() {
-  const { startImportWizardJob, pollImportProgress, loading } = useImportHub();
   const [activeStep, setActiveStep] = useState(0);
   const [config, setConfig] = useState<ImportConfig>({
     source: 'csv',
@@ -414,7 +413,6 @@ export function ImportWizard() {
   const [status, setStatus] = useState('pending');
   const [stats, setStats] = useState({ total: 0, valid: 0, invalid: 0, duplicates: 0 });
   const [isStarting, setIsStarting] = useState(false);
-  const cleanupRef = useRef<(() => void) | null>(null);
 
   const handleStart = useCallback(async () => {
     setIsStarting(true);
@@ -422,32 +420,28 @@ export function ImportWizard() {
       const source = IMPORT_SOURCES.find((s) => s.id === config.source);
       if (!source) throw new Error('Invalid source');
 
-      const newJobId = await startImportWizardJob({
-        source: config.source,
-        contentType: config.contentType,
-        duplicateStrategy: config.duplicateStrategy,
-        options: config.options,
-        sourceType: source.sourceType,
+      // Create import job via edge function
+      const { data, error } = await supabase.functions.invoke('background-import-manager', {
+        body: {
+          action: 'create',
+          import_type: config.source === 'csv' ? `${config.contentType}-csv` : config.source,
+          content_type: config.contentType,
+          config: {
+            ...config.options,
+            duplicate_strategy: config.duplicateStrategy,
+            source_type: source.sourceType,
+          },
+        },
       });
 
-      if (!newJobId) return;
+      if (error) throw error;
 
-      setJobId(newJobId);
+      setJobId(data?.job_id ?? null);
       setActiveStep(1);
       setStatus('processing');
 
       // Poll for progress
-      const cleanup = await pollImportProgress(newJobId, (data) => {
-        setProgress(data.progress);
-        setStatus(data.status);
-        setStats(data.stats);
-
-        if (data.status === 'completed') {
-          setProgress(100);
-          setTimeout(() => setActiveStep(2), 1500);
-        }
-      });
-      cleanupRef.current = cleanup;
+      pollProgress(data?.job_id);
 
       toast.success('Import job started');
     } catch (err) {
@@ -457,7 +451,40 @@ export function ImportWizard() {
     } finally {
       setIsStarting(false);
     }
-  }, [config, startImportWizardJob, pollImportProgress]);
+  }, [config]);
+
+  const pollProgress = useCallback(async (id: string) => {
+    if (!id) return;
+
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from('import_jobs' as any)
+        .select(
+          'status, progress_percentage, total_records, valid_records, invalid_records, duplicate_records',
+        )
+        .eq('id', id)
+        .maybeSingle();
+
+      if (!data) return;
+
+      setProgress(data.progress_percentage ?? 0);
+      setStatus(data.status ?? 'processing');
+      setStats({
+        total: data.total_records ?? 0,
+        valid: data.valid_records ?? 0,
+        invalid: data.invalid_records ?? 0,
+        duplicates: data.duplicate_records ?? 0,
+      });
+
+      if (['completed', 'failed', 'cancelled'].includes(data.status)) {
+        clearInterval(interval);
+        if (data.status === 'completed') {
+          setProgress(100);
+          setTimeout(() => setActiveStep(2), 1500);
+        }
+      }
+    }, 3000);
+  }, []);
 
   return (
     <Box>

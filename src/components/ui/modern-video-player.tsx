@@ -41,7 +41,7 @@ export function ModernVideoPlayer({
   muted = false,
   controls = true,
   onTimeUpdate,
-  onEnded,
+  onEnded
 }: ModernVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -57,10 +57,10 @@ export function ModernVideoPlayer({
     const videoElement = videoRef.current;
 
     // Find renditions by preference: HLS adaptive > AV1 > VP9 > H.264
-    const hlsRendition = video.renditions.find((r) => r.format === 'hls');
-    const av1Rendition = video.renditions.find((r) => r.codec === 'av1');
-    const vp9Rendition = video.renditions.find((r) => r.codec === 'vp9');
-    const h264Rendition = video.renditions.find((r) => r.codec === 'h264');
+    const hlsRendition = video.renditions.find(r => r.format === 'hls');
+    const av1Rendition = video.renditions.find(r => r.codec === 'av1');
+    const vp9Rendition = video.renditions.find(r => r.codec === 'vp9');
+    const h264Rendition = video.renditions.find(r => r.codec === 'h264');
 
     // Try HLS adaptive streaming first
     if (hlsRendition && Hls.isSupported()) {
@@ -68,6 +68,7 @@ export function ModernVideoPlayer({
       hlsRef.current = hls;
       hls.loadSource(getVideoUrl(hlsRendition.file_path));
       hls.attachMedia(videoElement);
+      console.log('🎬 Using HLS adaptive streaming');
     } else {
       // Progressive fallback with codec preference - secure clearing
       while (videoElement.firstChild) {
@@ -105,9 +106,9 @@ export function ModernVideoPlayer({
 
     function supportsCodec(codec: string): boolean {
       const video = document.createElement('video');
-      return codec === 'av01'
-        ? video.canPlayType('video/webm; codecs="av01.0.05M.08"') !== ''
-        : video.canPlayType('video/webm; codecs="vp9"') !== '';
+      return codec === 'av01' ?
+        video.canPlayType('video/webm; codecs="av01.0.05M.08"') !== '' :
+        video.canPlayType('video/webm; codecs="vp9"') !== '';
     }
 
     return () => {
@@ -118,8 +119,7 @@ export function ModernVideoPlayer({
   }, [video]);
 
   const getVideoUrl = (path: string): string => {
-    const apiUrl = import.meta.env.VITE_API_URL || '';
-    return `${apiUrl}/storage/videos/public/${path}`;
+    return `https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/videos/${path}`;
   };
 
   const togglePlay = () => {
@@ -140,14 +140,7 @@ export function ModernVideoPlayer({
   const posterUrl = video.poster_image_path ? getVideoUrl(video.poster_image_path) : undefined;
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        backgroundColor: '#000000',
-        borderRadius: 8,
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{ position: 'relative', backgroundColor: '#000000', borderRadius: 8, overflow: 'hidden' }}>
       <video
         ref={videoRef}
         style={{ width: '100%', height: '100%' }}
@@ -174,9 +167,9 @@ export function ModernVideoPlayer({
       >
         <p style={{ color: '#ffffff', padding: 16 }}>
           Your browser doesn't support embedded videos.
-          {video.renditions.find((r) => r.codec === 'h264') && (
+          {video.renditions.find(r => r.codec === 'h264') && (
             <a
-              href={getVideoUrl(video.renditions.find((r) => r.codec === 'h264')!.file_path)}
+              href={getVideoUrl(video.renditions.find(r => r.codec === 'h264')!.file_path)}
               style={{ color: '#60a5fa', textDecoration: 'underline', marginLeft: 8 }}
               download
             >
@@ -188,16 +181,14 @@ export function ModernVideoPlayer({
 
       {/* Simple Controls */}
       {controls && !isLoading && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-            padding: 16,
-          }}
-        >
+        <div style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+          padding: 16,
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Button
               variant="ghost"
@@ -206,21 +197,22 @@ export function ModernVideoPlayer({
               style={{ color: '#ffffff' }}
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? (
-                <Pause style={{ height: 20, width: 20 }} />
-              ) : (
-                <Play style={{ height: 20, width: 20 }} />
-              )}
+              {isPlaying ? <Pause style={{ height: 20, width: 20 }} /> : <Play style={{ height: 20, width: 20 }} />}
             </Button>
 
             <span style={{ color: '#ffffff', fontSize: '0.875rem' }}>
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
 
-            {video.renditions.find((r) => r.codec === 'h264') && (
-              <Button variant="ghost" size="sm" style={{ color: '#ffffff' }} asChild>
+            {video.renditions.find(r => r.codec === 'h264') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                style={{ color: '#ffffff' }}
+                asChild
+              >
                 <a
-                  href={getVideoUrl(video.renditions.find((r) => r.codec === 'h264')!.file_path)}
+                  href={getVideoUrl(video.renditions.find(r => r.codec === 'h264')!.file_path)}
                   download={video.title || 'video.mp4'}
                   aria-label="Download video"
                 >
@@ -234,15 +226,7 @@ export function ModernVideoPlayer({
 
       {video.title && (
         <div style={{ position: 'absolute', top: 16, left: 16 }}>
-          <h3
-            style={{
-              color: '#ffffff',
-              fontSize: '1.125rem',
-              fontWeight: 600,
-              textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-              margin: 0,
-            }}
-          >
+          <h3 style={{ color: '#ffffff', fontSize: '1.125rem', fontWeight: 600, textShadow: '0 2px 4px rgba(0,0,0,0.5)', margin: 0 }}>
             {video.title}
           </h3>
         </div>

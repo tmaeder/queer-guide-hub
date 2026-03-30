@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { api } from "@/integrations/api/client";
-import { Tables } from "@/types/database";
+import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 
 export type Continent = Tables<"continents">;
@@ -21,7 +21,7 @@ export const useDirectory = () => {
 
   const fetchContinents = async () => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from("continents")
         .select("*")
         .order("name");
@@ -35,7 +35,7 @@ export const useDirectory = () => {
 
   const fetchCountriesByContinent = async (continentId: string) => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from("countries")
         .select(`
           *,
@@ -54,7 +54,7 @@ export const useDirectory = () => {
 
   const fetchAllCountries = async () => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from("countries")
         .select(`
           *,
@@ -71,7 +71,7 @@ export const useDirectory = () => {
 
   const fetchCitiesByCountry = async (countryId: string) => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from("cities")
         .select(`
           *,
@@ -90,7 +90,7 @@ export const useDirectory = () => {
 
   const fetchMajorCities = async () => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from("cities")
         .select(`
           *,
@@ -111,18 +111,18 @@ export const useDirectory = () => {
       setLoading(true);
       
       const [continentsResult, countriesResult, citiesResult] = await Promise.all([
-        api
+        supabase
           .from("continents")
           .select("*")
           .ilike("name", `%${query}%`),
-        api
+        supabase
           .from("countries")
           .select(`
             *,
             regions (*)
           `)
           .ilike("name", `%${query}%`),
-        api
+        supabase
           .from("cities")
           .select(`
             *,
@@ -150,7 +150,7 @@ export const useDirectory = () => {
       setLoading(true);
       
       // Fetch all cities with coordinates
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from("cities")
         .select(`
           *,

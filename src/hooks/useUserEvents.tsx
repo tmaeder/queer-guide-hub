@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 export type UserEventAttendance = {
@@ -34,7 +34,7 @@ export function useUserEvents() {
 
     try {
       setLoading(true);
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('event_attendees')
         .select(`
           id,

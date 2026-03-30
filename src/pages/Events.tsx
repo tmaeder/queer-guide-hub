@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
+import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { EventCard } from '@/components/events/EventCard';
 import { EventsCalendarView } from '@/components/events/EventsCalendarView';
 import { TagSelector } from '@/components/tags/TagSelector';
@@ -33,7 +34,7 @@ import {
   Grid,
   MapPin,
 } from 'lucide-react';
-import { Database } from '@/types/database';
+import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -106,6 +107,8 @@ const Events = () => {
     lng: number;
   } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [autoLocationLabel, setAutoLocationLabel] = useState<string | null>(null);
+  const { location: visitorLocation } = useVisitorLocation();
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -186,6 +189,7 @@ const Events = () => {
   const clearFilters = async () => {
     setSearch('');
     setCity('');
+    setAutoLocationLabel(null);
     setEventType('all');
     setSelectedTags([]);
     setStartDate(undefined);
@@ -243,19 +247,22 @@ const Events = () => {
   };
   const hasActiveFilters =
     search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe;
+  const autoInitDone = useRef(false);
   useEffect(() => {
-    (async () => {
-      setPage(1);
-      setAutoLoadedCount(0);
-      await fetchEvents(
-        {},
-        {
-          page: 1,
-          pageSize: PAGE_SIZE,
-          append: false,
-        },
-      );
-    })();
+    if (autoInitDone.current) return;
+    autoInitDone.current = true;
+    setPage(1);
+    setAutoLoadedCount(0);
+    const cityName = visitorLocation?.city;
+    if (cityName) {
+      setCity(cityName);
+      setAutoLocationLabel(cityName);
+      fetchEvents({ city: cityName }, { page: 1, pageSize: PAGE_SIZE, append: false });
+    } else {
+      fetchEvents({}, { page: 1, pageSize: PAGE_SIZE, append: false });
+    }
+  // run once on mount; visitorLocation may not yet be available but that is fine — user can still see all events
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -389,7 +396,8 @@ const Events = () => {
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
               size="icon"
-              aria-label="Toggle filters"
+              aria-label={showFilters ? 'Hide filters' : 'Show filters'}
+              aria-expanded={showFilters}
             >
               <Filter style={{ width: 16, height: 16 }} />
             </Button>
@@ -398,6 +406,8 @@ const Events = () => {
           {/* Extended Filters */}
           {showFilters && (
             <Box
+              component="nav"
+              aria-label="Event filters"
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -588,17 +598,22 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   Search: {search}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear search"
                     onClick={() => setSearch('')}
                   />
                 </Badge>
               )}
               {city && (
-                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
-                  City: {city}
+                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
+                  {autoLocationLabel === city && <MapPin style={{ width: 10, height: 10 }} />}
+                  {autoLocationLabel === city ? `Near you: ${city}` : `City: ${city}`}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
-                    onClick={() => setCity('')}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear city filter"
+                    onClick={() => { setCity(''); setAutoLocationLabel(null); }}
                   />
                 </Badge>
               )}
@@ -606,7 +621,9 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {eventType}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear event type filter"
                     onClick={() => setEventType('')}
                   />
                 </Badge>
@@ -615,7 +632,9 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   From: {format(startDate, 'MMM d, yyyy')}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear start date filter"
                     onClick={() => setStartDate(undefined)}
                   />
                 </Badge>
@@ -624,7 +643,9 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   To: {format(endDate, 'MMM d, yyyy')}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear end date filter"
                     onClick={() => setEndDate(undefined)}
                   />
                 </Badge>
@@ -633,7 +654,9 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   Near Me
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear near me filter"
                     onClick={() => setNearMe(false)}
                   />
                 </Badge>
@@ -642,13 +665,25 @@ const Events = () => {
                 <Badge key={tag} variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {tag}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label={`Remove ${tag} filter`}
                     onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))}
                   />
                 </Badge>
               ))}
             </Box>
           )}
+        </Box>
+
+        {/* Status region for screen readers */}
+        <Box
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+        >
+          {loading ? 'Loading events...' : error ? error : `${events.length} events found`}
         </Box>
 
         {/* Error State */}

@@ -22,7 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useVenues } from '@/hooks/useVenues';
 import { useToast } from '@/hooks/use-toast';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import {
   LocationAutocomplete,
   type AddressComponents,
@@ -291,7 +291,7 @@ export default function AdminVenues() {
     setIsImporting((prev) => ({ ...prev, [provider]: true }));
     try {
       toast({ title: 'Import Started', description: `${provider} import triggered...` });
-      const { data, error } = await api.functions.invoke(fnName, {
+      const { data, error } = await supabase.functions.invoke(fnName, {
         body: config ?? { trigger: 'manual' },
       });
       if (error) throw error;
@@ -366,7 +366,7 @@ export default function AdminVenues() {
     }
     setIsEnrichingVenue(true);
     try {
-      const { data, error } = await api.functions.invoke('enrich-venue', {
+      const { data, error } = await supabase.functions.invoke('enrich-venue', {
         body: { venueName: formData.name, currentData: formData },
       });
       if (error) throw error;

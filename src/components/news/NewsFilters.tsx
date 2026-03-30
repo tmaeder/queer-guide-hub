@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp } from "lucide-react";
-import { Tables } from "@/types/database";
+import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 
 type NewsSource = Tables<'news_sources'>;
 
@@ -62,8 +62,8 @@ export const NewsFilters = ({
   useEffect(() => {
     const fetchData = async () => {
       const [{ data: countriesData }, { data: citiesData }] = await Promise.all([
-        api.from('countries').select('id, name').order('name'),
-        api.from('cities').select('id, name').order('name'),
+        supabase.from('countries').select('id, name').order('name'),
+        supabase.from('cities').select('id, name').order('name'),
       ]);
       if (countriesData) setCountries(countriesData);
       if (citiesData) setCities(citiesData);

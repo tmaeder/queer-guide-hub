@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { extractFileContent, isAcceptedFile } from '@/lib/fileExtractors';
 
@@ -106,7 +106,7 @@ export function useFlyerScan() {
             if (content.mode === 'image' && content.imageBlob) {
               // Upload image to storage bucket
               const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-              const { error: uploadError } = await api.storage
+              const { error: uploadError } = await supabase.storage
                 .from('flyer-scans')
                 .upload(fileName, content.imageBlob, {
                   cacheControl: '3600',
@@ -115,7 +115,7 @@ export function useFlyerScan() {
 
               if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-              const { data: urlData } = api.storage.from('flyer-scans').getPublicUrl(fileName);
+              const { data: urlData } = supabase.storage.from('flyer-scans').getPublicUrl(fileName);
               fileImageUrl = urlData.publicUrl;
               body = { image_url: fileImageUrl };
             } else {
@@ -125,7 +125,7 @@ export function useFlyerScan() {
 
             // Call analyze-flyer edge function
             setScanState('analyzing');
-            const { data, error: fnError } = await api.functions.invoke('analyze-flyer', {
+            const { data, error: fnError } = await supabase.functions.invoke('analyze-flyer', {
               body,
             });
 

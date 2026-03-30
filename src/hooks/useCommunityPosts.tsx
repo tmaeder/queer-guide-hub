@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Tables } from '@/types/database';
+import { Tables } from '@/integrations/supabase/types';
 
 export type CommunityPost = Tables<'community_posts'> & {
   profiles?: {
@@ -36,7 +36,7 @@ export const useCommunityPosts = (userId?: string) => {
   const { data: posts = [], isLoading, error } = useQuery({
     queryKey: ['community-posts', userId],
     queryFn: async () => {
-      let query = api
+      let query = supabase
         .from('community_posts')
         .select(`
           *,
@@ -63,7 +63,7 @@ export const useCommunityPosts = (userId?: string) => {
       // Check which posts the current user has liked
       if (user && data?.length) {
         const postIds = data.map(post => post.id);
-        const { data: likes } = await api
+        const { data: likes } = await supabase
           .from('post_likes')
           .select('post_id')
           .in('post_id', postIds)
@@ -87,7 +87,7 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postData: CreatePostData) => {
       if (!user) throw new Error('Must be logged in to create posts');
 
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('community_posts')
         .insert({
           user_id: user.id,
@@ -129,7 +129,7 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postId: string) => {
       if (!user) throw new Error('Must be logged in to like posts');
 
-      const { error } = await api
+      const { error } = await supabase
         .from('post_likes')
         .insert({
           post_id: postId,
@@ -139,7 +139,7 @@ export const useCommunityPosts = (userId?: string) => {
       if (error) throw error;
 
       // Increment likes count
-      await api.rpc('increment_post_likes', { post_id: postId });
+      await supabase.rpc('increment_post_likes', { post_id: postId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-posts'] });
@@ -151,7 +151,7 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postId: string) => {
       if (!user) throw new Error('Must be logged in to unlike posts');
 
-      const { error } = await api
+      const { error } = await supabase
         .from('post_likes')
         .delete()
         .eq('post_id', postId)
@@ -160,7 +160,7 @@ export const useCommunityPosts = (userId?: string) => {
       if (error) throw error;
 
       // Decrement likes count
-      await api.rpc('decrement_post_likes', { post_id: postId });
+      await supabase.rpc('decrement_post_likes', { post_id: postId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-posts'] });
@@ -172,7 +172,7 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postId: string) => {
       if (!user) throw new Error('Must be logged in to delete posts');
 
-      const { error } = await api
+      const { error } = await supabase
         .from('community_posts')
         .delete()
         .eq('id', postId)
@@ -198,7 +198,7 @@ export const useCommunityPosts = (userId?: string) => {
 
   // Set up real-time subscriptions
   useEffect(() => {
-    const channel = api
+    const channel = supabase
       .channel('community-posts-changes')
       .on(
         'postgres_changes',
@@ -236,7 +236,7 @@ export const useCommunityPosts = (userId?: string) => {
       .subscribe();
 
     return () => {
-      api.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, [queryClient]);
 

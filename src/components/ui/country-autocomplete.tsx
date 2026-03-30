@@ -4,7 +4,7 @@ import MuiAutocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Country {
   id: string;
@@ -41,7 +41,7 @@ export function CountryAutocomplete({
     const fetchCountries = async () => {
       setLoading(true);
       try {
-        const { data, error } = await api
+        const { data, error } = await supabase
           .from('countries')
           .select('id, name, code, flag_emoji')
           .order('name');

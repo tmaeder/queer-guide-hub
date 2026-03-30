@@ -23,12 +23,12 @@ import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { useAuth } from '@/hooks/useAuth';
-import { Database } from '@/types/database';
+import { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
 import { getTimezoneAbbr } from '@/utils/timezone';
-import { api } from '@/integrations/api/client';
-import { invokeFunction } from '@/integrations/cloudflare-workers';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { EntityMap } from '@/components/map/EntityMap';
 import { toast } from '@/hooks/use-toast';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
@@ -80,7 +80,7 @@ export default function EventDetail() {
   const fetchEventData = async () => {
     if (!id) return;
     try {
-      const { data: eventData, error: eventError } = await api
+      const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select(
           `
@@ -97,7 +97,7 @@ export default function EventDetail() {
       if (eventError) throw eventError;
 
       if (user) {
-        const { data: attendeesData } = await api
+        const { data: attendeesData } = await supabase
           .from('event_attendees')
           .select(`id, status, user_id, profiles:user_id (display_name, avatar_url)`)
           .eq('event_id', id);
@@ -135,7 +135,7 @@ export default function EventDetail() {
       return;
     }
     try {
-      const { error } = await api
+      const { error } = await supabase
         .from('event_attendees')
         .upsert({ event_id: event.id, user_id: user.id, status });
       if (error) throw error;
@@ -154,7 +154,7 @@ export default function EventDetail() {
   const handleExportToCalendar = async () => {
     if (!event) return;
     try {
-      const { data, error } = await invokeFunction('calendar-export', {
+      const { data, error } = await supabase.functions.invoke('calendar-export', {
         body: { eventId: event.id },
       });
       if (error) throw error;
@@ -708,6 +708,34 @@ export default function EventDetail() {
 
         {/* Sidebar */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {/* Location Map */}
+          {(() => {
+            const lat = event.latitude ?? event.venues?.latitude;
+            const lng = event.longitude ?? event.venues?.longitude;
+            return typeof lat === 'number' && typeof lng === 'number' ? (
+              <Card>
+                <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+                  <EntityMap
+                    center={[Number(lng), Number(lat)]}
+                    zoom={15}
+                    height={200}
+                    markers={[
+                      {
+                        id: event.id,
+                        lat: Number(lat),
+                        lng: Number(lng),
+                        name: event.title ?? 'Event',
+                        subtitle: event.venues?.name,
+                        type: 'events',
+                        primary: true,
+                      },
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+            ) : null;
+          })()}
+
           {/* Event Details */}
           <Card>
             <CardHeader>

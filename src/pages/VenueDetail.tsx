@@ -25,9 +25,10 @@ import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
 import { useEvents } from '@/hooks/useEvents';
-import { Database } from '@/types/database';
-import { api } from '@/integrations/api/client';
+import { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/integrations/supabase/client';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
+import { EntityMap } from '@/components/map/EntityMap';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -66,7 +67,7 @@ export default function VenueDetail() {
       try {
         setLoading(true);
 
-        const { data: venueData, error: venueError } = await api
+        const { data: venueData, error: venueError } = await supabase
           .from('venues')
           .select(
             '*, cities:city_id(id, name), countries:country_id(id, name, equality_score, lgbti_criminalization)',
@@ -77,7 +78,7 @@ export default function VenueDetail() {
         if (venueError) throw venueError;
         setVenue(venueData);
 
-        const { data: reviewsData, error: reviewsError } = await api
+        const { data: reviewsData, error: reviewsError } = await supabase
           .from('venue_reviews')
           .select(
             `
@@ -522,6 +523,29 @@ export default function VenueDetail() {
 
             {/* Sidebar */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* Location Map */}
+              {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
+                <Card>
+                  <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+                    <EntityMap
+                      center={[Number(venue.longitude), Number(venue.latitude)]}
+                      zoom={15}
+                      height={200}
+                      markers={[
+                        {
+                          id: venue.id,
+                          lat: Number(venue.latitude),
+                          lng: Number(venue.longitude),
+                          name: venue.name ?? 'Venue',
+                          type: 'venues',
+                          primary: true,
+                        },
+                      ]}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Recent Check-ins (desktop only) */}
               <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
                 <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />

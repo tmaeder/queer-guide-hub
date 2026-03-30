@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { CMSMedia, CMSMediaAttachment, MediaRole } from '@/types/cms';
 
@@ -68,7 +68,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
     const to = from + pageSize - 1;
 
     try {
-      let query = api
+      let query = supabase
         .from('cms_media' as any)
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
@@ -110,7 +110,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
       const storagePath = `uploads/${filename}`;
 
       // Upload to Supabase storage
-      const { error: uploadError } = await api.storage
+      const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(storagePath, file, {
           cacheControl: '3600',
@@ -129,7 +129,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
       }
 
       // Create cms_media record
-      const { data, error: insertError } = await api
+      const { data, error: insertError } = await supabase
         .from('cms_media' as any)
         .insert({
           filename,
@@ -161,7 +161,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
   const deleteMedia = useCallback(async (mediaId: string): Promise<boolean> => {
     try {
       // Get storage path first
-      const { data: mediaItem } = await api
+      const { data: mediaItem } = await supabase
         .from('cms_media' as any)
         .select('storage_path')
         .eq('id', mediaId)
@@ -169,13 +169,13 @@ export function useCMSMedia(): UseCMSMediaReturn {
 
       if (mediaItem?.storage_path) {
         // Delete from storage
-        await api.storage
+        await supabase.storage
           .from('cms-media')
           .remove([mediaItem.storage_path]);
       }
 
       // Delete record (attachments cascade)
-      const { error: deleteError } = await api
+      const { error: deleteError } = await supabase
         .from('cms_media' as any)
         .delete()
         .eq('id', mediaId);
@@ -200,7 +200,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
     if (!user) return false;
 
     try {
-      const { error: insertError } = await api
+      const { error: insertError } = await supabase
         .from('cms_media_attachments' as any)
         .insert({
           media_id: mediaId,
@@ -220,7 +220,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
 
   const detachMedia = useCallback(async (attachmentId: string): Promise<boolean> => {
     try {
-      const { error: deleteError } = await api
+      const { error: deleteError } = await supabase
         .from('cms_media_attachments' as any)
         .delete()
         .eq('id', attachmentId);
@@ -238,7 +238,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
     sourceId: string,
   ): Promise<CMSMediaAttachment[]> => {
     try {
-      const { data, error: fetchError } = await api
+      const { data, error: fetchError } = await supabase
         .from('cms_media_attachments' as any)
         .select('*, media:cms_media(*)')
         .eq('source_table', sourceTable)
@@ -258,7 +258,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
     updates: Partial<CMSMedia>,
   ): Promise<boolean> => {
     try {
-      const { error: updateError } = await api
+      const { error: updateError } = await supabase
         .from('cms_media' as any)
         .update({
           alt_text: updates.alt_text,
@@ -286,7 +286,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
     if (!user) return null;
 
     try {
-      const { data, error: insertError } = await api
+      const { data, error: insertError } = await supabase
         .from('cms_media' as any)
         .insert({
           filename: `${image.source}-${image.id}`,

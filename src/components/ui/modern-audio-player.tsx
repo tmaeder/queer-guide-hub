@@ -41,7 +41,7 @@ export function ModernAudioPlayer({
   muted = false,
   controls = true,
   onTimeUpdate,
-  onEnded,
+  onEnded
 }: ModernAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -58,9 +58,9 @@ export function ModernAudioPlayer({
     const audioElement = audioRef.current;
 
     // Find renditions by preference: Opus > AAC > MP3
-    const opusRendition = audio.renditions.find((r) => r.codec === 'opus');
-    const aacRendition = audio.renditions.find((r) => r.codec === 'aac');
-    const mp3Rendition = audio.renditions.find((r) => r.codec === 'mp3');
+    const opusRendition = audio.renditions.find(r => r.codec === 'opus');
+    const aacRendition = audio.renditions.find(r => r.codec === 'aac');
+    const mp3Rendition = audio.renditions.find(r => r.codec === 'mp3');
 
     // Securely clear existing sources without innerHTML
     while (audioElement.firstChild) {
@@ -87,9 +87,9 @@ export function ModernAudioPlayer({
 
     function supportsCodec(codec: string): boolean {
       const audio = document.createElement('audio');
-      return codec === 'opus'
-        ? audio.canPlayType('audio/webm; codecs="opus"') !== ''
-        : audio.canPlayType('audio/mp4') !== '';
+      return codec === 'opus' ?
+        audio.canPlayType('audio/webm; codecs="opus"') !== '' :
+        audio.canPlayType('audio/mp4') !== '';
     }
 
     // Set Media Session API metadata for lock screen controls
@@ -98,15 +98,11 @@ export function ModernAudioPlayer({
         title: audio.title,
         artist: audio.artist || 'Unknown Artist',
         album: audio.album || 'Unknown Album',
-        artwork: audio.poster_image_path
-          ? [
-              {
-                src: getAudioUrl(audio.poster_image_path),
-                sizes: '512x512',
-                type: 'image/webp',
-              },
-            ]
-          : [],
+        artwork: audio.poster_image_path ? [{
+          src: getAudioUrl(audio.poster_image_path),
+          sizes: '512x512',
+          type: 'image/webp'
+        }] : []
       });
 
       // Set up media session action handlers
@@ -126,11 +122,11 @@ export function ModernAudioPlayer({
 
     // Load the audio
     audioElement.load();
+
   }, [audio]);
 
   const getAudioUrl = (path: string): string => {
-    const apiUrl = import.meta.env.VITE_API_URL || '';
-    return `${apiUrl}/storage/audio/public/${path}`;
+    return `https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/audio/${path}`;
   };
 
   const togglePlay = () => {
@@ -178,10 +174,7 @@ export function ModernAudioPlayer({
 
   const skipForward = () => {
     if (!audioRef.current) return;
-    audioRef.current.currentTime = Math.min(
-      audioRef.current.duration,
-      audioRef.current.currentTime + 10,
-    );
+    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 10);
   };
 
   const formatTime = (seconds: number): string => {
@@ -192,22 +185,19 @@ export function ModernAudioPlayer({
 
   const getBestQualityDownload = (): AudioRendition | undefined => {
     // Prefer highest bitrate MP3 for download compatibility
-    return (
-      audio.renditions
-        .filter((r) => r.codec === 'mp3')
-        .sort((a, b) => (b.bitrate_kbps || 0) - (a.bitrate_kbps || 0))[0] || audio.renditions[0]
-    );
+    return audio.renditions
+      .filter(r => r.codec === 'mp3')
+      .sort((a, b) => (b.bitrate_kbps || 0) - (a.bitrate_kbps || 0))[0] ||
+      audio.renditions[0];
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: '#ffffff',
-        border: '1px solid #e5e5e5',
-        borderRadius: 8,
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{
+      backgroundColor: '#ffffff',
+      border: '1px solid #e5e5e5',
+      borderRadius: 8,
+      overflow: 'hidden',
+    }}>
       <audio
         ref={audioRef}
         autoPlay={autoplay}
@@ -227,7 +217,7 @@ export function ModernAudioPlayer({
             navigator.mediaSession.setPositionState({
               duration: audioRef.current?.duration || 0,
               playbackRate: audioRef.current?.playbackRate || 1,
-              position: currentTime,
+              position: currentTime
             });
           }
         }}
@@ -260,34 +250,18 @@ export function ModernAudioPlayer({
 
       {/* Album Art / Poster */}
       {audio.poster_image_path && (
-        <div
-          style={{
-            aspectRatio: '1/1',
-            width: '100%',
-            maxWidth: 320,
-            margin: '0 auto',
-            padding: 16,
-          }}
-        >
+        <div style={{ aspectRatio: '1/1', width: '100%', maxWidth: 320, margin: '0 auto', padding: 16 }}>
           <img
             src={getAudioUrl(audio.poster_image_path)}
             alt={`${audio.title} artwork`}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              borderRadius: 8,
-              boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
           />
         </div>
       )}
 
       {/* Track Info */}
       <div style={{ padding: 16, textAlign: 'center' }}>
-        <h3 style={{ fontWeight: 600, fontSize: '1.125rem', marginBottom: 4, margin: 0 }}>
-          {audio.title}
-        </h3>
+        <h3 style={{ fontWeight: 600, fontSize: '1.125rem', marginBottom: 4, margin: 0 }}>{audio.title}</h3>
         {audio.artist && (
           <p style={{ color: '#999999', marginBottom: 8, margin: '4px 0' }}>{audio.artist}</p>
         )}
@@ -308,14 +282,7 @@ export function ModernAudioPlayer({
               onValueChange={handleSeek}
               style={{ width: '100%' }}
             />
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '0.875rem',
-                color: '#999999',
-              }}
-            >
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: '#999999' }}>
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
@@ -340,11 +307,7 @@ export function ModernAudioPlayer({
               style={{ borderRadius: '50%', width: 48, height: 48 }}
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? (
-                <Pause style={{ height: 24, width: 24 }} />
-              ) : (
-                <Play style={{ height: 24, width: 24 }} />
-              )}
+              {isPlaying ? <Pause style={{ height: 24, width: 24 }} /> : <Play style={{ height: 24, width: 24 }} />}
             </Button>
 
             <Button
@@ -383,7 +346,11 @@ export function ModernAudioPlayer({
             </div>
 
             {getBestQualityDownload() && (
-              <Button variant="ghost" size="sm" asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+              >
                 <a
                   href={getAudioUrl(getBestQualityDownload()!.file_path)}
                   download={`${audio.title}.mp3`}
@@ -397,7 +364,7 @@ export function ModernAudioPlayer({
 
           {/* Format Info */}
           <div style={{ fontSize: '0.75rem', color: '#999999', textAlign: 'center' }}>
-            Available: {audio.renditions.map((r) => r.codec.toUpperCase()).join(', ')}
+            Available: {audio.renditions.map(r => r.codec.toUpperCase()).join(', ')}
           </div>
         </div>
       )}

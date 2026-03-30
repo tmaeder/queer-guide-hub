@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentType } from '@/config/contentTypeRegistry';
 import type { EditorState, CMSContentMetadata, WorkflowState, FieldGroup } from '@/types/cms';
@@ -73,7 +73,7 @@ export function useCMSEditor({
 
     try {
       // Fetch content from source table
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from(config.tableName as any)
         .select('*')
         .eq(config.primaryKey, itemId)
@@ -84,7 +84,7 @@ export function useCMSEditor({
       serverUpdatedAt.current = data.updated_at || null;
 
       // Fetch CMS metadata if exists
-      const { data: meta } = await api
+      const { data: meta } = await supabase
         .from('cms_content_metadata' as any)
         .select('*')
         .eq('source_table', config.tableName)
@@ -159,7 +159,7 @@ export function useCMSEditor({
     try {
       // Conflict detection: check updated_at hasn't changed
       if (itemId && serverUpdatedAt.current) {
-        const { data: current } = await api
+        const { data: current } = await supabase
           .from(config.tableName as any)
           .select('updated_at')
           .eq(config.primaryKey, itemId)
@@ -195,7 +195,7 @@ export function useCMSEditor({
 
       if (itemId) {
         // UPDATE
-        const { error } = await api
+        const { error } = await supabase
           .from(config.tableName as any)
           .update(saveData)
           .eq(config.primaryKey, itemId);
@@ -206,7 +206,7 @@ export function useCMSEditor({
         if (user) {
           saveData.created_by = user.id;
         }
-        const { data: inserted, error } = await api
+        const { data: inserted, error } = await supabase
           .from(config.tableName as any)
           .insert(saveData)
           .select('id')
@@ -218,7 +218,7 @@ export function useCMSEditor({
 
       // Ensure cms_content_metadata exists for ALL content types (workflow support)
       if (savedId && !metadata) {
-        const { data: newMeta } = await api
+        const { data: newMeta } = await supabase
           .from('cms_content_metadata' as any)
           .upsert(
             {
@@ -307,7 +307,7 @@ export function useCMSEditor({
 
         if (metadata) {
           // Update existing
-          const { data, error } = await api
+          const { data, error } = await supabase
             .from('cms_content_metadata' as any)
             .update(metaData)
             .eq('id', metadata.id)
@@ -318,7 +318,7 @@ export function useCMSEditor({
           setMetadata(data as CMSContentMetadata);
         } else {
           // Insert new
-          const { data, error } = await api
+          const { data, error } = await supabase
             .from('cms_content_metadata' as any)
             .insert({
               ...metaData,
@@ -375,7 +375,7 @@ async function createRevision(
 ) {
   try {
     // Get next revision number
-    const { data: lastRevision } = await api
+    const { data: lastRevision } = await supabase
       .from('cms_revisions' as any)
       .select('revision_number')
       .eq('source_table', sourceTable)
@@ -402,9 +402,9 @@ async function createRevision(
 
     const {
       data: { user },
-    } = await api.auth.getUser();
+    } = await supabase.auth.getUser();
 
-    await api.from('cms_revisions' as any).insert({
+    await supabase.from('cms_revisions' as any).insert({
       source_table: sourceTable,
       source_id: sourceId,
       revision_number: nextNumber,
@@ -425,7 +425,7 @@ async function writeAuditLog(
   actorId: string,
 ) {
   try {
-    await api.from('cms_audit_log' as any).insert({
+    await supabase.from('cms_audit_log' as any).insert({
       source_table: sourceTable,
       source_id: sourceId,
       action,

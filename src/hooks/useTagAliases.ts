@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface TagAlias {
   id: string;
@@ -17,7 +17,7 @@ export function useTagAliases(tagId: string | null) {
     queryKey: ['tag-aliases', tagId],
     queryFn: async (): Promise<TagAlias[]> => {
       if (!tagId) return [];
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('tag_aliases')
         .select('*')
         .eq('canonical_tag_id', tagId)
@@ -36,7 +36,7 @@ export function useTagAliases(tagId: string | null) {
         .toLowerCase()
         .replace(/\s+/g, '-')
         .replace(/[^a-z0-9-]/g, '');
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('tag_aliases')
         .insert([{ canonical_tag_id: tagId, alias_name, alias_slug, alias_type }])
         .select()
@@ -51,7 +51,7 @@ export function useTagAliases(tagId: string | null) {
 
   const deleteAlias = useMutation({
     mutationFn: async (aliasId: string) => {
-      const { error } = await api.from('tag_aliases').delete().eq('id', aliasId);
+      const { error } = await supabase.from('tag_aliases').delete().eq('id', aliasId);
       if (error) throw error;
     },
     onSuccess: () => {

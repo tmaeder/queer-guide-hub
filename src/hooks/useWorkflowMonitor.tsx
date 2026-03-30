@@ -8,7 +8,7 @@
 
 import { useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
@@ -116,7 +116,7 @@ export function useWorkflowMonitor() {
 
   // ── Realtime subscription ───────────────────────────────────────────────────
   useEffect(() => {
-    const channel = api
+    const channel = supabase
       .channel('workflow-runs-realtime')
       .on(
         'postgres_changes',
@@ -130,7 +130,7 @@ export function useWorkflowMonitor() {
       .subscribe();
 
     return () => {
-      api.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, [queryClient]);
 
@@ -141,7 +141,7 @@ export function useWorkflowMonitor() {
   } = useQuery({
     queryKey: QUERY_KEYS.definitions,
     queryFn: async (): Promise<WorkflowDefinition[]> => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('workflow_definitions' as never)
         .select('*')
         .order('priority', { ascending: true });
@@ -159,7 +159,7 @@ export function useWorkflowMonitor() {
     queryKey: QUERY_KEYS.runs,
     queryFn: async (): Promise<WorkflowRun[]> => {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('workflow_runs' as never)
         .select('*')
         .gte('created_at', since)
@@ -199,7 +199,7 @@ export function useWorkflowMonitor() {
   } = useQuery({
     queryKey: QUERY_KEYS.metrics,
     queryFn: async (): Promise<DispatcherMetrics> => {
-      const { data, error } = await api.functions.invoke(
+      const { data, error } = await supabase.functions.invoke(
         'workflow-dispatcher',
         { body: { action: 'metrics' } },
       );
@@ -220,7 +220,7 @@ export function useWorkflowMonitor() {
       workflow: string;
       payload?: Record<string, unknown>;
     }) => {
-      const { data, error } = await api.functions.invoke(
+      const { data, error } = await supabase.functions.invoke(
         'workflow-dispatcher',
         {
           body: {
@@ -251,7 +251,7 @@ export function useWorkflowMonitor() {
 
   const retryRun = useMutation({
     mutationFn: async (runId: string) => {
-      const { data, error } = await api.functions.invoke(
+      const { data, error } = await supabase.functions.invoke(
         'workflow-dispatcher',
         { body: { action: 'retry', run_id: runId } },
       );
@@ -269,7 +269,7 @@ export function useWorkflowMonitor() {
 
   const cancelRun = useMutation({
     mutationFn: async (runId: string) => {
-      const { data, error } = await api.functions.invoke(
+      const { data, error } = await supabase.functions.invoke(
         'workflow-dispatcher',
         { body: { action: 'cancel', run_id: runId } },
       );
@@ -287,7 +287,7 @@ export function useWorkflowMonitor() {
 
   const dispatchNow = useMutation({
     mutationFn: async () => {
-      const { data, error } = await api.functions.invoke(
+      const { data, error } = await supabase.functions.invoke(
         'workflow-dispatcher',
         { body: { action: 'dispatch' } },
       );
@@ -309,7 +309,7 @@ export function useWorkflowMonitor() {
 
   const healthCheck = useMutation({
     mutationFn: async () => {
-      const { data, error } = await api.functions.invoke(
+      const { data, error } = await supabase.functions.invoke(
         'workflow-dispatcher',
         { body: { action: 'health_check' } },
       );

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useAccessibilityAttributes() {
   const [accessibilityAttributes, setAccessibilityAttributes] = useState<any[]>([]);
@@ -8,7 +8,7 @@ export function useAccessibilityAttributes() {
   const fetchAccessibilityAttributes = async () => {
     try {
       setLoading(true);
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('accessibility_attributes')
         .select('*')
         .eq('is_active', true)

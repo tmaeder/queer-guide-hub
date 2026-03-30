@@ -5,7 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ export interface CockpitData {
 
 async function fetchSystemHealth(): Promise<SystemHealth> {
   const start = performance.now();
-  const { error } = await api
+  const { error } = await supabase
     .from('venues' as any)
     .select('id', { count: 'exact', head: true })
     .limit(1);
@@ -83,24 +83,24 @@ async function fetchSystemHealth(): Promise<SystemHealth> {
 
 async function fetchReviewSummary(): Promise<ReviewSummary> {
   const [stagingRes, cmsRes, modRes, autoRes, tagRes] = await Promise.all([
-    api
+    supabase
       .from('ingestion_staging' as any)
       .select('id', { count: 'exact', head: true })
       .eq('review_status', 'pending_review')
       .eq('disposition', 'pending'),
-    api
+    supabase
       .from('cms_content_metadata' as any)
       .select('id', { count: 'exact', head: true })
       .eq('workflow_state', 'review'),
-    api
+    supabase
       .from('moderation_flags' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'OPEN'),
-    api
+    supabase
       .from('content_flags' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending'),
-    api
+    supabase
       .from('tag_suggestions' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending'),
@@ -128,16 +128,16 @@ async function fetchImportSummary(): Promise<ImportSummary> {
   const todayISO = today.toISOString();
 
   const [activeRes, completedRes, failedRes] = await Promise.all([
-    api
+    supabase
       .from('import_jobs' as any)
       .select('id', { count: 'exact', head: true })
       .in('status', ['processing', 'validating', 'pending']),
-    api
+    supabase
       .from('import_jobs' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'completed')
       .gte('completed_at', todayISO),
-    api
+    supabase
       .from('import_jobs' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'failed')
@@ -159,12 +159,12 @@ async function fetchImportSummary(): Promise<ImportSummary> {
 
 async function fetchQualityIndex(): Promise<QualityIndex> {
   const [warningRes, criticalRes] = await Promise.all([
-    api
+    supabase
       .from('content_flags' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending')
       .in('severity', ['warning', 'info']),
-    api
+    supabase
       .from('content_flags' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending')
@@ -205,7 +205,7 @@ async function fetchContentStats(): Promise<ContentStats> {
 
   const results = await Promise.all(
     tables.map(({ table }) =>
-      api.from(table as any).select('id', { count: 'exact', head: true }),
+      supabase.from(table as any).select('id', { count: 'exact', head: true }),
     ),
   );
 

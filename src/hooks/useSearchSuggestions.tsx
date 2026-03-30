@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { MapPin, Calendar, Store, Tag, Users, User } from 'lucide-react';
 
 export interface SearchSuggestion {
@@ -31,7 +31,7 @@ export function useSearchSuggestions(query: string) {
 
       // Search venues
       promises.push(
-        api
+        supabase
           .from('venues')
           .select('id, name, location')
           .neq('data_source', 'refuge_restrooms')
@@ -49,7 +49,7 @@ export function useSearchSuggestions(query: string) {
 
       // Search events
       promises.push(
-        api
+        supabase
           .from('events')
           .select('id, title, city')
           .ilike('title', `%${searchTerm}%`)
@@ -67,7 +67,7 @@ export function useSearchSuggestions(query: string) {
 
       // Search marketplace
       promises.push(
-        api
+        supabase
           .from('marketplace_listings')
           .select('id, title, business_name')
           .ilike('title', `%${searchTerm}%`)
@@ -86,7 +86,7 @@ export function useSearchSuggestions(query: string) {
 
       // Search tags
       promises.push(
-        api
+        supabase
           .from('unified_tags')
           .select('id, name, description')
           .ilike('name', `%${searchTerm}%`)
@@ -103,7 +103,7 @@ export function useSearchSuggestions(query: string) {
 
       // Search users
       promises.push(
-        api
+        supabase
           .from('profiles')
           .select('user_id, display_name, location')
           .ilike('display_name', `%${searchTerm}%`)
@@ -121,7 +121,7 @@ export function useSearchSuggestions(query: string) {
 
       // Search personalities
       promises.push(
-        api
+        supabase
           .from('personalities')
           .select('id, name, profession')
           .ilike('name', `%${searchTerm}%`)
@@ -138,7 +138,7 @@ export function useSearchSuggestions(query: string) {
 
       // Search groups
       promises.push(
-        api
+        supabase
           .from('community_groups')
           .select('id, name, description')
           .ilike('name', `%${searchTerm}%`)

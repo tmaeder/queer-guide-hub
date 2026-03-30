@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useLoadingState } from './useLoadingState';
 
 interface ConsolidatedStats {
@@ -39,18 +39,18 @@ export function useConsolidatedStats() {
   const fetchStats = useCallback(async () => {
     return withLoading(async () => {
       const results = await Promise.allSettled([
-        api.from('venues').select('id', { count: 'exact', head: true }),
-        api.from('profiles').select('id', { count: 'exact', head: true }),
-        api.from('cities').select('id', { count: 'exact', head: true }),
-        api.from('countries').select('id', { count: 'exact', head: true }),
-        api.from('events').select('id', { count: 'exact', head: true }),
-        api.from('community_posts').select('id', { count: 'exact', head: true }),
-        api.from('personalities').select('id', { count: 'exact', head: true }),
-        api.from('community_groups').select('id', { count: 'exact', head: true }),
-        api.from('unified_tags').select('id', { count: 'exact', head: true }),
-        api.from('marketplace_listings').select('id', { count: 'exact', head: true }),
-        api.from('news_articles').select('id', { count: 'exact', head: true }),
-        api.from('cms_content').select('id', { count: 'exact', head: true }).is('deleted_at', null)
+        supabase.from('venues').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('cities').select('id', { count: 'exact', head: true }),
+        supabase.from('countries').select('id', { count: 'exact', head: true }),
+        supabase.from('events').select('id', { count: 'exact', head: true }),
+        supabase.from('community_posts').select('id', { count: 'exact', head: true }),
+        supabase.from('personalities').select('id', { count: 'exact', head: true }),
+        supabase.from('community_groups').select('id', { count: 'exact', head: true }),
+        supabase.from('unified_tags').select('id', { count: 'exact', head: true }),
+        supabase.from('marketplace_listings').select('id', { count: 'exact', head: true }),
+        supabase.from('news_articles').select('id', { count: 'exact', head: true }),
+        supabase.from('cms_content').select('id', { count: 'exact', head: true }).is('deleted_at', null)
       ]);
 
       const newStats: ConsolidatedStats = {

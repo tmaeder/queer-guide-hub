@@ -3,7 +3,7 @@ import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useSecurityValidation } from '@/hooks/useSecurityValidation';
@@ -81,7 +81,7 @@ export function ImageUpload({
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
       // Upload file to Supabase Storage
-      const { data, error } = await api.storage
+      const { data, error } = await supabase.storage
         .from('cms-media')
         .upload(fileName, file, {
           cacheControl: '3600',
@@ -99,7 +99,7 @@ export function ImageUpload({
       }
 
       // Get the public URL
-      const { data: { publicUrl } } = api.storage
+      const { data: { publicUrl } } = supabase.storage
         .from('cms-media')
         .getPublicUrl(data.path);
 
@@ -136,7 +136,7 @@ export function ImageUpload({
       const filePath = pathParts.slice(-2).join('/'); // Get user_id/filename
 
       // Delete from storage
-      const { error } = await api.storage
+      const { error } = await supabase.storage
         .from('cms-media')
         .remove([filePath]);
 

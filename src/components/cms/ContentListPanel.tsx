@@ -36,7 +36,7 @@ import {
   Inbox,
   X,
 } from 'lucide-react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useParams } from 'react-router';
 import { getContentType } from '@/config/contentTypeRegistry';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';
@@ -372,7 +372,7 @@ export function ContentListPanel({
     // Map sort field to actual DB column
     const dbSortField = sortField === 'title' ? ct.titleField : 'updated_at';
 
-    let query = api
+    let query = supabase
       .from(ct.tableName as any)
       .select('*', { count: 'exact' })
       .order(dbSortField, { ascending: sortDir === 'asc' })
@@ -420,7 +420,7 @@ export function ContentListPanel({
       .filter(Boolean) as ContentTypeConfig[];
 
     for (const ct of configs) {
-      let query = api
+      let query = supabase
         .from(ct.tableName as any)
         .select('*', { count: 'exact' })
         .order('updated_at', { ascending: false })

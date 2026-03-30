@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ export function useRedirects() {
     setLoading(true);
     setError(null);
     try {
-      let query = api
+      let query = supabase
         .from('redirects' as any)
         .select('*', { count: 'exact' });
 
@@ -125,7 +125,7 @@ export function useRedirects() {
   const createRedirect = useCallback(async (formData: RedirectFormData): Promise<Redirect | null> => {
     setError(null);
     try {
-      const { data, error: insertError } = await api
+      const { data, error: insertError } = await supabase
         .from('redirects' as any)
         .insert({
           ...formData,
@@ -153,7 +153,7 @@ export function useRedirects() {
       if (formData.query_mode !== undefined) {
         updatePayload.preserve_query = formData.query_mode === 'PRESERVE';
       }
-      const { data, error: updateError } = await api
+      const { data, error: updateError } = await supabase
         .from('redirects' as any)
         .update(updatePayload)
         .eq('id', id)
@@ -171,7 +171,7 @@ export function useRedirects() {
   const deleteRedirect = useCallback(async (id: string): Promise<boolean> => {
     setError(null);
     try {
-      const { error: deleteError } = await api
+      const { error: deleteError } = await supabase
         .from('redirects' as any)
         .delete()
         .eq('id', id);
@@ -187,7 +187,7 @@ export function useRedirects() {
   const toggleEnabled = useCallback(async (id: string, is_enabled: boolean): Promise<boolean> => {
     setError(null);
     try {
-      const { error: updateError } = await api
+      const { error: updateError } = await supabase
         .from('redirects' as any)
         .update({ is_enabled } as any)
         .eq('id', id);
@@ -205,7 +205,7 @@ export function useRedirects() {
     limit = 20,
   ): Promise<RedirectEvent[]> => {
     try {
-      const { data, error: fetchError } = await api
+      const { data, error: fetchError } = await supabase
         .from('redirect_events' as any)
         .select('*')
         .eq('redirect_id', redirectId)
@@ -237,7 +237,7 @@ export function useRedirects() {
       const item = items[i];
       try {
         const type: RedirectType = item.type || (item.slug ? 'SHORT' : 'PATH');
-        const { error: insertError } = await api
+        const { error: insertError } = await supabase
           .from('redirects' as any)
           .insert({
             type,
@@ -267,7 +267,7 @@ export function useRedirects() {
 
   // Export all redirects as CSV-ready objects
   const exportAll = useCallback(async (): Promise<Redirect[]> => {
-    const { data, error: fetchError } = await api
+    const { data, error: fetchError } = await supabase
       .from('redirects' as any)
       .select('*')
       .order('updated_at', { ascending: false });

@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Ticket, Loader2 } from "lucide-react";
 import Box from '@mui/material/Box';
 
@@ -65,7 +65,7 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
 
     setIsLoading(true);
     try {
-      const { data, error } = await api.functions.invoke('import-ticketmaster-events', {
+      const { data, error } = await supabase.functions.invoke('import-ticketmaster-events', {
         body: {
           keyword: keyword.trim(),
           city: city.trim() || undefined,

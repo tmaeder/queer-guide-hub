@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 import { UmamiAnalyticsDashboard } from "@/components/analytics/UmamiAnalyticsDashboard";
 import {
   Users,
@@ -38,12 +38,12 @@ export default function AdminAnalytics() {
   const fetchStats = async () => {
     try {
       const [users, venues, events, groups, listings, articles] = await Promise.all([
-        api.from('profiles').select('id', { count: 'exact', head: true }),
-        api.from('venues').select('id', { count: 'exact', head: true }),
-        api.from('events').select('id', { count: 'exact', head: true }),
-        api.from('community_groups').select('id', { count: 'exact', head: true }),
-        api.from('marketplace_listings').select('id', { count: 'exact', head: true }),
-        api.from('news_articles').select('id', { count: 'exact', head: true })
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('venues').select('id', { count: 'exact', head: true }),
+        supabase.from('events').select('id', { count: 'exact', head: true }),
+        supabase.from('community_groups').select('id', { count: 'exact', head: true }),
+        supabase.from('marketplace_listings').select('id', { count: 'exact', head: true }),
+        supabase.from('news_articles').select('id', { count: 'exact', head: true })
       ]);
 
       setStats({

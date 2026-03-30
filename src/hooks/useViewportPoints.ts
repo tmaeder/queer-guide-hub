@@ -12,8 +12,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { invokeFunction } from '@/integrations/cloudflare-workers';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 import {
@@ -76,7 +75,7 @@ async function fetchVenuesInBbox(
   bbox: Bbox,
   filters: ExploreMapFilters | undefined,
 ): Promise<PointFeature[]> {
-  let query = api
+  let query = supabase
     .from('venues')
     .select('id, name, category, latitude, longitude, city, country, featured')
     .neq('data_source', 'refuge_restrooms')
@@ -123,7 +122,7 @@ async function fetchEventsInBbox(
   bbox: Bbox,
   filters: ExploreMapFilters | undefined,
 ): Promise<PointFeature[]> {
-  let query = api
+  let query = supabase
     .from('events')
     .select(
       'id, title, start_date, event_type, latitude, longitude, city, venue_id, venues(name, latitude, longitude)',
@@ -183,7 +182,7 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
   const lat = (bbox.south + bbox.north) / 2;
   const lng = (bbox.west + bbox.east) / 2;
 
-  const { data, error } = await invokeFunction('get-refuge-restrooms', {
+  const { data, error } = await supabase.functions.invoke('get-refuge-restrooms', {
     body: { lat, lng, per_page: 500 },
   });
   if (error) throw error;

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, Check, X, Eye, Merge, RotateCcw } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -123,17 +123,17 @@ export function CMSDuplicateManager() {
   const runDuplicateDetection = async () => {
     setIsRunningDetection(true);
     try {
-      const { data: events, error: eventsError } = await api
+      const { data: events, error: eventsError } = await supabase
         .from('events')
         .select('id, title, created_at, description')
         .limit(100);
 
-      const { data: venues, error: venuesError } = await api
+      const { data: venues, error: venuesError } = await supabase
         .from('venues')
         .select('id, name, created_at, description')
         .limit(100);
 
-      const { data: personalities, error: personalitiesError } = await api
+      const { data: personalities, error: personalitiesError } = await supabase
         .from('personalities')
         .select('id, name, created_at, description')
         .limit(100);

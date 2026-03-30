@@ -7,8 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Globe, Image as ImageIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { api } from '@/integrations/api/client';
-import { invokeFunction } from '@/integrations/cloudflare-workers';
+import { supabase } from '@/integrations/supabase/client';
 
 interface WikipediaInfo {
   title: string;
@@ -59,10 +58,10 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
     try {
       // Fetch Wikipedia info and Pexels images in parallel
       const [wikipediaResponse, imagesResponse] = await Promise.all([
-        api.functions.invoke('get-wikipedia-info', {
+        supabase.functions.invoke('get-wikipedia-info', {
           body: { query: name, type }
         }),
-        invokeFunction('get-pexels-images', {
+        supabase.functions.invoke('get-pexels-images', {
           body: { query: name, type }
         })
       ]);

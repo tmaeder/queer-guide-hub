@@ -8,7 +8,7 @@ export const optimizeImageForCloudflare = (
   width?: number,
   height?: number,
   format: 'auto' | 'webp' | 'avif' | 'jpg' | 'png' = 'auto',
-  quality = 85,
+  quality = 85
 ) => {
   // If using Cloudflare Images, add transformation parameters
   if (src.includes('imagedelivery.net') || src.includes('cf-images.com')) {
@@ -30,7 +30,7 @@ export const optimizeImageForCloudflare = (
 export const cloudflareOptimizedFetch = async (
   url: string,
   options: RequestInit = {},
-  cacheTime = 300, // 5 minutes default
+  cacheTime = 300 // 5 minutes default
 ) => {
   const optimizedOptions: RequestInit = {
     ...options,
@@ -54,7 +54,7 @@ export const getCloudflareGeoData = () => {
       city: (window as any).CF?.city || 'San Francisco',
       timezone: (window as any).CF?.timezone || 'America/Los_Angeles',
       latitude: (window as any).CF?.latitude || '37.7749',
-      longitude: (window as any).CF?.longitude || '-122.4194',
+      longitude: (window as any).CF?.longitude || '-122.4194'
     };
   }
 
@@ -65,7 +65,7 @@ export const getCloudflareGeoData = () => {
     city: 'San Francisco',
     timezone: 'America/Los_Angeles',
     latitude: '37.7749',
-    longitude: '-122.4194',
+    longitude: '-122.4194'
   };
 };
 
@@ -73,21 +73,16 @@ export const getCloudflareGeoData = () => {
  * Initialize Cloudflare-specific performance optimizations
  */
 export const initCloudflareOptimizations = () => {
-  // Add dns-prefetch for the Workers API domain
-  const apiUrl = import.meta.env.VITE_API_URL || '';
-  if (apiUrl) {
-    try {
-      const apiHost = new URL(apiUrl).hostname;
-      if (!document.querySelector(`link[rel="dns-prefetch"][href="https://${apiHost}"]`)) {
-        const link = document.createElement('link');
-        link.rel = 'dns-prefetch';
-        link.href = `https://${apiHost}`;
-        document.head.appendChild(link);
-      }
-    } catch {
-      // ignore invalid URL
+  // Add dns-prefetch for external domains used by the app
+  const domains = ['supabase.co'];
+  domains.forEach(domain => {
+    if (!document.querySelector(`link[rel="dns-prefetch"][href="https://${domain}"]`)) {
+      const link = document.createElement('link');
+      link.rel = 'dns-prefetch';
+      link.href = `https://${domain}`;
+      document.head.appendChild(link);
     }
-  }
+  });
 
   // Register service worker (single registration point)
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -95,7 +90,7 @@ export const initCloudflareOptimizations = () => {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js', {
           scope: '/',
-          updateViaCache: 'imports',
+          updateViaCache: 'imports'
         });
 
         registration.addEventListener('updatefound', () => {

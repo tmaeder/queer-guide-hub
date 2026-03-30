@@ -5,10 +5,9 @@ import type {
   CountryWithRegions as Country,
   CityWithCountry as City,
 } from '@/hooks/useOptimizedPlaces';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Link } from 'react-router';
-import { api } from '@/integrations/api/client';
-import { invokeFunction } from '@/integrations/cloudflare-workers';
+import { supabase } from '@/integrations/supabase/client';
 import { useCityImages } from '@/hooks/useCityImages';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -20,7 +19,7 @@ interface PlacesCardProps {
   onClick?: () => void;
 }
 
-export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
+export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }: PlacesCardProps) {
   const [countryImage, setCountryImage] = useState<string | null>(data?.image_url || null);
   const [imageLoading, setImageLoading] = useState(false);
 
@@ -67,7 +66,7 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
         const specificQuery = countrySpecificQueries[name];
         const query = specificQuery || `${name} famous landmarks architecture cityscape`;
 
-        const { data: imageData, error } = await invokeFunction('get-pexels-images', {
+        const { data: imageData, error } = await supabase.functions.invoke('get-pexels-images', {
           body: { query, type: 'country', page: 1 },
         });
 
@@ -83,7 +82,7 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
         setCountryImage(imageUrl);
 
         // Save to DB so future visits don't need Pexels
-        api.from('countries').update({ image_url: imageUrl }).eq('id', data.id).then();
+        supabase.from('countries').update({ image_url: imageUrl }).eq('id', data.id).then();
       } catch (err) {
         // Silently fail — fallback image handles it
       } finally {
@@ -278,6 +277,9 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
             <img
               src={countryImage}
               alt={`${name} landscape`}
+              loading="lazy"
+              width={400}
+              height={300}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -334,6 +336,9 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
             <img
               src={cityImageUrl}
               alt={`${name} cityscape`}
+              loading="lazy"
+              width={400}
+              height={300}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={() => setCityImageError(true)}
             />
@@ -411,4 +416,4 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
 
   // For continents or items without detail pages, use onClick
   return <div onClick={onClick}>{cardContent}</div>;
-};
+});

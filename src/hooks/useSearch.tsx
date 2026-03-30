@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "./useDebounce";
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 import { invokeWithRetry } from '@/utils/fetchWithRetry';
 
 export interface SearchResult {

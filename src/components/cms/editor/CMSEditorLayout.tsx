@@ -28,7 +28,7 @@ import {
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { EditorHeader } from './EditorHeader';
 import { EditorSidebar } from './EditorSidebar';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { FieldGroup } from '@/types/cms';
 
@@ -111,7 +111,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
     if (!state.itemId || !config) return;
     setIsEnriching(true);
     try {
-      const { data, error } = await api.functions.invoke('content-automation', {
+      const { data, error } = await supabase.functions.invoke('content-automation', {
         body: {
           module: 'ai-content-enhancer',
           content_type: contentType,

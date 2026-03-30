@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,23 +13,7 @@ interface SecurityEvent {
   id: string;
   user_id: string | null;
   event_type: string;
-  details: Record<string, unknown>;
-  created_at: string;
-}
-
-interface AuditLog {
-  id: string;
-  admin_user_id: string | null;
-  target_user_id: string | null;
-  action: string;
-  role_name: string;
-  timestamp: string;
-}
-
-interface FailedLoginAttempt {
-  id: string;
-  attempt_type: string;
-  ip_address: string;
+  details: any;
   created_at: string;
 }
 
@@ -37,7 +21,7 @@ export function SecurityMonitoringDashboard() {
   const { data: recentEvents = [], isLoading } = useQuery({
     queryKey: ['security-events'],
     queryFn: async () => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('security_events')
         .select('*')
         .order('created_at', { ascending: false })
@@ -47,6 +31,7 @@ export function SecurityMonitoringDashboard() {
         console.error('Error fetching security events:', error);
         throw error;
       }
+      console.log('Security events fetched:', data?.length || 0);
       return data as SecurityEvent[];
     },
     refetchInterval: 30000,
@@ -55,14 +40,14 @@ export function SecurityMonitoringDashboard() {
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs'],
     queryFn: async () => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('user_role_audit_log')
         .select('id, admin_user_id, target_user_id, action, role_name, timestamp')
         .order('timestamp', { ascending: false })
         .limit(20);
 
       if (error) throw error;
-      return data as AuditLog[];
+      return data;
     },
   });
 
@@ -70,9 +55,9 @@ export function SecurityMonitoringDashboard() {
     queryKey: ['system-stats'],
     queryFn: async () => {
       const [failedLogins, captchaVerifications, accessLogs] = await Promise.all([
-        api.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
-        api.from('captcha_verifications').select('*', { count: 'exact', head: true }),
-        api.from('access_logs').select('*', { count: 'exact', head: true }),
+        supabase.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
+        supabase.from('captcha_verifications').select('*', { count: 'exact', head: true }),
+        supabase.from('access_logs').select('*', { count: 'exact', head: true }),
       ]);
 
       return {
@@ -86,14 +71,14 @@ export function SecurityMonitoringDashboard() {
   const { data: recentFailedLogins = [] } = useQuery({
     queryKey: ['recent-failed-logins'],
     queryFn: async () => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('failed_login_attempts')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(10);
 
       if (error) throw error;
-      return data as FailedLoginAttempt[];
+      return data;
     },
   });
 
@@ -307,7 +292,7 @@ export function SecurityMonitoringDashboard() {
                 overflowY: 'auto',
               }}
             >
-              {auditLogs.map((log) => (
+              {auditLogs.map((log: any) => (
                 <Box
                   key={log.id}
                   sx={{
@@ -368,7 +353,7 @@ export function SecurityMonitoringDashboard() {
                 overflowY: 'auto',
               }}
             >
-              {recentFailedLogins.map((attempt) => (
+              {recentFailedLogins.map((attempt: any) => (
                 <Box
                   key={attempt.id}
                   sx={{

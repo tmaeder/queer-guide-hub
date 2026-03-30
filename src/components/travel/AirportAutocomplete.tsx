@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Plane } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Airport {
   iata_code: string;
@@ -42,7 +42,7 @@ export function AirportAutocomplete({
     } else if (value && !displayValue) {
       // Fallback: resolve IATA code to display label from DB
       const loadLabel = async () => {
-        const { data } = await api
+        const { data } = await supabase
           .from('airports')
           .select('iata_code, city_name, country_code')
           .eq('iata_code', value)
@@ -79,7 +79,7 @@ export function AirportAutocomplete({
     // Exact IATA match gets priority (e.g. "LHR")
     const isIataQuery = q.length === 3 && /^[A-Za-z]{3}$/.test(q);
 
-    const { data } = await api
+    const { data } = await supabase
       .from('airports')
       .select('iata_code, name, city_name, country_code')
       .or(`city_name.ilike.%${q}%,name.ilike.%${q}%,iata_code.ilike.%${q}%`)

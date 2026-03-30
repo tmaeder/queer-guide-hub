@@ -4,8 +4,7 @@ import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from 'luci
 import { Country, City } from '@/hooks/useDirectory';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { api } from '@/integrations/api/client';
-import { invokeFunction } from '@/integrations/cloudflare-workers';
+import { supabase } from '@/integrations/supabase/client';
 import { useCityImages } from '@/hooks/useCityImages';
 interface DirectoryCardProps {
   type: 'continent' | 'country' | 'city';
@@ -58,7 +57,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           // Add a small random element to ensure different images for each country
           const randomSeed = Math.floor(Math.random() * 5) + 1;
           const finalQuery = `${query} ${randomSeed}`;
-          const { data: imageData, error } = await invokeFunction('get-pexels-images', {
+          const { data: imageData, error } = await supabase.functions.invoke('get-pexels-images', {
             body: {
               query: finalQuery,
               type: 'country',
@@ -267,6 +266,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
             </div>
           ) : (
             <img
+              loading="lazy"
               src={
                 countryImage ||
                 `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`
@@ -314,6 +314,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
             </div>
           ) : cityImageUrl && !cityImageError ? (
             <img
+              loading="lazy"
               src={cityImageUrl}
               alt={`${name} cityscape`}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}

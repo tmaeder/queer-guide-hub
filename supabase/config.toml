@@ -1,0 +1,191 @@
+project_id = "xqeacpakadqfxjxjcewc"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = true
+enable_manual_linking = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+template = "Your code is {{ .Code }}"
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[realtime]
+enabled = true
+ip_version = "IPv4"
+
+[studio]
+enabled = true
+port = 54324
+api_url = "http://localhost:54321"
+
+[inbucket]
+enabled = true
+port = 54325
+smtp_port = 54326
+pop3_port = 54327
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
+gcp_project_id = ""
+gcp_project_number = ""
+gcp_jwt_path = "supabase/gcp.json"
+
+[functions.create-booking]
+verify_jwt = false
+
+[functions.fetch-news]
+verify_jwt = false
+
+[functions.get-pexels-images]
+verify_jwt = false
+
+[functions.get-refuge-restrooms]
+verify_jwt = false
+
+[functions.get-weather-forecast]
+verify_jwt = false
+
+[functions.get-wikipedia-info]
+verify_jwt = false
+
+[functions.search-flights]
+verify_jwt = true
+
+[functions.search-hotels]
+verify_jwt = true
+
+[functions.store-tag-images]
+verify_jwt = false
+
+[functions.secure-mapbox-token]
+verify_jwt = false
+
+[functions.calendar-feed]
+verify_jwt = false
+
+[functions.compute-tag-relationships]
+verify_jwt = false
+
+[functions.import-awin-products]
+verify_jwt = false
+
+[functions.manage-email-templates]
+verify_jwt = true
+
+[functions.send-bulk-email]
+verify_jwt = true
+
+[functions.send-templated-email]
+verify_jwt = true
+
+[functions.import-foursquare-venues]
+verify_jwt = false
+
+[functions.import-tripadvisor-venues]
+verify_jwt = false
+
+[functions.umami-analytics]
+verify_jwt = false
+
+[functions.umami-dashboard]
+verify_jwt = false
+
+[functions.link-locations]
+verify_jwt = false
+
+[functions.enrich-venue]
+verify_jwt = false
+
+[functions.bulk-scrape-events]
+verify_jwt = true
+
+[functions.secure-google-maps-key]
+verify_jwt = false
+
+[functions.manage-placeholder-images]
+verify_jwt = false
+
+[functions.calendar-token]
+verify_jwt = true
+
+[functions.mapbox-geocoding]
+verify_jwt = false
+
+[functions.redis-get]
+verify_jwt = true
+
+[functions.redis-set]
+verify_jwt = true
+
+[functions.redis-delete]
+verify_jwt = true
+
+[functions.redis-keys]
+verify_jwt = true
+
+[functions.fetch-ilga-data]
+verify_jwt = false
+
+[functions.import-ilga-data]
+verify_jwt = true
+
+[functions.update-musician-concerts]
+verify_jwt = false
+
+[functions.background-import-manager]
+verify_jwt = false
+
+[functions.import-adult-models-csv]
+verify_jwt = true
+
+[functions.manage-api-keys]
+verify_jwt = true
+
+[functions.get-api-key]
+verify_jwt = true
+
+[functions.cloudflare-api]
+verify_jwt = true
+
+[functions.scrape-gaycities-events]
+verify_jwt = true
+
+[functions.scrape-spartacus]
+verify_jwt = true
+
+[functions.scrape-web-sources]
+verify_jwt = false

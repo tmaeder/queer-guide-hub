@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Globe, MapPin, Calendar, Play, RefreshCw, AlertTriangle } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 const SCRAPER_API = import.meta.env.DEV
   ? 'http://localhost:4400'
@@ -40,7 +40,7 @@ const NODE_SCRAPERS = [
     key: 'misterbandb',
     label: 'MisterBnB',
     url: 'sitemap.misterbandb.com',
-    types: 'Events, Guides',
+    types: 'Events, Guides, Stays',
     icon: MapPin,
   },
   {
@@ -70,7 +70,10 @@ export const WebScrapersPanel = () => {
     try {
       const res = await fetch(`${SCRAPER_API}/run`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Scraper-Secret': import.meta.env.VITE_SCRAPER_SECRET ?? '',
+        },
         body: JSON.stringify({ source }),
       });
       const data = await res.json();
@@ -90,13 +93,21 @@ export const WebScrapersPanel = () => {
         return;
       }
 
-      const { data: ingestData, error: ingestError } = await api.functions.invoke(
-        'ingestion-pipeline',
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token;
+
+      const ingestRes = await fetch(
+        `https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/ingest-scraper-results`,
         {
-          body: { entities: allEntities },
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ entities: allEntities }),
         },
       );
-      if (ingestError) throw new Error(ingestError.message || 'Ingestion failed');
+      const ingestData = await ingestRes.json();
 
       setResults((prev) => ({
         ...prev,

@@ -4,14 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { api } from '@/integrations/api/client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ModernAudioPlayer } from '@/components/ui/modern-audio-player';
 import Box from '@mui/material/Box';
@@ -52,14 +46,12 @@ export function AudioManager() {
   const loadAudios = async () => {
     try {
       setLoading(true);
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('audio_files')
-        .select(
-          `
+        .select(`
           *,
           renditions:audio_renditions(*)
-        `,
-        )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -76,7 +68,10 @@ export function AudioManager() {
     if (!confirm('Are you sure you want to delete this audio file?')) return;
 
     try {
-      const { error } = await api.from('audio_files').delete().eq('id', audioId);
+      const { error } = await supabase
+        .from('audio_files')
+        .delete()
+        .eq('id', audioId);
 
       if (error) throw error;
 
@@ -93,7 +88,7 @@ export function AudioManager() {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     if (bytes === 0) return '0 Bytes';
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
   };
 
   const formatDuration = (seconds?: number): string => {
@@ -105,43 +100,26 @@ export function AudioManager() {
 
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'completed':
-        return '#22c55e';
-      case 'processing':
-        return '#eab308';
-      case 'failed':
-        return '#ef4444';
-      case 'uploaded':
-        return '#3b82f6';
-      default:
-        return '#6b7280';
+      case 'completed': return '#22c55e';
+      case 'processing': return '#eab308';
+      case 'failed': return '#ef4444';
+      case 'uploaded': return '#3b82f6';
+      default: return '#6b7280';
     }
   };
 
-  const filteredAudios = audios.filter(
-    (audio) =>
-      audio.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      audio.artist?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      audio.album?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      audio.description?.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredAudios = audios.filter(audio =>
+    audio.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    audio.artist?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    audio.album?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    audio.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
         <Box sx={{ textAlign: 'center' }}>
-          <Box
-            sx={{
-              animation: 'spin 1s linear infinite',
-              borderRadius: '50%',
-              height: 32,
-              width: 32,
-              borderBottom: 2,
-              borderColor: 'primary.main',
-              mx: 'auto',
-              mb: 2,
-            }}
-          ></Box>
+          <Box sx={{ animation: 'spin 1s linear infinite', borderRadius: '50%', height: 32, width: 32, borderBottom: 2, borderColor: 'primary.main', mx: 'auto', mb: 2 }}></Box>
           <p>Loading audio files...</p>
         </Box>
       </Box>
@@ -152,21 +130,9 @@ export function AudioManager() {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-          Audio Library
-        </Typography>
+        <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Audio Library</Typography>
         <Box sx={{ position: 'relative', width: 256 }}>
-          <Search
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              height: 16,
-              width: 16,
-              color: 'var(--muted-foreground)',
-            }}
-          />
+          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           <Input
             placeholder="Search audio..."
             value={searchTerm}
@@ -177,29 +143,14 @@ export function AudioManager() {
       </Box>
 
       {/* Audio Grid */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-          gap: 3,
-        }}
-      >
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
         {filteredAudios.map((audio) => (
           <Card key={audio.id} sx={{ overflow: 'hidden' }}>
-            <Box
-              sx={{
-                aspectRatio: '1/1',
-                bgcolor: 'action.hover',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-              }}
-            >
+            <Box sx={{ aspectRatio: '1/1', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
               {audio.poster_image_path ? (
                 <Box
                   component="img"
-                  src={`${import.meta.env.VITE_API_URL || ''}/storage/audio/public/${audio.poster_image_path}`}
+                  src={`https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/audio/${audio.poster_image_path}`}
                   alt={audio.title}
                   sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
@@ -214,80 +165,29 @@ export function AudioManager() {
               </Box>
 
               {audio.duration_seconds && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: 8,
-                    right: 8,
-                    bgcolor: 'rgba(0,0,0,0.75)',
-                    color: 'white',
-                    px: 1,
-                    py: 0.5,
-                    borderRadius: 1,
-                    fontSize: '0.75rem',
-                  }}
-                >
+                <Box sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: 'rgba(0,0,0,0.75)', color: 'white', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.75rem' }}>
                   {formatDuration(audio.duration_seconds)}
                 </Box>
               )}
             </Box>
 
             <CardContent sx={{ p: 2 }}>
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 600,
-                  mb: 0.5,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {audio.title}
-              </Typography>
+              <Typography variant="h3" sx={{ fontWeight: 600, mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{audio.title}</Typography>
 
               {audio.artist && (
-                <Typography
-                  sx={{
-                    fontSize: '0.875rem',
-                    color: 'text.secondary',
-                    mb: 0.5,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   by {audio.artist}
                 </Typography>
               )}
 
               {audio.album && (
-                <Typography
-                  sx={{
-                    fontSize: '0.75rem',
-                    color: 'text.secondary',
-                    mb: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   from {audio.album}
                 </Typography>
               )}
 
               {audio.description && (
-                <Typography
-                  sx={{
-                    fontSize: '0.875rem',
-                    color: 'text.secondary',
-                    mb: 1.5,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}
-                >
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {audio.description}
                 </Typography>
               )}
@@ -301,7 +201,11 @@ export function AudioManager() {
                 {audio.status === 'completed' && audio.renditions.length > 0 && (
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setSelectedAudio(audio)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedAudio(audio)}
+                      >
                         <Play style={{ height: 16, width: 16 }} />
                       </Button>
                     </DialogTrigger>
@@ -320,15 +224,15 @@ export function AudioManager() {
                             duration_seconds: audio.duration_seconds,
                             poster_image_path: audio.poster_image_path,
                             transcript_path: audio.transcript_path,
-                            renditions: audio.renditions.map((r) => ({
+                            renditions: audio.renditions.map(r => ({
                               id: r.id,
                               format: r.format,
                               codec: r.codec,
                               container: r.container,
                               file_path: r.file_path,
                               bitrate_kbps: r.bitrate_kbps,
-                              file_size: r.file_size,
-                            })),
+                              file_size: r.file_size
+                            }))
                           }}
                           controls={true}
                           sx={{ width: '100%' }}
@@ -354,21 +258,10 @@ export function AudioManager() {
 
       {filteredAudios.length === 0 && (
         <Box sx={{ textAlign: 'center', py: 6 }}>
-          <Music
-            style={{
-              height: 48,
-              width: 48,
-              color: 'var(--muted-foreground)',
-              margin: '0 auto 16px',
-            }}
-          />
-          <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
-            No audio files found
-          </Typography>
+          <Music style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
+          <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No audio files found</Typography>
           <p style={{ color: 'var(--muted-foreground)' }}>
-            {searchTerm
-              ? 'Try adjusting your search terms'
-              : 'Upload some audio files to get started'}
+            {searchTerm ? 'Try adjusting your search terms' : 'Upload some audio files to get started'}
           </p>
         </Box>
       )}

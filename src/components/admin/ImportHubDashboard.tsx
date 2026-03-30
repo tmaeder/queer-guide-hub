@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { useImportHub, ImportJob, ScrapeSource } from '@/hooks/useImportHub';
+import { useImportHub, ImportJob } from '@/hooks/useImportHub';
 import {
   Upload,
   Database,
@@ -25,8 +24,6 @@ import {
   Package,
   Inbox,
   ArrowRight,
-  Globe,
-  Mail,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ImportJobCreator } from './ImportJobCreator';
@@ -38,8 +35,6 @@ import { DuplicatesPanel } from './import-hub/DuplicatesPanel';
 import { IngestionSourcesManager } from './IngestionSourcesManager';
 import { PipelineMonitor } from './PipelineMonitor';
 import { WebScrapersPanel } from './WebScrapersPanel';
-import { ScrapeSourcesDashboard } from './ScrapeSourcesDashboard';
-import { EmailIngestionsManager } from './EmailIngestionsManager';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
 
@@ -52,7 +47,6 @@ export const ImportHubDashboard = () => {
     cancelImportJob,
     refreshJobs: loadJobs,
     refreshStatistics: loadStatistics,
-    fetchScrapeSources,
   } = useImportHub();
   const { data: reviewCounts } = useReviewCounts();
 
@@ -60,11 +54,6 @@ export const ImportHubDashboard = () => {
   const [activeTab, setActiveTab] = useState('jobs');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [scrapeSources, setScrapeSources] = useState<ScrapeSource[]>([]);
-
-  useEffect(() => {
-    fetchScrapeSources().then(setScrapeSources);
-  }, [fetchScrapeSources]);
 
   const getStatusIcon = (status: ImportJob['status']) => {
     switch (status) {
@@ -195,7 +184,7 @@ export const ImportHubDashboard = () => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(5, 1fr)' },
+          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
           gap: 1.5,
           mb: 3,
         }}
@@ -243,23 +232,6 @@ export const ImportHubDashboard = () => {
         </Card>
 
         <Card
-          onClick={() => setActiveTab('scraping')}
-          style={{ cursor: 'pointer' }}
-        >
-          <CardContent sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Globe style={{ height: 18, width: 18, color: '#8b5cf6', flexShrink: 0 }} />
-            <Box>
-              <Typography sx={{ fontWeight: 700, lineHeight: 1 }}>
-                {scrapeSources.filter((s) => s.is_enabled).length}/{scrapeSources.length}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
-                Scrapers
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-
-        <Card
           onClick={() => navigate('/admin/review')}
           style={{
             cursor: 'pointer',
@@ -284,21 +256,18 @@ export const ImportHubDashboard = () => {
         </Card>
       </Box>
 
-      {/* Tabs — unified import interface */}
+      {/* Web Scrapers — always visible */}
+      <Box sx={{ mb: 3 }}>
+        <WebScrapersPanel />
+      </Box>
+
+      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList style={{ backgroundColor: 'var(--card)', marginBottom: 24, flexWrap: 'wrap' }}>
+        <TabsList style={{ backgroundColor: 'var(--card)', marginBottom: 24 }}>
           <TabsTrigger value="jobs">
             Jobs {activeJobs.length > 0 && `(${activeJobs.length} active)`}
           </TabsTrigger>
           <TabsTrigger value="create">New Import</TabsTrigger>
-          <TabsTrigger value="scraping">
-            <Globe style={{ height: 14, width: 14, marginRight: 4 }} />
-            Scraping
-          </TabsTrigger>
-          <TabsTrigger value="email">
-            <Mail style={{ height: 14, width: 14, marginRight: 4 }} />
-            Email
-          </TabsTrigger>
           <TabsTrigger value="sources">Sources</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
         </TabsList>
@@ -543,17 +512,6 @@ export const ImportHubDashboard = () => {
         {/* ── New Import ── */}
         <TabsContent value="create">
           <ImportJobCreator />
-        </TabsContent>
-
-        {/* ── Scraping: web scraper sources + quick scrapers ── */}
-        <TabsContent value="scraping" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <ScrapeSourcesDashboard />
-          <WebScrapersPanel />
-        </TabsContent>
-
-        {/* ── Email: email ingestion management ── */}
-        <TabsContent value="email">
-          <EmailIngestionsManager />
         </TabsContent>
 
         {/* ── Sources: ingestion sources + venues + news + API keys ── */}

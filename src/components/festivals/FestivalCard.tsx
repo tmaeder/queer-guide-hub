@@ -52,6 +52,7 @@ export function FestivalCard({ festival }: FestivalCardProps) {
         {heroImage && (
           <Box sx={{ height: 160, overflow: 'hidden' }}>
             <img
+              loading="lazy"
               src={heroImage}
               alt={festival.name}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}

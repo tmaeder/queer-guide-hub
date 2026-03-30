@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ProfessionAutocomplete } from '@/components/ui/profession-autocomplete';
@@ -86,7 +86,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       // Add updated_at timestamp
       changes['updated_at'] = new Date().toISOString();
 
-      const { error } = await api
+      const { error } = await supabase
         .from(tableName)
         .update(changes)
         .eq('id', content.id);

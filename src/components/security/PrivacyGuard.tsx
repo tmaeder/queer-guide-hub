@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PrivacyGuardProps {
   children: React.ReactNode;
@@ -34,7 +34,7 @@ export function PrivacyGuard({
   if (isAdmin && adminJustification) {
     // Log admin access for audit trail
     if (logAccess) {
-      api.rpc('log_security_event', {
+      supabase.rpc('log_security_event', {
         p_event_type: 'ADMIN_PRIVACY_OVERRIDE',
         p_user_id: user?.id || null,
         p_metadata: {

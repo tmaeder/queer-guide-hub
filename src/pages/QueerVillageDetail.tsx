@@ -19,7 +19,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { PageLoading } from '@/components/ui/loading';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
 import { useVenues } from '@/hooks/useVenues';
@@ -27,6 +27,7 @@ import { useEvents } from '@/hooks/useEvents';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import { EntityMap } from '@/components/map/EntityMap';
 
 type VillageWithRelations = {
   id: string;
@@ -78,7 +79,7 @@ export default function QueerVillageDetail() {
 
   const fetchVillage = async () => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('queer_villages')
         .select('*, cities:city_id(id, name), countries:country_id(id, name, flag_emoji)')
         .eq('slug', slug)
@@ -320,7 +321,7 @@ export default function QueerVillageDetail() {
             style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
           >
             <TabsList
-              style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}
+              style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(5, 1fr)' }}
             >
               <TabsTrigger value="overview" style={{ fontSize: '0.875rem' }}>
                 <Landmark style={{ height: 16, width: 16, marginRight: 6 }} />
@@ -344,6 +345,12 @@ export default function QueerVillageDetail() {
                 <ImageIcon style={{ height: 16, width: 16, marginRight: 6 }} />
                 <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                   Photos
+                </Box>
+              </TabsTrigger>
+              <TabsTrigger value="map" style={{ fontSize: '0.875rem' }}>
+                <MapPin style={{ height: 16, width: 16, marginRight: 6 }} />
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Map
                 </Box>
               </TabsTrigger>
             </TabsList>
@@ -566,6 +573,36 @@ export default function QueerVillageDetail() {
                     Photos will be added soon.
                   </Typography>
                 </Box>
+              )}
+            </TabsContent>
+
+            {/* MAP */}
+            <TabsContent value="map">
+              {typeof village.latitude === 'number' && typeof village.longitude === 'number' && (
+                <EntityMap
+                  center={[Number(village.longitude), Number(village.latitude)]}
+                  zoom={14}
+                  height={400}
+                  markers={[
+                    {
+                      id: village.id,
+                      lat: Number(village.latitude),
+                      lng: Number(village.longitude),
+                      name: village.name ?? 'Village',
+                      type: 'neighbourhoods',
+                      primary: true,
+                    },
+                    ...(venues as any[]).filter((v: any) => typeof v.latitude === 'number' && typeof v.longitude === 'number').map((v: any) => ({
+                      id: v.id,
+                      lat: Number(v.latitude),
+                      lng: Number(v.longitude),
+                      name: v.name ?? 'Venue',
+                      subtitle: v.category,
+                      type: 'venues' as const,
+                      linkTo: `/venues/${v.id}`,
+                    })),
+                  ]}
+                />
               )}
             </TabsContent>
           </Tabs>

@@ -68,11 +68,10 @@ import {
   detectLoop,
 } from '@/lib/redirects/validation';
 import { useToast } from '@/hooks/use-toast';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
-const REDIRECT_BASE = API_URL;
+const SUPABASE_URL = 'https://xqeacpakadqfxjxjcewc.supabase.co';
 
 interface RedirectRow {
   id: string;
@@ -306,7 +305,7 @@ export default function AdminRedirects() {
           icon: ExternalLink,
           visible: (row) => row.type === 'SHORT' && !!row.slug,
           onClick: (row) =>
-            window.open(`${REDIRECT_BASE}/redirect-handler?slug=${row.slug}`, '_blank'),
+            window.open(`${SUPABASE_URL}/functions/v1/redirect-handler?slug=${row.slug}`, '_blank'),
         },
         {
           key: 'analytics',
@@ -320,7 +319,7 @@ export default function AdminRedirects() {
           icon: Edit2,
           onClick: async (row) => {
             // Fetch full redirect data for edit dialog
-            const { data } = await api.from('redirects').select('*').eq('id', row.id).single();
+            const { data } = await supabase.from('redirects').select('*').eq('id', row.id).single();
             if (data) {
               setEditingRedirect(data as Redirect);
               setDialogOpen(true);
@@ -927,7 +926,7 @@ function PreviewDialog({ open, onClose }: { open: boolean; onClose: () => void }
       setPreviewResult('Enter a slug or /go/<slug> URL');
       return;
     }
-    const edgeUrl = `${REDIRECT_BASE}/redirect-handler?slug=${encodeURIComponent(slug)}`;
+    const edgeUrl = `${SUPABASE_URL}/functions/v1/redirect-handler?slug=${encodeURIComponent(slug)}`;
     setPreviewResult(`Edge function URL:\n${edgeUrl}\n\nOpen this URL to test the redirect.`);
   };
 

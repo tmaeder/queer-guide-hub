@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,7 +40,7 @@ export const useGroups = () => {
       if (!user?.id) return [];
 
       // Get all public groups and private groups the user is a member of
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('community_groups')
         .select(`
           *,
@@ -70,7 +70,7 @@ export const useGroups = () => {
     queryFn: async () => {
       if (!user?.id) return [];
 
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('group_memberships')
         .select(`
           *,
@@ -100,7 +100,7 @@ export const useGroups = () => {
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('community_groups')
         .insert({
           name,
@@ -117,7 +117,7 @@ export const useGroups = () => {
       if (error) throw error;
 
       // Add creator as admin
-      const { error: membershipError } = await api
+      const { error: membershipError } = await supabase
         .from('group_memberships')
         .insert({
           group_id: data.id,
@@ -151,7 +151,7 @@ export const useGroups = () => {
     mutationFn: async (groupId: string) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { error } = await api
+      const { error } = await supabase
         .from('group_memberships')
         .insert({
           group_id: groupId,
@@ -183,7 +183,7 @@ export const useGroups = () => {
     mutationFn: async (groupId: string) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { error } = await api
+      const { error } = await supabase
         .from('group_memberships')
         .delete()
         .eq('group_id', groupId)
@@ -214,7 +214,7 @@ export const useGroups = () => {
       groupId: string;
       updates: Partial<Pick<Group, 'name' | 'description' | 'image_url' | 'is_private' | 'rules' | 'tags'>>;
     }) => {
-      const { error } = await api
+      const { error } = await supabase
         .from('community_groups')
         .update(updates)
         .eq('id', groupId);

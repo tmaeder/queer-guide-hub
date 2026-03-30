@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import type { AdminTableState } from '@/components/admin/data-table/types';
 
 interface UseAdminTableQueryOptions {
@@ -12,7 +12,7 @@ interface UseAdminTableQueryOptions {
 }
 
 function applyFilters(
-  builder: ReturnType<typeof api.from>,
+  builder: ReturnType<typeof supabase.from>,
   state: UseAdminTableQueryOptions['state'],
   searchColumns: string[],
   baseFilters: Record<string, unknown>,
@@ -77,7 +77,7 @@ export function useAdminTableQuery<T = Record<string, unknown>>(
     queryKey,
     queryFn: async () => {
       // Count query
-      const countBuilder = api
+      const countBuilder = supabase
         .from(tableName as 'venues')
         .select(select, { count: 'exact', head: true });
       const filtered = applyFilters(countBuilder as any, state, searchColumns, baseFilters);
@@ -85,7 +85,7 @@ export function useAdminTableQuery<T = Record<string, unknown>>(
       if (countError) throw countError;
 
       // Data query
-      let dataBuilder = api.from(tableName as 'venues').select(select) as any;
+      let dataBuilder = supabase.from(tableName as 'venues').select(select) as any;
       dataBuilder = applyFilters(dataBuilder, state, searchColumns, baseFilters);
 
       // Sorting

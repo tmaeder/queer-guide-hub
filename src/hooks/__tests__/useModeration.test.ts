@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock api client
+// Mock supabase client
 const mockInvoke = vi.fn();
 const mockFrom = vi.fn();
 
-vi.mock('@/integrations/api/client', () => ({
-  api: {
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
     functions: {
       invoke: (...args: unknown[]) => mockInvoke(...args),
     },
@@ -39,8 +39,8 @@ describe('useModeration (unit)', () => {
       });
 
       // Simulate what createFlag does internally
-      const { api } = await import('@/integrations/api/client');
-      const { data, error } = await api.functions.invoke('create-moderation-flag', {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase.functions.invoke('create-moderation-flag', {
         body: flagData,
       });
 
@@ -57,8 +57,8 @@ describe('useModeration (unit)', () => {
         error: new Error('Rate limited'),
       });
 
-      const { api } = await import('@/integrations/api/client');
-      const { data, error } = await api.functions.invoke('create-moderation-flag', {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase.functions.invoke('create-moderation-flag', {
         body: {
           content_type: 'venues',
           content_id: 'venue-123',
@@ -78,8 +78,8 @@ describe('useModeration (unit)', () => {
         error: null,
       });
 
-      const { api } = await import('@/integrations/api/client');
-      const { data, error } = await api.functions.invoke('create-moderation-flag', {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase.functions.invoke('create-moderation-flag', {
         body: {
           content_type: 'events',
           content_id: 'event-456',
@@ -106,8 +106,8 @@ describe('useModeration (unit)', () => {
         error: null,
       });
 
-      const { api } = await import('@/integrations/api/client');
-      await api.functions.invoke('create-moderation-flag', {
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase.functions.invoke('create-moderation-flag', {
         body: params,
       });
 
@@ -137,8 +137,8 @@ describe('useModeration (unit)', () => {
       );
       mockFrom.mockReturnValue(mockQuery);
 
-      const { api } = await import('@/integrations/api/client');
-      const query = api.from('moderation_flags');
+      const { supabase } = await import('@/integrations/supabase/client');
+      const query = supabase.from('moderation_flags');
 
       expect(mockFrom).toHaveBeenCalledWith('moderation_flags');
     });
@@ -167,8 +167,8 @@ describe('useModeration (unit)', () => {
       };
       mockFrom.mockReturnValue(mockQuery);
 
-      const { api } = await import('@/integrations/api/client');
-      const query = api.from('moderation_flags');
+      const { supabase } = await import('@/integrations/supabase/client');
+      const query = supabase.from('moderation_flags');
       query.update({
         status: 'RESOLVED',
         resolved_by: 'admin-user-id',

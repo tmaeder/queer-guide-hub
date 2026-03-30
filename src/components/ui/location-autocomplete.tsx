@@ -3,8 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { MapPin, Check, Navigation, Loader2 } from 'lucide-react';
-import { api } from '@/integrations/api/client';
-import { invokeFunction } from '@/integrations/cloudflare-workers';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface LocationSuggestion {
@@ -68,7 +67,7 @@ export function LocationAutocomplete({
 
     setIsLoading(true);
     try {
-      const { data, error } = await invokeFunction('mapbox-geocoding', {
+      const { data, error } = await supabase.functions.invoke('mapbox-geocoding', {
         body: {
           query,
           types: ['address', 'poi']
@@ -193,7 +192,7 @@ export function LocationAutocomplete({
 
     setIsLoading(true);
     try {
-      const { data, error } = await invokeFunction('mapbox-geocoding', {
+      const { data, error } = await supabase.functions.invoke('mapbox-geocoding', {
         body: {
           query: inputValue,
           types: ['address']
@@ -263,7 +262,7 @@ export function LocationAutocomplete({
 
       const { latitude, longitude } = position.coords;
 
-      const { data, error } = await invokeFunction('mapbox-geocoding', {
+      const { data, error } = await supabase.functions.invoke('mapbox-geocoding', {
         body: {
           query: `${longitude},${latitude}`,
           isReverseGeocode: true

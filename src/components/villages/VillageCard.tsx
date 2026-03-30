@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router';
 import { MapPin, Landmark } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,7 @@ interface VillageCardProps {
   village: QueerVillageWithRelations;
 }
 
-export function VillageCard({ village }: VillageCardProps) {
+export const VillageCard = memo(function VillageCard({ village }: VillageCardProps) {
   const imageUrl = village.image_url;
   const cityName = village.cities?.name;
   const countryName = village.countries?.name;
@@ -36,6 +37,8 @@ export function VillageCard({ village }: VillageCardProps) {
             <img
               src={imageUrl}
               alt={village.name}
+              width={400}
+              height={180}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               loading="lazy"
             />
@@ -100,4 +103,4 @@ export function VillageCard({ village }: VillageCardProps) {
       </Paper>
     </Link>
   );
-}
+});

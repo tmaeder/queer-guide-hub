@@ -18,7 +18,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useGroupNotifications } from '@/hooks/useGroupNotifications';
 import { useAuth } from '@/hooks/useAuth';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -73,7 +73,7 @@ export const NotificationList = () => {
         setLikesLoading(true);
         setCommentsLoading(true);
         // Fetch user's post IDs
-        const { data: posts, error: postsErr } = await api
+        const { data: posts, error: postsErr } = await supabase
           .from('community_posts')
           .select('id')
           .eq('user_id', user.id)
@@ -88,7 +88,7 @@ export const NotificationList = () => {
           return;
         }
         // Fetch recent likes on user's posts
-        const { data: likesData } = await api
+        const { data: likesData } = await supabase
           .from('post_likes')
           .select('id, post_id, user_id, created_at')
           .in('post_id', postIds)
@@ -97,7 +97,7 @@ export const NotificationList = () => {
         let likesEnriched: LikeItem[] = [];
         if (likesData?.length) {
           const likerIds = [...new Set(likesData.map((l) => l.user_id))];
-          const { data: likerProfiles } = await api
+          const { data: likerProfiles } = await supabase
             .from('profiles')
             .select('user_id, display_name, avatar_url')
             .in('user_id', likerIds);
@@ -116,7 +116,7 @@ export const NotificationList = () => {
         if (isMounted) setLikes(likesEnriched);
 
         // Fetch recent comments on user's posts (with profile join)
-        const { data: commentsData, error: commentsErr } = await api
+        const { data: commentsData, error: commentsErr } = await supabase
           .from('post_comments')
           .select(
             `id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`,

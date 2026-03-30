@@ -1,7 +1,6 @@
 import { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { invokeFunction } from '@/integrations/cloudflare-workers';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useOptimizedCities, useOptimizedCountries } from '@/hooks/useOptimizedPlaces';
@@ -225,7 +224,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   const { data: rawRestrooms = [], isFetching: restroomsFetching } = useQuery({
     queryKey: ['restrooms_map', Math.round(lat * 10) / 10, Math.round(lng * 10) / 10],
     queryFn: async () => {
-      const { data, error } = await invokeFunction('get-refuge-restrooms', {
+      const { data, error } = await supabase.functions.invoke('get-refuge-restrooms', {
         body: { lat, lng, per_page: 100 },
       });
       if (error) throw error;
@@ -270,7 +269,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   const { data: rawVillages = [], isFetching: villagesFetching } = useQuery({
     queryKey: ['queer_villages_map', filters?.search],
     queryFn: async () => {
-      let query = api
+      let query = supabase
         .from('queer_villages')
         .select('id, name, slug, latitude, longitude, description, featured, cities:city_id(name)')
         .not('latitude', 'is', null)

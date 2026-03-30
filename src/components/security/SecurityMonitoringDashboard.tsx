@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,7 @@ export function SecurityMonitoringDashboard() {
   const fetchSecurityEvents = async () => {
     try {
       setLoading(true);
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('security_monitoring')
         .select('*')
         .order('created_at', { ascending: false })

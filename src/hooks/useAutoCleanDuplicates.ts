@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 // ==================== Types ====================
@@ -91,19 +91,28 @@ const INITIAL_PROGRESS: BatchProgress = {
 async function getAuthToken(): Promise<string> {
   const {
     data: { session },
-  } = await api.auth.getSession();
+  } = await supabase.auth.getSession();
   if (!session?.access_token) throw new Error('Not authenticated');
   return session.access_token;
 }
 
-async function callEdgeFunction(_token: string, params: Record<string, any>): Promise<any> {
-  const { data, error } = await api.functions.invoke('clean-merge-all-duplicates', {
-    body: params,
-  });
-  if (error) {
-    throw new Error(error.message || 'Edge function call failed');
+async function callEdgeFunction(token: string, params: Record<string, any>): Promise<any> {
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clean-merge-all-duplicates`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
   }
-  return data;
+  return res.json();
 }
 
 // ==================== Hooks ====================
@@ -113,7 +122,7 @@ export function useDuplicateCounts() {
   return useQuery({
     queryKey: ['duplicate-counts'],
     queryFn: async (): Promise<DuplicateCounts> => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('scraper_dedupe_decisions' as any)
         .select('entity_type')
         .eq('decision', 'pending');
@@ -138,8 +147,8 @@ export function useDuplicateCounts() {
       }
       return counts;
     },
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    staleTime: 60_000,
+    refetchInterval: 300_000,
   });
 }
 

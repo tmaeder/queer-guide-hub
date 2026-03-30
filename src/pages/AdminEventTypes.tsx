@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -80,11 +80,11 @@ export default function AdminEventTypes() {
     }
     try {
       if (editingId) {
-        const { error } = await api.from('event_types').update(form).eq('id', editingId);
+        const { error } = await supabase.from('event_types').update(form).eq('id', editingId);
         if (error) throw error;
         toast({ title: 'Success', description: 'Event type updated' });
       } else {
-        const { error } = await api.from('event_types').insert([form]);
+        const { error } = await supabase.from('event_types').insert([form]);
         if (error) throw error;
         toast({ title: 'Success', description: 'Event type created' });
       }
@@ -102,7 +102,7 @@ export default function AdminEventTypes() {
   const handleDelete = async (row: EventTypeRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await api.from('event_types').delete().eq('id', row.id);
+      const { error } = await supabase.from('event_types').delete().eq('id', row.id);
       if (error) throw error;
       toast({ title: 'Success', description: 'Event type deleted' });
       invalidateTable();

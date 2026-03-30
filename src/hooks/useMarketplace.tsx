@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/integrations/api/client';
-import { Database } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
@@ -34,7 +34,7 @@ export function useMarketplace() {
       setLoading(true);
       setLoadingTimedOut(false);
       setError(null);
-      let query = api
+      let query = supabase
         .from('marketplace_listings')
         .select(
           `
@@ -83,7 +83,7 @@ export function useMarketplace() {
       // Fetch listings and broken IDs in parallel
       const [listingsResult, brokenResult] = await Promise.all([
         queryWithRetry(() => query) as any,
-        api.rpc('get_broken_marketplace_ids'),
+        supabase.rpc('get_broken_marketplace_ids'),
       ]);
 
       if (listingsResult.error) throw listingsResult.error;
@@ -104,7 +104,7 @@ export function useMarketplace() {
 
   const createListing = async (listing: MarketplaceListingInsert) => {
     try {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('marketplace_listings')
         .insert([listing])
         .select()
@@ -122,10 +122,10 @@ export function useMarketplace() {
 
   const toggleFavorite = async (listingId: string) => {
     try {
-      const user = (await api.auth.getUser()).data.user;
+      const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error('Must be logged in to favorite items');
 
-      const { data: existing } = await api
+      const { data: existing } = await supabase
         .from('marketplace_favorites')
         .select('id')
         .eq('listing_id', listingId)
@@ -134,7 +134,7 @@ export function useMarketplace() {
 
       if (existing) {
         // Remove favorite
-        const { error } = await api
+        const { error } = await supabase
           .from('marketplace_favorites')
           .delete()
           .eq('listing_id', listingId)
@@ -143,7 +143,7 @@ export function useMarketplace() {
         return { favorited: false, error: null };
       } else {
         // Add favorite
-        const { error } = await api
+        const { error } = await supabase
           .from('marketplace_favorites')
           .insert({ listing_id: listingId, user_id: user.id });
         if (error) throw error;
@@ -159,7 +159,7 @@ export function useMarketplace() {
 
   const incrementViews = async (listingId: string) => {
     try {
-      const { error } = await api.rpc('increment_listing_views', {
+      const { error } = await supabase.rpc('increment_listing_views', {
         listing_id: listingId,
       });
       if (error) console.warn('Failed to increment views:', error);

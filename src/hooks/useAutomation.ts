@@ -8,7 +8,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ export function useAutomation() {
 
   // ── Realtime subscription on content_changes ────────────────────────────────
   useEffect(() => {
-    const channel = api
+    const channel = supabase
       .channel('automation-changes-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'content_changes' }, () => {
         // During active runs, skip Realtime-triggered invalidation entirely —
@@ -133,7 +133,7 @@ export function useAutomation() {
       .subscribe();
 
     return () => {
-      api.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, [queryClient]);
 
@@ -141,7 +141,7 @@ export function useAutomation() {
   const { data: modules = [], isLoading: modulesLoading } = useQuery({
     queryKey: QUERY_KEYS.modules,
     queryFn: async (): Promise<AutomationModule[]> => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('automation_modules' as never)
         .select('*')
         .order('display_name');
@@ -155,7 +155,7 @@ export function useAutomation() {
   const { data: pendingChanges = [], isLoading: pendingLoading } = useQuery({
     queryKey: QUERY_KEYS.pendingChanges,
     queryFn: async (): Promise<ContentChange[]> => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('content_changes' as never)
         .select('*')
         .eq('status', 'pending')
@@ -173,7 +173,7 @@ export function useAutomation() {
     queryKey: QUERY_KEYS.changes,
     queryFn: async (): Promise<ContentChange[]> => {
       const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('content_changes' as never)
         .select('*')
         .gte('created_at', since)
@@ -190,7 +190,7 @@ export function useAutomation() {
   const { data: runHistory = [], isLoading: historyLoading } = useQuery({
     queryKey: QUERY_KEYS.runHistory,
     queryFn: async (): Promise<AutomationRunLog[]> => {
-      const { data, error } = await api
+      const { data, error } = await supabase
         .from('automation_run_log' as never)
         .select('*')
         .order('created_at', { ascending: false })
@@ -209,16 +209,16 @@ export function useAutomation() {
     queryFn: async () => {
       const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const [pendingRes, autoApprovedRes, totalRes] = await Promise.all([
-        api
+        supabase
           .from('content_changes' as never)
           .select('*', { count: 'exact', head: true })
           .eq('status' as never, 'pending'),
-        api
+        supabase
           .from('content_changes' as never)
           .select('*', { count: 'exact', head: true })
           .in('status' as never, ['auto_approved', 'applied'] as never)
           .gte('created_at' as never, since24h as never),
-        api
+        supabase
           .from('content_changes' as never)
           .select('*', { count: 'exact', head: true })
           .gte('created_at' as never, since24h as never),
@@ -260,7 +260,7 @@ export function useAutomation() {
 
   const approveChange = useMutation({
     mutationFn: async (changeId: string) => {
-      const { data, error } = await api.rpc(
+      const { data, error } = await supabase.rpc(
         'apply_content_change' as never,
         {
           p_change_id: changeId,
@@ -281,7 +281,7 @@ export function useAutomation() {
 
   const rejectChange = useMutation({
     mutationFn: async (changeId: string) => {
-      const { error } = await api
+      const { error } = await supabase
         .from('content_changes' as never)
         .update({ status: 'rejected', reviewed_at: new Date().toISOString() } as never)
         .eq('id' as never, changeId as never);
@@ -299,7 +299,7 @@ export function useAutomation() {
 
   const bulkApprove = useMutation({
     mutationFn: async (changeIds: string[]) => {
-      const { data, error } = await api.rpc(
+      const { data, error } = await supabase.rpc(
         'bulk_apply_content_changes' as never,
         {
           p_change_ids: changeIds,
@@ -320,7 +320,7 @@ export function useAutomation() {
 
   const bulkReject = useMutation({
     mutationFn: async (changeIds: string[]) => {
-      const { error } = await api
+      const { error } = await supabase
         .from('content_changes' as never)
         .update({ status: 'rejected', reviewed_at: new Date().toISOString() } as never)
         .in('id' as never, changeIds as never);
@@ -338,7 +338,7 @@ export function useAutomation() {
 
   const toggleModule = useMutation({
     mutationFn: async ({ moduleId, enabled }: { moduleId: string; enabled: boolean }) => {
-      const { error } = await api
+      const { error } = await supabase
         .from('automation_modules' as never)
         .update({ is_enabled: enabled } as never)
         .eq('id' as never, moduleId as never);
@@ -363,7 +363,7 @@ export function useAutomation() {
       dryRun?: boolean;
       fullScan?: boolean;
     }) => {
-      const { data, error } = await api.functions.invoke('content-automation', {
+      const { data, error } = await supabase.functions.invoke('content-automation', {
         body: { module: slug, dry_run: dryRun, full_scan: fullScan },
       });
       if (error) throw error;
@@ -418,7 +418,7 @@ export function useAutomation() {
         >
       >;
     }) => {
-      const { error } = await api
+      const { error } = await supabase
         .from('automation_modules' as never)
         .update(settings as never)
         .eq('id' as never, moduleId as never);
@@ -435,7 +435,7 @@ export function useAutomation() {
 
   const revertChange = useMutation({
     mutationFn: async (changeId: string) => {
-      const { data, error } = await api.rpc(
+      const { data, error } = await supabase.rpc(
         'revert_content_change' as never,
         {
           p_change_id: changeId,

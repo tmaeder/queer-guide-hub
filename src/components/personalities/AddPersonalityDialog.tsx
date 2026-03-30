@@ -14,7 +14,7 @@ import { usePersonalities, Personality } from "@/hooks/usePersonalities";
 import { useAddressResolver } from "@/hooks/useAddressResolver";
 import { CountryAutocomplete } from "@/components/ui/country-autocomplete";
 import { toast } from "@/hooks/use-toast";
-import { api } from "@/integrations/api/client";
+import { supabase } from "@/integrations/supabase/client";
 import { PersonalitySelectionDialog } from "./PersonalitySelectionDialog";
 
 interface AddPersonalityDialogProps {
@@ -189,13 +189,13 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      const { error: uploadError } = await api.storage
+      const { error: uploadError } = await supabase.storage
         .from('personalities')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = api.storage
+      const { data: { publicUrl } } = supabase.storage
         .from('personalities')
         .getPublicUrl(fileName);
 
@@ -234,7 +234,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     setLookupLoading(true);
 
     try {
-      const { data, error } = await api.functions.invoke('fetch-personality-data', {
+      const { data, error } = await supabase.functions.invoke('fetch-personality-data', {
         body: { searchTerm: searchTerm.trim() }
       });
 
@@ -272,7 +272,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     setLookupLoading(true);
 
     try {
-      const { data, error } = await api.functions.invoke('fetch-personality-data', {
+      const { data, error } = await supabase.functions.invoke('fetch-personality-data', {
         body: {
           searchTerm: searchTerm.trim(),
           selectedId: candidate.id

@@ -13,7 +13,11 @@ import {
   classifyDuplicatePair,
   pickPrimary,
   computeMergeChanges,
+  extractStreet,
+  findDuplicateAddressVenues,
+  findSimilarNameSameStreetVenues,
   type EventRecord,
+  type VenueRecord,
 } from '../event-validation-rules';
 
 // ── Helper to build EventRecord with defaults ────────────────────────────────
@@ -561,25 +565,49 @@ describe('classifyDuplicatePair', () => {
   it('returns auto_merge when titles and types match', () => {
     const a = makeEvent({ title: 'Pride March', event_type: 'rally' });
     const b = makeEvent({ title: 'Pride March', event_type: 'rally' });
-    expect(classifyDuplicatePair(a, b)).toBe('auto_merge');
+    const result = classifyDuplicatePair(a, b);
+    expect(result.classification).toBe('auto_merge');
+    expect(result.confidence.score).toBeGreaterThan(0.85);
+    expect(result.titleSimilarity).toBe(1.0);
   });
 
   it('returns auto_merge case-insensitive title match', () => {
     const a = makeEvent({ title: 'Pride March', event_type: 'rally' });
     const b = makeEvent({ title: 'pride march', event_type: 'rally' });
-    expect(classifyDuplicatePair(a, b)).toBe('auto_merge');
+    const result = classifyDuplicatePair(a, b);
+    expect(result.classification).toBe('auto_merge');
   });
 
-  it('returns flag_review when titles differ', () => {
+  it('returns flag_review when titles differ significantly', () => {
     const a = makeEvent({ title: 'Pride March', event_type: 'rally' });
     const b = makeEvent({ title: 'Pride Parade', event_type: 'rally' });
-    expect(classifyDuplicatePair(a, b)).toBe('flag_review');
+    const result = classifyDuplicatePair(a, b);
+    expect(result.classification).toBe('flag_review');
+    expect(result.titleSimilarity).toBeLessThan(0.85);
   });
 
   it('returns flag_review when types differ', () => {
     const a = makeEvent({ title: 'Pride', event_type: 'rally' });
     const b = makeEvent({ title: 'Pride', event_type: 'festival' });
-    expect(classifyDuplicatePair(a, b)).toBe('flag_review');
+    const result = classifyDuplicatePair(a, b);
+    expect(result.classification).toBe('flag_review');
+  });
+
+  it('returns confidence with factors', () => {
+    const a = makeEvent({ title: 'Test Event', event_type: 'party' });
+    const b = makeEvent({ title: 'Test Event', event_type: 'party' });
+    const result = classifyDuplicatePair(a, b);
+    expect(result.confidence.factors.length).toBeGreaterThan(0);
+    expect(result.confidence.reasoning).toBeTruthy();
+  });
+
+  it('handles fuzzy title matches (typos)', () => {
+    const a = makeEvent({ title: 'Berghain Party Night', event_type: 'party' });
+    const b = makeEvent({ title: 'Berghein Party Night', event_type: 'party' });
+    const result = classifyDuplicatePair(a, b);
+    expect(result.titleSimilarity).toBeGreaterThan(0.85);
+    // Should auto_merge since similarity is high and type matches
+    expect(result.classification).toBe('auto_merge');
   });
 });
 
@@ -640,5 +668,303 @@ describe('computeMergeChanges', () => {
     const changes = computeMergeChanges(primary, secondary);
     const venueChange = changes.find((c) => c.field === 'venue_id');
     expect(venueChange).toBeUndefined();
+  });
+});
+
+// ── checkTimeWindow — pride (corrected from rally) ──────────────────────────
+
+describe('checkTimeWindow — pride/protest events', () => {
+  const config = { event_types: ['pride', 'protest'], min_hour: 10, max_hour: 15 };
+  const ruleId = 'rule-pride';
+  const ruleName = 'pride_demo_time_window';
+
+  it('returns null for pride event at 12:00', () => {
+    const ev = makeEvent({
+      event_type: 'pride',
+      start_date: '2026-06-14T12:00:00Z',
+      timezone: 'UTC',
+    });
+    expect(checkTimeWindow(ev, config, ruleId, ruleName)).toBeNull();
+  });
+
+  it('flags pride event at 08:00', () => {
+    const ev = makeEvent({
+      event_type: 'pride',
+      start_date: '2026-06-14T08:00:00Z',
+      timezone: 'UTC',
+    });
+    const issue = checkTimeWindow(ev, config, ruleId, ruleName);
+    expect(issue).not.toBeNull();
+    expect(issue!.details.local_hour).toBe(8);
+  });
+
+  it('flags protest event at 16:00', () => {
+    const ev = makeEvent({
+      event_type: 'protest',
+      start_date: '2026-06-14T16:00:00Z',
+      timezone: 'UTC',
+    });
+    const issue = checkTimeWindow(ev, config, ruleId, ruleName);
+    expect(issue).not.toBeNull();
+  });
+
+  it('returns null for protest at 10:00 (inclusive lower bound)', () => {
+    const ev = makeEvent({
+      event_type: 'protest',
+      start_date: '2026-06-14T10:00:00Z',
+      timezone: 'UTC',
+    });
+    expect(checkTimeWindow(ev, config, ruleId, ruleName)).toBeNull();
+  });
+
+  it('ignores non-pride/protest event types', () => {
+    const ev = makeEvent({
+      event_type: 'community',
+      start_date: '2026-06-14T08:00:00Z',
+      timezone: 'UTC',
+    });
+    expect(checkTimeWindow(ev, config, ruleId, ruleName)).toBeNull();
+  });
+});
+
+describe('checkDayOfWeek — pride/protest events', () => {
+  const config = { event_types: ['pride', 'protest'], expected_day: 6 };
+  const ruleId = 'rule-pride-day';
+  const ruleName = 'pride_demo_saturday';
+
+  it('returns null for pride on Saturday', () => {
+    const ev = makeEvent({ event_type: 'pride', start_date: '2026-06-13T12:00:00Z' });
+    expect(checkDayOfWeek(ev, config, ruleId, ruleName)).toBeNull();
+  });
+
+  it('flags protest on Wednesday', () => {
+    // 2026-06-10 is Wednesday
+    const ev = makeEvent({ event_type: 'protest', start_date: '2026-06-10T12:00:00Z' });
+    const issue = checkDayOfWeek(ev, config, ruleId, ruleName);
+    expect(issue).not.toBeNull();
+    expect(issue!.details.local_day_name).toBe('Wednesday');
+  });
+});
+
+// ── extractStreet ───────────────────────────────────────────────────────────
+
+describe('extractStreet', () => {
+  it('returns null for null/empty input', () => {
+    expect(extractStreet(null)).toBeNull();
+    expect(extractStreet('')).toBeNull();
+    expect(extractStreet('  ')).toBeNull();
+  });
+
+  it('extracts street from "123 Main St"', () => {
+    expect(extractStreet('123 Main St')).toBe('main street');
+  });
+
+  it('extracts street from German format "Hauptstr. 15"', () => {
+    expect(extractStreet('Hauptstr. 15')).toBe('hauptstrasse');
+  });
+
+  it('takes only first line (before comma)', () => {
+    expect(extractStreet('123 Main St, Apt 4, City')).toBe('main street');
+  });
+
+  it('handles addresses without house numbers', () => {
+    expect(extractStreet('Oak Avenue')).toBe('oak avenue');
+  });
+
+  it('normalizes abbreviations', () => {
+    expect(extractStreet('45 Elm Blvd')).toBe('elm boulevard');
+  });
+});
+
+// ── Venue helpers ───────────────────────────────────────────────────────────
+
+function makeVenue(overrides: Partial<VenueRecord> = {}): VenueRecord {
+  return {
+    id: 'ven-1',
+    name: 'Test Venue',
+    address: '123 Main St',
+    city: 'Berlin',
+    country: 'Germany',
+    latitude: null,
+    longitude: null,
+    ...overrides,
+  };
+}
+
+// ── findDuplicateAddressVenues (Rule 4) ─────────────────────────────────────
+
+describe('findDuplicateAddressVenues', () => {
+  it('detects two venues at the same normalized address', () => {
+    const venues = [
+      makeVenue({ id: 'a', name: 'Club A', address: '123 Main St.' }),
+      makeVenue({ id: 'b', name: 'Club B', address: '123 Main Street' }),
+    ];
+    const pairs = findDuplicateAddressVenues(venues);
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0].matchType).toBe('same_address');
+  });
+
+  it('does not match venues in different cities', () => {
+    const venues = [
+      makeVenue({ id: 'a', address: '123 Main St', city: 'Berlin' }),
+      makeVenue({ id: 'b', address: '123 Main St', city: 'Munich' }),
+    ];
+    const pairs = findDuplicateAddressVenues(venues);
+    expect(pairs).toHaveLength(0);
+  });
+
+  it('detects three venues at same address as 3 pairs', () => {
+    const venues = [
+      makeVenue({ id: 'a', name: 'Club A', address: '10 Elm Blvd' }),
+      makeVenue({ id: 'b', name: 'Club B', address: '10 Elm Boulevard' }),
+      makeVenue({ id: 'c', name: 'Club C', address: '10 Elm Blvd.' }),
+    ];
+    const pairs = findDuplicateAddressVenues(venues);
+    expect(pairs).toHaveLength(3); // a-b, a-c, b-c
+  });
+
+  it('returns empty for unique addresses', () => {
+    const venues = [
+      makeVenue({ id: 'a', address: '10 Main St' }),
+      makeVenue({ id: 'b', address: '20 Oak Ave' }),
+    ];
+    const pairs = findDuplicateAddressVenues(venues);
+    expect(pairs).toHaveLength(0);
+  });
+
+  it('includes name similarity score', () => {
+    const venues = [
+      makeVenue({ id: 'a', name: 'Berghain', address: '123 Main St' }),
+      makeVenue({ id: 'b', name: 'Berghain', address: '123 Main Street' }),
+    ];
+    const pairs = findDuplicateAddressVenues(venues);
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0].nameSimilarity).toBe(1.0);
+  });
+});
+
+// ── findSimilarNameSameStreetVenues (Rule 5) ────────────────────────────────
+
+describe('findSimilarNameSameStreetVenues', () => {
+  it('detects similar names on the same street', () => {
+    const venues = [
+      makeVenue({ id: 'a', name: 'Berghain', address: '10 Main St' }),
+      makeVenue({ id: 'b', name: 'Berghein', address: '20 Main St' }),
+    ];
+    const pairs = findSimilarNameSameStreetVenues(venues, 0.75);
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0].matchType).toBe('similar_name_same_street');
+    expect(pairs[0].nameSimilarity).toBeGreaterThanOrEqual(0.75);
+  });
+
+  it('skips pairs with identical normalized address (covered by rule 4)', () => {
+    const venues = [
+      makeVenue({ id: 'a', name: 'Club XY', address: '10 Main St' }),
+      makeVenue({ id: 'b', name: 'Club XY', address: '10 Main Street' }), // same after normalization
+    ];
+    const pairs = findSimilarNameSameStreetVenues(venues, 0.75);
+    expect(pairs).toHaveLength(0);
+  });
+
+  it('does not match venues on different streets', () => {
+    const venues = [
+      makeVenue({ id: 'a', name: 'Club XY', address: '10 Main St' }),
+      makeVenue({ id: 'b', name: 'Club XY', address: '10 Oak Ave' }),
+    ];
+    const pairs = findSimilarNameSameStreetVenues(venues, 0.75);
+    expect(pairs).toHaveLength(0);
+  });
+
+  it('does not match dissimilar names', () => {
+    const venues = [
+      makeVenue({ id: 'a', name: 'Berghain', address: '10 Main St' }),
+      makeVenue({ id: 'b', name: 'Tresor', address: '20 Main St' }),
+    ];
+    const pairs = findSimilarNameSameStreetVenues(venues, 0.75);
+    expect(pairs).toHaveLength(0);
+  });
+
+  it('does not match venues in different cities', () => {
+    const venues = [
+      makeVenue({ id: 'a', name: 'Club XY', address: '10 Main St', city: 'Berlin' }),
+      makeVenue({ id: 'b', name: 'Club XY', address: '20 Main St', city: 'Munich' }),
+    ];
+    const pairs = findSimilarNameSameStreetVenues(venues, 0.75);
+    expect(pairs).toHaveLength(0);
+  });
+});
+
+// ── findTimePlaceDuplicates — enhanced dedup (Rule 7) ───────────────────────
+
+describe('findTimePlaceDuplicates — enhanced classification', () => {
+  const config = { time_tolerance_min: 10, distance_threshold_m: 50 };
+
+  it('classifies identical titles + same type as auto_merge', () => {
+    const events = [
+      makeEvent({
+        id: 'a',
+        title: 'Pride March 2026',
+        event_type: 'pride',
+        start_date: '2026-06-14T12:00:00Z',
+        venue_id: 'v1',
+      }),
+      makeEvent({
+        id: 'b',
+        title: 'Pride March 2026',
+        event_type: 'pride',
+        start_date: '2026-06-14T12:05:00Z',
+        venue_id: 'v1',
+      }),
+    ];
+    const pairs = findTimePlaceDuplicates(events, config);
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0].classification).toBe('auto_merge');
+    expect(pairs[0].confidence.score).toBeGreaterThanOrEqual(0.9);
+    expect(pairs[0].titleSimilarity).toBe(1.0);
+  });
+
+  it('classifies different titles as flag_review', () => {
+    const events = [
+      makeEvent({
+        id: 'a',
+        title: 'Pride March',
+        event_type: 'pride',
+        start_date: '2026-06-14T12:00:00Z',
+        venue_id: 'v1',
+      }),
+      makeEvent({
+        id: 'b',
+        title: 'Rainbow Festival',
+        event_type: 'festival',
+        start_date: '2026-06-14T12:05:00Z',
+        venue_id: 'v1',
+      }),
+    ];
+    const pairs = findTimePlaceDuplicates(events, config);
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0].classification).toBe('flag_review');
+  });
+
+  it('includes confidence factors in result', () => {
+    const events = [
+      makeEvent({
+        id: 'a',
+        title: 'Club Night',
+        event_type: 'party',
+        start_date: '2026-06-14T22:00:00Z',
+        venue_id: 'v1',
+      }),
+      makeEvent({
+        id: 'b',
+        title: 'Club Night',
+        event_type: 'party',
+        start_date: '2026-06-14T22:00:00Z',
+        venue_id: 'v1',
+      }),
+    ];
+    const pairs = findTimePlaceDuplicates(events, config);
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0].confidence.factors.length).toBeGreaterThan(0);
+    expect(pairs[0].confidence.reasoning).toContain('Score');
   });
 });

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useModeration, ModerationFilters } from '@/hooks/useModeration';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { api } from '@/integrations/api/client';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Flag,
   CheckCircle,
@@ -101,7 +101,7 @@ export function ModerationQueue() {
       setSelectAllCount(0);
     } else {
       // Fetch ALL matching IDs across pages
-      let query = api
+      let query = supabase
         .from('moderation_flags')
         .select('id')
         .order('created_at', { ascending: false })
@@ -113,7 +113,7 @@ export function ModerationQueue() {
       if (filters.source) query = query.eq('source', filters.source);
 
       const { data } = await query;
-      const allIds = (data || []).map((f: { id: string }) => f.id);
+      const allIds = (data || []).map((f: any) => f.id);
       setSelectedIds(allIds);
       setSelectAllCount(allIds.length);
     }
