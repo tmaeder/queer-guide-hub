@@ -1,34 +1,44 @@
-import { Link, useNavigate, useLocation } from 'react-router';
-import { ChevronUp, FileText, Shield, Lock, Cookie, Copyright, Scale, Plus, Heart } from 'lucide-react';
+import { Link } from 'react-router';
+import { ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
+const linkGroups = [
+  {
+    title: 'Discover',
+    links: [
+      { href: '/venues', label: 'Venues' },
+      { href: '/events', label: 'Events' },
+      { href: '/places', label: 'Places' },
+      { href: '/map', label: 'Map' },
+    ],
+  },
+  {
+    title: 'Connect',
+    links: [
+      { href: '/groups', label: 'Groups' },
+      { href: '/feed', label: 'Feed' },
+      { href: '/members', label: 'Members' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { href: '/about', label: 'About' },
+      { href: '/legal', label: 'Legal' },
+      { href: '/privacy', label: 'Privacy' },
+      { href: '/terms', label: 'Terms' },
+      { href: '/contact', label: 'Contact' },
+      { href: '/donate', label: 'Support Us' },
+    ],
+  },
+];
+
 export function Footer() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const currentYear = new Date().getFullYear();
-
-  const getSubmitCta = () => {
-    if (location.pathname.startsWith('/events'))
-      return { label: 'Submit Event', route: '/submit/event' };
-    if (location.pathname.startsWith('/venues'))
-      return { label: 'Submit Venue', route: '/submit/venue' };
-    return { label: 'Submit a Space', route: '/submit/venue' };
-  };
-  const submitCta = getSubmitCta();
-
-  const legalLinks = [
-    { href: '/legal', label: 'Legal', icon: Shield },
-    { href: '/terms', label: 'Terms', icon: Scale },
-    { href: '/privacy', label: 'Privacy', icon: Lock },
-    { href: '/cookies', label: 'Cookies', icon: Cookie },
-    { href: '/dmca', label: 'DMCA', icon: Copyright },
-    { href: '/donate', label: 'Support Us', icon: Heart },
-  ];
 
   return (
     <Box
@@ -40,87 +50,97 @@ export function Footer() {
         mt: 'auto',
       }}
     >
-      <Container maxWidth="lg" sx={{ py: 1.5 }}>
-        {/* Single Row Layout */}
+      <Container
+        maxWidth="lg"
+        sx={{ py: { xs: 4, md: 6 } }}
+      >
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 2,
-            flexWrap: 'wrap',
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1fr 2fr auto' },
+            gap: { xs: 4, md: 6 },
+            alignItems: 'start',
           }}
         >
-          <Typography variant="body2" color="text.secondary">
-            &copy; {currentYear} Queer Guide. All rights reserved.
-          </Typography>
+          {/* Col 1: Brand */}
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              Queer Guide
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Your world. Your way.
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: { xs: 'none', md: 'block' }, mt: 2 }}
+            >
+              &copy; {currentYear} Queer Guide. All rights reserved.
+            </Typography>
+          </Box>
 
-          {/* Legal Links */}
+          {/* Col 2: Quick links */}
           <Box
             component="nav"
-            aria-label="Legal"
-            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}
+            aria-label="Footer navigation"
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+              gap: { xs: 3, sm: 4 },
+            }}
           >
-            {legalLinks.map((link) => (
-              <Link key={link.href} to={link.href} style={{ textDecoration: 'none' }}>
+            {linkGroups.map((group) => (
+              <Box key={group.title}>
                 <Typography
                   variant="caption"
-                  sx={{
-                    color: 'text.secondary',
-                    px: 1,
-                    py: 0.5,
-                    display: 'inline-block',
-                    '&:hover': { color: 'primary.main' },
-                    transition: 'color 0.2s',
-                  }}
+                  color="text.secondary"
+                  sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1, display: 'block' }}
                 >
-                  {link.label}
+                  {group.title}
                 </Typography>
-              </Link>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  {group.links.map((link) => (
+                    <Link key={link.href} to={link.href} style={{ textDecoration: 'none' }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'text.secondary',
+                          '&:hover': { color: 'primary.main' },
+                          transition: 'color 0.2s',
+                        }}
+                      >
+                        {link.label}
+                      </Typography>
+                    </Link>
+                  ))}
+                </Box>
+              </Box>
             ))}
           </Box>
 
-          {/* Quick Actions */}
+          {/* Col 3: Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Button
-              variant="default"
-              size="sm"
-              style={{
-                minHeight: 44,
-                fontSize: '0.75rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontWeight: 600,
-              }}
-              onClick={() => navigate(submitCta.route)}
-            >
-              <Plus style={{ width: 14, height: 14 }} />
-              {submitCta.label}
-            </Button>
-            <Separator orientation="vertical" style={{ height: 24 }} />
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
-              style={{ minWidth: 44, minHeight: 44, fontSize: '0.75rem' }}
+              style={{ minWidth: 44, minHeight: 44 }}
               aria-label="Scroll to top"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               <ChevronUp style={{ width: 16, height: 16 }} />
             </Button>
-            <Separator orientation="vertical" style={{ height: 24 }} />
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="Sitemap"
-              style={{ minWidth: 44, minHeight: 44, fontSize: '0.75rem' }}
-              onClick={() => navigate('/sitemap')}
-            >
-              <FileText style={{ width: 16, height: 16 }} />
-            </Button>
-            <ThemeToggle />
           </Box>
         </Box>
+
+        {/* Mobile copyright */}
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: { xs: 'block', md: 'none' }, mt: 4, textAlign: 'center' }}
+        >
+          &copy; {currentYear} Queer Guide. All rights reserved.
+        </Typography>
       </Container>
     </Box>
   );

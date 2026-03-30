@@ -14,17 +14,31 @@ export default function Donate() {
   const status = searchParams.get('status');
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 3, sm: 5 } }}>
+    <Container maxWidth="md" sx={{ py: { xs: 4, sm: 6 } }}>
       {/* Hero */}
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Heart style={{ width: 40, height: 40, margin: '0 auto 12px', opacity: 0.8 }} />
+      <Box sx={{ textAlign: 'center', mb: 5 }}>
+        <Box
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            bgcolor: 'action.hover',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mx: 'auto',
+            mb: 2,
+          }}
+        >
+          <Heart style={{ width: 28, height: 28 }} />
+        </Box>
         <Typography variant="h4" fontWeight={700} gutterBottom>
           {t('donate.title', 'Support queer.guide')}
         </Typography>
         <Typography
           variant="body1"
           color="text.secondary"
-          sx={{ maxWidth: 600, mx: 'auto' }}
+          sx={{ maxWidth: 520, mx: 'auto', lineHeight: 1.7 }}
         >
           {t(
             'donate.subtitle',
@@ -34,29 +48,28 @@ export default function Donate() {
       </Box>
 
       {status === 'success' ? (
-        <Box sx={{ maxWidth: 520, mx: 'auto' }}>
+        <Box sx={{ maxWidth: 480, mx: 'auto' }}>
           <DonationSuccess />
         </Box>
       ) : (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: 4,
-            alignItems: 'start',
-          }}
-        >
-          {/* Left: form */}
-          <DonationForm />
+        <>
+          {/* Centered form */}
+          <Box sx={{ maxWidth: 480, mx: 'auto', mb: 6 }}>
+            <DonationForm />
+          </Box>
 
-          {/* Right: donor wall */}
-          <Box>
-            <Typography variant="h6" fontWeight={600} gutterBottom>
+          {/* Donor wall below */}
+          <Box sx={{ maxWidth: 480, mx: 'auto' }}>
+            <Typography
+              variant="overline"
+              color="text.secondary"
+              sx={{ display: 'block', textAlign: 'center', mb: 2, letterSpacing: '0.1em' }}
+            >
               {t('donate.donorWall', 'Recent supporters')}
             </Typography>
             <DonorWall />
           </Box>
-        </Box>
+        </>
       )}
     </Container>
   );

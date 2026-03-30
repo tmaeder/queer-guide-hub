@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Heart, Loader2 } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,19 +57,19 @@ export function DonationForm() {
         is_anonymous: isAnonymous,
       });
       window.location.href = url;
-    } catch (err) {
+    } catch {
       toast.error(t('donate.error', 'Something went wrong. Please try again.'));
     }
   };
 
-  const formatAmount = (cents: number) => `$${(cents / 100).toFixed(0)}`;
+  const fmt = (cents: number) => `$${(cents / 100).toFixed(0)}`;
 
   return (
     <Card>
-      <CardContent className="pt-6 space-y-6">
-        {/* Tip Jar */}
-        <div>
-          <Typography variant="subtitle2" gutterBottom>
+      <CardContent className="p-6 space-y-5">
+        {/* Amount selection */}
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
             {t('donate.tipJar', 'Quick amounts')}
           </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
@@ -77,19 +78,34 @@ export function DonationForm() {
                 key={amount}
                 variant={selectedTip === amount ? 'default' : 'outline'}
                 onClick={() => handleTipSelect(amount)}
-                style={{ fontWeight: 600 }}
+                style={{ height: 44, fontSize: '1rem', fontWeight: 600 }}
               >
-                {formatAmount(amount)}
+                {fmt(amount)}
               </Button>
             ))}
           </Box>
-        </div>
+        </Box>
 
         {/* Custom amount */}
-        <div>
-          <Label htmlFor="custom-amount">{t('donate.customAmount', 'Custom amount (USD)')}</Label>
-          <div className="relative mt-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+        <Box>
+          <Label htmlFor="custom-amount">
+            {t('donate.customAmount', 'Custom amount (USD)')}
+          </Label>
+          <Box sx={{ position: 'relative', mt: 0.5 }}>
+            <Box
+              sx={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'text.secondary',
+                fontSize: '0.875rem',
+                pointerEvents: 'none',
+                zIndex: 1,
+              }}
+            >
+              $
+            </Box>
             <Input
               id="custom-amount"
               type="number"
@@ -98,34 +114,51 @@ export function DonationForm() {
               placeholder="50"
               value={customAmount}
               onChange={(e) => handleCustomAmountChange(e.target.value)}
-              className="pl-7"
+              style={{ paddingLeft: 28 }}
             />
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Frequency */}
-        <div>
-          <Typography variant="subtitle2" gutterBottom>
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
             {t('donate.frequency', 'Frequency')}
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 1,
+              p: 0.5,
+              borderRadius: '10px',
+              bgcolor: 'action.hover',
+            }}
+          >
             {FREQUENCY_OPTIONS.map((opt) => (
               <Button
                 key={opt}
-                variant={frequency === opt ? 'default' : 'outline'}
+                variant={frequency === opt ? 'default' : 'ghost'}
                 size="sm"
+                style={{ height: 36 }}
                 onClick={() => setFrequency(opt)}
               >
-                {t(`donate.${opt}`, opt === 'one_time' ? 'One-time' : opt === 'month' ? 'Monthly' : 'Yearly')}
+                {t(
+                  `donate.${opt}`,
+                  opt === 'one_time' ? 'One-time' : opt === 'month' ? 'Monthly' : 'Yearly',
+                )}
               </Button>
             ))}
           </Box>
-        </div>
+        </Box>
+
+        <Divider />
 
         {/* Donor info */}
-        <div className="space-y-3">
-          <div>
-            <Label htmlFor="donor-email">{t('donate.email', 'Email')} *</Label>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box>
+            <Label htmlFor="donor-email">
+              {t('donate.email', 'Email')} *
+            </Label>
             <Input
               id="donor-email"
               type="email"
@@ -135,8 +168,8 @@ export function DonationForm() {
               placeholder="you@example.com"
               className="mt-1"
             />
-          </div>
-          <div>
+          </Box>
+          <Box>
             <Label htmlFor="donor-name">{t('donate.name', 'Name (optional)')}</Label>
             <Input
               id="donor-name"
@@ -145,9 +178,11 @@ export function DonationForm() {
               placeholder={t('donate.namePlaceholder', 'How you want to appear on the donor wall')}
               className="mt-1"
             />
-          </div>
-          <div>
-            <Label htmlFor="donor-message">{t('donate.message', 'Message (optional)')}</Label>
+          </Box>
+          <Box>
+            <Label htmlFor="donor-message">
+              {t('donate.message', 'Message (optional)')}
+            </Label>
             <Input
               id="donor-message"
               value={message}
@@ -155,21 +190,22 @@ export function DonationForm() {
               placeholder={t('donate.messagePlaceholder', 'Leave a message of support')}
               className="mt-1"
             />
-          </div>
-          <div className="flex items-center gap-2">
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Switch
               id="anonymous"
               checked={isAnonymous}
               onCheckedChange={setIsAnonymous}
             />
-            <Label htmlFor="anonymous">{t('donate.anonymous', 'Donate anonymously')}</Label>
-          </div>
-        </div>
+            <Label htmlFor="anonymous" className="cursor-pointer">
+              {t('donate.anonymous', 'Donate anonymously')}
+            </Label>
+          </Box>
+        </Box>
 
         {/* Submit */}
         <Button
-          className="w-full"
-          size="lg"
+          style={{ width: '100%', height: 48, fontSize: '1rem', fontWeight: 600 }}
           disabled={!isValid || checkout.isPending}
           onClick={handleSubmit}
         >
@@ -179,7 +215,7 @@ export function DonationForm() {
             <Heart className="h-4 w-4 mr-2" />
           )}
           {isValid
-            ? t('donate.cta', 'Donate {{amount}}', { amount: formatAmount(amountCents) })
+            ? t('donate.cta', 'Donate {{amount}}', { amount: fmt(amountCents) })
             : t('donate.ctaDisabled', 'Enter an amount')}
         </Button>
       </CardContent>
