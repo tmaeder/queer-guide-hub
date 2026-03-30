@@ -406,6 +406,8 @@ const Events = () => {
           {/* Extended Filters */}
           {showFilters && (
             <Box
+              component="nav"
+              aria-label="Event filters"
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -596,7 +598,9 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   Search: {search}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear search"
                     onClick={() => setSearch('')}
                   />
                 </Badge>
@@ -606,7 +610,9 @@ const Events = () => {
                   {autoLocationLabel === city && <MapPin style={{ width: 10, height: 10 }} />}
                   {autoLocationLabel === city ? `Near you: ${city}` : `City: ${city}`}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear city filter"
                     onClick={() => { setCity(''); setAutoLocationLabel(null); }}
                   />
                 </Badge>
@@ -615,7 +621,9 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {eventType}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear event type filter"
                     onClick={() => setEventType('')}
                   />
                 </Badge>
@@ -624,7 +632,9 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   From: {format(startDate, 'MMM d, yyyy')}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear start date filter"
                     onClick={() => setStartDate(undefined)}
                   />
                 </Badge>
@@ -633,7 +643,9 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   To: {format(endDate, 'MMM d, yyyy')}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear end date filter"
                     onClick={() => setEndDate(undefined)}
                   />
                 </Badge>
@@ -642,7 +654,9 @@ const Events = () => {
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   Near Me
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear near me filter"
                     onClick={() => setNearMe(false)}
                   />
                 </Badge>
@@ -651,7 +665,9 @@ const Events = () => {
                 <Badge key={tag} variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {tag}
                   <X
-                    style={{ width: 12, height: 12, cursor: 'pointer' }}
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label={`Remove ${tag} filter`}
                     onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))}
                   />
                 </Badge>

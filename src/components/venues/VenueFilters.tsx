@@ -333,6 +333,8 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
       {/* Extended Filters */}
       {showAllFilters && (
         <Box
+          component="nav"
+          aria-label="Venue filters"
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -456,7 +458,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                     <Badge key={tag} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                       {tag}
                       <X
-                        style={{ width: 12, height: 12, cursor: 'pointer' }}
+                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                         onClick={() => handleTagToggle(tag)}
                       />
                     </Badge>
@@ -523,7 +527,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                     <Badge key={amenity} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                       {amenity}
                       <X
-                        style={{ width: 12, height: 12, cursor: 'pointer' }}
+                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                         onClick={() => handleAmenityToggle(amenity)}
                       />
                     </Badge>
@@ -590,7 +596,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                     <Badge key={service} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                       {service}
                       <X
-                        style={{ width: 12, height: 12, cursor: 'pointer' }}
+                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                         onClick={() => handleServiceToggle(service)}
                       />
                     </Badge>
@@ -672,7 +680,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                     <Badge key={attr} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                       {attr}
                       <X
-                        style={{ width: 12, height: 12, cursor: 'pointer' }}
+                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                         onClick={() => handleAccessibilityToggle(attr)}
                       />
                     </Badge>
@@ -764,7 +774,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                     <Badge key={group} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
                       {group}
                       <X
-                        style={{ width: 12, height: 12, cursor: 'pointer' }}
+                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                         onClick={() => handleTargetGroupToggle(group)}
                       />
                     </Badge>
@@ -823,7 +835,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             <Badge variant="secondary" sx={{ gap: 1 }}>
               Search: {search}
               <X
-                style={{ width: 12, height: 12, cursor: 'pointer' }}
+                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                 onClick={() => setSearch('')}
               />
             </Badge>
@@ -831,14 +845,18 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           {city && (
             <Badge variant="secondary" sx={{ gap: 1 }}>
               City: {city}
-              <X style={{ width: 12, height: 12, cursor: 'pointer' }} onClick={() => setCity('')} />
+              <X style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter" onClick={() => setCity('')} />
             </Badge>
           )}
           {category && category !== 'all' && (
             <Badge variant="secondary" sx={{ gap: 1 }}>
               {category}
               <X
-                style={{ width: 12, height: 12, cursor: 'pointer' }}
+                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                 onClick={() => setCategory('')}
               />
             </Badge>
@@ -847,7 +865,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             <Badge key={tag} variant="secondary" sx={{ gap: 1 }}>
               {tag}
               <X
-                style={{ width: 12, height: 12, cursor: 'pointer' }}
+                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                 onClick={() => handleTagToggle(tag)}
               />
             </Badge>
@@ -856,7 +876,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             <Badge key={amenity} variant="secondary" sx={{ gap: 1 }}>
               {amenity}
               <X
-                style={{ width: 12, height: 12, cursor: 'pointer' }}
+                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                 onClick={() => handleAmenityToggle(amenity)}
               />
             </Badge>
@@ -865,7 +887,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             <Badge key={service} variant="secondary" sx={{ gap: 1 }}>
               {service}
               <X
-                style={{ width: 12, height: 12, cursor: 'pointer' }}
+                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                 onClick={() => handleServiceToggle(service)}
               />
             </Badge>
@@ -874,7 +898,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             <Badge key={attr} variant="secondary" sx={{ gap: 1 }}>
               {attr}
               <X
-                style={{ width: 12, height: 12, cursor: 'pointer' }}
+                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                 onClick={() => handleAccessibilityToggle(attr)}
               />
             </Badge>
@@ -883,7 +909,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             <Badge key={group} variant="secondary" sx={{ gap: 1 }}>
               {group}
               <X
-                style={{ width: 12, height: 12, cursor: 'pointer' }}
+                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                 onClick={() => handleTargetGroupToggle(group)}
               />
             </Badge>
@@ -892,7 +920,9 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             <Badge variant="secondary" sx={{ gap: 1 }}>
               Near Me
               <X
-                style={{ width: 12, height: 12, cursor: 'pointer' }}
+                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                        role="button"
+                        aria-label="Remove filter"
                 onClick={handleNearMeToggle}
               />
             </Badge>
