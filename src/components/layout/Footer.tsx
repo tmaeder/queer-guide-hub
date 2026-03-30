@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router';
-import { ChevronUp, FileText, Shield, Lock, Cookie, Copyright, Scale, Plus } from 'lucide-react';
+import { ChevronUp, FileText, Shield, Lock, Cookie, Copyright, Scale, Plus, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
@@ -27,6 +27,7 @@ export function Footer() {
     { href: '/privacy', label: 'Privacy', icon: Lock },
     { href: '/cookies', label: 'Cookies', icon: Cookie },
     { href: '/dmca', label: 'DMCA', icon: Copyright },
+    { href: '/donate', label: 'Support Us', icon: Heart },
   ];
 
   return (

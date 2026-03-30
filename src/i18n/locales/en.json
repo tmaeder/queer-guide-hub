@@ -199,5 +199,32 @@
     "tryAgain": "Try Again",
     "comingSoon": "Not Yet Available",
     "underConstruction": "Under Development"
+  },
+  "donate": {
+    "title": "Support queer.guide",
+    "subtitle": "queer.guide is a free platform connecting the LGBTQ+ community with safe spaces, events, and resources worldwide. Your donation helps us keep it running and accessible to everyone.",
+    "tipJar": "Quick amounts",
+    "customAmount": "Custom amount (USD)",
+    "frequency": "Frequency",
+    "one_time": "One-time",
+    "month": "Monthly",
+    "year": "Yearly",
+    "email": "Email",
+    "name": "Name (optional)",
+    "namePlaceholder": "How you want to appear on the donor wall",
+    "message": "Message (optional)",
+    "messagePlaceholder": "Leave a message of support",
+    "anonymous": "Donate anonymously",
+    "cta": "Donate {{amount}}",
+    "ctaDisabled": "Enter an amount",
+    "error": "Something went wrong. Please try again.",
+    "donorWall": "Recent supporters",
+    "loadingDonors": "Loading donors...",
+    "noDonorsYet": "Be the first to support queer.guide!",
+    "anonymousDonor": "A supporter",
+    "recurring": "Recurring",
+    "thankYou": "Thank you!",
+    "successMessage": "Your donation helps keep queer.guide free and accessible for the LGBTQ+ community worldwide.",
+    "backHome": "Back to home"
   }
 }

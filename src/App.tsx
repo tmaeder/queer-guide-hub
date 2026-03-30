@@ -71,9 +71,9 @@ const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
 const AdminImportHub = lazy(() => import('./pages/AdminImportHub'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminWorkflows = lazy(() => import('./pages/AdminWorkflows'));
+const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
 const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
-const AdminScraping = lazy(() => import('./pages/AdminScraping'));
 
 // New feature pages
 const Hotels = lazyRetry(() => import('./pages/Hotels'));
@@ -107,14 +107,16 @@ const AuditLog = lazy(() =>
 const ImportJobCreator = lazy(() =>
   import('./components/admin/ImportJobCreator').then((m) => ({ default: m.ImportJobCreator })),
 );
-const ImportWizard = lazy(() =>
-  import('./components/admin/ImportWizard').then((m) => ({ default: m.ImportWizard })),
-);
 const NewsSourcesManager = lazy(() =>
   import('./components/admin/NewsSourcesManager').then((m) => ({ default: m.NewsSourcesManager })),
 );
 const PipelineMonitor = lazy(() =>
   import('./components/admin/PipelineMonitor').then((m) => ({ default: m.PipelineMonitor })),
+);
+const EnrichmentDashboard = lazy(() =>
+  import('./components/admin/EnrichmentDashboard').then((m) => ({
+    default: m.EnrichmentDashboard,
+  })),
 );
 const VenueImportQuickActions = lazy(() =>
   import('./components/admin/VenueImportQuickActions').then((m) => ({
@@ -169,6 +171,7 @@ const NotFound = lazyRetry(() => import('./pages/NotFound'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const Favorites = lazyRetry(() => import('./pages/Favorites'));
 
+const Donate = lazyRetry(() => import('./pages/Donate'));
 const Sitemap = lazyRetry(() => import('./pages/Sitemap'));
 const SubmitHub = lazyRetry(() => import('./pages/SubmitHub'));
 const SubmitForm = lazyRetry(() => import('./pages/SubmitForm'));
@@ -344,6 +347,8 @@ const AppRoutes = () => {
               <Route path="/tags" element={<Navigate to="/resources" replace />} />
               <Route path="/tags/:tagName" element={<Navigate to="/resources" replace />} />
 
+              <Route path="/donate" element={<Donate />} />
+
               {/* CMS-managed pages (content from cms_pages table) */}
               <Route path="/about-hub" element={<CMSRoutePage slug="about-hub" />} />
               <Route path="/about" element={<CMSRoutePage slug="about" />} />
@@ -383,14 +388,16 @@ const AppRoutes = () => {
 
                 {/* Imports & Data section */}
                 <Route path="imports" element={<AdminImportHub />} />
-                <Route path="imports/create" element={<ImportWizard />} />
+                <Route path="imports/create" element={<Navigate to="/admin/imports" replace />} />
                 <Route path="imports/news-sources" element={<NewsSourcesManager />} />
                 <Route path="imports/pipeline" element={<PipelineMonitor />} />
+                <Route path="imports/enrichment" element={<EnrichmentDashboard />} />
                 <Route path="imports/venues" element={<VenueImportQuickActions />} />
                 <Route path="imports/email-ingestions" element={<AdminEmailIngestions />} />
                 <Route path="imports/history" element={<AdminImportHub />} />
                 <Route path="workflows" element={<AdminWorkflows />} />
-                <Route path="scraping" element={<AdminScraping />} />
+                <Route path="pipelines" element={<AdminPipelines />} />
+                <Route path="scraping" element={<Navigate to="/admin/imports" replace />} />
 
                 {/* Review & Workflow section -- unified dashboard */}
                 <Route path="automation" element={<AdminAutomation />} />
