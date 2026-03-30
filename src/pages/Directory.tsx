@@ -1,6 +1,6 @@
 import { useState, useMemo, Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useOptimizedCountries, useOptimizedCities } from "@/hooks/useOptimizedDirectory";
+import { useOptimizedCountries, useOptimizedCities } from "@/hooks/useOptimizedPlaces";
 import { useDirectory } from "@/hooks/useDirectory";
 import { supabase } from "@/integrations/supabase/client";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";

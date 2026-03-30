@@ -159,6 +159,7 @@ export const NewsCard = ({
         <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
           {article.image_url ? (
             <img
+              loading="lazy"
               src={article.image_url}
               alt={decodeHtmlEntities(article.title)}
               style={{

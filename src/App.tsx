@@ -400,9 +400,15 @@ const AppRoutes = () => {
                   element={<Navigate to="/admin/review?tab=moderation" replace />}
                 />
                 <Route path="audit" element={<AuditLog />} />
-                <Route path="links" element={<LinkHealthDashboard />} />
+                <Route
+                  path="links"
+                  element={<Navigate to="/admin/automation" replace />}
+                />
                 <Route path="affiliates" element={<AffiliatePartnersManager />} />
-                <Route path="submissions" element={<AdminSubmissions />} />
+                <Route
+                  path="submissions"
+                  element={<Navigate to="/admin/review?tab=submissions" replace />}
+                />
 
                 {/* Content type admin pages */}
                 <Route path="hotels" element={<AdminHotels />} />

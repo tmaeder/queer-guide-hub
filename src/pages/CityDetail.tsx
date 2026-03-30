@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ import {
   FileText,
   Shield,
   Home,
+  Map as MapIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +37,7 @@ import { useCityImages } from '@/hooks/useCityImages';
 import { useNews } from '@/hooks/useNews';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
-import { useOptimizedCountry } from '@/hooks/useOptimizedDirectory';
+import { useOptimizedCountry } from '@/hooks/useOptimizedPlaces';
 import { NewsCard } from '@/components/news/NewsCard';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
@@ -52,6 +53,9 @@ import { useQueerVillages } from '@/hooks/useQueerVillages';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+
+const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 type CityWithCountry = {
   id: string;
@@ -417,7 +421,7 @@ export default function CityDetail() {
             style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
           >
             <TabsList
-              style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(6, 1fr)' }}
+              style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(7, 1fr)' }}
             >
               <TabsTrigger value="overview" style={{ fontSize: '0.875rem' }}>
                 <Info style={{ height: 16, width: 16, marginRight: 6 }} />
@@ -453,6 +457,12 @@ export default function CityDetail() {
                 <FileText style={{ height: 16, width: 16, marginRight: 6 }} />
                 <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                   News
+                </Box>
+              </TabsTrigger>
+              <TabsTrigger value="map" style={{ fontSize: '0.875rem' }}>
+                <MapIcon style={{ height: 16, width: 16, marginRight: 6 }} />
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Map
                 </Box>
               </TabsTrigger>
             </TabsList>
@@ -1397,6 +1407,23 @@ export default function CityDetail() {
                     Check back later for news about {city.name}!
                   </Typography>
                 </Box>
+              )}
+            </TabsContent>
+
+            {/* ═══ MAP TAB ═══ */}
+            <TabsContent value="map">
+              {typeof city.latitude === 'number' && typeof city.longitude === 'number' && (
+                <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} /></Box>}>
+                  <ExploreMap
+                    height={500}
+                    initialCenter={[Number(city.longitude), Number(city.latitude)]}
+                    initialZoom={12}
+                    defaultLayers={['venues', 'events', 'neighbourhoods']}
+                    showLayerToggles
+                    showFilters={false}
+                    skipAutoFly
+                  />
+                </Suspense>
               )}
             </TabsContent>
           </Tabs>

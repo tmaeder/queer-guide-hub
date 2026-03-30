@@ -389,7 +389,8 @@ const Events = () => {
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
               size="icon"
-              aria-label="Toggle filters"
+              aria-label={showFilters ? 'Hide filters' : 'Show filters'}
+              aria-expanded={showFilters}
             >
               <Filter style={{ width: 16, height: 16 }} />
             </Button>
@@ -649,6 +650,16 @@ const Events = () => {
               ))}
             </Box>
           )}
+        </Box>
+
+        {/* Status region for screen readers */}
+        <Box
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+        >
+          {loading ? 'Loading events...' : error ? error : `${events.length} events found`}
         </Box>
 
         {/* Error State */}

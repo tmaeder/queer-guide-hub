@@ -28,6 +28,7 @@ import { formatEventTime } from '@/lib/event-time';
 import { getTimezoneAbbr } from '@/utils/timezone';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { EntityMap } from '@/components/map/EntityMap';
 import { toast } from '@/hooks/use-toast';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
@@ -707,6 +708,34 @@ export default function EventDetail() {
 
         {/* Sidebar */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {/* Location Map */}
+          {(() => {
+            const lat = event.latitude ?? event.venues?.latitude;
+            const lng = event.longitude ?? event.venues?.longitude;
+            return typeof lat === 'number' && typeof lng === 'number' ? (
+              <Card>
+                <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+                  <EntityMap
+                    center={[Number(lng), Number(lat)]}
+                    zoom={15}
+                    height={200}
+                    markers={[
+                      {
+                        id: event.id,
+                        lat: Number(lat),
+                        lng: Number(lng),
+                        name: event.title ?? 'Event',
+                        subtitle: event.venues?.name,
+                        type: 'events',
+                        primary: true,
+                      },
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+            ) : null;
+          })()}
+
           {/* Event Details */}
           <Card>
             <CardHeader>

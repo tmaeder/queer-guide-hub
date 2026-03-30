@@ -74,8 +74,41 @@ const formatDate = (iso: string) => {
   }
 };
 
+/** Embeddable content for use as a tab inside AdminReview */
+export function AdminSubmissionsContent() {
+  return <SubmissionsCore />;
+}
+
 export default function AdminSubmissions() {
   const navigate = useNavigate();
+  return (
+    <Box
+      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/admin')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
+        </Button>
+        <div>
+          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
+            Community Submissions
+          </Typography>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            Review and manage community-submitted content
+          </p>
+        </div>
+      </Box>
+      <SubmissionsCore />
+    </Box>
+  );
+}
+
+function SubmissionsCore() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -302,28 +335,7 @@ export default function AdminSubmissions() {
   );
 
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
-        </Button>
-        <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-            Community Submissions
-          </Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>
-            Review and manage community-submitted content
-          </p>
-        </div>
-      </Box>
-
+    <>
       <AdminDataTable config={tableConfig} />
 
       {/* Detail / Review Dialog */}
@@ -466,6 +478,6 @@ export default function AdminSubmissions() {
           )}
         </DialogContent>
       </Dialog>
-    </Box>
+    </>
   );
 }

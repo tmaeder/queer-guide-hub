@@ -5,7 +5,7 @@ import type {
   CountryWithRegions as Country,
   CityWithCountry as City,
 } from '@/hooks/useOptimizedPlaces';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Link } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { useCityImages } from '@/hooks/useCityImages';
@@ -19,7 +19,7 @@ interface PlacesCardProps {
   onClick?: () => void;
 }
 
-export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
+export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }: PlacesCardProps) {
   const [countryImage, setCountryImage] = useState<string | null>(data?.image_url || null);
   const [imageLoading, setImageLoading] = useState(false);
 
@@ -277,6 +277,9 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
             <img
               src={countryImage}
               alt={`${name} landscape`}
+              loading="lazy"
+              width={400}
+              height={300}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -333,6 +336,9 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
             <img
               src={cityImageUrl}
               alt={`${name} cityscape`}
+              loading="lazy"
+              width={400}
+              height={300}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={() => setCityImageError(true)}
             />
@@ -410,4 +416,4 @@ export const PlacesCard = ({ type, name, data, onClick }: PlacesCardProps) => {
 
   // For continents or items without detail pages, use onClick
   return <div onClick={onClick}>{cardContent}</div>;
-};
+});

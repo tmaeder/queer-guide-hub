@@ -266,6 +266,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
             </div>
           ) : (
             <img
+              loading="lazy"
               src={
                 countryImage ||
                 `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`
@@ -313,6 +314,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
             </div>
           ) : cityImageUrl && !cityImageError ? (
             <img
+              loading="lazy"
               src={cityImageUrl}
               alt={`${name} cityscape`}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}

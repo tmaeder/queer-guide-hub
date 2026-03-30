@@ -147,8 +147,8 @@ export function useDuplicateCounts() {
       }
       return counts;
     },
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    staleTime: 60_000,
+    refetchInterval: 300_000,
   });
 }
 

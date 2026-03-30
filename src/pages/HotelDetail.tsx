@@ -127,6 +127,7 @@ export default function HotelDetail() {
       {heroImage && (
         <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 3, height: 300 }}>
           <img
+            loading="lazy"
             src={heroImage}
             alt={hotel.name}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}

@@ -7,6 +7,9 @@
  * Both files are identical (no platform-specific imports).
  */
 
+import { computeTitleSimilarity, computeSimilarity, normalizeText } from './fuzzy-match';
+import { computeDedupConfidence, type ConfidenceResult, type ReviewAction } from './confidence-scoring';
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface EventRecord {
@@ -25,6 +28,26 @@ export interface EventRecord {
   city_id: string | null;
   country_id: string | null;
   status: string | null;
+  source?: string | null;
+}
+
+export interface VenueRecord {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  country: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export interface VenueDuplicatePair {
+  venueA: VenueRecord;
+  venueB: VenueRecord;
+  matchType: 'same_address' | 'similar_name_same_street';
+  nameSimilarity: number;
+  normalizedAddress: string | null;
+  street: string | null;
 }
 
 export interface ValidationIssue {
@@ -42,6 +65,8 @@ export interface DuplicatePair {
   timeDiffMin: number;
   distanceM: number | null;
   classification: 'auto_merge' | 'flag_review';
+  confidence: ConfidenceResult;
+  titleSimilarity: number;
 }
 
 // ── Timezone helpers ─────────────────────────────────────────────────────────
@@ -329,13 +354,19 @@ export function findTimePlaceDuplicates(
         if (!loc.match) continue;
 
         seen.add(pairKey);
-        const classification = classifyDuplicatePair(a, b);
+        const { classification, confidence, titleSimilarity } = classifyDuplicatePair(a, b, {
+          timeDiffMin: Math.round(timeDiffMs / 60_000),
+          distanceM: loc.distanceM,
+          locationMatch: loc.match,
+        });
         pairs.push({
           eventA: a,
           eventB: b,
           timeDiffMin: Math.round(timeDiffMs / 60_000),
           distanceM: loc.distanceM,
           classification,
+          confidence,
+          titleSimilarity,
         });
       }
     }
@@ -344,15 +375,42 @@ export function findTimePlaceDuplicates(
   return pairs;
 }
 
+/**
+ * Classify a duplicate pair using fuzzy title matching and multi-signal confidence.
+ *
+ * auto_merge: High confidence that these are the same event (title similarity >= 0.85,
+ *             same type, confidence >= 0.90)
+ * flag_review: Likely duplicate but needs human verification
+ */
 export function classifyDuplicatePair(
   a: EventRecord,
   b: EventRecord,
-): 'auto_merge' | 'flag_review' {
-  const titleA = a.title.trim().toLowerCase();
-  const titleB = b.title.trim().toLowerCase();
-  if (titleA !== titleB) return 'flag_review';
-  if (a.event_type !== b.event_type) return 'flag_review';
-  return 'auto_merge';
+  context?: { timeDiffMin: number; distanceM: number | null; locationMatch: boolean },
+): {
+  classification: 'auto_merge' | 'flag_review';
+  confidence: ConfidenceResult;
+  titleSimilarity: number;
+} {
+  const titleSim = computeTitleSimilarity(a.title, b.title);
+  const typeMatch = normalizeText(a.event_type) === normalizeText(b.event_type);
+  const sourceMatch = !!(a.source && b.source && a.source === b.source);
+
+  const confidence = computeDedupConfidence({
+    titleSimilarity: titleSim.score,
+    locationMatch: context?.locationMatch ?? true,
+    geoDistanceM: context?.distanceM ?? null,
+    timeDiffMin: context?.timeDiffMin ?? null,
+    categoryMatch: typeMatch,
+    sourceMatch,
+    yearMatch: titleSim.yearMatch,
+  });
+
+  const classification: 'auto_merge' | 'flag_review' =
+    titleSim.score >= 0.85 && typeMatch && confidence.score >= 0.9
+      ? 'auto_merge'
+      : 'flag_review';
+
+  return { classification, confidence, titleSimilarity: titleSim.score };
 }
 
 export function pickPrimary(
@@ -406,4 +464,121 @@ export function computeMergeChanges(
     }
   }
   return changes;
+}
+
+// ── Venue deduplication ────────────────────────────────────────────────────
+
+export function extractStreet(address: string | null): string | null {
+  if (!address?.trim()) return null;
+  const firstLine = address.split(/[,\n]/)[0].trim().toLowerCase();
+  if (!firstLine) return null;
+  let street = firstLine
+    .replace(/^\d+[\s\-/]*/, '')
+    .replace(/\s+\d+[\s\-/]*$/, '')
+    .trim();
+  const words = street.split(/\s+/);
+  const expanded = words.map((w) => STREET_ABBREVS[w] ?? w);
+  street = expanded.join(' ');
+  street = street
+    .replace(/[.,;:!?'"()]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return street || null;
+}
+
+export function findDuplicateAddressVenues(venues: VenueRecord[]): VenueDuplicatePair[] {
+  const pairs: VenueDuplicatePair[] = [];
+  const seen = new Set<string>();
+
+  const byCity = new Map<string, VenueRecord[]>();
+  for (const v of venues) {
+    const key = v.city.trim().toLowerCase();
+    if (!byCity.has(key)) byCity.set(key, []);
+    byCity.get(key)!.push(v);
+  }
+
+  for (const group of byCity.values()) {
+    const byAddr = new Map<string, VenueRecord[]>();
+    for (const v of group) {
+      const norm = normalizeAddress(v.address);
+      if (!norm) continue;
+      if (!byAddr.has(norm)) byAddr.set(norm, []);
+      byAddr.get(norm)!.push(v);
+    }
+
+    for (const [normAddr, vens] of byAddr) {
+      if (vens.length < 2) continue;
+      for (let i = 0; i < vens.length; i++) {
+        for (let j = i + 1; j < vens.length; j++) {
+          const pairKey =
+            vens[i].id < vens[j].id
+              ? `${vens[i].id}:${vens[j].id}`
+              : `${vens[j].id}:${vens[i].id}`;
+          if (seen.has(pairKey)) continue;
+          seen.add(pairKey);
+
+          const nameSim = computeSimilarity(vens[i].name, vens[j].name);
+          pairs.push({
+            venueA: vens[i],
+            venueB: vens[j],
+            matchType: 'same_address',
+            nameSimilarity: nameSim.score,
+            normalizedAddress: normAddr,
+            street: null,
+          });
+        }
+      }
+    }
+  }
+  return pairs;
+}
+
+export function findSimilarNameSameStreetVenues(
+  venues: VenueRecord[],
+  minSimilarity = 0.75,
+): VenueDuplicatePair[] {
+  const pairs: VenueDuplicatePair[] = [];
+  const seen = new Set<string>();
+
+  const byStreet = new Map<string, VenueRecord[]>();
+  for (const v of venues) {
+    const street = extractStreet(v.address);
+    if (!street) continue;
+    const key = `${v.city.trim().toLowerCase()}::${street}`;
+    if (!byStreet.has(key)) byStreet.set(key, []);
+    byStreet.get(key)!.push(v);
+  }
+
+  for (const [streetKey, group] of byStreet) {
+    if (group.length < 2) continue;
+    const street = streetKey.split('::')[1];
+
+    for (let i = 0; i < group.length; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        const pairKey =
+          group[i].id < group[j].id
+            ? `${group[i].id}:${group[j].id}`
+            : `${group[j].id}:${group[i].id}`;
+        if (seen.has(pairKey)) continue;
+
+        const nameSim = computeSimilarity(group[i].name, group[j].name);
+        if (nameSim.score < minSimilarity) continue;
+
+        const addrA = normalizeAddress(group[i].address);
+        const addrB = normalizeAddress(group[j].address);
+        if (addrA && addrB && addrA === addrB) continue;
+
+        seen.add(pairKey);
+        pairs.push({
+          venueA: group[i],
+          venueB: group[j],
+          matchType: 'similar_name_same_street',
+          nameSimilarity: nameSim.score,
+          normalizedAddress: null,
+          street,
+        });
+      }
+    }
+  }
+  return pairs;
 }

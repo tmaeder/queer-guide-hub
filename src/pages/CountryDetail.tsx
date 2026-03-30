@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -43,7 +43,7 @@ import { useWorldBankData } from '@/hooks/useWorldBankData';
 import { useSDGData } from '@/hooks/useSDGData';
 import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
 import { ActivitiesWidget } from '@/components/activities/ActivitiesWidget';
-import { useOptimizedCountry, useOptimizedCities } from '@/hooks/useOptimizedDirectory';
+import { useOptimizedCountry, useOptimizedCities } from '@/hooks/useOptimizedPlaces';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';
@@ -52,6 +52,9 @@ import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+
+const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CountryDetail() {
   const { id: countryId } = useParams<{ id: string }>();
@@ -418,7 +421,7 @@ export default function CountryDetail() {
                   display: 'grid',
                   width: '100%',
                   maxWidth: 768,
-                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  gridTemplateColumns: 'repeat(8, 1fr)',
                   mx: 'auto',
                   height: 48,
                   bgcolor: 'action.hover',
@@ -467,6 +470,12 @@ export default function CountryDetail() {
                   <Newspaper style={{ height: 16, width: 16 }} />
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                     News
+                  </Box>
+                </TabsTrigger>
+                <TabsTrigger value="map" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <MapIcon style={{ height: 16, width: 16 }} />
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                    Map
                   </Box>
                 </TabsTrigger>
               </TabsList>
@@ -1043,6 +1052,23 @@ export default function CountryDetail() {
                       </Box>
                     </CardContent>
                   </Card>
+                )}
+              </TabsContent>
+
+              {/* ===== MAP TAB ===== */}
+              <TabsContent value="map">
+                {typeof country.latitude === 'number' && typeof country.longitude === 'number' && (
+                  <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} /></Box>}>
+                    <ExploreMap
+                      height={500}
+                      initialCenter={[Number(country.longitude), Number(country.latitude)]}
+                      initialZoom={5}
+                      defaultLayers={['venues', 'events', 'cities']}
+                      showLayerToggles
+                      showFilters={false}
+                      skipAutoFly
+                    />
+                  </Suspense>
                 )}
               </TabsContent>
             </Tabs>

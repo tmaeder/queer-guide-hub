@@ -125,6 +125,7 @@ export default function FestivalDetail() {
       {heroImage && (
         <Box sx={{ borderRadius: 2, overflow: 'hidden', mb: 3, height: { xs: 200, md: 320 } }}>
           <img
+            loading="lazy"
             src={heroImage}
             alt={festival.name}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -380,6 +381,7 @@ export default function FestivalDetail() {
           {festival.images.map((img, i) => (
             <Box key={i} sx={{ borderRadius: 2, overflow: 'hidden', aspectRatio: '4/3' }}>
               <img
+                loading="lazy"
                 src={img}
                 alt={`${festival.name} photo ${i + 1}`}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}

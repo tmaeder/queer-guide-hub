@@ -29,7 +29,7 @@ export const useComments = (postId: string) => {
   const { data: comments = [], isLoading, error } = useQuery({
     queryKey: ['post-comments', postId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const commentsPromise = supabase
         .from('post_comments')
         .select(`
           *,
@@ -41,19 +41,26 @@ export const useComments = (postId: string) => {
         `)
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
-      
-      if (error) throw error;
 
-      // Check which comments the current user has liked
-      if (user && data?.length) {
-        const commentIds = data.map(comment => comment.id);
-        const { data: likes } = await supabase
-          .from('comment_likes')
-          .select('comment_id')
-          .in('comment_id', commentIds)
-          .eq('user_id', user.id);
+      const likesPromise = user
+        ? supabase
+            .from('comment_likes')
+            .select('comment_id')
+            .eq('user_id', user.id)
+        : Promise.resolve({ data: null });
 
-        const likedCommentIds = new Set(likes?.map(like => like.comment_id));
+      const [commentsResult, likesResult] = await Promise.all([commentsPromise, likesPromise]);
+
+      if (commentsResult.error) throw commentsResult.error;
+      const data = commentsResult.data;
+
+      if (user && data?.length && likesResult.data) {
+        const commentIds = new Set(data.map(c => c.id));
+        const likedCommentIds = new Set(
+          likesResult.data
+            .filter(like => commentIds.has(like.comment_id))
+            .map(like => like.comment_id)
+        );
 
         return data.map(comment => ({
           ...comment,

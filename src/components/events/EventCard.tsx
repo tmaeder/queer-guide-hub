@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ interface EventCardProps {
   onUpdateAttendance?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void;
 }
 
-export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCardProps) {
+export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCardProps) {
   const attendeeCount = event.event_attendees?.filter((a) => a.status === 'going').length || 0;
 
   const getEventTypeStyle = (type: string): React.CSSProperties => {
@@ -512,4 +512,4 @@ export function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCar
       />
     </Card>
   );
-}
+});

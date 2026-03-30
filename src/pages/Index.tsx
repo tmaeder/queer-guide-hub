@@ -1,27 +1,20 @@
 import React, { useMemo } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
-  Heart,
   MapPin,
   Calendar,
   Store,
   Plane,
   Users,
-  Shield,
-  ArrowRight,
-  CheckCircle,
-  Sparkles,
-  Globe,
-  Search,
   BookOpen,
-  Image as ImageIcon,
+  ArrowRight,
+  Map,
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -29,171 +22,326 @@ import Typography from '@mui/material/Typography';
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
 const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider'));
-const RegionalEventsCalendar = React.lazy(() => import('@/components/home/RegionalEventsCalendar'));
+const RegionalEventsCalendar = React.lazy(
+  () => import('@/components/home/RegionalEventsCalendar'),
+);
+
+const features = [
+  {
+    icon: MapPin,
+    title: 'Venues',
+    description: 'Verified queer-friendly spaces where you can be yourself',
+    link: '/venues',
+    accent: '#c62828',
+    accentDark: '#ef9a9a',
+    bgLight: '#ffebee',
+    bgDark: '#2a0808',
+  },
+  {
+    icon: Calendar,
+    title: 'Events',
+    description: 'Local and virtual gatherings in your area',
+    link: '/events',
+    accent: '#e65100',
+    accentDark: '#ffcc80',
+    bgLight: '#fff3e0',
+    bgDark: '#2a1400',
+  },
+  {
+    icon: Store,
+    title: 'Marketplace',
+    description: 'Support queer-owned businesses and creators',
+    link: '/marketplace',
+    accent: '#2e7d32',
+    accentDark: '#a5d6a7',
+    bgLight: '#e8f5e9',
+    bgDark: '#0a2a0c',
+  },
+  {
+    icon: Plane,
+    title: 'Places',
+    description: 'Explore queer-friendly cities and countries',
+    link: '/places',
+    accent: '#1565c0',
+    accentDark: '#90caf9',
+    bgLight: '#e3f2fd',
+    bgDark: '#061a30',
+  },
+  {
+    icon: Users,
+    title: 'Community',
+    description: 'Connect with people and join groups',
+    link: '/groups',
+    accent: '#6a1b9a',
+    accentDark: '#ce93d8',
+    bgLight: '#f3e5f5',
+    bgDark: '#1a0828',
+  },
+  {
+    icon: BookOpen,
+    title: 'Resources',
+    description: 'Rights, culture, and community support',
+    link: '/resources',
+    accent: '#00695c',
+    accentDark: '#80cbc4',
+    bgLight: '#e0f2f1',
+    bgDark: '#002420',
+  },
+];
+
 const Index = React.memo(() => {
-  const { user } = useAuth();
   const { stats: realStats, loading } = useConsolidatedStats();
   const isMobile = useIsMobile();
-  const features = [
-    {
-      icon: MapPin,
-      title: 'Venues',
-      description: 'Find verified queer-friendly venues where you can be yourself',
-      color: 'text.primary',
-      link: '/venues',
-    },
-    {
-      icon: Calendar,
-      title: 'Events',
-      description: 'Discover local and virtual gatherings in your area',
-      color: 'text.primary',
-      link: '/events',
-    },
-    {
-      icon: Store,
-      title: 'Marketplace',
-      description: 'Support queer-owned businesses and creators',
-      color: 'text.primary',
-      link: '/marketplace',
-    },
-    {
-      icon: Plane,
-      title: 'Places',
-      description: 'Explore queer-friendly cities and countries worldwide',
-      color: 'text.primary',
-      link: '/places',
-    },
-    {
-      icon: Users,
-      title: 'Community',
-      description: 'Connect with like-minded people and join groups',
-      color: 'text.primary',
-      link: '/groups',
-    },
-    {
-      icon: BookOpen,
-      title: 'Resources',
-      description: 'Learn about rights, culture, and community topics',
-      color: 'text.primary',
-      link: '/resources',
-    },
-  ];
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const navigate = useNavigate();
+
   const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return `${Math.floor(num / 1000)}K+`;
-    }
+    if (num >= 1000) return `${Math.floor(num / 1000)}K+`;
     return num.toString();
   };
+
   const stats = useMemo(
     () =>
       loading
         ? [
-            {
-              number: '---',
-              label: 'Verified Venues',
-            },
-            {
-              number: '---',
-              label: 'Community Members',
-            },
-            {
-              number: '---',
-              label: 'Cities Worldwide',
-            },
-            {
-              number: '---',
-              label: 'Weekly Events',
-            },
+            { number: '\u2014', label: 'Verified Venues' },
+            { number: '\u2014', label: 'Community Members' },
+            { number: '\u2014', label: 'Cities Worldwide' },
+            { number: '\u2014', label: 'Weekly Events' },
           ]
         : [
-            {
-              number: formatNumber(realStats.venues),
-              label: 'Verified Venues',
-            },
-            {
-              number: formatNumber(realStats.profiles),
-              label: 'Community Members',
-            },
-            {
-              number: formatNumber(realStats.cities),
-              label: 'Cities Worldwide',
-            },
-            {
-              number: formatNumber(realStats.events),
-              label: 'Weekly Events',
-            },
+            { number: formatNumber(realStats.venues), label: 'Verified Venues' },
+            { number: formatNumber(realStats.profiles), label: 'Community Members' },
+            { number: formatNumber(realStats.cities), label: 'Cities Worldwide' },
+            { number: formatNumber(realStats.events), label: 'Weekly Events' },
           ],
-    [loading, realStats, formatNumber],
+    [loading, realStats],
   );
+
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      {/* Explore Map */}
-      <Box component="section">
-        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-          <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
-            Explore Venues & Events Near You
-          </Typography>
-          <React.Suspense
-            fallback={<Box sx={{ height: 480, bgcolor: 'action.hover', borderRadius: 2 }} />}
+      {/* ── Hero ─────────────────────────────────────────────────────── */}
+      <Box
+        className="hero-gradient hero-grain"
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          py: { xs: 10, sm: 14, md: 18 },
+          px: 2,
+        }}
+      >
+        <Container
+          maxWidth="md"
+          sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}
+        >
+          <Typography
+            variant="h1"
+            className="reveal-up"
+            sx={{
+              fontSize: { xs: '2.75rem', sm: '3.75rem', md: '5rem' },
+              fontWeight: 800,
+              letterSpacing: '-0.04em',
+              lineHeight: 1.05,
+              mb: { xs: 2.5, md: 3 },
+              color: 'text.primary',
+            }}
           >
-            <ExploreMap
-              height={480}
-              defaultLayers={['venues', 'events']}
-              showFilters
-              showLayerToggles
-              linkToFullMap="/map"
-            />
-          </React.Suspense>
+            Your guide to
+            <br />
+            queer spaces
+          </Typography>
+
+          <Typography
+            className="reveal-up reveal-delay-1"
+            sx={{
+              fontSize: { xs: '1.0625rem', sm: '1.1875rem', md: '1.375rem' },
+              color: 'text.secondary',
+              maxWidth: 520,
+              mx: 'auto',
+              mb: { xs: 4, md: 5 },
+              lineHeight: 1.6,
+            }}
+          >
+            Discover safe venues, vibrant events, and welcoming communities —
+            everywhere you go.
+          </Typography>
+
+          <Box
+            className="reveal-up reveal-delay-2"
+            sx={{
+              display: 'flex',
+              gap: { xs: 1.5, md: 2 },
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            <Button size="lg" onClick={() => navigate('/map')}>
+              <Map
+                style={{ width: 18, height: 18, marginRight: 8 }}
+                aria-hidden="true"
+              />
+              Explore the Map
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => navigate('/venues')}>
+              Browse Venues
+              <ArrowRight
+                style={{ width: 18, height: 18, marginLeft: 8 }}
+                aria-hidden="true"
+              />
+            </Button>
+          </Box>
         </Container>
       </Box>
 
-      {/* Features Grid */}
-      <Box component="section">
-        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 5 } }}>
+      {/* ── Stats Strip ──────────────────────────────────────────────── */}
+      <Box
+        sx={{
+          bgcolor: 'text.primary',
+          color: 'background.default',
+          py: { xs: 3.5, md: 4.5 },
+        }}
+      >
+        <Container maxWidth="lg">
           <Box
             sx={{
               display: 'grid',
               gridTemplateColumns: {
                 xs: 'repeat(2, 1fr)',
-                md: 'repeat(3, 1fr)',
-                lg: 'repeat(6, 1fr)',
+                md: 'repeat(4, 1fr)',
               },
-              gap: { xs: 2, md: 3 },
+              gap: { xs: 3, md: 4 },
+            }}
+          >
+            {stats.map((stat, i) => (
+              <Box key={i} sx={{ textAlign: 'center' }}>
+                <Typography
+                  sx={{
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 800,
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                    letterSpacing: '-0.03em',
+                    lineHeight: 1.1,
+                    color: 'inherit',
+                  }}
+                >
+                  {stat.number}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'inherit',
+                    opacity: 0.6,
+                    mt: 0.5,
+                    fontWeight: 500,
+                    letterSpacing: '0.02em',
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  {stat.label}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* ── Features Grid ────────────────────────────────────────────── */}
+      <Box component="section" sx={{ py: { xs: 5, md: 8 } }}>
+        <Container maxWidth="lg">
+          <Typography
+            variant="h4"
+            className="reveal-up"
+            sx={{
+              fontWeight: 700,
+              mb: { xs: 1, md: 1.5 },
+              fontSize: { xs: '1.5rem', md: '1.875rem' },
+            }}
+          >
+            Explore
+          </Typography>
+          <Typography
+            color="text.secondary"
+            className="reveal-up reveal-delay-1"
+            sx={{ mb: { xs: 3, md: 4 }, fontSize: { xs: '0.9375rem', md: '1.0625rem' } }}
+          >
+            Everything you need, in one place.
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+              },
+              gap: { xs: 2, md: 2.5 },
             }}
           >
             {features.map((feature, index) => {
-              const Icon = feature.icon as any;
+              const Icon = feature.icon;
               return (
                 <Link
                   to={feature.link}
-                  key={index}
+                  key={feature.title}
                   style={{ textDecoration: 'none', display: 'block' }}
                 >
-                  <Card style={{ height: '100%' }}>
-                    <CardContent style={{ padding: 20 }}>
+                  <Card
+                    className="feature-card-lift"
+                    style={{ height: '100%', cursor: 'pointer' }}
+                  >
+                    <CardContent
+                      style={{
+                        padding: isMobile ? 20 : 24,
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 16,
+                      }}
+                    >
                       <Box
                         sx={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: '12px',
+                          bgcolor: isDark ? feature.bgDark : feature.bgLight,
                           display: 'flex',
-                          flexDirection: 'column',
                           alignItems: 'center',
-                          gap: 1,
-                          textAlign: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
                         }}
                       >
-                        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                          <Icon
-                            style={{ width: 24, height: 24, color: 'inherit' }}
-                            aria-hidden="true"
-                          />
-                        </Box>
+                        <Icon
+                          style={{
+                            width: 22,
+                            height: 22,
+                            color: isDark ? feature.accentDark : feature.accent,
+                          }}
+                          aria-hidden="true"
+                        />
+                      </Box>
+                      <Box sx={{ minWidth: 0 }}>
                         <Typography
-                          variant="body2"
+                          variant="subtitle1"
                           sx={{
-                            fontWeight: 600,
-                            fontSize: { xs: '0.875rem', md: '1rem' },
+                            fontWeight: 700,
+                            fontFamily: "'Montserrat', sans-serif",
+                            mb: 0.5,
+                            fontSize: { xs: '0.9375rem', md: '1rem' },
                           }}
                         >
                           {feature.title}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: 'text.secondary',
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {feature.description}
                         </Typography>
                       </Box>
                     </CardContent>
@@ -205,263 +353,99 @@ const Index = React.memo(() => {
         </Container>
       </Box>
 
-      {/* Community Stats */}
-      <Box component="section" sx={{ py: { xs: 3, md: 4 } }}>
+      {/* ── Explore Map ──────────────────────────────────────────────── */}
+      <Box
+        component="section"
+        sx={{
+          bgcolor: isDark ? 'background.paper' : '#f8f8f8',
+          py: { xs: 5, md: 8 },
+        }}
+      >
         <Container maxWidth="lg">
-          <Card style={{ padding: 0 }}>
-            <CardContent style={{ padding: '20px 24px' }}>
-              <Box
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: { xs: 2, md: 3 },
+            }}
+          >
+            <Box>
+              <Typography
+                variant="h4"
                 sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-                  gap: { xs: 2, md: 4 },
+                  fontWeight: 700,
+                  mb: 0.5,
+                  fontSize: { xs: '1.5rem', md: '1.875rem' },
                 }}
               >
-                {stats.map((stat, index) => (
-                  <Box
-                    key={index}
-                    sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 0.5 }}
-                  >
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        fontWeight: 700,
-                        fontFamily: 'Montserrat, sans-serif',
-                        fontSize: { xs: '1.875rem', md: '2.25rem' },
-                        color: 'text.primary',
-                      }}
-                    >
-                      {stat.number}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      {stat.label}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
+                Explore Near You
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
+              >
+                Venues and events on the map
+              </Typography>
+            </Box>
+            <Button
+              variant="outline"
+              size={isMobile ? 'sm' : 'default'}
+              onClick={() => navigate('/map')}
+            >
+              Full Map
+              <ArrowRight
+                style={{
+                  marginLeft: 8,
+                  width: isMobile ? 14 : 16,
+                  height: isMobile ? 14 : 16,
+                }}
+                aria-hidden="true"
+              />
+            </Button>
+          </Box>
+          <Box sx={{ borderRadius: '12px', overflow: 'hidden' }}>
+            <React.Suspense
+              fallback={
+                <Box
+                  sx={{
+                    height: { xs: 360, md: 480 },
+                    bgcolor: 'action.hover',
+                    borderRadius: '12px',
+                  }}
+                />
+              }
+            >
+              <ExploreMap
+                height={isMobile ? 360 : 480}
+                defaultLayers={['venues', 'events']}
+                showFilters
+                showLayerToggles
+                linkToFullMap="/map"
+              />
+            </React.Suspense>
+          </Box>
         </Container>
       </Box>
 
-      {/* Weekly Events Near You */}
-      <React.Suspense fallback={<SliderSkeleton title="This Week Near You" />}>
+      {/* ── Weekly Events Near You ────────────────────────────────────── */}
+      <React.Suspense fallback={null}>
         <WeeklyEventsSlider />
       </React.Suspense>
 
-      {/* Regional Events Calendar */}
-      <React.Suspense fallback={<SliderSkeleton title="Events Calendar Near You" />}>
+      {/* ── Regional Events Calendar ─────────────────────────────────── */}
+      <React.Suspense fallback={null}>
         <RegionalEventsCalendar />
       </React.Suspense>
 
-      {/* Latest News Section */}
-      <React.Suspense fallback={<SliderSkeleton title="Latest News" />}>
+      {/* ── Latest News ──────────────────────────────────────────────── */}
+      <React.Suspense fallback={null}>
         <LatestNewsSlider />
       </React.Suspense>
     </Box>
   );
 });
 
-// Enhanced skeleton component for lazy-loaded sliders
-const SliderSkeleton = ({ title }: { title: string }) => {
-  const isMobile = useIsMobile();
-  return (
-    <Box
-      component="section"
-      sx={{
-        bgcolor: 'action.hover',
-        py: isMobile ? 6 : 10,
-        px: 2,
-      }}
-    >
-      <Container maxWidth="lg">
-        <Box sx={{ mb: isMobile ? 4 : 6 }}>
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}
-          >
-            <Box>
-              <Box
-                sx={{
-                  height: 40,
-                  bgcolor: 'action.disabledBackground',
-                  borderRadius: 2,
-                  width: isMobile ? 224 : 320,
-                  mb: 2,
-                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                  '@keyframes pulse': {
-                    '0%, 100%': { opacity: 1 },
-                    '50%': { opacity: 0.5 },
-                  },
-                }}
-              />
-              <Box
-                sx={{
-                  height: 24,
-                  bgcolor: 'action.disabledBackground',
-                  borderRadius: 2,
-                  width: isMobile ? 320 : 384,
-                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                }}
-              />
-            </Box>
-            <Box
-              sx={{
-                height: 40,
-                bgcolor: 'action.disabledBackground',
-                borderRadius: 2,
-                width: isMobile ? 96 : 128,
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              }}
-            />
-          </Box>
-        </Box>
-
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 3,
-            gridTemplateColumns: isMobile
-              ? '1fr'
-              : { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-          }}
-        >
-          {Array.from({
-            length: isMobile ? 2 : 3,
-          }).map((_, i) => (
-            <Card key={i} style={{ height: 320, opacity: 0.5 }}>
-              <CardContent style={{ padding: 32 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        height: 24,
-                        bgcolor: 'action.disabledBackground',
-                        borderRadius: 2,
-                        width: 80,
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        height: 24,
-                        bgcolor: 'action.disabledBackground',
-                        borderRadius: 2,
-                        width: 64,
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Box
-                      sx={{
-                        height: 28,
-                        bgcolor: 'action.disabledBackground',
-                        borderRadius: 2,
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        height: 28,
-                        bgcolor: 'action.disabledBackground',
-                        borderRadius: 2,
-                        width: '75%',
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        sx={{
-                          height: 16,
-                          width: 16,
-                          bgcolor: 'action.disabledBackground',
-                          borderRadius: 2,
-                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        }}
-                      />
-                      <Box
-                        sx={{
-                          height: 16,
-                          bgcolor: 'action.disabledBackground',
-                          borderRadius: 2,
-                          width: 96,
-                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        }}
-                      />
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        sx={{
-                          height: 16,
-                          width: 16,
-                          bgcolor: 'action.disabledBackground',
-                          borderRadius: 2,
-                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        }}
-                      />
-                      <Box
-                        sx={{
-                          height: 16,
-                          bgcolor: 'action.disabledBackground',
-                          borderRadius: 2,
-                          width: 128,
-                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Box
-                      sx={{
-                        height: 16,
-                        bgcolor: 'action.disabledBackground',
-                        borderRadius: 2,
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        height: 16,
-                        bgcolor: 'action.disabledBackground',
-                        borderRadius: 2,
-                        width: '83%',
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        height: 16,
-                        bgcolor: 'action.disabledBackground',
-                        borderRadius: 2,
-                        width: '66%',
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                      }}
-                    />
-                  </Box>
-                  <Box
-                    sx={{
-                      height: 40,
-                      bgcolor: 'action.disabledBackground',
-                      borderRadius: 2,
-                      mt: 'auto',
-                      animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    }}
-                  />
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
-      </Container>
-    </Box>
-  );
-};
+Index.displayName = 'Index';
 export default Index;

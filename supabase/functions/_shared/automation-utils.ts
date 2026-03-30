@@ -38,6 +38,15 @@ export interface AutomationRule {
   sort_order: number
 }
 
+/**
+ * Review action classification for proposed changes:
+ * - auto_correct: Safe to apply automatically (deterministic fix, high confidence)
+ * - needs_review: Requires human verification (ambiguous, medium confidence)
+ * - clearly_wrong: Definitively invalid content that should be blocked/removed
+ * - info_only: Low confidence observation, informational only
+ */
+export type ReviewAction = 'auto_correct' | 'needs_review' | 'clearly_wrong' | 'info_only'
+
 export interface ProposedChange {
   content_type: string
   content_id: string
@@ -45,10 +54,24 @@ export interface ProposedChange {
   field_name: string
   old_value: unknown
   new_value: unknown
+  /** Change type: update, normalize, sanitize, enrich, flag */
   change_type: string
+  /** Confidence score 0.0-1.0 */
   confidence: number
+  /** Human-readable explanation */
   reasoning: string
   rule_id?: string
+  /** Recommended review action (derived from confidence + change_type if not set) */
+  review_action?: ReviewAction
+}
+
+/** Derive review action from a proposed change if not explicitly set. */
+export function deriveReviewAction(change: ProposedChange, autoApproveThreshold: number): ReviewAction {
+  if (change.review_action) return change.review_action
+  if (change.change_type === 'flag') return change.confidence >= 0.85 ? 'clearly_wrong' : 'needs_review'
+  if (change.confidence >= autoApproveThreshold) return 'auto_correct'
+  if (change.confidence >= 0.55) return 'needs_review'
+  return 'info_only'
 }
 
 export interface PipelineResult {

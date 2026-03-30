@@ -9,6 +9,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { Link as RouterLink } from 'react-router';
 import { useAutomationMonitor, type ContentFlag } from '@/hooks/useAutomationMonitor';
 import {
   Bot,
@@ -22,12 +23,18 @@ import {
   Info,
   AlertOctagon,
   ShieldCheck,
+  Settings,
+  Scale,
+  Heart,
+  EyeOff,
+  Flag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import MuiLink from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Select from '@mui/material/Select';
@@ -65,6 +72,24 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
   duplicate: 'Duplicate',
   encoding_issue: 'Encoding Issue',
   outdated: 'Outdated',
+  lgbti_relevance: 'LGBTI Relevance',
+  sensitivity_legal: 'Legal',
+  sensitivity_medical: 'Medical',
+  sensitivity_nsfw: 'NSFW',
+};
+
+const SENSITIVITY_COLORS: Record<string, string> = {
+  sensitivity_legal: '#7c3aed',
+  sensitivity_medical: '#0891b2',
+  sensitivity_nsfw: '#e11d48',
+  lgbti_relevance: '#d97706',
+};
+
+const REVIEW_PRIORITY_COLORS: Record<string, string> = {
+  urgent: '#dc2626',
+  high: '#ea580c',
+  normal: '#f59e0b',
+  low: '#6b7280',
 };
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
@@ -206,6 +231,16 @@ export function AutoModerationQueue() {
           <Typography variant="body2" color="text.secondary">
             {flagStats?.pending || 0} pending flags from automation modules
             {(flagStats?.applied || 0) > 0 && ` · ${flagStats?.applied} auto-applied`}
+            {' · '}
+            <MuiLink
+              component={RouterLink}
+              to="/admin/automation"
+              underline="hover"
+              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+            >
+              <Settings size={12} />
+              Configure modules
+            </MuiLink>
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -429,6 +464,10 @@ function FlagCard({
 }: FlagCardProps) {
   const SeverityIcon = SEVERITY_ICONS[flag.severity] || Info;
   const severityColor = SEVERITY_COLORS[flag.severity] || '#6b7280';
+  const isClassifierFlag = flag.module_name === 'content-classifier';
+  const sensitivityColor = SENSITIVITY_COLORS[flag.flag_type];
+  const currentVal = flag.current_value as Record<string, unknown> | null;
+  const reviewPriority = currentVal?.review_priority as string | undefined;
 
   return (
     <Card
@@ -452,9 +491,21 @@ function FlagCard({
                 sx={{ bgcolor: severityColor, color: '#fff', fontWeight: 600, fontSize: '0.7rem' }}
               />
               <Chip
+                icon={
+                  flag.flag_type === 'sensitivity_legal' ? <Scale style={{ width: 12, height: 12 }} /> :
+                  flag.flag_type === 'sensitivity_medical' ? <Heart style={{ width: 12, height: 12 }} /> :
+                  flag.flag_type === 'sensitivity_nsfw' ? <EyeOff style={{ width: 12, height: 12 }} /> :
+                  flag.flag_type === 'lgbti_relevance' ? <Flag style={{ width: 12, height: 12 }} /> :
+                  undefined
+                }
                 label={FLAG_TYPE_LABELS[flag.flag_type] || flag.flag_type}
                 size="small"
                 variant="outlined"
+                sx={sensitivityColor ? {
+                  borderColor: sensitivityColor,
+                  color: sensitivityColor,
+                  fontWeight: 600,
+                } : undefined}
               />
               <Chip
                 label={CONTENT_TYPE_LABELS[flag.content_type] || flag.content_type}
@@ -474,6 +525,18 @@ function FlagCard({
                         : flag.confidence >= 0.7
                           ? '#f59e0b'
                           : '#ef4444',
+                  }}
+                />
+              )}
+              {reviewPriority && (
+                <Chip
+                  label={`Priority: ${reviewPriority}`}
+                  size="small"
+                  sx={{
+                    bgcolor: REVIEW_PRIORITY_COLORS[reviewPriority] || '#6b7280',
+                    color: '#fff',
+                    fontWeight: 600,
+                    fontSize: '0.7rem',
                   }}
                 />
               )}
@@ -536,7 +599,74 @@ function FlagCard({
                   Content ID: {flag.content_id}
                 </Typography>
 
-                {flag.current_value && (
+                {/* Classifier-specific detail view */}
+                {isClassifierFlag && currentVal && (
+                  <Box sx={{ mb: 1.5 }}>
+                    {/* Relevance score bar */}
+                    {currentVal.lgbti_relevance_score != null && (
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+                          LGBTI Relevance: {((currentVal.lgbti_relevance_score as number) * 100).toFixed(0)}%
+                        </Typography>
+                        <LinearProgress
+                          variant="determinate"
+                          value={(currentVal.lgbti_relevance_score as number) * 100}
+                          sx={{
+                            height: 8,
+                            borderRadius: 4,
+                            bgcolor: 'rgba(0,0,0,0.08)',
+                            '& .MuiLinearProgress-bar': {
+                              bgcolor: (currentVal.lgbti_relevance_score as number) >= 0.7
+                                ? '#16a34a'
+                                : (currentVal.lgbti_relevance_score as number) >= 0.5
+                                  ? '#f59e0b'
+                                  : '#ef4444',
+                              borderRadius: 4,
+                            },
+                          }}
+                        />
+                      </Box>
+                    )}
+                    {/* Reasoning */}
+                    {currentVal.lgbti_reasoning && (
+                      <Typography variant="body2" sx={{ mb: 1, fontStyle: 'italic', color: 'text.secondary' }}>
+                        {String(currentVal.lgbti_reasoning)}
+                      </Typography>
+                    )}
+                    {/* Sensitivity indicators */}
+                    {currentVal.indicators && Array.isArray(currentVal.indicators) && (
+                      <Box sx={{ mb: 1 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+                          Detected indicators:
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {(currentVal.indicators as string[]).map((indicator, i) => (
+                            <Chip
+                              key={i}
+                              label={indicator}
+                              size="small"
+                              sx={{
+                                fontSize: '0.7rem',
+                                bgcolor: sensitivityColor ? `${sensitivityColor}15` : undefined,
+                                borderColor: sensitivityColor,
+                                border: '1px solid',
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+                    {/* Severity */}
+                    {currentVal.severity && (
+                      <Typography variant="caption" color="text.secondary">
+                        Sensitivity severity: <strong>{String(currentVal.severity)}</strong>
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+
+                {/* Generic flag detail view (non-classifier flags) */}
+                {!isClassifierFlag && flag.current_value && (
                   <Box sx={{ mb: 1.5 }}>
                     <Typography
                       variant="caption"

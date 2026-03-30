@@ -85,7 +85,7 @@ export function Footer() {
               variant="default"
               size="sm"
               style={{
-                height: 32,
+                minHeight: 44,
                 fontSize: '0.75rem',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -101,7 +101,7 @@ export function Footer() {
             <Button
               variant="ghost"
               size="sm"
-              style={{ height: 32, fontSize: '0.75rem' }}
+              style={{ minWidth: 44, minHeight: 44, fontSize: '0.75rem' }}
               aria-label="Scroll to top"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
@@ -112,7 +112,7 @@ export function Footer() {
               variant="ghost"
               size="sm"
               aria-label="Sitemap"
-              style={{ height: 32, fontSize: '0.75rem' }}
+              style={{ minWidth: 44, minHeight: 44, fontSize: '0.75rem' }}
               onClick={() => navigate('/sitemap')}
             >
               <FileText style={{ width: 16, height: 16 }} />

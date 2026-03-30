@@ -132,7 +132,7 @@ export function useOptimizedCountry(countryId: string) {
   const fetchCountry = async (): Promise<Country | null> => {
     const { data, error } = await supabase
       .from('countries')
-      .select('*')
+      .select('*, continents(name), regions(name)')
       .eq('id', countryId)
       .maybeSingle();
 

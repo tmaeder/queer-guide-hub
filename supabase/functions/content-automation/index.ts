@@ -32,6 +32,7 @@ import { processGeoEnricher } from './modules/geo-enricher.ts'
 import { processAutoTagger } from './modules/auto-tagger.ts'
 import { processAiEnhancer } from './modules/ai-enhancer.ts'
 import { processEventValidator } from './modules/event-validator.ts'
+import { processContentClassifier } from './modules/content-classifier.ts'
 
 type ModuleProcessor = (
   supabase: SupabaseClient,
@@ -62,6 +63,7 @@ const PROCESSORS: Record<string, ModuleProcessor> = {
   'auto-tagger': processAutoTagger,
   'ai-enhancer': processAiEnhancer,
   'event-validator': processEventValidator,
+  'content-classifier': processContentClassifier,
 }
 
 const ALL_MODULES = Object.keys(PROCESSORS)

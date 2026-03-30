@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { enrichVenueWithAI, enrichEventWithAI, enrichPersonalityWithAI, enrichNewsWithAI } from '../_shared/ai-enrichment.ts'
+import { classifyContent, type ClassificationInput, type ContentType } from '../_shared/content-classifier.ts'
 
 // --- AI Validator (inlined from _shared/ai-validator.ts for edge function compatibility) ---
 
@@ -142,7 +143,7 @@ async function deduplicateItem(supabase: any, targetTable: string, data: Record<
 
 // --- Commit to target table ---
 
-async function commitItem(supabase: any, targetTable: string, normalizedData: Record<string, unknown>, enrichedData: Record<string, unknown> | null): Promise<{ id: string; action: 'inserted' | 'updated' }> {
+async function commitItem(supabase: any, targetTable: string, normalizedData: Record<string, unknown>, enrichedData: Record<string, unknown> | null, classificationResult?: Record<string, unknown> | null): Promise<{ id: string; action: 'inserted' | 'updated' }> {
   // Merge enriched data into normalized
   const finalData = { ...normalizedData }
   if (enrichedData) {
@@ -151,6 +152,19 @@ async function commitItem(supabase: any, targetTable: string, normalizedData: Re
       if (value && !finalData[key]) {
         finalData[key] = value
       }
+    }
+  }
+
+  // Apply classification results to target table columns
+  if (classificationResult) {
+    if (classificationResult.lgbti_relevance_score != null) {
+      finalData.lgbti_relevance_score = classificationResult.lgbti_relevance_score
+    }
+    if (classificationResult.sensitivity_flags && (classificationResult.sensitivity_flags as unknown[]).length > 0) {
+      finalData.sensitivity_flags = classificationResult.sensitivity_flags
+    }
+    if (classificationResult.classified_at) {
+      finalData.classified_at = classificationResult.classified_at
     }
   }
 
@@ -269,11 +283,39 @@ async function processAIValidation(supabase: any, jobId: string): Promise<{ proc
       else if (result.confidence < 0.7) { status = 'rejected'; aiRejected++ }
       else { status = 'needs_review'; needsReview++ }
 
+      // Run content classification for sensitivity flags
+      let classificationResult = null
+      try {
+        const classInput: ClassificationInput = {
+          content_type: item.target_table as ContentType,
+          title: nd.name || nd.title || 'Unknown',
+          description: nd.description || nd.excerpt || nd.bio,
+          tags: nd.tags,
+          category: nd.category,
+          source: nd.source_name,
+          location: [nd.city, nd.country].filter(Boolean).join(', ') || undefined,
+          country: nd.country,
+        }
+        classificationResult = await classifyContent(supabase, classInput)
+
+        // Escalate to review if sensitivity flags detected
+        if (classificationResult.sensitivity_flags.length > 0 && status === 'approved') {
+          if (classificationResult.review_priority === 'urgent' || classificationResult.review_priority === 'high') {
+            status = 'needs_review'
+            needsReview++
+            aiApproved--
+          }
+        }
+      } catch (classErr) {
+        console.warn(`Classification failed for staging item ${item.id}:`, classErr)
+      }
+
       await supabase.from('ingestion_staging').update({
         ai_validation_status: status,
         ai_confidence_score: result.confidence,
         ai_validation_result: result,
         ai_validated_at: new Date().toISOString(),
+        classification_result: classificationResult,
         ...(status === 'needs_review' ? { review_status: 'pending_review' } : {}),
         ...(status === 'rejected' ? { disposition: 'rejected' } : {}),
       }).eq('id', item.id)
@@ -426,7 +468,7 @@ async function processCommit(supabase: any, jobId: string): Promise<{ processed:
 
   for (const item of items) {
     try {
-      const result = await commitItem(supabase, item.target_table, item.normalized_data || item.raw_data, item.enriched_data)
+      const result = await commitItem(supabase, item.target_table, item.normalized_data || item.raw_data, item.enriched_data, item.classification_result)
       await supabase.from('ingestion_staging').update({
         disposition: result.action,
         target_record_id: result.id,

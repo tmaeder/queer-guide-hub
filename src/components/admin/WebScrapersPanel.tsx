@@ -40,7 +40,7 @@ const NODE_SCRAPERS = [
     key: 'misterbandb',
     label: 'MisterBnB',
     url: 'sitemap.misterbandb.com',
-    types: 'Events, Guides',
+    types: 'Events, Guides, Stays',
     icon: MapPin,
   },
   {

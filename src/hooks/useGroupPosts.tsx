@@ -60,30 +60,26 @@ export const useGroupPosts = (groupId: string) => {
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['group-posts', groupId],
     queryFn: async () => {
-      // Fetch posts with author profiles in a single query
-      const { data, error } = await supabase
-        .from('group_posts')
-        .select('*, profiles!group_posts_user_id_fkey(display_name, avatar_url)')
-        .eq('group_id', groupId)
-        .order('is_pinned', { ascending: false })
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Fetch user's likes and votes in parallel
-      const postIds = data?.map((post) => post.id) || [];
-      const [likesResult, votesResult] = await Promise.all([
+      // Fetch posts, likes, and votes all in parallel
+      const [postsResult, likesResult, votesResult] = await Promise.all([
+        supabase
+          .from('group_posts')
+          .select('*, profiles!group_posts_user_id_fkey(display_name, avatar_url)')
+          .eq('group_id', groupId)
+          .order('is_pinned', { ascending: false })
+          .order('created_at', { ascending: false }),
         supabase
           .from('group_post_likes')
           .select('post_id')
-          .in('post_id', postIds)
           .eq('user_id', user?.id || ''),
         supabase
           .from('group_poll_votes')
           .select('post_id, option_index')
-          .in('post_id', postIds)
           .eq('user_id', user?.id || ''),
       ]);
+
+      if (postsResult.error) throw postsResult.error;
+      const data = postsResult.data;
 
       const likes = likesResult.data;
       const votes = votesResult.data;

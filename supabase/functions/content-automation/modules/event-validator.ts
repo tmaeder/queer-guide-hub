@@ -11,8 +11,9 @@ import {
 import {
   checkTimeWindow, checkDayOfWeek, checkTimeOrder,
   findTimePlaceDuplicates, pickPrimary, computeMergeChanges,
-  type EventRecord, type ValidationIssue, type TimeWindowConfig,
-  type DayCheckConfig, type DedupConfig, type DuplicatePair,
+  findDuplicateAddressVenues, findSimilarNameSameStreetVenues,
+  type EventRecord, type VenueRecord, type ValidationIssue, type TimeWindowConfig,
+  type DayCheckConfig, type DedupConfig, type DuplicatePair, type VenueDuplicatePair,
 } from '../../_shared/event-validation-rules.ts'
 import {
   upsertModerationFlag, loadExistingAutomationFlags,
@@ -76,6 +77,7 @@ async function autoMergePair(
 ): Promise<number> {
   const { primary, secondary } = pickPrimary(pair.eventA, pair.eventB)
   const mergeFields = computeMergeChanges(primary, secondary)
+  const pairConfidence = pair.confidence.score
   let changesCount = 0
 
   // Create content_changes for each merged field
@@ -88,8 +90,8 @@ async function autoMergePair(
       old_value: mc.old_value,
       new_value: mc.new_value,
       change_type: 'normalize',
-      confidence: 0.96,
-      reasoning: `Auto-merged from duplicate event ${secondary.id}: ${mc.field}`,
+      confidence: pairConfidence,
+      reasoning: `Auto-merged from duplicate event ${secondary.id}: ${mc.field} (${pair.confidence.reasoning})`,
       rule_id: rule.id,
     })
     changesCount++
@@ -104,8 +106,8 @@ async function autoMergePair(
     old_value: secondary.status,
     new_value: 'cancelled',
     change_type: 'normalize',
-    confidence: 0.96,
-    reasoning: `Duplicate of ${primary.id} — auto-merged, marking as cancelled`,
+    confidence: pairConfidence,
+    reasoning: `Duplicate of ${primary.id} — auto-merged, marking as cancelled (${pair.confidence.reasoning})`,
     rule_id: rule.id,
   })
   changesCount++
@@ -127,6 +129,9 @@ async function autoMergePair(
         secondary_id: secondary.id,
         time_diff_min: pair.timeDiffMin,
         distance_m: pair.distanceM,
+        title_similarity: pair.titleSimilarity,
+        confidence: pair.confidence.score,
+        confidence_factors: pair.confidence.factors,
         fields_merged: mergeFields.map(f => f.field),
       },
       suggested_action: 'merged',
@@ -145,6 +150,8 @@ async function flagDuplicatePair(
   existingFlagKeys: Set<string>,
   allChanges: ProposedChange[],
 ): Promise<void> {
+  const pairConfidence = pair.confidence.score
+
   // Flag both events for review
   for (const event of [pair.eventA, pair.eventB]) {
     const other = event === pair.eventA ? pair.eventB : pair.eventA
@@ -154,16 +161,19 @@ async function flagDuplicatePair(
         content_type: 'events',
         content_id: event.id,
         flag_type: 'DUPLICATE',
-        reason: `Potential duplicate of "${other.title}" (${other.id}) — titles or types differ, manual review needed`,
+        reason: `Potential duplicate of "${other.title}" (${other.id}) — title similarity ${(pair.titleSimilarity * 100).toFixed(0)}%, manual review needed`,
         rule_id: rule.id,
         rule_name: rule.name,
-        severity: 'warning',
+        severity: pairConfidence >= 0.75 ? 'warning' : 'warning',
         details: {
           action: 'flag_review',
           other_event_id: other.id,
           other_title: other.title,
           time_diff_min: pair.timeDiffMin,
           distance_m: pair.distanceM,
+          title_similarity: pair.titleSimilarity,
+          confidence: pairConfidence,
+          confidence_factors: pair.confidence.factors,
           this_title: event.title,
           this_type: event.event_type,
           other_type: other.event_type,
@@ -182,8 +192,8 @@ async function flagDuplicatePair(
       old_value: null,
       new_value: null,
       change_type: 'flag',
-      confidence: 0.75,
-      reasoning: `Potential duplicate of ${other.id} — ${pair.timeDiffMin}min apart, conflicting titles/types`,
+      confidence: pairConfidence,
+      reasoning: `Potential duplicate of ${other.id} — title ${(pair.titleSimilarity * 100).toFixed(0)}% similar, ${pair.timeDiffMin}min apart (${pair.confidence.reasoning})`,
       rule_id: rule.id,
     })
   }
@@ -338,5 +348,136 @@ export async function processEventValidator(
     }
   }
 
+  // ── Venue dedup rules (same address / similar name same street) ─────────
+
+  const venueDupRules = config.rules.filter(r =>
+    r.rule_type === 'venue_dup_address' || r.rule_type === 'venue_dup_name'
+  )
+
+  if (venueDupRules.length > 0) {
+    try {
+      const venues = await fetchVenues(supabase, config.module.batch_size)
+      if (venues.length > 1) {
+        // Pre-load existing venue flags
+        const venueIds = venues.map(v => v.id)
+        const existingVenueFlags = opts.dryRun
+          ? new Set<string>()
+          : await loadExistingAutomationFlags(supabase, 'venues', venueIds)
+
+        for (const rule of venueDupRules) {
+          try {
+            const ruleConfig = rule.rule_config as Record<string, unknown>
+            let venuePairs: VenueDuplicatePair[] = []
+
+            if (rule.rule_type === 'venue_dup_address') {
+              venuePairs = findDuplicateAddressVenues(venues)
+            } else if (rule.rule_type === 'venue_dup_name') {
+              const minSim = (ruleConfig.min_similarity as number) ?? 0.75
+              venuePairs = findSimilarNameSameStreetVenues(venues, minSim)
+            }
+
+            for (const pair of venuePairs) {
+              await flagVenueDuplicatePair(
+                supabase, pair, rule, existingVenueFlags, allChanges, opts.dryRun,
+              )
+            }
+          } catch (e) {
+            console.error(`[event-validator] Venue dedup rule=${rule.name} error: ${e}`)
+            totalErrors++
+          }
+        }
+      }
+    } catch (e) {
+      console.error(`[event-validator] Venue fetch error: ${e}`)
+      totalErrors++
+    }
+  }
+
   return { scanned: totalScanned, changes: allChanges, errors: totalErrors }
+}
+
+// ── Venue helpers ─────────────────────────────────────────────────────────
+
+async function fetchVenues(
+  supabase: SupabaseClient,
+  batchSize: number,
+): Promise<VenueRecord[]> {
+  const { data, error } = await supabase
+    .from('venues')
+    .select('id, name, address, city, country, latitude, longitude')
+    .limit(batchSize)
+
+  if (error) {
+    console.error(`[event-validator] Venue fetch: ${error.message}`)
+    return []
+  }
+
+  return (data || []).map((v: Record<string, unknown>) => ({
+    id: String(v.id),
+    name: String(v.name ?? ''),
+    address: String(v.address ?? ''),
+    city: String(v.city ?? ''),
+    country: String(v.country ?? ''),
+    latitude: v.latitude != null ? Number(v.latitude) : null,
+    longitude: v.longitude != null ? Number(v.longitude) : null,
+  }))
+}
+
+async function flagVenueDuplicatePair(
+  supabase: SupabaseClient,
+  pair: VenueDuplicatePair,
+  rule: AutomationRule,
+  existingFlagKeys: Set<string>,
+  allChanges: ProposedChange[],
+  dryRun: boolean,
+): Promise<void> {
+  const isHighSimilarity = pair.nameSimilarity >= 0.90
+  const classification = isHighSimilarity ? 'likely_duplicate' : 'possible_duplicate'
+
+  for (const venue of [pair.venueA, pair.venueB]) {
+    const other = venue === pair.venueA ? pair.venueB : pair.venueA
+    const flagKey = `${venue.id}:${rule.name}`
+    if (existingFlagKeys.has(flagKey)) continue
+
+    const reason = pair.matchType === 'same_address'
+      ? `Venue "${other.name}" (${other.id}) has the same address: ${pair.normalizedAddress} — ${classification} (name similarity ${(pair.nameSimilarity * 100).toFixed(0)}%)`
+      : `Venue "${other.name}" (${other.id}) has similar name on same street "${pair.street}" — name similarity ${(pair.nameSimilarity * 100).toFixed(0)}%`
+
+    if (!dryRun) {
+      await upsertModerationFlag(supabase, {
+        content_type: 'venues',
+        content_id: venue.id,
+        flag_type: 'DUPLICATE',
+        reason,
+        rule_id: rule.id,
+        rule_name: rule.name,
+        severity: 'warning',
+        details: {
+          match_type: pair.matchType,
+          classification,
+          other_venue_id: other.id,
+          other_venue_name: other.name,
+          name_similarity: pair.nameSimilarity,
+          normalized_address: pair.normalizedAddress,
+          street: pair.street,
+        },
+        suggested_action: isHighSimilarity ? 'review_merge' : 'review',
+        related_event_ids: [pair.venueA.id, pair.venueB.id],
+      })
+      existingFlagKeys.add(flagKey)
+    }
+
+    allChanges.push({
+      content_type: 'venues',
+      content_id: venue.id,
+      content_name: venue.name.slice(0, 100),
+      field_name: pair.matchType === 'same_address' ? 'address' : 'name',
+      old_value: null,
+      new_value: null,
+      change_type: 'flag',
+      confidence: 0.75,
+      reasoning: reason,
+      rule_id: rule.id,
+    })
+  }
 }

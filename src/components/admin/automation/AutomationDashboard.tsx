@@ -6,13 +6,16 @@
  */
 
 import React, { useState } from 'react';
+import { Link as RouterLink } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import MuiLink from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
-import { Activity, Clock, Settings, ScanSearch } from 'lucide-react';
+import { Activity, Clock, Settings, ScanSearch, LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutomation, type AutomationModule } from '@/hooks/useAutomation';
+import { LinkHealthDashboard } from '../LinkHealthDashboard';
 import { AutomationStats } from './AutomationStats';
 import { ModuleCard } from './ModuleCard';
 import { RunHistoryTable } from './RunHistoryTable';
@@ -20,10 +23,11 @@ import { ModuleSettingsDialog } from './ModuleSettingsDialog';
 
 // ── Tab Definitions ─────────────────────────────────────────────────────────────
 
-type Tab = 'overview' | 'history' | 'settings';
+type Tab = 'overview' | 'history' | 'links' | 'settings';
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
   { key: 'overview', label: 'Overview', icon: Activity },
   { key: 'history', label: 'History', icon: Clock },
+  { key: 'links', label: 'Link Health', icon: LinkIcon },
   { key: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -80,8 +84,10 @@ export function AutomationDashboard() {
             Automation Modules
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Configure and run automation pipelines — review pending changes in Review &amp;
-            Moderation
+            Configure and run automation pipelines — review pending changes in{' '}
+            <MuiLink component={RouterLink} to="/admin/review?tab=automation" underline="hover">
+              Review &amp; Moderation
+            </MuiLink>
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -167,6 +173,8 @@ export function AutomationDashboard() {
       )}
 
       {activeTab === 'history' && <RunHistoryTable runs={runHistory} modules={modules} />}
+
+      {activeTab === 'links' && <LinkHealthDashboard embedded />}
 
       {activeTab === 'settings' && (
         <SettingsTab

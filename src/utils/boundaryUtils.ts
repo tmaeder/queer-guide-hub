@@ -15,7 +15,7 @@ import type { MapMarker } from '@/hooks/useExploreMapData';
  * - 'code': match GeoJSON feature property (matchKey) against marker.meta.code (countries)
  * - 'entityId': match GeoJSON feature property (matchKey) against marker.id (cities, villages)
  */
-type MatchMode = 'code' | 'entityId';
+export type MatchMode = 'code' | 'entityId';
 
 export function enrichBoundaryFeatures(
   boundaries: GeoJSON.FeatureCollection,

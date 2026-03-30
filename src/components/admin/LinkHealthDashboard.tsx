@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
+import { Link as RouterLink } from 'react-router';
 import {
   Link2, AlertTriangle, CheckCircle, Clock, ArrowRight, RefreshCw,
   ExternalLink, MoreVertical, Pencil, Trash2, EyeOff, RotateCcw, Search,
-  ShieldCheck, ShieldAlert, ShieldQuestion, Scan,
+  ShieldCheck, ShieldAlert, ShieldQuestion, Scan, Zap, Flag,
 } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -18,6 +19,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContentLinks, type ContentLink } from '@/hooks/useContentLinks';
@@ -48,13 +50,27 @@ const CONTENT_TYPES = ['all', 'venues', 'events', 'hotels', 'festivals', 'news_a
 
 const STAT_KEYS = ['total', 'ok', 'broken', 'redirect', 'pending', 'timeout', 'dismissed', 'auto_removed', 'malicious', 'suspicious'] as const;
 
-export function LinkHealthDashboard() {
+export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
   const {
     links, stats, loading, fetchLinks, fetchStats,
     deleteLink, deleteBulk, dismissLink, dismissBulk,
     recheckLink, recheckBulk, validateLinks, updateSourceUrl, applyRedirect, applyRedirectBulk,
     scanLink, scanBulk, scanBatch,
   } = useContentLinks();
+
+  // Pending broken_link flags from automation system
+  const { data: autoFlagCount = 0 } = useQuery({
+    queryKey: ['broken-link-flags-count'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('content_flags' as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+        .eq('flag_type', 'broken_link');
+      return count ?? 0;
+    },
+    staleTime: 60_000,
+  });
 
   const [statusFilter, setStatusFilter] = useState('BROKEN');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -302,14 +318,34 @@ export function LinkHealthDashboard() {
   };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link2 style={{ width: 24, height: 24 }} />
-          Link Health
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+    <Box sx={embedded ? {} : { p: 3, maxWidth: 1200, mx: 'auto' }}>
+      {/* Header — hidden when embedded as a tab */}
+      {!embedded && (
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+          <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Link2 style={{ width: 24, height: 24 }} />
+            Link Health
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button variant="outline" size="sm" onClick={triggerSync} disabled={syncing}>
+              <RefreshCw className={`w-4 h-4 mr-1 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing...' : 'Sync Links'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={triggerValidation} disabled={validating}>
+              <CheckCircle className={`w-4 h-4 mr-1 ${validating ? 'animate-spin' : ''}`} />
+              {validating ? 'Checking...' : 'Validate Now'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={triggerDeepScan} disabled={scanning}>
+              <Scan className={`w-4 h-4 mr-1 ${scanning ? 'animate-spin' : ''}`} />
+              {scanning ? 'Scanning...' : 'Deep Scan'}
+            </Button>
+          </Box>
+        </Box>
+      )}
+
+      {/* Action buttons when embedded */}
+      {embedded && (
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           <Button variant="outline" size="sm" onClick={triggerSync} disabled={syncing}>
             <RefreshCw className={`w-4 h-4 mr-1 ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? 'Syncing...' : 'Sync Links'}
@@ -323,7 +359,35 @@ export function LinkHealthDashboard() {
             {scanning ? 'Scanning...' : 'Deep Scan'}
           </Button>
         </Box>
+      )}
+
+      {/* Cross-navigation: Link Sanitizer + Automation flags — hidden when embedded */}
+      {!embedded && (
+      <Box sx={{ display: 'flex', gap: 1.5, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+        <Chip
+          component={RouterLink}
+          to="/admin/automation"
+          icon={<Zap style={{ width: 14, height: 14 }} />}
+          label="Configure Link Sanitizer"
+          variant="outlined"
+          size="small"
+          clickable
+          sx={{ fontSize: '0.75rem' }}
+        />
+        {autoFlagCount > 0 && (
+          <Chip
+            component={RouterLink}
+            to="/admin/review?tab=automation"
+            icon={<Flag style={{ width: 14, height: 14 }} />}
+            label={`${autoFlagCount} automation flag${autoFlagCount !== 1 ? 's' : ''} pending`}
+            color="warning"
+            size="small"
+            clickable
+            sx={{ fontSize: '0.75rem' }}
+          />
+        )}
       </Box>
+      )}
 
       {/* Stats Cards */}
       {stats && (

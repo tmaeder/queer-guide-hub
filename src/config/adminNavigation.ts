@@ -1,6 +1,6 @@
 /**
  * Admin Navigation Configuration
- * Simplified 4-section layout: Cockpit, Content, Import & Review, System.
+ * Simplified 4-section layout: Cockpit, Content, Import & Review, System (Review & Moderation merged into Import & Review).
  * Central config for the unified admin sidebar. Each section groups related nav items.
  * Used by AdminSidebar to render the navigation tree.
  */
@@ -30,9 +30,7 @@ import {
   Key,
   Mail,
   Link2,
-  LinkIcon,
   Handshake,
-  Inbox,
   Workflow,
   Zap,
   Hotel,
@@ -305,61 +303,6 @@ export const adminNavSections: AdminNavSection[] = [
     ],
   },
 
-  // ── Review & Workflow ──────────────────────────────────────────
-  {
-    id: 'review',
-    label: 'Review & Moderation',
-    icon: ClipboardCheck,
-    color: '#f59e0b',
-    items: [
-      {
-        id: 'automation',
-        label: 'Automation Modules',
-        icon: Zap,
-        route: '/admin/automation',
-        adminOnly: true,
-        color: '#8b5cf6',
-      },
-      {
-        id: 'review-queue',
-        label: 'Review & Moderation',
-        icon: ClipboardCheck,
-        route: '/admin/review',
-        color: '#f59e0b',
-      },
-      {
-        id: 'audit-log',
-        label: 'Audit Log',
-        icon: History,
-        route: '/admin/audit',
-        color: '#6366f1',
-      },
-      {
-        id: 'link-health',
-        label: 'Link Health',
-        icon: LinkIcon,
-        route: '/admin/links',
-        countTable: 'content_links',
-        color: '#0ea5e9',
-      },
-      {
-        id: 'audit-log',
-        label: 'Audit Log',
-        icon: History,
-        route: '/admin/audit',
-        color: '#6366f1',
-      },
-      {
-        id: 'submissions',
-        label: 'Submissions',
-        icon: Inbox,
-        route: '/admin/submissions',
-        countTable: 'community_submissions',
-        color: '#3b82f6',
-      },
-    ],
-  },
-
   // ── System (admin-only) ─────────────────────────────────────────
   {
     id: 'system',
@@ -402,22 +345,6 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#f59e0b',
       },
       {
-        id: 'automation',
-        label: 'Automation',
-        icon: Zap,
-        route: '/admin/automation',
-        adminOnly: true,
-        color: '#f59e0b',
-      },
-      {
-        id: 'workflows',
-        label: 'Workflows',
-        icon: Workflow,
-        route: '/admin/workflows',
-        adminOnly: true,
-        color: '#8b5cf6',
-      },
-      {
         id: 'affiliates',
         label: 'Affiliates',
         icon: Handshake,
@@ -449,6 +376,14 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/email-templates',
         adminOnly: true,
         color: '#64748b',
+      },
+      {
+        id: 'audit-log',
+        label: 'Audit Log',
+        icon: History,
+        route: '/admin/audit',
+        adminOnly: true,
+        color: '#6366f1',
       },
       {
         id: 'settings',
