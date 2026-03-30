@@ -70,7 +70,10 @@ export const WebScrapersPanel = () => {
     try {
       const res = await fetch(`${SCRAPER_API}/run`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Scraper-Secret': import.meta.env.VITE_SCRAPER_SECRET ?? '',
+        },
         body: JSON.stringify({ source }),
       });
       const data = await res.json();
