@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
+import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { EventCard } from '@/components/events/EventCard';
 import { EventsCalendarView } from '@/components/events/EventsCalendarView';
 import { TagSelector } from '@/components/tags/TagSelector';
@@ -106,6 +107,8 @@ const Events = () => {
     lng: number;
   } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [autoLocationLabel, setAutoLocationLabel] = useState<string | null>(null);
+  const { location: visitorLocation } = useVisitorLocation();
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -186,6 +189,7 @@ const Events = () => {
   const clearFilters = async () => {
     setSearch('');
     setCity('');
+    setAutoLocationLabel(null);
     setEventType('all');
     setSelectedTags([]);
     setStartDate(undefined);
@@ -243,19 +247,22 @@ const Events = () => {
   };
   const hasActiveFilters =
     search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe;
+  const autoInitDone = useRef(false);
   useEffect(() => {
-    (async () => {
-      setPage(1);
-      setAutoLoadedCount(0);
-      await fetchEvents(
-        {},
-        {
-          page: 1,
-          pageSize: PAGE_SIZE,
-          append: false,
-        },
-      );
-    })();
+    if (autoInitDone.current) return;
+    autoInitDone.current = true;
+    setPage(1);
+    setAutoLoadedCount(0);
+    const cityName = visitorLocation?.city;
+    if (cityName) {
+      setCity(cityName);
+      setAutoLocationLabel(cityName);
+      fetchEvents({ city: cityName }, { page: 1, pageSize: PAGE_SIZE, append: false });
+    } else {
+      fetchEvents({}, { page: 1, pageSize: PAGE_SIZE, append: false });
+    }
+  // run once on mount; visitorLocation may not yet be available but that is fine — user can still see all events
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -595,11 +602,12 @@ const Events = () => {
                 </Badge>
               )}
               {city && (
-                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
-                  City: {city}
+                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
+                  {autoLocationLabel === city && <MapPin style={{ width: 10, height: 10 }} />}
+                  {autoLocationLabel === city ? `Near you: ${city}` : `City: ${city}`}
                   <X
                     style={{ width: 12, height: 12, cursor: 'pointer' }}
-                    onClick={() => setCity('')}
+                    onClick={() => { setCity(''); setAutoLocationLabel(null); }}
                   />
                 </Badge>
               )}
