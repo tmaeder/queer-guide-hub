@@ -13,7 +13,6 @@ import '@xyflow/react/dist/style.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Save, Play, PlayCircle, BarChart3 } from 'lucide-react';
 import * as Icons from 'lucide-react';
@@ -135,22 +134,22 @@ function PipelineBuilderInner() {
   return (
     <div ref={containerRef} style={{ display: 'flex', height: containerHeight, overflow: 'hidden', margin: '-16px -24px' }}>
       {/* Sidebar — Node Palette */}
-      <div style={{ width: 256, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb', background: '#fafafa', overflow: 'hidden' }}>
-        <div className="p-3 border-b">
-          <h3 className="font-semibold text-sm">Node Palette</h3>
-          <p className="text-xs text-muted-foreground mt-1">Drag nodes onto the canvas</p>
+      <div style={{ width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb', background: '#fafafa', overflow: 'hidden' }}>
+        <div style={{ padding: '10px 12px', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ fontWeight: 600, fontSize: 13 }}>Node Palette</div>
+          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Drag nodes onto the canvas</div>
         </div>
-        <ScrollArea className="flex-1">
-          <div className="p-2 space-y-3">
+        <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {categoryOrder.map(cat => {
               const types = nodeTypesByCategory[cat];
               if (!types || types.length === 0) return null;
               return (
                 <div key={cat}>
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 mb-1">
+                  <div style={{ fontSize: 10, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 8px', marginBottom: 4 }}>
                     {categoryLabels[cat] || cat}
                   </div>
-                  <div className="space-y-1">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {types.map(nt => {
                       const Icon = (Icons as Record<string, unknown>)[nt.icon] as React.ComponentType<{ className?: string }> || Icons.Box;
                       return (
@@ -174,7 +173,7 @@ function PipelineBuilderInner() {
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Main Canvas Area */}
