@@ -16,8 +16,8 @@
 .aurora-layer-1 {
   background: radial-gradient(
     ellipse 80% 60% at 20% 50%,
-    rgba(244, 114, 182, 0.07) 0%,
-    rgba(251, 191, 36, 0.04) 40%,
+    rgba(244, 114, 182, 0.22) 0%,
+    rgba(251, 191, 36, 0.12) 40%,
     transparent 70%
   );
   animation: aurora-drift-1 45s ease-in-out infinite, aurora-fade-in 2s ease-out forwards;
@@ -27,8 +27,8 @@
 .aurora-layer-2 {
   background: radial-gradient(
     ellipse 70% 50% at 80% 40%,
-    rgba(96, 165, 250, 0.06) 0%,
-    rgba(52, 211, 153, 0.04) 40%,
+    rgba(96, 165, 250, 0.20) 0%,
+    rgba(52, 211, 153, 0.10) 40%,
     transparent 70%
   );
   animation: aurora-drift-2 55s ease-in-out infinite, aurora-fade-in 2s ease-out 0.3s forwards;
@@ -38,8 +38,8 @@
 .aurora-layer-3 {
   background: radial-gradient(
     ellipse 60% 40% at 50% 30%,
-    rgba(167, 139, 250, 0.05) 0%,
-    rgba(219, 39, 119, 0.03) 40%,
+    rgba(167, 139, 250, 0.18) 0%,
+    rgba(219, 39, 119, 0.10) 40%,
     transparent 65%
   );
   animation: aurora-drift-3 65s ease-in-out infinite, aurora-fade-in 2s ease-out 0.6s forwards;
@@ -70,12 +70,12 @@
   66% { transform: translate(-5%, 5%) scale(1.04); }
 }
 
-/* Dark mode: slightly brighter aurora to show against dark bg */
+/* Dark mode: brighter aurora against dark bg */
 .dark .aurora-layer-1 {
   background: radial-gradient(
     ellipse 80% 60% at 20% 50%,
-    rgba(244, 114, 182, 0.1) 0%,
-    rgba(251, 191, 36, 0.06) 40%,
+    rgba(244, 114, 182, 0.28) 0%,
+    rgba(251, 191, 36, 0.15) 40%,
     transparent 70%
   );
 }
@@ -83,8 +83,8 @@
 .dark .aurora-layer-2 {
   background: radial-gradient(
     ellipse 70% 50% at 80% 40%,
-    rgba(96, 165, 250, 0.09) 0%,
-    rgba(52, 211, 153, 0.05) 40%,
+    rgba(96, 165, 250, 0.25) 0%,
+    rgba(52, 211, 153, 0.12) 40%,
     transparent 70%
   );
 }
@@ -92,8 +92,8 @@
 .dark .aurora-layer-3 {
   background: radial-gradient(
     ellipse 60% 40% at 50% 30%,
-    rgba(167, 139, 250, 0.08) 0%,
-    rgba(219, 39, 119, 0.05) 40%,
+    rgba(167, 139, 250, 0.22) 0%,
+    rgba(219, 39, 119, 0.12) 40%,
     transparent 65%
   );
 }
