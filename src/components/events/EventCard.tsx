@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -86,165 +86,80 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
   };
 
   return (
-    <Card
-      sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        bgcolor: 'background.paper',
-        transition: 'all 0.3s',
-        '&:hover': { transform: 'translateY(-2px)', boxShadow: 6 },
-      }}
-    >
-      {/* Background Pattern */}
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          bgcolor: 'primary.main',
-          opacity: 0,
-          transition: 'opacity 0.5s',
-          '.group:hover &': { opacity: 0.02 },
-        }}
-      />
-
-      {/* Event Images */}
-      {event.images && event.images.length > 0 ? (
-        <Box sx={{ position: 'relative', height: 224, overflow: 'hidden' }}>
-          <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.2)', zIndex: 10 }} />
-          <Box
-            component="img"
-            src={event.images[0]}
-            alt={event.title}
-            sx={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              transition: 'transform 0.7s',
-              '&:hover': { transform: 'scale(1.1)' },
-            }}
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-
-          {/* Image Overlay Content */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 16,
-              left: 16,
-              right: 16,
-              zIndex: 20,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-            }}
-          >
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {event.featured && (
-                <Badge sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
-                  <Star style={{ height: 12, width: 12, marginRight: 4 }} />
-                  Featured
-                </Badge>
-              )}
-              <Badge style={{ ...getEventTypeStyle(event.event_type) }}>{event.event_type}</Badge>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {event.images.length > 1 && (
-                <Badge variant="secondary" sx={{ bgcolor: 'action.hover', color: 'text.primary' }}>
-                  +{event.images.length - 1} photos
-                </Badge>
-              )}
-            </Box>
-          </Box>
-
-          {/* Price Badge */}
-          <Box sx={{ position: 'absolute', bottom: 16, right: 16, zIndex: 20 }}>
-            {event.is_free ? (
-              <Badge
-                sx={{
-                  bgcolor: 'success.main',
-                  color: 'success.contrastText',
-                  fontSize: '0.875rem',
-                  px: 1.5,
-                  py: 0.5,
-                }}
-              >
-                <Ticket style={{ height: 12, width: 12, marginRight: 4 }} />
-                Free
-              </Badge>
-            ) : (
-              <Badge
-                variant="secondary"
-                sx={{
-                  bgcolor: 'action.hover',
-                  color: 'text.primary',
-                  fontSize: '0.875rem',
-                  px: 1.5,
-                  py: 0.5,
-                }}
-              >
-                <DollarSign style={{ height: 12, width: 12, marginRight: 4 }} />
-                {getPriceDisplay()}
-              </Badge>
-            )}
-          </Box>
-        </Box>
-      ) : (
+    <Link to={`/events/${event.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Card hoverable>
+      <CardImage
+        src={event.images?.[0]}
+        alt={event.title}
+        fallbackIcon={Calendar}
+        height={200}
+      >
+        {/* Overlay Badges */}
         <Box
           sx={{
-            position: 'relative',
-            height: 224,
-            bgcolor: 'grey.100',
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            right: 16,
+            zIndex: 20,
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
           }}
         >
-          <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Box
-              sx={{
-                width: 64,
-                height: 64,
-                mx: 'auto',
-                bgcolor: 'grey.200',
-                borderRadius: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Calendar style={{ height: 32, width: 32, color: '#666666' }} />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-              {event.featured && (
-                <Badge sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
-                  <Star style={{ height: 12, width: 12, marginRight: 4 }} />
-                  Featured
-                </Badge>
-              )}
-              <Badge style={getEventTypeStyle(event.event_type)}>{event.event_type}</Badge>
-            </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {event.featured && (
+              <Badge sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+                Featured
+              </Badge>
+            )}
+            <Badge style={{ ...getEventTypeStyle(event.event_type) }}>{event.event_type}</Badge>
           </Box>
 
-          <Box sx={{ position: 'absolute', bottom: 16, right: 16 }}>
-            {event.is_free ? (
-              <Badge sx={{ bgcolor: 'success.main', color: 'success.contrastText' }}>
-                <Ticket style={{ height: 12, width: 12, marginRight: 4 }} />
-                Free
-              </Badge>
-            ) : (
-              <Badge variant="outline" sx={{ bgcolor: 'background.default' }}>
-                <DollarSign style={{ height: 12, width: 12, marginRight: 4 }} />
-                {getPriceDisplay()}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {event.images && event.images.length > 1 && (
+              <Badge variant="secondary" sx={{ bgcolor: 'action.hover', color: 'text.primary' }}>
+                +{event.images.length - 1} photos
               </Badge>
             )}
           </Box>
         </Box>
-      )}
 
-      <CardHeader sx={{ position: 'relative', zIndex: 10, pb: 2 }}>
+        {/* Price Badge */}
+        <Box sx={{ position: 'absolute', bottom: 16, right: 16, zIndex: 20 }}>
+          {event.is_free ? (
+            <Badge
+              sx={{
+                bgcolor: 'success.main',
+                color: 'success.contrastText',
+                fontSize: '0.875rem',
+                px: 1.5,
+                py: 0.5,
+              }}
+            >
+              <Ticket style={{ height: 12, width: 12, marginRight: 4 }} />
+              Free
+            </Badge>
+          ) : (
+            <Badge
+              variant="secondary"
+              sx={{
+                bgcolor: 'action.hover',
+                color: 'text.primary',
+                fontSize: '0.875rem',
+                px: 1.5,
+                py: 0.5,
+              }}
+            >
+              <DollarSign style={{ height: 12, width: 12, marginRight: 4 }} />
+              {getPriceDisplay()}
+            </Badge>
+          )}
+        </Box>
+      </CardImage>
+
+      <CardHeader sx={{ pb: 2 }}>
         <CardTitle
           sx={{
             fontSize: '1.25rem',
@@ -301,8 +216,6 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
 
       <CardContent
         sx={{
-          position: 'relative',
-          zIndex: 10,
           display: 'flex',
           flexDirection: 'column',
           gap: 2,
@@ -389,27 +302,27 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
             )}
           </Box>
 
-          <FavoriteButton itemId={event.id} type="event" />
+          <Box onClick={(e) => e.preventDefault()}>
+            <FavoriteButton itemId={event.id} type="event" />
+          </Box>
         </Box>
 
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 1, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Link to={`/events/${event.id}`} style={{ flex: 1 }}>
-            <Button
-              size="sm"
-              variant="outline"
-              sx={{
-                width: '100%',
-                transition: 'all 0.3s',
-                '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' },
-              }}
-            >
-              <Eye
-                style={{ height: 16, width: 16, marginRight: 8, transition: 'transform 0.2s' }}
-              />
-              View Details
-            </Button>
-          </Link>
+          <Button
+            size="sm"
+            variant="outline"
+            sx={{
+              flex: 1,
+              transition: 'all 0.3s',
+              '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' },
+            }}
+          >
+            <Eye
+              style={{ height: 16, width: 16, marginRight: 8 }}
+            />
+            View Details
+          </Button>
 
           {/* External Links */}
           <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -424,7 +337,7 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
                   href={event.venues.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); window.open(event.venues!.website!, '_blank'); }}
                 >
                   <ExternalLink style={{ height: 16, width: 16 }} />
                 </a>
@@ -438,10 +351,10 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
                 asChild
               >
                 <a
-                  href={event.ticket_url}
+                  href={event.ticket_url!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); window.open(event.ticket_url!, '_blank'); }}
                 >
                   <Ticket style={{ height: 16, width: 16 }} />
                 </a>
@@ -464,6 +377,7 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
               }}
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 onUpdateAttendance(event.id, 'going');
               }}
             >
@@ -476,6 +390,7 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
               sx={{ flex: 1, '&:hover': { opacity: 0.9 } }}
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 onUpdateAttendance(event.id, 'interested');
               }}
             >
@@ -497,19 +412,7 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
         )}
       </CardContent>
 
-      {/* Hover Glow Effect */}
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          borderRadius: 2,
-          bgcolor: 'primary.main',
-          opacity: 0,
-          transition: 'opacity 0.5s',
-          pointerEvents: 'none',
-          '&:hover': { opacity: 0.05 },
-        }}
-      />
     </Card>
+    </Link>
   );
 });

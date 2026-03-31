@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 import { Plane, TrendingUp } from 'lucide-react';
 import { FlightSearchForm } from '@/components/travel/FlightSearchForm';
 import { TravelDealCard } from '@/components/travel/TravelDealCard';
@@ -13,6 +14,7 @@ import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 
 export default function Travel() {
+  const theme = useTheme();
   const [searchParams] = useSearchParams();
   const initialTo = searchParams.get('to') || undefined;
 
@@ -63,7 +65,7 @@ export default function Travel() {
       {/* Popular Deals */}
       <Paper variant="outlined" sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <TrendingUp style={{ height: 20, width: 20, color: '#7c3aed' }} />
+          <TrendingUp style={{ height: 20, width: 20, color: theme.palette.brand.main }} />
           <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
             {originCity ? `Popular Deals from ${originCity}` : 'Popular Flight Deals'}
           </Typography>

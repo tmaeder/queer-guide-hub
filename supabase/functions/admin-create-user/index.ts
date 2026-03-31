@@ -95,6 +95,6 @@ serve(async (req) => {
     );
   } catch (err) {
     console.error("admin-create-user error:", err);
-    return errorResponse(err.message ?? "Internal error", 500, req);
+    return errorResponse("Internal server error", 500, req);
   }
 });

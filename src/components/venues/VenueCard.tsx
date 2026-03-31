@@ -1,14 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardImage, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Star, MapPin, Phone, Globe, Instagram, Eye } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { VenueEvents } from './VenueEvents';
 import { Link } from 'react-router';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
@@ -60,55 +58,15 @@ export function VenueCard({
       to={`/venues/${venue.id}`}
       style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
     >
-      <Paper
-        elevation={2}
-        sx={{
-          overflow: 'hidden',
-          transition: 'all 0.3s',
-          cursor: 'pointer',
-          '&:hover': {
-            boxShadow: 8,
-            transform: 'translateY(-4px)',
-          },
-        }}
-      >
-        {/* Venue Image */}
-        {venue.images && venue.images.length > 0 ? (
-          <Box sx={{ position: 'relative', height: 192, overflow: 'hidden' }}>
-            <Box
-              component="img"
-              src={venue.images[0]}
-              alt={venue.name}
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                transition: 'transform 0.3s',
-                '&:hover': { transform: 'scale(1.05)' },
-              }}
-              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              height: 192,
-              bgcolor: 'action.hover',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <MapPin style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
-          </Box>
-        )}
+      <Card hoverable style={{ overflow: 'hidden' }}>
+        <CardImage
+          src={venue.images?.[0]}
+          alt={venue.name}
+          fallbackIcon={MapPin}
+        />
 
         <Box sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            {/* Title and Category */}
             <Box
               sx={{
                 display: 'flex',
@@ -119,12 +77,7 @@ export function VenueCard({
             >
               <Typography
                 variant="subtitle1"
-                sx={{
-                  fontWeight: 600,
-                  lineHeight: 1.2,
-                  transition: 'color 0.2s',
-                  '&:hover': { color: 'primary.main' },
-                }}
+                sx={{ fontWeight: 600, lineHeight: 1.2 }}
               >
                 {venue.name}
               </Typography>
@@ -133,7 +86,6 @@ export function VenueCard({
               </Badge>
             </Box>
 
-            {/* Location */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
               <MapPin style={{ width: 16, height: 16 }} />
               <Typography variant="body2">
@@ -141,7 +93,6 @@ export function VenueCard({
               </Typography>
             </Box>
 
-            {/* Tags (max 2) */}
             {venue.tags && venue.tags.length > 0 && (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                 {venue.tags.slice(0, 2).map((tag, index) => (
@@ -162,7 +113,6 @@ export function VenueCard({
               </Box>
             )}
 
-            {/* Actions */}
             <Box
               sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}
             >
@@ -170,7 +120,7 @@ export function VenueCard({
             </Box>
           </Box>
         </Box>
-      </Paper>
+      </Card>
     </Link>
   );
 }

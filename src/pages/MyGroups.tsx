@@ -190,8 +190,9 @@ export default function MyGroups() {
           searchQuery ? (
             <EmptyState
               icon={Search}
-              title="No groups found"
-              description="Try adjusting your search query"
+              title="You haven't joined any groups yet"
+              description="Explore groups and find your people."
+              mood="encouraging"
             />
           ) : (
             <Card>

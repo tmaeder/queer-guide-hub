@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from 'lucide-react';
+import { MapPin, Users, Globe, Building2, Crown } from 'lucide-react';
 import type {
   CountryWithRegions as Country,
   CityWithCountry as City,
@@ -241,121 +241,23 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   };
 
   const cardContent = (
-    <Card style={{ cursor: 'pointer', transition: 'all 0.2s', ...(onClick ? {} : {}) }}>
-      {/* Country Image */}
+    <Card hoverable>
       {type === 'country' && (
-        <Box
-          sx={{
-            aspectRatio: '4/3',
-            width: '100%',
-            overflow: 'hidden',
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-            bgcolor: 'action.hover',
-          }}
-        >
-          {imageLoading && !countryImage ? (
-            <Box
-              sx={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Box
-                sx={{
-                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                  bgcolor: 'rgba(var(--muted-foreground-rgb, 107, 114, 128), 0.2)',
-                  width: '100%',
-                  height: '100%',
-                }}
-              />
-            </Box>
-          ) : countryImage ? (
-            <img
-              src={countryImage}
-              alt={`${name} landscape`}
-              loading="lazy"
-              width={400}
-              height={300}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          ) : (
-            <Box
-              sx={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Globe style={{ height: 32, width: 32, color: 'var(--muted-foreground)' }} />
-            </Box>
-          )}
-        </Box>
+        <CardImage
+          src={countryImage}
+          alt={`${name} landscape`}
+          fallbackIcon={Globe}
+          height={200}
+        />
       )}
 
-      {/* City Image */}
       {type === 'city' && (
-        <Box
-          sx={{
-            aspectRatio: '4/3',
-            width: '100%',
-            overflow: 'hidden',
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-            bgcolor: 'action.hover',
-          }}
-        >
-          {cityImageLoading ? (
-            <Box
-              sx={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Loader2
-                style={{
-                  height: 24,
-                  width: 24,
-                  animation: 'spin 1s linear infinite',
-                  color: 'var(--muted-foreground)',
-                }}
-              />
-            </Box>
-          ) : cityImageUrl && !cityImageError ? (
-            <img
-              src={cityImageUrl}
-              alt={`${name} cityscape`}
-              loading="lazy"
-              width={400}
-              height={300}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              onError={() => setCityImageError(true)}
-            />
-          ) : (
-            <Box
-              sx={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ImageIcon style={{ height: 32, width: 32, color: 'var(--muted-foreground)' }} />
-            </Box>
-          )}
-        </Box>
+        <CardImage
+          src={cityImageUrl && !cityImageError ? cityImageUrl : null}
+          alt={`${name} cityscape`}
+          fallbackIcon={Building2}
+          height={200}
+        />
       )}
 
       <CardHeader

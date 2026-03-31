@@ -1,4 +1,17 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// DEPRECATED: Use source-ilga adapter via pipeline-executor instead.
+// This function is a duplicate of import-ilga-data and has been stubbed.
+
+Deno.serve((_req) => {
+  return new Response(JSON.stringify({
+    error: 'Gone',
+    message: 'fetch-ilga-data is deprecated. Use source-ilga via the pipeline engine instead.',
+    replacement: 'POST /functions/v1/source-ilga',
+  }), { status: 410, headers: { 'Content-Type': 'application/json' } })
+})
+
+// Original code below is preserved for reference but unreachable.
+// ------------------------------------------------------------------
+
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
 
 interface LGBTJurisdiction {

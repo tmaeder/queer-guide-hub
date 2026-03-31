@@ -3,12 +3,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 import { LucideIcon } from 'lucide-react';
 
 interface EmptyStateAction {
   label: string;
   onClick: () => void;
-  variant?: 'default' | 'outline' | 'ghost';
+  variant?: 'default' | 'outline' | 'ghost' | 'brand';
 }
 
 interface EmptyStateProps {
@@ -17,6 +18,7 @@ interface EmptyStateProps {
   description: string;
   primaryAction?: EmptyStateAction;
   secondaryAction?: EmptyStateAction;
+  mood?: 'neutral' | 'encouraging' | 'playful';
   /** Optional custom content below the description (e.g., dialog triggers) */
   children?: React.ReactNode;
 }
@@ -27,19 +29,40 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   description,
   primaryAction,
   secondaryAction,
+  mood = 'neutral',
   children,
 }) => {
+  const theme = useTheme();
+  const brandColor = theme.palette.brand?.main || '#DB2777';
+
+  const iconOpacity = mood === 'playful' ? 0.7 : mood === 'encouraging' ? 0.55 : 0.4;
+  const bgOpacity = mood === 'playful' ? '18' : mood === 'encouraging' ? '12' : '0a';
+
   return (
     <Card>
       <CardContent sx={{ p: 6, textAlign: 'center' }}>
-        <Icon
-          style={{
-            width: 48,
-            height: 48,
-            margin: '0 auto 16px',
-            color: '#999999',
+        <Box
+          sx={{
+            width: 72,
+            height: 72,
+            borderRadius: '50%',
+            bgcolor: `${brandColor}${bgOpacity}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mx: 'auto',
+            mb: 2.5,
           }}
-        />
+        >
+          <Icon
+            style={{
+              width: 32,
+              height: 32,
+              color: brandColor,
+              opacity: iconOpacity,
+            }}
+          />
+        </Box>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
           {title}
         </Typography>
@@ -116,7 +139,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   return (
     <Card>
       <CardContent sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="body1" sx={{ mb: 2, color: '#d32f2f' }}>
+        <Typography variant="body1" color="error.main" sx={{ mb: 2 }}>
           {message}
         </Typography>
         {onRetry && (

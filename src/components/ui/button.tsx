@@ -4,7 +4,7 @@ import MuiIconButton from "@mui/material/IconButton"
 import { Slot } from "@radix-ui/react-slot"
 
 // Variant mapping: shadcn → MUI
-type ShadcnVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+type ShadcnVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand";
 type ShadcnSize = "default" | "sm" | "lg" | "icon";
 
 export interface ButtonProps
@@ -31,6 +31,8 @@ function mapVariantToMui(variant: ShadcnVariant = "default"): {
       return { muiVariant: "text", muiColor: "inherit" };
     case "link":
       return { muiVariant: "text", muiColor: "primary" };
+    case "brand":
+      return { muiVariant: "contained", muiColor: "brand" as any };
     default:
       return { muiVariant: "contained", muiColor: "primary" };
   }

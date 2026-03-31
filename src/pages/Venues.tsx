@@ -314,8 +314,9 @@ const Venues = () => {
               {!loading && !error && venues.length === 0 && (
                 <EmptyState
                   icon={MapPin}
-                  title="No venues found"
-                  description="We couldn't find any venues matching your criteria. Try adjusting your filters or be the first to submit a venue in this area!"
+                  title="No spots match your vibe yet"
+                  description="Try widening your search or explore a different city."
+                  mood="encouraging"
                   primaryAction={{
                     label: 'Submit a Venue',
                     onClick: () => navigate('/submit/venue'),

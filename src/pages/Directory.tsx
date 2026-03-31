@@ -14,6 +14,7 @@ import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown } from "lucide-r
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import { useTheme } from '@mui/material/styles';
 
 // Lazy load the map component
 const ExploreMap = lazy(() => import("@/components/map/ExploreMap"));
@@ -21,6 +22,7 @@ const ExploreMap = lazy(() => import("@/components/map/ExploreMap"));
 type ViewMode = "overview" | "country" | "city" | "search";
 
 export default function Directory() {
+  const theme = useTheme();
   const { t } = useTranslation();
   const { countries, loading: countriesLoading } = useOptimizedCountries();
   const { cities, loading: citiesLoading } = useOptimizedCities();
@@ -354,7 +356,7 @@ export default function Directory() {
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                               <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover' }}>
-                                <Globe style={{ width: 20, height: 20, color: '#7c3aed' }} />
+                                <Globe style={{ width: 20, height: 20, color: theme.palette.brand.main }} />
                               </Box>
                               <Box>
                                 <Typography variant="h6" sx={{ fontWeight: 600 }}>{continent.name}</Typography>
@@ -432,7 +434,7 @@ export default function Directory() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover' }}>
-                              <Globe style={{ width: 20, height: 20, color: '#7c3aed' }} />
+                              <Globe style={{ width: 20, height: 20, color: theme.palette.brand.main }} />
                             </Box>
                             <Box>
                               <Typography variant="h6" sx={{ fontWeight: 600 }}>{continent.name}</Typography>

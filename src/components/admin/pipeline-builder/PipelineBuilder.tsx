@@ -1,0 +1,271 @@
+import { useCallback, useRef, useMemo, useState, useEffect } from 'react';
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  MiniMap,
+  ReactFlowProvider,
+  type DragEvent,
+  type Node,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Save, Play, PlayCircle, BarChart3 } from 'lucide-react';
+import * as Icons from 'lucide-react';
+import { useNavigate } from 'react-router';
+
+import BaseNode from './nodes/BaseNode';
+import NodeConfigPanel from './panels/NodeConfigPanel';
+import { usePipelineBuilder, usePipelineNodeTypes, type PipelineNodeType } from './hooks/usePipelineBuilder';
+import { usePipelineExecution } from './hooks/usePipelineExecution';
+
+const nodeTypes = { baseNode: BaseNode };
+
+const categoryLabels: Record<string, string> = {
+  source: 'Sources',
+  processor: 'Processors',
+  validator: 'Validators',
+  enricher: 'Enrichers',
+  output: 'Outputs',
+  control: 'Control',
+};
+
+const categoryOrder = ['source', 'processor', 'validator', 'enricher', 'output', 'control'];
+
+function PipelineBuilderInner() {
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { data: nodeTypeList } = usePipelineNodeTypes();
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
+
+  const {
+    nodes, edges, setNodes,
+    onNodesChange, onEdgesChange, onConnect,
+    addNode, pipelineName, setPipelineName,
+    save, isSaving, run, isRunning,
+    selectedNodeId, setSelectedNodeId,
+  } = usePipelineBuilder();
+
+  const { runStatus, clearOverlay } = usePipelineExecution(activeRunId, setNodes);
+
+  const selectedNode = useMemo(
+    () => nodes.find(n => n.id === selectedNodeId) || null,
+    [nodes, selectedNodeId]
+  );
+
+  const handleUpdateNode = useCallback((nodeId: string, data: Record<string, unknown>) => {
+    setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data } : n));
+  }, [setNodes]);
+
+  const handleRun = useCallback((opts?: { dryRun?: boolean }) => {
+    run(opts, {
+      onSuccess: (data: Record<string, unknown>) => {
+        if (data?.pipeline_run_id) {
+          setActiveRunId(data.pipeline_run_id as string);
+        }
+      },
+    } as any);
+  }, [run]);
+
+  const nodeTypesByCategory = useMemo(() => {
+    if (!nodeTypeList) return {};
+    const grouped: Record<string, PipelineNodeType[]> = {};
+    for (const nt of nodeTypeList) {
+      if (!grouped[nt.category]) grouped[nt.category] = [];
+      grouped[nt.category].push(nt);
+    }
+    return grouped;
+  }, [nodeTypeList]);
+
+  const onDragStart = useCallback((event: DragEvent<HTMLDivElement>, nodeType: PipelineNodeType) => {
+    event.dataTransfer.setData('application/pipeline-node', JSON.stringify(nodeType));
+    event.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const onDragOver = useCallback((event: DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event: DragEvent) => {
+      event.preventDefault();
+      const data = event.dataTransfer.getData('application/pipeline-node');
+      if (!data) return;
+
+      const nodeType = JSON.parse(data) as PipelineNodeType;
+      const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+      if (!bounds) return;
+
+      const position = {
+        x: event.clientX - bounds.left - 90,
+        y: event.clientY - bounds.top - 20,
+      };
+
+      addNode(nodeType, position);
+    },
+    [addNode]
+  );
+
+  const onNodeClick = useCallback((_: unknown, node: Node) => {
+    setSelectedNodeId(node.id);
+  }, [setSelectedNodeId]);
+
+  // Measure available height and lock the layout
+  const [containerHeight, setContainerHeight] = useState(600);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const measure = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerHeight(window.innerHeight - rect.top);
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  return (
+    <div ref={containerRef} style={{ display: 'flex', height: containerHeight, overflow: 'hidden', margin: '-16px -24px' }}>
+      {/* Sidebar — Node Palette */}
+      <div style={{ width: 256, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb', background: '#fafafa', overflow: 'hidden' }}>
+        <div className="p-3 border-b">
+          <h3 className="font-semibold text-sm">Node Palette</h3>
+          <p className="text-xs text-muted-foreground mt-1">Drag nodes onto the canvas</p>
+        </div>
+        <ScrollArea className="flex-1">
+          <div className="p-2 space-y-3">
+            {categoryOrder.map(cat => {
+              const types = nodeTypesByCategory[cat];
+              if (!types || types.length === 0) return null;
+              return (
+                <div key={cat}>
+                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 mb-1">
+                    {categoryLabels[cat] || cat}
+                  </div>
+                  <div className="space-y-1">
+                    {types.map(nt => {
+                      const Icon = (Icons as Record<string, unknown>)[nt.icon] as React.ComponentType<{ className?: string }> || Icons.Box;
+                      return (
+                        <div
+                          key={nt.slug}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-grab hover:bg-accent text-sm transition-colors"
+                          draggable
+                          onDragStart={(e) => onDragStart(e as unknown as DragEvent<HTMLDivElement>, nt)}
+                        >
+                          <div
+                            className="w-5 h-5 rounded flex items-center justify-center shrink-0"
+                            style={{ backgroundColor: `${nt.color}20`, color: nt.color }}
+                          >
+                            <Icon className="h-3 w-3" />
+                          </div>
+                          <span className="truncate">{nt.display_name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* Main Canvas Area */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+        {/* Toolbar */}
+        <div className="flex items-center gap-2 px-4 py-2 border-b bg-background">
+          <Input
+            value={pipelineName}
+            onChange={(e) => setPipelineName(e.target.value)}
+            placeholder="Pipeline name..."
+            className="w-64 h-8 text-sm"
+          />
+          <Separator orientation="vertical" className="h-6" />
+          <Button size="sm" variant="outline" onClick={() => save()} disabled={isSaving}>
+            <Save className="h-3.5 w-3.5 mr-1.5" />
+            {isSaving ? 'Saving...' : 'Save'}
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => handleRun({ dryRun: true })} disabled={isRunning}>
+            <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
+            Dry Run
+          </Button>
+          <Button size="sm" onClick={() => handleRun()} disabled={isRunning}>
+            <Play className="h-3.5 w-3.5 mr-1.5" />
+            {isRunning ? 'Starting...' : 'Run'}
+          </Button>
+          {activeRunId && runStatus && (
+            <Badge variant="outline" className={`text-xs ${runStatus === 'running' ? 'bg-blue-100 text-blue-700 animate-pulse' : runStatus === 'completed' ? 'bg-green-100 text-green-700' : runStatus === 'failed' ? 'bg-red-100 text-red-700' : ''}`}>
+              {runStatus}
+            </Badge>
+          )}
+          {activeRunId && runStatus && ['completed', 'failed', 'cancelled'].includes(runStatus) && (
+            <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setActiveRunId(null); clearOverlay(); }}>
+              Clear
+            </Button>
+          )}
+          <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+            <Badge variant="outline" className="text-xs">{nodes.length} nodes</Badge>
+            <Badge variant="outline" className="text-xs">{edges.length} edges</Badge>
+            <Separator orientation="vertical" className="h-4 mx-1" />
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/pipelines/dashboard')}>
+              <BarChart3 className="h-3 w-3 mr-1" /> Dashboard
+            </Button>
+          </div>
+        </div>
+
+        {/* React Flow Canvas */}
+        <div ref={reactFlowWrapper} style={{ flex: 1, minHeight: 0 }}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onDrop={onDrop as any}
+            onDragOver={onDragOver as any}
+            onNodeClick={onNodeClick as any}
+            onPaneClick={() => setSelectedNodeId(null)}
+            nodeTypes={nodeTypes}
+            fitView
+            defaultEdgeOptions={{ animated: true, style: { strokeWidth: 2 } }}
+            className="bg-muted/10"
+          >
+            <Background gap={16} size={1} />
+            <Controls />
+            <MiniMap
+              nodeStrokeWidth={2}
+              nodeColor={(node) => (node.data as Record<string, string>)?.color || '#6b7280'}
+              className="!bg-background !border"
+            />
+          </ReactFlow>
+        </div>
+      </div>
+
+      {/* Right Panel — Node Config */}
+      {selectedNode && nodeTypeList && (
+        <NodeConfigPanel
+          node={selectedNode}
+          nodeTypes={nodeTypeList}
+          onUpdate={handleUpdateNode}
+          onClose={() => setSelectedNodeId(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+export default function PipelineBuilder() {
+  return (
+    <ReactFlowProvider>
+      <PipelineBuilderInner />
+    </ReactFlowProvider>
+  );
+}

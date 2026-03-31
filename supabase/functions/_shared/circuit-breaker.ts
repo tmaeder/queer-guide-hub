@@ -1,0 +1,171 @@
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+
+// ============================================================
+// Circuit Breaker — protects against cascading external API failures
+// States: closed (normal) → open (blocked) → half_open (testing)
+// ============================================================
+
+interface CircuitState {
+  api_name: string
+  state: 'closed' | 'open' | 'half_open'
+  failure_count: number
+  success_count: number
+  open_until: string | null
+  threshold: number
+  reset_timeout_seconds: number
+}
+
+/**
+ * Check if an API circuit is open (blocked).
+ * Returns { allowed: true } if the API can be called,
+ * or { allowed: false, reason } if the circuit is open.
+ */
+export async function checkCircuit(
+  supabase: SupabaseClient,
+  apiName: string
+): Promise<{ allowed: boolean; reason?: string; state?: string }> {
+  const { data, error } = await supabase
+    .from('api_circuit_breakers')
+    .select('*')
+    .eq('api_name', apiName)
+    .single()
+
+  if (error || !data) {
+    // No circuit breaker configured — allow by default
+    return { allowed: true }
+  }
+
+  const cb = data as CircuitState
+
+  if (cb.state === 'closed') {
+    return { allowed: true, state: 'closed' }
+  }
+
+  if (cb.state === 'open') {
+    // Check if it's time to try half-open
+    if (cb.open_until && new Date(cb.open_until) <= new Date()) {
+      // Transition to half_open
+      await supabase
+        .from('api_circuit_breakers')
+        .update({ state: 'half_open', updated_at: new Date().toISOString() })
+        .eq('api_name', apiName)
+
+      return { allowed: true, state: 'half_open' }
+    }
+
+    return {
+      allowed: false,
+      state: 'open',
+      reason: `Circuit open for ${apiName} until ${cb.open_until}`,
+    }
+  }
+
+  // half_open — allow one test request
+  return { allowed: true, state: 'half_open' }
+}
+
+/**
+ * Record a successful API call. Resets failure count, closes circuit.
+ */
+export async function recordSuccess(
+  supabase: SupabaseClient,
+  apiName: string
+): Promise<void> {
+  await supabase
+    .from('api_circuit_breakers')
+    .update({
+      state: 'closed',
+      failure_count: 0,
+      success_count: supabase.rpc ? undefined : 0, // increment ideally
+      last_success_at: new Date().toISOString(),
+      open_until: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('api_name', apiName)
+
+  // Increment success_count
+  await supabase.rpc('increment_circuit_breaker_success', { p_api_name: apiName }).catch(() => {
+    // RPC may not exist yet — fallback to direct update
+    supabase
+      .from('api_circuit_breakers')
+      .select('success_count')
+      .eq('api_name', apiName)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          supabase
+            .from('api_circuit_breakers')
+            .update({ success_count: (data.success_count || 0) + 1 })
+            .eq('api_name', apiName)
+        }
+      })
+  })
+}
+
+/**
+ * Record a failed API call. Increments failure count.
+ * If threshold is exceeded, opens the circuit.
+ */
+export async function recordFailure(
+  supabase: SupabaseClient,
+  apiName: string,
+  errorMsg?: string
+): Promise<{ circuitOpened: boolean }> {
+  const { data } = await supabase
+    .from('api_circuit_breakers')
+    .select('failure_count, threshold, reset_timeout_seconds, state')
+    .eq('api_name', apiName)
+    .single()
+
+  if (!data) {
+    return { circuitOpened: false }
+  }
+
+  const newCount = (data.failure_count || 0) + 1
+  const shouldOpen = newCount >= data.threshold
+
+  const updates: Record<string, unknown> = {
+    failure_count: newCount,
+    last_failure_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  if (shouldOpen) {
+    const openUntil = new Date(Date.now() + data.reset_timeout_seconds * 1000)
+    updates.state = 'open'
+    updates.open_until = openUntil.toISOString()
+    console.warn(`[circuit-breaker] Opening circuit for ${apiName} until ${openUntil.toISOString()} (${newCount} failures, error: ${errorMsg})`)
+  }
+
+  await supabase
+    .from('api_circuit_breakers')
+    .update(updates)
+    .eq('api_name', apiName)
+
+  return { circuitOpened: shouldOpen }
+}
+
+/**
+ * Wrap an async API call with circuit breaker protection.
+ * Returns the result on success, or throws with circuit info on failure.
+ */
+export async function withCircuitBreaker<T>(
+  supabase: SupabaseClient,
+  apiName: string,
+  fn: () => Promise<T>
+): Promise<T> {
+  const check = await checkCircuit(supabase, apiName)
+  if (!check.allowed) {
+    throw new Error(`[circuit-breaker] ${check.reason}`)
+  }
+
+  try {
+    const result = await fn()
+    await recordSuccess(supabase, apiName)
+    return result
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    await recordFailure(supabase, apiName, msg)
+    throw error
+  }
+}

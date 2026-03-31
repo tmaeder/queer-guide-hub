@@ -282,11 +282,11 @@ describe('aviasalesUrl', () => {
   // ── Real-world routes (manual verification set) ──
   describe('real-world routes', () => {
     const routes = [
-      { origin: 'ZRH', dest: 'LON', date: '2026-03-11', expectedParams: 'ZRH1103LON1' },
-      { origin: 'ZRH', dest: 'BCN', date: '2026-05-09', expectedParams: 'ZRH0905BCN1' },
-      { origin: 'JFK', dest: 'LHR', date: '2026-07-04', expectedParams: 'JFK0407LHR1' },
-      { origin: 'BER', dest: 'IST', date: '2026-12-25', expectedParams: 'BER2512IST1' },
-      { origin: 'SFO', dest: 'NRT', date: '2026-08-15', expectedParams: 'SFO1508NRT1' },
+      { origin: 'ZRH', dest: 'LON', date: '2027-03-11', expectedParams: 'ZRH1103LON1' },
+      { origin: 'ZRH', dest: 'BCN', date: '2027-05-09', expectedParams: 'ZRH0905BCN1' },
+      { origin: 'JFK', dest: 'LHR', date: '2027-07-04', expectedParams: 'JFK0407LHR1' },
+      { origin: 'BER', dest: 'IST', date: '2027-12-25', expectedParams: 'BER2512IST1' },
+      { origin: 'SFO', dest: 'NRT', date: '2027-08-15', expectedParams: 'SFO1508NRT1' },
     ];
 
     routes.forEach(({ origin, dest, date, expectedParams }) => {

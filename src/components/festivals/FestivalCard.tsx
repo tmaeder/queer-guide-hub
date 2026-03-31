@@ -1,9 +1,9 @@
 import { Link } from 'react-router';
 import { Calendar, MapPin, Music } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardImage } from '@/components/ui/card';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import { format } from 'date-fns';
 import type { FestivalWithRelations } from '@/hooks/useFestivals';
@@ -38,27 +38,13 @@ export function FestivalCard({ festival }: FestivalCardProps) {
 
   return (
     <Link to={`/festivals/${festival.id}`} style={{ textDecoration: 'none' }}>
-      <Paper
-        elevation={0}
-        sx={{
-          border: 1,
-          borderColor: 'divider',
-          borderRadius: 2,
-          overflow: 'hidden',
-          transition: 'box-shadow 0.2s, transform 0.2s',
-          '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' },
-        }}
-      >
-        {heroImage && (
-          <Box sx={{ height: 160, overflow: 'hidden' }}>
-            <img
-              loading="lazy"
-              src={heroImage}
-              alt={festival.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </Box>
-        )}
+      <Card hoverable>
+        <CardImage
+          src={heroImage}
+          alt={festival.name}
+          fallbackIcon={Music}
+          height={160}
+        />
         <Box sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ flex: 1 }}>
@@ -108,7 +94,7 @@ export function FestivalCard({ festival }: FestivalCardProps) {
             </Typography>
           )}
         </Box>
-      </Paper>
+      </Card>
     </Link>
   );
 }

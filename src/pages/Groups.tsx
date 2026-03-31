@@ -96,10 +96,9 @@ export default function Groups() {
             ) : filteredGroups.length === 0 ? (
               <EmptyState
                 icon={Users}
-                title="No groups found"
-                description={searchQuery || activeFilters.length > 0
-                  ? "Try adjusting your search or filters"
-                  : "Be the first to create a group in this community!"}
+                title="No groups here yet"
+                description="Start one and be the first."
+                mood="encouraging"
               />
             ) : (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
@@ -114,8 +113,9 @@ export default function Groups() {
             {userGroups.length === 0 ? (
               <EmptyState
                 icon={Users}
-                title="You haven't joined any groups yet"
-                description="Start by joining existing groups or create your own!"
+                title="No groups here yet"
+                description="Start one and be the first."
+                mood="encouraging"
               />
             ) : (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>

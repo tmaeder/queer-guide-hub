@@ -445,8 +445,9 @@ export default function News() {
             {!loading && !error && sortedArticles.length === 0 && (
               <EmptyState
                 icon={Newspaper}
-                title="No articles found"
-                description="News articles are automatically imported regularly. Check back soon for the latest LGBTQ+ news and updates."
+                title="The newsroom is quiet"
+                description="No stories right now — check back soon."
+                mood="encouraging"
               />
             )}
 

@@ -108,8 +108,9 @@ export default function Friends() {
                 {friends.length === 0 ? (
                   <EmptyState
                     icon={Users}
-                    title="No friends yet"
-                    description="Start connecting with people in your community"
+                    title="Your circle is just getting started"
+                    description="Find people to connect with."
+                    mood="encouraging"
                     primaryAction={{
                       label: 'Find People',
                       onClick: () => navigate('/users'),
@@ -186,8 +187,9 @@ export default function Friends() {
                 {pendingRequests.length === 0 ? (
                   <EmptyState
                     icon={Clock}
-                    title="No pending requests"
-                    description="Friend requests will appear here"
+                    title="Your circle is just getting started"
+                    description="Find people to connect with."
+                    mood="encouraging"
                   />
                 ) : (
                   <Box sx={{ display: 'grid', gap: 2 }}>

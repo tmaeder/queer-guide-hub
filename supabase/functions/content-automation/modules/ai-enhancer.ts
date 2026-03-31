@@ -19,7 +19,7 @@ import {
 
 // ── AI call (Cloudflare Workers AI) ──────────────────────────────────────────
 
-const CF_ACCOUNT_ID = '7aa3765cc5f50f2b681b782eb4a8d296'
+const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') ?? ''
 const CF_CHAT_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/v1/chat/completions`
 const CF_CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
 

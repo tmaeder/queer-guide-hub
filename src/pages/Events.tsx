@@ -697,8 +697,9 @@ const Events = () => {
         {!loading && !error && events.length === 0 && (
           <EmptyState
             icon={Calendar}
-            title="No events found"
-            description="We couldn't find any events matching your criteria. Try adjusting your filters or be the first to submit an event!"
+            title="The dance floor is empty... for now"
+            description="Check back soon or widen your filters to find something fun."
+            mood="encouraging"
             primaryAction={{ label: 'Submit an Event', onClick: () => navigate('/submit/event') }}
             secondaryAction={{ label: 'Clear Filters', onClick: clearFilters }}
           />

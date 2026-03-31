@@ -747,8 +747,9 @@ export default function Favorites() {
         ) : getTotalCount() === 0 ? (
           <EmptyState
             icon={Heart}
-            title="No favorites yet"
-            description="Start exploring and save your favorite venues, events, marketplace items, and news articles"
+            title="Nothing saved yet"
+            description="Heart the things you love and find them here."
+            mood="encouraging"
             primaryAction={{
               label: 'Browse Events',
               onClick: () => navigate('/events'),

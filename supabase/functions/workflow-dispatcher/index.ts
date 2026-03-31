@@ -6,6 +6,7 @@ const QUEUE_CONFIG: Record<string, number> = {
   scheduled_jobs: 300,    // 5 min
   import_jobs: 600,       // 10 min
   content_processing: 120, // 2 min
+  pipeline_steps: 300,    // 5 min — DAG pipeline execution
 }
 
 const MAX_MESSAGES_PER_QUEUE = 5

@@ -139,14 +139,16 @@ export default function Feed() {
                 searchTerm ? (
                   <EmptyState
                     icon={Search}
-                    title="No posts found"
-                    description="Try adjusting your search terms to find what you're looking for."
+                    title="Your feed is fresh"
+                    description="Follow people and groups to see their posts here."
+                    mood="encouraging"
                   />
                 ) : (
                   <EmptyState
                     icon={Users}
-                    title="No posts yet"
-                    description="Be the first to share something with the community!"
+                    title="Your feed is fresh"
+                    description="Follow people and groups to see their posts here."
+                    mood="encouraging"
                   >
                     <CreatePostDialog>
                       <Button>

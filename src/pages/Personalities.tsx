@@ -158,8 +158,9 @@ export default function Personalities() {
         {sortedPersonalities.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="No personalities found"
-            description="Try adjusting your search criteria or filters."
+            title="No profiles match"
+            description="Try a different search or browse all."
+            mood="encouraging"
           />
         ) : (
           <Box

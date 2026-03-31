@@ -35,6 +35,7 @@ import { DuplicatesPanel } from './import-hub/DuplicatesPanel';
 import { IngestionSourcesManager } from './IngestionSourcesManager';
 import { PipelineMonitor } from './PipelineMonitor';
 import { WebScrapersPanel } from './WebScrapersPanel';
+import { ScrapeSourcesDashboard } from './ScrapeSourcesDashboard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
 
@@ -156,7 +157,7 @@ export const ImportHubDashboard = () => {
             <Database style={{ height: 24, width: 24, color: 'var(--primary-foreground)' }} />
           </Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Import Hub
+            Data Hub
           </Typography>
         </Box>
         <Button
@@ -256,11 +257,6 @@ export const ImportHubDashboard = () => {
         </Card>
       </Box>
 
-      {/* Web Scrapers — always visible */}
-      <Box sx={{ mb: 3 }}>
-        <WebScrapersPanel />
-      </Box>
-
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList style={{ backgroundColor: 'var(--card)', marginBottom: 24 }}>
@@ -268,6 +264,7 @@ export const ImportHubDashboard = () => {
             Jobs {activeJobs.length > 0 && `(${activeJobs.length} active)`}
           </TabsTrigger>
           <TabsTrigger value="create">New Import</TabsTrigger>
+          <TabsTrigger value="scraping">Scraping</TabsTrigger>
           <TabsTrigger value="sources">Sources</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
         </TabsList>
@@ -512,6 +509,12 @@ export const ImportHubDashboard = () => {
         {/* ── New Import ── */}
         <TabsContent value="create">
           <ImportJobCreator />
+        </TabsContent>
+
+        {/* ── Scraping: Node.js scrapers + DB-based scrape sources ── */}
+        <TabsContent value="scraping" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <WebScrapersPanel />
+          <ScrapeSourcesDashboard />
         </TabsContent>
 
         {/* ── Sources: ingestion sources + venues + news + API keys ── */}

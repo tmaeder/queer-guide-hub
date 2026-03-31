@@ -16,7 +16,7 @@ const BASE_URL = 'https://queer.guide';
 const DEFAULT_TITLE = 'Queer Guide';
 const DEFAULT_DESCRIPTION =
   'Connecting the LGBTQ+ community with safe spaces, events, businesses, and each other.';
-const DEFAULT_OG_IMAGE = '/images/og-image.svg';
+const DEFAULT_OG_IMAGE = '/images/og-image.png';
 
 function setMetaTag(attr: 'name' | 'property', key: string, content: string): void {
   let el = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;

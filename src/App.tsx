@@ -72,6 +72,7 @@ const AdminImportHub = lazy(() => import('./pages/AdminImportHub'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminWorkflows = lazy(() => import('./pages/AdminWorkflows'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
+const AdminPipelineDashboard = lazy(() => import('./pages/AdminPipelineDashboard'));
 const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
 
@@ -277,14 +278,16 @@ const AppRoutes = () => {
           bgcolor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
         })}
       >
-        <Suspense fallback={null}>
-          <Aurora
-            colorStops={['#E40303', '#FF8C00', '#FFED00', '#008026', '#004DFF', '#750787']}
-            blend={0.4}
-            amplitude={1.0}
-            speed={0.3}
-          />
-        </Suspense>
+        <ErrorBoundary section="aurora" fallback={null}>
+          <Suspense fallback={null}>
+            <Aurora
+              colorStops={['#E40303', '#FF8C00', '#FFED00', '#008026', '#004DFF', '#750787']}
+              blend={0.4}
+              amplitude={1.0}
+              speed={0.3}
+            />
+          </Suspense>
+        </ErrorBoundary>
       </Box>
       <AnalyticsTracker />
       <Box sx={{ position: 'relative', zIndex: 1 }}>
@@ -397,6 +400,7 @@ const AppRoutes = () => {
                 <Route path="imports/history" element={<AdminImportHub />} />
                 <Route path="workflows" element={<AdminWorkflows />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
+                <Route path="pipelines/dashboard" element={<AdminPipelineDashboard />} />
                 <Route path="scraping" element={<Navigate to="/admin/imports" replace />} />
 
                 {/* Review & Workflow section -- unified dashboard */}

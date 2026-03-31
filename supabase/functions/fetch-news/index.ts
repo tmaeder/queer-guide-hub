@@ -530,28 +530,28 @@ Deno.serve(async (req) => {
         await supabase
           .from('news_sources')
           .update({ 
-            last_fetch_at: new Date().toISOString(),
+            last_fetched_at: new Date().toISOString(),
             status: 'processing'
           })
           .eq('id', source.id);
 
         // Fetch articles based on source type
-        if (source.type === 'rss' && source.url) {
+        if (source.source_type === 'rss' && source.url) {
           articles = await parseRSSFeed(source.url, source.id, supabase);
-        } else if (source.type === 'api') {
+        } else if (source.source_type === 'api') {
           // Get API keys from environment
           const newsApiKey = Deno.env.get('NEWS_API_KEY');
           const newsdataApiKey = Deno.env.get('NEWSDATA_API_KEY');
           const gnewsApiKey = Deno.env.get('GNEWS_API_KEY');
           const thenewsApiKey = Deno.env.get('THENEWSAPI_API_KEY');
 
-          if (source.api_endpoint?.includes('newsapi.org') && newsApiKey) {
+          if (source.url?.includes('newsapi.org') && newsApiKey) {
             articles = await fetchFromNewsAPI(newsApiKey, source.id, supabase);
-          } else if (source.api_endpoint?.includes('newsdata.io') && newsdataApiKey) {
+          } else if (source.url?.includes('newsdata.io') && newsdataApiKey) {
             articles = await fetchFromNewsData(newsdataApiKey, source.id, supabase);
-          } else if (source.api_endpoint?.includes('gnews.io') && gnewsApiKey) {
+          } else if (source.url?.includes('gnews.io') && gnewsApiKey) {
             articles = await fetchFromGNews(gnewsApiKey, source.id, supabase);
-          } else if (source.api_endpoint?.includes('thenewsapi.com') && thenewsApiKey) {
+          } else if (source.url?.includes('thenewsapi.com') && thenewsApiKey) {
             articles = await fetchFromTheNewsAPI(thenewsApiKey, source.id, supabase);
           }
         }
@@ -582,7 +582,7 @@ Deno.serve(async (req) => {
                 published_at: article.published_at,
                 source_id: article.source_id,
                 views_count: 0,
-                featured: false
+                is_featured: false
               })),
               { onConflict: 'url' }
             );
@@ -630,7 +630,7 @@ Deno.serve(async (req) => {
           .from('news_sources')
           .update({ 
             status: 'active',
-            error_message: null,
+            last_error: null,
             last_successful_fetch: new Date().toISOString()
           })
           .eq('id', source.id);
@@ -645,7 +645,7 @@ Deno.serve(async (req) => {
           .from('news_sources')
           .update({ 
             status: 'error',
-            error_message: sourceError.message
+            last_error: sourceError.message
           })
           .eq('id', source.id);
       }

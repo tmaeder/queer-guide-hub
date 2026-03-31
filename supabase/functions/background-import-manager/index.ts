@@ -1,4 +1,18 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// DEPRECATED: Use pipeline-executor via the visual pipeline builder instead.
+// All 23 import types are now available as source adapter nodes.
+
+Deno.serve((_req) => {
+  return new Response(JSON.stringify({
+    error: 'Gone',
+    message: 'background-import-manager is deprecated. Use pipeline-executor with source adapter nodes instead.',
+    replacement: 'POST /functions/v1/pipeline-executor { action: "start", pipeline_name: "..." }',
+    admin_ui: '/admin/pipelines',
+  }), { status: 410, headers: { 'Content-Type': 'application/json' } })
+})
+
+// Original code below is preserved for reference but unreachable.
+// ------------------------------------------------------------------
+
 import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 interface ImportJob {

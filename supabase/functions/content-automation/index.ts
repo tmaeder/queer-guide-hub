@@ -15,7 +15,7 @@
  */
 
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { corsHeaders, jsonResponse, errorResponse, requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts'
 import {
   loadModuleConfig, checkRateLimit, writeChangesBatch, logRun,
   getContentName, CONTENT_TYPE_CONFIG, loadSharedReferenceData,
@@ -75,13 +75,17 @@ const FULL_SCAN_PAGE_SIZE = 1000
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) })
 
   const startTime = Date.now()
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
+
+  // ── Authentication: require admin role ──────────────────────────────────────
+  const auth = await requireAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
   try {
     let payload: Record<string, unknown> = {}
@@ -251,6 +255,6 @@ Deno.serve(async (req) => {
     })
   } catch (e) {
     console.error(`[content-automation] Fatal: ${e}`)
-    return errorResponse(e instanceof Error ? e.message : 'Internal error', 500)
+    return errorResponse('Internal server error', 500)
   }
 })

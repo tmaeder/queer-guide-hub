@@ -260,8 +260,9 @@ const Marketplace = () => {
           {!loading && sortedListings.length === 0 && (
             <EmptyState
               icon={Store}
-              title="No listings found"
-              description="We couldn't find any listings matching your criteria. Try adjusting your filters or be the first to add your business!"
+              title="Nothing on the shelves yet"
+              description="Queer-owned businesses are joining every day."
+              mood="encouraging"
               primaryAction={{
                 label: 'List Your Business',
                 onClick: () => {
@@ -347,8 +348,9 @@ const Marketplace = () => {
                 sortedListings.length > 0 && (
                   <EmptyState
                     icon={Store}
-                    title={`No ${category.label.toLowerCase()} found`}
-                    description={`There are no ${category.label.toLowerCase()} matching your current filters.`}
+                    title="Nothing on the shelves yet"
+                    description="Queer-owned businesses are joining every day."
+                    mood="encouraging"
                     primaryAction={{
                       label: 'Clear Filters',
                       onClick: () => handleFiltersChange({}),

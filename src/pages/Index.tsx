@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   MapPin,
   Calendar,
@@ -26,66 +27,59 @@ const RegionalEventsCalendar = React.lazy(
   () => import('@/components/home/RegionalEventsCalendar'),
 );
 
+// HSL-based feature color system — auto-computes light/dark variants
+const FEATURE_HUES = [
+  { key: 'venues', hue: 0, sat: 70 },
+  { key: 'events', hue: 25, sat: 85 },
+  { key: 'marketplace', hue: 142, sat: 60 },
+  { key: 'places', hue: 211, sat: 75 },
+  { key: 'community', hue: 330, sat: 80 },
+  { key: 'resources', hue: 174, sat: 55 },
+] as const;
+
+function featureColor(hue: number, sat: number, isDark: boolean) {
+  return {
+    accent: `hsl(${hue}, ${sat}%, ${isDark ? 70 : 40}%)`,
+    bg: `hsl(${hue}, ${sat}%, ${isDark ? 10 : 95}%)`,
+  };
+}
+
 const features = [
   {
     icon: MapPin,
     title: 'Venues',
     description: 'Verified queer-friendly spaces where you can be yourself',
     link: '/venues',
-    accent: '#c62828',
-    accentDark: '#ef9a9a',
-    bgLight: '#ffebee',
-    bgDark: '#2a0808',
   },
   {
     icon: Calendar,
     title: 'Events',
     description: 'Local and virtual gatherings in your area',
     link: '/events',
-    accent: '#e65100',
-    accentDark: '#ffcc80',
-    bgLight: '#fff3e0',
-    bgDark: '#2a1400',
   },
   {
     icon: Store,
     title: 'Marketplace',
     description: 'Support queer-owned businesses and creators',
     link: '/marketplace',
-    accent: '#2e7d32',
-    accentDark: '#a5d6a7',
-    bgLight: '#e8f5e9',
-    bgDark: '#0a2a0c',
   },
   {
     icon: Plane,
     title: 'Places',
     description: 'Explore queer-friendly cities and countries',
     link: '/places',
-    accent: '#1565c0',
-    accentDark: '#90caf9',
-    bgLight: '#e3f2fd',
-    bgDark: '#061a30',
   },
   {
     icon: Users,
     title: 'Community',
     description: 'Connect with people and join groups',
     link: '/groups',
-    accent: '#6a1b9a',
-    accentDark: '#ce93d8',
-    bgLight: '#f3e5f5',
-    bgDark: '#1a0828',
   },
   {
     icon: BookOpen,
     title: 'Resources',
     description: 'Rights, culture, and community support',
     link: '/resources',
-    accent: '#00695c',
-    accentDark: '#80cbc4',
-    bgLight: '#e0f2f1',
-    bgDark: '#002420',
   },
 ];
 
@@ -147,9 +141,9 @@ const Index = React.memo(() => {
               color: 'text.primary',
             }}
           >
-            Your guide to
+            Your world.
             <br />
-            queer spaces
+            Your way.
           </Typography>
 
           <Typography
@@ -163,8 +157,8 @@ const Index = React.memo(() => {
               lineHeight: 1.6,
             }}
           >
-            Discover safe venues, vibrant events, and welcoming communities —
-            everywhere you go.
+            Safe venues, vibrant events, and communities that get you —
+            wherever you are.
           </Typography>
 
           <Box
@@ -199,7 +193,9 @@ const Index = React.memo(() => {
         sx={{
           bgcolor: 'text.primary',
           color: 'background.default',
-          py: { xs: 3.5, md: 4.5 },
+          py: { xs: 4, md: 5 },
+          borderTop: 2,
+          borderColor: theme.palette.brand?.main || '#DB2777',
         }}
       >
         <Container maxWidth="lg">
@@ -217,7 +213,7 @@ const Index = React.memo(() => {
               <Box key={i} sx={{ textAlign: 'center' }}>
                 <Typography
                   sx={{
-                    fontFamily: "'Montserrat', sans-serif",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontWeight: 800,
                     fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
                     letterSpacing: '-0.03em',
@@ -248,7 +244,7 @@ const Index = React.memo(() => {
       </Box>
 
       {/* ── Features Grid ────────────────────────────────────────────── */}
-      <Box component="section" sx={{ py: { xs: 5, md: 8 } }}>
+      <Box component="section" className="content-enter" sx={{ py: { xs: 6, md: 10 } }}>
         <Container maxWidth="lg">
           <Typography
             variant="h4"
@@ -266,7 +262,7 @@ const Index = React.memo(() => {
             className="reveal-up reveal-delay-1"
             sx={{ mb: { xs: 3, md: 4 }, fontSize: { xs: '0.9375rem', md: '1.0625rem' } }}
           >
-            Everything you need, in one place.
+            All the good stuff, one tap away.
           </Typography>
 
           <Box
@@ -277,11 +273,13 @@ const Index = React.memo(() => {
                 sm: 'repeat(2, 1fr)',
                 md: 'repeat(3, 1fr)',
               },
-              gap: { xs: 2, md: 2.5 },
+              gap: 2.5,
             }}
           >
             {features.map((feature, index) => {
               const Icon = feature.icon;
+              const { hue, sat } = FEATURE_HUES[index];
+              const colors = featureColor(hue, sat, isDark);
               return (
                 <Link
                   to={feature.link}
@@ -305,8 +303,8 @@ const Index = React.memo(() => {
                         sx={{
                           width: 48,
                           height: 48,
-                          borderRadius: '12px',
-                          bgcolor: isDark ? feature.bgDark : feature.bgLight,
+                          borderRadius: 3,
+                          bgcolor: colors.bg,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -317,7 +315,7 @@ const Index = React.memo(() => {
                           style={{
                             width: 22,
                             height: 22,
-                            color: isDark ? feature.accentDark : feature.accent,
+                            color: colors.accent,
                           }}
                           aria-hidden="true"
                         />
@@ -327,7 +325,7 @@ const Index = React.memo(() => {
                           variant="subtitle1"
                           sx={{
                             fontWeight: 700,
-                            fontFamily: "'Montserrat', sans-serif",
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
                             mb: 0.5,
                             fontSize: { xs: '0.9375rem', md: '1rem' },
                           }}
@@ -358,7 +356,7 @@ const Index = React.memo(() => {
         component="section"
         sx={{
           bgcolor: isDark ? 'background.paper' : '#f8f8f8',
-          py: { xs: 5, md: 8 },
+          py: { xs: 6, md: 10 },
         }}
       >
         <Container maxWidth="lg">
@@ -405,26 +403,28 @@ const Index = React.memo(() => {
               />
             </Button>
           </Box>
-          <Box sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-            <React.Suspense
-              fallback={
-                <Box
-                  sx={{
-                    height: { xs: 360, md: 480 },
-                    bgcolor: 'action.hover',
-                    borderRadius: '12px',
-                  }}
+          <Box sx={{ borderRadius: 3, overflow: 'hidden' }}>
+            <ErrorBoundary section="map" fallback={null}>
+              <React.Suspense
+                fallback={
+                  <Box
+                    sx={{
+                      height: { xs: 360, md: 480 },
+                      bgcolor: 'action.hover',
+                      borderRadius: 3,
+                    }}
+                  />
+                }
+              >
+                <ExploreMap
+                  height={isMobile ? 360 : 480}
+                  defaultLayers={['venues', 'events']}
+                  showFilters
+                  showLayerToggles
+                  linkToFullMap="/map"
                 />
-              }
-            >
-              <ExploreMap
-                height={isMobile ? 360 : 480}
-                defaultLayers={['venues', 'events']}
-                showFilters
-                showLayerToggles
-                linkToFullMap="/map"
-              />
-            </React.Suspense>
+              </React.Suspense>
+            </ErrorBoundary>
           </Box>
         </Container>
       </Box>

@@ -1226,8 +1226,9 @@ export default function Ressources() {
           {filteredAndSortedTags.length === 0 && (
             <EmptyState
               icon={Tag}
-              title="No tags found"
-              description="Try adjusting your search terms or filters"
+              title="Nothing here yet"
+              description="Resources are being added regularly."
+              mood="encouraging"
             />
           )}
         </Box>

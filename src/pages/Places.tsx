@@ -952,8 +952,9 @@ export default function Places() {
               {!searchResults.countries?.length && !searchResults.cities?.length && (
                 <EmptyState
                   icon={Globe}
-                  title="No places found"
-                  description="Explore our featured destinations or try different search terms."
+                  title="No destinations match"
+                  description="Explore a different region or check back later."
+                  mood="encouraging"
                   primaryAction={{
                     label: 'Explore All',
                     onClick: () => {

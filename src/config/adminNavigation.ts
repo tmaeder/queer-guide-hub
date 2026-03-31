@@ -36,7 +36,6 @@ import {
   Hotel,
   Home,
   History,
-  Plus,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -232,13 +231,6 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#10b981',
       },
       {
-        id: 'create-import',
-        label: 'New Import',
-        icon: Plus,
-        route: '/admin/imports/create',
-        color: '#10b981',
-      },
-      {
         id: 'news-sources',
         label: 'Sources',
         icon: Rss,
@@ -261,6 +253,13 @@ export const adminNavSections: AdminNavSection[] = [
         color: '#f59e0b',
       },
       {
+        id: 'enrichment',
+        label: 'Enrichment',
+        icon: Zap,
+        route: '/admin/imports/enrichment',
+        color: '#0891b2',
+      },
+      {
         id: 'venue-import',
         label: 'Venue Import',
         icon: MapPin,
@@ -272,6 +271,22 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'History',
         icon: History,
         route: '/admin/imports/history',
+        color: '#6366f1',
+      },
+      {
+        id: 'pipelines',
+        label: 'Pipeline Builder',
+        icon: Workflow,
+        route: '/admin/pipelines',
+        adminOnly: true,
+        color: '#6366f1',
+      },
+      {
+        id: 'pipeline-dashboard',
+        label: 'Pipeline Monitor',
+        icon: Activity,
+        route: '/admin/pipelines/dashboard',
+        adminOnly: true,
         color: '#6366f1',
       },
       {
@@ -290,15 +305,6 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/automation',
         adminOnly: true,
         color: '#f59e0b',
-      },
-      {
-        id: 'scraping',
-        label: 'Web Scraping',
-        icon: Globe,
-        route: '/admin/scraping',
-        countTable: 'scrape_sources',
-        adminOnly: true,
-        color: '#0ea5e9',
       },
     ],
   },

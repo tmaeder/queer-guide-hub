@@ -158,32 +158,41 @@ async function fetchImportSummary(): Promise<ImportSummary> {
 }
 
 async function fetchQualityIndex(): Promise<QualityIndex> {
-  const [warningRes, criticalRes] = await Promise.all([
-    supabase
-      .from('content_flags' as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending')
-      .in('severity', ['warning', 'info']),
-    supabase
-      .from('content_flags' as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending')
-      .in('severity', ['critical', 'error']),
-  ]);
+  const entityTypes = ['venues', 'events', 'personalities', 'news_articles'] as const;
+  const byContentType: Record<string, { total: number; withIssues: number; score: number }> = {};
+  let totalScoreSum = 0;
+  let totalScored = 0;
+  let warnings = 0;
+  let critical = 0;
 
-  const warnings = warningRes.count ?? 0;
-  const critical = criticalRes.count ?? 0;
-  const totalIssues = warnings + critical;
+  const results = await Promise.all(
+    entityTypes.map((t) =>
+      supabase.from(t as any).select('quality_score, needs_attention'),
+    ),
+  );
 
-  // Approximate quality score: fewer issues = higher score
-  const overallScore = Math.max(0, Math.min(100, 100 - totalIssues * 0.5));
+  entityTypes.forEach((type, i) => {
+    const rows = (results[i].data ?? []) as Array<{
+      quality_score: number | null;
+      needs_attention: boolean | null;
+    }>;
+    const scored = rows.filter((r) => r.quality_score != null);
+    const withIssues = rows.filter((r) => r.needs_attention === true).length;
+    const avg =
+      scored.length > 0
+        ? Math.round(scored.reduce((s, r) => s + (r.quality_score ?? 0), 0) / scored.length)
+        : 0;
 
-  return {
-    overallScore: Math.round(overallScore),
-    byContentType: {},
-    warnings,
-    critical,
-  };
+    byContentType[type] = { total: rows.length, withIssues, score: avg };
+    totalScoreSum += scored.reduce((s, r) => s + (r.quality_score ?? 0), 0);
+    totalScored += scored.length;
+    if (withIssues > 0 && withIssues <= 10) warnings += withIssues;
+    if (withIssues > 10) critical += withIssues;
+  });
+
+  const overallScore = totalScored > 0 ? Math.round(totalScoreSum / totalScored) : 0;
+
+  return { overallScore, byContentType, warnings, critical };
 }
 
 async function fetchContentStats(): Promise<ContentStats> {

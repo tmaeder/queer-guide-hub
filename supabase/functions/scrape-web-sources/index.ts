@@ -740,6 +740,124 @@ function extractWikiTable(
   return items
 }
 
+// ─── Wiki List Extraction (heading + ul/li structure, e.g. WNBR) ──────────
+
+function extractWikiList(
+  html: string,
+  pageUrl: string,
+  source: ScrapeSource,
+): ExtractedItem[] {
+  const items: ExtractedItem[] = []
+  const $ = cheerio.load(html)
+  const config = source.scrape_config
+  const skipHeadings = new Set(['contents', 'references', 'see also', 'notes', 'external links', 'further reading'])
+
+  let currentCountry = ''
+  $('h2, h3, ul > li').each((_, el) => {
+    const tag = (el as any).tagName?.toLowerCase()
+    if (tag === 'h2' || tag === 'h3') {
+      const text = $(el).find('.mw-headline').text().trim() || $(el).text().replace(/\[edit\]/gi, '').trim()
+      if (text && !skipHeadings.has(text.toLowerCase())) {
+        currentCountry = text
+      }
+      return
+    }
+    if (tag === 'li' && currentCountry) {
+      const link = $(el).find('a').first()
+      const city = link.text().trim()
+      if (!city || city.length < 2) return
+      const rawText = $(el).text().trim()
+
+      if (source.content_type === 'events') {
+        items.push({
+          title: `${(config.event_type as string) || 'Event'} - ${city}`,
+          name: `${(config.event_type as string) || 'Event'} - ${city}`,
+          city,
+          country: currentCountry,
+          event_type: (config.event_type as string) || 'Event',
+          description: rawText.slice(0, 500) || undefined,
+          url: link.attr('href')
+            ? new URL(link.attr('href')!, pageUrl).href
+            : pageUrl,
+          raw_data: { wiki_list: true, raw_text: rawText },
+        })
+      } else {
+        items.push({
+          name: city,
+          city,
+          country: currentCountry,
+          description: rawText.slice(0, 500) || undefined,
+          url: link.attr('href')
+            ? new URL(link.attr('href')!, pageUrl).href
+            : pageUrl,
+          raw_data: { wiki_list: true },
+        })
+      }
+    }
+  })
+
+  return items
+}
+
+// ─── Wiki Country Tables (per-country wikitables, country from heading) ────
+
+function extractWikiCountryTables(
+  html: string,
+  pageUrl: string,
+  source: ScrapeSource,
+): ExtractedItem[] {
+  const items: ExtractedItem[] = []
+  const $ = cheerio.load(html)
+  const config = source.scrape_config
+  const selectors = (config.selectors || {}) as Record<string, unknown>
+  const skipHeadings = new Set(['contents', 'references', 'see also', 'notes', 'external links', 'further reading'])
+
+  const tableSelector = (selectors.table as string) || 'table.wikitable'
+
+  $(tableSelector).each((_, table) => {
+    // Find country from preceding heading
+    let country = ''
+    let prev = $(table).prev()
+    while (prev.length) {
+      const tag = (prev[0] as any).tagName?.toLowerCase()
+      if (tag === 'h2' || tag === 'h3') {
+        country = prev.find('.mw-headline').text().trim() || prev.text().replace(/\[edit\]/gi, '').trim()
+        break
+      }
+      prev = prev.prev()
+    }
+    if (!country || skipHeadings.has(country.toLowerCase())) return
+
+    const nameCol = (selectors.name_col as number) ?? 0
+    const cityCol = (selectors.city_col as number) ?? 1
+
+    $(table).find('tr').each((i, row) => {
+      if (i === 0) return
+      const $cells = $(row).find('td, th')
+      if ($cells.length < 2) return
+
+      const name = $cells.eq(nameCol).text().trim()
+      const city = $cells.eq(cityCol).text().trim()
+      if (!name || name.length < 2) return
+
+      const link = $cells.eq(nameCol).find('a').first().attr('href')
+
+      items.push({
+        name,
+        city: city || undefined,
+        country,
+        description: `${name} in ${city}${country ? ', ' + country : ''}`,
+        url: link
+          ? (link.startsWith('http') ? link : `https://en.wikipedia.org${link}`)
+          : pageUrl,
+        raw_data: { wiki_country_table: true },
+      })
+    })
+  })
+
+  return items
+}
+
 // ─── Timeline Extraction ────────────────────────────────────────────────────
 
 function extractTimelineItems(
@@ -939,6 +1057,10 @@ function extractFromPage(html: string, pageUrl: string, source: ScrapeSource): E
     return extractProductsFromPage(html, pageUrl, source)
   } else if (config.extract === 'wiki_table') {
     return extractWikiTable(html, pageUrl, source)
+  } else if (config.extract === 'wiki_list') {
+    return extractWikiList(html, pageUrl, source)
+  } else if (config.extract === 'wiki_country_tables') {
+    return extractWikiCountryTables(html, pageUrl, source)
   } else if (config.extract === 'timeline_items') {
     return extractTimelineItems(html, pageUrl, source)
   } else {
@@ -1057,15 +1179,7 @@ async function processSource(
       case 'html_fetch': {
         const html = await fetchPage(source.url, source.user_agent)
         pagesCrawled = 1
-        const config = source.scrape_config
-
-        if (config.extract === 'wiki_table') {
-          allItems = extractWikiTable(html, source.url, source)
-        } else if (config.extract === 'timeline_items') {
-          allItems = extractTimelineItems(html, source.url, source)
-        } else {
-          allItems = extractEventsFromPage(html, source.url, source)
-        }
+        allItems = extractFromPage(html, source.url, source)
         break
       }
 

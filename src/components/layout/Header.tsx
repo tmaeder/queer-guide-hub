@@ -65,31 +65,37 @@ import Divider from '@mui/material/Divider';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { useTheme } from '@mui/material/styles';
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
 const navigationSections = [
   {
-    title: 'Explore',
+    title: 'Discover',
     items: [
+      { to: '/venues', icon: MapPin, label: 'Venues' },
       { to: '/events', icon: Calendar, label: 'Events' },
       { to: '/places', icon: Globe, label: 'Places' },
-      { to: '/venues', icon: MapPin, label: 'Venues' },
       { to: '/map', icon: Map, label: 'Map' },
+    ],
+  },
+  {
+    title: 'Connect',
+    items: [
+      { to: '/feed', icon: Rss, label: 'Feed' },
+      { to: '/groups', icon: UsersRound, label: 'Groups' },
+      { to: '/users', icon: UserCheck, label: 'Members' },
+    ],
+  },
+  {
+    title: 'More',
+    items: [
       { to: '/marketplace', icon: Store, label: 'Marketplace' },
       { to: '/resources', icon: Tags, label: 'Resources' },
       { to: '/news', icon: Newspaper, label: 'News' },
       { to: '/travel', icon: Plane, label: 'Travel' },
       { to: '/personalities', icon: Users, label: 'Personalities' },
       { to: '/hotels', icon: Building, label: 'Hotels' },
-    ],
-  },
-  {
-    title: 'Community',
-    items: [
-      { to: '/feed', icon: Rss, label: 'Feed' },
-      { to: '/groups', icon: UsersRound, label: 'Groups' },
-      { to: '/users', icon: UserCheck, label: 'Members' },
     ],
   },
 ];
@@ -129,6 +135,7 @@ export function Header() {
   const location = useLocation();
   const isMobile = useIsMobile();
 
+  const theme = useTheme();
   const { user, signOut } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { unreadCount } = useNotifications();
@@ -809,7 +816,7 @@ export function Header() {
                                 ? {
                                     backgroundColor:
                                       'var(--mui-palette-action-hover, rgba(124,58,237,0.08))',
-                                    color: '#7c3aed',
+                                    color: theme.palette.brand.main,
                                     border: '1px solid var(--mui-palette-divider, #e0d6ff)',
                                   }
                                 : {}),
