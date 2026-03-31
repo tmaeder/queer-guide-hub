@@ -281,10 +281,10 @@ const AppRoutes = () => {
         <ErrorBoundary section="aurora" fallback={null}>
           <Suspense fallback={null}>
             <Aurora
-              colorStops={['#E40303', '#FF8C00', '#FFED00', '#008026', '#004DFF', '#750787']}
-              blend={0.4}
-              amplitude={1.0}
-              speed={0.3}
+              colorStops={['#F4A0B0', '#F5C5A0', '#F5E6A0', '#A0D8B0', '#A0B8E8', '#C4A0D8']}
+              blend={0.15}
+              amplitude={0.4}
+              speed={0.08}
             />
           </Suspense>
         </ErrorBoundary>

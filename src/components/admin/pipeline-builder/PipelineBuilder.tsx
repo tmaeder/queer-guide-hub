@@ -156,17 +156,16 @@ function PipelineBuilderInner() {
                       return (
                         <div
                           key={nt.slug}
-                          className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-grab hover:bg-accent text-sm transition-colors"
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, cursor: 'grab', fontSize: 13 }}
                           draggable
                           onDragStart={(e) => onDragStart(e as unknown as DragEvent<HTMLDivElement>, nt)}
                         >
                           <div
-                            className="w-5 h-5 rounded flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: `${nt.color}20`, color: nt.color }}
+                            style={{ width: 20, height: 20, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${nt.color}20`, color: nt.color }}
                           >
                             <Icon className="h-3 w-3" />
                           </div>
-                          <span className="truncate">{nt.display_name}</span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nt.display_name}</span>
                         </div>
                       );
                     })}
@@ -181,7 +180,7 @@ function PipelineBuilderInner() {
       {/* Main Canvas Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {/* Toolbar */}
-        <div className="flex items-center gap-2 px-4 py-2 border-b bg-background">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid #e5e7eb', background: '#fff', flexShrink: 0, zIndex: 10 }}>
           <Input
             value={pipelineName}
             onChange={(e) => setPipelineName(e.target.value)}
@@ -211,7 +210,7 @@ function PipelineBuilderInner() {
               Clear
             </Button>
           )}
-          <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#6b7280' }}>
             <Badge variant="outline" className="text-xs">{nodes.length} nodes</Badge>
             <Badge variant="outline" className="text-xs">{edges.length} edges</Badge>
             <Separator orientation="vertical" className="h-4 mx-1" />

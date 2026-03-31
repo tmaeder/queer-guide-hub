@@ -121,7 +121,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
         {/* Calendar Section */}
         <Box>
           <Card sx={{ boxShadow: 3 }}>
-            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <CardTitle sx={{ fontSize: '1.25rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 3 }}>
                   <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
@@ -175,7 +175,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
         {/* Events Section */}
         <Box>
           <Card sx={{ boxShadow: 3, height: '100%' }}>
-            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(var(--secondary-rgb), 0.05), rgba(var(--secondary-rgb), 0.1))', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(var(--secondary-rgb), 0.05), rgba(var(--secondary-rgb), 0.1))', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
               <CardTitle sx={{ fontSize: '1.125rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box sx={{ width: 12, height: 12, bgcolor: 'primary.main', borderRadius: '50%', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                 {format(selectedDate, 'MMM d, yyyy')}

@@ -63,7 +63,7 @@ function ChildPageCard({ page }: { page: CMSPage }) {
       variant="outlined"
       sx={{
         p: 2.5,
-        borderRadius: '12px',
+        borderRadius: 3,
         textDecoration: 'none',
         color: 'inherit',
         display: 'flex',
@@ -82,7 +82,7 @@ function ChildPageCard({ page }: { page: CMSPage }) {
         sx={{
           width: 40,
           height: 40,
-          borderRadius: '10px',
+          borderRadius: 2.5,
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
           display: 'flex',
