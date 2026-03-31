@@ -12,36 +12,28 @@
   animation: aurora-fade-in 2s ease-out forwards;
 }
 
-/* Layer 1: warm side (pink → amber) — drifts slowly right */
+/* Layer 1: red → orange → yellow (left side) */
 .aurora-layer-1 {
-  background: radial-gradient(
-    ellipse 85% 65% at 20% 50%,
-    rgba(244, 114, 182, 0.38) 0%,
-    rgba(251, 191, 36, 0.20) 40%,
-    transparent 70%
-  );
+  background:
+    radial-gradient(ellipse 50% 50% at 5% 50%, rgba(228, 3, 3, 0.30) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 50% at 25% 45%, rgba(255, 140, 0, 0.28) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 45% at 40% 55%, rgba(255, 237, 0, 0.22) 0%, transparent 60%);
   animation: aurora-drift-1 45s ease-in-out infinite, aurora-fade-in 2s ease-out forwards;
 }
 
-/* Layer 2: cool side (blue → teal) — drifts slowly left */
+/* Layer 2: green → blue (right side) */
 .aurora-layer-2 {
-  background: radial-gradient(
-    ellipse 75% 55% at 80% 40%,
-    rgba(96, 165, 250, 0.35) 0%,
-    rgba(52, 211, 153, 0.18) 40%,
-    transparent 70%
-  );
+  background:
+    radial-gradient(ellipse 45% 50% at 55% 40%, rgba(0, 128, 38, 0.25) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 75% 50%, rgba(0, 77, 255, 0.28) 0%, transparent 70%);
   animation: aurora-drift-2 55s ease-in-out infinite, aurora-fade-in 2s ease-out 0.3s forwards;
 }
 
-/* Layer 3: accent (violet → magenta) — slow vertical float */
+/* Layer 3: violet → magenta (top accent) */
 .aurora-layer-3 {
-  background: radial-gradient(
-    ellipse 65% 45% at 50% 30%,
-    rgba(167, 139, 250, 0.30) 0%,
-    rgba(219, 39, 119, 0.16) 40%,
-    transparent 65%
-  );
+  background:
+    radial-gradient(ellipse 45% 40% at 90% 45%, rgba(117, 7, 135, 0.26) 0%, transparent 65%),
+    radial-gradient(ellipse 35% 35% at 50% 25%, rgba(219, 39, 119, 0.18) 0%, transparent 60%);
   animation: aurora-drift-3 65s ease-in-out infinite, aurora-fade-in 2s ease-out 0.6s forwards;
 }
 
@@ -52,50 +44,42 @@
 
 @keyframes aurora-drift-1 {
   0%, 100% { transform: translate(0%, 0%) scale(1); }
-  25% { transform: translate(8%, -5%) scale(1.05); }
-  50% { transform: translate(15%, 3%) scale(1.02); }
-  75% { transform: translate(5%, -2%) scale(1.08); }
+  25% { transform: translate(6%, -4%) scale(1.04); }
+  50% { transform: translate(12%, 3%) scale(1.02); }
+  75% { transform: translate(4%, -2%) scale(1.06); }
 }
 
 @keyframes aurora-drift-2 {
   0%, 100% { transform: translate(0%, 0%) scale(1); }
-  25% { transform: translate(-10%, 4%) scale(1.06); }
-  50% { transform: translate(-5%, -6%) scale(1.03); }
-  75% { transform: translate(-12%, 2%) scale(1.07); }
+  25% { transform: translate(-8%, 3%) scale(1.05); }
+  50% { transform: translate(-4%, -5%) scale(1.03); }
+  75% { transform: translate(-10%, 2%) scale(1.06); }
 }
 
 @keyframes aurora-drift-3 {
   0%, 100% { transform: translate(0%, 0%) scale(1); }
-  33% { transform: translate(5%, -8%) scale(1.1); }
-  66% { transform: translate(-5%, 5%) scale(1.04); }
+  33% { transform: translate(4%, -6%) scale(1.08); }
+  66% { transform: translate(-4%, 4%) scale(1.04); }
 }
 
-/* Dark mode: even more vivid against dark bg */
+/* Dark mode: more vivid against dark bg */
 .dark .aurora-layer-1 {
-  background: radial-gradient(
-    ellipse 85% 65% at 20% 50%,
-    rgba(244, 114, 182, 0.45) 0%,
-    rgba(251, 191, 36, 0.24) 40%,
-    transparent 70%
-  );
+  background:
+    radial-gradient(ellipse 50% 50% at 5% 50%, rgba(228, 3, 3, 0.38) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 50% at 25% 45%, rgba(255, 140, 0, 0.35) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 45% at 40% 55%, rgba(255, 237, 0, 0.28) 0%, transparent 60%);
 }
 
 .dark .aurora-layer-2 {
-  background: radial-gradient(
-    ellipse 75% 55% at 80% 40%,
-    rgba(96, 165, 250, 0.40) 0%,
-    rgba(52, 211, 153, 0.20) 40%,
-    transparent 70%
-  );
+  background:
+    radial-gradient(ellipse 45% 50% at 55% 40%, rgba(0, 128, 38, 0.32) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 75% 50%, rgba(0, 77, 255, 0.35) 0%, transparent 70%);
 }
 
 .dark .aurora-layer-3 {
-  background: radial-gradient(
-    ellipse 65% 45% at 50% 30%,
-    rgba(167, 139, 250, 0.35) 0%,
-    rgba(219, 39, 119, 0.18) 40%,
-    transparent 65%
-  );
+  background:
+    radial-gradient(ellipse 45% 40% at 90% 45%, rgba(117, 7, 135, 0.32) 0%, transparent 65%),
+    radial-gradient(ellipse 35% 35% at 50% 25%, rgba(219, 39, 119, 0.22) 0%, transparent 60%);
 }
 
 /* Respect reduced motion */
