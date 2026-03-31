@@ -1,4 +1,106 @@
 .aurora-container {
   width: 100%;
   height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.aurora-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: aurora-fade-in 2s ease-out forwards;
+}
+
+/* Layer 1: warm side (pink → orange → yellow) — drifts slowly right */
+.aurora-layer-1 {
+  background: radial-gradient(
+    ellipse 80% 60% at 20% 50%,
+    rgba(244, 114, 182, 0.07) 0%,
+    rgba(251, 191, 36, 0.04) 40%,
+    transparent 70%
+  );
+  animation: aurora-drift-1 45s ease-in-out infinite, aurora-fade-in 2s ease-out forwards;
+}
+
+/* Layer 2: cool side (blue → teal → green) — drifts slowly left */
+.aurora-layer-2 {
+  background: radial-gradient(
+    ellipse 70% 50% at 80% 40%,
+    rgba(96, 165, 250, 0.06) 0%,
+    rgba(52, 211, 153, 0.04) 40%,
+    transparent 70%
+  );
+  animation: aurora-drift-2 55s ease-in-out infinite, aurora-fade-in 2s ease-out 0.3s forwards;
+}
+
+/* Layer 3: accent (violet → magenta) — slow vertical float */
+.aurora-layer-3 {
+  background: radial-gradient(
+    ellipse 60% 40% at 50% 30%,
+    rgba(167, 139, 250, 0.05) 0%,
+    rgba(219, 39, 119, 0.03) 40%,
+    transparent 65%
+  );
+  animation: aurora-drift-3 65s ease-in-out infinite, aurora-fade-in 2s ease-out 0.6s forwards;
+}
+
+@keyframes aurora-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes aurora-drift-1 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  25% { transform: translate(8%, -5%) scale(1.05); }
+  50% { transform: translate(15%, 3%) scale(1.02); }
+  75% { transform: translate(5%, -2%) scale(1.08); }
+}
+
+@keyframes aurora-drift-2 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  25% { transform: translate(-10%, 4%) scale(1.06); }
+  50% { transform: translate(-5%, -6%) scale(1.03); }
+  75% { transform: translate(-12%, 2%) scale(1.07); }
+}
+
+@keyframes aurora-drift-3 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  33% { transform: translate(5%, -8%) scale(1.1); }
+  66% { transform: translate(-5%, 5%) scale(1.04); }
+}
+
+/* Dark mode: slightly brighter aurora to show against dark bg */
+.dark .aurora-layer-1 {
+  background: radial-gradient(
+    ellipse 80% 60% at 20% 50%,
+    rgba(244, 114, 182, 0.1) 0%,
+    rgba(251, 191, 36, 0.06) 40%,
+    transparent 70%
+  );
+}
+
+.dark .aurora-layer-2 {
+  background: radial-gradient(
+    ellipse 70% 50% at 80% 40%,
+    rgba(96, 165, 250, 0.09) 0%,
+    rgba(52, 211, 153, 0.05) 40%,
+    transparent 70%
+  );
+}
+
+.dark .aurora-layer-3 {
+  background: radial-gradient(
+    ellipse 60% 40% at 50% 30%,
+    rgba(167, 139, 250, 0.08) 0%,
+    rgba(219, 39, 119, 0.05) 40%,
+    transparent 65%
+  );
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-layer {
+    animation: aurora-fade-in 0.01ms forwards !important;
+  }
 }
