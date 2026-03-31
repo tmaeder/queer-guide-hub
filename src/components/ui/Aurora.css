@@ -7,33 +7,33 @@
 
 .aurora-layer {
   position: absolute;
-  inset: 0;
+  inset: -20%;
   opacity: 0;
   animation: aurora-fade-in 2s ease-out forwards;
 }
 
-/* Layer 1: red → orange → yellow (left side) */
+/* Layer 1: red → orange → yellow (left to center) */
 .aurora-layer-1 {
   background:
-    radial-gradient(ellipse 50% 50% at 5% 50%, rgba(228, 3, 3, 0.30) 0%, transparent 70%),
-    radial-gradient(ellipse 45% 50% at 25% 45%, rgba(255, 140, 0, 0.28) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 45% at 40% 55%, rgba(255, 237, 0, 0.22) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 70% at 0% 50%, rgba(228, 3, 3, 0.30) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 65% at 30% 40%, rgba(255, 140, 0, 0.28) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 60% at 50% 60%, rgba(255, 237, 0, 0.22) 0%, transparent 60%);
   animation: aurora-drift-1 45s ease-in-out infinite, aurora-fade-in 2s ease-out forwards;
 }
 
-/* Layer 2: green → blue (right side) */
+/* Layer 2: green → blue (center to right) */
 .aurora-layer-2 {
   background:
-    radial-gradient(ellipse 45% 50% at 55% 40%, rgba(0, 128, 38, 0.25) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 50% at 75% 50%, rgba(0, 77, 255, 0.28) 0%, transparent 70%);
+    radial-gradient(ellipse 60% 65% at 60% 35%, rgba(0, 128, 38, 0.25) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 70% at 85% 50%, rgba(0, 77, 255, 0.28) 0%, transparent 70%);
   animation: aurora-drift-2 55s ease-in-out infinite, aurora-fade-in 2s ease-out 0.3s forwards;
 }
 
-/* Layer 3: violet → magenta (top accent) */
+/* Layer 3: violet → magenta (right edge + top) */
 .aurora-layer-3 {
   background:
-    radial-gradient(ellipse 45% 40% at 90% 45%, rgba(117, 7, 135, 0.26) 0%, transparent 65%),
-    radial-gradient(ellipse 35% 35% at 50% 25%, rgba(219, 39, 119, 0.18) 0%, transparent 60%);
+    radial-gradient(ellipse 65% 65% at 100% 50%, rgba(117, 7, 135, 0.26) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 50% 15%, rgba(219, 39, 119, 0.18) 0%, transparent 60%);
   animation: aurora-drift-3 65s ease-in-out infinite, aurora-fade-in 2s ease-out 0.6s forwards;
 }
 
@@ -65,21 +65,21 @@
 /* Dark mode: more vivid against dark bg */
 .dark .aurora-layer-1 {
   background:
-    radial-gradient(ellipse 50% 50% at 5% 50%, rgba(228, 3, 3, 0.38) 0%, transparent 70%),
-    radial-gradient(ellipse 45% 50% at 25% 45%, rgba(255, 140, 0, 0.35) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 45% at 40% 55%, rgba(255, 237, 0, 0.28) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 70% at 0% 50%, rgba(228, 3, 3, 0.38) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 65% at 30% 40%, rgba(255, 140, 0, 0.35) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 60% at 50% 60%, rgba(255, 237, 0, 0.28) 0%, transparent 60%);
 }
 
 .dark .aurora-layer-2 {
   background:
-    radial-gradient(ellipse 45% 50% at 55% 40%, rgba(0, 128, 38, 0.32) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 50% at 75% 50%, rgba(0, 77, 255, 0.35) 0%, transparent 70%);
+    radial-gradient(ellipse 60% 65% at 60% 35%, rgba(0, 128, 38, 0.32) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 70% at 85% 50%, rgba(0, 77, 255, 0.35) 0%, transparent 70%);
 }
 
 .dark .aurora-layer-3 {
   background:
-    radial-gradient(ellipse 45% 40% at 90% 45%, rgba(117, 7, 135, 0.32) 0%, transparent 65%),
-    radial-gradient(ellipse 35% 35% at 50% 25%, rgba(219, 39, 119, 0.22) 0%, transparent 60%);
+    radial-gradient(ellipse 65% 65% at 100% 50%, rgba(117, 7, 135, 0.32) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 50% 15%, rgba(219, 39, 119, 0.22) 0%, transparent 60%);
 }
 
 /* Respect reduced motion */
