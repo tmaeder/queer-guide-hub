@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -25,13 +26,28 @@ export default defineConfig(({ mode }) => ({
     setupFiles: [],
   },
   server: {
-    host: "127.0.0.1",
+    host: true,
     port: parseInt(process.env.PORT || "8080"),
   },
   plugins: [
     react(),
     cfRocketLoaderBypass(),
+    mode === 'production' && sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      release: {
+        name: process.env.CF_PAGES_COMMIT_SHA || undefined,
+      },
+      sourcemaps: {
+        filesToDeleteAfterUpload: ['./dist/assets/js/*.map'],
+      },
+      telemetry: false,
+    }),
   ].filter(Boolean),
+  define: {
+    'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(process.env.CF_PAGES_COMMIT_SHA || ''),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -79,6 +95,9 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/mammoth/')) {
             return 'mammoth';
           }
+          if (id.includes('node_modules/gsap/')) {
+            return 'gsap';
+          }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
             return 'vendor';
@@ -105,7 +124,7 @@ export default defineConfig(({ mode }) => ({
     minify: mode === 'production' ? 'esbuild' : false,
     // Cloudflare Pages optimization
     target: 'esnext',
-    sourcemap: mode === 'development',
+    sourcemap: mode === 'production' ? 'hidden' : true,
     ...(mode === 'production' && {
       reportCompressedSize: false,
       chunkSizeWarningLimit: 1000,

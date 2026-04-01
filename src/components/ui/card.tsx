@@ -62,6 +62,7 @@ const CardImage: React.FC<CardImageProps> = ({
   children,
 }) => {
   const [error, setError] = React.useState(false);
+  const [loaded, setLoaded] = React.useState(false);
   const theme = useTheme();
   const brandColor = theme.palette.brand?.main || '#DB2777';
 
@@ -108,12 +109,14 @@ const CardImage: React.FC<CardImageProps> = ({
         src={src}
         alt={alt}
         loading="lazy"
+        onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
+        className={`img-lazy-fade${loaded ? ' loaded' : ''}`}
         sx={{
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+          transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       />
       {children}

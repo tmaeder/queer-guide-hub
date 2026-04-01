@@ -54,7 +54,7 @@ export default function AdminGroups() {
                 height: 36,
                 width: 36,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+                background: 'linear-gradient(135deg, #DB2777, #F472B6)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

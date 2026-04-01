@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/command';
 import { format } from 'date-fns';
 import Box from '@mui/material/Box';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { useTheme } from '@mui/material/styles';
@@ -266,7 +267,7 @@ const Events = () => {
   }, []);
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
           title="Events"
@@ -709,7 +710,7 @@ const Events = () => {
         {!loading && events.length > 0 && (
           <>
             {viewMode === 'grid' ? (
-              <Box
+              <StaggerGrid
                 sx={{
                   display: 'grid',
                   gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
@@ -724,7 +725,7 @@ const Events = () => {
                     onUpdateAttendance={user ? handleAttendanceUpdate : undefined}
                   />
                 ))}
-              </Box>
+              </StaggerGrid>
             ) : (
               <EventsCalendarView
                 events={events}

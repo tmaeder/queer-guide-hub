@@ -79,7 +79,7 @@ const SubmitHub = () => {
             border: '1px solid',
             borderColor: 'divider',
             gridColumn: { sm: '1 / -1', md: '1 / -1' },
-            background: 'linear-gradient(135deg, #ec489910 0%, #8b5cf610 100%)',
+            background: 'linear-gradient(135deg, #ec489910 0%, #DB277710 100%)',
           }}
           onClick={() => navigate('/submit/event?mode=scan')}
         >

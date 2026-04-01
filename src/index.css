@@ -411,6 +411,185 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-1px) scale(0.99);
 }
 
+/* ── Scroll Reveal System ─────────────────────────────────────────── */
+
+.scroll-reveal {
+  will-change: transform, opacity;
+}
+
+.scroll-reveal--up {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity var(--sr-duration, 0.7s) cubic-bezier(0.22, 1, 0.36, 1),
+              transform var(--sr-duration, 0.7s) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-reveal--up.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal--down {
+  opacity: 0;
+  transform: translateY(-16px);
+  transition: opacity var(--sr-duration, 0.7s) cubic-bezier(0.22, 1, 0.36, 1),
+              transform var(--sr-duration, 0.7s) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-reveal--down.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal--left {
+  opacity: 0;
+  transform: translateX(-16px);
+  transition: opacity var(--sr-duration, 0.7s) cubic-bezier(0.22, 1, 0.36, 1),
+              transform var(--sr-duration, 0.7s) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-reveal--left.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-reveal--right {
+  opacity: 0;
+  transform: translateX(16px);
+  transition: opacity var(--sr-duration, 0.7s) cubic-bezier(0.22, 1, 0.36, 1),
+              transform var(--sr-duration, 0.7s) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-reveal--right.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-reveal--fade {
+  opacity: 0;
+  transition: opacity var(--sr-duration, 0.7s) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-reveal--fade.revealed {
+  opacity: 1;
+}
+
+/* Remove will-change after reveal to free GPU memory */
+.scroll-reveal.revealed {
+  will-change: auto;
+}
+
+/* ── Page Transitions ─────────────────────────────────────────────── */
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+}
+
+.page-transition-enter {
+  animation: page-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-transition-exit {
+  animation: page-exit 0.15s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+/* View Transitions API (progressive enhancement for Chrome 111+) */
+@supports (view-transition-name: none) {
+  ::view-transition-old(root) {
+    animation: page-exit 0.15s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: page-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+/* ── Extra Micro-Interaction Keyframes ────────────────────────────── */
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-4px); }
+  30%, 70% { transform: translateX(4px); }
+}
+
+@keyframes success-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes badge-bounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.3); }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.shake { animation: shake 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+.success-pop { animation: success-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.slide-up-in { animation: slide-up-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slide-down-in { animation: slide-down-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.badge-bounce { animation: badge-bounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ── Image lazy-load fade ─────────────────────────────────────────── */
+
+.img-lazy-fade {
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.img-lazy-fade.loaded {
+  opacity: 1;
+}
+
+/* ── Nav link animated underline ──────────────────────────────────── */
+
+.nav-link-animated {
+  position: relative;
+}
+.nav-link-animated::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: hsl(var(--brand));
+  border-radius: 1px;
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-link-animated:hover::after,
+.nav-link-animated.active::after {
+  width: 100%;
+}
+
+/* ── Content crossfade (skeleton → content) ───────────────────────── */
+
+.content-crossfade-enter {
+  animation: fade-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* ── Accessibility Classes ─────────────────────────────────────────── */
 
 .font-size-small { font-size: 0.875rem; }

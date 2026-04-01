@@ -271,7 +271,7 @@ export function AdminShell() {
                         color: 'text.secondary',
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
-                        '&:hover': { color: '#8b5cf6' },
+                        '&:hover': { color: '#DB2777' },
                       }}
                     >
                       {crumb.label}

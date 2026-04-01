@@ -16,6 +16,7 @@ import { usePersonalities, PersonalityFilters } from '@/hooks/usePersonalities';
 import { useAuth } from '@/hooks/useAuth';
 import { Users } from 'lucide-react';
 import Box from '@mui/material/Box';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -88,7 +89,7 @@ export default function Personalities() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
+      <Container maxWidth="lg" sx={{ px: 2, py: { xs: 6, md: 10 } }}>
         <PageLoadingState count={8} />
       </Container>
     );
@@ -96,7 +97,7 @@ export default function Personalities() {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
+      <Container maxWidth="lg" sx={{ px: 2, py: { xs: 6, md: 10 } }}>
         <ErrorState message={error} onRetry={() => window.location.reload()} />
       </Container>
     );
@@ -104,7 +105,7 @@ export default function Personalities() {
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
+      <Container maxWidth="lg" sx={{ px: 2, py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
           title="Personalities"
@@ -163,7 +164,7 @@ export default function Personalities() {
             mood="encouraging"
           />
         ) : (
-          <Box
+          <StaggerGrid
             sx={{
               display: 'grid',
               gridTemplateColumns: {
@@ -182,7 +183,7 @@ export default function Personalities() {
                 onClick={() => handlePersonalityClick(personality)}
               />
             ))}
-          </Box>
+          </StaggerGrid>
         )}
       </Container>
     </Box>

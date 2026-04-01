@@ -1,11 +1,11 @@
 import { lazy, Suspense } from 'react';
 
-const PipelineBuilder = lazy(() => import('@/components/admin/pipeline-builder/PipelineBuilder'));
+const UnifiedDataOps = lazy(() => import('@/components/admin/pipeline-builder/UnifiedDataOps'));
 
 export default function AdminPipelines() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading Pipeline Builder...</div>}>
-      <PipelineBuilder />
+    <Suspense fallback={<div style={{ padding: 32, textAlign: 'center', color: '#9ca3af' }}>Loading Data Operations...</div>}>
+      <UnifiedDataOps />
     </Suspense>
   );
 }

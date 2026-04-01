@@ -80,7 +80,7 @@ const ROLE_COLORS: Record<string, string> = {
   admin: '#ef4444',
   moderator: '#f97316',
   editor: '#3b82f6',
-  contributor: '#8b5cf6',
+  contributor: '#DB2777',
 };
 
 const ALL_ROLES: AppRole[] = ['admin', 'moderator', 'editor'];

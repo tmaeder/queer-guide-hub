@@ -70,10 +70,7 @@ const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
 const AdminImportHub = lazy(() => import('./pages/AdminImportHub'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
-const AdminWorkflows = lazy(() => import('./pages/AdminWorkflows'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
-const AdminPipelineDashboard = lazy(() => import('./pages/AdminPipelineDashboard'));
-const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
 
 // New feature pages
@@ -209,6 +206,8 @@ const AppRoutes = () => {
   // Move focus to main content on route change (a11y: WCAG 2.4.3)
   const mainRef = React.useRef<HTMLElement>(null);
   const isFirstRender = React.useRef(true);
+  const pageRef = React.useRef<HTMLDivElement>(null);
+
   React.useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -217,6 +216,17 @@ const AppRoutes = () => {
     requestAnimationFrame(() => {
       mainRef.current?.focus({ preventScroll: false });
     });
+
+    // Page entrance animation
+    const el = pageRef.current;
+    if (!el) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) return;
+
+    el.classList.remove('page-transition-enter');
+    // Force reflow to restart animation
+    void el.offsetHeight;
+    el.classList.add('page-transition-enter');
   }, [location.pathname]);
 
   return (
@@ -318,6 +328,7 @@ const AppRoutes = () => {
               </Box>
             }
           >
+            <div ref={pageRef}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/venues" element={<Venues />} />
@@ -394,17 +405,17 @@ const AppRoutes = () => {
                 <Route path="imports/create" element={<Navigate to="/admin/imports" replace />} />
                 <Route path="imports/news-sources" element={<NewsSourcesManager />} />
                 <Route path="imports/pipeline" element={<PipelineMonitor />} />
-                <Route path="imports/enrichment" element={<EnrichmentDashboard />} />
+                <Route path="imports/enrichment" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
                 <Route path="imports/venues" element={<VenueImportQuickActions />} />
                 <Route path="imports/email-ingestions" element={<AdminEmailIngestions />} />
                 <Route path="imports/history" element={<AdminImportHub />} />
-                <Route path="workflows" element={<AdminWorkflows />} />
+                <Route path="workflows" element={<Navigate to="/admin/pipelines?tab=health" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
-                <Route path="pipelines/dashboard" element={<AdminPipelineDashboard />} />
+                <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
                 <Route path="scraping" element={<Navigate to="/admin/imports" replace />} />
 
                 {/* Review & Workflow section -- unified dashboard */}
-                <Route path="automation" element={<AdminAutomation />} />
+                <Route path="automation" element={<Navigate to="/admin/pipelines?tab=modules" replace />} />
                 <Route path="review" element={<AdminReview />} />
                 <Route
                   path="moderation"
@@ -512,6 +523,7 @@ const AppRoutes = () => {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </div>
           </Suspense>
         </ErrorBoundary>
       </Box>

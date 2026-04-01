@@ -163,7 +163,7 @@ const BULK_BUTTONS: Array<{
 }> = [
   { action: 'approve', label: 'Approve All', icon: CheckCheck, variant: 'contained', muiColor: 'success' },
   { action: 'approve_confident', label: 'Approve High-Confidence', icon: Sparkles, variant: 'outlined', color: '#0ea5e9' },
-  { action: 'enrich', label: 'Apply Enrichments', icon: Zap, variant: 'outlined', color: '#8b5cf6' },
+  { action: 'enrich', label: 'Apply Enrichments', icon: Zap, variant: 'outlined', color: '#DB2777' },
   { action: 'dedup', label: 'Resolve Duplicates', icon: Inbox, variant: 'outlined', color: '#ea580c' },
   { action: 'dismiss_low', label: 'Dismiss Low-Severity', icon: VolumeX, variant: 'outlined', color: '#a855f7' },
   { action: 'reject_stale', label: 'Reject Stale', icon: Clock, variant: 'outlined', color: '#6b7280' },
@@ -397,7 +397,7 @@ export default function AdminReview() {
           icon={Tag}
           label="Tag Suggestions"
           count={c.tagSuggestions}
-          color="#8b5cf6"
+          color="#DB2777"
           active={activeTab === 'tags'}
           onClick={() => handleTabChange('tags')}
         />

@@ -340,8 +340,8 @@ export const VenueImportQuickActions = () => {
               <Typography variant="caption" sx={{ color: '#ea580c' }}>Imported</Typography>
             </Box>
             <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: '#faf5ff', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ color: '#7c3aed' }}>{activeSources}</Typography>
-              <Typography variant="caption" sx={{ color: '#7c3aed' }}>Active Sources</Typography>
+              <Typography variant="h5" sx={{ color: '#DB2777' }}>{activeSources}</Typography>
+              <Typography variant="caption" sx={{ color: '#DB2777' }}>Active Sources</Typography>
             </Box>
             <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: '#fef2f2', borderRadius: 2 }}>
               <Typography variant="h5" sx={{ color: '#dc2626' }}>{venueSources.length}</Typography>

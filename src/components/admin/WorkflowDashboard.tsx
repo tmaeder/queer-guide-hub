@@ -260,7 +260,7 @@ function OverviewTab({
     { label: 'Failed', value: stats.failedRuns, color: '#ef4444' },
     { label: 'Queued', value: stats.queuedRuns, color: '#f59e0b' },
     { label: 'Dead Letter', value: stats.deadLetterRuns, color: '#dc2626' },
-    { label: 'Avg Duration', value: formatDuration(stats.avgDurationMs), color: '#8b5cf6' },
+    { label: 'Avg Duration', value: formatDuration(stats.avgDurationMs), color: '#DB2777' },
     { label: 'Definitions', value: definitions.length, color: '#64748b' },
   ];
 

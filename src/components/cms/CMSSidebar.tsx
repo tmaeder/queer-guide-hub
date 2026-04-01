@@ -117,7 +117,7 @@ const navItemSx = (isActive: boolean, accentColor?: string) => ({
     ? (accentColor ? accentColor + '10' : 'action.selected')
     : 'transparent',
   borderLeft: isActive
-    ? `3px solid ${accentColor || '#8b5cf6'}`
+    ? `3px solid ${accentColor || '#DB2777'}`
     : '3px solid transparent',
   '&:hover': {
     bgcolor: isActive
@@ -232,7 +232,7 @@ export function CMSSidebar({
         sx={{
           px: 2.5,
           py: 2.5,
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 50%, transparent 100%)',
+          background: 'linear-gradient(135deg, rgba(219, 39, 119, 0.08) 0%, rgba(244, 114, 182, 0.04) 50%, transparent 100%)',
           borderBottom: 1,
           borderColor: 'divider',
         }}
@@ -243,12 +243,12 @@ export function CMSSidebar({
               width: 32,
               height: 32,
               borderRadius: '10px',
-              background: 'linear-gradient(135deg, #8b5cf6, #a855f7)',
+              background: 'linear-gradient(135deg, #DB2777, #F472B6)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
+              boxShadow: '0 2px 8px rgba(219, 39, 119, 0.3)',
             }}
           >
             <Layers size={16} color="#fff" />
@@ -260,7 +260,7 @@ export function CMSSidebar({
                 fontWeight: 700,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.2,
-                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                background: 'linear-gradient(135deg, #DB2777, #DB2777)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -284,10 +284,10 @@ export function CMSSidebar({
           <ListItemButton
             selected={activeView === 'overview'}
             onClick={() => onNavigate('overview')}
-            sx={navItemSx(activeView === 'overview', '#8b5cf6')}
+            sx={navItemSx(activeView === 'overview', '#DB2777')}
           >
             <ListItemIcon sx={{ minWidth: 36 }}>
-              <IconBadge icon={LayoutDashboard} color="#8b5cf6" size={15} />
+              <IconBadge icon={LayoutDashboard} color="#DB2777" size={15} />
             </ListItemIcon>
             <ListItemText
               primary="Dashboard"
@@ -353,7 +353,7 @@ export function CMSSidebar({
                 selected={activeView === 'content' && !activeContentType}
                 onClick={() => onNavigate('content')}
                 sx={{
-                  ...navItemSx(activeView === 'content' && !activeContentType, '#8b5cf6'),
+                  ...navItemSx(activeView === 'content' && !activeContentType, '#DB2777'),
                   pl: activeView === 'content' && !activeContentType ? 4.5 : 4.75,
                   py: 0.5,
                 }}
@@ -543,7 +543,7 @@ export function CMSSidebar({
             height: 32,
             fontSize: '0.8rem',
             fontWeight: 600,
-            bgcolor: '#8b5cf6',
+            bgcolor: '#DB2777',
             color: '#fff',
           }}
           src={user?.user_metadata?.avatar_url as string | undefined}

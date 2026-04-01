@@ -260,10 +260,7 @@ function PipelineBuilderInner() {
   );
 }
 
+// Note: ReactFlowProvider is provided by UnifiedDataOps wrapper
 export default function PipelineBuilder() {
-  return (
-    <ReactFlowProvider>
-      <PipelineBuilderInner />
-    </ReactFlowProvider>
-  );
+  return <PipelineBuilderInner />;
 }

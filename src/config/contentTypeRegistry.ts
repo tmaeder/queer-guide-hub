@@ -944,7 +944,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     imageField: 'images',
     icon: Building,
     label: { singular: 'Venue', plural: 'Venues' },
-    color: '#8b5cf6',
+    color: '#DB2777',
     fields: venueFields,
     defaults: { featured: false, verified: false },
     validate: validateVenue,

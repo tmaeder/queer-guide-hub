@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import * as Sentry from '@sentry/react';
 
 // Optimized query client configuration with better batching and error handling
 export const createOptimizedQueryClient = () => {
@@ -43,6 +44,7 @@ export const createOptimizedQueryClient = () => {
         },
         retryDelay: 1500,
         networkMode: 'online',
+        onError: (error) => Sentry.captureException(error),
       },
     },
   });

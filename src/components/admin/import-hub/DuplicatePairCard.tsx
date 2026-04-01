@@ -109,7 +109,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
                 </Card>
                 <Card>
                   <CardContent sx={{ p: 2 }}>
-                    <Typography variant="subtitle2" sx={{ mb: 1, color: '#8b5cf6', fontWeight: 600 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1, color: '#DB2777', fontWeight: 600 }}>
                       Record B: {entityB[nameField] || 'Unknown'}
                     </Typography>
                     <StructuredFieldDisplay entityType={pair.entity_type} data={entityB} />

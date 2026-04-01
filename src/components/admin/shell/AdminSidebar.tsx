@@ -72,7 +72,7 @@ const navItemSx = (isActive: boolean, accentColor?: string) => ({
   position: 'relative' as const,
   transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
   bgcolor: isActive ? (accentColor ? accentColor + '10' : 'action.selected') : 'transparent',
-  borderLeft: isActive ? `3px solid ${accentColor || '#8b5cf6'}` : '3px solid transparent',
+  borderLeft: isActive ? `3px solid ${accentColor || '#DB2777'}` : '3px solid transparent',
   '&:hover': {
     bgcolor: isActive ? (accentColor ? accentColor + '14' : 'action.selected') : 'action.hover',
     transform: 'translateX(2px)',
@@ -225,7 +225,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
           px: 2.5,
           py: 2.5,
           background:
-            'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 50%, transparent 100%)',
+            'linear-gradient(135deg, rgba(219, 39, 119, 0.08) 0%, rgba(244, 114, 182, 0.04) 50%, transparent 100%)',
           borderBottom: 1,
           borderColor: 'divider',
         }}
@@ -236,12 +236,12 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
               width: 32,
               height: 32,
               borderRadius: '10px',
-              background: 'linear-gradient(135deg, #8b5cf6, #a855f7)',
+              background: 'linear-gradient(135deg, #DB2777, #F472B6)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
+              boxShadow: '0 2px 8px rgba(219, 39, 119, 0.3)',
             }}
           >
             <Layers size={16} color="#fff" />
@@ -253,7 +253,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                 fontWeight: 700,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.2,
-                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                background: 'linear-gradient(135deg, #DB2777, #DB2777)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -266,7 +266,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
           </Box>
           {isAdmin && (
             <Tooltip title="Admin role">
-              <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', color: '#8b5cf6' }}>
+              <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', color: '#DB2777' }}>
                 <Shield size={14} />
               </Box>
             </Tooltip>
@@ -413,7 +413,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
             height: 32,
             fontSize: '0.8rem',
             fontWeight: 600,
-            bgcolor: '#8b5cf6',
+            bgcolor: '#DB2777',
             color: '#fff',
           }}
           src={user?.user_metadata?.avatar_url as string | undefined}

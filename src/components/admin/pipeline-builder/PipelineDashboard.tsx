@@ -50,55 +50,50 @@ export default function PipelineDashboard() {
   const recentCompleted = runs?.filter(r => r.status === 'completed').length || 0;
   const recentFailed = runs?.filter(r => r.status === 'failed').length || 0;
 
+  const statCardStyle: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 8, padding: '16px 16px 12px', background: '#fff' };
+  const statIconRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8 };
+  const statValue: React.CSSProperties = { fontSize: 24, fontWeight: 700 };
+  const statLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', marginTop: 4 };
+
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2">
-              <Play className="h-4 w-4 text-blue-500" />
-              <span className="text-2xl font-bold">{runningPipelines}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Running</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span className="text-2xl font-bold">{recentCompleted}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Completed</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2">
-              <XCircle className="h-4 w-4 text-red-500" />
-              <span className="text-2xl font-bold">{recentFailed}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Failed</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-indigo-500" />
-              <span className="text-2xl font-bold">{totalStaging}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Staging Items</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="flex items-center gap-2">
-              {openCircuits > 0 ? <AlertTriangle className="h-4 w-4 text-red-500" /> : <Shield className="h-4 w-4 text-green-500" />}
-              <span className="text-2xl font-bold">{openCircuits}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Open Circuits</p>
-          </CardContent>
-        </Card>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
+        <div style={statCardStyle}>
+          <div style={statIconRow}>
+            <Play style={{ width: 16, height: 16, color: '#3b82f6' }} />
+            <span style={statValue}>{runningPipelines}</span>
+          </div>
+          <p style={statLabel}>Running</p>
+        </div>
+        <div style={statCardStyle}>
+          <div style={statIconRow}>
+            <CheckCircle style={{ width: 16, height: 16, color: '#22c55e' }} />
+            <span style={statValue}>{recentCompleted}</span>
+          </div>
+          <p style={statLabel}>Completed</p>
+        </div>
+        <div style={statCardStyle}>
+          <div style={statIconRow}>
+            <XCircle style={{ width: 16, height: 16, color: '#ef4444' }} />
+            <span style={statValue}>{recentFailed}</span>
+          </div>
+          <p style={statLabel}>Failed</p>
+        </div>
+        <div style={statCardStyle}>
+          <div style={statIconRow}>
+            <Database style={{ width: 16, height: 16, color: '#6366f1' }} />
+            <span style={statValue}>{totalStaging}</span>
+          </div>
+          <p style={statLabel}>Staging Items</p>
+        </div>
+        <div style={statCardStyle}>
+          <div style={statIconRow}>
+            {openCircuits > 0 ? <AlertTriangle style={{ width: 16, height: 16, color: '#ef4444' }} /> : <Shield style={{ width: 16, height: 16, color: '#22c55e' }} />}
+            <span style={statValue}>{openCircuits}</span>
+          </div>
+          <p style={statLabel}>Open Circuits</p>
+        </div>
       </div>
 
       <Tabs defaultValue="runs">
@@ -111,8 +106,8 @@ export default function PipelineDashboard() {
 
         {/* Pipeline Runs Tab */}
         <TabsContent value="runs">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <Card className="lg:col-span-2">
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+            <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium">Recent Runs</CardTitle>
               </CardHeader>
@@ -213,11 +208,11 @@ export default function PipelineDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                 {circuitBreakers?.map(cb => (
-                  <div key={cb.id} className="border rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{cb.api_name}</span>
+                  <div key={cb.id} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: 500, fontSize: 14 }}>{cb.api_name}</span>
                       <Badge variant="outline" className={`text-xs ${cbStateColors[cb.state]}`}>
                         {cb.state === 'half_open' ? 'HALF OPEN' : cb.state.toUpperCase()}
                       </Badge>
@@ -261,11 +256,11 @@ export default function PipelineDashboard() {
                         />
                       ))}
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                       {stagingStats.map(s => (
-                        <div key={s.status} className="border rounded-md p-3 text-center">
-                          <div className="text-xl font-bold">{s.count.toLocaleString()}</div>
-                          <div className="text-xs text-muted-foreground capitalize">{s.status}</div>
+                        <div key={s.status} style={{ border: '1px solid #e5e7eb', borderRadius: 6, padding: 12, textAlign: 'center' }}>
+                          <div style={{ fontSize: 20, fontWeight: 700 }}>{s.count.toLocaleString()}</div>
+                          <div style={{ fontSize: 12, color: '#9ca3af', textTransform: 'capitalize' }}>{s.status}</div>
                         </div>
                       ))}
                     </div>

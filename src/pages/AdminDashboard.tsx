@@ -190,7 +190,7 @@ function ReviewQueueWidget({ data }: { data: CockpitData }) {
     {
       label: 'Automation',
       count: review.automation,
-      color: '#8b5cf6',
+      color: '#DB2777',
       icon: Bot,
       tab: 'automation',
     },
@@ -348,7 +348,7 @@ const contentStatItems = [
     key: 'venues',
     label: 'Venues',
     icon: Building,
-    color: '#8b5cf6',
+    color: '#DB2777',
     route: '/admin/content/venues',
   },
   {
@@ -480,7 +480,7 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
 function QuickActionsBar() {
   const navigate = useNavigate();
   const actions = [
-    { label: 'New Content', icon: Plus, route: '/admin/content', color: '#8b5cf6' },
+    { label: 'New Content', icon: Plus, route: '/admin/content', color: '#DB2777' },
     { label: 'Import Data', icon: Download, route: '/admin/imports', color: '#10b981' },
     { label: 'Review Queue', icon: ClipboardCheck, route: '/admin/review', color: '#f59e0b' },
     { label: 'Automation', icon: Zap, route: '/admin/automation', color: '#f59e0b' },
@@ -536,7 +536,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <LayoutDashboard size={24} style={{ color: '#8b5cf6' }} />
+          <LayoutDashboard size={24} style={{ color: '#DB2777' }} />
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
             Cockpit
           </Typography>

@@ -26,9 +26,11 @@ export const PageLoadingState: React.FC<PageLoadingStateProps> = ({
   count = 6,
   variant = 'card',
 }) => {
+  // Skeleton grids get a fade-in entrance so they don't pop in harshly
+  const wrapperClass = 'content-crossfade-enter';
   if (variant === 'list') {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box className={wrapperClass} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {Array.from({ length: count }).map((_, i) => (
           <Card key={i}>
             <CardContent sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -52,6 +54,7 @@ export const PageLoadingState: React.FC<PageLoadingStateProps> = ({
   // Default: card grid
   return (
     <Box
+      className={wrapperClass}
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },

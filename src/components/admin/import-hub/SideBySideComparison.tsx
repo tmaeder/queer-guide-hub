@@ -146,7 +146,7 @@ export function SideBySideComparison({
             <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ArrowRight style={{ width: 14, height: 14, color: 'var(--muted-foreground)' }} />
             </Box>
-            <Box sx={{ p: 1.5, fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', color: '#8b5cf6' }}>
+            <Box sx={{ p: 1.5, fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', color: '#DB2777' }}>
               {rightLabel}
             </Box>
           </Box>
@@ -198,7 +198,7 @@ export function SideBySideComparison({
                       sx={{
                         width: 20, height: 20, borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        bgcolor: choices[field.key] === 'left' ? '#3b82f6' : '#8b5cf6',
+                        bgcolor: choices[field.key] === 'left' ? '#3b82f6' : '#DB2777',
                         color: 'white', fontSize: '0.6rem', fontWeight: 700,
                       }}
                     >
@@ -212,8 +212,8 @@ export function SideBySideComparison({
                   sx={{
                     p: 1.5,
                     cursor: isDiff ? 'pointer' : 'default',
-                    borderLeft: choices[field.key] === 'right' && isDiff ? '3px solid #8b5cf6' : '3px solid transparent',
-                    bgcolor: choices[field.key] === 'right' && isDiff ? 'rgba(139, 92, 246, 0.06)' : 'transparent',
+                    borderLeft: choices[field.key] === 'right' && isDiff ? '3px solid #DB2777' : '3px solid transparent',
+                    bgcolor: choices[field.key] === 'right' && isDiff ? 'rgba(219, 39, 119, 0.06)' : 'transparent',
                   }}
                   onClick={() => isDiff && handleChoice(field.key, 'right')}
                 >

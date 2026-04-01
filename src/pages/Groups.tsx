@@ -62,7 +62,7 @@ export default function Groups() {
 
   return (
     <AuthGate title="Community Groups" description="Please sign in to view and join community groups.">
-      <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
         <PageHeader
           title="Community Groups"
           subtitle="Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces."

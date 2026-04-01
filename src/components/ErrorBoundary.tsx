@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import * as Sentry from '@sentry/react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import Box from '@mui/material/Box';
@@ -31,14 +32,13 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
 
-    // Structured error logging (no PII)
     const route = typeof window !== 'undefined' ? window.location.pathname : 'unknown';
     const section = this.props.section || 'app';
 
-    console.error(`[ErrorBoundary:${section}] Uncaught error on ${route}:`, {
-      message: error.message,
-      name: error.name,
-      componentStack: errorInfo.componentStack?.slice(0, 500),
+    // Report to Sentry
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: errorInfo.componentStack } },
+      tags: { section, route },
     });
 
     // Report to Umami if available

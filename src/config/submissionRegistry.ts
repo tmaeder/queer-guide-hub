@@ -37,7 +37,7 @@ const venueSubmission: SubmissionTypeConfig = {
   label: 'Venue',
   description: 'Know a queer-friendly space? Share it with the community.',
   icon: Building,
-  color: '#8b5cf6',
+  color: '#DB2777',
   titleField: 'name',
   defaults: { featured: false, verified: false },
   steps: [

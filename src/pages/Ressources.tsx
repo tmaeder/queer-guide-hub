@@ -467,14 +467,14 @@ export default function Ressources() {
   };
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         <PageLoadingState count={12} />
       </Container>
     );
   }
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         <ErrorState
           message="Something went wrong while loading resources. Please try again later."
           onRetry={() => window.location.reload()}
@@ -490,7 +490,7 @@ export default function Ressources() {
     const parentCatName = primaryCatInfo?.parent_name;
 
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         {/* Breadcrumb (3-level: Resources > Parent > Subcategory > Tag) */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
           <Box
@@ -661,7 +661,7 @@ export default function Ressources() {
   );
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
       {/* Header */}
       <PageHeader
         title="Resources"

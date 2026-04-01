@@ -79,7 +79,7 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
 };
 
 const SENSITIVITY_COLORS: Record<string, string> = {
-  sensitivity_legal: '#7c3aed',
+  sensitivity_legal: '#DB2777',
   sensitivity_medical: '#0891b2',
   sensitivity_nsfw: '#e11d48',
   lgbti_relevance: '#d97706',
@@ -260,7 +260,7 @@ export function AutoModerationQueue() {
       </Box>
 
       {/* Auto-Approve Panel */}
-      <Card sx={{ border: '1px solid', borderColor: '#8b5cf6', bgcolor: 'rgba(139,92,246,0.04)' }}>
+      <Card sx={{ border: '1px solid', borderColor: '#DB2777', bgcolor: 'rgba(219, 39, 119, 0.04)' }}>
         <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
           <Box
             sx={{
@@ -273,7 +273,7 @@ export function AutoModerationQueue() {
           >
             <Box sx={{ flex: 1, minWidth: 200 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <ShieldCheck style={{ width: 18, height: 18, color: '#8b5cf6' }} />
+                <ShieldCheck style={{ width: 18, height: 18, color: '#DB2777' }} />
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                   Auto-Approve High Confidence
                 </Typography>
@@ -294,7 +294,7 @@ export function AutoModerationQueue() {
                   max={1.0}
                   step={0.05}
                   size="small"
-                  sx={{ color: '#8b5cf6' }}
+                  sx={{ color: '#DB2777' }}
                 />
               </Box>
             </Box>

@@ -211,7 +211,7 @@ export default function Places() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         <PageLoadingState count={8} />
         {loadingTimedOut && (
           <Box sx={{ mt: 3 }}>
@@ -237,7 +237,7 @@ export default function Places() {
   return (
     <Box sx={{ width: '100%' }}>
       {/* Hero Section */}
-      <Container maxWidth="lg" sx={{ pt: { xs: 3, lg: 5 }, pb: 2 }}>
+      <Container maxWidth="lg" sx={{ pt: { xs: 6, md: 10 }, pb: 2 }}>
         <Box
           sx={{
             bgcolor: 'background.paper',

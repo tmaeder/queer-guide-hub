@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Paper from "@mui/material/Paper";
 
 const ARTICLES_PER_PAGE = 24;
@@ -323,7 +324,7 @@ export default function News() {
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
           title="News"
@@ -462,7 +463,7 @@ export default function News() {
                 </Box>
 
                 {/* Articles Grid/List */}
-                <Box sx={viewMode === 'grid'
+                <StaggerGrid sx={viewMode === 'grid'
                   ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: 'repeat(3, 1fr)' }, gap: 3 }
                   : { display: 'flex', flexDirection: 'column', gap: 2 }
                 }>
@@ -480,7 +481,7 @@ export default function News() {
                       sourcesMap={sourcesMap}
                     />
                   ))}
-                </Box>
+                </StaggerGrid>
 
                 {/* Pagination */}
                 {totalPages > 1 && (

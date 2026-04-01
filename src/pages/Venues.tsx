@@ -23,6 +23,7 @@ import { MapPin, Plus, Grid, Map, SortAsc, SortDesc, Filter } from 'lucide-react
 import { Database } from '@/integrations/supabase/types';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Box from '@mui/material/Box';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -181,7 +182,7 @@ const Venues = () => {
   }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
           title="Venues"
@@ -330,7 +331,7 @@ const Venues = () => {
 
               {/* Venues Grid */}
               {!loading && venues.length > 0 && (
-                <Box
+                <StaggerGrid
                   sx={{
                     display: 'grid',
                     gridTemplateColumns: {
@@ -360,7 +361,7 @@ const Venues = () => {
                       />
                     </Box>
                   ))}
-                </Box>
+                </StaggerGrid>
               )}
 
               {/* Infinite scroll sentinel and manual load control */}

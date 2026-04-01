@@ -19,6 +19,8 @@ import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -199,7 +201,8 @@ const Index = React.memo(() => {
         }}
       >
         <Container maxWidth="lg">
-          <Box
+          <StaggerGrid
+            stagger={0.1}
             sx={{
               display: 'grid',
               gridTemplateColumns: {
@@ -239,7 +242,7 @@ const Index = React.memo(() => {
                 </Typography>
               </Box>
             ))}
-          </Box>
+          </StaggerGrid>
         </Container>
       </Box>
 
@@ -265,7 +268,7 @@ const Index = React.memo(() => {
             All the good stuff, one tap away.
           </Typography>
 
-          <Box
+          <StaggerGrid
             sx={{
               display: 'grid',
               gridTemplateColumns: {
@@ -347,11 +350,12 @@ const Index = React.memo(() => {
                 </Link>
               );
             })}
-          </Box>
+          </StaggerGrid>
         </Container>
       </Box>
 
       {/* ── Explore Map ──────────────────────────────────────────────── */}
+      <ScrollReveal direction="up">
       <Box
         component="section"
         sx={{
@@ -428,6 +432,7 @@ const Index = React.memo(() => {
           </Box>
         </Container>
       </Box>
+      </ScrollReveal>
 
       {/* ── Weekly Events Near You ────────────────────────────────────── */}
       <React.Suspense fallback={null}>

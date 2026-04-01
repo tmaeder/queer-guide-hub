@@ -1,4 +1,5 @@
 import { createTheme, type ThemeOptions } from '@mui/material/styles';
+import { duration, ease, transition } from '@/lib/animation';
 import './theme.d.ts';
 
 // ─── Palettes ─────────────────────────────────────────────────────────────────
@@ -63,9 +64,13 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           borderRadius: 12,
-          transition: 'all 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
+          transition: transition.fast,
+          '&:hover': {
+            transform: 'translateY(-1px)',
+          },
           '&:active': {
             transform: 'scale(0.97)',
+            transition: `all ${duration.instant}s ${ease.smooth}`,
           },
         },
         sizeSmall: {
@@ -89,7 +94,7 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           borderRadius: 12,
-          transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
+          transition: transition.normal,
         },
       },
       defaultProps: {
@@ -112,9 +117,9 @@ const baseThemeOptions: ThemeOptions = {
           borderRadius: 999,
           fontWeight: 600,
           fontSize: '0.75rem',
-          transition: 'all 0.15s ease',
+          transition: transition.fast,
           '&:hover': {
-            transform: 'scale(1.04)',
+            transform: 'scale(1.04) translateY(-1px)',
           },
         },
       },
@@ -136,6 +141,7 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         paper: {
           borderRadius: 16,
+          animation: `scale-in ${duration.normal}s ${ease.smooth} both`,
         },
       },
     },
@@ -171,7 +177,7 @@ const baseThemeOptions: ThemeOptions = {
     MuiIconButton: {
       styleOverrides: {
         root: {
-          transition: 'all 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
+          transition: transition.fast,
           '&:hover': {
             transform: 'scale(1.08)',
           },

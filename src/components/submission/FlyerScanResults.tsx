@@ -156,7 +156,7 @@ function ItemDetail({
               fontWeight: 600,
               fontSize: '0.75rem',
               ...(detected_type === 'venue'
-                ? { bgcolor: '#8b5cf6', color: '#fff' }
+                ? { bgcolor: '#DB2777', color: '#fff' }
                 : { bgcolor: 'action.hover' }),
             }}
           />
@@ -244,8 +244,8 @@ function ItemDetail({
                   fontSize: '0.72rem',
                   ...(selectedVenueId === v.id
                     ? {
-                        bgcolor: '#8b5cf620',
-                        borderColor: '#8b5cf6',
+                        bgcolor: '#DB277720',
+                        borderColor: '#DB2777',
                         borderWidth: 1,
                         borderStyle: 'solid',
                       }
@@ -263,7 +263,7 @@ function ItemDetail({
         onClick={onApply}
         style={{
           width: '100%',
-          backgroundColor: detected_type === 'event' ? '#ec4899' : '#8b5cf6',
+          backgroundColor: detected_type === 'event' ? '#ec4899' : '#DB2777',
           color: '#fff',
         }}
       >
@@ -401,7 +401,7 @@ export function FlyerScanResults({
                   borderColor: isExpanded
                     ? effectiveType === 'event'
                       ? '#ec4899'
-                      : '#8b5cf6'
+                      : '#DB2777'
                     : 'divider',
                   borderRadius: 2,
                   overflow: 'hidden',
@@ -427,8 +427,8 @@ export function FlyerScanResults({
                       fontWeight: 600,
                       fontSize: '0.7rem',
                       height: 22,
-                      bgcolor: effectiveType === 'event' ? '#ec489920' : '#8b5cf620',
-                      color: effectiveType === 'event' ? '#ec4899' : '#8b5cf6',
+                      bgcolor: effectiveType === 'event' ? '#ec489920' : '#DB277720',
+                      color: effectiveType === 'event' ? '#ec4899' : '#DB2777',
                     }}
                   />
                   <Box sx={{ flex: 1, minWidth: 0 }}>

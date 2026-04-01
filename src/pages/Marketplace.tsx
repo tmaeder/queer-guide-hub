@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import Box from '@mui/material/Box';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
@@ -149,7 +150,7 @@ const Marketplace = () => {
   if (error) {
     return (
       <Box sx={{ minHeight: '100vh' }}>
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
           <ErrorState
             message="Something went wrong while loading the marketplace. Please try again."
             onRetry={() => fetchListings()}
@@ -160,7 +161,7 @@ const Marketplace = () => {
   }
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
           title="Marketplace"

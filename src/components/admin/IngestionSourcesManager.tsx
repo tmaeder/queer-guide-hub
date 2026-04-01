@@ -104,7 +104,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent sx={{ p: 2, textAlign: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
-              <Database style={{ height: 20, width: 20, color: '#8b5cf6' }} />
+              <Database style={{ height: 20, width: 20, color: '#DB2777' }} />
               <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
                 {sources.reduce((sum, s) => sum + (s.total_items_fetched || 0), 0).toLocaleString()}
               </Typography>

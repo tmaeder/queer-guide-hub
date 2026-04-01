@@ -51,7 +51,7 @@ export const LAYER_COLORS: Record<LayerType, string> = {
   countries: '#dc2626', // red
   restrooms: '#10b981', // emerald
   hotels: '#f59e0b', // amber
-  neighbourhoods: '#8b5cf6', // violet
+  neighbourhoods: '#DB2777', // brand
 };
 
 // ── Hook ───────────────────────────────────────────────────────────────────────

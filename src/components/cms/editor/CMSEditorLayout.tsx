@@ -47,7 +47,7 @@ const fieldGroupIcons: Record<FieldGroup, React.ElementType> = {
 /** Map field groups to dot colors */
 const fieldGroupColors: Record<FieldGroup, string> = {
   basic: '#3b82f6',
-  details: '#8b5cf6',
+  details: '#DB2777',
   location: '#10b981',
   media: '#f59e0b',
   seo: '#06b6d4',

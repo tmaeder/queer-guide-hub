@@ -56,7 +56,7 @@ import { MergeDialog } from './import-hub/MergeDialog';
 const ENTITY_TYPES = [
   { key: 'venues', label: 'Venues', icon: MapPin, color: '#ef4444' },
   { key: 'events', label: 'Events', icon: Calendar, color: '#f59e0b' },
-  { key: 'personalities', label: 'Personalities', icon: Users, color: '#8b5cf6' },
+  { key: 'personalities', label: 'Personalities', icon: Users, color: '#DB2777' },
   { key: 'news_articles', label: 'News', icon: Newspaper, color: '#3b82f6' },
   { key: 'cities', label: 'Cities', icon: Building2, color: '#10b981' },
   { key: 'tags', label: 'Tags', icon: Tag, color: '#ec4899' },
