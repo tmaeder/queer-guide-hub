@@ -876,7 +876,6 @@ export default function CityDetail() {
                     )}
                   </CardContent>
                 </Card>
-              </Box>
 
               {/* Demographics */}
               {city.demographics && Object.keys(city.demographics).length > 0 && (
@@ -1094,6 +1093,7 @@ export default function CityDetail() {
                     </CardContent>
                   </Card>
                 )}
+              </Box>
               </StaggerGrid>
 
               {/* Local Customs */}
