@@ -54,6 +54,7 @@ import {
   type WorkflowDefinition,
 } from '@/hooks/useWorkflowMonitor';
 import { formatDistanceToNow, format } from 'date-fns';
+import { brandColors } from '@/theme/muiTheme';
 
 // ── Status Helpers ──────────────────────────────────────────────────────────────
 
@@ -260,7 +261,7 @@ function OverviewTab({
     { label: 'Failed', value: stats.failedRuns, color: '#ef4444' },
     { label: 'Queued', value: stats.queuedRuns, color: '#f59e0b' },
     { label: 'Dead Letter', value: stats.deadLetterRuns, color: '#dc2626' },
-    { label: 'Avg Duration', value: formatDuration(stats.avgDurationMs), color: '#DB2777' },
+    { label: 'Avg Duration', value: formatDuration(stats.avgDurationMs), color: brandColors.main },
     { label: 'Definitions', value: definitions.length, color: '#64748b' },
   ];
 

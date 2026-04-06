@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Skeleton from '@mui/material/Skeleton';
 import LinearProgress from '@mui/material/LinearProgress';
 import Chip from '@mui/material/Chip';
@@ -47,6 +48,7 @@ import {
 } from 'lucide-react';
 import { useAdminCockpit } from '@/hooks/useAdminCockpit';
 import type { CockpitData } from '@/hooks/useAdminCockpit';
+import { brandColors } from '@/theme/muiTheme';
 
 // ── Quadrant Card ──────────────────────────────────────────────────
 
@@ -190,7 +192,7 @@ function ReviewQueueWidget({ data }: { data: CockpitData }) {
     {
       label: 'Automation',
       count: review.automation,
-      color: '#DB2777',
+      color: brandColors.main,
       icon: Bot,
       tab: 'automation',
     },
@@ -348,7 +350,7 @@ const contentStatItems = [
     key: 'venues',
     label: 'Venues',
     icon: Building,
-    color: '#DB2777',
+    color: brandColors.main,
     route: '/admin/content/venues',
   },
   {
@@ -434,7 +436,8 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
           total items
         </Typography>
       </Box>
-      <Box
+      <StaggerGrid
+        stagger={0.04}
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)', md: 'repeat(6, 1fr)' },
@@ -470,7 +473,7 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
             </Typography>
           </Box>
         ))}
-      </Box>
+      </StaggerGrid>
     </Paper>
   );
 }
@@ -480,7 +483,7 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
 function QuickActionsBar() {
   const navigate = useNavigate();
   const actions = [
-    { label: 'New Content', icon: Plus, route: '/admin/content', color: '#DB2777' },
+    { label: 'New Content', icon: Plus, route: '/admin/content', color: brandColors.main },
     { label: 'Import Data', icon: Download, route: '/admin/imports', color: '#10b981' },
     { label: 'Review Queue', icon: ClipboardCheck, route: '/admin/review', color: '#f59e0b' },
     { label: 'Automation', icon: Zap, route: '/admin/automation', color: '#f59e0b' },
@@ -536,7 +539,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <LayoutDashboard size={24} style={{ color: '#DB2777' }} />
+          <LayoutDashboard size={24} style={{ color: brandColors.main }} />
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
             Cockpit
           </Typography>

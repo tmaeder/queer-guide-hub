@@ -51,6 +51,8 @@ import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import { VillageCard } from '@/components/villages/VillageCard';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
 import Box from '@mui/material/Box';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -473,6 +475,7 @@ export default function CityDetail() {
               style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}
             >
               {/* About + Quick Facts */}
+              <ScrollReveal direction="up">
               <Box
                 sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, gap: 3 }}
               >
@@ -627,6 +630,7 @@ export default function CityDetail() {
                   </CardContent>
                 </Card>
               </Box>
+              </ScrollReveal>
 
               {/* Wikipedia + Photo Gallery */}
               <LocationInfo name={city.name} type="city" />
@@ -641,7 +645,7 @@ export default function CityDetail() {
               )}
 
               {/* Info Cards Grid */}
-              <Box
+              <StaggerGrid
                 sx={{
                   display: 'grid',
                   gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
@@ -1090,7 +1094,7 @@ export default function CityDetail() {
                     </CardContent>
                   </Card>
                 )}
-              </Box>
+              </StaggerGrid>
 
               {/* Local Customs */}
               {city.local_customs && (

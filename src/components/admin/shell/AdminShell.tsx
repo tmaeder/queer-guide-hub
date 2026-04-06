@@ -24,6 +24,7 @@ import { useTheme } from '@mui/material/styles';
 import { Menu, ChevronRight } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
 import { getBreadcrumbsForRoute } from '@/config/adminNavigation';
+import { brandColors } from '@/theme/muiTheme';
 
 // ── Editor Context ────────────────────────────────────────────────────────────
 
@@ -271,7 +272,7 @@ export function AdminShell() {
                         color: 'text.secondary',
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
-                        '&:hover': { color: '#DB2777' },
+                        '&:hover': { color: brandColors.main },
                       }}
                     >
                       {crumb.label}
@@ -295,7 +296,9 @@ export function AdminShell() {
                 />
               </Suspense>
             ) : (
-              <Outlet />
+              <Box key={location.pathname} className="content-enter">
+                <Outlet />
+              </Box>
             )}
           </Box>
         </Box>

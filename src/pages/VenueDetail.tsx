@@ -33,6 +33,8 @@ import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Chip from '@mui/material/Chip';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -440,6 +442,7 @@ export default function VenueDetail() {
 
         {/* Overview Tab */}
         <TabsContent value="overview">
+          <ScrollReveal direction="up">
           <Box
             sx={{
               display: 'grid',
@@ -676,14 +679,14 @@ export default function VenueDetail() {
               )}
             </Box>
           </Box>
+          </ScrollReveal>
         </TabsContent>
 
         {/* Photos Tab */}
         <TabsContent value="photos">
           {venue.images && venue.images.length > 0 ? (
-            <Box
+            <StaggerGrid
               sx={{
-                display: 'grid',
                 gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
                 gap: 2,
                 mt: 1,
@@ -718,7 +721,7 @@ export default function VenueDetail() {
                   />
                 </Box>
               ))}
-            </Box>
+            </StaggerGrid>
           ) : (
             <Box sx={{ textAlign: 'center', py: 6 }}>
               <Typography color="text.secondary">No photos available</Typography>

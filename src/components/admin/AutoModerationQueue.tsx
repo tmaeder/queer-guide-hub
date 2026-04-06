@@ -46,6 +46,7 @@ import IconButton from '@mui/material/IconButton';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@mui/material/LinearProgress';
 import Slider from '@mui/material/Slider';
+import { brandColors } from '@/theme/muiTheme';
 
 const SEVERITY_COLORS: Record<string, string> = {
   info: '#3b82f6',
@@ -79,7 +80,7 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
 };
 
 const SENSITIVITY_COLORS: Record<string, string> = {
-  sensitivity_legal: '#DB2777',
+  sensitivity_legal: brandColors.main,
   sensitivity_medical: '#0891b2',
   sensitivity_nsfw: '#e11d48',
   lgbti_relevance: '#d97706',
@@ -260,7 +261,7 @@ export function AutoModerationQueue() {
       </Box>
 
       {/* Auto-Approve Panel */}
-      <Card sx={{ border: '1px solid', borderColor: '#DB2777', bgcolor: 'rgba(219, 39, 119, 0.04)' }}>
+      <Card sx={{ border: '1px solid', borderColor: brandColors.main, bgcolor: brandColors.main + '0A' }}>
         <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
           <Box
             sx={{
@@ -273,7 +274,7 @@ export function AutoModerationQueue() {
           >
             <Box sx={{ flex: 1, minWidth: 200 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <ShieldCheck style={{ width: 18, height: 18, color: '#DB2777' }} />
+                <ShieldCheck style={{ width: 18, height: 18, color: brandColors.main }} />
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                   Auto-Approve High Confidence
                 </Typography>
@@ -294,7 +295,7 @@ export function AutoModerationQueue() {
                   max={1.0}
                   step={0.05}
                   size="small"
-                  sx={{ color: '#DB2777' }}
+                  sx={{ color: brandColors.main }}
                 />
               </Box>
             </Box>

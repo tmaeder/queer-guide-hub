@@ -311,7 +311,7 @@ const Marketplace = () => {
                       </Typography>
                     </Box>
 
-                    <Box
+                    <StaggerGrid
                       sx={
                         viewMode === 'grid'
                           ? {
@@ -339,7 +339,7 @@ const Marketplace = () => {
                           </Box>
                         ),
                       )}
-                    </Box>
+                    </StaggerGrid>
                   </>
                 )}
 

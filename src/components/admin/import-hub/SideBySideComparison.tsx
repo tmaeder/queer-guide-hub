@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, ArrowRight, Merge } from 'lucide-react';
 import { getFieldsForEntity, type FieldDef } from './StructuredFieldDisplay';
+import { brandColors } from '@/theme/muiTheme';
 
 interface SideBySideComparisonProps {
   entityType: string;
@@ -146,7 +147,7 @@ export function SideBySideComparison({
             <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ArrowRight style={{ width: 14, height: 14, color: 'var(--muted-foreground)' }} />
             </Box>
-            <Box sx={{ p: 1.5, fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', color: '#DB2777' }}>
+            <Box sx={{ p: 1.5, fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', color: brandColors.main }}>
               {rightLabel}
             </Box>
           </Box>
@@ -198,7 +199,7 @@ export function SideBySideComparison({
                       sx={{
                         width: 20, height: 20, borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        bgcolor: choices[field.key] === 'left' ? '#3b82f6' : '#DB2777',
+                        bgcolor: choices[field.key] === 'left' ? '#3b82f6' : brandColors.main,
                         color: 'white', fontSize: '0.6rem', fontWeight: 700,
                       }}
                     >
@@ -212,8 +213,8 @@ export function SideBySideComparison({
                   sx={{
                     p: 1.5,
                     cursor: isDiff ? 'pointer' : 'default',
-                    borderLeft: choices[field.key] === 'right' && isDiff ? '3px solid #DB2777' : '3px solid transparent',
-                    bgcolor: choices[field.key] === 'right' && isDiff ? 'rgba(219, 39, 119, 0.06)' : 'transparent',
+                    borderLeft: choices[field.key] === 'right' && isDiff ? `3px solid ${brandColors.main}` : '3px solid transparent',
+                    bgcolor: choices[field.key] === 'right' && isDiff ? brandColors.main + '0F' : 'transparent',
                   }}
                   onClick={() => isDiff && handleChoice(field.key, 'right')}
                 >

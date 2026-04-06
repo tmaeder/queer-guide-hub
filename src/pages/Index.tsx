@@ -21,6 +21,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
+import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -92,25 +93,20 @@ const Index = React.memo(() => {
   const isDark = theme.palette.mode === 'dark';
   const navigate = useNavigate();
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000) return `${Math.floor(num / 1000)}K+`;
-    return num.toString();
-  };
-
   const stats = useMemo(
     () =>
       loading
         ? [
-            { number: '\u2014', label: 'Verified Venues' },
-            { number: '\u2014', label: 'Community Members' },
-            { number: '\u2014', label: 'Cities Worldwide' },
-            { number: '\u2014', label: 'Weekly Events' },
+            { value: 0, label: 'Verified Venues' },
+            { value: 0, label: 'Community Members' },
+            { value: 0, label: 'Cities Worldwide' },
+            { value: 0, label: 'Weekly Events' },
           ]
         : [
-            { number: formatNumber(realStats.venues), label: 'Verified Venues' },
-            { number: formatNumber(realStats.profiles), label: 'Community Members' },
-            { number: formatNumber(realStats.cities), label: 'Cities Worldwide' },
-            { number: formatNumber(realStats.events), label: 'Weekly Events' },
+            { value: realStats.venues, label: 'Verified Venues' },
+            { value: realStats.profiles, label: 'Community Members' },
+            { value: realStats.cities, label: 'Cities Worldwide' },
+            { value: realStats.events, label: 'Weekly Events' },
           ],
     [loading, realStats],
   );
@@ -215,6 +211,7 @@ const Index = React.memo(() => {
             {stats.map((stat, i) => (
               <Box key={i} sx={{ textAlign: 'center' }}>
                 <Typography
+                  component="div"
                   sx={{
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontWeight: 800,
@@ -224,7 +221,7 @@ const Index = React.memo(() => {
                     color: 'inherit',
                   }}
                 >
-                  {stat.number}
+                  {loading ? '\u2014' : <AnimatedCounter value={stat.value} suffix="+" />}
                 </Typography>
                 <Typography
                   variant="body2"

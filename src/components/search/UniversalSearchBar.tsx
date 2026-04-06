@@ -301,14 +301,15 @@ export const UniversalSearchBar = () => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                transition: 'all 0.2s',
+                transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
                 borderRadius: '8px',
                 cursor: 'text',
                 bgcolor: 'background.paper',
                 border: 1,
                 borderColor: isFocused ? 'text.secondary' : 'divider',
                 ...(isFocused && {
-                  boxShadow: 2,
+                  boxShadow: 3,
+                  transform: 'scale(1.01)',
                 }),
               }}
               onClick={() => {
@@ -601,11 +602,12 @@ export const UniversalSearchBar = () => {
                   key={type}
                   heading={contentTypeLabels[type as keyof typeof contentTypeLabels]}
                 >
-                  {typeResults.map((result) => (
+                  {typeResults.map((result, idx) => (
                     <CommandItem
                       key={`${result.type}-${result.objectID}`}
                       onSelect={() => handleSelectResult(result)}
-                      style={{ cursor: 'pointer', padding: '8px 12px' }}
+                      className="slide-up-in"
+                      style={{ cursor: 'pointer', padding: '8px 12px', animationDelay: `${idx * 0.04}s` }}
                     >
                       <Box
                         sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, width: '100%' }}

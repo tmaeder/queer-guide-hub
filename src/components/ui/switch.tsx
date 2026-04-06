@@ -1,5 +1,6 @@
 import * as React from "react"
 import MuiSwitch from "@mui/material/Switch"
+import { hapticTrigger } from "@/hooks/useHaptics"
 
 interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   checked?: boolean;
@@ -15,7 +16,7 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         ref={ref as any}
         checked={checked}
         defaultChecked={defaultChecked}
-        onChange={(e) => onCheckedChange?.(e.target.checked)}
+        onChange={(e) => { hapticTrigger('nudge'); onCheckedChange?.(e.target.checked); }}
         disabled={disabled}
         id={id}
         className={className}

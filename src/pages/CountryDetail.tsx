@@ -50,6 +50,8 @@ import { useNews } from '@/hooks/useNews';
 import { NewsCard } from '@/components/news/NewsCard';
 import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -486,6 +488,7 @@ export default function CountryDetail() {
                 style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
               >
                 {/* Top row: About + Quick Facts */}
+                <ScrollReveal direction="up">
                 <Box
                   sx={{
                     display: 'grid',
@@ -628,6 +631,7 @@ export default function CountryDetail() {
                     </CardContent>
                   </Card>
                 </Box>
+                </ScrollReveal>
 
                 {/* LocationInfo: Wikipedia + Photo Gallery */}
                 <LocationInfo

@@ -269,8 +269,10 @@ export function AdminDataTable<TData extends { id: string }>({
               return (
                 <TableRow
                   key={row.id}
+                  className="content-enter"
                   style={{
                     backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.04)' : undefined,
+                    transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
                   }}
                 >
                   {enableSelection && (

@@ -6,6 +6,7 @@ import Collapse from '@mui/material/Collapse';
 import { MapPin, Calendar, Building2, Globe, Accessibility, Hotel, Landmark, Layers } from 'lucide-react';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
+import { hapticTrigger } from '@/hooks/useHaptics';
 
 /** Layers rendered as translucent area circles (not point pins) */
 export const AREA_TYPES: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
@@ -100,7 +101,7 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
                 label={`${label}${enabled && count > 0 ? ` (${count})` : ''}`}
                 size="small"
                 variant={enabled ? 'filled' : 'outlined'}
-                onClick={() => onToggle(type)}
+                onClick={() => { hapticTrigger('nudge'); onToggle(type); }}
                 sx={{
                   height: 28,
                   fontSize: '0.75rem',

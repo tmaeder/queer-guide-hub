@@ -31,6 +31,7 @@ import { EditorSidebar } from './EditorSidebar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { FieldGroup } from '@/types/cms';
+import { brandColors } from '@/theme/muiTheme';
 
 /** Map field groups to Lucide icons for tab labels */
 const fieldGroupIcons: Record<FieldGroup, React.ElementType> = {
@@ -47,7 +48,7 @@ const fieldGroupIcons: Record<FieldGroup, React.ElementType> = {
 /** Map field groups to dot colors */
 const fieldGroupColors: Record<FieldGroup, string> = {
   basic: '#3b82f6',
-  details: '#DB2777',
+  details: brandColors.main,
   location: '#10b981',
   media: '#f59e0b',
   seo: '#06b6d4',
@@ -260,6 +261,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
 
   return (
     <Box
+      className="scale-in"
       sx={{
         display: 'flex',
         flexDirection: 'column',

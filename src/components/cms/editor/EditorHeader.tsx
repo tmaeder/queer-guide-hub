@@ -308,10 +308,10 @@ export function EditorHeader({
                   textTransform: 'none',
                   fontWeight: 500,
                   display: { xs: 'none', sm: 'inline-flex' },
-                  borderColor: '#DB2777',
-                  color: '#DB2777',
+                  borderColor: 'brand.main',
+                  color: 'brand.main',
                   '&:hover': {
-                    borderColor: '#DB2777',
+                    borderColor: 'brand.dark',
                     bgcolor: 'rgba(219, 39, 119, 0.04)',
                   },
                 }}

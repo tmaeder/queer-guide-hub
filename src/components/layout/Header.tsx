@@ -378,16 +378,18 @@ export function Header() {
             >
               {section.title}
             </Typography>
-            {section.items.map((item) => {
+            {section.items.map((item, itemIdx) => {
               const active = isActiveRoute(item.to);
               return (
                 <ListItemButton
                   key={item.to}
                   onClick={() => handleDrawerNav(item.to)}
                   selected={active}
+                  className="slide-up-in"
                   sx={{
                     minHeight: 48,
                     px: 2,
+                    animationDelay: `${itemIdx * 0.04}s`,
                     ...(active && {
                       bgcolor: 'action.selected',
                       borderRight: 3,

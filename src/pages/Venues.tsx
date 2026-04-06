@@ -346,6 +346,7 @@ const Venues = () => {
                   {sortedVenues.map((venue, index) => (
                     <Box
                       key={venue.id}
+                      className={index >= PAGE_SIZE ? 'content-enter' : undefined}
                       sx={{
                         '&:hover': { transform: 'scale(1.02)' },
                         transition: 'transform 200ms',

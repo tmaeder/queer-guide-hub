@@ -32,6 +32,7 @@ import {
 import { getContentTypeIds, getContentType } from '@/config/contentTypeRegistry';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { brandColors } from '@/theme/muiTheme';
 
 export type CMSView =
   | 'overview'
@@ -117,7 +118,7 @@ const navItemSx = (isActive: boolean, accentColor?: string) => ({
     ? (accentColor ? accentColor + '10' : 'action.selected')
     : 'transparent',
   borderLeft: isActive
-    ? `3px solid ${accentColor || '#DB2777'}`
+    ? `3px solid ${accentColor || brandColors.main}`
     : '3px solid transparent',
   '&:hover': {
     bgcolor: isActive
@@ -232,7 +233,7 @@ export function CMSSidebar({
         sx={{
           px: 2.5,
           py: 2.5,
-          background: 'linear-gradient(135deg, rgba(219, 39, 119, 0.08) 0%, rgba(244, 114, 182, 0.04) 50%, transparent 100%)',
+          background: `linear-gradient(135deg, ${brandColors.main}14 0%, ${brandColors.light}0A 50%, transparent 100%)`,
           borderBottom: 1,
           borderColor: 'divider',
         }}
@@ -243,12 +244,12 @@ export function CMSSidebar({
               width: 32,
               height: 32,
               borderRadius: '10px',
-              background: 'linear-gradient(135deg, #DB2777, #F472B6)',
+              background: `linear-gradient(135deg, ${brandColors.main}, ${brandColors.light})`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(219, 39, 119, 0.3)',
+              boxShadow: `0 2px 8px ${brandColors.main}4D`,
             }}
           >
             <Layers size={16} color="#fff" />
@@ -260,7 +261,7 @@ export function CMSSidebar({
                 fontWeight: 700,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.2,
-                background: 'linear-gradient(135deg, #DB2777, #DB2777)',
+                background: `linear-gradient(135deg, ${brandColors.main}, ${brandColors.main})`,
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -284,7 +285,7 @@ export function CMSSidebar({
           <ListItemButton
             selected={activeView === 'overview'}
             onClick={() => onNavigate('overview')}
-            sx={navItemSx(activeView === 'overview', '#DB2777')}
+            sx={navItemSx(activeView === 'overview', brandColors.main)}
           >
             <ListItemIcon sx={{ minWidth: 36 }}>
               <IconBadge icon={LayoutDashboard} color="#DB2777" size={15} />
@@ -353,7 +354,7 @@ export function CMSSidebar({
                 selected={activeView === 'content' && !activeContentType}
                 onClick={() => onNavigate('content')}
                 sx={{
-                  ...navItemSx(activeView === 'content' && !activeContentType, '#DB2777'),
+                  ...navItemSx(activeView === 'content' && !activeContentType, brandColors.main),
                   pl: activeView === 'content' && !activeContentType ? 4.5 : 4.75,
                   py: 0.5,
                 }}
@@ -543,7 +544,7 @@ export function CMSSidebar({
             height: 32,
             fontSize: '0.8rem',
             fontWeight: 600,
-            bgcolor: '#DB2777',
+            bgcolor: brandColors.main,
             color: '#fff',
           }}
           src={user?.user_metadata?.avatar_url as string | undefined}

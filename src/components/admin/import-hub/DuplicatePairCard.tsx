@@ -8,6 +8,7 @@ import { Merge, X, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { useEntityById, useDismissDuplicate } from '@/hooks/useImportHubQueries';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import type { DuplicatePair } from '@/hooks/useImportHubQueries';
+import { brandColors } from '@/theme/muiTheme';
 
 interface DuplicatePairCardProps {
   pair: DuplicatePair;
@@ -109,7 +110,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
                 </Card>
                 <Card>
                   <CardContent sx={{ p: 2 }}>
-                    <Typography variant="subtitle2" sx={{ mb: 1, color: '#DB2777', fontWeight: 600 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1, color: brandColors.main, fontWeight: 600 }}>
                       Record B: {entityB[nameField] || 'Unknown'}
                     </Typography>
                     <StructuredFieldDisplay entityType={pair.entity_type} data={entityB} />

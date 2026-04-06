@@ -10,10 +10,11 @@ import {
   RefreshCw, Activity, CheckCircle, AlertTriangle, Clock,
   ArrowRight, Zap, Eye, Brain, GitMerge, Sparkles, Database, DollarSign
 } from 'lucide-react';
+import { brandColors } from '@/theme/muiTheme';
 
 const PIPELINE_STAGES = [
   { key: 'fetching', label: 'Fetching', icon: Zap, color: '#2563eb' },
-  { key: 'ai_validation', label: 'AI Validation', icon: Brain, color: '#DB2777' },
+  { key: 'ai_validation', label: 'AI Validation', icon: Brain, color: brandColors.main },
   { key: 'dedup', label: 'Deduplication', icon: GitMerge, color: '#ca8a04' },
   { key: 'enrichment', label: 'Enrichment', icon: Sparkles, color: '#0891b2' },
   { key: 'review', label: 'Review', icon: Eye, color: '#ea580c' },
@@ -98,7 +99,7 @@ export const PipelineMonitor = () => {
         <Card>
           <CardContent sx={{ p: 2, textAlign: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
-              <DollarSign style={{ height: 20, width: 20, color: '#DB2777' }} />
+              <DollarSign style={{ height: 20, width: 20, color: brandColors.main }} />
               <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>${totalCost.toFixed(4)}</Typography>
             </Box>
             <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>AI Cost (USD)</Typography>

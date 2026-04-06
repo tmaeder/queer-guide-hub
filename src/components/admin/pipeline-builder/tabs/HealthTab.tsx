@@ -5,6 +5,7 @@ import { useCircuitBreakers, useStagingStats, usePipelineDefinitionsList } from 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router';
+import { brandColors } from '@/theme/muiTheme';
 
 const cbColors: Record<string, React.CSSProperties> = {
   closed: { background: '#dcfce7', color: '#15803d' },
@@ -149,7 +150,7 @@ export default function HealthTab() {
                 <tr key={def.id as string} style={{ borderBottom: '1px solid #f9fafb' }}>
                   <td style={{ padding: '8px 12px', fontWeight: 500 }}>{(def.display_name || def.name) as string}</td>
                   <td style={{ padding: '8px 12px' }}>
-                    <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: '#fdf2f8', color: '#DB2777' }}>pipeline</span>
+                    <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: '#fdf2f8', color: brandColors.main }}>pipeline</span>
                   </td>
                   <td style={{ padding: '8px 12px', color: '#6b7280' }}>{(def.schedule as string) || 'Manual'}</td>
                   <td style={{ padding: '8px 12px' }}>

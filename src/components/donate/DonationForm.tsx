@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useCreateCheckoutSession } from '@/hooks/useDonations';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { hapticTrigger } from '@/hooks/useHaptics';
 
 const TIP_AMOUNTS = [300, 500, 1000, 2500]; // cents
 const FREQUENCY_OPTIONS = ['one_time', 'month', 'year'] as const;
@@ -33,6 +34,7 @@ export function DonationForm() {
   const isValid = amountCents >= 100 && email.includes('@');
 
   const handleTipSelect = (amount: number) => {
+    hapticTrigger('nudge');
     setSelectedTip(amount);
     setCustomAmount('');
   };
@@ -44,6 +46,7 @@ export function DonationForm() {
 
   const handleSubmit = async () => {
     if (!isValid) return;
+    hapticTrigger('success');
 
     try {
       const url = await checkout.mutateAsync({

@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { Button } from "./button";
 import { useFavorites, FavoriteType } from "@/hooks/useFavorites";
+import { useHaptics } from "@/hooks/useHaptics";
 
 interface FavoriteButtonProps {
   itemId: string;
   type: FavoriteType;
-  className?: string;
   variant?: "default" | "ghost";
   size?: "sm" | "md" | "lg";
 }
@@ -31,15 +31,21 @@ export const FavoriteButton = ({
 }: FavoriteButtonProps) => {
   const { isFavorited, toggleFavorite } = useFavorites(type);
   const favorited = isFavorited(itemId);
+  const { trigger } = useHaptics();
 
   const [animating, setAnimating] = React.useState(false);
+  const timerRef = useRef<number>();
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    trigger(favorited ? 'nudge' : 'success');
     if (!favorited) {
       setAnimating(true);
-      setTimeout(() => setAnimating(false), 400);
+      clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => setAnimating(false), 400);
     }
     toggleFavorite(itemId);
   };

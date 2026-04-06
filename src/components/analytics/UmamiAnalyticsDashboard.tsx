@@ -673,7 +673,7 @@ export const UmamiAnalyticsDashboard = () => {
                   <XAxis dataKey="hour" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="views" fill="hsl(var(--primary))" />
+                  <Bar dataKey="views" fill="hsl(var(--primary))" animationDuration={800} animationEasing="ease-out" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

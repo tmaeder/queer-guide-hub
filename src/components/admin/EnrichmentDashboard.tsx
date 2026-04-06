@@ -40,11 +40,12 @@ import {
   type ReviewQueueItem,
   type QualityDistribution,
 } from '@/hooks/useEnrichmentDashboard';
+import { brandColors } from '@/theme/muiTheme';
 
 // ── Helper ──────────────────────────────────────────────────────────────
 
 const ENTITY_META: Record<string, { label: string; icon: typeof Building; color: string }> = {
-  venues: { label: 'Venues', icon: Building, color: '#DB2777' },
+  venues: { label: 'Venues', icon: Building, color: brandColors.main },
   events: { label: 'Events', icon: Calendar, color: '#ec4899' },
   personalities: { label: 'Personalities', icon: Users, color: '#f59e0b' },
   news_articles: { label: 'News', icon: Newspaper, color: '#3b82f6' },
@@ -61,7 +62,7 @@ const STEP_LABELS: Record<string, string> = {
 const REVIEW_TYPE_META: Record<string, { label: string; color: string; icon: typeof GitMerge }> = {
   duplicate: { label: 'Duplicate', color: '#f59e0b', icon: GitMerge },
   low_quality: { label: 'Low Quality', color: '#ef4444', icon: AlertCircle },
-  anomaly: { label: 'Anomaly', color: '#DB2777', icon: AlertTriangle },
+  anomaly: { label: 'Anomaly', color: brandColors.main, icon: AlertTriangle },
   stale: { label: 'Stale', color: '#6b7280', icon: Clock },
   broken_source: { label: 'Broken Source', color: '#ea580c', icon: XCircle },
 };

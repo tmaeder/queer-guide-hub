@@ -26,6 +26,7 @@ import { ChevronDown, LogOut, Layers, Shield } from 'lucide-react';
 
 import { adminNavSections } from '@/config/adminNavigation';
 import type { AdminNavItem } from '@/config/adminNavigation';
+import { brandColors } from '@/theme/muiTheme';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -70,12 +71,12 @@ const navItemSx = (isActive: boolean, accentColor?: string) => ({
   py: 0.75,
   pl: isActive ? 1.5 : 1.75,
   position: 'relative' as const,
-  transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
   bgcolor: isActive ? (accentColor ? accentColor + '10' : 'action.selected') : 'transparent',
-  borderLeft: isActive ? `3px solid ${accentColor || '#DB2777'}` : '3px solid transparent',
+  borderLeft: isActive ? `3px solid ${accentColor || brandColors.main}` : '3px solid transparent',
   '&:hover': {
     bgcolor: isActive ? (accentColor ? accentColor + '14' : 'action.selected') : 'action.hover',
-    transform: 'translateX(2px)',
+    transform: 'translateX(3px)',
   },
   '&.Mui-selected': {
     bgcolor: accentColor ? accentColor + '10' : 'action.selected',
@@ -225,7 +226,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
           px: 2.5,
           py: 2.5,
           background:
-            'linear-gradient(135deg, rgba(219, 39, 119, 0.08) 0%, rgba(244, 114, 182, 0.04) 50%, transparent 100%)',
+            `linear-gradient(135deg, ${brandColors.main}14 0%, ${brandColors.light}0A 50%, transparent 100%)`,
           borderBottom: 1,
           borderColor: 'divider',
         }}
@@ -236,12 +237,12 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
               width: 32,
               height: 32,
               borderRadius: '10px',
-              background: 'linear-gradient(135deg, #DB2777, #F472B6)',
+              background: `linear-gradient(135deg, ${brandColors.main}, ${brandColors.light})`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(219, 39, 119, 0.3)',
+              boxShadow: `0 2px 8px ${brandColors.main}4D`,
             }}
           >
             <Layers size={16} color="#fff" />
@@ -253,7 +254,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                 fontWeight: 700,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.2,
-                background: 'linear-gradient(135deg, #DB2777, #DB2777)',
+                background: `linear-gradient(135deg, ${brandColors.main}, ${brandColors.main})`,
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -266,7 +267,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
           </Box>
           {isAdmin && (
             <Tooltip title="Admin role">
-              <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', color: '#DB2777' }}>
+              <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', color: brandColors.main }}>
                 <Shield size={14} />
               </Box>
             </Tooltip>
@@ -413,7 +414,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
             height: 32,
             fontSize: '0.8rem',
             fontWeight: 600,
-            bgcolor: '#DB2777',
+            bgcolor: brandColors.main,
             color: '#fff',
           }}
           src={user?.user_metadata?.avatar_url as string | undefined}

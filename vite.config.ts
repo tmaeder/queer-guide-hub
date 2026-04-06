@@ -26,15 +26,15 @@ export default defineConfig(({ mode }) => ({
     setupFiles: [],
   },
   server: {
-    host: true,
+    host: "127.0.0.1",
     port: parseInt(process.env.PORT || "8080"),
   },
   plugins: [
     react(),
     cfRocketLoaderBypass(),
     mode === 'production' && sentryVitePlugin({
-      org: process.env.SENTRY_ORG,
-      project: process.env.SENTRY_PROJECT,
+      org: process.env.SENTRY_ORG || 'maedertobiassimon',
+      project: process.env.SENTRY_PROJECT || 'javascript-react',
       authToken: process.env.SENTRY_AUTH_TOKEN,
       release: {
         name: process.env.CF_PAGES_COMMIT_SHA || undefined,

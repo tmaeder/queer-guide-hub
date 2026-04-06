@@ -38,6 +38,7 @@ import {
   History,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { brandColors } from '@/theme/muiTheme';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -73,14 +74,14 @@ export const adminNavSections: AdminNavSection[] = [
     id: 'cockpit',
     label: 'Cockpit',
     icon: LayoutDashboard,
-    color: '#DB2777',
+    color: brandColors.main,
     items: [
       {
         id: 'overview',
         label: 'Overview',
         icon: LayoutDashboard,
         route: '/admin',
-        color: '#DB2777',
+        color: brandColors.main,
       },
     ],
   },
@@ -90,7 +91,7 @@ export const adminNavSections: AdminNavSection[] = [
     id: 'content',
     label: 'Content',
     icon: Layers,
-    color: '#DB2777',
+    color: brandColors.main,
     collapsible: true,
     defaultExpanded: true,
     items: [
@@ -99,7 +100,7 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'All Content',
         icon: Layers,
         route: '/admin/content',
-        color: '#DB2777',
+        color: brandColors.main,
       },
       {
         id: 'venues',
@@ -107,7 +108,7 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Building,
         route: '/admin/content/venues',
         countTable: 'venues',
-        color: '#DB2777',
+        color: brandColors.main,
       },
       {
         id: 'events',
@@ -257,7 +258,7 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Venue Import',
         icon: MapPin,
         route: '/admin/imports/venues',
-        color: '#DB2777',
+        color: brandColors.main,
       },
       {
         id: 'import-history',
@@ -341,7 +342,7 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/redirects',
         adminOnly: true,
         countTable: 'redirects',
-        color: '#DB2777',
+        color: brandColors.main,
       },
       {
         id: 'email-templates',

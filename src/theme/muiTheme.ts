@@ -2,13 +2,20 @@ import { createTheme, type ThemeOptions } from '@mui/material/styles';
 import { duration, ease, transition } from '@/lib/animation';
 import './theme.d.ts';
 
+// ─── Brand Colors (importable outside React context) ─────────────────────────
+export const brandColors = {
+  main: '#DB2777',
+  light: '#F472B6',
+  dark: '#BE185D',
+} as const;
+
 // ─── Palettes ─────────────────────────────────────────────────────────────────
 // All colors are solid (alpha = 1). No rgba/hsla with transparency allowed.
 
 const lightPalette = {
   primary: { main: '#222222', contrastText: '#ffffff' },
   secondary: { main: '#f4f4f5', contrastText: '#18181b' },
-  brand: { main: '#DB2777', light: '#F472B6', dark: '#BE185D', contrastText: '#ffffff' },
+  brand: { main: brandColors.main, light: brandColors.light, dark: brandColors.dark, contrastText: '#ffffff' },
   accent: { main: '#F59E0B', light: '#FCD34D', dark: '#D97706', contrastText: '#111111' },
   error: { main: '#ef4444', contrastText: '#ffffff' },
   warning: { main: '#f59e0b', contrastText: '#ffffff' },
@@ -21,7 +28,7 @@ const lightPalette = {
 const darkPalette = {
   primary: { main: '#ffffff', contrastText: '#111111' },
   secondary: { main: '#27272a', contrastText: '#f2f2f2' },
-  brand: { main: '#F472B6', light: '#F9A8D4', dark: '#DB2777', contrastText: '#111111' },
+  brand: { main: brandColors.light, light: '#F9A8D4', dark: brandColors.main, contrastText: '#111111' },
   accent: { main: '#FBBF24', light: '#FDE68A', dark: '#F59E0B', contrastText: '#111111' },
   error: { main: '#dc2626', contrastText: '#ffffff' },
   warning: { main: '#f59e0b', contrastText: '#ffffff' },

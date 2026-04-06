@@ -395,7 +395,7 @@ export function AdminEditDialog({
     const isReadOnly = field.readOnly === true;
     const isEnriched = enrichedFields.has(field.name);
     const enrichedSx = isEnriched
-      ? { '& .MuiOutlinedInput-root': { borderColor: '#DB2777', boxShadow: '0 0 0 1px #DB2777' } }
+      ? { '& .MuiOutlinedInput-root': { borderColor: 'brand.main', boxShadow: (t: any) => `0 0 0 1px ${t.palette.brand.main}` } }
       : {};
 
     switch (field.type) {

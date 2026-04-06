@@ -34,3 +34,4 @@ dist-ssr
 # Supabase CLI temp files
 supabase/.temp/
 .gstack/
+.sentryclirc

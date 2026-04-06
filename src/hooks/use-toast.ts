@@ -4,6 +4,7 @@ import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
+import { hapticTrigger } from "@/hooks/useHaptics"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -141,6 +142,10 @@ type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
   const id = genId()
+
+  const variant = (props as any).variant as string | undefined;
+  if (variant === 'destructive') hapticTrigger('error');
+  else hapticTrigger('nudge');
 
   const update = (props: ToasterToast) =>
     dispatch({

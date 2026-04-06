@@ -23,6 +23,8 @@ export function useStaggerReveal<T extends HTMLElement>(
   const containerRef = useRef<T>(null);
   const reducedMotion = useReducedMotion();
   const hasAnimated = useRef(false);
+  const lowEnd = isLowEndDevice();
+  const skipAnimation = reducedMotion || lowEnd;
 
   const animate = useCallback(async () => {
     const el = containerRef.current;
@@ -32,8 +34,7 @@ export function useStaggerReveal<T extends HTMLElement>(
     const children = el.querySelectorAll(childSelector);
     if (children.length === 0) return;
 
-    // Low-end or reduced motion: just show everything
-    if (reducedMotion || isLowEndDevice()) {
+    if (skipAnimation) {
       children.forEach((child) => {
         (child as HTMLElement).style.opacity = '1';
         (child as HTMLElement).style.transform = 'none';
@@ -55,7 +56,7 @@ export function useStaggerReveal<T extends HTMLElement>(
         delay: from,
       },
     );
-  }, [staggerVal, from, childSelector, reducedMotion]);
+  }, [staggerVal, from, childSelector, skipAnimation]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -63,7 +64,7 @@ export function useStaggerReveal<T extends HTMLElement>(
 
     // Set initial hidden state via CSS
     const children = el.querySelectorAll(childSelector);
-    if (!reducedMotion && !isLowEndDevice()) {
+    if (!skipAnimation) {
       children.forEach((child) => {
         (child as HTMLElement).style.opacity = '0';
       });
@@ -81,7 +82,7 @@ export function useStaggerReveal<T extends HTMLElement>(
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [animate, childSelector, reducedMotion]);
+  }, [animate, childSelector, skipAnimation]);
 
   return containerRef;
 }

@@ -22,6 +22,7 @@ import { ExploreMapLayers, LAYER_DEFS } from '@/components/map/ExploreMapLayers'
 import { ExploreMapFiltersPanel } from '@/components/map/ExploreMapFilters';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
+import { hapticTrigger } from '@/hooks/useHaptics';
 import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, type Bbox } from '@/utils/mapViewport';
 import {
   useCountryBoundaries,
@@ -231,6 +232,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   // ── Helper: show popup with navigation ───────────────────────────────────
   const showPopup = useCallback(
     (map: maplibregl.Map, lngLat: maplibregl.LngLat, marker: MapMarker) => {
+      hapticTrigger('nudge');
       popupRef.current?.remove();
       const popup = new maplibregl.Popup({ offset: 15, closeButton: true, maxWidth: '260px' })
         .setLngLat(lngLat)

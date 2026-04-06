@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useUnifiedMonitor, type UnifiedRun } from '../hooks/useUnifiedMonitor';
 import { useStagingStats } from '../hooks/usePipelineHistory';
+import { brandColors } from '@/theme/muiTheme';
 
 const statusBadgeStyle: Record<string, React.CSSProperties> = {
   running: { background: '#dbeafe', color: '#1d4ed8' },
@@ -82,7 +83,7 @@ export default function MonitorTab() {
                   >
                     <td style={{ padding: '8px 12px', fontWeight: 500 }}>{run.name}</td>
                     <td style={{ padding: '8px 12px' }}>
-                      <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: run.type === 'pipeline' ? '#fdf2f8' : '#e0f2fe', color: run.type === 'pipeline' ? '#DB2777' : '#0369a1' }}>
+                      <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: run.type === 'pipeline' ? '#fdf2f8' : '#e0f2fe', color: run.type === 'pipeline' ? brandColors.main : '#0369a1' }}>
                         {run.type}
                       </span>
                     </td>
