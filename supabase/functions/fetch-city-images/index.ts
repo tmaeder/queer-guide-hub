@@ -1,443 +1,392 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 interface ImageResult {
-  url: string;
-  thumbnail: string;
-  alt: string;
-  photographer: string;
-  photographer_url: string;
-  source: 'pexels' | 'unsplash';
-  source_id: string;
-  stored_url?: string;
+  url: string
+  thumbnail: string
+  alt: string
+  photographer: string
+  photographer_url: string
+  source: 'pexels' | 'unsplash' | 'wikimedia'
+  source_id: string
+  width?: number
+  height?: number
+  license?: string
+  score: number
 }
 
 interface CityImageRequest {
-  cityId?: string;
-  cityName?: string;
-  countryName?: string;
-  batchMode?: boolean;
+  cityId?: string
+  cityName?: string
+  countryName?: string
+  batchMode?: boolean
+  forceUpdate?: boolean
+  batchLimit?: number
 }
 
-async function initializeSupabaseClient() {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing required Supabase environment variables');
-  }
-  
-  return createClient(supabaseUrl, supabaseServiceKey);
-}
+// ---------------------------------------------------------------------------
+// API fetch helpers
+// ---------------------------------------------------------------------------
 
-async function validateApiKeys() {
-  const pexelsApiKey = Deno.env.get('PEXELS_API_KEY');
-  const unsplashApiKey = Deno.env.get('UNSPLASH_ACCESS_KEY');
-  
-  if (!pexelsApiKey && !unsplashApiKey) {
-    throw new Error('No image API keys configured. Please set PEXELS_API_KEY or UNSPLASH_ACCESS_KEY');
-  }
-  
-  return { pexelsApiKey, unsplashApiKey };
-}
-
-async function checkExistingImage(supabase: any, cityId: string) {
-  const { data: existingCity, error } = await supabase
-    .from('cities')
-    .select('image_url, image_metadata')
-    .eq('id', cityId)
-    .single();
-
-  if (error && error.code !== 'PGRST116') {
-    throw new Error(`Database error: ${error.message}`);
-  }
-
-  return existingCity;
-}
-
-function generateSearchQueries(cityName: string, countryName: string): string[] {
-  return [
-    `${cityName} city skyline architecture`,
-    `${cityName} ${countryName} landmarks`,
-    `${cityName} downtown cityscape`,
-    `${cityName} famous buildings`,
-    `${cityName} aerial view`
-  ];
-}
-
-async function fetchFromPexels(apiKey: string, searchQuery: string): Promise<ImageResult | null> {
+async function fetchFromPexels(apiKey: string, query: string): Promise<ImageResult[]> {
   try {
-    console.log('Searching Pexels for:', searchQuery);
-    
-    const response = await fetch(
-      `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=5&orientation=landscape`,
-      {
-        headers: {
-          'Authorization': apiKey,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      console.log('Pexels API error:', response.status, response.statusText);
-      return null;
-    }
-
-    const data = await response.json();
-    
-    if (data.photos && data.photos.length > 0) {
-      const photo = data.photos[0];
-      console.log('Found Pexels image:', photo.src.large);
-      
-      return {
-        url: photo.src.large,
-        thumbnail: photo.src.medium,
-        alt: photo.alt || searchQuery,
-        photographer: photo.photographer,
-        photographer_url: photo.photographer_url,
-        source: 'pexels',
-        source_id: photo.id.toString()
-      };
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('Pexels fetch error:', error);
-    return null;
-  }
+    const res = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape`,
+      { headers: { Authorization: apiKey } }
+    )
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.photos ?? []).map((p: any) => ({
+      url: p.src.large2x || p.src.large,
+      thumbnail: p.src.medium,
+      alt: p.alt || query,
+      photographer: p.photographer,
+      photographer_url: p.photographer_url,
+      source: 'pexels' as const,
+      source_id: String(p.id),
+      width: p.width,
+      height: p.height,
+      score: 0,
+    }))
+  } catch { return [] }
 }
 
-async function fetchFromUnsplash(apiKey: string, searchQuery: string): Promise<ImageResult | null> {
+async function fetchFromUnsplash(apiKey: string, query: string): Promise<ImageResult[]> {
   try {
-    console.log('Searching Unsplash for:', searchQuery);
-    
-    const response = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=5&orientation=landscape`,
-      {
-        headers: {
-          'Authorization': `Client-ID ${apiKey}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      console.log('Unsplash API error:', response.status, response.statusText);
-      return null;
-    }
-
-    const data = await response.json();
-    
-    if (data.results && data.results.length > 0) {
-      const photo = data.results[0];
-      console.log('Found Unsplash image:', photo.urls.regular);
-      
-      return {
-        url: photo.urls.regular,
-        thumbnail: photo.urls.small,
-        alt: photo.alt_description || photo.description || searchQuery,
-        photographer: photo.user.name,
-        photographer_url: photo.user.links.html,
-        source: 'unsplash',
-        source_id: photo.id
-      };
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('Unsplash fetch error:', error);
-    return null;
-  }
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape`,
+      { headers: { Authorization: `Client-ID ${apiKey}` } }
+    )
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.results ?? []).map((p: any) => ({
+      url: p.urls.regular,
+      thumbnail: p.urls.small,
+      alt: p.alt_description || p.description || query,
+      photographer: p.user.name,
+      photographer_url: p.user.links.html,
+      source: 'unsplash' as const,
+      source_id: p.id,
+      width: p.width,
+      height: p.height,
+      score: 0,
+    }))
+  } catch { return [] }
 }
 
-async function searchForImage(
-  cityName: string, 
-  countryName: string, 
-  pexelsApiKey?: string, 
-  unsplashApiKey?: string
+async function fetchFromWikimedia(query: string): Promise<ImageResult[]> {
+  try {
+    // Search Wikimedia Commons for images related to the place
+    const searchQuery = `${query} view`
+    const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(searchQuery)}&gsrlimit=8&prop=imageinfo&iiprop=url|extmetadata|size|mime&iiurlwidth=1280&format=json&origin=*`
+
+    const res = await fetch(url)
+    if (!res.ok) return []
+    const data = await res.json()
+
+    const pages = data.query?.pages
+    if (!pages) return []
+
+    const results: ImageResult[] = []
+    for (const page of Object.values(pages) as any[]) {
+      const info = page.imageinfo?.[0]
+      if (!info) continue
+
+      // Only JPEG/PNG images
+      const mime = info.mime || ''
+      if (!mime.startsWith('image/jpeg') && !mime.startsWith('image/png')) continue
+
+      // Skip tiny images and non-landscape
+      const w = info.width || 0
+      const h = info.height || 0
+      if (w < 800 || h < 400 || w < h) continue
+
+      const meta = info.extmetadata || {}
+      const desc = meta.ImageDescription?.value?.replace(/<[^>]*>/g, '') || ''
+      const artist = meta.Artist?.value?.replace(/<[^>]*>/g, '') || 'Unknown'
+      const license = meta.LicenseShortName?.value || 'CC'
+
+      results.push({
+        url: info.thumburl || info.url,
+        thumbnail: info.thumburl || info.url,
+        alt: desc || page.title?.replace('File:', '') || query,
+        photographer: artist,
+        photographer_url: info.descriptionurl || '',
+        source: 'wikimedia',
+        source_id: String(page.pageid),
+        width: w,
+        height: h,
+        license,
+        score: 0,
+      })
+    }
+    return results
+  } catch { return [] }
+}
+
+// ---------------------------------------------------------------------------
+// Scoring: pick the image most likely to actually depict the target place
+// ---------------------------------------------------------------------------
+
+function scoreImage(img: ImageResult, cityName: string, countryName: string): number {
+  let score = 0
+  const alt = (img.alt || '').toLowerCase()
+  const cityLower = cityName.toLowerCase()
+  const countryLower = countryName.toLowerCase()
+
+  // Highest priority: alt text contains the city name
+  if (alt.includes(cityLower)) score += 50
+
+  // Also good: alt text contains country name
+  if (countryLower && alt.includes(countryLower)) score += 20
+
+  // Wikimedia images are more likely to be correctly tagged
+  if (img.source === 'wikimedia') score += 15
+  else if (img.source === 'unsplash') score += 5
+
+  // Prefer landscape orientation and decent size
+  if (img.width && img.height) {
+    const ratio = img.width / img.height
+    if (ratio >= 1.3 && ratio <= 2.5) score += 10
+    if (img.width >= 1280) score += 5
+  }
+
+  // Penalize generic stock-photo alt text
+  const genericTerms = ['skyscraper', 'modern building', 'abstract', 'business', 'office']
+  for (const term of genericTerms) {
+    if (alt.includes(term) && !alt.includes(cityLower)) score -= 10
+  }
+
+  return score
+}
+
+// ---------------------------------------------------------------------------
+// Search orchestration: query all sources in parallel, score, pick best
+// ---------------------------------------------------------------------------
+
+async function findBestImage(
+  cityName: string,
+  countryName: string,
+  pexelsKey?: string,
+  unsplashKey?: string,
 ): Promise<ImageResult | null> {
-  const searchQueries = generateSearchQueries(cityName, countryName);
-  
-  for (const query of searchQueries) {
-    console.log('Trying search query:', query);
-    
-    // Try Pexels first if available
-    if (pexelsApiKey) {
-      const pexelsResult = await fetchFromPexels(pexelsApiKey, query);
-      if (pexelsResult) return pexelsResult;
+  // Primary query: specific place name
+  const primaryQuery = countryName ? `${cityName} ${countryName}` : cityName
+
+  // Fetch from all sources in parallel
+  const fetches: Promise<ImageResult[]>[] = [
+    fetchFromWikimedia(primaryQuery),
+  ]
+  if (pexelsKey) fetches.push(fetchFromPexels(pexelsKey, primaryQuery))
+  if (unsplashKey) fetches.push(fetchFromUnsplash(unsplashKey, primaryQuery))
+
+  const results = (await Promise.all(fetches)).flat()
+
+  if (results.length === 0) {
+    // Fallback: broader search without country
+    const fallbackQuery = `${cityName} city landmark`
+    const fallbackFetches: Promise<ImageResult[]>[] = [
+      fetchFromWikimedia(cityName),
+    ]
+    if (pexelsKey) fallbackFetches.push(fetchFromPexels(pexelsKey, fallbackQuery))
+    if (unsplashKey) fallbackFetches.push(fetchFromUnsplash(unsplashKey, fallbackQuery))
+
+    const fallbackResults = (await Promise.all(fallbackFetches)).flat()
+    if (fallbackResults.length === 0) return null
+
+    for (const img of fallbackResults) {
+      img.score = scoreImage(img, cityName, countryName)
     }
-    
-    // Try Unsplash if Pexels didn't work or isn't available
-    if (unsplashApiKey) {
-      const unsplashResult = await fetchFromUnsplash(unsplashApiKey, query);
-      if (unsplashResult) return unsplashResult;
-    }
+    fallbackResults.sort((a, b) => b.score - a.score)
+    return fallbackResults[0]
   }
-  
-  return null;
+
+  // Score and pick the best
+  for (const img of results) {
+    img.score = scoreImage(img, cityName, countryName)
+  }
+  results.sort((a, b) => b.score - a.score)
+  return results[0]
 }
 
-async function storeImageInSupabase(supabase: any, imageResult: ImageResult, cityId: string): Promise<string> {
+// ---------------------------------------------------------------------------
+// Storage
+// ---------------------------------------------------------------------------
+
+async function storeImage(supabase: any, img: ImageResult, entityId: string, bucket: string): Promise<string> {
   try {
-    console.log('Downloading and storing image from:', imageResult.url);
-    
-    const imageResponse = await fetch(imageResult.url);
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to download image: ${imageResponse.status}`);
+    const imageRes = await fetch(img.url)
+    if (!imageRes.ok) return img.url
+
+    const buffer = await imageRes.arrayBuffer()
+    const ext = img.url.includes('.png') ? 'png' : 'jpg'
+    const filePath = `cities/${entityId}-${Date.now()}.${ext}`
+
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, buffer, {
+        contentType: ext === 'png' ? 'image/png' : 'image/jpeg',
+        cacheControl: '86400',
+        upsert: true,
+      })
+
+    if (error) {
+      console.error('Storage upload error:', error)
+      return img.url
     }
 
-    const imageBuffer = await imageResponse.arrayBuffer();
-    const fileName = `${cityId}-${Date.now()}.jpg`;
-    const filePath = `cities/${fileName}`;
-
-    console.log('Uploading to Supabase Storage:', filePath);
-    
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('city-images')
-      .upload(filePath, imageBuffer, {
-        contentType: 'image/jpeg',
-        cacheControl: '3600'
-      });
-
-    if (uploadError) {
-      console.error('Storage upload error:', uploadError);
-      return imageResult.url; // Return original URL as fallback
-    }
-
-    console.log('Image uploaded successfully:', uploadData.path);
-    
-    const { data: publicUrlData } = supabase.storage
-      .from('city-images')
-      .getPublicUrl(uploadData.path);
-    
-    return publicUrlData.publicUrl;
-  } catch (error) {
-    console.error('Error storing image:', error);
-    return imageResult.url; // Return original URL as fallback
+    const { data: pubUrl } = supabase.storage.from(bucket).getPublicUrl(data.path)
+    return pubUrl.publicUrl
+  } catch (e) {
+    console.error('storeImage error:', e)
+    return img.url
   }
 }
 
-async function updateCityWithImage(supabase: any, cityId: string, imageResult: ImageResult, storedUrl: string) {
-  const imageMetadata = {
-    thumbnail: imageResult.thumbnail,
-    alt: imageResult.alt,
-    photographer: imageResult.photographer,
-    photographer_url: imageResult.photographer_url,
-    source: imageResult.source,
-    source_id: imageResult.source_id,
-    stored_locally: storedUrl !== imageResult.url,
-    updated_at: new Date().toISOString()
-  };
-
-  console.log('Updating city record with image URL:', storedUrl);
-  
-  const { error: updateError } = await supabase
-    .from('cities')
-    .update({ 
-      image_url: storedUrl,
-      image_metadata: imageMetadata,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', cityId);
-
-  if (updateError) {
-    throw new Error(`Failed to update city record: ${updateError.message}`);
-  }
-
-  return imageMetadata;
-}
+// ---------------------------------------------------------------------------
+// Process single city
+// ---------------------------------------------------------------------------
 
 async function processSingleCity(
-  supabase: any, 
-  cityId: string, 
-  cityName: string, 
+  supabase: any,
+  cityId: string,
+  cityName: string,
   countryName: string,
-  pexelsApiKey?: string,
-  unsplashApiKey?: string,
-  forceUpdate = false
+  pexelsKey?: string,
+  unsplashKey?: string,
+  forceUpdate = false,
 ) {
-  console.log('Processing city:', { cityId, cityName, countryName });
-
-  // Check if city already has an image
+  // Skip if already has image (unless force)
   if (!forceUpdate) {
-    const existingCity = await checkExistingImage(supabase, cityId);
-    if (existingCity?.image_url) {
-      console.log('City already has image:', existingCity.image_url);
-      return {
-        success: true,
-        image_url: existingCity.image_url,
-        image_metadata: existingCity.image_metadata,
-        cached: true
-      };
+    const { data: existing } = await supabase
+      .from('cities')
+      .select('image_url')
+      .eq('id', cityId)
+      .single()
+    if (existing?.image_url) {
+      return { success: true, image_url: existing.image_url, cached: true }
     }
   }
 
-  // Search for image
-  const imageResult = await searchForImage(cityName, countryName, pexelsApiKey, unsplashApiKey);
-  
-  if (!imageResult) {
-    console.log('No images found for city:', cityName);
-    return {
-      success: false,
-      error: 'No images found',
-      message: `Could not find any images for ${cityName}`
-    };
+  const best = await findBestImage(cityName, countryName, pexelsKey, unsplashKey)
+  if (!best) {
+    return { success: false, error: `No images found for ${cityName}` }
   }
 
-  // Store image and update city
-  const storedUrl = await storeImageInSupabase(supabase, imageResult, cityId);
-  const imageMetadata = await updateCityWithImage(supabase, cityId, imageResult, storedUrl);
+  const storedUrl = await storeImage(supabase, best, cityId, 'city-images')
 
-  console.log('Successfully processed city:', cityName);
-  
-  return {
-    success: true,
-    image_url: storedUrl,
-    image_metadata: imageMetadata,
-    cached: false
-  };
+  const metadata = {
+    thumbnail: best.thumbnail,
+    alt: best.alt,
+    photographer: best.photographer,
+    photographer_url: best.photographer_url,
+    source: best.source,
+    source_id: best.source_id,
+    license: best.license,
+    score: best.score,
+    stored_locally: storedUrl !== best.url,
+    updated_at: new Date().toISOString(),
+  }
+
+  const { error: updateError } = await supabase
+    .from('cities')
+    .update({ image_url: storedUrl, image_metadata: metadata, updated_at: new Date().toISOString() })
+    .eq('id', cityId)
+
+  if (updateError) {
+    return { success: false, error: updateError.message }
+  }
+
+  return { success: true, image_url: storedUrl, image_metadata: metadata, cached: false }
 }
 
-async function processBatchMode(supabase: any, pexelsApiKey?: string, unsplashApiKey?: string) {
-  console.log('Starting batch mode - processing all cities without images...');
-  
-  const { data: cities, error } = await supabase
+// ---------------------------------------------------------------------------
+// Batch mode
+// ---------------------------------------------------------------------------
+
+async function processBatch(
+  supabase: any,
+  pexelsKey?: string,
+  unsplashKey?: string,
+  forceUpdate = false,
+  batchLimit = 50,
+) {
+  let query = supabase
     .from('cities')
     .select('id, name, countries(name)')
-    .is('image_url', null)
-    .limit(50); // Process in chunks
 
-  if (error) {
-    throw new Error(`Failed to fetch cities: ${error.message}`);
+  if (!forceUpdate) {
+    query = query.is('image_url', null)
   }
 
-  if (!cities || cities.length === 0) {
-    return {
-      success: true,
-      message: 'No cities without images found',
-      processed: 0
-    };
-  }
+  const { data: cities, error } = await query.order('name').limit(batchLimit)
 
-  const results = [];
-  let successCount = 0;
-  let errorCount = 0;
+  if (error) throw new Error(`Failed to fetch cities: ${error.message}`)
+  if (!cities?.length) return { success: true, message: 'No cities to process', processed: 0 }
+
+  const results: any[] = []
+  let ok = 0, fail = 0
 
   for (const city of cities) {
     try {
-      const result = await processSingleCity(
-        supabase,
-        city.id,
-        city.name,
-        city.countries?.name || '',
-        pexelsApiKey,
-        unsplashApiKey
-      );
-      
-      if (result.success) {
-        successCount++;
-      } else {
-        errorCount++;
-      }
-      
-      results.push({ cityId: city.id, cityName: city.name, ...result });
-      
-      // Add delay to respect API rate limits
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-    } catch (error) {
-      console.error(`Error processing city ${city.name}:`, error);
-      errorCount++;
-      results.push({
-        cityId: city.id,
-        cityName: city.name,
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      const r = await processSingleCity(
+        supabase, city.id, city.name, city.countries?.name || '',
+        pexelsKey, unsplashKey, forceUpdate,
+      )
+      if (r.success) ok++; else fail++
+      results.push({ city: city.name, ...r })
+    } catch (e: any) {
+      fail++
+      results.push({ city: city.name, success: false, error: e.message })
     }
+    // Rate-limit: 1.5s between API calls
+    await new Promise(r => setTimeout(r, 1500))
   }
 
-  return {
-    success: true,
-    message: `Batch processing completed: ${successCount} successful, ${errorCount} errors`,
-    processed: cities.length,
-    successCount,
-    errorCount,
-    results
-  };
+  return { success: true, processed: cities.length, ok, fail, results }
 }
+
+// ---------------------------------------------------------------------------
+// Handler
+// ---------------------------------------------------------------------------
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
-
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
   try {
     const supabase = getServiceClient()
     const auth = await requireAdmin(req, supabase)
     if (auth instanceof Response) return auth
 
-    const requestData: CityImageRequest = await req.json().catch(() => ({}));
-    const { cityId, cityName, countryName, batchMode } = requestData;
-
-    // Validate API keys
-    const { pexelsApiKey, unsplashApiKey } = await validateApiKeys();
-    
-    console.log('City image fetch request:', { cityId, cityName, countryName, batchMode });
-
-    let result;
-
-    if (batchMode) {
-      result = await processBatchMode(supabase, pexelsApiKey, unsplashApiKey);
-    } else {
-      if (!cityId || !cityName) {
-        return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: 'cityId and cityName are required for single city processing' 
-          }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      result = await processSingleCity(
-        supabase,
-        cityId,
-        cityName,
-        countryName || '',
-        pexelsApiKey,
-        unsplashApiKey
-      );
+    let body: CityImageRequest = {}
+    if (req.method === 'POST') {
+      body = await req.json().catch(() => ({}))
     }
 
-    return new Response(
-      JSON.stringify({
-        ...result,
-        timestamp: new Date().toISOString()
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: result.success ? 200 : 400
-      }
-    );
+    const pexelsKey = Deno.env.get('PEXELS_API_KEY')
+    const unsplashKey = Deno.env.get('UNSPLASH_ACCESS_KEY')
+    if (!pexelsKey && !unsplashKey) {
+      return errorResponse('No image API keys configured (PEXELS_API_KEY or UNSPLASH_ACCESS_KEY)', 500, req)
+    }
 
-  } catch (error) {
-    console.error('Error in fetch-city-images function:', error);
+    const { cityId, cityName, countryName, batchMode, forceUpdate, batchLimit } = body
 
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Failed to fetch city images',
-        timestamp: new Date().toISOString()
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    let result: any
+    if (batchMode) {
+      result = await processBatch(supabase, pexelsKey, unsplashKey, forceUpdate ?? false, batchLimit ?? 50)
+    } else {
+      if (!cityId || !cityName) {
+        return errorResponse('cityId and cityName are required', 400, req)
       }
-    );
+      result = await processSingleCity(
+        supabase, cityId, cityName, countryName || '',
+        pexelsKey, unsplashKey, forceUpdate ?? false,
+      )
+    }
+
+    return jsonResponse({ ...result, timestamp: new Date().toISOString() }, result.success ? 200 : 400, req)
+  } catch (e: any) {
+    console.error('fetch-city-images error:', e)
+    return errorResponse('Internal error', 500, req)
   }
-});
+})
