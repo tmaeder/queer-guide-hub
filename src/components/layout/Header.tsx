@@ -39,6 +39,7 @@ import {
   Mail,
   ChevronRight,
   Building,
+  Luggage,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -101,6 +102,7 @@ const navigationSections = [
 ];
 
 const userMenuItems = [
+  { to: '/trips', icon: Luggage, label: 'My Trips' },
   { to: '/favorites', icon: Heart, label: 'Favorites' },
   { to: '/profile/settings', icon: Settings, label: 'Settings' },
   { to: '/inbox', icon: Mail, label: 'Inbox' },

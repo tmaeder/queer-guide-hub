@@ -169,6 +169,8 @@ const NotFound = lazyRetry(() => import('./pages/NotFound'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const Favorites = lazyRetry(() => import('./pages/Favorites'));
 
+const TripsPage = lazyRetry(() => import('./pages/trips/TripsPage'));
+const TripPlannerPage = lazyRetry(() => import('./pages/trips/TripPlannerPage'));
 const Donate = lazyRetry(() => import('./pages/Donate'));
 const Sitemap = lazyRetry(() => import('./pages/Sitemap'));
 const SubmitHub = lazyRetry(() => import('./pages/SubmitHub'));
@@ -346,6 +348,8 @@ const AppRoutes = () => {
               <Route path="/festivals/:id" element={<Navigate to="/events" replace />} />
               <Route path="/places" element={<Places />} />
               <Route path="/travel" element={<Travel />} />
+              <Route path="/trips" element={<TripsPage />} />
+              <Route path="/trips/:tripId" element={<TripPlannerPage />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="/flights" element={<Navigate to="/travel" replace />} />
               <Route path="/city/:id" element={<CityDetail />} />
