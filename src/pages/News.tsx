@@ -439,7 +439,11 @@ export default function News() {
             {error && !loading && <ErrorState message={error} onRetry={() => fetchArticles()} />}
 
             {/* Loading State */}
-            {loading && <PageLoadingState count={6} variant="card" />}
+            {loading && (
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+                {Array.from({ length: 6 }).map((_, i) => (<NewsCard key={i} loading />))}
+              </Box>
+            )}
             {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
 
             {/* Empty State */}

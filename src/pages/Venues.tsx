@@ -92,8 +92,6 @@ const Venues = () => {
 
   const handleViewDetails = (venue: Venue) => {
     setSelectedVenue(venue);
-    // In a real app, this would navigate to a detailed venue page
-    console.log('View venue details:', venue);
   };
 
   // Sort venues based on current sort settings
@@ -308,7 +306,11 @@ const Venues = () => {
               {error && !loading && <ErrorState message={error} onRetry={() => fetchVenues()} />}
 
               {/* Loading State */}
-              {loading && <PageLoadingState count={8} />}
+              {loading && (
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 3 }}>
+                  {Array.from({ length: 8 }).map((_, i) => (<VenueCard key={i} loading />))}
+                </Box>
+              )}
               {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchVenues()} />}
 
               {/* Empty State */}

@@ -92,7 +92,9 @@ export default function Groups() {
             />
 
             {isLoading ? (
-              <PageLoadingState count={6} />
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+                {Array.from({ length: 6 }).map((_, i) => (<GroupCard key={i} loading />))}
+              </Box>
             ) : filteredGroups.length === 0 ? (
               <EmptyState
                 icon={Users}

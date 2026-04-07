@@ -7,9 +7,43 @@ import { Users, Lock, Globe, UserPlus, UserMinus, Settings, ExternalLink } from 
 import { Group } from '@/hooks/useGroups';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { Skeleton } from 'boneyard-js/react';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+
+const GroupCardFixture = () => (
+  <Card>
+    <CardHeader>
+      <Box sx={{ pb: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+          <Avatar><AvatarFallback>S</AvatarFallback></Avatar>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Sample Group</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Users style={{ width: 12, height: 12 }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>42</Typography>
+              <Typography variant="body2" color="text.secondary">members</Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    </CardHeader>
+    <CardContent>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>A sample group description.</Typography>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+        <Badge variant="outline"><Typography variant="caption">Tag 1</Typography></Badge>
+        <Badge variant="outline"><Typography variant="caption">Tag 2</Typography></Badge>
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Button variant="ghost" size="sm" sx={{ flex: 1 }}>View</Button>
+        <Button size="sm" sx={{ flex: 1 }}>Join</Button>
+      </Box>
+    </CardContent>
+  </Card>
+);
 
 interface GroupCardProps {
-  group: Group;
+  group?: Group;
+  loading?: boolean;
   onJoin?: (groupId: string) => void;
   onLeave?: (groupId: string) => void;
   onManage?: (group: Group) => void;
@@ -19,12 +53,21 @@ interface GroupCardProps {
 
 export const GroupCard = ({
   group,
+  loading = false,
   onJoin,
   onLeave,
   onManage,
   isJoining,
   isLeaving,
 }: GroupCardProps) => {
+  if (loading || !group) {
+    return (
+      <Skeleton name="group-card" loading={true} fixture={<GroupCardFixture />} fallback={<PageLoadingState count={1} />}>
+        <div />
+      </Skeleton>
+    );
+  }
+
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
 
   return (

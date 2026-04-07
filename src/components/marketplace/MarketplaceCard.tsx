@@ -8,11 +8,13 @@ import { Star, Heart, MapPin, Globe, Phone, Mail, ExternalLink, Eye, Building } 
 import { Database } from '@/integrations/supabase/types';
 import { Link } from 'react-router';
 import { FavoriteButton } from '@/components/ui/favorite-button';
+import { Skeleton } from 'boneyard-js/react';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
 interface MarketplaceCardProps {
-  listing: MarketplaceListing & {
+  listing?: MarketplaceListing & {
     marketplace_reviews?: Array<{ rating: number }>;
     marketplace_favorites?: Array<{ id: string }>;
     venues?: { name: string; address: string; city: string } | null;
@@ -20,14 +22,24 @@ interface MarketplaceCardProps {
   onViewDetails?: (listing: MarketplaceListing) => void;
   onToggleFavorite?: (listingId: string) => void;
   showFavoriteButton?: boolean;
+  loading?: boolean;
 }
 
 export function MarketplaceCard({
   listing,
+  loading = false,
   onViewDetails,
   onToggleFavorite,
   showFavoriteButton = false,
 }: MarketplaceCardProps) {
+  if (loading || !listing) {
+    return (
+      <Skeleton name="marketplace-card" loading={true} fallback={<PageLoadingState count={1} />}>
+        <div />
+      </Skeleton>
+    );
+  }
+
   const averageRating = listing.marketplace_reviews?.length
     ? listing.marketplace_reviews.reduce((sum, review) => sum + review.rating, 0) /
       listing.marketplace_reviews.length

@@ -90,7 +90,9 @@ export default function Personalities() {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ px: 2, py: { xs: 6, md: 10 } }}>
-        <PageLoadingState count={8} />
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+          {Array.from({ length: 8 }).map((_, i) => (<PersonalityCard key={i} loading />))}
+        </Box>
       </Container>
     );
   }

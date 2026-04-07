@@ -98,6 +98,9 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/gsap/')) {
             return 'gsap';
           }
+          if (id.includes('node_modules/boneyard-js/')) {
+            return 'boneyard';
+          }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
             return 'vendor';

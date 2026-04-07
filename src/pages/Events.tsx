@@ -244,7 +244,6 @@ const Events = () => {
   };
   const handleViewDetails = (event: Event) => {
     setSelectedEvent(event);
-    console.log('View event details:', event);
   };
   const hasActiveFilters =
     search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe;
@@ -691,7 +690,11 @@ const Events = () => {
         {error && !loading && <ErrorState message={error} onRetry={() => fetchEvents()} />}
 
         {/* Loading State */}
-        {loading && <PageLoadingState count={6} />}
+        {loading && (
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+            {Array.from({ length: 6 }).map((_, i) => (<EventCard key={i} loading />))}
+          </Box>
+        )}
         {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchEvents()} />}
 
         {/* Empty State */}

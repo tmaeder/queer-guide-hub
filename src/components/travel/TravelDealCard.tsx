@@ -7,9 +7,12 @@ import { Button } from '@/components/ui/button';
 import { buildAviasalesUrl, getAffiliateUrl } from '@/utils/aviasalesUrl';
 import { trackTravelEvent } from '@/utils/travelAnalytics';
 import type { TravelDeal } from '@/hooks/useTravelDeals';
+import { Skeleton } from 'boneyard-js/react';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 interface TravelDealCardProps {
-  deal: TravelDeal;
+  deal?: TravelDeal;
+  loading?: boolean;
   originCity?: string;
   destinationCity?: string;
 }
@@ -59,7 +62,14 @@ function resolveBookingUrl(deal: TravelDeal): string {
   });
 }
 
-export function TravelDealCard({ deal, originCity, destinationCity }: TravelDealCardProps) {
+export function TravelDealCard({ deal, loading = false, originCity, destinationCity }: TravelDealCardProps) {
+  if (loading || !deal) {
+    return (
+      <Skeleton name="travel-deal-card" loading={true} fallback={<PageLoadingState count={1} />}>
+        <div />
+      </Skeleton>
+    );
+  }
   const handleBookClick = () => {
     const bookingUrl = resolveBookingUrl(deal);
 

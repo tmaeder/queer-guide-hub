@@ -5,14 +5,26 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Eye, Calendar, MapPin, Check, AlertCircle, Star, Clock, Heart } from "lucide-react";
 import { Personality } from "@/hooks/usePersonalities";
+import { Skeleton } from 'boneyard-js/react';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+
 interface PersonalityCardProps {
-  personality: Personality;
+  personality?: Personality;
+  loading?: boolean;
   onClick?: () => void;
 }
 export function PersonalityCard({
   personality,
+  loading = false,
   onClick
 }: PersonalityCardProps) {
+  if (loading || !personality) {
+    return (
+      <Skeleton name="personality-card" loading={true} fallback={<PageLoadingState count={1} />}>
+        <div />
+      </Skeleton>
+    );
+  }
   const getInitials = (name: string) => {
     return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
   };

@@ -21,6 +21,8 @@ import { formatEventTime } from '@/lib/event-time';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { Skeleton } from 'boneyard-js/react';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -37,15 +39,49 @@ type Event = Database['public']['Tables']['events']['Row'] & {
 };
 
 interface EventCardProps {
-  event: Event & {
+  event?: Event & {
     event_attendees?: Array<{ status: string }>;
   };
+  loading?: boolean;
   onViewDetails?: (event: Event) => void;
   onUpdateAttendance?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void;
 }
 
-export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdateAttendance }: EventCardProps) {
-  const attendeeCount = event.event_attendees?.filter((a) => a.status === 'going').length || 0;
+const EventCardFixture = () => (
+  <Card hoverable>
+    <CardImage src="" alt="Event" fallbackIcon={Calendar} height={200} />
+    <CardHeader sx={{ pb: 2 }}>
+      <CardTitle sx={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Sample Event Title</CardTitle>
+      <Box sx={{ display: 'flex', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, bgcolor: 'action.hover', borderRadius: 2 }}>
+          <Calendar style={{ height: 16, width: 16 }} />
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>Jun 15, 2026</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, bgcolor: 'action.hover', borderRadius: 2 }}>
+          <Clock style={{ height: 16, width: 16 }} />
+          <Typography variant="body2">8:00 PM</Typography>
+        </Box>
+      </Box>
+    </CardHeader>
+    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 0 }}>
+      <Typography variant="body2" color="text.secondary">A sample event description spanning a couple of lines.</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+        <MapPin style={{ height: 16, width: 16, marginTop: 2, flexShrink: 0 }} />
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>Sample Venue</Typography>
+          <Typography variant="caption" color="text.secondary">Berlin, Germany</Typography>
+        </Box>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1 }}>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>12 attending</Typography>
+        <Box sx={{ width: 32, height: 32 }} />
+      </Box>
+    </CardContent>
+  </Card>
+);
+
+export const EventCard = memo(function EventCard({ event, loading = false, onViewDetails, onUpdateAttendance }: EventCardProps) {
+  const attendeeCount = event?.event_attendees?.filter((a) => a.status === 'going').length || 0;
 
   const getEventTypeStyle = (type: string): React.CSSProperties => {
     const styles: Record<string, React.CSSProperties> = {
@@ -86,6 +122,8 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
   };
 
   return (
+    <Skeleton name="event-card" loading={loading || !event} fixture={<EventCardFixture />} fallback={<PageLoadingState count={1} />}>
+      {event && (
     <Link to={`/events/${event.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
     <Card hoverable>
       <CardImage
@@ -414,5 +452,7 @@ export const EventCard = memo(function EventCard({ event, onViewDetails, onUpdat
 
     </Card>
     </Link>
+      )}
+    </Skeleton>
   );
 });

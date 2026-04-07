@@ -121,8 +121,6 @@ const Marketplace = () => {
   const handleViewDetails = (listing: MarketplaceListing) => {
     setSelectedListing(listing);
     incrementViews(listing.id);
-    // In a real app, this would navigate to a detailed listing page
-    console.log('View listing details:', listing);
   };
 
   // Filter listings by category for tabs
@@ -255,7 +253,11 @@ const Marketplace = () => {
 
           {/* Loading State */}
           {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchListings()} />}
-          {loading && !loadingTimedOut && <PageLoadingState count={6} />}
+          {loading && !loadingTimedOut && (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+              {Array.from({ length: 6 }).map((_, i) => (<MarketplaceCard key={i} loading />))}
+            </Box>
+          )}
 
           {/* Empty State */}
           {!loading && sortedListings.length === 0 && (

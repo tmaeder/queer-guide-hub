@@ -5,9 +5,12 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import type { Hotel } from '@/hooks/useHotels';
+import { Skeleton } from 'boneyard-js/react';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 interface HotelCardProps {
-  hotel: Hotel;
+  hotel?: Hotel;
+  loading?: boolean;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -34,10 +37,39 @@ function PriceIndicator({ range }: { range: number | null }) {
   );
 }
 
-export function HotelCard({ hotel }: HotelCardProps) {
+const HotelCardFixture = () => (
+  <Paper elevation={1} sx={{ overflow: 'hidden', borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ height: 180, bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <MapPin style={{ width: 32, height: 32, color: '#999' }} />
+    </Box>
+    <Box sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600 }} noWrap>Sample Hotel</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+        <MapPin style={{ width: 14, height: 14 }} />
+        <Typography variant="body2" noWrap>Berlin, Germany</Typography>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto', pt: 1 }}>
+        <Star style={{ width: 14, height: 14 }} />
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>4.5</Typography>
+        <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>LGBTQ+</Badge>
+      </Box>
+    </Box>
+  </Paper>
+);
+
+export function HotelCard({ hotel, loading = false }: HotelCardProps) {
+  if (loading || !hotel) {
+    return (
+      <Skeleton name="hotel-card" loading={true} fixture={<HotelCardFixture />} fallback={<PageLoadingState count={1} />}>
+        <div />
+      </Skeleton>
+    );
+  }
+
   const imageUrl = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
 
   return (
+    <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
     <Link to={`/hotels/${hotel.id}`} style={{ textDecoration: 'none' }}>
       <Paper
         elevation={1}
@@ -136,5 +168,6 @@ export function HotelCard({ hotel }: HotelCardProps) {
         </Box>
       </Paper>
     </Link>
+    </Skeleton>
   );
 }

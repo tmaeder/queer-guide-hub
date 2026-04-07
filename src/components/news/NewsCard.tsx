@@ -11,13 +11,44 @@ import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
+import { Skeleton } from 'boneyard-js/react';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 type NewsArticle = Tables<'news_articles'> & {
   news_sources?: Tables<'news_sources'>;
 };
 
+const NewsCardFixture = () => (
+  <Card>
+    <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <Box sx={{ width: '100%', height: 192, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover', borderRadius: 2 }}>
+        <Newspaper style={{ width: 32, height: 32 }} />
+      </Box>
+      <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem' }}>Sample News Headline</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Badge style={{ backgroundColor: '#1a73e8', color: '#fff' }}>Politics</Badge>
+        <Badge variant="outline" style={{ fontSize: '0.75rem' }}>Source</Badge>
+      </Box>
+    </CardHeader>
+    <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <Typography variant="body2">A sample excerpt for the news article.</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Clock style={{ height: 14, width: 14 }} />
+          <Typography variant="caption">2 hours ago</Typography>
+        </Box>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
+        <Box sx={{ width: 32, height: 32 }} />
+        <Button size="sm">Read Full Article</Button>
+      </Box>
+    </CardContent>
+  </Card>
+);
+
 interface NewsCardProps {
-  article: NewsArticle;
+  article?: NewsArticle;
+  loading?: boolean;
   onViewArticle?: (articleId: string) => void;
   onFilterByTag?: (tag: string) => void;
   onFilterBySource?: (sourceId: string, sourceName: string) => void;
@@ -34,6 +65,7 @@ interface NewsCardProps {
 
 export const NewsCard = ({
   article,
+  loading = false,
   onViewArticle,
   onFilterByTag,
   onFilterBySource,
@@ -50,7 +82,7 @@ export const NewsCard = ({
 
   useEffect(() => {
     const fetchTags = async () => {
-      if (!article.id) return;
+      if (!article?.id) return;
 
       setIsLoadingTags(true);
       try {
@@ -77,7 +109,15 @@ export const NewsCard = ({
     };
 
     fetchTags();
-  }, [article.id]);
+  }, [article?.id]);
+
+  if (loading || !article) {
+    return (
+      <Skeleton name="news-card" loading={true} fixture={<NewsCardFixture />} fallback={<PageLoadingState count={1} />}>
+        <div />
+      </Skeleton>
+    );
+  }
 
   const handleViewClick = () => {
     onViewArticle?.(article.id);

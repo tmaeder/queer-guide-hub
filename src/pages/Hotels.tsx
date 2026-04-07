@@ -66,8 +66,8 @@ export default function Hotels() {
       />
 
       {loading && hotels.length === 0 ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+          {Array.from({ length: 8 }).map((_, i) => (<HotelCard key={i} loading />))}
         </Box>
       ) : hotels.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>
