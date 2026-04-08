@@ -13,6 +13,7 @@ import {
   Car,
   Accessibility,
   ChevronRight,
+  Luggage,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,8 @@ import Box from '@mui/material/Box';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Chip from '@mui/material/Chip';
+import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -58,6 +61,8 @@ export default function VenueDetail() {
   const [reviews, setReviews] = useState<VenueReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkinRefresh, setCheckinRefresh] = useState(0);
+  const [addToTripOpen, setAddToTripOpen] = useState(false);
+  const { data: tripStatus } = useEntityTripStatus('venue', id);
   const { events } = useEvents();
 
   const venueEvents = events.filter((event) => event.venue_id === id);
@@ -309,6 +314,26 @@ export default function VenueDetail() {
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5, flexWrap: 'wrap' }}>
+            {venue.logo_url && (
+              <Box
+                component="img"
+                src={venue.logo_url}
+                alt=""
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '10px',
+                  objectFit: 'contain',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  p: '3px',
+                  flexShrink: 0,
+                }}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            )}
             <Typography variant="h4" sx={{ fontWeight: 700 }}>
               {venue.name}
             </Typography>
@@ -358,6 +383,15 @@ export default function VenueDetail() {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
           <FavoriteButton itemId={venue.id} type="venue" size="md" />
+          <Button variant="outline" size="sm" onClick={() => setAddToTripOpen(true)}>
+            <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
+            Add to Trip
+          </Button>
+          {tripStatus?.isInTrip && (
+            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
+              In {tripStatus.count} trip{tripStatus.count !== 1 ? 's' : ''}
+            </Badge>
+          )}
           <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
           <AdminEditButton
             contentType="venues"
@@ -824,6 +858,22 @@ export default function VenueDetail() {
           )}
         </TabsContent>
       </Tabs>
+
+      <AddToTripDialog
+        open={addToTripOpen}
+        onClose={() => setAddToTripOpen(false)}
+        entity={{
+          type: 'venue',
+          id: venue.id,
+          name: venue.name,
+          latitude: venue.latitude,
+          longitude: venue.longitude,
+          city_id: venue.city_id,
+          country_id: venue.country_id,
+          address: venue.address,
+          category: venue.category,
+        }}
+      />
     </Container>
   );
 }

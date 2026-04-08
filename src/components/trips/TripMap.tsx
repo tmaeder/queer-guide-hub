@@ -2,16 +2,40 @@ import { useEffect, useRef, useMemo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 import { Maximize2 } from 'lucide-react';
+import { createRoot } from 'react-dom/client';
+import { Button } from '@/components/ui/button';
+import { mapStyle } from '@/config/mapStyle';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
 
-const DAY_COLORS = [
-  '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6',
-  '#ef4444', '#06b6d4', '#84cc16', '#f97316', '#a855f7',
-];
-const UNASSIGNED_COLOR = '#9ca3af';
+function dayColor(index: number, theme: ReturnType<typeof useTheme>): string {
+  const hue = (index * 137.5) % 360;
+  return `hsl(${hue}, 65%, 50%)`;
+}
+
+interface PopupContentProps {
+  name: string;
+  dayLabel: string;
+  category: string | null;
+}
+
+function PopupContent({ name, dayLabel, category }: PopupContentProps) {
+  return (
+    <div style={{ fontSize: 13, lineHeight: 1.4 }}>
+      <strong>{name}</strong>
+      <br />
+      <span style={{ color: '#666' }}>{dayLabel}</span>
+      {category && (
+        <>
+          <br />
+          <span style={{ fontSize: 11, color: '#999' }}>{category}</span>
+        </>
+      )}
+    </div>
+  );
+}
 
 interface Props {
   places: TripPlace[];
@@ -19,6 +43,7 @@ interface Props {
 }
 
 export function TripMap({ places, days }: Props) {
+  const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -46,7 +71,7 @@ export function TripMap({ places, days }: Props) {
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+      style: mapStyle,
       center: [10, 48],
       zoom: 3,
     });
@@ -64,20 +89,29 @@ export function TripMap({ places, days }: Props) {
     const map = mapRef.current;
     if (!map) return;
 
+    // Clear old markers
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
+    // Remove old route lines
+    const existingSources = Object.keys((map.getStyle()?.sources) || {}).filter((s) => s.startsWith('route-day-'));
+    for (const src of existingSources) {
+      if (map.getLayer(`${src}-line`)) map.removeLayer(`${src}-line`);
+      if (map.getSource(src)) map.removeSource(src);
+    }
+
+    // Group places by day for route lines
+    const placesByDay = new Map<string, TripPlace[]>();
+
     geoPlaces.forEach((place) => {
       const dayIdx = place.day_id ? dayIndexMap.get(place.day_id) : undefined;
-      const color = dayIdx != null ? DAY_COLORS[dayIdx % DAY_COLORS.length] : UNASSIGNED_COLOR;
+      const color = dayIdx != null ? dayColor(dayIdx, theme) : theme.palette.text.disabled;
 
       const placeName =
         place.venues?.name || place.events?.title || place.hotels?.name || place.custom_name || 'Place';
-      const dayLabel =
-        dayIdx != null && days[dayIdx]
-          ? `Day ${dayIdx + 1}`
-          : 'Unassigned';
+      const dayLabel = dayIdx != null && days[dayIdx] ? `Day ${dayIdx + 1}` : 'Unassigned';
 
+      // Create marker element
       const el = document.createElement('div');
       el.style.width = '14px';
       el.style.height = '14px';
@@ -87,9 +121,14 @@ export function TripMap({ places, days }: Props) {
       el.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)';
       el.style.cursor = 'pointer';
 
-      const popup = new maplibregl.Popup({ offset: 10, closeButton: false }).setHTML(
-        `<div style="font-size:13px"><strong>${placeName}</strong><br/><span style="color:#666">${dayLabel}</span></div>`,
+      // React-rendered popup
+      const popupEl = document.createElement('div');
+      const root = createRoot(popupEl);
+      root.render(
+        <PopupContent name={placeName} dayLabel={dayLabel} category={place.category} />,
       );
+
+      const popup = new maplibregl.Popup({ offset: 10, closeButton: false }).setDOMContent(popupEl);
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([place.longitude!, place.latitude!])
@@ -97,47 +136,76 @@ export function TripMap({ places, days }: Props) {
         .addTo(map);
 
       markersRef.current.push(marker);
+
+      // Collect for route lines
+      if (place.day_id) {
+        if (!placesByDay.has(place.day_id)) placesByDay.set(place.day_id, []);
+        placesByDay.get(place.day_id)!.push(place);
+      }
     });
+
+    // Add route lines between same-day places
+    const addRoutes = () => {
+      placesByDay.forEach((dayPlaces, dayId) => {
+        if (dayPlaces.length < 2) return;
+        const dayIdx = dayIndexMap.get(dayId);
+        const color = dayIdx != null ? dayColor(dayIdx, theme) : theme.palette.text.disabled;
+        const sourceId = `route-day-${dayId}`;
+
+        const coordinates = dayPlaces.map((p) => [p.longitude!, p.latitude!]);
+
+        if (!map.getSource(sourceId)) {
+          map.addSource(sourceId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: { type: 'LineString', coordinates },
+            },
+          });
+          map.addLayer({
+            id: `${sourceId}-line`,
+            type: 'line',
+            source: sourceId,
+            layout: { 'line-join': 'round', 'line-cap': 'round' },
+            paint: { 'line-color': color, 'line-width': 2, 'line-opacity': 0.6, 'line-dasharray': [2, 4] },
+          });
+        }
+      });
+    };
+
+    if (map.isStyleLoaded()) {
+      addRoutes();
+    } else {
+      map.once('style.load', addRoutes);
+    }
 
     if (geoPlaces.length > 0) {
       setTimeout(fitBounds, 200);
     }
-  }, [geoPlaces, dayIndexMap, days]);
+  }, [geoPlaces, dayIndexMap, days, theme]);
 
   if (places.length === 0 || geoPlaces.length === 0) {
     return (
-      <Box className="h-full w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+      <Box className="h-full w-full rounded-lg overflow-hidden flex items-center justify-center" sx={{ bgcolor: 'action.hover', minHeight: 300 }}>
         <Typography color="text.secondary">
           {places.length === 0
-            ? 'Add places to see them on the map.'
-            : 'None of your places have coordinates yet.'}
+            ? 'Add places to see them on the map'
+            : 'None of your places have coordinates yet'}
         </Typography>
       </Box>
     );
   }
 
   return (
-    <Box className="h-full w-full rounded-lg overflow-hidden relative">
-      <div ref={containerRef} className="h-full w-full" />
-      <Button
-        size="small"
-        variant="contained"
-        startIcon={<Maximize2 size={14} />}
-        onClick={fitBounds}
-        sx={{
-          position: 'absolute',
-          bottom: 16,
-          left: 16,
-          bgcolor: 'white',
-          color: 'text.primary',
-          boxShadow: 2,
-          '&:hover': { bgcolor: 'grey.100' },
-          textTransform: 'none',
-          fontSize: 12,
-        }}
-      >
-        Fit All
-      </Button>
+    <Box className="h-full w-full rounded-lg overflow-hidden relative" sx={{ minHeight: 400 }}>
+      <div ref={containerRef} key={places.length} style={{ width: '100%', height: '100%' }} />
+      <Box sx={{ position: 'absolute', top: 12, right: 52 }}>
+        <Button variant="ghost" size="sm" onClick={fitBounds}>
+          <Maximize2 size={14} />
+          Fit All
+        </Button>
+      </Box>
     </Box>
   );
 }

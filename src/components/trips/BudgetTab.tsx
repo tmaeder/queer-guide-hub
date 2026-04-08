@@ -1,28 +1,29 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
-import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
-import { Plus, Trash2, ArrowRight, Utensils, Car, Home, Ticket, ShoppingBag, Package } from 'lucide-react';
+import { useTheme } from '@mui/material/styles';
+import { Plus, Trash2, ArrowRight, Utensils, Car, Home, Ticket, ShoppingBag, Package, Wallet } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { useToast } from '@/hooks/use-toast';
 import { useTripBudget, useBudgetMutations, type BudgetItem } from '@/hooks/useTripBudget';
 import type { TripMember } from '@/hooks/useTrips';
 import { AddBudgetDialog } from './AddBudgetDialog';
-
-const CATEGORY_COLORS: Record<string, string> = {
-  food: '#f97316',
-  transport: '#3b82f6',
-  accommodation: '#8b5cf6',
-  activities: '#10b981',
-  shopping: '#ec4899',
-  other: '#6b7280',
-};
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 const CATEGORY_ICONS: Record<string, typeof Utensils> = {
   food: Utensils,
@@ -48,38 +49,51 @@ interface Props {
 }
 
 export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
+  const theme = useTheme();
+  const { toast } = useToast();
   const { items, summary, isLoading } = useTripBudget(tripId);
   const { deleteBudgetItem } = useBudgetMutations(tripId);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const categoryColors: Record<string, string> = {
+    food: theme.palette.warning?.main || '#f59e0b',
+    transport: theme.palette.info?.main || theme.palette.primary.main,
+    accommodation: theme.palette.brand?.main || '#DB2777',
+    activities: theme.palette.success?.main || '#10b981',
+    shopping: theme.palette.error?.main || '#ef4444',
+    other: theme.palette.text.secondary,
+  };
 
   const memberName = (userId: string) => {
-    const m = members.find((m) => m.user_id === userId);
+    const m = members.find((mb) => mb.user_id === userId);
     return m?.profiles?.display_name || 'Unknown';
   };
 
   const memberAvatar = (userId: string) => {
-    const m = members.find((m) => m.user_id === userId);
+    const m = members.find((mb) => mb.user_id === userId);
     return m?.profiles?.avatar_url || undefined;
   };
 
-  if (isLoading) {
-    return (
-      <Box className="space-y-3">
-        <Skeleton variant="rounded" height={80} />
-        <Skeleton variant="rounded" height={200} />
-      </Box>
-    );
-  }
+  const handleDelete = (id: string) => {
+    deleteBudgetItem.mutate(id, {
+      onSuccess: () => toast({ title: 'Expense deleted' }),
+      onError: (err) => toast({ title: 'Failed to delete expense', description: String(err), variant: 'destructive' }),
+    });
+    setDeleteConfirmId(null);
+  };
 
-  // Build chart data from the primary currency
+  if (isLoading) return <PageLoadingState count={3} variant="list" />;
+
   const primaryCurrency = defaultCurrency;
-  const chartData = Object.entries(summary.totalByCategory).map(([cat, currencies]) => ({
-    name: cat.charAt(0).toUpperCase() + cat.slice(1),
-    value: currencies[primaryCurrency] || Object.values(currencies)[0] || 0,
-    color: CATEGORY_COLORS[cat] || CATEGORY_COLORS.other,
-  })).filter((d) => d.value > 0);
+  const chartData = Object.entries(summary.totalByCategory)
+    .map(([cat, currencies]) => ({
+      name: cat.charAt(0).toUpperCase() + cat.slice(1),
+      value: currencies[primaryCurrency] || Object.values(currencies)[0] || 0,
+      color: categoryColors[cat] || categoryColors.other,
+    }))
+    .filter((d) => d.value > 0);
 
-  // Group items by category
   const itemsByCategory: Record<string, BudgetItem[]> = {};
   for (const item of items) {
     const cat = item.category || 'other';
@@ -87,32 +101,72 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
     itemsByCategory[cat].push(item);
   }
 
+  if (items.length === 0) {
+    return (
+      <>
+        <ScrollReveal>
+          <Box className="flex flex-col items-center justify-center py-16 text-center">
+            <Box
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: '50%',
+                bgcolor: 'action.hover',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 2,
+              }}
+            >
+              <Wallet size={28} style={{ color: theme.palette.text.secondary }} />
+            </Box>
+            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+              No expenses yet
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 280 }}>
+              Track spending and split costs with your group
+            </Typography>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus size={16} />
+              Add Expense
+            </Button>
+          </Box>
+        </ScrollReveal>
+        <AddBudgetDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          tripId={tripId}
+          members={members}
+          defaultCurrency={defaultCurrency}
+        />
+      </>
+    );
+  }
+
   return (
     <div>
-      {/* Total spend summary */}
-      <Card variant="outlined" sx={{ mb: 3 }}>
+      {/* Summary card */}
+      <Card>
         <CardContent>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-            Total Spend
-          </Typography>
+          <Box className="flex items-center justify-between mb-1">
+            <Typography variant="subtitle2" color="text.secondary">
+              Total Spend
+            </Typography>
+            <Badge variant="secondary">{members.length} members</Badge>
+          </Box>
           <Box className="flex items-center gap-4 flex-wrap">
             {Object.entries(summary.totalByCurrency).map(([cur, total]) => (
               <Typography key={cur} variant="h5" fontWeight={700}>
                 {formatAmount(total, cur)}
               </Typography>
             ))}
-            {Object.keys(summary.totalByCurrency).length === 0 && (
-              <Typography variant="body2" color="text.secondary">
-                No expenses yet
-              </Typography>
-            )}
           </Box>
         </CardContent>
       </Card>
 
-      {/* Donut chart */}
+      {/* Pie chart */}
       {chartData.length > 0 && (
-        <Card variant="outlined" sx={{ mb: 3 }}>
+        <Card className="mt-3">
           <CardContent>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Spending by Category
@@ -133,25 +187,26 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
                       <Cell key={idx} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    formatter={(value: number) => formatAmount(value, primaryCurrency)}
-                  />
+                  <Tooltip formatter={(value: number) => formatAmount(value, primaryCurrency)} />
                 </PieChart>
               </ResponsiveContainer>
             </Box>
             <Box className="flex flex-wrap gap-2 justify-center mt-2">
               {chartData.map((d) => (
-                <Chip
-                  key={d.name}
-                  label={`${d.name}: ${formatAmount(d.value, primaryCurrency)}`}
-                  size="small"
-                  sx={{
-                    bgcolor: d.color + '20',
-                    color: d.color,
-                    fontWeight: 600,
-                    fontSize: 11,
-                  }}
-                />
+                <Badge key={d.name} variant="outline">
+                  <Box
+                    component="span"
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: d.color,
+                      display: 'inline-block',
+                      mr: 0.5,
+                    }}
+                  />
+                  {d.name}: {formatAmount(d.value, primaryCurrency)}
+                </Badge>
               ))}
             </Box>
           </CardContent>
@@ -161,19 +216,19 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {/* Expenses grouped by category */}
       {Object.entries(itemsByCategory).map(([cat, catItems]) => {
         const Icon = CATEGORY_ICONS[cat] || Package;
-        const color = CATEGORY_COLORS[cat] || CATEGORY_COLORS.other;
+        const color = categoryColors[cat] || categoryColors.other;
         const catTotal: Record<string, number> = {};
         for (const item of catItems) {
           catTotal[item.currency] = (catTotal[item.currency] || 0) + Number(item.amount);
         }
 
         return (
-          <Box key={cat} sx={{ mb: 3 }}>
+          <Box key={cat} sx={{ mt: 3 }}>
             <Box className="flex items-center justify-between mb-1.5">
               <Box className="flex items-center gap-2">
                 <Box
                   className="rounded-full flex items-center justify-center"
-                  sx={{ width: 28, height: 28, bgcolor: color + '20' }}
+                  sx={{ width: 28, height: 28, bgcolor: `${color}20` }}
                 >
                   <Icon size={14} style={{ color }} />
                 </Box>
@@ -191,24 +246,30 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
             </Box>
 
             {catItems.map((item) => (
-              <Card key={item.id} variant="outlined" sx={{ mb: 1 }}>
-                <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
+              <Card key={item.id} className="mb-1">
+                <CardContent>
                   <Box className="flex items-center gap-2">
                     <Avatar
                       src={memberAvatar(item.paid_by)}
                       sx={{ width: 28, height: 28, fontSize: 12 }}
                     >
-                      {memberName(item.paid_by)[0].toUpperCase()}
+                      {memberName(item.paid_by)[0]?.toUpperCase()}
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <Typography variant="body2" fontWeight={600} noWrap>
                         {item.title}
                       </Typography>
-                      <Box className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {item.date && <span>{item.date}</span>}
-                        <span>Paid by {memberName(item.paid_by)}</span>
+                      <Box className="flex items-center gap-2">
+                        {item.date && (
+                          <Typography variant="caption" color="text.secondary">
+                            {item.date}
+                          </Typography>
+                        )}
+                        <Typography variant="caption" color="text.secondary">
+                          Paid by {memberName(item.paid_by)}
+                        </Typography>
                         {item.split_among.length > 1 && (
-                          <span>-- split {item.split_among.length} ways</span>
+                          <Badge variant="outline">split {item.split_among.length} ways</Badge>
                         )}
                       </Box>
                     </div>
@@ -217,8 +278,8 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
                     </Typography>
                     <IconButton
                       size="small"
-                      onClick={() => deleteBudgetItem.mutate(item.id)}
-                      sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                      onClick={() => setDeleteConfirmId(item.id)}
+                      sx={{ opacity: 0.5, '&:hover': { opacity: 1 }, minWidth: 44, minHeight: 44 }}
                     >
                       <Trash2 size={14} />
                     </IconButton>
@@ -230,18 +291,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         );
       })}
 
-      {items.length === 0 && (
-        <Box className="text-center py-12">
-          <Typography color="text.secondary" sx={{ mb: 1 }}>
-            No expenses tracked yet.
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Tap the + button to add your first expense.
-          </Typography>
-        </Box>
-      )}
-
-      {/* Settlement section */}
+      {/* Settlements */}
       {Object.keys(summary.perPersonBalance).length > 0 && (
         <Box sx={{ mt: 4 }}>
           <Divider sx={{ mb: 2 }} />
@@ -250,28 +300,24 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
           </Typography>
           {Object.entries(summary.perPersonBalance).map(([cur, settlements]) =>
             settlements.map((s, i) => (
-              <Card key={`${cur}-${i}`} variant="outlined" sx={{ mb: 1 }}>
-                <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
+              <Card key={`${cur}-${i}`} className="mb-1">
+                <CardContent>
                   <Box className="flex items-center gap-2">
                     <Avatar
                       src={memberAvatar(s.from)}
                       sx={{ width: 24, height: 24, fontSize: 11 }}
                     >
-                      {memberName(s.from)[0].toUpperCase()}
+                      {memberName(s.from)[0]?.toUpperCase()}
                     </Avatar>
-                    <Typography variant="body2">
-                      {memberName(s.from)}
-                    </Typography>
-                    <ArrowRight size={14} className="text-muted-foreground" />
+                    <Typography variant="body2">{memberName(s.from)}</Typography>
+                    <ArrowRight size={14} style={{ color: theme.palette.text.secondary }} />
                     <Avatar
                       src={memberAvatar(s.to)}
                       sx={{ width: 24, height: 24, fontSize: 11 }}
                     >
-                      {memberName(s.to)[0].toUpperCase()}
+                      {memberName(s.to)[0]?.toUpperCase()}
                     </Avatar>
-                    <Typography variant="body2">
-                      {memberName(s.to)}
-                    </Typography>
+                    <Typography variant="body2">{memberName(s.to)}</Typography>
                     <Typography variant="body2" fontWeight={700} sx={{ ml: 'auto' }}>
                       {formatAmount(s.amount, cur)}
                     </Typography>
@@ -285,10 +331,16 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
 
       {/* FAB */}
       <Fab
-        color="primary"
         size="medium"
         onClick={() => setDialogOpen(true)}
-        sx={{ position: 'fixed', bottom: 24, right: 24 }}
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          bgcolor: 'brand.main',
+          color: 'white',
+          '&:hover': { bgcolor: 'brand.dark' },
+        }}
       >
         <Plus size={22} />
       </Fab>
@@ -300,6 +352,26 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         members={members}
         defaultCurrency={defaultCurrency}
       />
+
+      {/* Delete confirmation */}
+      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Expense</DialogTitle>
+          </DialogHeader>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            Are you sure you want to delete this expense? This cannot be undone.
+          </Typography>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

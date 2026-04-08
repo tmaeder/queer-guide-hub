@@ -1,13 +1,17 @@
-import { useState } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import { useState, useEffect } from 'react';
+import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { useReservationMutations, type Reservation } from '@/hooks/useTripReservations';
 
 const TYPES = ['flight', 'hotel', 'activity', 'transport', 'other'] as const;
@@ -30,6 +34,7 @@ interface Props {
 }
 
 export function AddReservationDialog({ open, onClose, tripId, existing }: Props) {
+  const { toast } = useToast();
   const { addReservation, updateReservation } = useReservationMutations(tripId);
   const isEdit = !!existing;
 
@@ -44,6 +49,22 @@ export function AddReservationDialog({ open, onClose, tripId, existing }: Props)
   const [currency, setCurrency] = useState(existing?.currency || 'EUR');
   const [notes, setNotes] = useState(existing?.notes || '');
   const [status, setStatus] = useState(existing?.status || 'pending');
+
+  useEffect(() => {
+    if (existing) {
+      setType(existing.type);
+      setTitle(existing.title);
+      setConfirmationCode(existing.confirmation_code || '');
+      setCheckIn(existing.check_in?.slice(0, 16) || '');
+      setCheckOut(existing.check_out?.slice(0, 16) || '');
+      setProvider(existing.provider || '');
+      setBookingUrl(existing.booking_url || '');
+      setAmount(existing.amount != null ? String(existing.amount) : '');
+      setCurrency(existing.currency || 'EUR');
+      setNotes(existing.notes || '');
+      setStatus(existing.status);
+    }
+  }, [existing]);
 
   const resetAndClose = () => {
     if (!isEdit) {
@@ -84,23 +105,32 @@ export function AddReservationDialog({ open, onClose, tripId, existing }: Props)
       attachment_urls: null,
     };
 
-    if (isEdit && existing) {
-      const { trip_id, place_id, attachment_urls, ...updatePayload } = payload;
-      await updateReservation.mutateAsync({ id: existing.id, ...updatePayload });
-    } else {
-      await addReservation.mutateAsync(payload);
+    try {
+      if (isEdit && existing) {
+        const { trip_id, place_id, attachment_urls, ...updatePayload } = payload;
+        await updateReservation.mutateAsync({ id: existing.id, ...updatePayload });
+        toast({ title: 'Reservation updated' });
+      } else {
+        await addReservation.mutateAsync(payload);
+        toast({ title: 'Reservation added' });
+      }
+      resetAndClose();
+    } catch (err) {
+      toast({ title: 'Failed to save reservation', description: String(err), variant: 'destructive' });
     }
-    resetAndClose();
   };
 
   const isPending = addReservation.isPending || updateReservation.isPending;
   const canSubmit = title.trim().length > 0 && type;
 
   return (
-    <Dialog open={open} onClose={resetAndClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{isEdit ? 'Edit Reservation' : 'Add Reservation'}</DialogTitle>
+    <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
       <DialogContent>
-        <Box className="flex flex-col gap-3 pt-1">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? 'Edit Reservation' : 'Add Reservation'}</DialogTitle>
+        </DialogHeader>
+
+        <Box className="flex flex-col gap-2.5 mt-2">
           <Box className="grid grid-cols-2 gap-3">
             <TextField
               label="Type"
@@ -225,18 +255,15 @@ export function AddReservationDialog({ open, onClose, tripId, existing }: Props)
             onChange={(e) => setNotes(e.target.value)}
           />
         </Box>
+
+        <DialogFooter className="mt-3">
+          <Button variant="outline" onClick={resetAndClose}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={!canSubmit || isPending}>
+            {isPending && <CircularProgress size={16} sx={{ mr: 1 }} />}
+            {isEdit ? 'Save' : 'Add Reservation'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={resetAndClose}>Cancel</Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={!canSubmit || isPending}
-          startIcon={isPending ? <CircularProgress size={16} /> : undefined}
-        >
-          {isEdit ? 'Save' : 'Add Reservation'}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

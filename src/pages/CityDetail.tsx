@@ -1,11 +1,12 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { useParams, useNavigate, Link } from 'react-router';
+import { useParams, Link } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import {
   MapPin,
   Globe,
@@ -29,20 +30,23 @@ import {
   Shield,
   Home,
   Map as MapIcon,
+  ChevronDown,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
 import { useNews } from '@/hooks/useNews';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
-import { useOptimizedCountry } from '@/hooks/useOptimizedPlaces';
+import { useOptimizedCountry, useOptimizedCity } from '@/hooks/useOptimizedPlaces';
 import { NewsCard } from '@/components/news/NewsCard';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
 import { WeatherForecast } from '@/components/weather/WeatherForecast';
 import { PageLoading, InlineLoading } from '@/components/ui/loading';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { DetailHero } from '@/components/layout/DetailHero';
+import { DetailTabs } from '@/components/layout/DetailTabs';
 import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
@@ -54,65 +58,24 @@ import Box from '@mui/material/Box';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
+import { useAuth } from '@/hooks/useAuth';
+import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
+import { Luggage } from 'lucide-react';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
-type CityWithCountry = {
-  id: string;
-  name: string;
-  region_name?: string;
-  population?: number;
-  latitude?: number;
-  longitude?: number;
-  timezone?: string;
-  is_capital: boolean;
-  is_major_city: boolean;
-  elevation_m?: number;
-  climate_type?: string;
-  major_airport_code?: string;
-  airport_codes?: string[];
-  founded_year?: number;
-  area_km2?: number;
-  local_language?: string;
-  official_website?: string;
-  mayor?: string;
-  postal_codes?: string[];
-  area_codes?: string[];
-  sister_cities?: string[];
-  notable_landmarks?: string[];
-  economy_sectors?: string[];
-  universities?: string[];
-  transportation_info?: any;
-  demographics?: any;
-  cost_of_living?: any;
-  lgbt_friendly_rating?: number;
-  description?: string;
-  best_time_to_visit?: string;
-  local_customs?: string;
-  image_url?: string;
-  countries?: {
-    id: string;
-    name: string;
-    code?: string;
-    flag_emoji?: string;
-    currency?: string;
-    equality_score?: number | null;
-    lgbti_criminalization?: Record<string, any> | null;
-  };
-};
-
 export default function CityDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
   const { fetchCityImage } = useCityImages();
   const { articles, loading: newsLoading, fetchArticles } = useNews();
-  const [city, setCity] = useState<CityWithCountry | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { city, loading, refetch: refetchCity } = useOptimizedCity(id ?? '');
   const [imageUrl, setImageUrl] = useState<string>('');
+  const [createTripOpen, setCreateTripOpen] = useState(false);
+  const { user } = useAuth();
 
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
   const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
@@ -132,9 +95,6 @@ export default function CityDetail() {
   const { villages, loading: villagesLoading, fetchVillages } = useQueerVillages(false);
 
   useEffect(() => {
-    if (id) fetchCityDetails();
-  }, [id]);
-  useEffect(() => {
     if (city) {
       loadCityImage();
       loadRelatedContent();
@@ -150,25 +110,6 @@ export default function CityDetail() {
       cityIds: [city.id],
       countryIds: city.countries?.id ? [city.countries.id] : undefined,
     });
-  };
-
-  const fetchCityDetails = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('cities')
-        .select(
-          `*, countries (id, name, code, flag_emoji, currency, equality_score, lgbti_criminalization)`,
-        )
-        .eq('id', id)
-        .single();
-      if (error) throw error;
-      setCity(data);
-    } catch (error) {
-      console.error('Error fetching city details:', error);
-      toast({ title: 'Error', description: 'Failed to load city details', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
   };
 
   const loadCityImage = async () => {
@@ -254,20 +195,8 @@ export default function CityDetail() {
         </Box>
       </Box>
 
-      {/* Compact Hero Image */}
-      {imageUrl && (
-        <Box sx={{ position: 'relative', height: 192, borderRadius: 2, overflow: 'hidden', mb: 3 }}>
-          <Box
-            component="img"
-            src={imageUrl}
-            alt={city.name}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        </Box>
-      )}
+      {/* Hero Image */}
+      <DetailHero imageUrl={imageUrl} alt={city.name} height={{ xs: 192, md: 240 }} />
 
       {/* Title Row */}
       <Box
@@ -314,14 +243,14 @@ export default function CityDetail() {
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, mt: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, mt: 1, flexWrap: 'wrap' }}>
           <ReportButton contentType="cities" contentId={city.id} contentName={city.name} />
           <AdminEditButton
             contentType="cities"
             contentId={city.id}
             contentName={city.name}
             currentData={city as Record<string, unknown>}
-            onSaved={() => window.location.reload()}
+            onSaved={() => refetchCity()}
           />
           <Button variant="outline" size="sm" onClick={handleFavoriteToggle}>
             <Heart
@@ -416,58 +345,17 @@ export default function CityDetail() {
       />
 
       {/* Main Content — Tabs */}
-      <Card sx={{ borderColor: 'divider', boxShadow: 1 }}>
-        <CardContent sx={{ p: { xs: 2, md: 3 } }}>
-          <Tabs
-            defaultValue="overview"
-            style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
-          >
-            <TabsList
-              style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(7, 1fr)' }}
-            >
-              <TabsTrigger value="overview" style={{ fontSize: '0.875rem' }}>
-                <Info style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Overview
-                </Box>
-              </TabsTrigger>
-              <TabsTrigger value="rights" style={{ fontSize: '0.875rem' }}>
-                <Shield style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Rights
-                </Box>
-              </TabsTrigger>
-              <TabsTrigger value="venues" style={{ fontSize: '0.875rem' }}>
-                <Building style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Venues
-                </Box>
-              </TabsTrigger>
-              <TabsTrigger value="events" style={{ fontSize: '0.875rem' }}>
-                <Calendar style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Events
-                </Box>
-              </TabsTrigger>
-              <TabsTrigger value="travel" style={{ fontSize: '0.875rem' }}>
-                <Plane style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Travel
-                </Box>
-              </TabsTrigger>
-              <TabsTrigger value="news" style={{ fontSize: '0.875rem' }}>
-                <FileText style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  News
-                </Box>
-              </TabsTrigger>
-              <TabsTrigger value="map" style={{ fontSize: '0.875rem' }}>
-                <MapIcon style={{ height: 16, width: 16, marginRight: 6 }} />
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                  Map
-                </Box>
-              </TabsTrigger>
-            </TabsList>
+      <DetailTabs
+        tabs={[
+          { value: 'overview', label: 'Overview', icon: Info },
+          { value: 'rights', label: 'Rights', icon: Shield },
+          { value: 'venues', label: 'Venues', icon: Building },
+          { value: 'events', label: 'Events', icon: Calendar },
+          { value: 'travel', label: 'Travel', icon: Plane },
+          { value: 'news', label: 'News', icon: FileText },
+          { value: 'map', label: 'Map', icon: MapIcon },
+        ]}
+      >
 
             {/* ═══ OVERVIEW TAB ═══ */}
             <TabsContent
@@ -514,7 +402,7 @@ export default function CityDetail() {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Globe style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Globe style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -539,7 +427,7 @@ export default function CityDetail() {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <DollarSign style={{ height: 16, width: 16, color: '#999999' }} />
+                          <DollarSign style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -564,7 +452,7 @@ export default function CityDetail() {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Globe style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Globe style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -589,7 +477,7 @@ export default function CityDetail() {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Clock style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Clock style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -614,7 +502,7 @@ export default function CityDetail() {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -644,7 +532,15 @@ export default function CityDetail() {
                 />
               )}
 
-              {/* Info Cards Grid */}
+              {/* Info Cards Grid — collapsible */}
+              <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm" sx={{ display: 'flex', alignItems: 'center', gap: 1, mx: 'auto' }}>
+                  <ChevronDown style={{ height: 16, width: 16 }} />
+                  Show more details
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
               <StaggerGrid
                 sx={{
                   display: 'grid',
@@ -673,7 +569,7 @@ export default function CityDetail() {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Users style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Users style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -698,7 +594,7 @@ export default function CityDetail() {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -723,7 +619,7 @@ export default function CityDetail() {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Mountain style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Mountain style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -748,7 +644,7 @@ export default function CityDetail() {
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Mountain style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Mountain style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -776,7 +672,7 @@ export default function CityDetail() {
                     {city.climate_type && (
                       <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                          <Thermometer style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Thermometer style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -792,7 +688,7 @@ export default function CityDetail() {
                     {city.latitude && city.longitude && (
                       <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                          <MapPin style={{ height: 16, width: 16, color: '#999999' }} />
+                          <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -863,7 +759,7 @@ export default function CityDetail() {
                     {city.major_airport_code && (
                       <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                          <Plane style={{ height: 16, width: 16, color: '#999999' }} />
+                          <Plane style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                           <Typography
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
@@ -1112,6 +1008,8 @@ export default function CityDetail() {
                   </CardContent>
                 </Card>
               )}
+              </CollapsibleContent>
+              </Collapsible>
 
               {/* Queer Villages */}
               {!villagesLoading && villages.length > 0 && (
@@ -1216,6 +1114,23 @@ export default function CityDetail() {
 
             {/* ═══ VENUES TAB ═══ */}
             <TabsContent value="venues" style={{ marginTop: 24 }}>
+              {user && city && (
+                <Card style={{ marginBottom: 16 }}>
+                  <CardContent style={{ paddingTop: 20 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Luggage style={{ width: 20, height: 20, opacity: 0.6 }} />
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          Planning a trip to {city.name}?
+                        </Typography>
+                      </Box>
+                      <Button variant="outline" size="sm" onClick={() => setCreateTripOpen(true)}>
+                        Create Trip
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              )}
               {venuesLoading ? (
                 <InlineLoading text="Loading venues..." size="md" />
               ) : venues.length > 0 ? (
@@ -1231,17 +1146,12 @@ export default function CityDetail() {
                   ))}
                 </Box>
               ) : (
-                <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <Building
-                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
-                  />
-                  <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
-                    No venues found yet
-                  </Typography>
-                  <Typography sx={{ color: 'text.secondary' }}>
-                    Be the first to add venues in {city.name}!
-                  </Typography>
-                </Box>
+                <EmptyState
+                  icon={Building}
+                  title="No venues found yet"
+                  description={`Be the first to add venues in ${city.name}!`}
+                  mood="encouraging"
+                />
               )}
             </TabsContent>
 
@@ -1262,17 +1172,12 @@ export default function CityDetail() {
                   ))}
                 </Box>
               ) : (
-                <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <Calendar
-                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
-                  />
-                  <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
-                    No upcoming events
-                  </Typography>
-                  <Typography sx={{ color: 'text.secondary' }}>
-                    Check back later for events in {city.name}!
-                  </Typography>
-                </Box>
+                <EmptyState
+                  icon={Calendar}
+                  title="No upcoming events"
+                  description={`Check back later for events in ${city.name}!`}
+                  mood="encouraging"
+                />
               )}
             </TabsContent>
 
@@ -1355,7 +1260,7 @@ export default function CityDetail() {
                         {Object.entries(city.transportation_info).map(([key, value]) => (
                           <Box key={key} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                              <Bus style={{ height: 16, width: 16, color: '#999999' }} />
+                              <Bus style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                               <Typography
                                 component="span"
                                 sx={{
@@ -1400,17 +1305,12 @@ export default function CityDetail() {
                   ))}
                 </Box>
               ) : (
-                <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <FileText
-                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
-                  />
-                  <Typography sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
-                    No news available
-                  </Typography>
-                  <Typography sx={{ color: 'text.secondary' }}>
-                    Check back later for news about {city.name}!
-                  </Typography>
-                </Box>
+                <EmptyState
+                  icon={FileText}
+                  title="No news available"
+                  description={`Check back later for news about ${city.name}!`}
+                  mood="neutral"
+                />
               )}
             </TabsContent>
 
@@ -1430,9 +1330,9 @@ export default function CityDetail() {
                 </Suspense>
               )}
             </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+      </DetailTabs>
+
+      <CreateTripDialog open={createTripOpen} onClose={() => setCreateTripOpen(false)} />
     </Box>
   );
 }

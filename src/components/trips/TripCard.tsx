@@ -1,45 +1,33 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-import CardContent from '@mui/material/CardContent';
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
+import Avatar from '@mui/material/Avatar';
+import AvatarGroup from '@mui/material/AvatarGroup';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
-import { MoreVertical, Users, Calendar } from 'lucide-react';
+import { MoreVertical, Calendar, Luggage } from 'lucide-react';
 import { format } from 'date-fns';
-import type { Trip } from '@/hooks/useTrips';
+import { Card, CardImage, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import type { Trip, TripMember } from '@/hooks/useTrips';
 import { useTripMutations } from '@/hooks/useTrips';
 
-const statusColors: Record<string, 'default' | 'primary' | 'success' | 'warning'> = {
-  planning: 'primary',
-  active: 'success',
-  completed: 'default',
-  archived: 'warning',
-};
-
-const gradients = [
-  'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-  'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-  'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-  'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-  'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-];
-
 interface Props {
-  trip: Trip & { member_count: number };
+  trip: Trip & { member_count: number; trip_members?: TripMember[] };
 }
 
 export function TripCard({ trip }: Props) {
   const navigate = useNavigate();
   const { deleteTrip } = useTripMutations();
+  const { toast } = useToast();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const gradient = gradients[trip.title.length % gradients.length];
   const dateRange =
     trip.start_date && trip.end_date
       ? `${format(new Date(trip.start_date), 'MMM d')} - ${format(new Date(trip.end_date), 'MMM d, yyyy')}`
@@ -52,67 +40,154 @@ export function TripCard({ trip }: Props) {
     setAnchorEl(e.currentTarget);
   };
 
-  const handleDelete = () => {
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setAnchorEl(null);
-    if (confirm('Delete this trip? This cannot be undone.')) {
-      deleteTrip.mutate(trip.id);
-    }
+    navigate(`/trips/${trip.id}`);
   };
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAnchorEl(null);
+    setDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteTrip.mutate(trip.id, {
+      onSuccess: () => {
+        toast({ title: 'Trip deleted', description: `"${trip.title}" has been removed.` });
+        setDeleteOpen(false);
+      },
+      onError: (err) => {
+        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+        setDeleteOpen(false);
+      },
+    });
+  };
+
+  const members = trip.trip_members || [];
+
   return (
-    <Card variant="outlined" sx={{ position: 'relative', overflow: 'hidden' }}>
-      <CardActionArea onClick={() => navigate(`/trips/${trip.id}`)}>
-        <Box
-          sx={{
-            height: 120,
-            background: trip.cover_image_url
-              ? `url(${trip.cover_image_url}) center/cover`
-              : gradient,
-          }}
-        />
+    <>
+      <Card hoverable onClick={() => navigate(`/trips/${trip.id}`)}>
+        <CardImage
+          src={trip.cover_image_url}
+          alt={trip.title}
+          height={180}
+          fallbackIcon={Luggage}
+        >
+          <IconButton
+            size="small"
+            onClick={handleMenuClick}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              bgcolor: 'background.paper',
+              boxShadow: 1,
+              '&:hover': { bgcolor: 'background.paper' },
+            }}
+          >
+            <MoreVertical style={{ width: 16, height: 16 }} />
+          </IconButton>
+        </CardImage>
+
         <CardContent>
-          <Typography variant="subtitle1" fontWeight={600} noWrap>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 600,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              mb: 1,
+            }}
+          >
             {trip.title}
           </Typography>
-          <Box className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-            <Calendar size={14} />
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <Calendar style={{ width: 14, height: 14, flexShrink: 0, color: 'inherit', opacity: 0.6 }} />
             <Typography variant="body2" color="text.secondary">
               {dateRange}
             </Typography>
           </Box>
-          <Box className="flex items-center gap-2 mt-2">
-            <Chip
-              label={trip.status}
-              size="small"
-              color={statusColors[trip.status] || 'default'}
-              variant="outlined"
-            />
-            {trip.member_count > 1 && (
-              <Box className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Users size={14} />
-                {trip.member_count}
-              </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {trip.status === 'planning' && (
+                <Badge variant="outline">Planning</Badge>
+              )}
+              {trip.status === 'active' && (
+                <Badge variant="default" sx={{ bgcolor: 'success.main', color: 'success.contrastText' }}>
+                  Active
+                </Badge>
+              )}
+              {trip.status === 'completed' && (
+                <Badge variant="secondary">Completed</Badge>
+              )}
+              {trip.status === 'archived' && (
+                <Badge variant="outline">Archived</Badge>
+              )}
+            </Box>
+
+            {members.length > 1 && (
+              <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 28, height: 28, fontSize: '0.75rem' } }}>
+                {members.map((m) => (
+                  <Avatar
+                    key={m.id}
+                    alt={m.profiles?.display_name || 'Member'}
+                    src={m.profiles?.avatar_url || undefined}
+                  >
+                    {(m.profiles?.display_name || 'U')[0].toUpperCase()}
+                  </Avatar>
+                ))}
+              </AvatarGroup>
+            )}
+            {!members.length && trip.member_count > 1 && (
+              <Typography variant="caption" color="text.secondary">
+                {trip.member_count} members
+              </Typography>
             )}
           </Box>
         </CardContent>
-      </CardActionArea>
+      </Card>
 
-      <IconButton
-        size="small"
-        onClick={handleMenuClick}
-        sx={{ position: 'absolute', top: 8, right: 8, bgcolor: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.95)' } }}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={(e: React.SyntheticEvent) => { e.stopPropagation?.(); setAnchorEl(null); }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <MoreVertical size={16} />
-      </IconButton>
-
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-        <MenuItem onClick={() => { setAnchorEl(null); navigate(`/trips/${trip.id}`); }}>
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleEdit}>Edit</MenuItem>
+        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
           Delete
         </MenuItem>
       </Menu>
-    </Card>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Trip</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{trip.title}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleteTrip.isPending}
+            >
+              {deleteTrip.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

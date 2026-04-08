@@ -2,9 +2,8 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
-import { GripVertical, MapPin, Hotel, CalendarDays, Star, Trash2, Clock, X } from 'lucide-react';
+import { GripVertical, MapPin, Hotel, CalendarDays, Star, Clock, X } from 'lucide-react';
 import type { TripPlace } from '@/hooks/useTrips';
 import { getScoreRingColor } from '@/utils/equalityScore';
 
@@ -57,35 +56,73 @@ export function SortablePlaceCard({ place, onDelete }: SortablePlaceCardProps) {
   return (
     <div ref={setNodeRef} style={style}>
       <Box
-        className="group flex items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 mb-1 hover:border-primary/30 transition-colors"
-        sx={{ cursor: isDragging ? 'grabbing' : 'default' }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          borderRadius: 1.5,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+          px: 1.5,
+          py: 1,
+          mb: 0.5,
+          minHeight: 44,
+          cursor: isDragging ? 'grabbing' : 'default',
+          transition: 'background-color 0.15s, border-color 0.15s',
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
+          '&:hover .delete-btn': {
+            opacity: 1,
+          },
+        }}
       >
+        {/* Grip handle */}
         <Box
           {...attributes}
           {...listeners}
-          className="shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground"
-          sx={{ display: 'flex', alignItems: 'center', touchAction: 'none' }}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            flexShrink: 0,
+            cursor: 'grab',
+            color: 'text.disabled',
+            touchAction: 'none',
+            '&:hover': { color: 'text.secondary' },
+            '&:active': { cursor: 'grabbing' },
+          }}
         >
-          <GripVertical size={14} />
+          <GripVertical style={{ width: 14, height: 14 }} />
         </Box>
 
+        {/* Category icon circle */}
         <Box
-          className="rounded-full flex items-center justify-center shrink-0"
-          sx={{ width: 26, height: 26, bgcolor: 'action.hover' }}
+          sx={{
+            width: 24,
+            height: 24,
+            borderRadius: '50%',
+            bgcolor: 'action.hover',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
         >
-          <Icon size={13} />
+          <Icon style={{ width: 13, height: 13 }} />
         </Box>
 
-        <div className="flex-1 min-w-0">
-          <Box className="flex items-center gap-1.5">
-            <Typography variant="body2" fontWeight={600} noWrap sx={{ fontSize: 13 }}>
+        {/* Place name + time */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500, fontSize: 13 }} noWrap>
               {getPlaceName(place)}
             </Typography>
             {eqScore !== null && (
               <Box
                 sx={{
-                  width: 7,
-                  height: 7,
+                  width: 8,
+                  height: 8,
                   borderRadius: '50%',
                   bgcolor: ringColor,
                   flexShrink: 0,
@@ -94,25 +131,34 @@ export function SortablePlaceCard({ place, onDelete }: SortablePlaceCardProps) {
               />
             )}
           </Box>
-          <Box className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Chip label={cat} size="small" variant="outlined" sx={{ height: 16, fontSize: 10, '& .MuiChip-label': { px: 0.75 } }} />
-            {place.start_time && (
-              <span className="flex items-center gap-0.5">
-                <Clock size={9} />
+          {place.start_time && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+              <Clock style={{ width: 10, height: 10 }} />
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
                 {place.start_time.slice(0, 5)}
                 {place.end_time && ` - ${place.end_time.slice(0, 5)}`}
-              </span>
-            )}
-          </Box>
-        </div>
+              </Typography>
+            </Box>
+          )}
+        </Box>
 
+        {/* Delete button */}
         <IconButton
+          className="delete-btn"
           size="small"
           onClick={() => onDelete(place.id)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-          sx={{ p: 0.5 }}
+          sx={{
+            opacity: 0,
+            transition: 'opacity 0.15s',
+            p: 0.5,
+            minHeight: 44,
+            minWidth: 44,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
-          <X size={13} />
+          <X style={{ width: 14, height: 14 }} />
         </IconButton>
       </Box>
     </div>
@@ -128,27 +174,46 @@ export function PlaceCardOverlay({ place }: { place: TripPlace }) {
 
   return (
     <Box
-      className="flex items-center gap-2 rounded-lg border-2 border-primary bg-background px-2 py-1.5 shadow-lg"
-      sx={{ width: 320, opacity: 0.95 }}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        borderRadius: 1.5,
+        border: '2px solid',
+        borderColor: 'primary.main',
+        bgcolor: 'background.paper',
+        px: 1.5,
+        py: 1,
+        width: 320,
+        opacity: 0.95,
+        boxShadow: 4,
+      }}
     >
-      <GripVertical size={14} className="text-muted-foreground shrink-0" />
+      <GripVertical style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }} />
       <Box
-        className="rounded-full flex items-center justify-center shrink-0"
-        sx={{ width: 26, height: 26, bgcolor: 'action.hover' }}
+        sx={{
+          width: 24,
+          height: 24,
+          borderRadius: '50%',
+          bgcolor: 'action.hover',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
       >
-        <Icon size={13} />
+        <Icon style={{ width: 13, height: 13 }} />
       </Box>
-      <div className="flex-1 min-w-0">
-        <Box className="flex items-center gap-1.5">
-          <Typography variant="body2" fontWeight={600} noWrap sx={{ fontSize: 13 }}>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="body2" sx={{ fontWeight: 500, fontSize: 13 }} noWrap>
             {getPlaceName(place)}
           </Typography>
           {eqScore !== null && (
-            <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: ringColor, flexShrink: 0 }} />
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: ringColor, flexShrink: 0 }} />
           )}
         </Box>
-        <Chip label={cat} size="small" variant="outlined" sx={{ height: 16, fontSize: 10, '& .MuiChip-label': { px: 0.75 } }} />
-      </div>
+      </Box>
     </Box>
   );
 }

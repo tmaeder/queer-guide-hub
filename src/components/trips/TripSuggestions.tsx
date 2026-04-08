@@ -2,17 +2,14 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Alert from '@mui/material/Alert';
-import Skeleton from '@mui/material/Skeleton';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Plus, MapPin, Star, AlertTriangle, Calendar } from 'lucide-react';
+import { useTheme } from '@mui/material/styles';
+import { Plus, MapPin, Star, Shield, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { useTripMutations, type TripPlace, type TripDay } from '@/hooks/useTrips';
 
 interface SuggestedVenue {
@@ -26,7 +23,6 @@ interface SuggestedVenue {
   longitude: number | null;
   city_id: string | null;
   country_id: string | null;
-  images: string[] | null;
 }
 
 interface SuggestedEvent {
@@ -39,7 +35,6 @@ interface SuggestedEvent {
   longitude: number | null;
   city_id: string | null;
   country_id: string | null;
-  images: string[] | null;
 }
 
 interface CityInfo {
@@ -66,19 +61,20 @@ interface Props {
   tripId: string;
   places: TripPlace[];
   days: TripDay[];
-  startDate: string | null;
-  endDate: string | null;
+  startDate?: string;
+  endDate?: string;
 }
 
 export function TripSuggestions({ tripId, places, days, startDate, endDate }: Props) {
+  const theme = useTheme();
+  const { toast } = useToast();
   const { addPlace } = useTripMutations();
-  const [filter, setFilter] = useState(0);
+  const [filter, setFilter] = useState('all');
   const [addingId, setAddingId] = useState<string | null>(null);
 
-  const filterTabs = ['All', 'Nightlife', 'Dining', 'Culture', 'Events'];
-  const filterKey = ['all', 'nightlife', 'dining', 'culture', 'events'][filter];
+  const filters = ['All', 'Nightlife', 'Dining', 'Culture', 'Events'];
+  const filterKeys = ['all', 'nightlife', 'dining', 'culture', 'events'];
 
-  // Collect unique city_ids from trip places
   const cityIds = useMemo(() => {
     const ids = new Set<string>();
     for (const p of places) {
@@ -87,7 +83,6 @@ export function TripSuggestions({ tripId, places, days, startDate, endDate }: Pr
     return Array.from(ids);
   }, [places]);
 
-  // Fetch city info (for equality scores)
   const { data: cities } = useQuery({
     queryKey: ['trip-suggestion-cities', cityIds],
     queryFn: async () => {
@@ -103,14 +98,13 @@ export function TripSuggestions({ tripId, places, days, startDate, endDate }: Pr
     staleTime: 10 * 60 * 1000,
   });
 
-  // Fetch suggested venues
   const { data: venues, isLoading: venuesLoading } = useQuery({
     queryKey: ['trip-suggestion-venues', cityIds],
     queryFn: async () => {
       if (cityIds.length === 0) return [];
       const { data, error } = await supabase
         .from('venues')
-        .select('id, name, category, address, foursquare_rating, featured, latitude, longitude, city_id, country_id, images')
+        .select('id, name, category, address, foursquare_rating, featured, latitude, longitude, city_id, country_id')
         .in('city_id', cityIds)
         .order('foursquare_rating', { ascending: false, nullsFirst: false })
         .limit(30);
@@ -121,26 +115,17 @@ export function TripSuggestions({ tripId, places, days, startDate, endDate }: Pr
     staleTime: 10 * 60 * 1000,
   });
 
-  // Fetch suggested events (during trip dates)
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: ['trip-suggestion-events', cityIds, startDate, endDate],
     queryFn: async () => {
       if (cityIds.length === 0) return [];
       let query = supabase
         .from('events')
-        .select('id, title, event_type, start_date, end_date, latitude, longitude, city_id, country_id, images')
+        .select('id, title, event_type, start_date, end_date, latitude, longitude, city_id, country_id')
         .in('city_id', cityIds);
-
-      if (startDate) {
-        query = query.gte('start_date', startDate);
-      }
-      if (endDate) {
-        query = query.lte('start_date', endDate);
-      }
-
-      const { data, error } = await query
-        .order('start_date', { ascending: true })
-        .limit(20);
+      if (startDate) query = query.gte('start_date', startDate);
+      if (endDate) query = query.lte('start_date', endDate);
+      const { data, error } = await query.order('start_date', { ascending: true }).limit(20);
       if (error) throw error;
       return (data || []) as SuggestedEvent[];
     },
@@ -148,7 +133,6 @@ export function TripSuggestions({ tripId, places, days, startDate, endDate }: Pr
     staleTime: 10 * 60 * 1000,
   });
 
-  // IDs already in trip
   const existingVenueIds = new Set(places.filter((p) => p.venue_id).map((p) => p.venue_id));
   const existingEventIds = new Set(places.filter((p) => p.event_id).map((p) => p.event_id));
 
@@ -175,6 +159,9 @@ export function TripSuggestions({ tripId, places, days, startDate, endDate }: Pr
         sort_order: 0,
         created_by: null,
       });
+      toast({ title: 'Added to trip' });
+    } catch (err) {
+      toast({ title: 'Failed to add', description: String(err), variant: 'destructive' });
     } finally {
       setAddingId(null);
     }
@@ -203,6 +190,9 @@ export function TripSuggestions({ tripId, places, days, startDate, endDate }: Pr
         sort_order: 0,
         created_by: null,
       });
+      toast({ title: 'Added to trip' });
+    } catch (err) {
+      toast({ title: 'Failed to add', description: String(err), variant: 'destructive' });
     } finally {
       setAddingId(null);
     }
@@ -210,10 +200,10 @@ export function TripSuggestions({ tripId, places, days, startDate, endDate }: Pr
 
   if (cityIds.length === 0) {
     return (
-      <Card variant="outlined">
+      <Card>
         <CardContent>
           <Typography variant="body2" color="text.secondary" className="text-center">
-            Add places with cities to get personalized suggestions.
+            Add cities to see suggestions
           </Typography>
         </CardContent>
       </Card>
@@ -221,166 +211,145 @@ export function TripSuggestions({ tripId, places, days, startDate, endDate }: Pr
   }
 
   const isLoading = venuesLoading || eventsLoading;
-
-  // Safety warnings for low equality score destinations
   const unsafeCities = (cities || []).filter(
     (c) => c.countries?.equality_score != null && (c.countries?.equality_score ?? 100) < 40,
   );
 
-  // Filter venues
   const filteredVenues = (venues || [])
     .filter((v) => !existingVenueIds.has(v.id))
-    .filter((v) => filterKey === 'events' ? false : matchesFilter(v.category, filterKey));
+    .filter((v) => (filter === 'events' ? false : matchesFilter(v.category, filter)));
 
   const filteredEvents = (events || [])
     .filter((e) => !existingEventIds.has(e.id))
-    .filter(() => filterKey === 'all' || filterKey === 'events');
+    .filter(() => filter === 'all' || filter === 'events');
 
-  // Group suggestions by city
   const citiesMap = new Map((cities || []).map((c) => [c.id, c]));
 
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-          Suggestions
-        </Typography>
+    <div>
+      {/* Safety warnings */}
+      {unsafeCities.map((city) => (
+        <Card key={city.id} className="mb-2">
+          <CardContent>
+            <Box className="flex items-start gap-2" sx={{ bgcolor: 'warning.light', mx: -2, mt: -1, mb: -1, p: 2, borderRadius: 1 }}>
+              <Shield size={16} style={{ color: theme.palette.warning?.main, flexShrink: 0, marginTop: 2 }} />
+              <Typography variant="body2">
+                <strong>{city.name}</strong> ({city.countries?.name}) has a lower equality score
+                ({city.countries?.equality_score}). Check the Safety tab for local tips.
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      ))}
 
-        {/* Safety warnings */}
-        {unsafeCities.map((city) => (
-          <Alert
-            key={city.id}
-            severity="warning"
-            icon={<AlertTriangle size={16} />}
-            sx={{ mb: 2, fontSize: 13 }}
+      {/* Category filter */}
+      <Box className="flex flex-wrap gap-1.5 mb-3">
+        {filters.map((label, i) => (
+          <Badge
+            key={label}
+            variant={filter === filterKeys[i] ? 'default' : 'outline'}
+            onClick={() => setFilter(filterKeys[i])}
+            sx={{ cursor: 'pointer', minHeight: 44, px: 1.5 }}
           >
-            <strong>{city.name}</strong> ({city.countries?.name}) has a lower equality score
-            ({city.countries?.equality_score}). Check the Safety tab for local tips.
-          </Alert>
+            {label}
+          </Badge>
         ))}
+      </Box>
 
-        {/* Filter tabs */}
-        <Tabs
-          value={filter}
-          onChange={(_, v) => setFilter(v)}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{ mb: 2, minHeight: 36 }}
-        >
-          {filterTabs.map((label) => (
-            <Tab key={label} label={label} sx={{ minHeight: 36, py: 0.5, fontSize: 13 }} />
-          ))}
-        </Tabs>
+      {isLoading && (
+        <Box className="flex justify-center py-8">
+          <CircularProgress size={24} />
+        </Box>
+      )}
 
-        {isLoading && (
-          <Box className="space-y-2">
-            <Skeleton variant="rounded" height={60} />
-            <Skeleton variant="rounded" height={60} />
-            <Skeleton variant="rounded" height={60} />
-          </Box>
-        )}
+      {/* Suggestions by city */}
+      {!isLoading &&
+        cityIds.map((cityId) => {
+          const city = citiesMap.get(cityId);
+          const cityVenues = filteredVenues.filter((v) => v.city_id === cityId).slice(0, 5);
+          const cityEvents = filteredEvents.filter((e) => e.city_id === cityId).slice(0, 5);
 
-        {/* Suggestions by city */}
-        {!isLoading &&
-          cityIds.map((cityId) => {
-            const city = citiesMap.get(cityId);
-            const cityVenues = filteredVenues.filter((v) => v.city_id === cityId).slice(0, 5);
-            const cityEvents = filteredEvents.filter((e) => e.city_id === cityId).slice(0, 5);
+          if (cityVenues.length === 0 && cityEvents.length === 0) return null;
 
-            if (cityVenues.length === 0 && cityEvents.length === 0) return null;
+          return (
+            <Box key={cityId} sx={{ mb: 2 }}>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 0.5, display: 'block' }}>
+                Suggested for {city?.name || 'Unknown City'}
+              </Typography>
 
-            return (
-              <Box key={cityId} sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  Suggested for {city?.name || 'Unknown City'}
-                </Typography>
-
-                {cityVenues.map((venue) => (
-                  <Box
-                    key={venue.id}
-                    className="flex items-center gap-2 py-1.5"
-                    sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+              {cityVenues.map((venue) => (
+                <Box
+                  key={venue.id}
+                  className="flex items-center gap-2 py-1.5"
+                  sx={{ borderBottom: '1px solid', borderColor: 'divider', minHeight: 44 }}
+                >
+                  <MapPin size={13} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
+                  <div className="flex-1 min-w-0">
+                    <Typography variant="body2" noWrap fontWeight={500}>
+                      {venue.name}
+                    </Typography>
+                    <Box className="flex items-center gap-1.5">
+                      {venue.category && <Badge variant="outline">{venue.category}</Badge>}
+                      {venue.foursquare_rating && (
+                        <Box className="flex items-center gap-0.5">
+                          <Star size={10} style={{ color: theme.palette.warning?.main }} />
+                          <Typography variant="caption" sx={{ fontSize: 11 }}>{venue.foursquare_rating}</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleAddVenue(venue)}
+                    disabled={addingId === venue.id}
                   >
-                    <MapPin size={13} className="text-muted-foreground shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <Typography variant="body2" noWrap fontWeight={500}>
-                        {venue.name}
-                      </Typography>
-                      <Box className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        {venue.category && (
-                          <Chip label={venue.category} size="small" sx={{ height: 16, fontSize: 10 }} />
-                        )}
-                        {venue.foursquare_rating && (
-                          <span className="flex items-center gap-0.5">
-                            <Star size={10} /> {venue.foursquare_rating}
-                          </span>
-                        )}
-                      </Box>
-                    </div>
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={() => handleAddVenue(venue)}
-                      disabled={addingId === venue.id}
-                      startIcon={
-                        addingId === venue.id ? <CircularProgress size={12} /> : <Plus size={12} />
-                      }
-                      sx={{ minWidth: 'auto', fontSize: 12 }}
-                    >
-                      Add
-                    </Button>
-                  </Box>
-                ))}
+                    {addingId === venue.id ? <CircularProgress size={12} /> : <Plus size={12} />}
+                    Add
+                  </Button>
+                </Box>
+              ))}
 
-                {cityEvents.map((event) => (
-                  <Box
-                    key={event.id}
-                    className="flex items-center gap-2 py-1.5"
-                    sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+              {cityEvents.map((event) => (
+                <Box
+                  key={event.id}
+                  className="flex items-center gap-2 py-1.5"
+                  sx={{ borderBottom: '1px solid', borderColor: 'divider', minHeight: 44 }}
+                >
+                  <Calendar size={13} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
+                  <div className="flex-1 min-w-0">
+                    <Typography variant="body2" noWrap fontWeight={500}>
+                      {event.title}
+                    </Typography>
+                    <Box className="flex items-center gap-1.5">
+                      {event.event_type && <Badge variant="outline">{event.event_type}</Badge>}
+                      {event.start_date && (
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+                          {new Date(event.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        </Typography>
+                      )}
+                    </Box>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleAddEvent(event)}
+                    disabled={addingId === event.id}
                   >
-                    <Calendar size={13} className="text-muted-foreground shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <Typography variant="body2" noWrap fontWeight={500}>
-                        {event.title}
-                      </Typography>
-                      <Box className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        {event.event_type && (
-                          <Chip label={event.event_type} size="small" sx={{ height: 16, fontSize: 10 }} />
-                        )}
-                        {event.start_date && (
-                          <span>
-                            {new Date(event.start_date).toLocaleDateString(undefined, {
-                              month: 'short',
-                              day: 'numeric',
-                            })}
-                          </span>
-                        )}
-                      </Box>
-                    </div>
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={() => handleAddEvent(event)}
-                      disabled={addingId === event.id}
-                      startIcon={
-                        addingId === event.id ? <CircularProgress size={12} /> : <Plus size={12} />
-                      }
-                      sx={{ minWidth: 'auto', fontSize: 12 }}
-                    >
-                      Add
-                    </Button>
-                  </Box>
-                ))}
-              </Box>
-            );
-          })}
+                    {addingId === event.id ? <CircularProgress size={12} /> : <Plus size={12} />}
+                    Add
+                  </Button>
+                </Box>
+              ))}
+            </Box>
+          );
+        })}
 
-        {!isLoading && filteredVenues.length === 0 && filteredEvents.length === 0 && (
-          <Typography variant="body2" color="text.secondary" className="text-center py-4">
-            No suggestions for this filter. Try another category.
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
+      {!isLoading && filteredVenues.length === 0 && filteredEvents.length === 0 && (
+        <Typography variant="body2" color="text.secondary" className="text-center py-4">
+          No suggestions for this filter. Try another category.
+        </Typography>
+      )}
+    </div>
   );
 }

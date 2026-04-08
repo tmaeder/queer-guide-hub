@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { useTripMutations } from '@/hooks/useTrips';
 
 const currencies = [
@@ -20,8 +25,6 @@ const currencies = [
   { value: 'AUD', label: 'AUD - Australian Dollar' },
   { value: 'JPY', label: 'JPY - Japanese Yen' },
   { value: 'THB', label: 'THB - Thai Baht' },
-  { value: 'BRL', label: 'BRL - Brazilian Real' },
-  { value: 'MXN', label: 'MXN - Mexican Peso' },
 ];
 
 interface Props {
@@ -32,11 +35,29 @@ interface Props {
 export function CreateTripDialog({ open, onClose }: Props) {
   const navigate = useNavigate();
   const { createTrip } = useTripMutations();
+  const { toast } = useToast();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [currency, setCurrency] = useState('EUR');
+
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setStartDate('');
+    setEndDate('');
+    setCurrency('EUR');
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) handleClose();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,28 +71,30 @@ export function CreateTripDialog({ open, onClose }: Props) {
         end_date: endDate || undefined,
         currency,
       });
+      toast({ title: 'Trip created!', description: 'Start adding destinations.' });
       handleClose();
       navigate(`/trips/${trip.id}`);
-    } catch {
-      // mutation error handled by react-query
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: err?.message || 'Failed to create trip.',
+        variant: 'destructive',
+      });
     }
   };
 
-  const handleClose = () => {
-    setTitle('');
-    setDescription('');
-    setStartDate('');
-    setEndDate('');
-    setCurrency('EUR');
-    onClose();
-  };
-
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <form onSubmit={handleSubmit}>
-        <DialogTitle>Create a New Trip</DialogTitle>
-        <DialogContent>
-          <Box className="flex flex-col gap-4 pt-2">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent>
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Create Trip</DialogTitle>
+            <DialogDescription>
+              Plan a new adventure. You can add destinations and safety info later.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 3 }}>
             <TextField
               label="Trip Title"
               value={title}
@@ -90,7 +113,7 @@ export function CreateTripDialog({ open, onClose }: Props) {
               rows={2}
               placeholder="What's this trip about?"
             />
-            <Box className="grid grid-cols-2 gap-3">
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
               <TextField
                 label="Start Date"
                 type="date"
@@ -123,19 +146,23 @@ export function CreateTripDialog({ open, onClose }: Props) {
               ))}
             </TextField>
           </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={!title.trim() || createTrip.isPending}
-            startIcon={createTrip.isPending ? <CircularProgress size={16} /> : undefined}
-          >
-            Create Trip
-          </Button>
-        </DialogActions>
-      </form>
+
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={!title.trim() || createTrip.isPending}
+            >
+              {createTrip.isPending && (
+                <CircularProgress size={16} sx={{ mr: 1, color: 'inherit' }} />
+              )}
+              Create Trip
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }

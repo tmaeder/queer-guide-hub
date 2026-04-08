@@ -1,17 +1,22 @@
 import { useState } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
 import CircularProgress from '@mui/material/CircularProgress';
-import type { TripMember } from '@/hooks/useTrips';
+import Chip from '@mui/material/Chip';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { useBudgetMutations } from '@/hooks/useTripBudget';
+import type { TripMember } from '@/hooks/useTrips';
 
 const CATEGORIES = ['food', 'transport', 'accommodation', 'activities', 'shopping', 'other'] as const;
 const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY', 'THB', 'MXN', 'BRL'];
@@ -25,6 +30,7 @@ interface Props {
 }
 
 export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrency = 'EUR' }: Props) {
+  const { toast } = useToast();
   const { addBudgetItem } = useBudgetMutations(tripId);
 
   const [title, setTitle] = useState('');
@@ -53,34 +59,42 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
   };
 
   const memberName = (userId: string) => {
-    const m = members.find((m) => m.user_id === userId);
+    const m = members.find((mb) => mb.user_id === userId);
     return m?.profiles?.display_name || 'Unknown';
   };
 
   const handleSubmit = async () => {
     if (!title.trim() || !amount || !paidBy || splitAmong.length === 0) return;
-    await addBudgetItem.mutateAsync({
-      trip_id: tripId,
-      title: title.trim(),
-      amount: parseFloat(amount),
-      currency,
-      category,
-      date: date || null,
-      paid_by: paidBy,
-      split_among: splitAmong,
-      place_id: null,
-      receipt_url: null,
-    });
-    resetAndClose();
+    try {
+      await addBudgetItem.mutateAsync({
+        trip_id: tripId,
+        title: title.trim(),
+        amount: parseFloat(amount),
+        currency,
+        category,
+        date: date || null,
+        paid_by: paidBy,
+        split_among: splitAmong,
+        place_id: null,
+        receipt_url: null,
+      });
+      toast({ title: 'Expense added' });
+      resetAndClose();
+    } catch (err) {
+      toast({ title: 'Failed to add expense', description: String(err), variant: 'destructive' });
+    }
   };
 
   const canSubmit = title.trim().length > 0 && parseFloat(amount) > 0 && paidBy && splitAmong.length > 0;
 
   return (
-    <Dialog open={open} onClose={resetAndClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add Expense</DialogTitle>
+    <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
       <DialogContent>
-        <Box className="flex flex-col gap-3 pt-1">
+        <DialogHeader>
+          <DialogTitle>Add Expense</DialogTitle>
+        </DialogHeader>
+
+        <Box className="flex flex-col gap-2.5 mt-2">
           <TextField
             label="Title"
             required
@@ -167,7 +181,9 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
           </TextField>
 
           <div>
-            <Box className="text-sm font-medium text-muted-foreground mb-1.5">Split among</Box>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 1, display: 'block' }}>
+              Split among
+            </Typography>
             <Box className="flex flex-wrap gap-1">
               {members.map((m) => {
                 const selected = splitAmong.includes(m.user_id);
@@ -183,25 +199,25 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
                     variant={selected ? 'filled' : 'outlined'}
                     color={selected ? 'primary' : 'default'}
                     onClick={() => toggleSplitMember(m.user_id)}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ cursor: 'pointer', minHeight: 44 }}
                   />
                 );
               })}
             </Box>
           </div>
         </Box>
+
+        <DialogFooter className="mt-3">
+          <Button variant="outline" onClick={resetAndClose}>Cancel</Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!canSubmit || addBudgetItem.isPending}
+          >
+            {addBudgetItem.isPending && <CircularProgress size={16} sx={{ mr: 1 }} />}
+            Add Expense
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={resetAndClose}>Cancel</Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={!canSubmit || addBudgetItem.isPending}
-          startIcon={addBudgetItem.isPending ? <CircularProgress size={16} /> : undefined}
-        >
-          Add Expense
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

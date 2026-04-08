@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Wifi,
   Shield,
+  Luggage,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,8 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 
@@ -46,6 +49,8 @@ export default function HotelDetail() {
   const { id } = useParams<{ id: string }>();
   const [hotel, setHotel] = useState<HotelWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
+  const [addToTripOpen, setAddToTripOpen] = useState(false);
+  const { data: tripStatus } = useEntityTripStatus('hotel', id);
 
   useEffect(() => {
     if (!id) return;
@@ -162,6 +167,15 @@ export default function HotelDetail() {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+          <Button variant="outline" size="sm" onClick={() => setAddToTripOpen(true)}>
+            <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
+            Add to Trip
+          </Button>
+          {tripStatus?.isInTrip && (
+            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
+              In {tripStatus.count} trip{tripStatus.count !== 1 ? 's' : ''}
+            </Badge>
+          )}
           <ReportButton contentType="hotels" contentId={hotel.id} contentName={hotel.name} />
           <AdminEditButton
             contentType="hotels"
@@ -362,6 +376,22 @@ export default function HotelDetail() {
           </TabsContent>
         )}
       </Tabs>
+
+      <AddToTripDialog
+        open={addToTripOpen}
+        onClose={() => setAddToTripOpen(false)}
+        entity={{
+          type: 'hotel',
+          id: hotel.id,
+          name: hotel.name,
+          latitude: hotel.latitude,
+          longitude: hotel.longitude,
+          city_id: hotel.city_id,
+          country_id: hotel.country_id,
+          address: hotel.address,
+          category: hotel.hotel_type,
+        }}
+      />
     </Container>
   );
 }

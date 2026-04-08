@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Tag,
   Music,
+  Luggage,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,8 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -76,6 +79,8 @@ export default function EventDetail() {
   const [userAttendance, setUserAttendance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEventTz, setShowEventTz] = useState(true);
+  const [addToTripOpen, setAddToTripOpen] = useState(false);
+  const { data: tripStatus } = useEntityTripStatus('event', id);
 
   const fetchEventData = async () => {
     if (!id) return;
@@ -386,6 +391,26 @@ export default function EventDetail() {
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5, flexWrap: 'wrap' }}>
+            {event.logo_url && (
+              <Box
+                component="img"
+                src={event.logo_url}
+                alt=""
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '10px',
+                  objectFit: 'contain',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  p: '3px',
+                  flexShrink: 0,
+                }}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            )}
             <Typography variant="h4" sx={{ fontWeight: 700 }}>
               {event.title}
             </Typography>
@@ -470,6 +495,15 @@ export default function EventDetail() {
           sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}
         >
           <FavoriteButton itemId={event.id} type="event" size="md" />
+          <Button variant="outline" size="sm" onClick={() => setAddToTripOpen(true)}>
+            <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
+            Add to Trip
+          </Button>
+          {tripStatus?.isInTrip && (
+            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
+              In {tripStatus.count} trip{tripStatus.count !== 1 ? 's' : ''}
+            </Badge>
+          )}
           <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
           <AdminEditButton
             contentType="events"
@@ -876,6 +910,21 @@ export default function EventDetail() {
           )}
         </Box>
       </Box>
+
+      <AddToTripDialog
+        open={addToTripOpen}
+        onClose={() => setAddToTripOpen(false)}
+        entity={{
+          type: 'event',
+          id: event.id,
+          name: event.title,
+          latitude: event.latitude,
+          longitude: event.longitude,
+          city_id: event.city_id,
+          country_id: event.country_id,
+          category: event.event_type,
+        }}
+      />
     </Container>
   );
 }

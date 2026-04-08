@@ -1,24 +1,38 @@
 import { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Alert from '@mui/material/Alert';
-import Chip from '@mui/material/Chip';
-import { AlertTriangle, Shield, ShieldAlert, Skull } from 'lucide-react';
+import { Shield, ShieldAlert, Skull, AlertTriangle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { useTripSafety, type TripSafetyReport } from '@/hooks/useTripSafety';
-import { getScoreRingColor, getScoreLabel, parseSsuSummary } from '@/utils/equalityScore';
+import { getScoreLabel, parseSsuSummary } from '@/utils/equalityScore';
 import type { TripPlace } from '@/hooks/useTrips';
 
 const riskConfig: Record<
   TripSafetyReport['overallRisk'],
-  { label: string; color: string; bgColor: string; Icon: typeof Shield }
+  { label: string; Icon: typeof Shield; severity: 'success' | 'warning' | 'error' }
 > = {
-  low: { label: 'Low Risk', color: '#15803d', bgColor: '#dcfce7', Icon: Shield },
-  moderate: { label: 'Moderate Risk', color: '#ca8a04', bgColor: '#fef9c3', Icon: AlertTriangle },
-  high: { label: 'High Risk', color: '#ea580c', bgColor: '#fff7ed', Icon: ShieldAlert },
-  critical: { label: 'Critical Risk', color: '#dc2626', bgColor: '#fef2f2', Icon: Skull },
+  low: { label: 'Low Risk', Icon: Shield, severity: 'success' },
+  moderate: { label: 'Moderate Risk', Icon: AlertTriangle, severity: 'warning' },
+  high: { label: 'High Risk', Icon: ShieldAlert, severity: 'error' },
+  critical: { label: 'Critical Risk', Icon: Skull, severity: 'error' },
 };
+
+function getRiskBadgeColor(risk: TripSafetyReport['overallRisk']) {
+  switch (risk) {
+    case 'low':
+      return { bgcolor: 'success.main', color: 'success.contrastText' };
+    case 'moderate':
+      return { bgcolor: 'warning.main', color: 'warning.contrastText' };
+    case 'high':
+    case 'critical':
+      return { bgcolor: 'error.main', color: 'error.contrastText' };
+  }
+}
 
 interface Props {
   tripPlaces: TripPlace[];
@@ -34,64 +48,91 @@ export function TripSafetyBriefing({ tripPlaces }: Props) {
 
   if (report.countries.length === 0) {
     return (
-      <Box className="text-center py-12">
-        <Typography color="text.secondary">
-          Add places to your trip to see safety information for each destination.
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Shield style={{ width: 48, height: 48, margin: '0 auto 16px', opacity: 0.3 }} />
+        <Typography variant="body2" color="text.secondary">
+          Add destinations to see safety information.
         </Typography>
       </Box>
     );
   }
 
   const risk = riskConfig[report.overallRisk];
+  const riskColors = getRiskBadgeColor(report.overallRisk);
 
   return (
     <div>
-      {report.hasCriminalizedDestination && (
-        <Alert severity="error" icon={<ShieldAlert size={20} />} sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" fontWeight={600}>
-            Warning: Criminalized Destination
-          </Typography>
-          <Typography variant="body2">
-            One or more countries on your trip criminalize same-sex relations. Exercise extreme caution, research local laws, and consider consulting LGBTQ+ travel advisories.
-          </Typography>
-        </Alert>
-      )}
-
+      {/* Death penalty warning */}
       {report.hasDeathPenaltyDestination && (
-        <Alert severity="error" icon={<Skull size={20} />} sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" fontWeight={600}>
+        <Alert severity="error" icon={<Skull style={{ width: 20, height: 20 }} />} sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
             Death Penalty in Effect
           </Typography>
           <Typography variant="body2">
-            At least one destination on your trip has the death penalty for same-sex relations. Strongly reconsider travel to this country.
+            At least one destination has the death penalty for same-sex relations.
+            Strongly reconsider travel to this country.
           </Typography>
         </Alert>
       )}
 
-      <Card variant="outlined" sx={{ mb: 3, bgcolor: risk.bgColor }}>
-        <CardContent>
-          <Box className="flex items-center gap-3">
-            <Box
-              className="rounded-full flex items-center justify-center"
-              sx={{ width: 48, height: 48, bgcolor: 'white' }}
-            >
-              <risk.Icon size={24} style={{ color: risk.color }} />
-            </Box>
-            <div>
-              <Typography variant="h6" fontWeight={700} sx={{ color: risk.color }}>
-                {risk.label}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Based on LGBTQ+ equality data for {report.countries.length} {report.countries.length === 1 ? 'country' : 'countries'} in your trip.
-              </Typography>
-            </div>
-          </Box>
-        </CardContent>
-      </Card>
+      {/* Criminalization warning */}
+      {report.hasCriminalizedDestination && !report.hasDeathPenaltyDestination && (
+        <Alert severity="error" icon={<ShieldAlert style={{ width: 20, height: 20 }} />} sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            Warning: Criminalized Destination
+          </Typography>
+          <Typography variant="body2">
+            One or more countries criminalize same-sex relations. Exercise extreme
+            caution and research local laws.
+          </Typography>
+        </Alert>
+      )}
 
+      {/* Overall risk badge */}
+      <ScrollReveal direction="up">
+        <Card style={{ marginBottom: 16 }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  bgcolor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <risk.Icon style={{ width: 24, height: 24 }} />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Badge
+                  variant="default"
+                  sx={{
+                    ...riskColors,
+                    fontSize: '0.875rem',
+                    height: 28,
+                    mb: 0.5,
+                  }}
+                >
+                  {risk.label}
+                </Badge>
+                <Typography variant="body2" color="text.secondary">
+                  Based on LGBTQ+ equality data for {report.countries.length}{' '}
+                  {report.countries.length === 1 ? 'country' : 'countries'} in your trip.
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </ScrollReveal>
+
+      {/* Cross-border warnings */}
       {report.crossBorderWarnings.length > 0 && (
         <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
             Cross-Border Warnings
           </Typography>
           {report.crossBorderWarnings.map((w, i) => (
@@ -102,98 +143,86 @@ export function TripSafetyBriefing({ tripPlaces }: Props) {
         </Box>
       )}
 
-      <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2 }}>
+      {/* Per-country safety cards */}
+      <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
         Country Safety Details
       </Typography>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
         {report.countries.map((country) => {
-          const ringColor = getScoreRingColor(country.equality_score);
           const scoreInfo = getScoreLabel(country.equality_score);
 
           return (
-            <Card key={country.id} variant="outlined">
-              <CardContent>
-                <Box className="flex items-start gap-3">
-                  <Box
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: '50%',
-                      border: `3px solid ${ringColor}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 700,
-                      fontSize: 14,
-                      color: ringColor,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {country.equality_score ?? '?'}
-                  </Box>
-                  <div className="flex-1 min-w-0">
-                    <Box className="flex items-center gap-2 mb-1">
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        {country.name}
-                      </Typography>
-                      <Chip
-                        label={scoreInfo.label}
-                        size="small"
-                        sx={{
-                          height: 20,
-                          fontSize: 11,
-                          bgcolor: scoreInfo.bgColor,
-                          color: scoreInfo.color,
-                        }}
-                      />
+            <ScrollReveal key={country.id} direction="up">
+              <Card>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                    <EqualityScoreBadge score={country.equality_score} size="sm" />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          {country.name}
+                        </Typography>
+                        <Badge
+                          variant="default"
+                          sx={{
+                            bgcolor: scoreInfo.bgColor,
+                            color: scoreInfo.color,
+                            fontSize: '0.6875rem',
+                            height: 20,
+                          }}
+                        >
+                          {scoreInfo.label}
+                        </Badge>
+                      </Box>
+
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        {country.criminalized && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'error.main' }}>
+                            <ShieldAlert style={{ width: 14, height: 14 }} />
+                            <Typography variant="body2" sx={{ fontWeight: 500 }} color="error">
+                              Same-sex relations criminalized
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {country.deathPenalty && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'error.main' }}>
+                            <Skull style={{ width: 14, height: 14 }} />
+                            <Typography variant="body2" sx={{ fontWeight: 500 }} color="error">
+                              Death penalty applies
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {country.lgbti_protection_employment && (
+                          <Typography variant="body2" color="text.secondary">
+                            Employment protection:{' '}
+                            {typeof country.lgbti_protection_employment === 'object'
+                              ? (country.lgbti_protection_employment as any).so || 'No data'
+                              : String(country.lgbti_protection_employment)}
+                          </Typography>
+                        )}
+
+                        {country.lgbti_recognition_ssu && (
+                          <Typography variant="body2" color="text.secondary">
+                            SSU recognition:{' '}
+                            {parseSsuSummary(
+                              typeof country.lgbti_recognition_ssu === 'string'
+                                ? country.lgbti_recognition_ssu
+                                : JSON.stringify(country.lgbti_recognition_ssu),
+                            )}
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
-
-                    <div className="space-y-1 text-sm">
-                      {country.criminalized && (
-                        <Box className="flex items-center gap-1.5" sx={{ color: 'error.main' }}>
-                          <ShieldAlert size={14} />
-                          <Typography variant="body2" fontWeight={500} color="error">
-                            Same-sex relations criminalized
-                          </Typography>
-                        </Box>
-                      )}
-
-                      {country.deathPenalty && (
-                        <Box className="flex items-center gap-1.5" sx={{ color: 'error.main' }}>
-                          <Skull size={14} />
-                          <Typography variant="body2" fontWeight={500} color="error">
-                            Death penalty applies
-                          </Typography>
-                        </Box>
-                      )}
-
-                      {country.lgbti_protection_employment && (
-                        <Typography variant="body2" color="text.secondary">
-                          Employment protection:{' '}
-                          {typeof country.lgbti_protection_employment === 'object'
-                            ? (country.lgbti_protection_employment as any).so || 'No data'
-                            : String(country.lgbti_protection_employment)}
-                        </Typography>
-                      )}
-
-                      {country.lgbti_recognition_ssu && (
-                        <Typography variant="body2" color="text.secondary">
-                          SSU recognition: {parseSsuSummary(
-                            typeof country.lgbti_recognition_ssu === 'string'
-                              ? country.lgbti_recognition_ssu
-                              : JSON.stringify(country.lgbti_recognition_ssu)
-                          )}
-                        </Typography>
-                      )}
-                    </div>
-                  </div>
-                </Box>
-              </CardContent>
-            </Card>
+                  </Box>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
           );
         })}
-      </div>
+      </Box>
     </div>
   );
 }

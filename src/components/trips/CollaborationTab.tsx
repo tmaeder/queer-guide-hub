@@ -1,8 +1,5 @@
-import { useState } from 'react';
-import Box from '@mui/material/Box';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ToggleButton from '@mui/material/ToggleButton';
 import { MessageCircle, StickyNote, BarChart3 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TripChat } from './TripChat';
 import { TripNotes } from './TripNotes';
 import { TripPolls } from './TripPolls';
@@ -11,40 +8,36 @@ interface Props {
   tripId: string;
 }
 
-type SubTab = 'chat' | 'notes' | 'polls';
-
 export function CollaborationTab({ tripId }: Props) {
-  const [subTab, setSubTab] = useState<SubTab>('chat');
-
   return (
-    <Box>
-      <Box className="flex justify-center mb-4">
-        <ToggleButtonGroup
-          value={subTab}
-          exclusive
-          onChange={(_, val) => {
-            if (val) setSubTab(val);
-          }}
-          size="small"
-        >
-          <ToggleButton value="chat" sx={{ gap: 0.75, px: 2, textTransform: 'none', fontSize: 13 }}>
-            <MessageCircle size={15} />
-            Chat
-          </ToggleButton>
-          <ToggleButton value="notes" sx={{ gap: 0.75, px: 2, textTransform: 'none', fontSize: 13 }}>
-            <StickyNote size={15} />
-            Notes
-          </ToggleButton>
-          <ToggleButton value="polls" sx={{ gap: 0.75, px: 2, textTransform: 'none', fontSize: 13 }}>
-            <BarChart3 size={15} />
-            Polls
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
+    <Tabs defaultValue="chat">
+      <TabsList>
+        <TabsTrigger value="chat">
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <MessageCircle size={14} /> Chat
+          </span>
+        </TabsTrigger>
+        <TabsTrigger value="notes">
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <StickyNote size={14} /> Notes
+          </span>
+        </TabsTrigger>
+        <TabsTrigger value="polls">
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <BarChart3 size={14} /> Polls
+          </span>
+        </TabsTrigger>
+      </TabsList>
 
-      {subTab === 'chat' && <TripChat tripId={tripId} />}
-      {subTab === 'notes' && <TripNotes tripId={tripId} />}
-      {subTab === 'polls' && <TripPolls tripId={tripId} />}
-    </Box>
+      <TabsContent value="chat">
+        <TripChat tripId={tripId} />
+      </TabsContent>
+      <TabsContent value="notes">
+        <TripNotes tripId={tripId} />
+      </TabsContent>
+      <TabsContent value="polls">
+        <TripPolls tripId={tripId} />
+      </TabsContent>
+    </Tabs>
   );
 }
