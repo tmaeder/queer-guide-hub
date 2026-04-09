@@ -182,7 +182,7 @@ export default function CityDetail() {
         {city.countries && (
           <>
             <Link
-              to={`/country/${city.countries.id}`}
+              to={`/country/${city.countries.slug || city.countries.id}`}
               style={{ color: 'inherit', textDecoration: 'none' }}
             >
               {city.countries.name}
@@ -237,7 +237,7 @@ export default function CityDetail() {
             {city.region_name && `${city.region_name}, `}
             {city.countries ? (
               <Link
-                to={`/country/${city.countries.id}`}
+                to={`/country/${city.countries.slug || city.countries.id}`}
                 style={{
                   color: 'inherit',
                   textDecoration: 'underline',
@@ -1060,7 +1060,7 @@ export default function CityDetail() {
                     Legal protections and rights status in{' '}
                     {city.countries ? (
                       <Link
-                        to={`/country/${city.countries.id}`}
+                        to={`/country/${city.countries.slug || city.countries.id}`}
                         style={{ color: 'inherit', textDecoration: 'underline' }}
                       >
                         {city.countries.name}

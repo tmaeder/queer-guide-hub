@@ -87,9 +87,9 @@ export default function EventDetail() {
     try {
       const selectFields = `
           *,
-          venues (id, name, address, city, state, country, phone, website, email),
-          cities:city_id(id, name),
-          countries:country_id(id, name, equality_score, lgbti_criminalization),
+          venues (id, slug, name, address, city, state, country, phone, website, email),
+          cities:city_id(id, slug, name),
+          countries:country_id(id, slug, name, equality_score, lgbti_criminalization),
           festivals:festival_id(id, name)
         `;
       let { data: eventData, error: eventError } = await supabase
@@ -280,8 +280,8 @@ export default function EventDetail() {
   const heroImage = event.images && event.images.length > 0 ? event.images[0] : null;
   const cityName = event.cities?.name || event.city;
   const countryName = event.countries?.name || event.country;
-  const cityLink = event.cities?.id ? `/city/${event.cities.id}` : null;
-  const countryLink = event.countries?.id ? `/country/${event.countries.id}` : null;
+  const cityLink = event.cities?.id ? `/city/${event.cities.slug || event.cities.id}` : null;
+  const countryLink = event.countries?.id ? `/country/${event.countries.slug || event.countries.id}` : null;
   const locationLabel = event.venues?.name || event.venue_name || 'Location TBA';
 
   return (
@@ -442,7 +442,7 @@ export default function EventDetail() {
             <Typography variant="body2" color="text.secondary">
               {event.venues?.id ? (
                 <Link
-                  to={`/venues/${event.venues.id}`}
+                  to={`/venues/${event.venues.slug || event.venues.id}`}
                   style={{ color: 'inherit', textDecoration: 'none' }}
                 >
                   <Typography
@@ -904,7 +904,7 @@ export default function EventDetail() {
                       </a>
                     </Button>
                   )}
-                  <Link to={`/venues/${event.venues.id}`}>
+                  <Link to={`/venues/${event.venues.slug || event.venues.id}`}>
                     <Button variant="outline" size="sm">
                       View Venue
                     </Button>

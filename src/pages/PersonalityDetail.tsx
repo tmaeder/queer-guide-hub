@@ -549,7 +549,7 @@ export default function PersonalityDetail() {
                     <Box
                       key={similar.id}
                       component={Link}
-                      to={`/personalities/${similar.id}`}
+                      to={`/personalities/${similar.slug || similar.id}`}
                       sx={{
                         display: 'flex',
                         alignItems: 'center',

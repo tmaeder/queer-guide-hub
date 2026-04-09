@@ -550,7 +550,7 @@ export default function NewsDetail() {
                     <Box
                       key={related.id}
                       component={Link}
-                      to={`/news/${related.id}`}
+                      to={`/news/${related.slug || related.id}`}
                       sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -705,7 +705,7 @@ export default function NewsDetail() {
                     <Typography
                       key={c.id}
                       component={Link}
-                      to={`/city/${c.id}`}
+                      to={`/city/${c.slug || c.id}`}
                       sx={{
                         fontWeight: 500,
                         color: 'primary.main',
@@ -720,7 +720,7 @@ export default function NewsDetail() {
                     <Typography
                       key={c.id}
                       component={Link}
-                      to={`/country/${c.id}`}
+                      to={`/country/${c.slug || c.id}`}
                       sx={{
                         fontWeight: 500,
                         color: 'primary.main',

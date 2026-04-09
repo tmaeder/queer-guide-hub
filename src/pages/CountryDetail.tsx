@@ -743,7 +743,7 @@ export default function CountryDetail() {
                           type="city"
                           name={city.name}
                           data={city}
-                          onClick={() => (window.location.href = `/city/${city.id}`)}
+                          onClick={() => (window.location.href = `/city/${city.slug || city.id}`)}
                         />
                       </Box>
                     ))}

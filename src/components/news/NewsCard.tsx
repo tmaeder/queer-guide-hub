@@ -434,7 +434,7 @@ export const NewsCard = ({
             {linkedCities.map((city: any, i: number) => (
               <span key={city.id}>
                 <Link
-                  to={`/city/${city.id}`}
+                  to={`/city/${city.slug || city.id}`}
                   style={{ color: 'var(--primary)', textDecoration: 'none' }}
                 >
                   {city.name}
@@ -445,7 +445,7 @@ export const NewsCard = ({
             {linkedCountries.map((country: any, i: number) => (
               <span key={country.id}>
                 <Link
-                  to={`/country/${country.id}`}
+                  to={`/country/${country.slug || country.id}`}
                   style={{ color: 'var(--primary)', textDecoration: 'none' }}
                 >
                   {country.name}

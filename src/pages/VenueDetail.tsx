@@ -75,7 +75,7 @@ export default function VenueDetail() {
         setLoading(true);
 
         // Try slug first, fall back to ID for backwards compatibility
-        const selectFields = '*, cities:city_id(id, name), countries:country_id(id, name, equality_score, lgbti_criminalization)';
+        const selectFields = '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization)';
         let { data: venueData, error: venueError } = await supabase
           .from('venues')
           .select(selectFields)
@@ -204,8 +204,8 @@ export default function VenueDetail() {
 
   const cityName = venue.cities?.name || venue.city;
   const countryName = venue.countries?.name || venue.country;
-  const cityLink = venue.cities?.id ? `/city/${venue.cities.id}` : null;
-  const countryLink = venue.countries?.id ? `/country/${venue.countries.id}` : null;
+  const cityLink = venue.cities?.id ? `/city/${venue.cities.slug || venue.cities.id}` : null;
+  const countryLink = venue.countries?.id ? `/country/${venue.countries.slug || venue.countries.id}` : null;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
