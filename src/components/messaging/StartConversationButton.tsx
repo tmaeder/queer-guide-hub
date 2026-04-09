@@ -45,7 +45,7 @@ export const StartConversationButton = ({
         navigate(`/messages?conversation=${conversationId}`);
       }
     } catch (error) {
-      console.error('Error starting conversation:', error);
+      toast({ title: 'Error', description: 'Failed to start conversation. Please try again.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }

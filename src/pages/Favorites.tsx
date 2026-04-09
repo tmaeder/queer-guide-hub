@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { useToast } from '@/hooks/use-toast';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -55,6 +56,7 @@ interface FavoriteItem {
 export default function Favorites() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const {
     loading: calendarLoading,
     copyCalendarFeedUrl,
@@ -202,7 +204,7 @@ export default function Favorites() {
       };
       setFavorites(transformedFavorites);
     } catch (error) {
-      console.error('Error fetching favorites:', error);
+      toast({ title: 'Error', description: 'Failed to load favorites. Please try again.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }

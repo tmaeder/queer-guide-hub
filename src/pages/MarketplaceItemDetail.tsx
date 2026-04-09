@@ -97,7 +97,7 @@ export default function MarketplaceItemDetail() {
           setIsFavorited(!!favoriteData);
         }
       } catch (error) {
-        console.error('Error fetching listing:', error);
+        toast({ title: 'Error', description: 'Failed to load listing details.', variant: 'destructive' });
       } finally {
         setLoading(false);
       }

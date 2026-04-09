@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router';
 import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import {
   ArrowLeft,
   Star,
@@ -47,6 +48,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default function HotelDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const { toast } = useToast();
   const [hotel, setHotel] = useState<HotelWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
@@ -74,7 +76,7 @@ export default function HotelDetail() {
         if (error) throw error;
         setHotel(data);
       } catch (error) {
-        console.error('Error fetching hotel:', error);
+        toast({ title: 'Error', description: 'Failed to load hotel details.', variant: 'destructive' });
       } finally {
         setLoading(false);
       }

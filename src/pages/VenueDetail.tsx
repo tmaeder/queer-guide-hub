@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router';
 import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import {
   ArrowLeft,
   Star,
@@ -57,6 +58,7 @@ type VenueWithRelations = Venue & {
 
 export default function VenueDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const { toast } = useToast();
   const [venue, setVenue] = useState<VenueWithRelations | null>(null);
   const [reviews, setReviews] = useState<VenueReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,7 +110,7 @@ export default function VenueDetail() {
         if (reviewsError) throw reviewsError;
         setReviews(reviewsData || []);
       } catch (error) {
-        console.error('Error fetching venue:', error);
+        toast({ title: 'Error', description: 'Failed to load venue details.', variant: 'destructive' });
       } finally {
         setLoading(false);
       }

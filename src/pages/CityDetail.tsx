@@ -118,7 +118,7 @@ export default function CityDetail() {
       const result = await fetchCityImage(city.id, city.name, city.countries?.name || '');
       setImageUrl(result.image_url || '');
     } catch (error) {
-      console.error('Error loading city image:', error);
+      // Image loading failure is non-critical, fallback to no image
     }
   };
 

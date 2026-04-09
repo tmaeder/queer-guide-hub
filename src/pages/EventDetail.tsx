@@ -121,7 +121,7 @@ export default function EventDetail() {
         setEvent({ ...eventData, event_attendees: [] });
       }
     } catch (error) {
-      console.error('Error fetching event:', error);
+      toast({ title: 'Error', description: 'Failed to load event details.', variant: 'destructive' });
     }
   };
 
