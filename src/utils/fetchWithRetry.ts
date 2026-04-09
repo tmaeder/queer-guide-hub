@@ -4,14 +4,21 @@ const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 const REQUEST_TIMEOUT_MS = 10000;
 
+interface RetryableError {
+  message?: string;
+  status?: number;
+  code?: number | string;
+}
+
 /**
  * Check if an error is retryable (network or 5xx server error).
  * 4xx client errors (auth, validation) are NOT retried.
  */
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: unknown): boolean {
   if (!error) return false;
 
-  const message = (error.message || error.toString()).toLowerCase();
+  const err = error as RetryableError;
+  const message = (err.message || String(error)).toLowerCase();
 
   // Network errors
   if (
@@ -27,7 +34,7 @@ function isRetryableError(error: any): boolean {
   }
 
   // HTTP 5xx server errors
-  const status = error.status || error.code;
+  const status = err.status || err.code;
   if (typeof status === 'number' && status >= 500) return true;
 
   return false;
@@ -35,6 +42,12 @@ function isRetryableError(error: any): boolean {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+interface QueryResult<T> {
+  data: T | null;
+  error: RetryableError | null;
+  count?: number | null;
 }
 
 /**
@@ -49,14 +62,14 @@ function sleep(ms: number): Promise<void> {
  * build the query outside and pass it, since Supabase query builders are
  * single-use once `.then()` / `await` is called).
  */
-export async function queryWithRetry<T = any>(
-  queryBuilder: () => PromiseLike<{ data: T | null; error: any; count?: number | null }>,
+export async function queryWithRetry<T = unknown>(
+  queryBuilder: () => PromiseLike<QueryResult<T>>,
   options?: { maxRetries?: number; timeoutMs?: number }
-): Promise<{ data: T | null; error: any; count?: number | null }> {
+): Promise<QueryResult<T>> {
   const maxRetries = options?.maxRetries ?? MAX_RETRIES;
   const timeoutMs = options?.timeoutMs ?? REQUEST_TIMEOUT_MS;
 
-  let lastError: any = null;
+  let lastError: unknown = null;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
@@ -80,7 +93,7 @@ export async function queryWithRetry<T = any>(
     } catch (err) {
       lastError = err;
       if (!isRetryableError(err) || attempt === maxRetries - 1) {
-        return { data: null, error: lastError, count: null };
+        return { data: null, error: lastError as RetryableError, count: null };
       }
     }
 
@@ -89,7 +102,12 @@ export async function queryWithRetry<T = any>(
     await sleep(delay);
   }
 
-  return { data: null, error: lastError, count: null };
+  return { data: null, error: lastError as RetryableError, count: null };
+}
+
+interface InvokeResult<T> {
+  data: T | null;
+  error: RetryableError | null;
 }
 
 /**
@@ -100,15 +118,15 @@ export async function queryWithRetry<T = any>(
  *     body: { query: 'bar', filters: {} }
  *   });
  */
-export async function invokeWithRetry<T = any>(
+export async function invokeWithRetry<T = unknown>(
   functionName: string,
-  invokeOptions?: { body?: any; headers?: Record<string, string> },
+  invokeOptions?: { body?: Record<string, unknown>; headers?: Record<string, string> },
   retryOptions?: { maxRetries?: number; timeoutMs?: number }
-): Promise<{ data: T | null; error: any }> {
+): Promise<InvokeResult<T>> {
   const maxRetries = retryOptions?.maxRetries ?? MAX_RETRIES;
   const timeoutMs = retryOptions?.timeoutMs ?? REQUEST_TIMEOUT_MS;
 
-  let lastError: any = null;
+  let lastError: unknown = null;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
@@ -130,7 +148,7 @@ export async function invokeWithRetry<T = any>(
     } catch (err) {
       lastError = err;
       if (!isRetryableError(err) || attempt === maxRetries - 1) {
-        return { data: null, error: lastError };
+        return { data: null, error: lastError as RetryableError };
       }
     }
 
@@ -138,5 +156,5 @@ export async function invokeWithRetry<T = any>(
     await sleep(delay);
   }
 
-  return { data: null, error: lastError };
+  return { data: null, error: lastError as RetryableError };
 }

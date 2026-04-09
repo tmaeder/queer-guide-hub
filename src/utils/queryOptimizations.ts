@@ -17,7 +17,7 @@ export const createOptimizedQueryClient = () => {
         // Refetch when network reconnects after offline
         refetchOnReconnect: true,
         // Aggressive retry strategy with better error handling
-        retry: (failureCount, error: any) => {
+        retry: (failureCount, error: Error & { status?: number }) => {
           // Don't retry on authentication errors
           if (error?.status === 401 || error?.status === 403) {
             return false;
@@ -35,7 +35,7 @@ export const createOptimizedQueryClient = () => {
       },
       mutations: {
         // Retry mutations with better error handling
-        retry: (failureCount, error: any) => {
+        retry: (failureCount, error: Error & { status?: number }) => {
           // Don't retry client errors
           if (error?.status >= 400 && error?.status < 500) {
             return false;
@@ -52,13 +52,13 @@ export const createOptimizedQueryClient = () => {
 
 // Query key factories for consistent caching
 export const queryKeys = {
-  countries: (filters?: any) => ['countries', filters],
-  cities: (filters?: any) => ['cities', filters],
-  venues: (filters?: any) => ['venues', filters],
-  events: (filters?: any) => ['events', filters],
+  countries: (filters?: Record<string, unknown>) => ['countries', filters],
+  cities: (filters?: Record<string, unknown>) => ['cities', filters],
+  venues: (filters?: Record<string, unknown>) => ['venues', filters],
+  events: (filters?: Record<string, unknown>) => ['events', filters],
   profiles: (userId?: string) => ['profiles', userId],
-  groups: (filters?: any) => ['groups', filters],
-  posts: (filters?: any) => ['posts', filters],
+  groups: (filters?: Record<string, unknown>) => ['groups', filters],
+  posts: (filters?: Record<string, unknown>) => ['posts', filters],
   notifications: (userId?: string) => ['notifications', userId],
   messages: (conversationId?: string) => ['messages', conversationId],
   conversations: (userId?: string) => ['conversations', userId],
