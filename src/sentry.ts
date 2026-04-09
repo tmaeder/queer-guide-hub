@@ -13,8 +13,8 @@ if (import.meta.env.VITE_SENTRY_DSN) {
       }),
       Sentry.feedbackIntegration({ autoInject: false }),
     ],
-    tracesSampleRate: 0.2,
-    replaysSessionSampleRate: 0.1,
+    tracesSampleRate: 0.1,
+    replaysSessionSampleRate: 0.05,
     replaysOnErrorSampleRate: 1.0,
     ignoreErrors: [
       'ResizeObserver loop limit exceeded',

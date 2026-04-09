@@ -101,6 +101,12 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/boneyard-js/')) {
             return 'boneyard';
           }
+          if (id.includes('node_modules/@sentry/')) {
+            return 'sentry';
+          }
+          if (id.includes('node_modules/i18next') || id.includes('node_modules/react-i18next/')) {
+            return 'i18n';
+          }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
             return 'vendor';
