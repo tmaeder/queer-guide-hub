@@ -60,7 +60,7 @@ export function PersonalityCard({
 
   const handleCardClick = () => {
     // Navigate to detail page
-    window.location.href = `/personalities/${personality.id}`;
+    window.location.href = `/personalities/${personality.slug}`;
   };
 
   const handleProfessionClick = (e: React.MouseEvent) => {

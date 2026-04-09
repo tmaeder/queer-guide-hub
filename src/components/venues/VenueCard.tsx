@@ -102,7 +102,7 @@ export function VenueCard({
     >
       {venue && (
         <Link
-          to={`/venues/${venue.id}`}
+          to={`/venues/${venue.slug}`}
           style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
         >
           <Card hoverable style={{ overflow: 'hidden' }}>
@@ -243,7 +243,7 @@ export function VenueCard({
                         e.preventDefault();
                         setMenuAnchor(null);
                         navigator.clipboard.writeText(
-                          `${window.location.origin}/venues/${venue.id}`,
+                          `${window.location.origin}/venues/${venue.slug}`,
                         );
                       }}
                     >

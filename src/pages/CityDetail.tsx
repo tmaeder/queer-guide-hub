@@ -67,12 +67,12 @@ import CircularProgress from '@mui/material/CircularProgress';
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CityDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
   const { fetchCityImage } = useCityImages();
   const { articles, loading: newsLoading, fetchArticles } = useNews();
-  const { city, loading, refetch: refetchCity } = useOptimizedCity(id ?? '');
+  const { city, loading, refetch: refetchCity } = useOptimizedCity(slug ?? '');
   const [imageUrl, setImageUrl] = useState<string>('');
   const [createTripOpen, setCreateTripOpen] = useState(false);
   const { user } = useAuth();

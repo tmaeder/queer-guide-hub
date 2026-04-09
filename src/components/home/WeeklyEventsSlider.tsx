@@ -254,7 +254,7 @@ const WeeklyEventsSlider = React.memo(() => {
                       style={{ marginTop: 'auto', alignSelf: 'flex-start' }}
                       asChild
                     >
-                      <Link to={`/events/${event.id}`}>
+                      <Link to={`/events/${event.slug}`}>
                         Learn More
                         <ArrowRight style={{ marginLeft: 8, height: 12, width: 12 }} />
                       </Link>

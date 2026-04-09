@@ -57,7 +57,7 @@ export const useNews = () => {
         .from('news_articles')
         .select(
           `
-          id, title, excerpt, url, image_url, author,
+          id, slug, title, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured,
           country_ids, city_ids, tags, category
         `,
@@ -189,7 +189,7 @@ export const useNews = () => {
         .from('news_articles')
         .select(
           `
-          id, title, excerpt, url, image_url, author,
+          id, slug, title, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured,
           country_ids, city_ids, tags, category
         `,

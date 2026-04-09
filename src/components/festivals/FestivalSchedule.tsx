@@ -62,7 +62,7 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
             }}
           >
             {grouped[day].map((event) => (
-              <Link key={event.id} to={`/events/${event.id}`} style={{ textDecoration: 'none' }}>
+              <Link key={event.id} to={`/events/${event.slug}`} style={{ textDecoration: 'none' }}>
                 <Paper
                   elevation={0}
                   sx={{

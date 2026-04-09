@@ -17,6 +17,8 @@ import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { PWAProvider } from '@/components/pwa/PWAProvider';
+import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
 import Box from '@mui/material/Box';
 const Aurora = lazy(() => import('@/components/ui/Aurora'));
@@ -179,6 +181,7 @@ const SubmitHub = lazyRetry(() => import('./pages/SubmitHub'));
 const SubmitForm = lazyRetry(() => import('./pages/SubmitForm'));
 const FeedbackBoard = lazyRetry(() => import('./pages/FeedbackBoard'));
 const CMSPage = lazyRetry(() => import('./pages/Page'));
+const ShareTarget = lazyRetry(() => import('./pages/ShareTarget'));
 
 const queryClient = createOptimizedQueryClient();
 
@@ -359,14 +362,14 @@ const AppRoutes = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/venues" element={<Venues />} />
-              <Route path="/venues/:id" element={<VenueDetail />} />
+              <Route path="/venues/:slug" element={<VenueDetail />} />
               <Route path="/events" element={<Events />} />
-              <Route path="/events/:id" element={<EventDetail />} />
+              <Route path="/events/:slug" element={<EventDetail />} />
               <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/marketplace/:id" element={<MarketplaceItemDetail />} />
+              <Route path="/marketplace/:slug" element={<MarketplaceItemDetail />} />
 
               <Route path="/hotels" element={<Hotels />} />
-              <Route path="/hotels/:id" element={<HotelDetail />} />
+              <Route path="/hotels/:slug" element={<HotelDetail />} />
               <Route path="/villages" element={<Navigate to="/places" replace />} />
               <Route path="/villages/:slug" element={<QueerVillageDetail />} />
               <Route path="/festivals" element={<Navigate to="/events" replace />} />
@@ -378,11 +381,11 @@ const AppRoutes = () => {
               <Route path="/trips/shared/:token" element={<SharedTripPage />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="/flights" element={<Navigate to="/travel" replace />} />
-              <Route path="/city/:id" element={<CityDetail />} />
-              <Route path="/country/:id" element={<CountryDetail />} />
+              <Route path="/city/:slug" element={<CityDetail />} />
+              <Route path="/country/:slug" element={<CountryDetail />} />
               <Route path="/users" element={<UserDirectory />} />
               <Route path="/personalities" element={<Personalities />} />
-              <Route path="/personalities/:id" element={<PersonalityDetail />} />
+              <Route path="/personalities/:slug" element={<PersonalityDetail />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/resources/:tagName" element={<Resources />} />
               <Route path="/professions/:professionName" element={<ProfessionDetail />} />
@@ -530,7 +533,7 @@ const AppRoutes = () => {
                 />
               </Route>
               <Route path="/news" element={<News />} />
-              <Route path="/news/:id" element={<NewsDetail />} />
+              <Route path="/news/:slug" element={<NewsDetail />} />
               <Route path="/search" element={<SearchResults />} />
 
               <Route path="/groups" element={<Groups />} />
@@ -551,6 +554,8 @@ const AppRoutes = () => {
               <Route path="/submit" element={<SubmitHub />} />
               <Route path="/submit/:contentType" element={<SubmitForm />} />
               <Route path="/p/:slug" element={<CMSPage />} />
+              {/* PWA share target — receives shared URLs/text */}
+              <Route path="/share-target" element={<ShareTarget />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
@@ -563,6 +568,7 @@ const AppRoutes = () => {
       </Box>
       <CookieConsentBanner />
       <FeedbackButton />
+      <InstallBanner />
     </Box>
   );
 };
@@ -571,19 +577,21 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="queer-guide-theme">
-        <AccessibilityProvider>
-          <CookieConsentProvider>
-            <AuthProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-              </TooltipProvider>
-            </AuthProvider>
-          </CookieConsentProvider>
-        </AccessibilityProvider>
+        <PWAProvider>
+          <AccessibilityProvider>
+            <CookieConsentProvider>
+              <AuthProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <AppRoutes />
+                  </BrowserRouter>
+                </TooltipProvider>
+              </AuthProvider>
+            </CookieConsentProvider>
+          </AccessibilityProvider>
+        </PWAProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

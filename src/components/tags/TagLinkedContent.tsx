@@ -489,7 +489,7 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
           count={venues.length}
         >
           {venues.map((v) => (
-            <VenueRow key={v.id} v={v} onClick={() => navigate(`/venues/${v.id}`)} />
+            <VenueRow key={v.id} v={v} onClick={() => navigate(`/venues/${v.slug || v.id}`)} />
           ))}
         </ContentSection>
       )}
@@ -501,7 +501,7 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
           count={events.length}
         >
           {events.map((e) => (
-            <EventRow key={e.id} e={e} onClick={() => navigate(`/events/${e.id}`)} />
+            <EventRow key={e.id} e={e} onClick={() => navigate(`/events/${e.slug || e.id}`)} />
           ))}
         </ContentSection>
       )}
@@ -513,7 +513,7 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
           count={personalities.length}
         >
           {personalities.map((p) => (
-            <PersonalityRow key={p.id} p={p} onClick={() => navigate(`/personalities/${p.id}`)} />
+            <PersonalityRow key={p.id} p={p} onClick={() => navigate(`/personalities/${p.slug || p.id}`)} />
           ))}
         </ContentSection>
       )}

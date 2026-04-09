@@ -292,7 +292,7 @@ const LatestNewsSlider = React.memo(() => {
                       style={{ marginTop: 'auto', alignSelf: 'flex-start' }}
                       asChild
                     >
-                      <Link to={`/news/${article.id}`}>
+                      <Link to={`/news/${article.slug}`}>
                         Read More
                         <ArrowRight style={{ marginLeft: 8, width: 12, height: 12 }} />
                       </Link>

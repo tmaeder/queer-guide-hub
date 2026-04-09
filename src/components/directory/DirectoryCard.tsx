@@ -372,14 +372,14 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
   // Wrap with Link for cities and countries, otherwise use onClick
   if (type === 'city' && data?.id) {
     return (
-      <Link to={`/city/${data.id}`} style={{ display: 'block' }}>
+      <Link to={`/city/${data.slug || data.id}`} style={{ display: 'block' }}>
         {cardContent}
       </Link>
     );
   }
   if (type === 'country' && data?.id) {
     return (
-      <Link to={`/country/${data.id}`} style={{ display: 'block' }}>
+      <Link to={`/country/${data.slug || data.id}`} style={{ display: 'block' }}>
         {cardContent}
       </Link>
     );

@@ -59,13 +59,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CountryDetail() {
-  const { id: countryId } = useParams<{ id: string }>();
+  const { slug: countrySlug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
   const [weatherData, setWeatherData] = useState<any>(null);
 
-  const { country, loading: countryLoading } = useOptimizedCountry(countryId ?? '');
+  const { country, loading: countryLoading } = useOptimizedCountry(countrySlug ?? '');
   const { cities, loading: citiesLoading } = useOptimizedCities({
-    countryId: countryId ?? '',
+    countryId: country?.id ?? '',
     limit: 12,
   });
 
@@ -161,7 +161,7 @@ export default function CountryDetail() {
     return Sun;
   };
 
-  if (!countryId) {
+  if (!countrySlug) {
     return <Box>Country not found</Box>;
   }
 

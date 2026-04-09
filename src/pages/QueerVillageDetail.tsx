@@ -81,7 +81,7 @@ export default function QueerVillageDetail() {
     try {
       const { data, error } = await supabase
         .from('queer_villages')
-        .select('*, cities:city_id(id, name), countries:country_id(id, name, flag_emoji)')
+        .select('*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, flag_emoji)')
         .eq('slug', slug)
         .single();
       if (error) throw error;
@@ -153,7 +153,7 @@ export default function QueerVillageDetail() {
         {village.countries && (
           <>
             <Link
-              to={`/country/${village.countries.id}`}
+              to={`/country/${village.countries.slug || village.countries.id}`}
               style={{ color: 'inherit', textDecoration: 'none' }}
             >
               {village.countries.name}
@@ -164,7 +164,7 @@ export default function QueerVillageDetail() {
         {village.cities && (
           <>
             <Link
-              to={`/city/${village.cities.id}`}
+              to={`/city/${village.cities.slug || village.cities.id}`}
               style={{ color: 'inherit', textDecoration: 'none' }}
             >
               {village.cities.name}
@@ -242,7 +242,7 @@ export default function QueerVillageDetail() {
             <Typography sx={{ fontSize: '1.125rem' }}>
               {village.cities && (
                 <Link
-                  to={`/city/${village.cities.id}`}
+                  to={`/city/${village.cities.slug || village.cities.id}`}
                   style={{
                     color: 'inherit',
                     textDecoration: 'underline',
@@ -255,7 +255,7 @@ export default function QueerVillageDetail() {
               {village.cities && village.countries && ', '}
               {village.countries && (
                 <Link
-                  to={`/country/${village.countries.id}`}
+                  to={`/country/${village.countries.slug || village.countries.id}`}
                   style={{
                     color: 'inherit',
                     textDecoration: 'underline',
@@ -599,7 +599,7 @@ export default function QueerVillageDetail() {
                       name: v.name ?? 'Venue',
                       subtitle: v.category,
                       type: 'venues' as const,
-                      linkTo: `/venues/${v.id}`,
+                      linkTo: `/venues/${v.slug || v.id}`,
                     })),
                   ]}
                 />

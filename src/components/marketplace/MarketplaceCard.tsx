@@ -280,7 +280,7 @@ export function MarketplaceCard({
             )}
           </Box>
 
-          <Link to={`/marketplace/${listing.id}`}>
+          <Link to={`/marketplace/${listing.slug}`}>
             <Button size="sm" sx={{ height: 28, fontSize: '0.75rem' }}>
               View
             </Button>

@@ -70,7 +70,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
 
   return (
     <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
-    <Link to={`/hotels/${hotel.id}`} style={{ textDecoration: 'none' }}>
+    <Link to={`/hotels/${hotel.slug}`} style={{ textDecoration: 'none' }}>
       <Paper
         elevation={1}
         sx={{

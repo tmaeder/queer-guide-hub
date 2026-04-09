@@ -77,7 +77,7 @@ const RegionalEventsCalendar: React.FC = () => {
 
         <EventsCalendarView
           events={events}
-          onEventSelect={(event) => navigate(`/events/${event.id}`)}
+          onEventSelect={(event) => navigate(`/events/${event.slug}`)}
           onAttendanceUpdate={updateAttendance}
         />
       </Container>

@@ -193,7 +193,7 @@ export const NewsCard = ({
         borderColor: 'rgba(var(--border-rgb, 0,0,0), 0.5)',
         cursor: 'pointer',
       }}
-      onClick={() => navigate(`/news/${article.id}`)}
+      onClick={() => navigate(`/news/${article.slug}`)}
     >
       <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>

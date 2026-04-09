@@ -40,6 +40,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 
 interface FavoriteItem {
   id: string;
+  slug?: string;
   title: string;
   description?: string;
   image_url?: string;
@@ -92,7 +93,7 @@ export default function Favorites() {
         venueIds.length > 0
           ? await supabase
               .from('venues')
-              .select('id, name, description, image_url, location, rating, category')
+              .select('id, slug, name, description, image_url, location, rating, category')
               .in('id', venueIds)
           : {
               data: [],
@@ -109,7 +110,7 @@ export default function Favorites() {
           ? await supabase
               .from('events')
               .select(
-                'id, title, description, images, city, state, country, start_date, price_min, event_type',
+                'id, slug, title, description, images, city, state, country, start_date, price_min, event_type',
               )
               .in('id', eventIds)
           : {
@@ -126,7 +127,7 @@ export default function Favorites() {
         listingIds.length > 0
           ? await supabase
               .from('marketplace_listings')
-              .select('id, title, description, images, location, price, category, business_name')
+              .select('id, slug, title, description, images, location, price, category, business_name')
               .in('id', listingIds)
           : {
               data: [],
@@ -142,7 +143,7 @@ export default function Favorites() {
         articleIds.length > 0
           ? await supabase
               .from('news_articles')
-              .select('id, title, excerpt, image_url, category, published_at, views_count')
+              .select('id, slug, title, excerpt, image_url, category, published_at, views_count')
               .in('id', articleIds)
           : {
               data: [],
@@ -153,6 +154,7 @@ export default function Favorites() {
         venue:
           venueData?.map((venue) => ({
             id: venue.id,
+            slug: venue.slug,
             title: venue.name || '',
             description: venue.description,
             image_url: venue.image_url,
@@ -164,6 +166,7 @@ export default function Favorites() {
         event:
           eventData?.map((event) => ({
             id: event.id,
+            slug: event.slug,
             title: event.title || '',
             description: event.description,
             image_url: event.images?.[0],
@@ -176,6 +179,7 @@ export default function Favorites() {
         marketplace:
           marketplaceData?.map((listing) => ({
             id: listing.id,
+            slug: listing.slug,
             title: listing.title || '',
             description: listing.description,
             image_url: listing.images?.[0],
@@ -187,6 +191,7 @@ export default function Favorites() {
         news:
           newsData?.map((article) => ({
             id: article.id,
+            slug: article.slug,
             title: article.title || '',
             description: article.excerpt,
             image_url: article.image_url,
@@ -232,13 +237,13 @@ export default function Favorites() {
     const getItemUrl = () => {
       switch (item.type) {
         case 'venue':
-          return `/venues/${item.id}`;
+          return `/venues/${item.slug || item.id}`;
         case 'event':
-          return `/events/${item.id}`;
+          return `/events/${item.slug || item.id}`;
         case 'marketplace':
-          return `/marketplace/${item.id}`;
+          return `/marketplace/${item.slug || item.id}`;
         case 'news':
-          return `/news/${item.id}`;
+          return `/news/${item.slug || item.id}`;
         default:
           return '#';
       }

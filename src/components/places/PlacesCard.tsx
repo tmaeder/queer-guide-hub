@@ -302,7 +302,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   // Wrap with Link for cities and countries, otherwise use onClick
   if (type === 'city' && data?.id) {
     return (
-      <Link to={`/city/${data.id}`} style={{ display: 'block' }}>
+      <Link to={`/city/${data.slug || data.id}`} style={{ display: 'block' }}>
         {cardContent}
       </Link>
     );
@@ -310,7 +310,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
 
   if (type === 'country' && data?.id) {
     return (
-      <Link to={`/country/${data.id}`} style={{ display: 'block' }}>
+      <Link to={`/country/${data.slug || data.id}`} style={{ display: 'block' }}>
         {cardContent}
       </Link>
     );

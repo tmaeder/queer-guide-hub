@@ -188,14 +188,14 @@ export default function SearchResults() {
     switch (result.type) {
       case 'venue':
       case 'venues':
-        navigate(`/venues/${result.objectID}`);
+        navigate(`/venues/${slug}`);
         break;
       case 'event':
       case 'events':
-        navigate(`/events/${result.objectID}`);
+        navigate(`/events/${slug}`);
         break;
       case 'marketplace':
-        navigate(`/marketplace/${result.objectID}`);
+        navigate(`/marketplace/${slug}`);
         break;
       case 'user':
       case 'personalities':
@@ -203,7 +203,7 @@ export default function SearchResults() {
         navigate(`/personalities/${slug}`);
         break;
       case 'news':
-        navigate(`/news/${result.objectID}`);
+        navigate(`/news/${slug}`);
         break;
       case 'cities':
       case 'location':

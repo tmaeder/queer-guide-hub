@@ -90,7 +90,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
         name: v.name ?? 'Venue',
         subtitle: v.category ?? undefined,
         color: LAYER_COLORS.venues,
-        linkTo: `/venues/${v.id}`,
+        linkTo: `/venues/${v.slug}`,
         meta: { city: v.city, country: v.country, category: v.category, featured: v.featured },
       }));
   }, [rawVenues, venuesEnabled]);
@@ -137,7 +137,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
           name: e.title ?? 'Event',
           subtitle: startDate,
           color: LAYER_COLORS.events,
-          linkTo: `/events/${e.id}`,
+          linkTo: `/events/${e.slug}`,
           meta: {
             startDate: e.start_date,
             endDate: e.end_date,
@@ -174,7 +174,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
         subtitle: c.country_name ?? undefined,
         color: LAYER_COLORS.cities,
         scale: 0.85,
-        linkTo: `/city/${c.id}`,
+        linkTo: `/city/${c.slug}`,
         meta: {
           population: c.population,
           countryName: c.country_name,
@@ -207,7 +207,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
         subtitle: c.capital ?? undefined,
         color: LAYER_COLORS.countries,
         scale: 0.75,
-        linkTo: `/country/${c.id}`,
+        linkTo: `/country/${c.slug}`,
         meta: {
           capital: c.capital,
           code: c.code,

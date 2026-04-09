@@ -80,7 +80,7 @@ export default function Personalities() {
 
   const handlePersonalityClick = (personality: any) => {
     setSelectedPersonality(personality);
-    navigate(`/personalities/${personality.id}`);
+    navigate(`/personalities/${personality.slug}`);
   };
 
   const handleFiltersChange = (newFilters: PersonalityFilters) => {

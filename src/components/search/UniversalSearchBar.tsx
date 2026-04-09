@@ -160,14 +160,14 @@ export const UniversalSearchBar = () => {
     switch (result.type) {
       case 'venue':
       case 'venues':
-        navigate(`/venues/${result.objectID}`);
+        navigate(`/venues/${slug}`);
         break;
       case 'event':
       case 'events':
-        navigate(`/events/${result.objectID}`);
+        navigate(`/events/${slug}`);
         break;
       case 'marketplace':
-        navigate(`/marketplace/${result.objectID}`);
+        navigate(`/marketplace/${slug}`);
         break;
       case 'user':
         navigate(`/user/${result.objectID}`);
@@ -180,7 +180,7 @@ export const UniversalSearchBar = () => {
         navigate(`/groups/${result.objectID}`);
         break;
       case 'news':
-        navigate(`/news/${result.objectID}`);
+        navigate(`/news/${slug}`);
         break;
       case 'cities':
       case 'location':
@@ -213,13 +213,13 @@ export const UniversalSearchBar = () => {
     setQuery(displayName);
     switch (suggestion.type) {
       case 'venue':
-        navigate(`/venues/${suggestion.id}`);
+        navigate(`/venues/${suggestion.slug || suggestion.id}`);
         break;
       case 'event':
-        navigate(`/events/${suggestion.id}`);
+        navigate(`/events/${suggestion.slug || suggestion.id}`);
         break;
       case 'marketplace':
-        navigate(`/marketplace/${suggestion.id}`);
+        navigate(`/marketplace/${suggestion.slug || suggestion.id}`);
         break;
       case 'tag':
         const tagSlug = suggestion.name.replace(/[^\w\s-]/g, '').replace(/\s+/g, '%20');
@@ -229,7 +229,7 @@ export const UniversalSearchBar = () => {
         navigate(`/user/${suggestion.id}`);
         break;
       case 'personality':
-        navigate(`/personalities/${suggestion.id}`);
+        navigate(`/personalities/${suggestion.slug || suggestion.id}`);
         break;
       case 'group':
         navigate(`/groups/${suggestion.id}`);

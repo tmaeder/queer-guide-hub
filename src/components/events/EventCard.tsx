@@ -146,7 +146,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, onVie
   return (
     <Skeleton name="event-card" loading={loading || !event} fixture={<EventCardFixture />} fallback={<PageLoadingState count={1} />}>
       {event && (
-    <Link to={`/events/${event.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <Link to={`/events/${event.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
     <Card hoverable>
       {/* Image — collapses to compact layout on load error */}
       {hasImage && (
@@ -478,7 +478,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, onVie
                   e.preventDefault();
                   setMenuAnchor(null);
                   navigator.clipboard.writeText(
-                    `${window.location.origin}/events/${event.id}`,
+                    `${window.location.origin}/events/${event.slug}`,
                   );
                 }}
               >

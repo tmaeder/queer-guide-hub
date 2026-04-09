@@ -77,7 +77,7 @@ async function fetchVenuesInBbox(
 ): Promise<PointFeature[]> {
   let query = supabase
     .from('venues')
-    .select('id, name, category, latitude, longitude, city, country, featured')
+    .select('id, slug, name, category, latitude, longitude, city, country, featured')
     .neq('data_source', 'refuge_restrooms')
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
@@ -107,7 +107,7 @@ async function fetchVenuesInBbox(
       name: v.name ?? 'Venue',
       subtitle: v.category ?? '',
       color: LAYER_COLORS.venues,
-      linkTo: `/venues/${v.id}`,
+      linkTo: `/venues/${v.slug}`,
       meta: JSON.stringify({
         city: v.city,
         country: v.country,
@@ -125,7 +125,7 @@ async function fetchEventsInBbox(
   let query = supabase
     .from('events')
     .select(
-      'id, title, start_date, event_type, latitude, longitude, city, venue_id, venues(name, latitude, longitude)',
+      'id, slug, title, start_date, event_type, latitude, longitude, city, venue_id, venues(name, latitude, longitude)',
     )
     .eq('status', 'active')
     .gte('start_date', new Date().toISOString())
@@ -165,7 +165,7 @@ async function fetchEventsInBbox(
           name: e.title ?? 'Event',
           subtitle: dateStr,
           color: LAYER_COLORS.events,
-          linkTo: `/events/${e.id}`,
+          linkTo: `/events/${e.slug}`,
           meta: JSON.stringify({
             startDate: e.start_date,
             eventType: e.event_type,
