@@ -39,7 +39,7 @@ interface SimilarPersonality {
 }
 
 export default function PersonalityDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [personality, setPersonality] = useState<Personality | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ export default function PersonalityDetail() {
   const { incrementViews } = usePersonalities();
 
   useEffect(() => {
-    if (!id) {
+    if (!slug) {
       navigate('/personalities');
       return;
     }
@@ -57,12 +57,19 @@ export default function PersonalityDetail() {
       try {
         setLoading(true);
 
-        const { data, error } = await supabase
+        let { data, error } = await supabase
           .from('personalities')
           .select('*')
-          .eq('id', id)
+          .eq('slug', slug)
           .eq('visibility', 'public')
           .maybeSingle();
+
+        // Fall back to ID lookup for backwards compatibility
+        if (!data && !error) {
+          const fallback = await supabase.from('personalities').select('*').eq('id', slug).eq('visibility', 'public').maybeSingle();
+          data = fallback.data;
+          error = fallback.error;
+        }
 
         if (error) {
           console.error('Error fetching personality:', error);
@@ -125,7 +132,7 @@ export default function PersonalityDetail() {
 
         // Fetch similar personalities via embedding similarity
         const { data: similarData } = await supabase.rpc('get_similar_personalities', {
-          personality_uuid: id,
+          personality_uuid: transformedData.id,
           result_limit: 6,
           min_similarity: 0.3,
         });
@@ -144,7 +151,7 @@ export default function PersonalityDetail() {
     };
 
     fetchPersonality();
-  }, [id, navigate]);
+  }, [slug, navigate]);
 
   useEffect(() => {
     if (personality?.id) {

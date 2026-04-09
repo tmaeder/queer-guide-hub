@@ -37,7 +37,7 @@ type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Ro
 };
 
 export default function MarketplaceItemDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { incrementViews } = useMarketplace();
   const [listing, setListing] = useState<MarketplaceListing | null>(null);
@@ -46,22 +46,28 @@ export default function MarketplaceItemDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;
 
     const fetchListing = async () => {
       try {
         setLoading(true);
 
-        const { data: listingData, error: listingError } = await supabase
+        let { data: listingData, error: listingError } = await supabase
           .from('marketplace_listings')
           .select('*')
-          .eq('id', id)
+          .eq('slug', slug)
           .single();
+
+        if (listingError && /uuid|invalid|no rows/i.test(listingError.message || '')) {
+          const fallback = await supabase.from('marketplace_listings').select('*').eq('id', slug).single();
+          listingData = fallback.data;
+          listingError = fallback.error;
+        }
 
         if (listingError) throw listingError;
         setListing(listingData);
 
-        await incrementViews(id);
+        await incrementViews(listingData.id);
 
         const { data: reviewsData, error: reviewsError } = await supabase
           .from('marketplace_reviews')
@@ -74,7 +80,7 @@ export default function MarketplaceItemDetail() {
             )
           `,
           )
-          .eq('listing_id', id)
+          .eq('listing_id', listingData.id)
           .order('created_at', { ascending: false });
 
         if (reviewsError) throw reviewsError;
@@ -84,7 +90,7 @@ export default function MarketplaceItemDetail() {
           const { data: favoriteData } = await supabase
             .from('marketplace_favorites')
             .select('id')
-            .eq('listing_id', id)
+            .eq('listing_id', listingData.id)
             .eq('user_id', user.id)
             .single();
 
@@ -99,7 +105,7 @@ export default function MarketplaceItemDetail() {
 
     fetchListing();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, user]);
+  }, [slug, user]);
 
   const handleToggleFavorite = async () => {
     if (!user) {

@@ -54,7 +54,7 @@ interface RelatedArticle {
 }
 
 export default function NewsDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,7 +66,7 @@ export default function NewsDetail() {
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
 
   useEffect(() => {
-    if (!id) {
+    if (!slug) {
       navigate('/news');
       return;
     }
@@ -74,11 +74,18 @@ export default function NewsDetail() {
     const fetchArticle = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        let { data, error } = await supabase
           .from('news_articles')
           .select('*')
-          .eq('id', id)
+          .eq('slug', slug)
           .maybeSingle();
+
+        // Fall back to ID lookup for backwards compatibility
+        if (!data && !error) {
+          const fallback = await supabase.from('news_articles').select('*').eq('id', slug).maybeSingle();
+          data = fallback.data;
+          error = fallback.error;
+        }
 
         if (error || !data) {
           navigate('/news');
@@ -88,7 +95,7 @@ export default function NewsDetail() {
         setArticle(data as NewsArticle);
 
         // Increment views
-        supabase.rpc('increment_article_views', { article_id: id }).then(() => {});
+        supabase.rpc('increment_article_views', { article_id: data.id }).then(() => {});
 
         // Fetch source name
         if (data.source_id) {
@@ -110,7 +117,7 @@ export default function NewsDetail() {
           .from('unified_tag_assignments')
           .select('unified_tags!inner(name)')
           .eq('entity_type', 'news')
-          .eq('entity_id', id)
+          .eq('entity_id', data.id)
           .then(({ data: tagData }) => {
             if (tagData) {
               setTags(tagData.map((t: any) => t.unified_tags.name));
@@ -157,7 +164,7 @@ export default function NewsDetail() {
             .from('news_articles')
             .select('id, title, excerpt, image_url, published_at, category')
             .eq('category', data.category)
-            .neq('id', id)
+            .neq('id', data.id)
             .not('published_at', 'is', null)
             .order('published_at', { ascending: false })
             .limit(4)
@@ -174,7 +181,7 @@ export default function NewsDetail() {
     };
 
     fetchArticle();
-  }, [id, navigate]);
+  }, [slug, navigate]);
 
   const handleShare = async () => {
     const url = window.location.href;

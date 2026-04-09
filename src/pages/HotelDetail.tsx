@@ -46,23 +46,30 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default function HotelDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [hotel, setHotel] = useState<HotelWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
-  const { data: tripStatus } = useEntityTripStatus('hotel', id);
+  const { data: tripStatus } = useEntityTripStatus('hotel', hotel?.id);
 
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;
 
     const fetchHotel = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        const selectFields = '*, cities:city_id(id, name), countries:country_id(id, name)';
+        let { data, error } = await supabase
           .from('hotels')
-          .select('*, cities:city_id(id, name), countries:country_id(id, name)')
-          .eq('id', id)
+          .select(selectFields)
+          .eq('slug', slug)
           .single();
+
+        if (error && /uuid|invalid|no rows/i.test(error.message || '')) {
+          const fallback = await supabase.from('hotels').select(selectFields).eq('id', slug).single();
+          data = fallback.data;
+          error = fallback.error;
+        }
 
         if (error) throw error;
         setHotel(data);
@@ -74,7 +81,7 @@ export default function HotelDetail() {
     };
 
     fetchHotel();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return (

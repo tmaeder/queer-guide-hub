@@ -56,31 +56,37 @@ type VenueWithRelations = Venue & {
 };
 
 export default function VenueDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [venue, setVenue] = useState<VenueWithRelations | null>(null);
   const [reviews, setReviews] = useState<VenueReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkinRefresh, setCheckinRefresh] = useState(0);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
-  const { data: tripStatus } = useEntityTripStatus('venue', id);
+  const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
   const { events } = useEvents();
 
-  const venueEvents = events.filter((event) => event.venue_id === id);
+  const venueEvents = events.filter((event) => event.venue_id === venue?.id);
 
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;
 
     const fetchVenue = async () => {
       try {
         setLoading(true);
 
-        const { data: venueData, error: venueError } = await supabase
+        // Try slug first, fall back to ID for backwards compatibility
+        const selectFields = '*, cities:city_id(id, name), countries:country_id(id, name, equality_score, lgbti_criminalization)';
+        let { data: venueData, error: venueError } = await supabase
           .from('venues')
-          .select(
-            '*, cities:city_id(id, name), countries:country_id(id, name, equality_score, lgbti_criminalization)',
-          )
-          .eq('id', id)
+          .select(selectFields)
+          .eq('slug', slug)
           .single();
+
+        if (venueError && /uuid|invalid|no rows/i.test(venueError.message || '')) {
+          const fallback = await supabase.from('venues').select(selectFields).eq('id', slug).single();
+          venueData = fallback.data;
+          venueError = fallback.error;
+        }
 
         if (venueError) throw venueError;
         setVenue(venueData);
@@ -96,7 +102,7 @@ export default function VenueDetail() {
             )
           `,
           )
-          .eq('venue_id', id)
+          .eq('venue_id', venueData.id)
           .order('created_at', { ascending: false });
 
         if (reviewsError) throw reviewsError;
@@ -109,7 +115,7 @@ export default function VenueDetail() {
     };
 
     fetchVenue();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return (

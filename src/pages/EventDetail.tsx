@@ -72,7 +72,7 @@ type Event = Database['public']['Tables']['events']['Row'] & {
 };
 
 export default function EventDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
@@ -80,24 +80,29 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [showEventTz, setShowEventTz] = useState(true);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
-  const { data: tripStatus } = useEntityTripStatus('event', id);
+  const { data: tripStatus } = useEntityTripStatus('event', event?.id);
 
   const fetchEventData = async () => {
-    if (!id) return;
+    if (!slug) return;
     try {
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select(
-          `
+      const selectFields = `
           *,
           venues (id, name, address, city, state, country, phone, website, email),
           cities:city_id(id, name),
           countries:country_id(id, name, equality_score, lgbti_criminalization),
           festivals:festival_id(id, name)
-        `,
-        )
-        .eq('id', id)
+        `;
+      let { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select(selectFields)
+        .eq('slug', slug)
         .single();
+
+      if (eventError && /uuid|invalid|no rows/i.test(eventError.message || '')) {
+        const fallback = await supabase.from('events').select(selectFields).eq('id', slug).single();
+        eventData = fallback.data;
+        eventError = fallback.error;
+      }
 
       if (eventError) throw eventError;
 
@@ -105,7 +110,7 @@ export default function EventDetail() {
         const { data: attendeesData } = await supabase
           .from('event_attendees')
           .select(`id, status, user_id, profiles:user_id (display_name, avatar_url)`)
-          .eq('event_id', id);
+          .eq('event_id', eventData.id);
 
         const fullEvent = { ...eventData, event_attendees: attendeesData || [] };
         setEvent(fullEvent);
@@ -121,14 +126,14 @@ export default function EventDetail() {
   };
 
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;
     const load = async () => {
       setLoading(true);
       await fetchEventData();
       setLoading(false);
     };
     load();
-  }, [id, user]);
+  }, [slug, user]);
 
   const handleAttendanceUpdate = async (status: 'going' | 'interested' | 'not_going') => {
     if (!user || !event) {

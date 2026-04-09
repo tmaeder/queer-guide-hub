@@ -128,16 +128,26 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
   };
 }
 
-export function useOptimizedCountry(countryId: string) {
+export function useOptimizedCountry(countrySlug: string) {
   const fetchCountry = async (): Promise<Country | null> => {
+    // Try slug first, fall back to ID for backwards compatibility
     const { data, error } = await supabase
       .from('countries')
       .select('*, continents(name), regions(name)')
-      .eq('id', countryId)
+      .eq('slug', countrySlug)
       .maybeSingle();
 
     if (error) throw error;
-    return data;
+    if (data) return data;
+
+    const { data: byId, error: idError } = await supabase
+      .from('countries')
+      .select('*, continents(name), regions(name)')
+      .eq('id', countrySlug)
+      .maybeSingle();
+
+    if (idError) throw idError;
+    return byId;
   };
 
   const {
@@ -146,7 +156,7 @@ export function useOptimizedCountry(countryId: string) {
     error,
     refetch,
   } = useQuery({
-    queryKey: [COUNTRIES_QUERY_KEY, countryId],
+    queryKey: [COUNTRIES_QUERY_KEY, countrySlug],
     queryFn: fetchCountry,
     gcTime: CACHE_TIME,
     staleTime: STALE_TIME,
@@ -162,16 +172,27 @@ export function useOptimizedCountry(countryId: string) {
   };
 }
 
-export function useOptimizedCity(cityId: string) {
+export function useOptimizedCity(citySlug: string) {
   const fetchCity = async (): Promise<City | null> => {
+    // Try slug first, fall back to ID for backwards compatibility
     const { data, error } = await supabase
       .from('cities')
       .select('*')
-      .eq('id', cityId)
+      .eq('slug', citySlug)
       .maybeSingle();
 
     if (error) throw error;
-    return data;
+    if (data) return data;
+
+    // Fallback: try as ID (UUID or numeric)
+    const { data: byId, error: idError } = await supabase
+      .from('cities')
+      .select('*')
+      .eq('id', citySlug)
+      .maybeSingle();
+
+    if (idError) throw idError;
+    return byId;
   };
 
   const {
@@ -180,7 +201,7 @@ export function useOptimizedCity(cityId: string) {
     error,
     refetch,
   } = useQuery({
-    queryKey: [CITIES_QUERY_KEY, cityId],
+    queryKey: [CITIES_QUERY_KEY, citySlug],
     queryFn: fetchCity,
     gcTime: CACHE_TIME,
     staleTime: STALE_TIME,
