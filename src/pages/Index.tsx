@@ -12,6 +12,7 @@ import {
   BookOpen,
   ArrowRight,
   Map,
+  Building,
 } from 'lucide-react';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -22,6 +23,7 @@ import Typography from '@mui/material/Typography';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
+import { categoryColor, categoryBg, type CategoryKey } from '@/lib/categoryColors';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -30,59 +32,61 @@ const RegionalEventsCalendar = React.lazy(
   () => import('@/components/home/RegionalEventsCalendar'),
 );
 
-// HSL-based feature color system — auto-computes light/dark variants
-const FEATURE_HUES = [
-  { key: 'venues', hue: 0, sat: 70 },
-  { key: 'events', hue: 25, sat: 85 },
-  { key: 'marketplace', hue: 142, sat: 60 },
-  { key: 'places', hue: 211, sat: 75 },
-  { key: 'community', hue: 330, sat: 80 },
-  { key: 'resources', hue: 174, sat: 55 },
-] as const;
-
-function featureColor(hue: number, sat: number, isDark: boolean) {
-  return {
-    accent: `hsl(${hue}, ${sat}%, ${isDark ? 70 : 40}%)`,
-    bg: `hsl(${hue}, ${sat}%, ${isDark ? 10 : 95}%)`,
-  };
-}
-
-const features = [
+const features: {
+  icon: typeof MapPin;
+  title: string;
+  description: string;
+  link: string;
+  category: CategoryKey;
+}[] = [
   {
     icon: MapPin,
     title: 'Venues',
     description: 'Verified queer-friendly spaces where you can be yourself',
     link: '/venues',
+    category: 'venues',
   },
   {
     icon: Calendar,
     title: 'Events',
     description: 'Local and virtual gatherings in your area',
     link: '/events',
+    category: 'events',
   },
   {
     icon: Store,
     title: 'Marketplace',
     description: 'Support queer-owned businesses and creators',
     link: '/marketplace',
+    category: 'marketplace',
   },
   {
     icon: Plane,
     title: 'Places',
     description: 'Explore queer-friendly cities and countries',
     link: '/places',
+    category: 'places',
+  },
+  {
+    icon: Building,
+    title: 'Hotels',
+    description: 'Welcoming accommodations worldwide',
+    link: '/hotels',
+    category: 'hotels',
   },
   {
     icon: Users,
     title: 'Community',
     description: 'Connect with people and join groups',
     link: '/groups',
+    category: 'community',
   },
   {
     icon: BookOpen,
     title: 'Resources',
     description: 'Rights, culture, and community support',
     link: '/resources',
+    category: 'news',
   },
 ];
 
@@ -97,16 +101,16 @@ const Index = React.memo(() => {
     () =>
       loading
         ? [
-            { value: 0, label: 'Verified Venues' },
-            { value: 0, label: 'Community Members' },
-            { value: 0, label: 'Cities Worldwide' },
-            { value: 0, label: 'Weekly Events' },
+            { value: 0, label: 'Verified Venues', cat: 'venues' as CategoryKey },
+            { value: 0, label: 'Community Members', cat: 'community' as CategoryKey },
+            { value: 0, label: 'Cities Worldwide', cat: 'places' as CategoryKey },
+            { value: 0, label: 'Weekly Events', cat: 'events' as CategoryKey },
           ]
         : [
-            { value: realStats.venues, label: 'Verified Venues' },
-            { value: realStats.profiles, label: 'Community Members' },
-            { value: realStats.cities, label: 'Cities Worldwide' },
-            { value: realStats.events, label: 'Weekly Events' },
+            { value: realStats.venues, label: 'Verified Venues', cat: 'venues' as CategoryKey },
+            { value: realStats.profiles, label: 'Community Members', cat: 'community' as CategoryKey },
+            { value: realStats.cities, label: 'Cities Worldwide', cat: 'places' as CategoryKey },
+            { value: realStats.events, label: 'Weekly Events', cat: 'events' as CategoryKey },
           ],
     [loading, realStats],
   );
@@ -115,12 +119,12 @@ const Index = React.memo(() => {
     <Box sx={{ minHeight: '100vh' }}>
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <Box
-        className="hero-gradient hero-grain"
         sx={{
           position: 'relative',
           overflow: 'hidden',
-          py: { xs: 10, sm: 14, md: 18 },
+          py: { xs: 14, sm: 18, md: 24 },
           px: 2,
+          bgcolor: 'background.default',
         }}
       >
         <Container
@@ -131,17 +135,24 @@ const Index = React.memo(() => {
             variant="h1"
             className="reveal-up"
             sx={{
-              fontSize: { xs: '2.75rem', sm: '3.75rem', md: '5rem' },
+              fontSize: { xs: '3rem', sm: '4.5rem', md: '6rem' },
               fontWeight: 800,
               letterSpacing: '-0.04em',
               lineHeight: 1.05,
-              mb: { xs: 2.5, md: 3 },
+              mb: { xs: 3, md: 4 },
               color: 'text.primary',
             }}
           >
-            Your world.
+            Discover.
             <br />
-            Your way.
+            Connect.
+            <br />
+            <Box
+              component="span"
+              sx={{ color: categoryColor('community') }}
+            >
+              Belong.
+            </Box>
           </Typography>
 
           <Typography
@@ -149,10 +160,10 @@ const Index = React.memo(() => {
             sx={{
               fontSize: { xs: '1.0625rem', sm: '1.1875rem', md: '1.375rem' },
               color: 'text.secondary',
-              maxWidth: 520,
+              maxWidth: 540,
               mx: 'auto',
-              mb: { xs: 4, md: 5 },
-              lineHeight: 1.6,
+              mb: { xs: 5, md: 6 },
+              lineHeight: 1.7,
             }}
           >
             Safe venues, vibrant events, and communities that get you —
@@ -191,9 +202,9 @@ const Index = React.memo(() => {
         sx={{
           bgcolor: 'text.primary',
           color: 'background.default',
-          py: { xs: 4, md: 5 },
-          borderTop: 2,
-          borderColor: theme.palette.brand?.main || '#DB2777',
+          py: { xs: 5, md: 7 },
+          borderTop: 3,
+          borderImage: `linear-gradient(90deg, ${categoryColor('venues')}, ${categoryColor('events')}, ${categoryColor('marketplace')}, ${categoryColor('places')}, ${categoryColor('hotels')}, ${categoryColor('community')}) 1`,
         }}
       >
         <Container maxWidth="lg">
@@ -215,10 +226,10 @@ const Index = React.memo(() => {
                   sx={{
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontWeight: 800,
-                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                    fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' },
                     letterSpacing: '-0.03em',
                     lineHeight: 1.1,
-                    color: 'inherit',
+                    color: categoryColor(stat.cat),
                   }}
                 >
                   {loading ? '\u2014' : <AnimatedCounter value={stat.value} suffix="+" />}
@@ -244,15 +255,15 @@ const Index = React.memo(() => {
       </Box>
 
       {/* ── Features Grid ────────────────────────────────────────────── */}
-      <Box component="section" className="content-enter" sx={{ py: { xs: 6, md: 10 } }}>
+      <Box component="section" className="content-enter" sx={{ py: { xs: 8, md: 14 } }}>
         <Container maxWidth="lg">
           <Typography
-            variant="h4"
+            variant="h3"
             className="reveal-up"
             sx={{
-              fontWeight: 700,
+              fontWeight: 800,
               mb: { xs: 1, md: 1.5 },
-              fontSize: { xs: '1.5rem', md: '1.875rem' },
+              fontSize: { xs: '1.75rem', md: '2.25rem' },
             }}
           >
             Explore
@@ -260,9 +271,9 @@ const Index = React.memo(() => {
           <Typography
             color="text.secondary"
             className="reveal-up reveal-delay-1"
-            sx={{ mb: { xs: 3, md: 4 }, fontSize: { xs: '0.9375rem', md: '1.0625rem' } }}
+            sx={{ mb: { xs: 4, md: 5 }, fontSize: { xs: '0.9375rem', md: '1.0625rem' } }}
           >
-            All the good stuff, one tap away.
+            Everything you need, one tap away.
           </Typography>
 
           <StaggerGrid
@@ -272,14 +283,14 @@ const Index = React.memo(() => {
                 xs: '1fr',
                 sm: 'repeat(2, 1fr)',
                 md: 'repeat(3, 1fr)',
+                lg: 'repeat(4, 1fr)',
               },
               gap: 2.5,
             }}
           >
-            {features.map((feature, index) => {
+            {features.map((feature) => {
               const Icon = feature.icon;
-              const { hue, sat } = FEATURE_HUES[index];
-              const colors = featureColor(hue, sat, isDark);
+              const catCssVar = `--cat-${feature.category}`;
               return (
                 <Link
                   to={feature.link}
@@ -287,56 +298,85 @@ const Index = React.memo(() => {
                   style={{ textDecoration: 'none', display: 'block' }}
                 >
                   <Card
-                    className="feature-card-lift"
-                    style={{ height: '100%', cursor: 'pointer' }}
+                    className="card-category-hover"
+                    style={{
+                      height: '100%',
+                      cursor: 'pointer',
+                      ['--_cat' as string]: `var(${catCssVar})`,
+                    }}
                   >
                     <CardContent
                       style={{
-                        padding: isMobile ? 20 : 24,
+                        padding: isMobile ? 20 : 28,
                         height: '100%',
                         display: 'flex',
-                        alignItems: 'flex-start',
+                        flexDirection: 'column',
                         gap: 16,
                       }}
                     >
                       <Box
                         sx={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 3,
-                          bgcolor: colors.bg,
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
+                          justifyContent: 'space-between',
                         }}
                       >
-                        <Icon
+                        <Box
+                          className="cat-hover-icon-box"
+                          sx={{
+                            width: 52,
+                            height: 52,
+                            borderRadius: 3,
+                            bgcolor: categoryBg(feature.category, isDark),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+                          }}
+                        >
+                          <Icon
+                            className="cat-hover-icon"
+                            style={{
+                              width: 24,
+                              height: 24,
+                              color: categoryColor(feature.category),
+                              transition: 'color 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+                            }}
+                            aria-hidden="true"
+                          />
+                        </Box>
+                        <ArrowRight
+                          className="cat-hover-arrow"
                           style={{
-                            width: 22,
-                            height: 22,
-                            color: colors.accent,
+                            width: 18,
+                            height: 18,
+                            color: 'currentColor',
                           }}
                           aria-hidden="true"
                         />
                       </Box>
                       <Box sx={{ minWidth: 0 }}>
                         <Typography
+                          className="cat-hover-title"
                           variant="subtitle1"
                           sx={{
                             fontWeight: 700,
                             fontFamily: "'Plus Jakarta Sans', sans-serif",
                             mb: 0.5,
-                            fontSize: { xs: '0.9375rem', md: '1rem' },
+                            fontSize: { xs: '1rem', md: '1.0625rem' },
+                            transition: 'color 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
                           }}
                         >
                           {feature.title}
                         </Typography>
                         <Typography
+                          className="cat-hover-desc"
                           variant="body2"
                           sx={{
                             color: 'text.secondary',
                             lineHeight: 1.5,
+                            transition: 'color 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
                           }}
                         >
                           {feature.description}
@@ -357,7 +397,7 @@ const Index = React.memo(() => {
         component="section"
         sx={{
           bgcolor: isDark ? 'background.paper' : '#f8f8f8',
-          py: { xs: 6, md: 10 },
+          py: { xs: 8, md: 14 },
         }}
       >
         <Container maxWidth="lg">
@@ -366,16 +406,16 @@ const Index = React.memo(() => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              mb: { xs: 2, md: 3 },
+              mb: { xs: 3, md: 4 },
             }}
           >
             <Box>
               <Typography
-                variant="h4"
+                variant="h3"
                 sx={{
-                  fontWeight: 700,
+                  fontWeight: 800,
                   mb: 0.5,
-                  fontSize: { xs: '1.5rem', md: '1.875rem' },
+                  fontSize: { xs: '1.75rem', md: '2.25rem' },
                 }}
               >
                 Explore Near You

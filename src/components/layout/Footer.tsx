@@ -5,6 +5,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import { categoryColor } from '@/lib/categoryColors';
 
 const linkGroups = [
   {
@@ -46,8 +47,8 @@ export function Footer() {
       component="footer"
       sx={{
         bgcolor: 'background.default',
-        borderTop: 1,
-        borderColor: 'divider',
+        borderTop: 3,
+        borderImage: `linear-gradient(90deg, ${categoryColor('venues')}, ${categoryColor('events')}, ${categoryColor('marketplace')}, ${categoryColor('places')}, ${categoryColor('hotels')}, ${categoryColor('community')}) 1`,
         mt: 'auto',
       }}
     >

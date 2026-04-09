@@ -67,6 +67,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/material/styles';
+import { categoryColor, resolveCategoryKey } from '@/lib/categoryColors';
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -74,29 +75,29 @@ const navigationSections = [
   {
     title: 'Discover',
     items: [
-      { to: '/venues', icon: MapPin, label: 'Venues' },
-      { to: '/events', icon: Calendar, label: 'Events' },
-      { to: '/places', icon: Globe, label: 'Places' },
-      { to: '/map', icon: Map, label: 'Map' },
+      { to: '/venues', icon: MapPin, label: 'Venues', cat: 'venues' },
+      { to: '/events', icon: Calendar, label: 'Events', cat: 'events' },
+      { to: '/places', icon: Globe, label: 'Places', cat: 'places' },
+      { to: '/map', icon: Map, label: 'Map', cat: 'places' },
     ],
   },
   {
     title: 'Connect',
     items: [
-      { to: '/feed', icon: Rss, label: 'Feed' },
-      { to: '/groups', icon: UsersRound, label: 'Groups' },
-      { to: '/users', icon: UserCheck, label: 'Members' },
+      { to: '/feed', icon: Rss, label: 'Feed', cat: 'community' },
+      { to: '/groups', icon: UsersRound, label: 'Groups', cat: 'community' },
+      { to: '/users', icon: UserCheck, label: 'Members', cat: 'community' },
     ],
   },
   {
     title: 'More',
     items: [
-      { to: '/marketplace', icon: Store, label: 'Marketplace' },
-      { to: '/resources', icon: Tags, label: 'Resources' },
-      { to: '/news', icon: Newspaper, label: 'News' },
-      { to: '/travel', icon: Plane, label: 'Travel' },
-      { to: '/personalities', icon: Users, label: 'Personalities' },
-      { to: '/hotels', icon: Building, label: 'Hotels' },
+      { to: '/marketplace', icon: Store, label: 'Marketplace', cat: 'marketplace' },
+      { to: '/resources', icon: Tags, label: 'Resources', cat: 'news' },
+      { to: '/news', icon: Newspaper, label: 'News', cat: 'news' },
+      { to: '/travel', icon: Plane, label: 'Travel', cat: 'travel' },
+      { to: '/personalities', icon: Users, label: 'Personalities', cat: 'community' },
+      { to: '/hotels', icon: Building, label: 'Hotels', cat: 'hotels' },
     ],
   },
 ];
@@ -382,6 +383,7 @@ export function Header() {
             </Typography>
             {section.items.map((item, itemIdx) => {
               const active = isActiveRoute(item.to);
+              const catKey = resolveCategoryKey(item.cat);
               return (
                 <ListItemButton
                   key={item.to}
@@ -395,12 +397,12 @@ export function Header() {
                     ...(active && {
                       bgcolor: 'action.selected',
                       borderRight: 3,
-                      borderColor: 'primary.main',
+                      borderColor: categoryColor(catKey),
                     }),
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: 36 }}>
-                    <item.icon style={{ width: 18, height: 18 }} />
+                    <item.icon style={{ width: 18, height: 18, color: active ? categoryColor(catKey) : undefined }} />
                   </ListItemIcon>
                   <ListItemText
                     primary={item.label}
@@ -804,10 +806,13 @@ export function Header() {
                           p: 1,
                         }}
                       >
-                        {section.items.map((item) => (
+                        {section.items.map((item) => {
+                          const catKey = resolveCategoryKey(item.cat);
+                          const active = isActiveRoute(item.to);
+                          return (
                           <Button
                             key={item.to}
-                            variant={isActiveRoute(item.to) ? 'default' : 'ghost'}
+                            variant={active ? 'default' : 'ghost'}
                             size="sm"
                             style={{
                               display: 'flex',
@@ -816,21 +821,22 @@ export function Header() {
                               padding: 12,
                               height: 'auto',
                               gap: 4,
-                              ...(isActiveRoute(item.to)
+                              borderLeft: `3px solid ${active ? categoryColor(catKey) : 'transparent'}`,
+                              ...(active
                                 ? {
                                     backgroundColor:
                                       'var(--mui-palette-action-hover, rgba(124,58,237,0.08))',
-                                    color: theme.palette.brand.main,
-                                    border: '1px solid var(--mui-palette-divider, #e0d6ff)',
+                                    color: categoryColor(catKey),
                                   }
                                 : {}),
                             }}
                             onClick={() => handleMenuItemClick(item.to)}
                           >
-                            <item.icon style={{ width: 16, height: 16 }} />
+                            <item.icon style={{ width: 16, height: 16, color: active ? categoryColor(catKey) : undefined }} />
                             <Typography variant="caption">{item.label}</Typography>
                           </Button>
-                        ))}
+                          );
+                        })}
                       </Box>
                     </Box>
                   ))}

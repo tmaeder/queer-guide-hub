@@ -154,6 +154,16 @@
   --sidebar-ring: 0 0% 13%;
 
   --transition-smooth: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ── Category colors (LABASAD-inspired discipline color system) ── */
+  --cat-venues:      350 80% 52%;
+  --cat-events:       25 90% 52%;
+  --cat-marketplace: 142 65% 42%;
+  --cat-places:      211 80% 50%;
+  --cat-hotels:      262 70% 55%;
+  --cat-travel:      190 80% 45%;
+  --cat-news:         45 95% 50%;
+  --cat-community:   330 80% 55%;
 }
 
 .dark {
@@ -205,6 +215,16 @@
   --sidebar-accent-foreground: 0 0% 95%;
   --sidebar-border: 240 4% 16%;
   --sidebar-ring: 0 0% 100%;
+
+  /* ── Category colors (dark mode — boosted lightness) ── */
+  --cat-venues:      350 85% 68%;
+  --cat-events:       25 92% 65%;
+  --cat-marketplace: 142 70% 58%;
+  --cat-places:      211 85% 65%;
+  --cat-hotels:      262 75% 70%;
+  --cat-travel:      190 85% 60%;
+  --cat-news:         45 95% 65%;
+  --cat-community:   330 85% 68%;
 }
 
 /* ── Base resets ───────────────────────────────────────────────────── */
@@ -223,6 +243,7 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-feature-settings: 'rlig' 1, 'calt' 1;
+  animation: fade-in 0.5s ease-out;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -409,6 +430,35 @@ h1, h2, h3, h4, h5, h6 {
 }
 .feature-card-lift:active {
   transform: translateY(-1px) scale(0.99);
+}
+
+/* ── Category card hover inversion (LABASAD-style) ────────────────── */
+.card-category-hover {
+  --_cat: var(--cat-venues);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card-category-hover:hover {
+  background-color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--foreground)) !important;
+}
+.card-category-hover:hover .cat-hover-title,
+.card-category-hover:hover .cat-hover-desc {
+  color: hsl(var(--_cat)) !important;
+}
+.card-category-hover:hover .cat-hover-icon-box {
+  background-color: hsl(var(--_cat) / 0.15) !important;
+}
+.card-category-hover:hover .cat-hover-icon {
+  color: hsl(var(--_cat)) !important;
+}
+.card-category-hover:hover .cat-hover-arrow {
+  color: hsl(var(--_cat)) !important;
+  opacity: 1 !important;
+  transform: translateX(4px);
+}
+.card-category-hover .cat-hover-arrow {
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ── Scroll Reveal System ─────────────────────────────────────────── */

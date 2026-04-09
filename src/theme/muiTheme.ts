@@ -47,16 +47,16 @@ const baseThemeOptions: ThemeOptions = {
   },
   typography: {
     fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-    h1: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, letterSpacing: '-0.03em' },
-    h2: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, letterSpacing: '-0.025em' },
-    h3: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.02em' },
-    h4: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.015em' },
+    h1: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.05 },
+    h2: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1 },
+    h3: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.15 },
+    h4: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 },
     h5: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.015em' },
     h6: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.01em' },
     subtitle1: { fontWeight: 500 },
     subtitle2: { fontWeight: 500 },
-    body1: { lineHeight: 1.65 },
-    body2: { lineHeight: 1.6 },
+    body1: { lineHeight: 1.7 },
+    body2: { lineHeight: 1.65 },
     button: { textTransform: 'none', fontWeight: 600 },
   },
   components: {
@@ -71,9 +71,11 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           borderRadius: 12,
-          transition: transition.fast,
+          transition: `all ${duration.fast}s ${ease.smooth}`,
+          fontWeight: 600,
           '&:hover': {
             transform: 'translateY(-1px)',
+            filter: 'brightness(1.1)',
           },
           '&:active': {
             transform: 'scale(0.97)',
