@@ -53,11 +53,19 @@ export function ThemeProvider({
   // Resolve "system" to actual light/dark
   const resolvedMode = theme === "system" ? systemMode : theme;
 
-  // Keep HTML class in sync for CSS custom properties (coexistence with Tailwind during migration)
+  // Keep HTML class and theme-color meta tag in sync
   React.useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(resolvedMode);
+
+    // Update theme-color meta tags for browser chrome
+    const themeColor = resolvedMode === "dark" ? "#0a0a0a" : "#ffffff";
+    document
+      .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+      .forEach((meta) => {
+        meta.content = themeColor;
+      });
   }, [resolvedMode]);
 
   const muiTheme = React.useMemo(() => createAppTheme(resolvedMode), [resolvedMode]);

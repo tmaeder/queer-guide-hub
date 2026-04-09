@@ -1,147 +1,193 @@
-// Service Worker optimized for Cloudflare Pages
-const CACHE_NAME = 'queer-guide-v4';
-const STATIC_CACHE = 'static-v3';
-const DYNAMIC_CACHE = 'dynamic-v3';
+// Service Worker for Queer Guide — optimized for Cloudflare Pages
+const STATIC_CACHE = 'static-v4';
+const DYNAMIC_CACHE = 'dynamic-v4';
+const DYNAMIC_CACHE_LIMIT = 50;
 
-// Only cache the HTML shell and manifest - JS/CSS have hashed filenames
-// and are cached via Cache-Control: immutable headers
-const STATIC_ASSETS = [
+// Precached during install — HTML shell, offline fallback, manifest
+const PRECACHE_ASSETS = [
   '/',
   '/index.html',
+  '/offline.html',
   '/manifest.json'
 ];
 
-// Assets to cache on first request
 const CACHE_STRATEGIES = {
-  // Static assets - cache first
   static: /\.(js|css|woff2?|png|jpg|jpeg|webp|avif|svg|ico)$/,
-  // Images - cache first with network fallback
-  images: /\.(png|jpg|jpeg|webp|avif|gif|svg)$/,
-  // HTML - network first
-  html: /\.html$|\/$/
+  images: /\.(png|jpg|jpeg|webp|avif|gif|svg)$/
 };
+
+// Enable navigation preload if supported
+async function enableNavigationPreload() {
+  if (self.registration.navigationPreload) {
+    await self.registration.navigationPreload.enable();
+  }
+}
+
+// Trim dynamic cache to size limit (LRU: delete oldest entries first)
+async function trimCache(cacheName, maxItems) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxItems) {
+    await Promise.all(
+      keys.slice(0, keys.length - maxItems).map(key => cache.delete(key))
+    );
+  }
+}
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then(cache => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
+      .then(cache => cache.addAll(PRECACHE_ASSETS))
+    // Do NOT call skipWaiting() — let the app control activation via message
   );
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys()
-      .then(cacheNames => {
-        return Promise.all(
+    Promise.all([
+      // Clean old caches
+      caches.keys().then(cacheNames =>
+        Promise.all(
           cacheNames
-            .filter(cacheName =>
-              cacheName !== STATIC_CACHE &&
-              cacheName !== DYNAMIC_CACHE
-            )
-            .map(cacheName => caches.delete(cacheName))
-        );
-      })
-      .then(() => self.clients.claim())
+            .filter(name => name !== STATIC_CACHE && name !== DYNAMIC_CACHE)
+            .map(name => caches.delete(name))
+        )
+      ),
+      // Enable navigation preload
+      enableNavigationPreload(),
+      // Take control of all clients
+      self.clients.claim()
+    ])
   );
+});
+
+// Allow the app to trigger activation of a waiting SW
+self.addEventListener('message', event => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
   if (request.method !== 'GET') return;
 
-  // Skip external domains - don't cache Supabase API responses (auth data!)
-  // Fonts are now self-hosted, so all font requests are same-origin
-  if (url.origin !== location.origin) {
+  // Skip external domains — don't cache Supabase API responses (auth data)
+  if (url.origin !== location.origin) return;
+
+  // Navigation requests (HTML pages) — Network First with offline fallback
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        try {
+          // Use navigation preload response if available
+          const preloadResponse = event.preloadResponse && await event.preloadResponse;
+          if (preloadResponse) return preloadResponse;
+
+          const networkResponse = await fetch(request);
+          if (networkResponse.status === 200) {
+            const cache = await caches.open(DYNAMIC_CACHE);
+            cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
+        } catch {
+          // Network failed — try cache, then offline fallback
+          const cached = await caches.match(request);
+          if (cached) return cached;
+          const offlinePage = await caches.match('/offline.html');
+          return offlinePage || new Response('Offline', { status: 503 });
+        }
+      })()
+    );
     return;
   }
 
-  // Static assets - Cache First strategy
+  // Static assets (JS, CSS, fonts, images) — Cache First
   if (CACHE_STRATEGIES.static.test(url.pathname)) {
     event.respondWith(
-      caches.match(request)
-        .then(cachedResponse => {
-          if (cachedResponse) {
-            return cachedResponse;
+      (async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+
+        try {
+          const networkResponse = await fetch(request);
+          if (networkResponse.status === 200) {
+            const cache = await caches.open(STATIC_CACHE);
+            cache.put(request, networkResponse.clone());
           }
-          return fetch(request)
-            .then(response => {
-              if (response.status === 200) {
-                const responseClone = response.clone();
-                caches.open(STATIC_CACHE)
-                  .then(cache => cache.put(request, responseClone));
-              }
-              return response;
-            });
-        })
-        .catch(() => {
-          // Return offline fallback for images
+          return networkResponse;
+        } catch {
+          // Offline fallback for images
           if (request.destination === 'image') {
             return new Response(
-              '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f3f4f6"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#6b7280">Image unavailable</text></svg>',
+              '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#1a1a2e"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#6b7280" font-family="system-ui" font-size="14">Offline</text></svg>',
               { headers: { 'Content-Type': 'image/svg+xml' } }
             );
           }
-        })
+          return new Response('', { status: 503 });
+        }
+      })()
     );
     return;
   }
 
-  // HTML pages - Network First with cache fallback
-  if (CACHE_STRATEGIES.html.test(url.pathname) || url.pathname === '/') {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE)
-              .then(cache => cache.put(request, responseClone));
-          }
-          return response;
-        })
-        .catch(() => {
-          return caches.match(request)
-            .then(cachedResponse => {
-              return cachedResponse || caches.match('/index.html');
-            });
-        })
-    );
-    return;
-  }
-
-  // Default: try network first, fallback to cache
+  // All other same-origin requests — Network First with cache fallback
   event.respondWith(
-    fetch(request)
-      .catch(() => caches.match(request))
+    (async () => {
+      try {
+        const networkResponse = await fetch(request);
+        if (networkResponse.status === 200) {
+          const cache = await caches.open(DYNAMIC_CACHE);
+          cache.put(request, networkResponse.clone());
+          trimCache(DYNAMIC_CACHE, DYNAMIC_CACHE_LIMIT);
+        }
+        return networkResponse;
+      } catch {
+        const cached = await caches.match(request);
+        return cached || new Response('', { status: 503 });
+      }
+    })()
   );
-});
-
-// Handle background sync for Cloudflare compatibility
-self.addEventListener('sync', event => {
-  if (event.tag === 'background-sync') {
-    event.waitUntil(Promise.resolve());
-  }
 });
 
 // Handle push notifications
 self.addEventListener('push', event => {
   if (!event.data) return;
 
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { body: event.data.text() };
+  }
+
   const options = {
-    body: event.data.text(),
-    icon: '/icons/icon-512.png',
-    badge: '/icons/icon-512.png',
+    body: payload.body || '',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-96.png',
     vibrate: [100, 50, 100],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    }
+    data: payload.data || {},
+    actions: payload.actions || []
   };
 
   event.waitUntil(
-    self.registration.showNotification('Queer Guide', options)
+    self.registration.showNotification(payload.title || 'Queer Guide', options)
+  );
+});
+
+// Handle notification clicks
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clients => {
+        const existing = clients.find(c => c.url.includes(targetUrl));
+        if (existing) return existing.focus();
+        return self.clients.openWindow(targetUrl);
+      })
   );
 });

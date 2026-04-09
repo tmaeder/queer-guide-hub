@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Offline — Queer Guide</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #e5e5e5;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 18px;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: #f5f5f5;
+    }
+    p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #a3a3a3;
+      max-width: 28rem;
+      margin-bottom: 2rem;
+    }
+    button {
+      appearance: none;
+      border: none;
+      background: #DB2777;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      padding: 0.75rem 2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover, button:focus-visible {
+      background: #be185d;
+    }
+    button:focus-visible {
+      outline: 2px solid #DB2777;
+      outline-offset: 2px;
+    }
+    .hint {
+      margin-top: 2rem;
+      font-size: 0.8125rem;
+      color: #737373;
+    }
+  </style>
+</head>
+<body>
+  <img src="/icons/icon-192.png" alt="Queer Guide" class="icon" width="80" height="80">
+  <h1>You're offline</h1>
+  <p>It looks like you've lost your internet connection. Check your Wi-Fi or mobile data and try again.</p>
+  <button onclick="window.location.reload()" type="button">Try again</button>
+  <p class="hint">Some previously visited pages may still be available.</p>
+</body>
+</html>

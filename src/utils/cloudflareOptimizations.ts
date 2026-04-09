@@ -84,28 +84,5 @@ export const initCloudflareOptimizations = () => {
     }
   });
 
-  // Register service worker (single registration point)
-  if ('serviceWorker' in navigator && import.meta.env.PROD) {
-    window.addEventListener('load', async () => {
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js', {
-          scope: '/',
-          updateViaCache: 'imports'
-        });
-
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('New content available. Refresh to update.');
-              }
-            });
-          }
-        });
-      } catch (error) {
-        console.debug('[SW] Registration failed:', error);
-      }
-    });
-  }
+  // Service worker registration is handled by PWAProvider
 };
