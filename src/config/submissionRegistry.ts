@@ -4,7 +4,7 @@
  * Fields reference names from contentTypeRegistry — looked up at render time.
  */
 
-import { Building, Calendar, ShoppingBag, Tag, Users, Hotel } from 'lucide-react';
+import { Building, Calendar, ShoppingBag, Tag, Users, Hotel, MessageSquarePlus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -172,6 +172,27 @@ const tagSubmission: SubmissionTypeConfig = {
   ],
 };
 
+// ── Feedback (1 step — lightweight form) ────────────────────────
+
+const feedbackSubmission: SubmissionTypeConfig = {
+  id: 'feedback',
+  contentType: 'feedback',
+  targetTable: 'community_submissions',
+  label: 'Feedback',
+  description: 'Report a bug, suggest a feature, or share an idea.',
+  icon: MessageSquarePlus,
+  color: '#DB2777',
+  titleField: 'title',
+  defaults: {},
+  steps: [
+    {
+      id: 'feedback',
+      label: 'Share Feedback',
+      fields: ['title', 'description', 'category', 'contact_email'],
+    },
+  ],
+};
+
 // ── Registry ─────────────────────────────────────────────────────
 
 export const submissionRegistry: Record<string, SubmissionTypeConfig> = {
@@ -181,6 +202,7 @@ export const submissionRegistry: Record<string, SubmissionTypeConfig> = {
   personality: personalitySubmission,
   hotel: hotelSubmission,
   tag: tagSubmission,
+  feedback: feedbackSubmission,
 };
 
 /** Ordered array for hub page display */
@@ -191,6 +213,7 @@ export const submissionTypes: SubmissionTypeConfig[] = [
   personalitySubmission,
   hotelSubmission,
   tagSubmission,
+  feedbackSubmission,
 ];
 
 /** Get a submission config by ID */

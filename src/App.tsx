@@ -10,6 +10,7 @@ import { AccessibilityProvider } from '@/hooks/useAccessibility';
 import { CookieConsentProvider } from '@/hooks/useCookieConsent';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { CookieConsentBanner } from '@/components/privacy/CookieConsentBanner';
+import { FeedbackButton } from '@/components/feedback/FeedbackButton';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
@@ -176,6 +177,7 @@ const Donate = lazyRetry(() => import('./pages/Donate'));
 const Sitemap = lazyRetry(() => import('./pages/Sitemap'));
 const SubmitHub = lazyRetry(() => import('./pages/SubmitHub'));
 const SubmitForm = lazyRetry(() => import('./pages/SubmitForm'));
+const FeedbackBoard = lazyRetry(() => import('./pages/FeedbackBoard'));
 const CMSPage = lazyRetry(() => import('./pages/Page'));
 
 const queryClient = createOptimizedQueryClient();
@@ -523,6 +525,7 @@ const AppRoutes = () => {
               <Route path="/profile/settings" element={<ProfileSettings />} />
               <Route path="/user/:userId" element={<UserProfile />} />
               <Route path="/sitemap" element={<Sitemap />} />
+              <Route path="/feedback" element={<FeedbackBoard />} />
               <Route path="/submit" element={<SubmitHub />} />
               <Route path="/submit/:contentType" element={<SubmitForm />} />
               <Route path="/p/:slug" element={<CMSPage />} />
@@ -537,6 +540,7 @@ const AppRoutes = () => {
         <Footer />
       </Box>
       <CookieConsentBanner />
+      <FeedbackButton />
     </Box>
   );
 };

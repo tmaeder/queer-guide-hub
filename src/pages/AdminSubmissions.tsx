@@ -28,6 +28,7 @@ interface SubmissionRow {
   id: string;
   content_type: string;
   status: string;
+  feedback_status: string;
   data: Record<string, unknown>;
   submitted_by: string;
   submitted_at: string;
@@ -37,6 +38,14 @@ interface SubmissionRow {
   promoted_to_id: string | null;
   promoted_to_table: string | null;
 }
+
+const feedbackStatusOptions = [
+  { value: 'new', label: 'New', color: '#f59e0b' },
+  { value: 'under_review', label: 'Under Review', color: '#3b82f6' },
+  { value: 'planned', label: 'Planned', color: '#8b5cf6' },
+  { value: 'in_progress', label: 'In Progress', color: '#f97316' },
+  { value: 'done', label: 'Done', color: '#22c55e' },
+];
 
 const statusConfig: Record<
   string,
@@ -238,6 +247,22 @@ function SubmissionsCore() {
         },
         meta: { serverSortable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
       }),
+      columnHelper.accessor('feedback_status', {
+        header: 'Board Status',
+        cell: (info) => {
+          const row = info.row.original;
+          if (row.content_type !== 'feedback') return '-';
+          const opt = feedbackStatusOptions.find((o) => o.value === info.getValue());
+          return opt ? (
+            <Badge variant="secondary" style={{ backgroundColor: opt.color, color: '#fff' }}>
+              {opt.label}
+            </Badge>
+          ) : (
+            info.getValue() || '-'
+          );
+        },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('submitted_at', {
         header: 'Submitted',
         cell: (info) => formatDate(info.getValue()),
@@ -263,7 +288,7 @@ function SubmissionsCore() {
     () => ({
       tableName: 'community_submissions',
       select:
-        'id,content_type,status,data,submitted_by,submitted_at,reviewed_by,reviewed_at,reviewer_notes,promoted_to_id,promoted_to_table',
+        'id,content_type,status,feedback_status,data,submitted_by,submitted_at,reviewed_by,reviewed_at,reviewer_notes,promoted_to_id,promoted_to_table',
       columns,
       defaultSort: { column: 'submitted_at', direction: 'desc' as const },
       defaultPageSize: 25,
@@ -401,6 +426,42 @@ function SubmissionsCore() {
                   });
                 })()}
               </Box>
+
+              {/* Feedback board status selector */}
+              {selectedSubmission.content_type === 'feedback' && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                    Board Status
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                    {feedbackStatusOptions.map((opt) => (
+                      <Badge
+                        key={opt.value}
+                        variant={selectedSubmission.feedback_status === opt.value ? 'default' : 'outline'}
+                        style={{
+                          cursor: 'pointer',
+                          ...(selectedSubmission.feedback_status === opt.value
+                            ? { backgroundColor: opt.color, color: '#fff' }
+                            : {}),
+                        }}
+                        onClick={async () => {
+                          const { error } = await supabase
+                            .from('community_submissions' as any)
+                            .update({ feedback_status: opt.value })
+                            .eq('id', selectedSubmission.id);
+                          if (!error) {
+                            setSelectedSubmission({ ...selectedSubmission, feedback_status: opt.value });
+                            doRefresh();
+                            toast({ title: `Status updated to "${opt.label}"` });
+                          }
+                        }}
+                      >
+                        {opt.label}
+                      </Badge>
+                    ))}
+                  </Box>
+                </Box>
+              )}
 
               <Box sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
