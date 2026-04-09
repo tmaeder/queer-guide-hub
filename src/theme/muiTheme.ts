@@ -82,7 +82,8 @@ const baseThemeOptions: ThemeOptions = {
         },
         sizeSmall: {
           height: 36,
-          padding: '0 12px',
+          padding: '4px 12px',
+          minHeight: 44,
         },
         sizeMedium: {
           height: 40,
@@ -184,6 +185,8 @@ const baseThemeOptions: ThemeOptions = {
     MuiIconButton: {
       styleOverrides: {
         root: {
+          minWidth: 44,
+          minHeight: 44,
           transition: transition.fast,
           '&:hover': {
             transform: 'scale(1.08)',

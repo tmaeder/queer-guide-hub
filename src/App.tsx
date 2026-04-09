@@ -212,6 +212,7 @@ const AppRoutes = () => {
   const mainRef = React.useRef<HTMLElement>(null);
   const isFirstRender = React.useRef(true);
   const pageRef = React.useRef<HTMLDivElement>(null);
+  const [routeAnnouncement, setRouteAnnouncement] = React.useState('');
 
   React.useEffect(() => {
     if (isFirstRender.current) {
@@ -220,6 +221,9 @@ const AppRoutes = () => {
     }
     requestAnimationFrame(() => {
       mainRef.current?.focus({ preventScroll: false });
+      // Announce route change to screen readers
+      const title = document.title || location.pathname.replace(/\//g, ' ').trim() || 'Home';
+      setRouteAnnouncement(`Navigated to ${title}`);
     });
 
     // Page entrance animation
@@ -278,6 +282,24 @@ const AppRoutes = () => {
         }}
       >
         Skip to main content
+      </Box>
+
+      {/* Screen reader route change announcements (a11y: WCAG 4.1.3) */}
+      <Box
+        aria-live="polite"
+        aria-atomic="true"
+        role="status"
+        sx={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          overflow: 'hidden',
+          clip: 'rect(0 0 0 0)',
+          clipPath: 'inset(50%)',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {routeAnnouncement}
       </Box>
 
       {/* Rainbow aurora background — fixed behind all content.

@@ -198,6 +198,14 @@ export default function CityDetail() {
       {/* Hero Image */}
       <DetailHero imageUrl={imageUrl} alt={city.name} height={{ xs: 192, md: 240 }} />
 
+      {/* Safety Alert — above fold, before title */}
+      <SafetyAlertBanner
+        criminalization={
+          city.countries?.lgbti_criminalization as Record<string, any> | null | undefined
+        }
+        countryName={city.countries?.name || ''}
+      />
+
       {/* Title Row */}
       <Box
         sx={{
@@ -335,14 +343,6 @@ export default function CityDetail() {
           />
         )}
       </Box>
-
-      {/* Safety Alert Banner */}
-      <SafetyAlertBanner
-        criminalization={
-          city.countries?.lgbti_criminalization as Record<string, any> | null | undefined
-        }
-        countryName={city.countries?.name || ''}
-      />
 
       {/* Main Content — Tabs */}
       <DetailTabs
