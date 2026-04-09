@@ -25,6 +25,7 @@ const DIACRITICS_MAP: Record<string, string> = {
 /** Normalize text for comparison: lowercase, strip diacritics, collapse whitespace. */
 export function normalizeText(text: string): string {
   let result = text.toLowerCase().trim();
+  // eslint-disable-next-line no-control-regex
   result = result.replace(/[^\x00-\x7F]/g, (ch) => DIACRITICS_MAP[ch] ?? ch);
   result = result.replace(/[''"""`.,;:!?()[\]{}<>@#$%^&*+=~/\\|]/g, '');
   result = result.replace(/[\s-]+/g, ' ').trim();

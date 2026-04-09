@@ -33,6 +33,7 @@ import { processAutoTagger } from './modules/auto-tagger.ts'
 import { processAiEnhancer } from './modules/ai-enhancer.ts'
 import { processEventValidator } from './modules/event-validator.ts'
 import { processContentClassifier } from './modules/content-classifier.ts'
+import { processLogoEnricher } from './modules/logo-enricher.ts'
 
 type ModuleProcessor = (
   supabase: SupabaseClient,
@@ -64,6 +65,7 @@ const PROCESSORS: Record<string, ModuleProcessor> = {
   'ai-enhancer': processAiEnhancer,
   'event-validator': processEventValidator,
   'content-classifier': processContentClassifier,
+  'logo-enricher': processLogoEnricher,
 }
 
 const ALL_MODULES = Object.keys(PROCESSORS)

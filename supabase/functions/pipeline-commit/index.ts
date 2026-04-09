@@ -1,5 +1,6 @@
 import { getServiceClient, getCorsHeaders, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { logoUrlFromWebsite } from '../_shared/logo-enrichment.ts'
 
 // ============================================================
 // Pipeline Commit Node
@@ -143,6 +144,14 @@ function buildRecord(
       record.email = (normalized.contacts as Record<string, unknown>)?.email
       if (meta.foursquare_id) record.foursquare_id = meta.foursquare_id
       if (meta.google_place_id) record.google_place_id = meta.google_place_id
+      // Logo enrichment via logo.dev
+      if (record.website) {
+        const logo = logoUrlFromWebsite(record.website as string)
+        if (logo) {
+          record.logo_url = logo
+          record.logo_fetched_at = new Date().toISOString()
+        }
+      }
       break
 
     case 'events':
@@ -152,6 +161,17 @@ function buildRecord(
       record.end_date = (normalized.dates as Record<string, unknown>)?.end
       if (loc.city) record.location = loc.city
       if (meta.url) record.url = meta.url
+      // Logo enrichment via logo.dev
+      {
+        const eventWebsite = meta.website || meta.url || ((normalized.urls as string[]) || [])[0]
+        if (eventWebsite) {
+          const logo = logoUrlFromWebsite(eventWebsite as string)
+          if (logo) {
+            record.logo_url = logo
+            record.logo_fetched_at = new Date().toISOString()
+          }
+        }
+      }
       break
 
     case 'personalities':

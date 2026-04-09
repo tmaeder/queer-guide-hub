@@ -22,6 +22,7 @@ const DIACRITICS_MAP: Record<string, string> = {
 export function normalizeText(text: string): string {
   let result = text.toLowerCase().trim()
   // Replace known diacritics
+  // eslint-disable-next-line no-control-regex
   result = result.replace(/[^\x00-\x7F]/g, ch => DIACRITICS_MAP[ch] ?? ch)
   // Remove punctuation except hyphens
   result = result.replace(/[''"""`.,;:!?()[\]{}<>@#$%^&*+=~/\\|]/g, '')

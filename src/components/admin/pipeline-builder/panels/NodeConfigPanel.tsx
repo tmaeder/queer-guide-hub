@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,14 @@ interface SchemaProperty {
 }
 
 export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: NodeConfigPanelProps) {
+  const updateConfig = useCallback((key: string, value: unknown) => {
+    if (!node) return;
+    const nd = node.data as Record<string, unknown>;
+    const cfg = (nd.config || {}) as Record<string, unknown>;
+    const newConfig = { ...cfg, [key]: value };
+    onUpdate(node.id, { ...nd, config: newConfig });
+  }, [node, onUpdate]);
+
   if (!node) return null;
 
   const nodeData = node.data as Record<string, unknown>;
@@ -45,11 +53,6 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
   const schema = nodeType?.config_schema as { type?: string; properties?: Record<string, SchemaProperty>; required?: string[] } | undefined;
   const properties = schema?.properties || {};
   const requiredFields = schema?.required || [];
-
-  const updateConfig = useCallback((key: string, value: unknown) => {
-    const newConfig = { ...config, [key]: value };
-    onUpdate(node.id, { ...nodeData, config: newConfig });
-  }, [node.id, nodeData, config, onUpdate]);
 
   return (
     <Card className="w-80 border-l rounded-none h-full">

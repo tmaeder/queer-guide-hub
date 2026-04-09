@@ -290,7 +290,8 @@ Deno.serve(async (req) => {
     if (authResult instanceof Response) return authResult;
 
     const requestData: WikipediaRequest = await req.json().catch(() => ({}));
-    let { query, type, entityId, batchMode, language = 'en' } = requestData;
+    const { query, type, entityId, batchMode } = requestData;
+    let { language = 'en' } = requestData;
 
     if (!VALID_LANGS.has(language)) language = 'en';
 

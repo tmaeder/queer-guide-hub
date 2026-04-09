@@ -66,7 +66,7 @@ Return ONLY the text. No markdown, no surrounding quotes, no labels like "Descri
 const GARBAGE_PATTERNS = [
   /^search:ta:/,                  // Foursquare/TripAdvisor import artifacts
   /^search:/,                     // Any search: prefix
-  /^[0-9a-f\-]{20,}$/i,          // UUIDs or hex IDs
+  /^[0-9a-f-]{20,}$/i,           // UUIDs or hex IDs
   /^\d{4,}$/,                     // Numeric-only strings
   /^\{.*\}$/,                     // JSON objects
   /^\[.*\]$/,                     // JSON arrays
