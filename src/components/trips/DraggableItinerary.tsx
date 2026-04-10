@@ -19,8 +19,9 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
-import { Plus, Pencil, Check } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, Pencil, Check, Inbox, Map as MapIcon } from 'lucide-react';
+import { format, differenceInCalendarDays } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export function DraggableItinerary({ trip, onAddPlace }: Props) {
+  const { t } = useTranslation();
   const { updatePlace, removePlace, updateDay } = useTripMutations();
   const { toast } = useToast();
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
@@ -67,6 +69,22 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
     () => (activeDragId ? trip.trip_places.find((p) => p.id === activeDragId) : null),
     [activeDragId, trip.trip_places],
   );
+
+  // Pre-compute day number + weekday + date for headers, sorted by date
+  const sortedDays = useMemo(() => {
+    const sorted = [...trip.trip_days].sort((a, b) =>
+      a.date.localeCompare(b.date),
+    );
+    const firstDate = sorted[0]?.date ? new Date(sorted[0].date) : null;
+    return sorted.map((day, index) => ({
+      day,
+      index,
+      dayNumber:
+        firstDate != null
+          ? differenceInCalendarDays(new Date(day.date), firstDate) + 1
+          : index + 1,
+    }));
+  }, [trip.trip_days]);
 
   const findContainer = useCallback(
     (id: string): string | null => {
@@ -118,7 +136,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
           updatePlace.mutate({ id: place.id, sort_order: idx });
         }
       });
-      toast({ title: 'Place reordered' });
+      toast({ title: t('trips.itinerary.reordered') });
     } else {
       const destItems = placesByContainer[overContainer] || [];
       let insertIndex = destItems.length;
@@ -137,7 +155,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
           updatePlace.mutate({ id: place.id, sort_order: newOrder });
         }
       });
-      toast({ title: 'Place moved' });
+      toast({ title: t('trips.itinerary.moved') });
     }
   };
 
@@ -145,8 +163,13 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
     removePlace.mutate(
       { id: placeId, tripId: trip.id },
       {
-        onSuccess: () => toast({ title: 'Place removed' }),
-        onError: (err) => toast({ title: 'Error', description: err.message, variant: 'destructive' }),
+        onSuccess: () => toast({ title: t('trips.itinerary.removed') }),
+        onError: (err) =>
+          toast({
+            title: t('trips.toast.error'),
+            description: err.message,
+            variant: 'destructive',
+          }),
       },
     );
   };
@@ -161,13 +184,22 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
       updateDay.mutate(
         { id: editingDayId, title: editDayTitle || undefined },
         {
-          onSuccess: () => toast({ title: 'Day updated' }),
-          onError: (err) => toast({ title: 'Error', description: err.message, variant: 'destructive' }),
+          onSuccess: () => toast({ title: t('trips.itinerary.dayUpdated') }),
+          onError: (err) =>
+            toast({
+              title: t('trips.toast.error'),
+              description: err.message,
+              variant: 'destructive',
+            }),
         },
       );
       setEditingDayId(null);
     }
   };
+
+  const unassigned = placesByContainer['unassigned'] || [];
+  const itineraryIsEmpty =
+    trip.trip_days.length === 0 && unassigned.length === 0;
 
   return (
     <DndContext
@@ -178,106 +210,268 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
       onDragEnd={handleDragEnd}
     >
       {/* Unassigned places */}
-      {(placesByContainer['unassigned']?.length ?? 0) > 0 && (
-        <Card style={{ marginBottom: 12 }}>
-          <CardContent>
-            <Box sx={{ bgcolor: 'action.hover', borderRadius: 1.5, p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Unassigned
-                  </Typography>
-                  <Badge variant="outline">
-                    {placesByContainer['unassigned']?.length || 0}
-                  </Badge>
-                </Box>
-                <Button variant="ghost" size="sm" onClick={() => onAddPlace()}>
-                  <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
-                  Add
-                </Button>
-              </Box>
-              <SortableContext
-                items={(placesByContainer['unassigned'] || []).map((p) => p.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {(placesByContainer['unassigned'] || []).map((place) => (
-                  <SortablePlaceCard key={place.id} place={place} onDelete={handleDelete} />
-                ))}
-              </SortableContext>
+      {unassigned.length > 0 && (
+        <Box
+          sx={{
+            border: '1.5px dashed',
+            borderColor: 'divider',
+            borderRadius: 2,
+            p: 2,
+            mb: 2,
+            bgcolor: 'action.hover',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: 1.5,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Inbox
+                style={{ width: 16, height: 16, opacity: 0.6 }}
+                aria-hidden="true"
+              />
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                {t('trips.itinerary.unassigned')}
+              </Typography>
+              <Badge variant="outline">{unassigned.length}</Badge>
             </Box>
-          </CardContent>
-        </Card>
+            <Button variant="ghost" size="sm" onClick={() => onAddPlace()}>
+              <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
+              {t('trips.itinerary.add')}
+            </Button>
+          </Box>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block', mb: 1 }}
+          >
+            {t('trips.itinerary.unassignedHint')}
+          </Typography>
+          <SortableContext
+            items={unassigned.map((p) => p.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {unassigned.map((place) => (
+              <SortablePlaceCard
+                key={place.id}
+                place={place}
+                onDelete={handleDelete}
+              />
+            ))}
+          </SortableContext>
+        </Box>
       )}
 
       {/* Empty state */}
-      {trip.trip_days.length === 0 && (placesByContainer['unassigned']?.length ?? 0) === 0 && (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Your itinerary is empty. Add some places to get started.
+      {itineraryIsEmpty && (
+        <Box
+          sx={{
+            textAlign: 'center',
+            py: { xs: 6, md: 10 },
+            px: 3,
+            border: '1.5px dashed',
+            borderColor: 'divider',
+            borderRadius: 3,
+          }}
+        >
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              bgcolor: 'brand.main',
+              opacity: 0.12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 1.5,
+            }}
+          />
+          <MapIcon
+            style={{
+              width: 28,
+              height: 28,
+              marginTop: -46,
+              marginBottom: 18,
+              color: '#DB2777',
+            }}
+            aria-hidden="true"
+          />
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+            {t('trips.itinerary.emptyTitle')}
           </Typography>
-          <Button variant="outline" onClick={() => onAddPlace()}>
-            <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
-            Add Place
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 3, maxWidth: 420, mx: 'auto' }}
+          >
+            {t('trips.itinerary.emptyDescription')}
+          </Typography>
+          <Button variant="brand" onClick={() => onAddPlace()}>
+            <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+            {t('trips.itinerary.addPlace')}
           </Button>
         </Box>
       )}
 
       {/* Day containers */}
-      {trip.trip_days.map((day) => {
+      {sortedDays.map(({ day, dayNumber }) => {
         const dayPlaces = placesByContainer[day.id] || [];
         return (
           <Card key={day.id} style={{ marginBottom: 12 }}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600, flexShrink: 0 }}>
-                    {format(new Date(day.date), 'EEE, MMM d')}
-                  </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 1.5,
+                  gap: 1.5,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      width: 48,
+                      height: 48,
+                      borderRadius: 2,
+                      bgcolor: 'brand.main',
+                      color: 'brand.contrastText',
+                    }}
+                    aria-hidden="true"
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        letterSpacing: '0.06em',
+                        lineHeight: 1,
+                        textTransform: 'uppercase',
+                        opacity: 0.85,
+                      }}
+                    >
+                      {t('trips.itinerary.dayShort')}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontSize: 18,
+                        fontWeight: 800,
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {dayNumber}
+                    </Typography>
+                  </Box>
 
-                  {editingDayId === day.id ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
-                      <TextField
-                        value={editDayTitle}
-                        onChange={(e) => setEditDayTitle(e.target.value)}
-                        placeholder="Day title..."
-                        size="small"
-                        variant="standard"
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveEditDay();
-                          if (e.key === 'Escape') setEditingDayId(null);
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        fontWeight: 700,
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {format(new Date(day.date), 'EEEE, MMM d')}
+                    </Typography>
+
+                    {editingDayId === day.id ? (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          mt: 0.25,
                         }}
-                        sx={{ flex: 1, maxWidth: 240 }}
-                      />
-                      <IconButton size="small" onClick={saveEditDay} sx={{ minHeight: 44, minWidth: 44 }}>
-                        <Check style={{ width: 14, height: 14 }} />
-                      </IconButton>
-                    </Box>
-                  ) : (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
-                      {day.title && (
-                        <Typography variant="body2" color="text.secondary" noWrap>
-                          -- {day.title}
-                        </Typography>
-                      )}
-                      <IconButton
-                        size="small"
-                        onClick={() => startEditDay(day)}
-                        sx={{ opacity: 0.4, '&:hover': { opacity: 1 }, p: 0.5, minHeight: 44, minWidth: 44 }}
                       >
-                        <Pencil style={{ width: 12, height: 12 }} />
-                      </IconButton>
-                    </Box>
-                  )}
+                        <TextField
+                          value={editDayTitle}
+                          onChange={(e) => setEditDayTitle(e.target.value)}
+                          placeholder={t('trips.itinerary.dayTitlePlaceholder')}
+                          size="small"
+                          variant="standard"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEditDay();
+                            if (e.key === 'Escape') setEditingDayId(null);
+                          }}
+                          sx={{ flex: 1, maxWidth: 240 }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={saveEditDay}
+                          aria-label={t('trips.itinerary.saveDayTitle')}
+                          sx={{ p: 0.5 }}
+                        >
+                          <Check style={{ width: 14, height: 14 }} />
+                        </IconButton>
+                      </Box>
+                    ) : (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          minWidth: 0,
+                        }}
+                      >
+                        {day.title && (
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            noWrap
+                            sx={{ maxWidth: 280 }}
+                          >
+                            {day.title}
+                          </Typography>
+                        )}
+                        <IconButton
+                          size="small"
+                          onClick={() => startEditDay(day)}
+                          aria-label={t('trips.itinerary.editDayTitle')}
+                          sx={{
+                            opacity: 0.4,
+                            '&:hover': { opacity: 1 },
+                            p: 0.5,
+                          }}
+                        >
+                          <Pencil style={{ width: 12, height: 12 }} />
+                        </IconButton>
+                      </Box>
+                    )}
+                  </Box>
 
                   <Badge variant="outline">
-                    {dayPlaces.length} {dayPlaces.length === 1 ? 'place' : 'places'}
+                    {t('trips.card.placeCount', { count: dayPlaces.length })}
                   </Badge>
                 </Box>
 
-                <Button variant="ghost" size="sm" onClick={() => onAddPlace(day.id)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onAddPlace(day.id)}
+                >
                   <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
-                  Add
+                  {t('trips.itinerary.add')}
                 </Button>
               </Box>
 
@@ -288,22 +482,30 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
                 {dayPlaces.length === 0 ? (
                   <Box
                     sx={{
-                      border: '2px dashed',
-                      borderColor: activeDragId ? 'primary.main' : 'divider',
+                      border: '1.5px dashed',
+                      borderColor: activeDragId ? 'brand.main' : 'divider',
                       borderRadius: 2,
-                      py: 3,
+                      py: 2.5,
                       textAlign: 'center',
                       minHeight: 48,
                       transition: 'border-color 0.2s',
                     }}
                   >
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
-                      Drag places here or click Add
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontSize: 12 }}
+                    >
+                      {t('trips.itinerary.dropHere')}
                     </Typography>
                   </Box>
                 ) : (
                   dayPlaces.map((place) => (
-                    <SortablePlaceCard key={place.id} place={place} onDelete={handleDelete} />
+                    <SortablePlaceCard
+                      key={place.id}
+                      place={place}
+                      onDelete={handleDelete}
+                    />
                   ))
                 )}
               </SortableContext>
@@ -312,14 +514,16 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
         );
       })}
 
-      <Button
-        variant="outline"
-        onClick={() => onAddPlace()}
-        style={{ width: '100%', marginTop: 8 }}
-      >
-        <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
-        Add Place
-      </Button>
+      {!itineraryIsEmpty && (
+        <Button
+          variant="outline"
+          onClick={() => onAddPlace()}
+          style={{ width: '100%', marginTop: 8 }}
+        >
+          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          {t('trips.itinerary.addPlace')}
+        </Button>
+      )}
 
       <DragOverlay>
         {activePlace ? <PlaceCardOverlay place={activePlace} /> : null}

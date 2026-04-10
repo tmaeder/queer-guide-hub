@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Box from '@mui/material/Box';
@@ -6,13 +6,15 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { Maximize2 } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { mapStyle } from '@/config/mapStyle';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
 
-function dayColor(index: number, theme: ReturnType<typeof useTheme>): string {
-  const hue = (index * 137.5) % 360;
-  return `hsl(${hue}, 65%, 50%)`;
+function dayColor(index: number): string {
+  // Deterministic, brand-adjacent hue rotation. Day 0 is magenta-ish.
+  const hue = (330 + index * 47) % 360;
+  return `hsl(${hue}, 70%, 52%)`;
 }
 
 interface PopupContentProps {
@@ -43,19 +45,42 @@ interface Props {
 }
 
 export function TripMap({ places, days }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  // Day filter: null = all, dayId = only that day, 'unassigned' = only unassigned
+  const [dayFilter, setDayFilter] = useState<string | null>(null);
+
+  const sortedDays = useMemo(
+    () => [...days].sort((a, b) => a.date.localeCompare(b.date)),
+    [days],
+  );
 
   const dayIndexMap = useMemo(() => {
     const map = new Map<string, number>();
-    days.forEach((d, i) => map.set(d.id, i));
+    sortedDays.forEach((d, i) => map.set(d.id, i));
     return map;
-  }, [days]);
+  }, [sortedDays]);
 
   const geoPlaces = useMemo(
-    () => places.filter((p) => p.latitude != null && p.longitude != null),
+    () =>
+      places
+        .filter((p) => p.latitude != null && p.longitude != null)
+        .filter((p) => {
+          if (!dayFilter) return true;
+          if (dayFilter === 'unassigned') return !p.day_id;
+          return p.day_id === dayFilter;
+        }),
+    [places, dayFilter],
+  );
+
+  const hasUnassignedGeo = useMemo(
+    () =>
+      places.some(
+        (p) => p.latitude != null && p.longitude != null && !p.day_id,
+      ),
     [places],
   );
 
@@ -105,11 +130,14 @@ export function TripMap({ places, days }: Props) {
 
     geoPlaces.forEach((place) => {
       const dayIdx = place.day_id ? dayIndexMap.get(place.day_id) : undefined;
-      const color = dayIdx != null ? dayColor(dayIdx, theme) : theme.palette.text.disabled;
+      const color = dayIdx != null ? dayColor(dayIdx) : theme.palette.text.disabled;
 
       const placeName =
         place.venues?.name || place.events?.title || place.hotels?.name || place.custom_name || 'Place';
-      const dayLabel = dayIdx != null && days[dayIdx] ? `Day ${dayIdx + 1}` : 'Unassigned';
+      const dayLabel =
+        dayIdx != null
+          ? t('trips.map.dayLabel', { number: dayIdx + 1 })
+          : t('trips.itinerary.unassigned');
 
       // Create marker element
       const el = document.createElement('div');
@@ -149,7 +177,7 @@ export function TripMap({ places, days }: Props) {
       placesByDay.forEach((dayPlaces, dayId) => {
         if (dayPlaces.length < 2) return;
         const dayIdx = dayIndexMap.get(dayId);
-        const color = dayIdx != null ? dayColor(dayIdx, theme) : theme.palette.text.disabled;
+        const color = dayIdx != null ? dayColor(dayIdx) : theme.palette.text.disabled;
         const sourceId = `route-day-${dayId}`;
 
         const coordinates = dayPlaces.map((p) => [p.longitude!, p.latitude!]);
@@ -183,29 +211,192 @@ export function TripMap({ places, days }: Props) {
     if (geoPlaces.length > 0) {
       setTimeout(fitBounds, 200);
     }
-  }, [geoPlaces, dayIndexMap, days, theme]);
+    // fitBounds is a stable closure over refs; intentionally excluded from deps
+    // to avoid re-running the effect on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geoPlaces, dayIndexMap, days, theme, t]);
 
-  if (places.length === 0 || geoPlaces.length === 0) {
+  if (places.length === 0) {
     return (
-      <Box className="h-full w-full rounded-lg overflow-hidden flex items-center justify-center" sx={{ bgcolor: 'action.hover', minHeight: 300 }}>
+      <Box
+        sx={{
+          height: '100%',
+          width: '100%',
+          minHeight: 300,
+          borderRadius: 2,
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'action.hover',
+        }}
+      >
         <Typography color="text.secondary">
-          {places.length === 0
-            ? 'Add places to see them on the map'
-            : 'None of your places have coordinates yet'}
+          {t('trips.map.emptyNoPlaces')}
+        </Typography>
+      </Box>
+    );
+  }
+
+  const totalWithCoords = places.filter(
+    (p) => p.latitude != null && p.longitude != null,
+  ).length;
+
+  if (totalWithCoords === 0) {
+    return (
+      <Box
+        sx={{
+          height: '100%',
+          width: '100%',
+          minHeight: 300,
+          borderRadius: 2,
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'action.hover',
+        }}
+      >
+        <Typography color="text.secondary">
+          {t('trips.map.emptyNoCoords')}
         </Typography>
       </Box>
     );
   }
 
   return (
-    <Box className="h-full w-full rounded-lg overflow-hidden relative" sx={{ minHeight: 400 }}>
-      <div ref={containerRef} key={places.length} style={{ width: '100%', height: '100%' }} />
-      <Box sx={{ position: 'absolute', top: 12, right: 52 }}>
-        <Button variant="ghost" size="sm" onClick={fitBounds}>
-          <Maximize2 size={14} />
-          Fit All
+    <Box
+      sx={{
+        width: '100%',
+        borderRadius: 2,
+        overflow: 'hidden',
+        position: 'relative',
+        height: { xs: 'calc(100dvh - 360px)', md: 'calc(100dvh - 320px)' },
+        minHeight: { xs: 360, md: 520 },
+      }}
+    >
+      {/* Day filter chips */}
+      {sortedDays.length > 0 && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 12,
+            left: 12,
+            right: 96,
+            zIndex: 2,
+            display: 'flex',
+            gap: 0.75,
+            overflowX: 'auto',
+            pb: 0.5,
+            '&::-webkit-scrollbar': { display: 'none' },
+            scrollbarWidth: 'none',
+          }}
+        >
+          <FilterChip
+            active={dayFilter === null}
+            onClick={() => setDayFilter(null)}
+            color={theme.palette.text.primary}
+            label={t('trips.map.filterAll')}
+          />
+          {sortedDays.map((day, idx) => (
+            <FilterChip
+              key={day.id}
+              active={dayFilter === day.id}
+              onClick={() => setDayFilter(day.id)}
+              color={dayColor(idx)}
+              label={t('trips.map.dayLabel', { number: idx + 1 })}
+            />
+          ))}
+          {hasUnassignedGeo && (
+            <FilterChip
+              active={dayFilter === 'unassigned'}
+              onClick={() => setDayFilter('unassigned')}
+              color={theme.palette.text.disabled as string}
+              label={t('trips.itinerary.unassigned')}
+            />
+          )}
+        </Box>
+      )}
+
+      <div
+        ref={containerRef}
+        key={places.length}
+        style={{ width: '100%', height: '100%' }}
+      />
+
+      {/* Fit-all button */}
+      <Box sx={{ position: 'absolute', top: 12, right: 52, zIndex: 2 }}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fitBounds}
+          style={{
+            backgroundColor: theme.palette.background.paper,
+            paddingLeft: 10,
+            paddingRight: 10,
+          }}
+          aria-label={t('trips.map.fitAllAria')}
+        >
+          <Maximize2 size={14} style={{ marginRight: 4 }} />
+          {t('trips.map.fitAll')}
         </Button>
       </Box>
+    </Box>
+  );
+}
+
+/** Compact pill filter chip for the day-filter row on the map. */
+function FilterChip({
+  active,
+  onClick,
+  color,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  color: string;
+  label: string;
+}) {
+  return (
+    <Box
+      component="button"
+      type="button"
+      onClick={onClick}
+      sx={{
+        flexShrink: 0,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.5,
+        px: 1.25,
+        py: 0.5,
+        borderRadius: 999,
+        border: '1px solid',
+        borderColor: active ? 'brand.main' : 'divider',
+        bgcolor: active ? 'brand.main' : 'background.paper',
+        color: active ? 'brand.contrastText' : 'text.primary',
+        fontSize: '0.75rem',
+        fontWeight: 700,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+        transition: 'all 0.15s cubic-bezier(0.22, 1, 0.36, 1)',
+        fontFamily: 'inherit',
+        '&:hover': {
+          borderColor: 'brand.main',
+        },
+      }}
+    >
+      <Box
+        component="span"
+        sx={{
+          display: 'inline-block',
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          bgcolor: color,
+          flexShrink: 0,
+        }}
+      />
+      {label}
     </Box>
   );
 }

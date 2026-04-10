@@ -6,35 +6,58 @@ import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Collapse from '@mui/material/Collapse';
+import { useTheme } from '@mui/material/styles';
 import { Trash2, ChevronDown, ChevronRight, CheckSquare } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useToast } from '@/hooks/use-toast';
-import { useTripPacking, usePackingMutations, type PackingGroup } from '@/hooks/useTripPacking';
+import {
+  useTripPacking,
+  usePackingMutations,
+  type PackingGroup,
+} from '@/hooks/useTripPacking';
 
-const CATEGORY_ORDER = ['clothing', 'toiletries', 'electronics', 'documents', 'safety', 'lgbtq-specific', 'other'];
+const CATEGORY_ORDER = [
+  'clothing',
+  'toiletries',
+  'electronics',
+  'documents',
+  'safety',
+  'lgbtq-specific',
+  'other',
+];
+
+const TEMPLATES = ['essentials', 'lgbtq-safety', 'beach'] as const;
 
 interface Props {
   tripId: string;
 }
 
 export function PackingTab({ tripId }: Props) {
+  const { t } = useTranslation();
+  const theme = useTheme();
   const { toast } = useToast();
   const { grouped, checkedCount, totalCount, isLoading } = useTripPacking(tripId);
-  const { addPackingItem, toggleChecked, deletePackingItem, addPackingTemplate } = usePackingMutations(tripId);
+  const {
+    addPackingItem,
+    toggleChecked,
+    deletePackingItem,
+    addPackingTemplate,
+  } = usePackingMutations(tripId);
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [newItemText, setNewItemText] = useState<Record<string, string>>({});
 
   if (isLoading) return <PageLoadingState count={3} variant="list" />;
 
-  const percentage = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
+  const percentage =
+    totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
   const sortedGroups = [...grouped].sort(
-    (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
+    (a, b) =>
+      CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
   );
 
   const existingCategories = new Set(sortedGroups.map((g) => g.category));
@@ -46,6 +69,15 @@ export function PackingTab({ tripId }: Props) {
     })),
   ];
 
+  const categoryLabel = (cat: string) =>
+    t(`trips.packing.category.${cat}`, {
+      defaultValue: cat
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (ch) => ch.toUpperCase()),
+    });
+
+  const templateLabel = (tpl: string) => t(`trips.packing.templates.${tpl}`);
+
   const toggleCollapse = (cat: string) => {
     setCollapsed((prev) => ({ ...prev, [cat]: !prev[cat] }));
   };
@@ -54,213 +86,387 @@ export function PackingTab({ tripId }: Props) {
     const text = (newItemText[category] || '').trim();
     if (!text) return;
     try {
-      await addPackingItem.mutateAsync({ trip_id: tripId, name: text, category });
+      await addPackingItem.mutateAsync({
+        trip_id: tripId,
+        name: text,
+        category,
+      });
       setNewItemText((prev) => ({ ...prev, [category]: '' }));
-      toast({ title: 'Item added' });
+      toast({ title: t('trips.packing.added') });
     } catch (err) {
-      toast({ title: 'Failed to add item', description: String(err), variant: 'destructive' });
+      toast({
+        title: t('trips.packing.addFailed'),
+        description: String(err),
+        variant: 'destructive',
+      });
     }
   };
 
   const handleTemplate = (templateName: string) => {
     addPackingTemplate.mutate(templateName, {
-      onSuccess: () => toast({ title: 'Template items added' }),
-      onError: (err) => toast({ title: 'Failed to add template', description: String(err), variant: 'destructive' }),
+      onSuccess: () => toast({ title: t('trips.packing.templateAdded') }),
+      onError: (err) =>
+        toast({
+          title: t('trips.packing.templateFailed'),
+          description: String(err),
+          variant: 'destructive',
+        }),
     });
   };
 
   const handleDeleteItem = (id: string) => {
     deletePackingItem.mutate(id, {
-      onSuccess: () => toast({ title: 'Item removed' }),
-      onError: (err) => toast({ title: 'Failed to remove item', description: String(err), variant: 'destructive' }),
+      onSuccess: () => toast({ title: t('trips.packing.removed') }),
+      onError: (err) =>
+        toast({
+          title: t('trips.packing.removeFailed'),
+          description: String(err),
+          variant: 'destructive',
+        }),
     });
   };
 
   if (totalCount === 0) {
+    const brand = theme.palette.brand?.main || '#DB2777';
     return (
-      <>
-        <ScrollReveal>
-          <Box className="flex flex-col items-center justify-center py-16 text-center">
-            <Box
+      <Box
+        sx={{
+          textAlign: 'center',
+          py: { xs: 6, md: 10 },
+          px: 3,
+          border: '1.5px dashed',
+          borderColor: 'divider',
+          borderRadius: 3,
+        }}
+      >
+        <Box
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: 2,
+            bgcolor: `${brand}1a`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mx: 'auto',
+            mb: 1.5,
+          }}
+        >
+          <CheckSquare size={26} style={{ color: brand }} />
+        </Box>
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+          {t('trips.packing.emptyTitle')}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mb: 3, maxWidth: 360, mx: 'auto' }}
+        >
+          {t('trips.packing.emptyDescription')}
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            justifyContent: 'center',
+          }}
+        >
+          {TEMPLATES.map((tpl) => (
+            <Badge
+              key={tpl}
+              variant="outline"
+              onClick={() => handleTemplate(tpl)}
               sx={{
-                width: 64,
-                height: 64,
-                borderRadius: '50%',
-                bgcolor: 'action.hover',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 2,
+                cursor: 'pointer',
+                px: 2,
+                py: 0.75,
+                fontSize: '0.8125rem',
+                transition: 'all 0.15s cubic-bezier(0.22, 1, 0.36, 1)',
+                '&:hover': {
+                  borderColor: 'brand.main',
+                  color: 'brand.main',
+                },
               }}
             >
-              <CheckSquare size={28} style={{ opacity: 0.5 }} />
-            </Box>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-              Start your packing list
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 280 }}>
-              Add items or use a template to get started
-            </Typography>
-            <Box className="flex flex-wrap gap-2 justify-center">
-              <Badge
-                variant="outline"
-                onClick={() => handleTemplate('essentials')}
-                sx={{ cursor: 'pointer', minHeight: 44, px: 2 }}
-              >
-                Essentials
-              </Badge>
-              <Badge
-                variant="outline"
-                onClick={() => handleTemplate('lgbtq-safety')}
-                sx={{ cursor: 'pointer', minHeight: 44, px: 2 }}
-              >
-                LGBTQ+ Safety Kit
-              </Badge>
-              <Badge
-                variant="outline"
-                onClick={() => handleTemplate('beach')}
-                sx={{ cursor: 'pointer', minHeight: 44, px: 2 }}
-              >
-                Beach Pack
-              </Badge>
-            </Box>
-          </Box>
-        </ScrollReveal>
-      </>
+              {templateLabel(tpl)}
+            </Badge>
+          ))}
+        </Box>
+      </Box>
     );
   }
 
   return (
     <div>
-      {/* Progress bar */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
-          {checkedCount} of {totalCount} items packed
-        </Typography>
+      {/* Progress card */}
+      <Box
+        sx={{
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          p: { xs: 2, md: 2.5 },
+          mb: 3,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'baseline',
+            justifyContent: 'space-between',
+            mb: 1,
+            gap: 1,
+          }}
+        >
+          <Typography
+            sx={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontWeight: 800,
+              fontSize: '1.375rem',
+              letterSpacing: '-0.02em',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {t('trips.packing.progress', {
+              checked: checkedCount,
+              total: totalCount,
+            })}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 700,
+              color: 'brand.main',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {percentage}%
+          </Typography>
+        </Box>
         <LinearProgress
           variant="determinate"
           value={percentage}
           sx={{
-            height: 8,
-            borderRadius: 4,
-            '& .MuiLinearProgress-bar': { bgcolor: 'brand.main' },
+            height: 10,
+            borderRadius: 5,
+            bgcolor: 'action.hover',
+            '& .MuiLinearProgress-bar': {
+              bgcolor: 'brand.main',
+              borderRadius: 5,
+            },
           }}
         />
       </Box>
 
-      {/* Template buttons */}
-      <Box sx={{ display: 'flex', gap: 1.5, mb: 3, overflowX: 'auto', pb: 0.5 }}>
-        <Badge
-          variant="outline"
-          onClick={() => handleTemplate('essentials')}
-          sx={{ cursor: 'pointer', minHeight: 44, px: 2 }}
-        >
-          Essentials
-        </Badge>
-        <Badge
-          variant="outline"
-          onClick={() => handleTemplate('lgbtq-safety')}
-          sx={{ cursor: 'pointer', minHeight: 44, px: 2 }}
-        >
-          LGBTQ+ Safety Kit
-        </Badge>
-        <Badge
-          variant="outline"
-          onClick={() => handleTemplate('beach')}
-          sx={{ cursor: 'pointer', minHeight: 44, px: 2 }}
-        >
-          Beach Pack
-        </Badge>
+      {/* Template chip row */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          mb: 3,
+          overflowX: 'auto',
+          pb: 0.5,
+          '&::-webkit-scrollbar': { display: 'none' },
+          scrollbarWidth: 'none',
+        }}
+      >
+        {TEMPLATES.map((tpl) => (
+          <Badge
+            key={tpl}
+            variant="outline"
+            onClick={() => handleTemplate(tpl)}
+            sx={{
+              cursor: 'pointer',
+              px: 1.75,
+              py: 0.75,
+              flexShrink: 0,
+              fontSize: '0.8125rem',
+              transition: 'all 0.15s cubic-bezier(0.22, 1, 0.36, 1)',
+              '&:hover': {
+                borderColor: 'brand.main',
+                color: 'brand.main',
+              },
+            }}
+          >
+            + {templateLabel(tpl)}
+          </Badge>
+        ))}
       </Box>
 
       {/* Category groups */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {allGroups.map((group) => {
-        const isCollapsed = collapsed[group.category];
-        const groupChecked = group.items.filter((i) => i.is_checked).length;
-        const hasItems = group.items.length > 0;
-        const categoryLabel = group.category.charAt(0).toUpperCase() + group.category.replace(/-/g, ' ').slice(1);
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        {allGroups.map((group) => {
+          const isCollapsed = collapsed[group.category];
+          const groupChecked = group.items.filter((i) => i.is_checked).length;
+          const hasItems = group.items.length > 0;
+          const allChecked =
+            hasItems && groupChecked === group.items.length;
 
-        return (
-          <Card key={group.category}>
-            <CardContent>
-              <Box
-                className="flex items-center gap-1 cursor-pointer select-none"
-                onClick={() => toggleCollapse(group.category)}
-                sx={{ minHeight: 44, py: 0.5 }}
-              >
-                {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
-                <Typography variant="subtitle2" fontWeight={600} sx={{ flex: 1 }}>
-                  {categoryLabel}
-                </Typography>
-                {hasItems && (
-                  <Badge variant={groupChecked === group.items.length ? 'default' : 'secondary'}>
-                    {groupChecked}/{group.items.length}
-                  </Badge>
-                )}
-              </Box>
-
-              <Collapse in={!isCollapsed}>
-                {group.items.map((item) => (
-                  <Box
-                    key={item.id}
-                    className="flex items-center gap-1 pl-2"
-                    sx={{ minHeight: 44 }}
+          return (
+            <Card key={group.category}>
+              <CardContent>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={() => toggleCollapse(group.category)}
+                  aria-expanded={!isCollapsed}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    width: '100%',
+                    border: 'none',
+                    bgcolor: 'transparent',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    color: 'inherit',
+                    fontFamily: 'inherit',
+                    p: 0,
+                    minHeight: 36,
+                  }}
+                >
+                  {isCollapsed ? (
+                    <ChevronRight size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 700,
+                      flex: 1,
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      color: allChecked ? 'text.secondary' : 'text.primary',
+                    }}
                   >
-                    <Checkbox
-                      size="small"
-                      checked={item.is_checked}
-                      onChange={(e) => toggleChecked.mutate({ id: item.id, is_checked: e.target.checked })}
-                      sx={{ p: 0.5 }}
-                    />
-                    <Typography
-                      variant="body2"
+                    {categoryLabel(group.category)}
+                  </Typography>
+                  {hasItems && (
+                    <Badge
+                      variant={allChecked ? 'default' : 'secondary'}
+                      sx={
+                        allChecked
+                          ? {
+                              bgcolor: 'brand.main',
+                              color: 'brand.contrastText',
+                              borderColor: 'brand.main',
+                            }
+                          : undefined
+                      }
+                    >
+                      {groupChecked}/{group.items.length}
+                    </Badge>
+                  )}
+                </Box>
+
+                <Collapse in={!isCollapsed}>
+                  <Box sx={{ mt: 1 }}>
+                    {group.items.map((item) => (
+                      <Box
+                        key={item.id}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          pl: 1,
+                          minHeight: 40,
+                          borderRadius: 1,
+                          '&:hover': { bgcolor: 'action.hover' },
+                          '&:hover .pack-delete': { opacity: 1 },
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={item.is_checked}
+                          onChange={(e) =>
+                            toggleChecked.mutate({
+                              id: item.id,
+                              is_checked: e.target.checked,
+                            })
+                          }
+                          sx={{
+                            p: 0.5,
+                            color: 'text.secondary',
+                            '&.Mui-checked': { color: 'brand.main' },
+                          }}
+                          aria-label={item.name}
+                        />
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            flex: 1,
+                            textDecoration: item.is_checked
+                              ? 'line-through'
+                              : 'none',
+                            color: item.is_checked
+                              ? 'text.disabled'
+                              : 'text.primary',
+                          }}
+                        >
+                          {item.name}
+                        </Typography>
+                        {item.quantity > 1 && (
+                          <Badge variant="secondary">×{item.quantity}</Badge>
+                        )}
+                        <IconButton
+                          className="pack-delete"
+                          size="small"
+                          onClick={() => handleDeleteItem(item.id)}
+                          aria-label={t('trips.packing.removeAria')}
+                          sx={{
+                            opacity: 0,
+                            transition: 'opacity 0.15s, color 0.15s',
+                            '&:hover': { color: 'error.main' },
+                          }}
+                        >
+                          <Trash2 size={13} />
+                        </IconButton>
+                      </Box>
+                    ))}
+
+                    {/* Inline add input */}
+                    <Box
                       sx={{
-                        flex: 1,
-                        textDecoration: item.is_checked ? 'line-through' : 'none',
-                        color: item.is_checked ? 'text.disabled' : 'text.primary',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        pl: 1,
+                        mt: 0.5,
                       }}
                     >
-                      {item.name}
-                    </Typography>
-                    {item.quantity > 1 && (
-                      <Badge variant="secondary">{item.quantity}</Badge>
-                    )}
-                    <IconButton
-                      size="small"
-                      onClick={() => handleDeleteItem(item.id)}
-                      sx={{ opacity: 0.4, '&:hover': { opacity: 1 }, minWidth: 44, minHeight: 44 }}
-                    >
-                      <Trash2 size={13} />
-                    </IconButton>
+                      <TextField
+                        placeholder={t('trips.packing.addItem')}
+                        size="small"
+                        variant="standard"
+                        fullWidth
+                        value={newItemText[group.category] || ''}
+                        onChange={(e) =>
+                          setNewItemText((prev) => ({
+                            ...prev,
+                            [group.category]: e.target.value,
+                          }))
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddItem(group.category);
+                          }
+                        }}
+                        sx={{
+                          '& .MuiInput-root': {
+                            fontSize: 14,
+                            minHeight: 40,
+                          },
+                          '& .MuiInput-input::placeholder': { opacity: 0.55 },
+                        }}
+                      />
+                    </Box>
                   </Box>
-                ))}
-
-                {/* Inline add input */}
-                <Box className="flex items-center gap-1 pl-2 mt-1">
-                  <TextField
-                    placeholder="Add item..."
-                    size="small"
-                    variant="standard"
-                    fullWidth
-                    value={newItemText[group.category] || ''}
-                    onChange={(e) =>
-                      setNewItemText((prev) => ({ ...prev, [group.category]: e.target.value }))
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddItem(group.category);
-                      }
-                    }}
-                    sx={{ '& .MuiInput-root': { fontSize: 14, minHeight: 44 }, '& .MuiInput-input::placeholder': { opacity: 0.5 } }}
-                  />
-                </Box>
-              </Collapse>
-            </CardContent>
-          </Card>
-        );
-      })}
+                </Collapse>
+              </CardContent>
+            </Card>
+          );
+        })}
       </Box>
     </div>
   );

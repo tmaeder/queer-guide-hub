@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { GripVertical, MapPin, Hotel, CalendarDays, Star, Clock, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { TripPlace } from '@/hooks/useTrips';
 import { getScoreRingColor } from '@/utils/equalityScore';
 
@@ -33,6 +34,7 @@ interface SortablePlaceCardProps {
 }
 
 export function SortablePlaceCard({ place, onDelete }: SortablePlaceCardProps) {
+  const { t } = useTranslation();
   const {
     attributes,
     listeners,
@@ -72,8 +74,12 @@ export function SortablePlaceCard({ place, onDelete }: SortablePlaceCardProps) {
           transition: 'background-color 0.15s, border-color 0.15s',
           '&:hover': {
             bgcolor: 'action.hover',
+            borderColor: 'brand.main',
           },
-          '&:hover .delete-btn': {
+          '&:hover .grip-handle, &:focus-within .grip-handle': {
+            opacity: 1,
+          },
+          '&:hover .delete-btn, &:focus-within .delete-btn': {
             opacity: 1,
           },
         }}
@@ -82,14 +88,18 @@ export function SortablePlaceCard({ place, onDelete }: SortablePlaceCardProps) {
         <Box
           {...attributes}
           {...listeners}
+          className="grip-handle"
+          aria-label={t('trips.itinerary.dragHandleAria')}
           sx={{
             display: 'flex',
             alignItems: 'center',
             flexShrink: 0,
             cursor: 'grab',
             color: 'text.disabled',
+            opacity: 0.45,
+            transition: 'opacity 0.15s, color 0.15s',
             touchAction: 'none',
-            '&:hover': { color: 'text.secondary' },
+            '&:hover': { color: 'brand.main' },
             '&:active': { cursor: 'grabbing' },
           }}
         >

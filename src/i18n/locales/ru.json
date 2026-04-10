@@ -68,5 +68,347 @@
     "resources": "Ресурсы",
     "legal": "Правовая Информация",
     "copyright": "© {{year}} Все права защищены."
+  },
+  "trips": {
+    "title": "Мои поездки",
+    "subtitle": "Планируйте, организуйте и путешествуйте безопасно.",
+    "create": "Создать поездку",
+    "error": "Не удалось загрузить поездки. Попробуйте снова.",
+    "empty": {
+      "title": "Запланируйте первую поездку",
+      "description": "Создайте маршрут, узнайте ЛГБТ+ информацию по каждому направлению и держите всё в одном месте.",
+      "cta": "Создать первую поездку"
+    },
+    "filteredEmpty": {
+      "title": "Поездок не найдено",
+      "description": "Попробуйте изменить поиск или фильтр.",
+      "cta": "Сбросить фильтры"
+    },
+    "status": {
+      "planning": "Планируется",
+      "active": "Активная",
+      "completed": "Завершена",
+      "archived": "В архиве"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Поиск по поездкам…",
+      "searchAria": "Поиск поездок",
+      "statusAria": "Фильтр по статусу",
+      "sortAria": "Сортировка поездок",
+      "status": {
+        "all": "Все",
+        "planning": "Планируются",
+        "active": "Активные",
+        "completed": "Завершённые",
+        "archived": "В архиве"
+      },
+      "sort": {
+        "recent": "Недавние обновления",
+        "start_date": "Дата начала",
+        "alphabetical": "По алфавиту"
+      }
+    },
+    "signedOut": {
+      "badge": "Планировщик поездок",
+      "title": "Планируйте поездки, которые вас защитят.",
+      "subtitle": "Создавайте queer-friendly маршруты, получайте ЛГБТ+ информацию по каждому направлению и планируйте вместе с вашими попутчиками.",
+      "primaryCta": "Войти, чтобы планировать",
+      "secondaryCta": "Как это работает",
+      "safeLabel": "Безопасно",
+      "daysLabel_one": "{{count}} день",
+      "daysLabel_few": "{{count}} дня",
+      "daysLabel_many": "{{count}} дней",
+      "daysLabel_other": "{{count}} дней",
+      "bullets": {
+        "safety": {
+          "title": "Брифинги по безопасности",
+          "body": "Правовой статус и контекст ЛГБТ+ для каждой страны маршрута."
+        },
+        "itinerary": {
+          "title": "Маршруты drag-and-drop",
+          "body": "Планируйте дни визуально и меняйте порядок остановок за секунды."
+        },
+        "collaborate": {
+          "title": "Путешествуйте вместе",
+          "body": "Делитесь заметками, переписывайтесь и делите расходы с попутчиками."
+        }
+      },
+      "samples": {
+        "berlin": "Pride Week Берлин",
+        "barcelona": "Барселона: пляж и ночь",
+        "bangkok": "Бангкок и Пхукет Explorer"
+      }
+    },
+    "card": {
+      "fromDate": "С {{date}}",
+      "noDates": "Даты не заданы",
+      "placeCount_one": "{{count}} место",
+      "placeCount_few": "{{count}} места",
+      "placeCount_many": "{{count}} мест",
+      "placeCount_other": "{{count}} мест",
+      "dayCount_one": "{{count}} день",
+      "dayCount_few": "{{count}} дня",
+      "dayCount_many": "{{count}} дней",
+      "dayCount_other": "{{count}} дней",
+      "memberCount_one": "{{count}} участник",
+      "memberCount_few": "{{count}} участника",
+      "memberCount_many": "{{count}} участников",
+      "memberCount_other": "{{count}} участников",
+      "ariaLabel": "Открыть поездку {{title}}",
+      "menuAria": "Опции поездки",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "deleting": "Удаление…",
+      "cancel": "Отмена",
+      "deleteTitle": "Удалить поездку",
+      "deleteConfirm": "Удалить \"{{title}}\"? Это действие нельзя отменить."
+    },
+    "toast": {
+      "created": "Поездка создана",
+      "createdDescription": "Добавьте направления.",
+      "deleted": "Поездка удалена",
+      "deletedDescription": "\"{{title}}\" удалена.",
+      "error": "Что-то пошло не так"
+    },
+    "dialog": {
+      "create": {
+        "title": "Создать поездку",
+        "description": "Куда вы едете? Направления и информацию о безопасности можно добавить позже.",
+        "titleField": "Название поездки",
+        "titlePlaceholder": "Например, Pride Week Берлин 2026",
+        "descriptionField": "Описание",
+        "descriptionPlaceholder": "О чём эта поездка?",
+        "startDate": "Дата начала",
+        "endDate": "Дата окончания",
+        "currency": "Валюта",
+        "submit": "Создать поездку",
+        "cancel": "Отмена",
+        "endBeforeStart": "Дата окончания должна быть позже даты начала.",
+        "failed": "Не удалось создать поездку. Попробуйте ещё раз."
+      }
+    },
+    "backToTrips": "К списку поездок",
+    "planner": {
+      "loadFailed": "Не удалось загрузить поездку.",
+      "notFound": "Поездка не найдена.",
+      "progressTooltip": "Прогресс планирования",
+      "days_one": "{{count}} день",
+      "days_few": "{{count}} дня",
+      "days_many": "{{count}} дней",
+      "days_other": "{{count}} дней",
+      "placesCount_one": "{{count}} место",
+      "placesCount_few": "{{count}} места",
+      "placesCount_many": "{{count}} мест",
+      "placesCount_other": "{{count}} мест",
+      "daysPlanned_one": "{{count}} день запланирован",
+      "daysPlanned_few": "{{count}} дня запланировано",
+      "daysPlanned_many": "{{count}} дней запланировано",
+      "daysPlanned_other": "{{count}} дней запланировано"
+    },
+    "share": {
+      "title": "Поделиться поездкой",
+      "description": "Создайте ссылку, которую может открыть кто угодно — без аккаунта.",
+      "activeLinks_one": "{{count}} активная ссылка",
+      "activeLinks_few": "{{count}} активные ссылки",
+      "activeLinks_many": "{{count}} активных ссылок",
+      "activeLinks_other": "{{count}} активных ссылок",
+      "createNew": "Создать новую ссылку",
+      "previewLabel": "Получатели увидят:",
+      "itineraryAlways": "Маршрут (всегда доступен)",
+      "expiresLabel": "Истекает (необязательно)",
+      "createButton": "Создать ссылку",
+      "close": "Закрыть",
+      "created": "Ссылка создана",
+      "createFailed": "Не удалось создать ссылку",
+      "deleted": "Ссылка удалена",
+      "deleteFailed": "Не удалось удалить ссылку",
+      "copied": "Ссылка скопирована",
+      "copyAria": "Скопировать ссылку",
+      "deleteAria": "Удалить ссылку",
+      "deleteTitle": "Удалить ссылку",
+      "deleteConfirm": "Все, у кого есть эта ссылка, потеряют доступ. Отменить нельзя.",
+      "expired": "Истекла",
+      "expiresOn": "Истекает {{date}}"
+    },
+    "itinerary": {
+      "add": "Добавить",
+      "addPlace": "Добавить место",
+      "unassigned": "Без дня",
+      "unassignedHint": "Перетащите их в день, чтобы запланировать.",
+      "emptyTitle": "Маршрут пуст",
+      "emptyDescription": "Добавьте первое место, чтобы начать планирование.",
+      "dayShort": "День",
+      "dropHere": "Перетащите места сюда или нажмите «Добавить»",
+      "dayTitlePlaceholder": "Название дня…",
+      "editDayTitle": "Изменить название дня",
+      "saveDayTitle": "Сохранить название",
+      "reordered": "Место перемещено",
+      "moved": "Место перенесено",
+      "removed": "Место удалено",
+      "dayUpdated": "День обновлён",
+      "dragHandleAria": "Перетащите для перестановки"
+    },
+    "map": {
+      "emptyNoPlaces": "Добавьте места, чтобы увидеть их на карте",
+      "emptyNoCoords": "Ни у одного из мест нет координат",
+      "fitAll": "Показать всё",
+      "fitAllAria": "Показать все места на карте",
+      "filterAll": "Все дни",
+      "dayLabel": "День {{number}}"
+    },
+    "safety": {
+      "emptyTitle": "Нет информации о безопасности",
+      "emptyDescription": "Добавьте направления в поездку — мы покажем правовой статус ЛГБТ+ и местный контекст для каждой страны.",
+      "crossBorderHeading": "Предупреждения при пересечении границ",
+      "countriesHeading": "Страны поездки",
+      "crossBorderTitle": "Резкое падение от {{from}} к {{to}}",
+      "crossBorderBody": "Индекс равенства падает на {{drop}} пунктов. Изучите местные законы и риски до пересечения границы.",
+      "dataSource": "Данные из базы ILGA World, обновляются ежегодно. Оценки — ориентир, а не гарантия; проверяйте свежие новости перед поездкой.",
+      "basedOn_one": "На основе данных ЛГБТ+ по {{count}} стране вашей поездки.",
+      "basedOn_few": "На основе данных ЛГБТ+ по {{count}} странам вашей поездки.",
+      "basedOn_many": "На основе данных ЛГБТ+ по {{count}} странам вашей поездки.",
+      "basedOn_other": "На основе данных ЛГБТ+ по {{count}} странам вашей поездки.",
+      "worstCountry": "Самая низкая оценка: {{country}} ({{score}}/100).",
+      "stops_one": "{{count}} остановка",
+      "stops_few": "{{count}} остановки",
+      "stops_many": "{{count}} остановок",
+      "stops_other": "{{count}} остановок",
+      "warningCount_one": "{{count}} предупреждение",
+      "warningCount_few": "{{count}} предупреждения",
+      "warningCount_many": "{{count}} предупреждений",
+      "warningCount_other": "{{count}} предупреждений",
+      "toggleDetails": "Показать подробности о стране {{country}}",
+      "viewOnIlga": "Посмотреть в базе ILGA",
+      "risk": {
+        "low": "Низкий риск",
+        "moderate": "Умеренный риск",
+        "high": "Высокий риск",
+        "critical": "Критический риск"
+      },
+      "headline": {
+        "low": "Поездка выглядит безопасной.",
+        "moderate": "Нужна осторожность.",
+        "high": "Высокий риск на маршруте.",
+        "critical": "Критический риск на маршруте."
+      },
+      "flags": {
+        "deathPenalty": "Действует смертная казнь за однополые отношения",
+        "criminalized": "Однополые отношения криминализированы"
+      },
+      "scoreLabel": {
+        "veryHigh": "Очень высокий",
+        "high": "Высокий",
+        "moderate": "Средний",
+        "low": "Низкий",
+        "veryLow": "Очень низкий",
+        "noData": "Нет данных"
+      },
+      "detail": {
+        "criminalized": {
+          "label": "Правовой статус",
+          "value": "Однополые отношения запрещены"
+        },
+        "deathPenalty": {
+          "label": "Максимальное наказание",
+          "value": "Применяется смертная казнь"
+        },
+        "ssu": "Однополые союзы",
+        "employment": "Защита на работе"
+      },
+      "tip": {
+        "safe": "Широкое принятие ЛГБТ+. Соблюдайте обычные меры предосторожности с публичным проявлением чувств.",
+        "caution": "Будьте осторожны с публичным проявлением чувств. Изучите город и почитайте свежие отзывы путешественников.",
+        "danger": "Отнеситесь к риску серьёзно. Избегайте публичных проявлений чувств и приложений для знакомств, держитесь незаметно."
+      }
+    },
+    "budget": {
+      "emptyTitle": "Пока нет расходов",
+      "emptyDescription": "Отслеживайте траты и делите расходы с группой.",
+      "addExpense": "Добавить расход",
+      "totalSpend": "Всего потрачено",
+      "spendingByCategory": "Расходы по категориям",
+      "settlements": "Взаиморасчёты",
+      "unknownMember": "Неизвестный",
+      "paidBy": "Оплатил(а) {{name}}",
+      "splitWays_one": "на {{count}} человека",
+      "splitWays_few": "на {{count}} человек",
+      "splitWays_many": "на {{count}} человек",
+      "splitWays_other": "на {{count}} человек",
+      "itemsCount_one": "учтён {{count}} расход",
+      "itemsCount_few": "учтено {{count}} расхода",
+      "itemsCount_many": "учтено {{count}} расходов",
+      "itemsCount_other": "учтено {{count}} расходов",
+      "membersCount_one": "{{count}} участник",
+      "membersCount_few": "{{count}} участника",
+      "membersCount_many": "{{count}} участников",
+      "membersCount_other": "{{count}} участников",
+      "deleted": "Расход удалён",
+      "deleteFailed": "Не удалось удалить расход",
+      "deleteAria": "Удалить расход",
+      "deleteTitle": "Удалить расход",
+      "deleteConfirm": "Удалить этот расход? Отменить нельзя.",
+      "category": {
+        "food": "Еда",
+        "transport": "Транспорт",
+        "accommodation": "Жильё",
+        "activities": "Активности",
+        "shopping": "Покупки",
+        "other": "Другое"
+      }
+    },
+    "reservations": {
+      "emptyTitle": "Пока нет броней",
+      "emptyDescription": "Добавьте рейсы, отели и активности, чтобы всё было под рукой.",
+      "add": "Добавить бронь",
+      "nextUp": "Ближайшее",
+      "deleted": "Бронь удалена",
+      "deleteFailed": "Не удалось удалить бронь",
+      "deleteTitle": "Удалить бронь",
+      "deleteConfirm": "Удалить эту бронь? Отменить нельзя.",
+      "type": {
+        "flight": "Рейсы",
+        "hotel": "Отели",
+        "activity": "Активности",
+        "transport": "Транспорт",
+        "other": "Другое"
+      },
+      "status": {
+        "confirmed": "Подтверждено",
+        "cancelled": "Отменено",
+        "pending": "Ожидает"
+      }
+    },
+    "packing": {
+      "emptyTitle": "Начните список вещей",
+      "emptyDescription": "Добавьте вещи или используйте шаблон, чтобы начать.",
+      "progress": "{{checked}} из {{total}} собрано",
+      "addItem": "Добавить вещь…",
+      "removeAria": "Удалить вещь",
+      "added": "Вещь добавлена",
+      "addFailed": "Не удалось добавить вещь",
+      "removed": "Вещь удалена",
+      "removeFailed": "Не удалось удалить вещь",
+      "templateAdded": "Шаблон добавлен",
+      "templateFailed": "Не удалось добавить шаблон",
+      "templates": {
+        "essentials": "Необходимое",
+        "lgbtq-safety": "Аптечка безопасности ЛГБТ+",
+        "beach": "Пляжный набор"
+      },
+      "category": {
+        "clothing": "Одежда",
+        "toiletries": "Гигиена",
+        "electronics": "Электроника",
+        "documents": "Документы",
+        "safety": "Безопасность",
+        "lgbtq-specific": "Для ЛГБТ+",
+        "other": "Другое"
+      }
+    },
+    "collaborate": {
+      "chat": "Чат",
+      "notes": "Заметки",
+      "polls": "Опросы"
+    }
   }
 }

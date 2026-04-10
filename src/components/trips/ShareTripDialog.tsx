@@ -8,7 +8,8 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
-import { Copy, Trash2, Check, Link2 } from 'lucide-react';
+import { Copy, Trash2, Check, Link2, Lock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +29,12 @@ interface TripShare {
   id: string;
   trip_id: string;
   token: string;
-  permissions: { itinerary: boolean; budget: boolean; notes: boolean; packing: boolean };
+  permissions: {
+    itinerary: boolean;
+    budget: boolean;
+    notes: boolean;
+    packing: boolean;
+  };
   expires_at: string | null;
   created_by: string | null;
   created_at: string;
@@ -40,6 +47,7 @@ interface Props {
 }
 
 export function ShareTripDialog({ open, onClose, tripId }: Props) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -72,7 +80,12 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
         .insert({
           trip_id: tripId,
           created_by: user?.id || null,
-          permissions: { itinerary: true, budget: showBudget, notes: showNotes, packing: showPacking },
+          permissions: {
+            itinerary: true,
+            budget: showBudget,
+            notes: showNotes,
+            packing: showPacking,
+          },
           expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
         })
         .select()
@@ -86,9 +99,14 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
       setShowNotes(false);
       setShowPacking(false);
       setExpiresAt('');
-      toast({ title: 'Share link created' });
+      toast({ title: t('trips.share.created') });
     },
-    onError: (err) => toast({ title: 'Failed to create share link', description: String(err), variant: 'destructive' }),
+    onError: (err) =>
+      toast({
+        title: t('trips.share.createFailed'),
+        description: String(err),
+        variant: 'destructive',
+      }),
   });
 
   const deleteShare = useMutation({
@@ -99,19 +117,22 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trip-shares', tripId] });
       setDeleteConfirmId(null);
-      toast({ title: 'Share link deleted' });
+      toast({ title: t('trips.share.deleted') });
     },
-    onError: (err) => toast({ title: 'Failed to delete share', description: String(err), variant: 'destructive' }),
+    onError: (err) =>
+      toast({
+        title: t('trips.share.deleteFailed'),
+        description: String(err),
+        variant: 'destructive',
+      }),
   });
 
-  const shareUrl = (token: string) => `${window.location.origin}/trips/shared/${token}`;
+  const shareUrl = (token: string) =>
+    `${window.location.origin}/trips/shared/${token}`;
 
   const copyToClipboard = async (token: string) => {
     try {
       await navigator.clipboard.writeText(shareUrl(token));
-      setCopied(token);
-      toast({ title: 'Link copied!' });
-      setTimeout(() => setCopied(null), 2000);
     } catch {
       const input = document.createElement('input');
       input.value = shareUrl(token);
@@ -119,139 +140,260 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
       input.select();
       document.execCommand('copy');
       document.body.removeChild(input);
-      setCopied(token);
-      toast({ title: 'Link copied!' });
-      setTimeout(() => setCopied(null), 2000);
     }
+    setCopied(token);
+    toast({ title: t('trips.share.copied') });
+    setTimeout(() => setCopied(null), 2000);
   };
+
+  const activeShares = (shares || []).filter(
+    (s) => !s.expires_at || new Date(s.expires_at) > new Date(),
+  );
 
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Share Trip</DialogTitle>
+            <DialogTitle>{t('trips.share.title')}</DialogTitle>
+            <DialogDescription>
+              {t('trips.share.description')}
+            </DialogDescription>
           </DialogHeader>
 
           {/* Existing shares */}
           {isLoading ? (
-            <Box className="flex justify-center py-4">
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
               <CircularProgress size={24} />
             </Box>
           ) : (
-            <>
-              {(shares || []).length > 0 && (
-                <Box sx={{ mb: 2, mt: 1 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Active Share Links
-                  </Typography>
-                  {(shares || []).map((share) => {
-                    const isExpired = share.expires_at && new Date(share.expires_at) < new Date();
-                    return (
-                      <Card key={share.id} className="mb-1" style={{ opacity: isExpired ? 0.5 : 1 }}>
-                        <CardContent>
-                          <Box className="flex items-center gap-2">
-                            <Link2 size={14} style={{ flexShrink: 0, opacity: 0.5 }} />
-                            <div className="flex-1 min-w-0">
-                              <Typography variant="body2" noWrap sx={{ fontFamily: 'monospace', fontSize: 12 }}>
-                                {shareUrl(share.token)}
-                              </Typography>
-                              <Box className="flex items-center gap-1.5 mt-0.5">
-                                {share.permissions.budget && <Badge variant="outline">Budget</Badge>}
-                                {share.permissions.notes && <Badge variant="outline">Notes</Badge>}
-                                {share.permissions.packing && <Badge variant="outline">Packing</Badge>}
-                                {share.expires_at && (
-                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10 }}>
-                                    {isExpired ? 'Expired' : `Expires ${new Date(share.expires_at).toLocaleDateString()}`}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </div>
-                            <IconButton
-                              size="small"
-                              onClick={() => copyToClipboard(share.token)}
-                              sx={{ minWidth: 44, minHeight: 44 }}
+            (shares || []).length > 0 && (
+              <Box sx={{ mb: 2, mt: 1 }}>
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  gutterBottom
+                >
+                  {t('trips.share.activeLinks', { count: activeShares.length })}
+                </Typography>
+                {(shares || []).map((share) => {
+                  const isExpired =
+                    share.expires_at && new Date(share.expires_at) < new Date();
+                  return (
+                    <Card
+                      key={share.id}
+                      className="mb-1"
+                      style={{ opacity: isExpired ? 0.5 : 1 }}
+                    >
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Link2 size={14} style={{ flexShrink: 0, opacity: 0.5 }} />
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography
+                              variant="body2"
+                              noWrap
+                              sx={{ fontFamily: 'monospace', fontSize: 12 }}
                             >
-                              {copied === share.token ? <Check size={14} /> : <Copy size={14} />}
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={() => setDeleteConfirmId(share.id)}
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 }, minWidth: 44, minHeight: 44 }}
+                              {shareUrl(share.token)}
+                            </Typography>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.75,
+                                mt: 0.5,
+                                flexWrap: 'wrap',
+                              }}
                             >
-                              <Trash2 size={14} />
-                            </IconButton>
+                              <Badge variant="secondary">
+                                {t('trips.tabs.itinerary')}
+                              </Badge>
+                              {share.permissions.budget && (
+                                <Badge variant="outline">
+                                  {t('trips.tabs.budget')}
+                                </Badge>
+                              )}
+                              {share.permissions.notes && (
+                                <Badge variant="outline">
+                                  {t('trips.collaborate.notes')}
+                                </Badge>
+                              )}
+                              {share.permissions.packing && (
+                                <Badge variant="outline">
+                                  {t('trips.tabs.packing')}
+                                </Badge>
+                              )}
+                              {share.expires_at && (
+                                <Typography
+                                  variant="caption"
+                                  color={isExpired ? 'error' : 'text.secondary'}
+                                  sx={{ fontSize: 10 }}
+                                >
+                                  {isExpired
+                                    ? t('trips.share.expired')
+                                    : t('trips.share.expiresOn', {
+                                        date: new Date(
+                                          share.expires_at,
+                                        ).toLocaleDateString(),
+                                      })}
+                                </Typography>
+                              )}
+                            </Box>
                           </Box>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </Box>
-              )}
-            </>
+                          <IconButton
+                            size="small"
+                            onClick={() => copyToClipboard(share.token)}
+                            aria-label={t('trips.share.copyAria')}
+                            sx={{
+                              minWidth: 40,
+                              minHeight: 40,
+                              color:
+                                copied === share.token ? 'success.main' : undefined,
+                            }}
+                          >
+                            {copied === share.token ? (
+                              <Check size={14} />
+                            ) : (
+                              <Copy size={14} />
+                            )}
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => setDeleteConfirmId(share.id)}
+                            aria-label={t('trips.share.deleteAria')}
+                            sx={{
+                              opacity: 0.5,
+                              '&:hover': { opacity: 1, color: 'error.main' },
+                              minWidth: 40,
+                              minHeight: 40,
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </IconButton>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </Box>
+            )
           )}
 
           <Divider sx={{ my: 2 }} />
 
           <Typography variant="subtitle2" gutterBottom>
-            Create New Share Link
+            {t('trips.share.createNew')}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+            {t('trips.share.previewLabel')}
           </Typography>
 
-          <Box className="flex flex-col gap-1 mb-2">
+          {/* Permissions preview */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0.25,
+              mb: 2,
+            }}
+          >
             <FormControlLabel
               control={<Switch checked disabled size="small" />}
-              label={<Typography variant="body2">Itinerary (always shared)</Typography>}
+              label={
+                <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
+                  <Lock size={12} style={{ opacity: 0.5 }} />
+                  <Typography variant="body2">
+                    {t('trips.share.itineraryAlways')}
+                  </Typography>
+                </Box>
+              }
             />
             <FormControlLabel
-              control={<Switch checked={showBudget} onChange={(e) => setShowBudget(e.target.checked)} size="small" />}
-              label={<Typography variant="body2">Budget</Typography>}
+              control={
+                <Switch
+                  checked={showBudget}
+                  onChange={(e) => setShowBudget(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={<Typography variant="body2">{t('trips.tabs.budget')}</Typography>}
             />
             <FormControlLabel
-              control={<Switch checked={showNotes} onChange={(e) => setShowNotes(e.target.checked)} size="small" />}
-              label={<Typography variant="body2">Notes</Typography>}
+              control={
+                <Switch
+                  checked={showNotes}
+                  onChange={(e) => setShowNotes(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={<Typography variant="body2">{t('trips.collaborate.notes')}</Typography>}
             />
             <FormControlLabel
-              control={<Switch checked={showPacking} onChange={(e) => setShowPacking(e.target.checked)} size="small" />}
-              label={<Typography variant="body2">Packing List</Typography>}
+              control={
+                <Switch
+                  checked={showPacking}
+                  onChange={(e) => setShowPacking(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={<Typography variant="body2">{t('trips.tabs.packing')}</Typography>}
             />
           </Box>
 
           <TextField
-            label="Expires on (optional)"
+            label={t('trips.share.expiresLabel')}
             type="date"
             fullWidth
             size="small"
             value={expiresAt}
             onChange={(e) => setExpiresAt(e.target.value)}
             InputLabelProps={{ shrink: true }}
+            inputProps={{ min: new Date().toISOString().slice(0, 10) }}
           />
 
           <DialogFooter>
-            <Button variant="outline" onClick={onClose}>Close</Button>
+            <Button variant="outline" onClick={onClose}>
+              {t('trips.share.close')}
+            </Button>
             <Button
+              variant="brand"
               onClick={() => createShare.mutate()}
               disabled={createShare.isPending}
             >
-              {createShare.isPending ? <CircularProgress size={16} sx={{ mr: 1 }} /> : <Link2 size={16} style={{ marginRight: 6 }} />}
-              Create Share Link
+              {createShare.isPending ? (
+                <CircularProgress size={16} sx={{ mr: 1, color: 'inherit' }} />
+              ) : (
+                <Link2 size={16} style={{ marginRight: 6 }} />
+              )}
+              {t('trips.share.createButton')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete confirmation */}
-      <Dialog open={!!deleteConfirmId} onOpenChange={(o) => !o && setDeleteConfirmId(null)}>
+      <Dialog
+        open={!!deleteConfirmId}
+        onOpenChange={(o) => !o && setDeleteConfirmId(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Share Link</DialogTitle>
+            <DialogTitle>{t('trips.share.deleteTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('trips.share.deleteConfirm')}
+            </DialogDescription>
           </DialogHeader>
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            Are you sure you want to delete this share link? Anyone with it will lose access.
-          </Typography>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => deleteConfirmId && deleteShare.mutate(deleteConfirmId)}>
-              Delete
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
+              {t('trips.card.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() =>
+                deleteConfirmId && deleteShare.mutate(deleteConfirmId)
+              }
+            >
+              {t('trips.card.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

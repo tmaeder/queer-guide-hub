@@ -68,5 +68,319 @@
     "resources": "Ressourcen",
     "legal": "Rechtliches",
     "copyright": "© {{year}} Alle Rechte vorbehalten."
+  },
+  "trips": {
+    "title": "Meine Reisen",
+    "subtitle": "Plane, organisiere und reise sicher.",
+    "create": "Reise erstellen",
+    "error": "Deine Reisen konnten nicht geladen werden. Bitte versuche es erneut.",
+    "empty": {
+      "title": "Plane deine erste Reise",
+      "description": "Erstelle eine Reiseroute, prüfe LGBTQ+-Sicherheitsinfos für jedes Ziel und behalte alles an einem Ort.",
+      "cta": "Erste Reise erstellen"
+    },
+    "filteredEmpty": {
+      "title": "Keine Reisen gefunden",
+      "description": "Passe deine Suche oder den Filter an.",
+      "cta": "Filter zurücksetzen"
+    },
+    "status": {
+      "planning": "In Planung",
+      "active": "Läuft",
+      "completed": "Abgeschlossen",
+      "archived": "Archiviert"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Reisen durchsuchen…",
+      "searchAria": "Reisen durchsuchen",
+      "statusAria": "Reisen nach Status filtern",
+      "sortAria": "Reisen sortieren",
+      "status": {
+        "all": "Alle",
+        "planning": "In Planung",
+        "active": "Laufend",
+        "completed": "Abgeschlossen",
+        "archived": "Archiviert"
+      },
+      "sort": {
+        "recent": "Zuletzt aktualisiert",
+        "start_date": "Startdatum",
+        "alphabetical": "Alphabetisch"
+      }
+    },
+    "signedOut": {
+      "badge": "Reiseplaner",
+      "title": "Plane Reisen, die dich schützen.",
+      "subtitle": "Erstelle queer-freundliche Routen, sieh LGBTQ+-Sicherheitsinfos für jedes Ziel und plane gemeinsam mit deinen Mitreisenden.",
+      "primaryCta": "Anmelden und Reise planen",
+      "secondaryCta": "So funktioniert's",
+      "safeLabel": "Sicher",
+      "daysLabel_one": "{{count}} Tag",
+      "daysLabel_other": "{{count}} Tage",
+      "bullets": {
+        "safety": {
+          "title": "Sicherheits-Briefings",
+          "body": "LGBTQ+-Rechtslage und lokaler Kontext für jedes Land deiner Route."
+        },
+        "itinerary": {
+          "title": "Drag-and-drop-Routen",
+          "body": "Gestalte deine Tage visuell und ordne Stopps in Sekunden neu."
+        },
+        "collaborate": {
+          "title": "Gemeinsam reisen",
+          "body": "Teile Notizen, chatte und teile Budgets mit deinen Mitreisenden."
+        }
+      },
+      "samples": {
+        "berlin": "Pride Week Berlin",
+        "barcelona": "Barcelona: Strand und Nacht",
+        "bangkok": "Bangkok und Phuket Explorer"
+      }
+    },
+    "card": {
+      "fromDate": "Ab {{date}}",
+      "noDates": "Keine Daten",
+      "placeCount_one": "{{count}} Ort",
+      "placeCount_other": "{{count}} Orte",
+      "dayCount_one": "{{count}} Tag",
+      "dayCount_other": "{{count}} Tage",
+      "memberCount_one": "{{count}} Mitglied",
+      "memberCount_other": "{{count}} Mitglieder",
+      "ariaLabel": "Reise {{title}} öffnen",
+      "menuAria": "Reise-Optionen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "deleting": "Wird gelöscht…",
+      "cancel": "Abbrechen",
+      "deleteTitle": "Reise löschen",
+      "deleteConfirm": "Möchtest du \"{{title}}\" wirklich löschen? Das lässt sich nicht rückgängig machen."
+    },
+    "toast": {
+      "created": "Reise erstellt",
+      "createdDescription": "Füge jetzt Reiseziele hinzu.",
+      "deleted": "Reise gelöscht",
+      "deletedDescription": "\"{{title}}\" wurde entfernt.",
+      "error": "Etwas ist schiefgelaufen"
+    },
+    "dialog": {
+      "create": {
+        "title": "Reise erstellen",
+        "description": "Wohin geht's? Reiseziele und Sicherheitsinfos kannst du später ergänzen.",
+        "titleField": "Titel der Reise",
+        "titlePlaceholder": "z. B. Pride Week Berlin 2026",
+        "descriptionField": "Beschreibung",
+        "descriptionPlaceholder": "Worum geht's auf dieser Reise?",
+        "startDate": "Startdatum",
+        "endDate": "Enddatum",
+        "currency": "Währung",
+        "submit": "Reise erstellen",
+        "cancel": "Abbrechen",
+        "endBeforeStart": "Das Enddatum muss nach dem Startdatum liegen.",
+        "failed": "Reise konnte nicht erstellt werden. Bitte versuche es erneut."
+      }
+    },
+    "backToTrips": "Zurück zu Reisen",
+    "planner": {
+      "loadFailed": "Diese Reise konnte nicht geladen werden.",
+      "notFound": "Reise nicht gefunden.",
+      "progressTooltip": "Planungsfortschritt",
+      "days_one": "{{count}} Tag",
+      "days_other": "{{count}} Tage",
+      "placesCount_one": "{{count}} Ort",
+      "placesCount_other": "{{count}} Orte",
+      "daysPlanned_one": "{{count}} Tag geplant",
+      "daysPlanned_other": "{{count}} Tage geplant"
+    },
+    "share": {
+      "title": "Reise teilen",
+      "description": "Erstelle einen Link, den jede*r öffnen kann — kein Konto nötig.",
+      "activeLinks_one": "{{count}} aktiver Link",
+      "activeLinks_other": "{{count}} aktive Links",
+      "createNew": "Neuen Link erstellen",
+      "previewLabel": "Empfänger*innen sehen:",
+      "itineraryAlways": "Reiseroute (immer geteilt)",
+      "expiresLabel": "Läuft ab am (optional)",
+      "createButton": "Link erstellen",
+      "close": "Schließen",
+      "created": "Link erstellt",
+      "createFailed": "Link konnte nicht erstellt werden",
+      "deleted": "Link gelöscht",
+      "deleteFailed": "Link konnte nicht gelöscht werden",
+      "copied": "Link kopiert",
+      "copyAria": "Link kopieren",
+      "deleteAria": "Link löschen",
+      "deleteTitle": "Link löschen",
+      "deleteConfirm": "Alle mit diesem Link verlieren den Zugriff. Das lässt sich nicht rückgängig machen.",
+      "expired": "Abgelaufen",
+      "expiresOn": "Läuft ab am {{date}}"
+    },
+    "itinerary": {
+      "add": "Hinzufügen",
+      "addPlace": "Ort hinzufügen",
+      "unassigned": "Nicht zugeordnet",
+      "unassignedHint": "Zieh sie in einen Tag, um sie einzuplanen.",
+      "emptyTitle": "Deine Route ist leer",
+      "emptyDescription": "Füge deinen ersten Ort hinzu, um loszulegen.",
+      "dayShort": "Tag",
+      "dropHere": "Orte hierher ziehen oder auf Hinzufügen klicken",
+      "dayTitlePlaceholder": "Tagesname…",
+      "editDayTitle": "Tagesname bearbeiten",
+      "saveDayTitle": "Tagesname speichern",
+      "reordered": "Ort neu sortiert",
+      "moved": "Ort verschoben",
+      "removed": "Ort entfernt",
+      "dayUpdated": "Tag aktualisiert",
+      "dragHandleAria": "Zum Sortieren ziehen"
+    },
+    "map": {
+      "emptyNoPlaces": "Füge Orte hinzu, um sie auf der Karte zu sehen",
+      "emptyNoCoords": "Keiner deiner Orte hat Koordinaten",
+      "fitAll": "Alles zeigen",
+      "fitAllAria": "Alle Orte einpassen",
+      "filterAll": "Alle Tage",
+      "dayLabel": "Tag {{number}}"
+    },
+    "safety": {
+      "emptyTitle": "Noch keine Sicherheitsinfos",
+      "emptyDescription": "Füge Ziele zu deiner Reise hinzu, und wir zeigen dir den LGBTQ+-Rechtsstatus und den lokalen Kontext für jedes Land.",
+      "crossBorderHeading": "Warnungen beim Grenzübertritt",
+      "countriesHeading": "Länder deiner Reise",
+      "crossBorderTitle": "Starker Rückgang von {{from}} nach {{to}}",
+      "crossBorderBody": "Der Gleichstellungs-Score fällt um {{drop}} Punkte. Prüfe lokale Gesetze und Risiken vor dem Grenzübertritt.",
+      "dataSource": "Daten aus der ILGA World-Datenbank, jährlich aktualisiert. Scores sind ein Anhaltspunkt, keine Garantie — prüfe aktuelle Nachrichten vor der Reise.",
+      "basedOn_one": "Basiert auf LGBTQ+-Gleichstellungsdaten für {{count}} Land deiner Reise.",
+      "basedOn_other": "Basiert auf LGBTQ+-Gleichstellungsdaten für {{count}} Länder deiner Reise.",
+      "worstCountry": "Niedrigster Score: {{country}} ({{score}}/100).",
+      "stops_one": "{{count}} Stopp",
+      "stops_other": "{{count}} Stopps",
+      "warningCount_one": "{{count}} Warnung",
+      "warningCount_other": "{{count}} Warnungen",
+      "toggleDetails": "Details für {{country}} umschalten",
+      "viewOnIlga": "In der ILGA-Datenbank ansehen",
+      "risk": {
+        "low": "Geringes Risiko",
+        "moderate": "Mittleres Risiko",
+        "high": "Hohes Risiko",
+        "critical": "Kritisches Risiko"
+      },
+      "headline": {
+        "low": "Deine Reise sieht sicher aus.",
+        "moderate": "Etwas Vorsicht ist geboten.",
+        "high": "Hohes Risiko auf deiner Route.",
+        "critical": "Kritisches Risiko auf deiner Route."
+      },
+      "flags": {
+        "deathPenalty": "Todesstrafe für gleichgeschlechtliche Beziehungen in Kraft",
+        "criminalized": "Gleichgeschlechtliche Beziehungen sind kriminalisiert"
+      },
+      "scoreLabel": {
+        "veryHigh": "Sehr hoch",
+        "high": "Hoch",
+        "moderate": "Mittel",
+        "low": "Niedrig",
+        "veryLow": "Sehr niedrig",
+        "noData": "Keine Daten"
+      },
+      "detail": {
+        "criminalized": {
+          "label": "Rechtslage",
+          "value": "Gleichgeschlechtliche Beziehungen sind illegal"
+        },
+        "deathPenalty": {
+          "label": "Höchststrafe",
+          "value": "Todesstrafe möglich"
+        },
+        "ssu": "Gleichgeschlechtliche Partnerschaften",
+        "employment": "Arbeitsrechtlicher Schutz"
+      },
+      "tip": {
+        "safe": "Breite LGBTQ+-Akzeptanz. Gehe mit öffentlichen Zuneigungsbekundungen so um wie überall sonst.",
+        "caution": "Sei mit öffentlichen Zuneigungsbekundungen vorsichtig. Recherchiere die Stadt und lies aktuelle Reiseberichte.",
+        "danger": "Nimm das Risiko ernst. Vermeide öffentliche Zuneigungsbekundungen und Dating-Apps und halte dich bedeckt."
+      }
+    },
+    "budget": {
+      "emptyTitle": "Noch keine Ausgaben",
+      "emptyDescription": "Verfolge Ausgaben und teile Kosten mit deiner Gruppe.",
+      "addExpense": "Ausgabe hinzufügen",
+      "totalSpend": "Gesamtausgaben",
+      "spendingByCategory": "Ausgaben nach Kategorie",
+      "settlements": "Ausgleich",
+      "unknownMember": "Unbekannt",
+      "paidBy": "Bezahlt von {{name}}",
+      "splitWays_one": "auf {{count}} Person aufgeteilt",
+      "splitWays_other": "auf {{count}} Personen aufgeteilt",
+      "itemsCount_one": "{{count}} Ausgabe erfasst",
+      "itemsCount_other": "{{count}} Ausgaben erfasst",
+      "membersCount_one": "{{count}} Mitglied",
+      "membersCount_other": "{{count}} Mitglieder",
+      "deleted": "Ausgabe gelöscht",
+      "deleteFailed": "Ausgabe konnte nicht gelöscht werden",
+      "deleteAria": "Ausgabe löschen",
+      "deleteTitle": "Ausgabe löschen",
+      "deleteConfirm": "Diese Ausgabe wirklich löschen? Das lässt sich nicht rückgängig machen.",
+      "category": {
+        "food": "Essen",
+        "transport": "Transport",
+        "accommodation": "Unterkunft",
+        "activities": "Aktivitäten",
+        "shopping": "Shopping",
+        "other": "Sonstiges"
+      }
+    },
+    "reservations": {
+      "emptyTitle": "Noch keine Buchungen",
+      "emptyDescription": "Füge Flüge, Hotels und Aktivitäten hinzu, um alles an einem Ort zu haben.",
+      "add": "Buchung hinzufügen",
+      "nextUp": "Als Nächstes",
+      "deleted": "Buchung gelöscht",
+      "deleteFailed": "Buchung konnte nicht gelöscht werden",
+      "deleteTitle": "Buchung löschen",
+      "deleteConfirm": "Diese Buchung wirklich löschen? Das lässt sich nicht rückgängig machen.",
+      "type": {
+        "flight": "Flüge",
+        "hotel": "Hotels",
+        "activity": "Aktivitäten",
+        "transport": "Transport",
+        "other": "Sonstiges"
+      },
+      "status": {
+        "confirmed": "Bestätigt",
+        "cancelled": "Storniert",
+        "pending": "Ausstehend"
+      }
+    },
+    "packing": {
+      "emptyTitle": "Starte deine Packliste",
+      "emptyDescription": "Füge Dinge hinzu oder nutze eine Vorlage.",
+      "progress": "{{checked}} von {{total}} gepackt",
+      "addItem": "Artikel hinzufügen…",
+      "removeAria": "Artikel entfernen",
+      "added": "Artikel hinzugefügt",
+      "addFailed": "Artikel konnte nicht hinzugefügt werden",
+      "removed": "Artikel entfernt",
+      "removeFailed": "Artikel konnte nicht entfernt werden",
+      "templateAdded": "Vorlage hinzugefügt",
+      "templateFailed": "Vorlage konnte nicht hinzugefügt werden",
+      "templates": {
+        "essentials": "Essentials",
+        "lgbtq-safety": "LGBTQ+-Sicherheitskit",
+        "beach": "Strand-Kit"
+      },
+      "category": {
+        "clothing": "Kleidung",
+        "toiletries": "Hygiene",
+        "electronics": "Elektronik",
+        "documents": "Dokumente",
+        "safety": "Sicherheit",
+        "lgbtq-specific": "LGBTQ+-spezifisch",
+        "other": "Sonstiges"
+      }
+    },
+    "collaborate": {
+      "chat": "Chat",
+      "notes": "Notizen",
+      "polls": "Abstimmungen"
+    }
   }
 }

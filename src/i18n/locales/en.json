@@ -226,5 +226,319 @@
     "thankYou": "Thank you!",
     "successMessage": "Your donation helps keep queer.guide free and accessible for the LGBTQ+ community worldwide.",
     "backHome": "Back to home"
+  },
+  "trips": {
+    "title": "My Trips",
+    "subtitle": "Plan, organize, and travel safely.",
+    "create": "Create Trip",
+    "error": "Couldn't load your trips. Please try again.",
+    "empty": {
+      "title": "Plan your first trip",
+      "description": "Start an itinerary, check LGBTQ+ safety for every destination, and keep everything in one place.",
+      "cta": "Create your first trip"
+    },
+    "filteredEmpty": {
+      "title": "No trips match",
+      "description": "Try adjusting your search or filter.",
+      "cta": "Clear filters"
+    },
+    "status": {
+      "planning": "Planning",
+      "active": "Active",
+      "completed": "Completed",
+      "archived": "Archived"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search your trips…",
+      "searchAria": "Search trips",
+      "statusAria": "Filter trips by status",
+      "sortAria": "Sort trips",
+      "status": {
+        "all": "All",
+        "planning": "Planning",
+        "active": "Active",
+        "completed": "Completed",
+        "archived": "Archived"
+      },
+      "sort": {
+        "recent": "Recently updated",
+        "start_date": "Start date",
+        "alphabetical": "Alphabetical"
+      }
+    },
+    "signedOut": {
+      "badge": "Trip planner",
+      "title": "Plan trips that keep you safe.",
+      "subtitle": "Build queer-friendly itineraries, see LGBTQ+ safety info for every destination, and plan together with the people you travel with.",
+      "primaryCta": "Sign in to plan a trip",
+      "secondaryCta": "See how it works",
+      "safeLabel": "Safe",
+      "daysLabel_one": "{{count}} day",
+      "daysLabel_other": "{{count}} days",
+      "bullets": {
+        "safety": {
+          "title": "Safety briefings",
+          "body": "LGBTQ+ legal status and local context for every country on your route."
+        },
+        "itinerary": {
+          "title": "Drag-drop itineraries",
+          "body": "Build your days visually and reorder stops in seconds."
+        },
+        "collaborate": {
+          "title": "Travel together",
+          "body": "Share notes, chat, and split budgets with your travel companions."
+        }
+      },
+      "samples": {
+        "berlin": "Pride Week Berlin",
+        "barcelona": "Barcelona Beach & Nightlife",
+        "bangkok": "Bangkok & Phuket Explorer"
+      }
+    },
+    "card": {
+      "fromDate": "From {{date}}",
+      "noDates": "No dates set",
+      "placeCount_one": "{{count}} place",
+      "placeCount_other": "{{count}} places",
+      "dayCount_one": "{{count}} day",
+      "dayCount_other": "{{count}} days",
+      "memberCount_one": "{{count}} member",
+      "memberCount_other": "{{count}} members",
+      "ariaLabel": "Open trip {{title}}",
+      "menuAria": "Trip options",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "cancel": "Cancel",
+      "deleteTitle": "Delete trip",
+      "deleteConfirm": "Are you sure you want to delete \"{{title}}\"? This can't be undone."
+    },
+    "toast": {
+      "created": "Trip created",
+      "createdDescription": "Start adding destinations.",
+      "deleted": "Trip deleted",
+      "deletedDescription": "\"{{title}}\" was removed.",
+      "error": "Something went wrong"
+    },
+    "dialog": {
+      "create": {
+        "title": "Create a trip",
+        "description": "Where are you going? You can add destinations and safety info after.",
+        "titleField": "Trip title",
+        "titlePlaceholder": "e.g. Pride Week Berlin 2026",
+        "descriptionField": "Description",
+        "descriptionPlaceholder": "What's this trip about?",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "currency": "Currency",
+        "submit": "Create trip",
+        "cancel": "Cancel",
+        "endBeforeStart": "End date must be after start date.",
+        "failed": "Couldn't create your trip. Please try again."
+      }
+    },
+    "backToTrips": "Back to trips",
+    "planner": {
+      "loadFailed": "Couldn't load this trip.",
+      "notFound": "Trip not found.",
+      "progressTooltip": "Trip planning progress",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "placesCount_one": "{{count}} place",
+      "placesCount_other": "{{count}} places",
+      "daysPlanned_one": "{{count}} day planned",
+      "daysPlanned_other": "{{count}} days planned"
+    },
+    "share": {
+      "title": "Share this trip",
+      "description": "Create a link anyone can open — no account needed.",
+      "activeLinks_one": "{{count}} active link",
+      "activeLinks_other": "{{count}} active links",
+      "createNew": "Create a new share link",
+      "previewLabel": "Recipients will see:",
+      "itineraryAlways": "Itinerary (always shared)",
+      "expiresLabel": "Expires on (optional)",
+      "createButton": "Create share link",
+      "close": "Close",
+      "created": "Share link created",
+      "createFailed": "Couldn't create the share link",
+      "deleted": "Share link deleted",
+      "deleteFailed": "Couldn't delete the share link",
+      "copied": "Link copied",
+      "copyAria": "Copy link",
+      "deleteAria": "Delete link",
+      "deleteTitle": "Delete share link",
+      "deleteConfirm": "Anyone with this link will lose access. This can't be undone.",
+      "expired": "Expired",
+      "expiresOn": "Expires {{date}}"
+    },
+    "itinerary": {
+      "add": "Add",
+      "addPlace": "Add place",
+      "unassigned": "Unassigned",
+      "unassignedHint": "Drag these into a day to schedule them.",
+      "emptyTitle": "Your itinerary is empty",
+      "emptyDescription": "Add your first place to start planning.",
+      "dayShort": "Day",
+      "dropHere": "Drag places here or click Add",
+      "dayTitlePlaceholder": "Day title…",
+      "editDayTitle": "Edit day title",
+      "saveDayTitle": "Save day title",
+      "reordered": "Place reordered",
+      "moved": "Place moved",
+      "removed": "Place removed",
+      "dayUpdated": "Day updated",
+      "dragHandleAria": "Drag to reorder"
+    },
+    "map": {
+      "emptyNoPlaces": "Add places to see them on the map",
+      "emptyNoCoords": "None of your places have coordinates yet",
+      "fitAll": "Fit all",
+      "fitAllAria": "Fit all places into view",
+      "filterAll": "All days",
+      "dayLabel": "Day {{number}}"
+    },
+    "safety": {
+      "emptyTitle": "No safety info yet",
+      "emptyDescription": "Add destinations to your trip and we'll pull LGBTQ+ legal status and local context for each country.",
+      "crossBorderHeading": "Cross-border warnings",
+      "countriesHeading": "Countries on your trip",
+      "crossBorderTitle": "Sharp drop from {{from}} to {{to}}",
+      "crossBorderBody": "Equality score drops by {{drop}} points. Review local laws and risks before crossing.",
+      "dataSource": "Data from ILGA World database, updated yearly. Scores are a guide, not a guarantee — check current news before you travel.",
+      "basedOn_one": "Based on LGBTQ+ equality data for {{count}} country on your trip.",
+      "basedOn_other": "Based on LGBTQ+ equality data for {{count}} countries on your trip.",
+      "worstCountry": "Lowest score: {{country}} ({{score}}/100).",
+      "stops_one": "{{count}} stop",
+      "stops_other": "{{count}} stops",
+      "warningCount_one": "{{count}} warning",
+      "warningCount_other": "{{count}} warnings",
+      "toggleDetails": "Toggle details for {{country}}",
+      "viewOnIlga": "View on ILGA database",
+      "risk": {
+        "low": "Low risk",
+        "moderate": "Moderate risk",
+        "high": "High risk",
+        "critical": "Critical risk"
+      },
+      "headline": {
+        "low": "Your trip looks safe.",
+        "moderate": "Some caution needed.",
+        "high": "High risk on your route.",
+        "critical": "Critical risk on your route."
+      },
+      "flags": {
+        "deathPenalty": "Death penalty in effect for same-sex relations",
+        "criminalized": "Same-sex relations are criminalized"
+      },
+      "scoreLabel": {
+        "veryHigh": "Very high",
+        "high": "High",
+        "moderate": "Moderate",
+        "low": "Low",
+        "veryLow": "Very low",
+        "noData": "No data"
+      },
+      "detail": {
+        "criminalized": {
+          "label": "Legal status",
+          "value": "Same-sex relations are illegal"
+        },
+        "deathPenalty": {
+          "label": "Maximum penalty",
+          "value": "Death penalty applies"
+        },
+        "ssu": "Same-sex unions",
+        "employment": "Employment protection"
+      },
+      "tip": {
+        "safe": "Broad LGBTQ+ acceptance. Use common sense with public affection as you would anywhere.",
+        "caution": "Be mindful of public affection. Research the specific city and read recent travel reports.",
+        "danger": "Consider travel risk seriously. Avoid public displays of affection and dating apps, and keep a low profile."
+      }
+    },
+    "budget": {
+      "emptyTitle": "No expenses yet",
+      "emptyDescription": "Track spending and split costs with your group.",
+      "addExpense": "Add expense",
+      "totalSpend": "Total spend",
+      "spendingByCategory": "Spending by category",
+      "settlements": "Settlements",
+      "unknownMember": "Unknown",
+      "paidBy": "Paid by {{name}}",
+      "splitWays_one": "split {{count}} way",
+      "splitWays_other": "split {{count}} ways",
+      "itemsCount_one": "{{count}} expense tracked",
+      "itemsCount_other": "{{count}} expenses tracked",
+      "membersCount_one": "{{count}} member",
+      "membersCount_other": "{{count}} members",
+      "deleted": "Expense deleted",
+      "deleteFailed": "Couldn't delete the expense",
+      "deleteAria": "Delete expense",
+      "deleteTitle": "Delete expense",
+      "deleteConfirm": "Are you sure you want to delete this expense? This can't be undone.",
+      "category": {
+        "food": "Food",
+        "transport": "Transport",
+        "accommodation": "Accommodation",
+        "activities": "Activities",
+        "shopping": "Shopping",
+        "other": "Other"
+      }
+    },
+    "reservations": {
+      "emptyTitle": "No reservations yet",
+      "emptyDescription": "Add flights, hotels, and activities to keep everything organized.",
+      "add": "Add reservation",
+      "nextUp": "Next up",
+      "deleted": "Reservation deleted",
+      "deleteFailed": "Couldn't delete the reservation",
+      "deleteTitle": "Delete reservation",
+      "deleteConfirm": "Are you sure you want to delete this reservation? This can't be undone.",
+      "type": {
+        "flight": "Flights",
+        "hotel": "Hotels",
+        "activity": "Activities",
+        "transport": "Transport",
+        "other": "Other"
+      },
+      "status": {
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "pending": "Pending"
+      }
+    },
+    "packing": {
+      "emptyTitle": "Start your packing list",
+      "emptyDescription": "Add items or use a template to get started.",
+      "progress": "{{checked}} of {{total}} packed",
+      "addItem": "Add item…",
+      "removeAria": "Remove item",
+      "added": "Item added",
+      "addFailed": "Couldn't add the item",
+      "removed": "Item removed",
+      "removeFailed": "Couldn't remove the item",
+      "templateAdded": "Template added",
+      "templateFailed": "Couldn't add the template",
+      "templates": {
+        "essentials": "Essentials",
+        "lgbtq-safety": "LGBTQ+ safety kit",
+        "beach": "Beach pack"
+      },
+      "category": {
+        "clothing": "Clothing",
+        "toiletries": "Toiletries",
+        "electronics": "Electronics",
+        "documents": "Documents",
+        "safety": "Safety",
+        "lgbtq-specific": "LGBTQ+ specific",
+        "other": "Other"
+      }
+    },
+    "collaborate": {
+      "chat": "Chat",
+      "notes": "Notes",
+      "polls": "Polls"
+    }
   }
 }

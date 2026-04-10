@@ -68,5 +68,305 @@
     "resources": "الموارد",
     "legal": "قانوني",
     "copyright": "© {{year}} جميع الحقوق محفوظة."
+  },
+  "trips": {
+    "title": "رحلاتي",
+    "subtitle": "خطط ونظم وسافر بأمان.",
+    "create": "إنشاء رحلة",
+    "error": "تعذّر تحميل رحلاتك. يرجى المحاولة مرة أخرى.",
+    "empty": {
+      "title": "خطّط لأول رحلة لك",
+      "description": "أنشئ مسارًا، وتحقق من معلومات الأمان لمجتمع الميم لكل وجهة، واحتفظ بكل شيء في مكان واحد.",
+      "cta": "إنشاء أول رحلة"
+    },
+    "filteredEmpty": {
+      "title": "لا توجد رحلات مطابقة",
+      "description": "جرّب تعديل البحث أو الفلاتر.",
+      "cta": "مسح الفلاتر"
+    },
+    "status": {
+      "planning": "قيد التخطيط",
+      "active": "نشطة",
+      "completed": "مكتملة",
+      "archived": "مؤرشفة"
+    },
+    "toolbar": {
+      "searchPlaceholder": "ابحث في رحلاتك…",
+      "searchAria": "البحث في الرحلات",
+      "statusAria": "تصفية الرحلات حسب الحالة",
+      "sortAria": "ترتيب الرحلات",
+      "status": {
+        "all": "الكل",
+        "planning": "قيد التخطيط",
+        "active": "نشطة",
+        "completed": "مكتملة",
+        "archived": "مؤرشفة"
+      },
+      "sort": {
+        "recent": "آخر التحديثات",
+        "start_date": "تاريخ البدء",
+        "alphabetical": "أبجديًا"
+      }
+    },
+    "signedOut": {
+      "badge": "مخطط الرحلات",
+      "title": "خطّط لرحلات تحميك.",
+      "subtitle": "أنشئ مسارات صديقة لمجتمع الميم، واطلع على معلومات الأمان لكل وجهة، وخطّط مع رفاق سفرك.",
+      "primaryCta": "سجّل الدخول لتخطيط رحلة",
+      "secondaryCta": "شاهد كيف يعمل",
+      "safeLabel": "آمن",
+      "daysLabel_other": "{{count}} يوم",
+      "bullets": {
+        "safety": {
+          "title": "تقارير الأمان",
+          "body": "الوضع القانوني والسياق المحلي لكل بلد في مسارك."
+        },
+        "itinerary": {
+          "title": "مسارات بالسحب والإفلات",
+          "body": "نظّم أيامك بصريًا وأعد ترتيب المحطات في ثوانٍ."
+        },
+        "collaborate": {
+          "title": "سافروا معًا",
+          "body": "شاركوا الملاحظات والمحادثات والميزانية مع رفاق السفر."
+        }
+      },
+      "samples": {
+        "berlin": "أسبوع الفخر في برلين",
+        "barcelona": "برشلونة: الشاطئ والليل",
+        "bangkok": "مستكشف بانكوك وبوكيت"
+      }
+    },
+    "card": {
+      "fromDate": "من {{date}}",
+      "noDates": "بدون تواريخ",
+      "placeCount_other": "{{count}} مكان",
+      "dayCount_other": "{{count}} يوم",
+      "memberCount_other": "{{count}} عضو",
+      "ariaLabel": "فتح الرحلة {{title}}",
+      "menuAria": "خيارات الرحلة",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "deleting": "جارٍ الحذف…",
+      "cancel": "إلغاء",
+      "deleteTitle": "حذف الرحلة",
+      "deleteConfirm": "هل أنت متأكد من حذف \"{{title}}\"؟ لا يمكن التراجع عن هذا الإجراء."
+    },
+    "toast": {
+      "created": "تم إنشاء الرحلة",
+      "createdDescription": "ابدأ بإضافة الوجهات.",
+      "deleted": "تم حذف الرحلة",
+      "deletedDescription": "تمت إزالة \"{{title}}\".",
+      "error": "حدث خطأ ما"
+    },
+    "dialog": {
+      "create": {
+        "title": "إنشاء رحلة",
+        "description": "إلى أين أنت ذاهب؟ يمكنك إضافة الوجهات ومعلومات الأمان لاحقًا.",
+        "titleField": "عنوان الرحلة",
+        "titlePlaceholder": "مثل: أسبوع الفخر برلين 2026",
+        "descriptionField": "الوصف",
+        "descriptionPlaceholder": "عمّ تدور هذه الرحلة؟",
+        "startDate": "تاريخ البدء",
+        "endDate": "تاريخ الانتهاء",
+        "currency": "العملة",
+        "submit": "إنشاء الرحلة",
+        "cancel": "إلغاء",
+        "endBeforeStart": "يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء.",
+        "failed": "تعذّر إنشاء الرحلة. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "backToTrips": "العودة إلى الرحلات",
+    "planner": {
+      "loadFailed": "تعذّر تحميل هذه الرحلة.",
+      "notFound": "الرحلة غير موجودة.",
+      "progressTooltip": "تقدم تخطيط الرحلة",
+      "days_other": "{{count}} يوم",
+      "placesCount_other": "{{count}} مكان",
+      "daysPlanned_other": "تم التخطيط لـ {{count}} يوم"
+    },
+    "share": {
+      "title": "مشاركة هذه الرحلة",
+      "description": "أنشئ رابطًا يمكن لأي شخص فتحه دون الحاجة إلى حساب.",
+      "activeLinks_other": "{{count}} رابط نشط",
+      "createNew": "إنشاء رابط مشاركة جديد",
+      "previewLabel": "ما سيراه المستلمون:",
+      "itineraryAlways": "المسار (تتم مشاركته دائمًا)",
+      "expiresLabel": "ينتهي في (اختياري)",
+      "createButton": "إنشاء الرابط",
+      "close": "إغلاق",
+      "created": "تم إنشاء الرابط",
+      "createFailed": "تعذّر إنشاء الرابط",
+      "deleted": "تم حذف الرابط",
+      "deleteFailed": "تعذّر حذف الرابط",
+      "copied": "تم نسخ الرابط",
+      "copyAria": "نسخ الرابط",
+      "deleteAria": "حذف الرابط",
+      "deleteTitle": "حذف رابط المشاركة",
+      "deleteConfirm": "سيفقد كل من يملك هذا الرابط حق الوصول. لا يمكن التراجع عن هذا.",
+      "expired": "منتهي",
+      "expiresOn": "ينتهي في {{date}}"
+    },
+    "itinerary": {
+      "add": "إضافة",
+      "addPlace": "إضافة مكان",
+      "unassigned": "غير مجدولة",
+      "unassignedHint": "اسحبها إلى يوم لجدولتها.",
+      "emptyTitle": "مسارك فارغ",
+      "emptyDescription": "أضف أول مكان لبدء التخطيط.",
+      "dayShort": "يوم",
+      "dropHere": "اسحب الأماكن إلى هنا أو اضغط على إضافة",
+      "dayTitlePlaceholder": "عنوان اليوم…",
+      "editDayTitle": "تعديل عنوان اليوم",
+      "saveDayTitle": "حفظ عنوان اليوم",
+      "reordered": "تمت إعادة ترتيب المكان",
+      "moved": "تم نقل المكان",
+      "removed": "تمت إزالة المكان",
+      "dayUpdated": "تم تحديث اليوم",
+      "dragHandleAria": "اسحب لإعادة الترتيب"
+    },
+    "map": {
+      "emptyNoPlaces": "أضف أماكن لعرضها على الخريطة",
+      "emptyNoCoords": "لا يحتوي أي من أماكنك على إحداثيات",
+      "fitAll": "عرض الكل",
+      "fitAllAria": "ضبط كل الأماكن على الشاشة",
+      "filterAll": "كل الأيام",
+      "dayLabel": "اليوم {{number}}"
+    },
+    "safety": {
+      "emptyTitle": "لا توجد معلومات أمان بعد",
+      "emptyDescription": "أضف وجهات إلى رحلتك وسنعرض لك الوضع القانوني لمجتمع الميم والسياق المحلي لكل بلد.",
+      "crossBorderHeading": "تحذيرات عبور الحدود",
+      "countriesHeading": "دول رحلتك",
+      "crossBorderTitle": "انخفاض حاد من {{from}} إلى {{to}}",
+      "crossBorderBody": "ينخفض مؤشر المساواة بمقدار {{drop}} نقطة. راجع القوانين المحلية والمخاطر قبل العبور.",
+      "dataSource": "البيانات من قاعدة ILGA World، تُحدَّث سنويًا. الدرجات دليل إرشادي وليست ضمانًا — تحقق من الأخبار الحديثة قبل السفر.",
+      "basedOn_other": "استنادًا إلى بيانات المساواة لمجتمع الميم في {{count}} بلد من رحلتك.",
+      "worstCountry": "أدنى درجة: {{country}} ({{score}}/100).",
+      "stops_other": "{{count}} محطات",
+      "warningCount_other": "{{count}} تحذيرات",
+      "toggleDetails": "إظهار تفاصيل {{country}}",
+      "viewOnIlga": "اطلع على قاعدة ILGA",
+      "risk": {
+        "low": "خطر منخفض",
+        "moderate": "خطر متوسط",
+        "high": "خطر مرتفع",
+        "critical": "خطر حرج"
+      },
+      "headline": {
+        "low": "رحلتك تبدو آمنة.",
+        "moderate": "يُستحسن الحذر.",
+        "high": "يوجد خطر مرتفع في مسارك.",
+        "critical": "يوجد خطر حرج في مسارك."
+      },
+      "flags": {
+        "deathPenalty": "عقوبة الإعدام مطبّقة على العلاقات المثلية",
+        "criminalized": "العلاقات المثلية مُجرّمة"
+      },
+      "scoreLabel": {
+        "veryHigh": "مرتفعة جدًا",
+        "high": "مرتفعة",
+        "moderate": "متوسطة",
+        "low": "منخفضة",
+        "veryLow": "منخفضة جدًا",
+        "noData": "لا توجد بيانات"
+      },
+      "detail": {
+        "criminalized": {
+          "label": "الحالة القانونية",
+          "value": "العلاقات المثلية غير قانونية"
+        },
+        "deathPenalty": {
+          "label": "العقوبة القصوى",
+          "value": "تُطبّق عقوبة الإعدام"
+        },
+        "ssu": "الاتحادات المثلية",
+        "employment": "الحماية في العمل"
+      },
+      "tip": {
+        "safe": "قبول واسع لمجتمع الميم. استخدم الحس السليم في إظهار المودة علنًا كما في أي مكان آخر.",
+        "caution": "كن حذرًا بإظهار المودة علنًا. ابحث عن المدينة واقرأ تقارير سفر حديثة.",
+        "danger": "تعامل مع الخطر بجدية. تجنّب إظهار المودة علنًا وتطبيقات المواعدة، وحافظ على ملف منخفض."
+      }
+    },
+    "budget": {
+      "emptyTitle": "لا توجد نفقات بعد",
+      "emptyDescription": "تتبّع المصاريف وقسّم التكاليف مع مجموعتك.",
+      "addExpense": "إضافة نفقة",
+      "totalSpend": "إجمالي الإنفاق",
+      "spendingByCategory": "الإنفاق حسب الفئة",
+      "settlements": "التسويات",
+      "unknownMember": "غير معروف",
+      "paidBy": "دفع بواسطة {{name}}",
+      "splitWays_other": "مقسّمة على {{count}} أشخاص",
+      "itemsCount_other": "تم تسجيل {{count}} مصروفات",
+      "membersCount_other": "{{count}} أعضاء",
+      "deleted": "تم حذف النفقة",
+      "deleteFailed": "تعذّر حذف النفقة",
+      "deleteAria": "حذف النفقة",
+      "deleteTitle": "حذف النفقة",
+      "deleteConfirm": "هل تريد حذف هذه النفقة؟ لا يمكن التراجع.",
+      "category": {
+        "food": "الطعام",
+        "transport": "المواصلات",
+        "accommodation": "الإقامة",
+        "activities": "الأنشطة",
+        "shopping": "التسوق",
+        "other": "أخرى"
+      }
+    },
+    "reservations": {
+      "emptyTitle": "لا توجد حجوزات بعد",
+      "emptyDescription": "أضف الرحلات والفنادق والأنشطة لتكون كل شيء منظمًا.",
+      "add": "إضافة حجز",
+      "nextUp": "التالي",
+      "deleted": "تم حذف الحجز",
+      "deleteFailed": "تعذّر حذف الحجز",
+      "deleteTitle": "حذف الحجز",
+      "deleteConfirm": "هل تريد حذف هذا الحجز؟ لا يمكن التراجع.",
+      "type": {
+        "flight": "رحلات جوية",
+        "hotel": "فنادق",
+        "activity": "أنشطة",
+        "transport": "مواصلات",
+        "other": "أخرى"
+      },
+      "status": {
+        "confirmed": "مؤكد",
+        "cancelled": "ملغي",
+        "pending": "قيد الانتظار"
+      }
+    },
+    "packing": {
+      "emptyTitle": "ابدأ قائمة الأمتعة",
+      "emptyDescription": "أضف عناصر أو استخدم قالبًا للبدء.",
+      "progress": "{{checked}} من {{total}} جاهزة",
+      "addItem": "إضافة عنصر…",
+      "removeAria": "إزالة العنصر",
+      "added": "تم إضافة العنصر",
+      "addFailed": "تعذّر إضافة العنصر",
+      "removed": "تم إزالة العنصر",
+      "removeFailed": "تعذّر إزالة العنصر",
+      "templateAdded": "تم إضافة القالب",
+      "templateFailed": "تعذّر إضافة القالب",
+      "templates": {
+        "essentials": "الأساسيات",
+        "lgbtq-safety": "حقيبة أمان مجتمع الميم",
+        "beach": "حقيبة الشاطئ"
+      },
+      "category": {
+        "clothing": "الملابس",
+        "toiletries": "أدوات النظافة",
+        "electronics": "إلكترونيات",
+        "documents": "المستندات",
+        "safety": "السلامة",
+        "lgbtq-specific": "خاص بمجتمع الميم",
+        "other": "أخرى"
+      }
+    },
+    "collaborate": {
+      "chat": "الدردشة",
+      "notes": "ملاحظات",
+      "polls": "استطلاعات"
+    }
   }
 }

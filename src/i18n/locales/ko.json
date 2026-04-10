@@ -68,5 +68,305 @@
     "resources": "리소스",
     "legal": "법적 고지",
     "copyright": "© {{year}} 모든 권리 보유."
+  },
+  "trips": {
+    "title": "내 여행",
+    "subtitle": "안전하게 계획하고, 정리하고, 여행하세요.",
+    "create": "여행 만들기",
+    "error": "여행을 불러오지 못했습니다. 다시 시도해 주세요.",
+    "empty": {
+      "title": "첫 여행을 계획하세요",
+      "description": "일정을 만들고, 각 목적지의 LGBTQ+ 안전 정보를 확인하고, 모든 것을 한곳에 모으세요.",
+      "cta": "첫 여행 만들기"
+    },
+    "filteredEmpty": {
+      "title": "일치하는 여행이 없습니다",
+      "description": "검색이나 필터를 조정해 보세요.",
+      "cta": "필터 지우기"
+    },
+    "status": {
+      "planning": "계획 중",
+      "active": "진행 중",
+      "completed": "완료",
+      "archived": "보관됨"
+    },
+    "toolbar": {
+      "searchPlaceholder": "여행 검색…",
+      "searchAria": "여행 검색",
+      "statusAria": "상태로 필터링",
+      "sortAria": "여행 정렬",
+      "status": {
+        "all": "전체",
+        "planning": "계획 중",
+        "active": "진행 중",
+        "completed": "완료",
+        "archived": "보관됨"
+      },
+      "sort": {
+        "recent": "최근 업데이트",
+        "start_date": "시작 날짜",
+        "alphabetical": "알파벳순"
+      }
+    },
+    "signedOut": {
+      "badge": "여행 플래너",
+      "title": "당신을 지키는 여행을 계획하세요.",
+      "subtitle": "퀴어 친화적 일정을 만들고, 각 목적지의 LGBTQ+ 정보를 확인하며, 동행자와 함께 계획하세요.",
+      "primaryCta": "로그인하여 여행 계획",
+      "secondaryCta": "사용 방법 보기",
+      "safeLabel": "안전",
+      "daysLabel_other": "{{count}}일",
+      "bullets": {
+        "safety": {
+          "title": "안전 브리핑",
+          "body": "여정에 포함된 각 국가의 LGBTQ+ 법적 지위와 현지 상황."
+        },
+        "itinerary": {
+          "title": "드래그 앤 드롭 일정",
+          "body": "하루 일정을 시각적으로 구성하고 몇 초 만에 순서를 재배치하세요."
+        },
+        "collaborate": {
+          "title": "함께 여행하기",
+          "body": "동행자와 노트, 대화, 예산을 공유하세요."
+        }
+      },
+      "samples": {
+        "berlin": "베를린 프라이드 위크",
+        "barcelona": "바르셀로나: 해변과 밤",
+        "bangkok": "방콕 & 푸껫 익스플로러"
+      }
+    },
+    "card": {
+      "fromDate": "{{date}}부터",
+      "noDates": "날짜 미지정",
+      "placeCount_other": "{{count}}곳",
+      "dayCount_other": "{{count}}일",
+      "memberCount_other": "{{count}}명",
+      "ariaLabel": "{{title}} 여행 열기",
+      "menuAria": "여행 옵션",
+      "edit": "편집",
+      "delete": "삭제",
+      "deleting": "삭제 중…",
+      "cancel": "취소",
+      "deleteTitle": "여행 삭제",
+      "deleteConfirm": "정말 \"{{title}}\"을(를) 삭제하시겠습니까? 되돌릴 수 없습니다."
+    },
+    "toast": {
+      "created": "여행이 생성되었습니다",
+      "createdDescription": "목적지를 추가하세요.",
+      "deleted": "여행이 삭제되었습니다",
+      "deletedDescription": "\"{{title}}\"이(가) 삭제되었습니다.",
+      "error": "문제가 발생했습니다"
+    },
+    "dialog": {
+      "create": {
+        "title": "여행 만들기",
+        "description": "어디로 가세요? 목적지와 안전 정보는 나중에 추가할 수 있습니다.",
+        "titleField": "여행 제목",
+        "titlePlaceholder": "예: 베를린 프라이드 위크 2026",
+        "descriptionField": "설명",
+        "descriptionPlaceholder": "어떤 여행인가요?",
+        "startDate": "시작 날짜",
+        "endDate": "종료 날짜",
+        "currency": "통화",
+        "submit": "여행 만들기",
+        "cancel": "취소",
+        "endBeforeStart": "종료 날짜는 시작 날짜 이후여야 합니다.",
+        "failed": "여행을 만들 수 없습니다. 다시 시도해 주세요."
+      }
+    },
+    "backToTrips": "여행 목록으로",
+    "planner": {
+      "loadFailed": "이 여행을 불러올 수 없습니다.",
+      "notFound": "여행을 찾을 수 없습니다.",
+      "progressTooltip": "여행 계획 진행률",
+      "days_other": "{{count}}일",
+      "placesCount_other": "{{count}}곳",
+      "daysPlanned_other": "{{count}}일 계획 완료"
+    },
+    "share": {
+      "title": "이 여행 공유하기",
+      "description": "계정 없이도 누구나 열 수 있는 링크를 만듭니다.",
+      "activeLinks_other": "활성 링크 {{count}}개",
+      "createNew": "새 공유 링크 만들기",
+      "previewLabel": "받는 사람이 볼 수 있는 항목:",
+      "itineraryAlways": "일정 (항상 공유됨)",
+      "expiresLabel": "만료일 (선택)",
+      "createButton": "링크 만들기",
+      "close": "닫기",
+      "created": "링크가 생성되었습니다",
+      "createFailed": "링크를 만들 수 없습니다",
+      "deleted": "링크가 삭제되었습니다",
+      "deleteFailed": "링크를 삭제할 수 없습니다",
+      "copied": "링크가 복사되었습니다",
+      "copyAria": "링크 복사",
+      "deleteAria": "링크 삭제",
+      "deleteTitle": "공유 링크 삭제",
+      "deleteConfirm": "이 링크를 가진 모든 사람이 접근할 수 없게 됩니다. 되돌릴 수 없습니다.",
+      "expired": "만료됨",
+      "expiresOn": "{{date}} 만료"
+    },
+    "itinerary": {
+      "add": "추가",
+      "addPlace": "장소 추가",
+      "unassigned": "미배정",
+      "unassignedHint": "해당하는 날로 드래그해 일정에 넣으세요.",
+      "emptyTitle": "일정이 비어 있어요",
+      "emptyDescription": "첫 번째 장소를 추가해 계획을 시작하세요.",
+      "dayShort": "일차",
+      "dropHere": "여기로 드래그하거나 추가를 누르세요",
+      "dayTitlePlaceholder": "하루 제목…",
+      "editDayTitle": "하루 제목 편집",
+      "saveDayTitle": "하루 제목 저장",
+      "reordered": "장소 순서 변경됨",
+      "moved": "장소 이동됨",
+      "removed": "장소 삭제됨",
+      "dayUpdated": "하루 정보 업데이트됨",
+      "dragHandleAria": "드래그하여 순서 변경"
+    },
+    "map": {
+      "emptyNoPlaces": "지도에서 보려면 장소를 추가하세요",
+      "emptyNoCoords": "아직 좌표가 있는 장소가 없어요",
+      "fitAll": "전체 보기",
+      "fitAllAria": "모든 장소를 화면에 맞추기",
+      "filterAll": "모든 날짜",
+      "dayLabel": "{{number}}일차"
+    },
+    "safety": {
+      "emptyTitle": "아직 안전 정보가 없어요",
+      "emptyDescription": "여행에 목적지를 추가하면 각 국가의 LGBTQ+ 법적 상태와 현지 상황을 보여드릴게요.",
+      "crossBorderHeading": "국경 이동 경고",
+      "countriesHeading": "여행 대상 국가",
+      "crossBorderTitle": "{{from}}에서 {{to}}로 큰 폭 하락",
+      "crossBorderBody": "평등 점수가 {{drop}}점 떨어집니다. 이동 전에 현지 법률과 위험을 확인하세요.",
+      "dataSource": "데이터는 ILGA World 데이터베이스에서 제공되며 매년 업데이트됩니다. 점수는 참고용이며, 여행 전에 최신 뉴스를 확인하세요.",
+      "basedOn_other": "여행 대상 {{count}}개국의 LGBTQ+ 데이터를 기반으로 합니다.",
+      "worstCountry": "가장 낮은 점수: {{country}} ({{score}}/100).",
+      "stops_other": "{{count}}곳 방문",
+      "warningCount_other": "경고 {{count}}개",
+      "toggleDetails": "{{country}} 상세 정보 토글",
+      "viewOnIlga": "ILGA 데이터베이스에서 보기",
+      "risk": {
+        "low": "낮은 위험",
+        "moderate": "중간 위험",
+        "high": "높은 위험",
+        "critical": "심각한 위험"
+      },
+      "headline": {
+        "low": "여행은 안전해 보여요.",
+        "moderate": "약간의 주의가 필요합니다.",
+        "high": "경로에 높은 위험이 있습니다.",
+        "critical": "경로에 심각한 위험이 있습니다."
+      },
+      "flags": {
+        "deathPenalty": "동성 관계에 사형이 적용됩니다",
+        "criminalized": "동성 관계가 범죄로 간주됩니다"
+      },
+      "scoreLabel": {
+        "veryHigh": "매우 높음",
+        "high": "높음",
+        "moderate": "보통",
+        "low": "낮음",
+        "veryLow": "매우 낮음",
+        "noData": "데이터 없음"
+      },
+      "detail": {
+        "criminalized": {
+          "label": "법적 상태",
+          "value": "동성 관계가 불법입니다"
+        },
+        "deathPenalty": {
+          "label": "최고 형벌",
+          "value": "사형이 적용됩니다"
+        },
+        "ssu": "동성 결합",
+        "employment": "고용 보호"
+      },
+      "tip": {
+        "safe": "LGBTQ+에 대한 수용도가 높습니다. 다른 지역과 마찬가지로 공공장소 애정 표현에는 상식을 사용하세요.",
+        "caution": "공공장소 애정 표현에 주의하세요. 해당 도시를 조사하고 최근 여행 후기를 읽어보세요.",
+        "danger": "위험을 진지하게 받아들이세요. 공공장소 애정 표현과 데이팅 앱을 피하고 눈에 띄지 않게 지내세요."
+      }
+    },
+    "budget": {
+      "emptyTitle": "아직 지출이 없어요",
+      "emptyDescription": "지출을 추적하고 그룹과 비용을 나눠보세요.",
+      "addExpense": "지출 추가",
+      "totalSpend": "총 지출",
+      "spendingByCategory": "카테고리별 지출",
+      "settlements": "정산",
+      "unknownMember": "알 수 없음",
+      "paidBy": "{{name}} 결제",
+      "splitWays_other": "{{count}}명이 분담",
+      "itemsCount_other": "{{count}}건의 지출 기록",
+      "membersCount_other": "구성원 {{count}}명",
+      "deleted": "지출이 삭제되었습니다",
+      "deleteFailed": "지출을 삭제할 수 없습니다",
+      "deleteAria": "지출 삭제",
+      "deleteTitle": "지출 삭제",
+      "deleteConfirm": "이 지출을 삭제할까요? 되돌릴 수 없습니다.",
+      "category": {
+        "food": "식사",
+        "transport": "교통",
+        "accommodation": "숙박",
+        "activities": "액티비티",
+        "shopping": "쇼핑",
+        "other": "기타"
+      }
+    },
+    "reservations": {
+      "emptyTitle": "아직 예약이 없어요",
+      "emptyDescription": "항공편, 호텔, 액티비티를 추가해 한곳에서 관리하세요.",
+      "add": "예약 추가",
+      "nextUp": "다음 일정",
+      "deleted": "예약이 삭제되었습니다",
+      "deleteFailed": "예약을 삭제할 수 없습니다",
+      "deleteTitle": "예약 삭제",
+      "deleteConfirm": "이 예약을 삭제할까요? 되돌릴 수 없습니다.",
+      "type": {
+        "flight": "항공편",
+        "hotel": "호텔",
+        "activity": "액티비티",
+        "transport": "교통",
+        "other": "기타"
+      },
+      "status": {
+        "confirmed": "확정",
+        "cancelled": "취소됨",
+        "pending": "대기 중"
+      }
+    },
+    "packing": {
+      "emptyTitle": "짐 목록을 시작하세요",
+      "emptyDescription": "항목을 추가하거나 템플릿으로 시작하세요.",
+      "progress": "{{checked}} / {{total}} 완료",
+      "addItem": "항목 추가…",
+      "removeAria": "항목 삭제",
+      "added": "항목이 추가되었습니다",
+      "addFailed": "항목을 추가할 수 없습니다",
+      "removed": "항목이 삭제되었습니다",
+      "removeFailed": "항목을 삭제할 수 없습니다",
+      "templateAdded": "템플릿이 추가되었습니다",
+      "templateFailed": "템플릿을 추가할 수 없습니다",
+      "templates": {
+        "essentials": "필수 아이템",
+        "lgbtq-safety": "LGBTQ+ 안전 키트",
+        "beach": "해변 키트"
+      },
+      "category": {
+        "clothing": "의류",
+        "toiletries": "세면 용품",
+        "electronics": "전자 기기",
+        "documents": "서류",
+        "safety": "안전 용품",
+        "lgbtq-specific": "LGBTQ+ 전용",
+        "other": "기타"
+      }
+    },
+    "collaborate": {
+      "chat": "채팅",
+      "notes": "메모",
+      "polls": "투표"
+    }
   }
 }
