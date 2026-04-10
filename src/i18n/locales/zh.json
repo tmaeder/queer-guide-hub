@@ -68,5 +68,305 @@
     "resources": "资源",
     "legal": "法律",
     "copyright": "© {{year}} 版权所有。"
+  },
+  "trips": {
+    "title": "我的行程",
+    "subtitle": "安全地规划、组织和旅行。",
+    "create": "创建行程",
+    "error": "无法加载你的行程，请重试。",
+    "empty": {
+      "title": "规划你的第一次行程",
+      "description": "创建行程表，查看每个目的地的 LGBTQ+ 安全信息，把一切都集中在一处。",
+      "cta": "创建第一次行程"
+    },
+    "filteredEmpty": {
+      "title": "没有匹配的行程",
+      "description": "请尝试调整搜索或筛选。",
+      "cta": "清除筛选"
+    },
+    "status": {
+      "planning": "规划中",
+      "active": "进行中",
+      "completed": "已完成",
+      "archived": "已归档"
+    },
+    "toolbar": {
+      "searchPlaceholder": "搜索行程…",
+      "searchAria": "搜索行程",
+      "statusAria": "按状态筛选行程",
+      "sortAria": "行程排序",
+      "status": {
+        "all": "全部",
+        "planning": "规划中",
+        "active": "进行中",
+        "completed": "已完成",
+        "archived": "已归档"
+      },
+      "sort": {
+        "recent": "最近更新",
+        "start_date": "出发日期",
+        "alphabetical": "字母顺序"
+      }
+    },
+    "signedOut": {
+      "badge": "行程规划器",
+      "title": "规划保护你的旅行。",
+      "subtitle": "创建对 queer 友好的行程，查看每个目的地的 LGBTQ+ 安全信息，和同行伙伴一起规划。",
+      "primaryCta": "登录以规划行程",
+      "secondaryCta": "了解其工作原理",
+      "safeLabel": "安全",
+      "daysLabel_other": "{{count}} 天",
+      "bullets": {
+        "safety": {
+          "title": "安全简报",
+          "body": "你行程中每个国家的 LGBTQ+ 法律状况和本地背景。"
+        },
+        "itinerary": {
+          "title": "拖拽式行程",
+          "body": "直观地安排每日行程，几秒钟重新排序停靠点。"
+        },
+        "collaborate": {
+          "title": "一起旅行",
+          "body": "与同行伙伴共享备注、聊天和分摊预算。"
+        }
+      },
+      "samples": {
+        "berlin": "柏林骄傲周",
+        "barcelona": "巴塞罗那：海滩与夜生活",
+        "bangkok": "曼谷与普吉岛探索"
+      }
+    },
+    "card": {
+      "fromDate": "从 {{date}} 开始",
+      "noDates": "未设日期",
+      "placeCount_other": "{{count}} 个地点",
+      "dayCount_other": "{{count}} 天",
+      "memberCount_other": "{{count}} 位成员",
+      "ariaLabel": "打开行程 {{title}}",
+      "menuAria": "行程选项",
+      "edit": "编辑",
+      "delete": "删除",
+      "deleting": "正在删除…",
+      "cancel": "取消",
+      "deleteTitle": "删除行程",
+      "deleteConfirm": "确定要删除「{{title}}」吗？此操作不可撤销。"
+    },
+    "toast": {
+      "created": "行程已创建",
+      "createdDescription": "开始添加目的地。",
+      "deleted": "行程已删除",
+      "deletedDescription": "「{{title}}」已被移除。",
+      "error": "出现问题"
+    },
+    "dialog": {
+      "create": {
+        "title": "创建行程",
+        "description": "你要去哪里？目的地和安全信息可以之后再添加。",
+        "titleField": "行程标题",
+        "titlePlaceholder": "例如：柏林骄傲周 2026",
+        "descriptionField": "描述",
+        "descriptionPlaceholder": "这次行程的主题是什么？",
+        "startDate": "开始日期",
+        "endDate": "结束日期",
+        "currency": "货币",
+        "submit": "创建行程",
+        "cancel": "取消",
+        "endBeforeStart": "结束日期必须晚于开始日期。",
+        "failed": "无法创建行程，请重试。"
+      }
+    },
+    "backToTrips": "返回行程",
+    "planner": {
+      "loadFailed": "无法加载该行程。",
+      "notFound": "未找到行程。",
+      "progressTooltip": "行程规划进度",
+      "days_other": "{{count}} 天",
+      "placesCount_other": "{{count}} 个地点",
+      "daysPlanned_other": "已规划 {{count}} 天"
+    },
+    "share": {
+      "title": "分享此行程",
+      "description": "创建任何人都能打开的链接，无需账号。",
+      "activeLinks_other": "{{count}} 个活跃链接",
+      "createNew": "创建新的分享链接",
+      "previewLabel": "收到链接的人将看到：",
+      "itineraryAlways": "行程（始终共享）",
+      "expiresLabel": "过期日期（可选）",
+      "createButton": "创建链接",
+      "close": "关闭",
+      "created": "链接已创建",
+      "createFailed": "无法创建链接",
+      "deleted": "链接已删除",
+      "deleteFailed": "无法删除链接",
+      "copied": "链接已复制",
+      "copyAria": "复制链接",
+      "deleteAria": "删除链接",
+      "deleteTitle": "删除分享链接",
+      "deleteConfirm": "持有该链接的人将失去访问权限。此操作不可撤销。",
+      "expired": "已过期",
+      "expiresOn": "于 {{date}} 过期"
+    },
+    "itinerary": {
+      "add": "添加",
+      "addPlace": "添加地点",
+      "unassigned": "未分配",
+      "unassignedHint": "把它们拖到某一天来安排日程。",
+      "emptyTitle": "你的行程还是空的",
+      "emptyDescription": "添加第一个地点开始规划。",
+      "dayShort": "天",
+      "dropHere": "将地点拖到这里或点击添加",
+      "dayTitlePlaceholder": "当日标题…",
+      "editDayTitle": "编辑当日标题",
+      "saveDayTitle": "保存标题",
+      "reordered": "地点已重新排序",
+      "moved": "地点已移动",
+      "removed": "地点已移除",
+      "dayUpdated": "当日已更新",
+      "dragHandleAria": "拖动以重新排序"
+    },
+    "map": {
+      "emptyNoPlaces": "添加地点以在地图上查看",
+      "emptyNoCoords": "你的地点都还没有坐标",
+      "fitAll": "查看全部",
+      "fitAllAria": "将所有地点框入视图",
+      "filterAll": "所有天数",
+      "dayLabel": "第 {{number}} 天"
+    },
+    "safety": {
+      "emptyTitle": "还没有安全信息",
+      "emptyDescription": "将目的地添加到行程中，我们会为每个国家展示 LGBTQ+ 法律状态和本地背景。",
+      "crossBorderHeading": "跨境提醒",
+      "countriesHeading": "行程中的国家",
+      "crossBorderTitle": "从 {{from}} 到 {{to}} 大幅下降",
+      "crossBorderBody": "平等指数下降 {{drop}} 分。跨境前请查阅当地法律和风险。",
+      "dataSource": "数据来自 ILGA World 数据库，每年更新。分数仅供参考，请在出行前查看最新资讯。",
+      "basedOn_other": "基于行程中 {{count}} 个国家的 LGBTQ+ 数据。",
+      "worstCountry": "最低分：{{country}}（{{score}}/100）。",
+      "stops_other": "{{count}} 个停留点",
+      "warningCount_other": "{{count}} 条警告",
+      "toggleDetails": "切换 {{country}} 的详细信息",
+      "viewOnIlga": "在 ILGA 数据库查看",
+      "risk": {
+        "low": "低风险",
+        "moderate": "中等风险",
+        "high": "高风险",
+        "critical": "严重风险"
+      },
+      "headline": {
+        "low": "你的行程看起来安全。",
+        "moderate": "需要保持一定警惕。",
+        "high": "路线存在高风险。",
+        "critical": "路线存在严重风险。"
+      },
+      "flags": {
+        "deathPenalty": "同性关系可能判处死刑",
+        "criminalized": "同性关系被定为刑事犯罪"
+      },
+      "scoreLabel": {
+        "veryHigh": "非常高",
+        "high": "较高",
+        "moderate": "中等",
+        "low": "较低",
+        "veryLow": "非常低",
+        "noData": "暂无数据"
+      },
+      "detail": {
+        "criminalized": {
+          "label": "法律状态",
+          "value": "同性关系在当地属违法"
+        },
+        "deathPenalty": {
+          "label": "最高刑罚",
+          "value": "可能适用死刑"
+        },
+        "ssu": "同性结合",
+        "employment": "就业保护"
+      },
+      "tip": {
+        "safe": "LGBTQ+ 接受度较高。与在其他地方一样，对公开示爱保持基本判断力。",
+        "caution": "注意公开示爱。请详细研究该城市并阅读近期游记。",
+        "danger": "请认真对待风险。避免公开示爱和使用约会应用，保持低调。"
+      }
+    },
+    "budget": {
+      "emptyTitle": "暂无支出",
+      "emptyDescription": "追踪花费，与小组分摊费用。",
+      "addExpense": "添加支出",
+      "totalSpend": "总支出",
+      "spendingByCategory": "按类别支出",
+      "settlements": "结算",
+      "unknownMember": "未知",
+      "paidBy": "由 {{name}} 支付",
+      "splitWays_other": "按 {{count}} 人分摊",
+      "itemsCount_other": "已记录 {{count}} 笔",
+      "membersCount_other": "{{count}} 位成员",
+      "deleted": "已删除支出",
+      "deleteFailed": "无法删除支出",
+      "deleteAria": "删除支出",
+      "deleteTitle": "删除支出",
+      "deleteConfirm": "确定要删除这笔支出吗？此操作无法撤销。",
+      "category": {
+        "food": "餐饮",
+        "transport": "交通",
+        "accommodation": "住宿",
+        "activities": "活动",
+        "shopping": "购物",
+        "other": "其他"
+      }
+    },
+    "reservations": {
+      "emptyTitle": "暂无预订",
+      "emptyDescription": "添加航班、酒店和活动，让一切井然有序。",
+      "add": "添加预订",
+      "nextUp": "下一项",
+      "deleted": "已删除预订",
+      "deleteFailed": "无法删除预订",
+      "deleteTitle": "删除预订",
+      "deleteConfirm": "确定要删除这条预订吗？此操作无法撤销。",
+      "type": {
+        "flight": "航班",
+        "hotel": "酒店",
+        "activity": "活动",
+        "transport": "交通",
+        "other": "其他"
+      },
+      "status": {
+        "confirmed": "已确认",
+        "cancelled": "已取消",
+        "pending": "待确认"
+      }
+    },
+    "packing": {
+      "emptyTitle": "开始打包清单",
+      "emptyDescription": "添加物品或使用模板开始。",
+      "progress": "已打包 {{checked}} / {{total}}",
+      "addItem": "添加物品…",
+      "removeAria": "移除物品",
+      "added": "已添加物品",
+      "addFailed": "无法添加物品",
+      "removed": "已移除物品",
+      "removeFailed": "无法移除物品",
+      "templateAdded": "已添加模板",
+      "templateFailed": "无法添加模板",
+      "templates": {
+        "essentials": "必备物品",
+        "lgbtq-safety": "LGBTQ+ 安全套装",
+        "beach": "海滩套装"
+      },
+      "category": {
+        "clothing": "衣物",
+        "toiletries": "洗漱用品",
+        "electronics": "电子产品",
+        "documents": "证件",
+        "safety": "安全用品",
+        "lgbtq-specific": "LGBTQ+ 专用",
+        "other": "其他"
+      }
+    },
+    "collaborate": {
+      "chat": "聊天",
+      "notes": "笔记",
+      "polls": "投票"
+    }
   }
 }

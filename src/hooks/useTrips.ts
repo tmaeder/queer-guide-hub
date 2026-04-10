@@ -86,13 +86,19 @@ type UpdateTripInput = Partial<CreateTripInput> & {
   is_public?: boolean;
 };
 
+export type TripListItem = Trip & {
+  member_count: number;
+  place_count: number;
+  day_count: number;
+};
+
 // ── List user's trips ──────────────────────────────────────────
 export function useTrips() {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['trips', user?.id],
-    queryFn: async (): Promise<(Trip & { member_count: number })[]> => {
+    queryFn: async (): Promise<TripListItem[]> => {
       // Get trips where user is a member
       const { data: memberRows, error: memberErr } = await supabase
         .from('trip_members')
@@ -106,7 +112,7 @@ export function useTrips() {
 
       const { data, error } = await supabase
         .from('trips')
-        .select('*, trip_members(id)')
+        .select('*, trip_members(id), trip_places(id), trip_days(id)')
         .in('id', tripIds)
         .order('updated_at', { ascending: false });
 
@@ -114,7 +120,11 @@ export function useTrips() {
       return (data || []).map((t: any) => ({
         ...t,
         member_count: t.trip_members?.length || 0,
+        place_count: t.trip_places?.length || 0,
+        day_count: t.trip_days?.length || 0,
         trip_members: undefined,
+        trip_places: undefined,
+        trip_days: undefined,
       }));
     },
     enabled: !!user,

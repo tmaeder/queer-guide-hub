@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import { useTheme } from '@mui/material/styles';
-import { Plus, Trash2, Plane, Building, Ticket, Car, Package, ExternalLink } from 'lucide-react';
-import { format } from 'date-fns';
+import {
+  Plus,
+  Trash2,
+  Plane,
+  Building,
+  Ticket,
+  Car,
+  Package,
+  ExternalLink,
+  CalendarClock,
+} from 'lucide-react';
+import { format, isAfter, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -16,9 +25,14 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useTripReservations, useReservationMutations, type Reservation } from '@/hooks/useTripReservations';
+import {
+  useTripReservations,
+  useReservationMutations,
+  type Reservation,
+} from '@/hooks/useTripReservations';
 import { AddReservationDialog } from './AddReservationDialog';
 
 const TYPE_ICONS: Record<string, typeof Plane> = {
@@ -29,13 +43,7 @@ const TYPE_ICONS: Record<string, typeof Plane> = {
   other: Package,
 };
 
-const TYPE_LABELS: Record<string, string> = {
-  flight: 'Flights',
-  hotel: 'Hotels',
-  activity: 'Activities',
-  transport: 'Transport',
-  other: 'Other',
-};
+const TYPE_ORDER = ['flight', 'hotel', 'activity', 'transport', 'other'] as const;
 
 function formatAmount(amount: number, currency: string): string {
   try {
@@ -50,7 +58,7 @@ interface Props {
 }
 
 export function ReservationsTab({ tripId }: Props) {
-  const theme = useTheme();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { data: reservations, isLoading } = useTripReservations(tripId);
   const { deleteReservation } = useReservationMutations(tripId);
@@ -60,22 +68,39 @@ export function ReservationsTab({ tripId }: Props) {
 
   const handleDelete = (id: string) => {
     deleteReservation.mutate(id, {
-      onSuccess: () => toast({ title: 'Reservation deleted' }),
-      onError: (err) => toast({ title: 'Failed to delete', description: String(err), variant: 'destructive' }),
+      onSuccess: () => toast({ title: t('trips.reservations.deleted') }),
+      onError: (err) =>
+        toast({
+          title: t('trips.reservations.deleteFailed'),
+          description: String(err),
+          variant: 'destructive',
+        }),
     });
     setDeleteConfirmId(null);
   };
 
+  const items = useMemo(() => reservations ?? [], [reservations]);
+
+  // Compute "next up" — the reservation with the soonest future check-in
+  const nextUp = useMemo(() => {
+    const now = new Date();
+    const upcoming = items
+      .filter((r) => r.check_in && r.status !== 'cancelled')
+      .map((r) => ({ res: r, when: parseISO(r.check_in as string) }))
+      .filter((x) => isAfter(x.when, now))
+      .sort((a, b) => a.when.getTime() - b.when.getTime());
+    return upcoming[0]?.res;
+  }, [items]);
+
   if (isLoading) return <PageLoadingState count={3} variant="list" />;
 
-  const items = reservations || [];
-  const types = ['flight', 'hotel', 'activity', 'transport', 'other'];
-
   const grouped: Record<string, Reservation[]> = {};
-  for (const type of types) {
+  for (const type of TYPE_ORDER) {
     const typeItems = items.filter((r) => r.type === type);
     if (typeItems.length > 0) grouped[type] = typeItems;
   }
+
+  const typeLabel = (type: string) => t(`trips.reservations.type.${type}`);
 
   const statusBadge = (status: string) => {
     if (status === 'confirmed') {
@@ -84,55 +109,95 @@ export function ReservationsTab({ tripId }: Props) {
           <Box
             component="span"
             sx={{
-              display: 'inline-block',
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              bgcolor: 'success.main',
-              mr: 0.5,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.5,
             }}
-          />
-          Confirmed
+          >
+            <Box
+              component="span"
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                bgcolor: '#10B981',
+              }}
+            />
+            {t('trips.reservations.status.confirmed')}
+          </Box>
         </Badge>
       );
     }
-    if (status === 'cancelled') return <Badge variant="destructive">Cancelled</Badge>;
-    return <Badge variant="outline">Pending</Badge>;
+    if (status === 'cancelled')
+      return (
+        <Badge variant="destructive">
+          {t('trips.reservations.status.cancelled')}
+        </Badge>
+      );
+    return (
+      <Badge variant="outline">{t('trips.reservations.status.pending')}</Badge>
+    );
   };
 
   if (items.length === 0) {
     return (
       <>
-        <Box sx={{ py: 8, textAlign: 'center' }}>
+        <Box
+          sx={{
+            textAlign: 'center',
+            py: { xs: 6, md: 10 },
+            px: 3,
+            border: '1.5px dashed',
+            borderColor: 'divider',
+            borderRadius: 3,
+          }}
+        >
           <Box
             sx={{
-              width: 64,
-              height: 64,
-              borderRadius: '50%',
-              bgcolor: 'action.hover',
+              width: 56,
+              height: 56,
+              borderRadius: 2,
+              bgcolor: (theme) =>
+                `${theme.palette.brand?.main || '#DB2777'}1a`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               mx: 'auto',
-              mb: 2,
+              mb: 1.5,
             }}
           >
-            <Ticket size={28} style={{ opacity: 0.5 }} />
+            <Ticket
+              size={26}
+              style={{ color: 'var(--brand-magenta, #DB2777)' }}
+            />
           </Box>
-          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-            No reservations yet
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+            {t('trips.reservations.emptyTitle')}
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Add flights, hotels, and activities to keep everything organized
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 3, maxWidth: 360, mx: 'auto' }}
+          >
+            {t('trips.reservations.emptyDescription')}
           </Typography>
-          <Button variant="outline" className="w-full" onClick={() => { setEditItem(undefined); setAddOpen(true); }}>
-            <Plus size={16} />
-            Add Reservation
+          <Button
+            variant="brand"
+            onClick={() => {
+              setEditItem(undefined);
+              setAddOpen(true);
+            }}
+          >
+            <Plus size={16} style={{ marginRight: 6 }} />
+            {t('trips.reservations.add')}
           </Button>
         </Box>
         <AddReservationDialog
           open={addOpen}
-          onClose={() => { setAddOpen(false); setEditItem(undefined); }}
+          onClose={() => {
+            setAddOpen(false);
+            setEditItem(undefined);
+          }}
           tripId={tripId}
           existing={editItem}
         />
@@ -142,17 +207,91 @@ export function ReservationsTab({ tripId }: Props) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {types.map((type) => {
+      {/* Next up card */}
+      {nextUp && (
+        <Box
+          sx={{
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'brand.main',
+            bgcolor: (theme) =>
+              `${theme.palette.brand?.main || '#DB2777'}14`,
+            p: 2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: 1.5,
+              bgcolor: 'brand.main',
+              color: 'brand.contrastText',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <CalendarClock size={18} />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                fontWeight: 700,
+                color: 'brand.main',
+                fontSize: '0.68rem',
+                display: 'block',
+              }}
+            >
+              {t('trips.reservations.nextUp')}
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
+              {nextUp.title}
+            </Typography>
+            {nextUp.check_in && (
+              <Typography variant="caption" color="text.secondary">
+                {format(new Date(nextUp.check_in), 'EEE, MMM d · HH:mm')}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      )}
+
+      {TYPE_ORDER.map((type) => {
         const typeItems = grouped[type];
         if (!typeItems) return null;
 
         const Icon = TYPE_ICONS[type] || Package;
         return (
           <Box key={type}>
-            <Box className="flex items-center gap-2 mb-1.5">
-              <Icon size={16} style={{ color: theme.palette.text.secondary }} />
-              <Typography variant="subtitle2" fontWeight={600}>
-                {TYPE_LABELS[type]}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.25 }}>
+              <Box
+                sx={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 1.25,
+                  bgcolor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Icon size={14} />
+              </Box>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontWeight: 700,
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                }}
+              >
+                {typeLabel(type)}
               </Typography>
               <Badge variant="secondary">{typeItems.length}</Badge>
             </Box>
@@ -248,31 +387,49 @@ export function ReservationsTab({ tripId }: Props) {
         );
       })}
 
-      <Button variant="outline" className="w-full" onClick={() => { setEditItem(undefined); setAddOpen(true); }}>
-        <Plus size={16} />
-        Add Reservation
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => {
+          setEditItem(undefined);
+          setAddOpen(true);
+        }}
+      >
+        <Plus size={16} style={{ marginRight: 6 }} />
+        {t('trips.reservations.add')}
       </Button>
 
       <AddReservationDialog
         open={addOpen}
-        onClose={() => { setAddOpen(false); setEditItem(undefined); }}
+        onClose={() => {
+          setAddOpen(false);
+          setEditItem(undefined);
+        }}
         tripId={tripId}
         existing={editItem}
       />
 
       {/* Delete confirmation */}
-      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+      <Dialog
+        open={!!deleteConfirmId}
+        onOpenChange={(open) => !open && setDeleteConfirmId(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Reservation</DialogTitle>
+            <DialogTitle>{t('trips.reservations.deleteTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('trips.reservations.deleteConfirm')}
+            </DialogDescription>
           </DialogHeader>
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            Are you sure you want to delete this reservation? This cannot be undone.
-          </Typography>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}>
-              Delete
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
+              {t('trips.card.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+            >
+              {t('trips.card.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -68,5 +68,305 @@
     "resources": "リソース",
     "legal": "法的事項",
     "copyright": "© {{year}} 全著作権所有。"
+  },
+  "trips": {
+    "title": "マイトリップ",
+    "subtitle": "計画して、整理して、安全に旅しよう。",
+    "create": "旅を作成",
+    "error": "旅を読み込めませんでした。もう一度お試しください。",
+    "empty": {
+      "title": "最初の旅を計画しよう",
+      "description": "旅程を作り、各目的地の LGBTQ+ 安全情報を確認し、すべてを一つの場所にまとめよう。",
+      "cta": "最初の旅を作成"
+    },
+    "filteredEmpty": {
+      "title": "該当する旅がありません",
+      "description": "検索やフィルターを調整してみてください。",
+      "cta": "フィルターをクリア"
+    },
+    "status": {
+      "planning": "計画中",
+      "active": "進行中",
+      "completed": "完了",
+      "archived": "アーカイブ済み"
+    },
+    "toolbar": {
+      "searchPlaceholder": "旅を検索…",
+      "searchAria": "旅を検索",
+      "statusAria": "ステータスで絞り込み",
+      "sortAria": "旅を並べ替え",
+      "status": {
+        "all": "すべて",
+        "planning": "計画中",
+        "active": "進行中",
+        "completed": "完了",
+        "archived": "アーカイブ済み"
+      },
+      "sort": {
+        "recent": "最近更新",
+        "start_date": "出発日",
+        "alphabetical": "アルファベット順"
+      }
+    },
+    "signedOut": {
+      "badge": "旅プランナー",
+      "title": "あなたを守る旅を計画しよう。",
+      "subtitle": "クィアフレンドリーな旅程を作り、各目的地の LGBTQ+ 情報を確認し、旅の仲間と一緒に計画しよう。",
+      "primaryCta": "サインインして旅を計画",
+      "secondaryCta": "使い方を見る",
+      "safeLabel": "安全",
+      "daysLabel_other": "{{count}}日",
+      "bullets": {
+        "safety": {
+          "title": "安全ブリーフィング",
+          "body": "旅程の各国における LGBTQ+ 法的状況と現地コンテクスト。"
+        },
+        "itinerary": {
+          "title": "ドラッグ＆ドロップの旅程",
+          "body": "一日の予定を視覚的に並べ、数秒で順序を入れ替え。"
+        },
+        "collaborate": {
+          "title": "一緒に旅する",
+          "body": "メモの共有、チャット、予算の分担を仲間と。"
+        }
+      },
+      "samples": {
+        "berlin": "ベルリン・プライドウィーク",
+        "barcelona": "バルセロナ：ビーチ＆ナイトライフ",
+        "bangkok": "バンコク＆プーケット エクスプローラー"
+      }
+    },
+    "card": {
+      "fromDate": "{{date}} から",
+      "noDates": "日付未設定",
+      "placeCount_other": "{{count}}スポット",
+      "dayCount_other": "{{count}}日",
+      "memberCount_other": "{{count}}人のメンバー",
+      "ariaLabel": "旅 {{title}} を開く",
+      "menuAria": "旅のオプション",
+      "edit": "編集",
+      "delete": "削除",
+      "deleting": "削除中…",
+      "cancel": "キャンセル",
+      "deleteTitle": "旅を削除",
+      "deleteConfirm": "「{{title}}」を削除しますか？この操作は取り消せません。"
+    },
+    "toast": {
+      "created": "旅を作成しました",
+      "createdDescription": "目的地を追加しよう。",
+      "deleted": "旅を削除しました",
+      "deletedDescription": "「{{title}}」を削除しました。",
+      "error": "エラーが発生しました"
+    },
+    "dialog": {
+      "create": {
+        "title": "旅を作成",
+        "description": "どこへ行きますか？目的地と安全情報は後から追加できます。",
+        "titleField": "旅のタイトル",
+        "titlePlaceholder": "例：ベルリン・プライドウィーク 2026",
+        "descriptionField": "説明",
+        "descriptionPlaceholder": "どんな旅ですか？",
+        "startDate": "開始日",
+        "endDate": "終了日",
+        "currency": "通貨",
+        "submit": "旅を作成",
+        "cancel": "キャンセル",
+        "endBeforeStart": "終了日は開始日より後にしてください。",
+        "failed": "旅を作成できませんでした。もう一度お試しください。"
+      }
+    },
+    "backToTrips": "旅の一覧に戻る",
+    "planner": {
+      "loadFailed": "この旅を読み込めませんでした。",
+      "notFound": "旅が見つかりません。",
+      "progressTooltip": "旅の計画の進捗",
+      "days_other": "{{count}}日",
+      "placesCount_other": "{{count}}スポット",
+      "daysPlanned_other": "{{count}}日分計画済み"
+    },
+    "share": {
+      "title": "この旅を共有",
+      "description": "アカウント不要で誰でも開けるリンクを作成します。",
+      "activeLinks_other": "有効なリンク {{count}} 件",
+      "createNew": "新しい共有リンクを作成",
+      "previewLabel": "受け取る人に見えるもの:",
+      "itineraryAlways": "旅程（常に共有）",
+      "expiresLabel": "有効期限（任意）",
+      "createButton": "リンクを作成",
+      "close": "閉じる",
+      "created": "リンクを作成しました",
+      "createFailed": "リンクを作成できませんでした",
+      "deleted": "リンクを削除しました",
+      "deleteFailed": "リンクを削除できませんでした",
+      "copied": "リンクをコピーしました",
+      "copyAria": "リンクをコピー",
+      "deleteAria": "リンクを削除",
+      "deleteTitle": "共有リンクを削除",
+      "deleteConfirm": "このリンクを持つ人はアクセスできなくなります。この操作は取り消せません。",
+      "expired": "期限切れ",
+      "expiresOn": "{{date}} に期限切れ"
+    },
+    "itinerary": {
+      "add": "追加",
+      "addPlace": "スポットを追加",
+      "unassigned": "未割り当て",
+      "unassignedHint": "日にドラッグしてスケジュールに追加します。",
+      "emptyTitle": "旅程はまだ空です",
+      "emptyDescription": "最初のスポットを追加して計画を始めましょう。",
+      "dayShort": "日目",
+      "dropHere": "ここにドラッグするか追加をタップ",
+      "dayTitlePlaceholder": "この日のタイトル…",
+      "editDayTitle": "この日のタイトルを編集",
+      "saveDayTitle": "タイトルを保存",
+      "reordered": "スポットの順序を変更しました",
+      "moved": "スポットを移動しました",
+      "removed": "スポットを削除しました",
+      "dayUpdated": "この日を更新しました",
+      "dragHandleAria": "ドラッグして並び替え"
+    },
+    "map": {
+      "emptyNoPlaces": "地図に表示するにはスポットを追加してください",
+      "emptyNoCoords": "座標のあるスポットがまだありません",
+      "fitAll": "すべて表示",
+      "fitAllAria": "すべてのスポットを画面に収める",
+      "filterAll": "すべての日",
+      "dayLabel": "{{number}}日目"
+    },
+    "safety": {
+      "emptyTitle": "まだ安全情報がありません",
+      "emptyDescription": "旅に行き先を追加すると、各国の LGBTQ+ 法的状況と現地の状況を表示します。",
+      "crossBorderHeading": "国境越えの注意",
+      "countriesHeading": "旅の対象国",
+      "crossBorderTitle": "{{from}} から {{to}} へ大きく低下",
+      "crossBorderBody": "平等スコアが {{drop}} ポイント低下します。国境を越える前に現地の法律とリスクを確認してください。",
+      "dataSource": "データは ILGA World データベースから取得し、毎年更新されます。スコアは目安です — 出発前に最新ニュースを確認してください。",
+      "basedOn_other": "旅の対象 {{count}} か国の LGBTQ+ データに基づいています。",
+      "worstCountry": "最も低いスコア: {{country}}（{{score}}/100）。",
+      "stops_other": "{{count}} 箇所",
+      "warningCount_other": "警告 {{count}} 件",
+      "toggleDetails": "{{country}} の詳細を表示/非表示",
+      "viewOnIlga": "ILGA データベースで見る",
+      "risk": {
+        "low": "リスク低",
+        "moderate": "中程度のリスク",
+        "high": "高リスク",
+        "critical": "重大なリスク"
+      },
+      "headline": {
+        "low": "安全に旅できそうです。",
+        "moderate": "多少の注意が必要です。",
+        "high": "ルート上に高いリスクがあります。",
+        "critical": "ルート上に重大なリスクがあります。"
+      },
+      "flags": {
+        "deathPenalty": "同性間の関係に死刑が適用されます",
+        "criminalized": "同性間の関係が刑事罰の対象です"
+      },
+      "scoreLabel": {
+        "veryHigh": "非常に高い",
+        "high": "高い",
+        "moderate": "中程度",
+        "low": "低い",
+        "veryLow": "非常に低い",
+        "noData": "データなし"
+      },
+      "detail": {
+        "criminalized": {
+          "label": "法的状態",
+          "value": "同性間の関係は違法です"
+        },
+        "deathPenalty": {
+          "label": "最高刑",
+          "value": "死刑が適用されます"
+        },
+        "ssu": "同性パートナーシップ",
+        "employment": "雇用での保護"
+      },
+      "tip": {
+        "safe": "LGBTQ+ の受容度は高めです。他の地域と同様、公の場での愛情表現には常識的な配慮を。",
+        "caution": "公の場での愛情表現には注意を。現地の都市情報と最新の旅行記を確認してください。",
+        "danger": "リスクを真剣に受け止めてください。公の場での愛情表現やマッチングアプリを避け、目立たないようにしましょう。"
+      }
+    },
+    "budget": {
+      "emptyTitle": "まだ支出がありません",
+      "emptyDescription": "支出を記録して、グループで費用を分担しましょう。",
+      "addExpense": "支出を追加",
+      "totalSpend": "合計支出",
+      "spendingByCategory": "カテゴリ別支出",
+      "settlements": "清算",
+      "unknownMember": "不明",
+      "paidBy": "{{name}} が支払い",
+      "splitWays_other": "{{count}} 人で分担",
+      "itemsCount_other": "{{count}} 件の支出を記録",
+      "membersCount_other": "メンバー {{count}} 人",
+      "deleted": "支出を削除しました",
+      "deleteFailed": "支出を削除できませんでした",
+      "deleteAria": "支出を削除",
+      "deleteTitle": "支出を削除",
+      "deleteConfirm": "この支出を削除しますか？この操作は取り消せません。",
+      "category": {
+        "food": "食事",
+        "transport": "交通",
+        "accommodation": "宿泊",
+        "activities": "アクティビティ",
+        "shopping": "ショッピング",
+        "other": "その他"
+      }
+    },
+    "reservations": {
+      "emptyTitle": "予約はまだありません",
+      "emptyDescription": "フライト、ホテル、アクティビティを追加して一元管理しましょう。",
+      "add": "予約を追加",
+      "nextUp": "次の予定",
+      "deleted": "予約を削除しました",
+      "deleteFailed": "予約を削除できませんでした",
+      "deleteTitle": "予約を削除",
+      "deleteConfirm": "この予約を削除しますか？この操作は取り消せません。",
+      "type": {
+        "flight": "フライト",
+        "hotel": "ホテル",
+        "activity": "アクティビティ",
+        "transport": "交通",
+        "other": "その他"
+      },
+      "status": {
+        "confirmed": "確定",
+        "cancelled": "キャンセル",
+        "pending": "保留中"
+      }
+    },
+    "packing": {
+      "emptyTitle": "パッキングリストを始めましょう",
+      "emptyDescription": "アイテムを追加するか、テンプレートから始めましょう。",
+      "progress": "{{checked}} / {{total}} 完了",
+      "addItem": "アイテムを追加…",
+      "removeAria": "アイテムを削除",
+      "added": "アイテムを追加しました",
+      "addFailed": "アイテムを追加できませんでした",
+      "removed": "アイテムを削除しました",
+      "removeFailed": "アイテムを削除できませんでした",
+      "templateAdded": "テンプレートを追加しました",
+      "templateFailed": "テンプレートを追加できませんでした",
+      "templates": {
+        "essentials": "必需品",
+        "lgbtq-safety": "LGBTQ+ セーフティキット",
+        "beach": "ビーチセット"
+      },
+      "category": {
+        "clothing": "衣類",
+        "toiletries": "洗面用具",
+        "electronics": "電子機器",
+        "documents": "書類",
+        "safety": "安全用品",
+        "lgbtq-specific": "LGBTQ+ 向け",
+        "other": "その他"
+      }
+    },
+    "collaborate": {
+      "chat": "チャット",
+      "notes": "メモ",
+      "polls": "投票"
+    }
   }
 }
