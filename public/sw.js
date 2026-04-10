@@ -1,6 +1,6 @@
 // Service Worker for Queer Guide — optimized for Cloudflare Pages
-const STATIC_CACHE = 'static-v4';
-const DYNAMIC_CACHE = 'dynamic-v4';
+const STATIC_CACHE = 'static-v5';
+const DYNAMIC_CACHE = 'dynamic-v5';
 const DYNAMIC_CACHE_LIMIT = 50;
 
 // Precached during install — HTML shell, offline fallback, manifest
