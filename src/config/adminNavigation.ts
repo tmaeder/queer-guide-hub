@@ -36,6 +36,7 @@ import {
   Hotel,
   Home,
   History,
+  MessageSquarePlus,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { brandColors } from '@/theme/muiTheme';
@@ -49,6 +50,8 @@ export interface AdminNavItem {
   route: string;
   /** Supabase table name for count badge (optional) */
   countTable?: string;
+  /** Direct key from get_admin_counts RPC for review-queue-style counts */
+  reviewCountKey?: string;
   /** Whether this item requires admin role (not just moderator) */
   adminOnly?: boolean;
   /** Accent color for active state */
@@ -223,6 +226,14 @@ export const adminNavSections: AdminNavSection[] = [
         icon: ClipboardCheck,
         route: '/admin/review',
         color: '#f59e0b',
+      },
+      {
+        id: 'feedback',
+        label: 'Feedback',
+        icon: MessageSquarePlus,
+        route: '/admin/feedback',
+        reviewCountKey: 'review_feedback',
+        color: '#DB2777',
       },
       {
         id: 'import-dashboard',

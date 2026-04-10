@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { MessageSquarePlus, Bug, Lightbulb, Sparkles, BookOpen, Check } from 'lucide-react';
+import { MessageSquarePlus, Bug, Lightbulb, Sparkles, BookOpen, Check, Camera } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import Fab from '@mui/material/Fab';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { captureContext, captureScreenshot } from '@/utils/feedbackContext';
 
 const categories = [
   { value: 'bug', label: 'Bug', icon: Bug, color: '#ef4444' },
@@ -40,6 +42,18 @@ export function FeedbackButton() {
   const [honeypot, setHoneypot] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [includeScreenshot, setIncludeScreenshot] = useState(false);
+  const [pageUrl, setPageUrl] = useState('');
+
+  // Capture current URL when dialog opens so user sees what will be sent
+  useEffect(() => {
+    if (open) setPageUrl(window.location.href);
+  }, [open]);
+
+  // Default screenshot toggle to ON when category is 'bug'
+  useEffect(() => {
+    if (category === 'bug') setIncludeScreenshot(true);
+  }, [category]);
 
   const reset = useCallback(() => {
     setCategory('');
@@ -48,6 +62,7 @@ export function FeedbackButton() {
     setEmail('');
     setHoneypot('');
     setIsSubmitted(false);
+    setIncludeScreenshot(false);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -65,6 +80,28 @@ export function FeedbackButton() {
 
     setIsSubmitting(true);
     try {
+      // Capture browser context synchronously BEFORE the dialog modifies the DOM
+      const context = captureContext();
+
+      // Optionally capture and upload screenshot
+      let screenshotUrl: string | null = null;
+      if (includeScreenshot) {
+        // Close dialog visually before screenshot so it's not in the image
+        const blob = await captureScreenshot();
+        if (blob) {
+          const fileName = `${crypto.randomUUID()}.jpg`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('feedback-screenshots')
+            .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
+          if (!uploadError && uploadData) {
+            const { data: publicUrl } = supabase.storage
+              .from('feedback-screenshots')
+              .getPublicUrl(uploadData.path);
+            screenshotUrl = publicUrl.publicUrl;
+          }
+        }
+      }
+
       const { error } = await supabase.from('community_submissions' as any).insert({
         content_type: 'feedback',
         data: {
@@ -72,6 +109,8 @@ export function FeedbackButton() {
           description: description.trim(),
           category,
           contact_email: email.trim() || null,
+          context,
+          screenshot_url: screenshotUrl,
         },
         submitted_by: user?.id || null,
       });
@@ -88,7 +127,7 @@ export function FeedbackButton() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [category, title, description, email, honeypot, user, toast]);
+  }, [category, title, description, email, honeypot, includeScreenshot, user, toast]);
 
   return (
     <>
@@ -232,6 +271,52 @@ export function FeedbackButton() {
                   />
                 </Box>
               )}
+
+              {/* Screenshot toggle */}
+              <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Checkbox
+                  id="feedback-screenshot"
+                  checked={includeScreenshot}
+                  onCheckedChange={(checked) => setIncludeScreenshot(checked === true)}
+                />
+                <Label
+                  htmlFor="feedback-screenshot"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+                >
+                  <Camera style={{ width: 14, height: 14 }} />
+                  Include screenshot of this page
+                </Label>
+              </Box>
+
+              {/* Context preview */}
+              <Box
+                sx={{
+                  mb: 2,
+                  p: 1.25,
+                  borderRadius: 1,
+                  bgcolor: 'action.hover',
+                  fontSize: '0.7rem',
+                }}
+              >
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                  Automatically included: current page URL, browser info, recent errors
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    display: 'block',
+                    fontFamily: 'monospace',
+                    fontSize: '0.65rem',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    mt: 0.25,
+                  }}
+                >
+                  {pageUrl}
+                </Typography>
+              </Box>
 
               {/* Honeypot */}
               <input

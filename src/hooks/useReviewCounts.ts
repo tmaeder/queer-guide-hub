@@ -15,6 +15,7 @@ export interface ReviewCounts {
   automation: number;
   tagSuggestions: number;
   duplicates: number;
+  feedback: number;
   total: number;
 }
 
@@ -30,6 +31,7 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
       automation: 0,
       tagSuggestions: 0,
       duplicates: 0,
+      feedback: 0,
       total: 0,
     };
   }
@@ -41,11 +43,13 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
   const automation = 0; // content_flags table does not exist
   const tagSuggestions = raw.review_tags ?? 0;
   const duplicates = raw.review_duplicates ?? 0;
+  const feedback = raw.review_feedback ?? 0;
 
   // Submissions count — fetch pending community submissions
   let submissions = raw.review_submissions ?? 0;
   if (!submissions) {
     const { count } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .from('community_submissions' as any)
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending');
@@ -60,7 +64,16 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
     automation,
     tagSuggestions,
     duplicates,
-    total: staging + cmsReview + moderation + submissions + automation + tagSuggestions + duplicates,
+    feedback,
+    total:
+      staging +
+      cmsReview +
+      moderation +
+      submissions +
+      automation +
+      tagSuggestions +
+      duplicates +
+      feedback,
   };
 }
 

@@ -147,6 +147,9 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
             if (item.countTable && raw[item.countTable] !== undefined) {
               counts[item.id] = raw[item.countTable];
             }
+            if (item.reviewCountKey && raw[item.reviewCountKey] !== undefined) {
+              counts[item.id] = raw[item.reviewCountKey];
+            }
           }
         }
         setLoadedCounts(counts);

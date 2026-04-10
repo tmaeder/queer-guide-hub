@@ -11,6 +11,11 @@ import { CookieConsentProvider } from '@/hooks/useCookieConsent';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { CookieConsentBanner } from '@/components/privacy/CookieConsentBanner';
 import { FeedbackButton } from '@/components/feedback/FeedbackButton';
+import { installErrorBuffer, installNetworkBuffer } from '@/utils/feedbackContext';
+
+// Install feedback context buffers at module load (idempotent)
+installErrorBuffer();
+installNetworkBuffer();
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
@@ -87,6 +92,7 @@ const AdminHotels = lazy(() => import('./pages/AdminHotels'));
 const AdminQueerVillages = lazy(() => import('./pages/AdminQueerVillages'));
 const AdminReview = lazy(() => import('./pages/AdminReview'));
 const AdminSubmissions = lazy(() => import('./pages/AdminSubmissions'));
+const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 // CMS components rendered as admin views
 const AdminCMS = lazy(() => import('./pages/AdminCMS'));
@@ -450,6 +456,7 @@ const AppRoutes = () => {
                 {/* Review & Workflow section -- unified dashboard */}
                 <Route path="automation" element={<Navigate to="/admin/pipelines?tab=modules" replace />} />
                 <Route path="review" element={<AdminReview />} />
+                <Route path="feedback" element={<AdminFeedback />} />
                 <Route
                   path="moderation"
                   element={<Navigate to="/admin/review?tab=moderation" replace />}
