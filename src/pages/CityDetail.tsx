@@ -90,7 +90,7 @@ export default function CityDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city?.name]);
   const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(
-    city?.countries?.id || '',
+    city?.countries?.slug || city?.countries?.id || '',
   );
   const { villages, loading: villagesLoading, fetchVillages } = useQueerVillages(false);
 

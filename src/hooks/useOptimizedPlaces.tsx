@@ -160,7 +160,7 @@ export function useOptimizedCountry(countrySlug: string) {
     queryFn: fetchCountry,
     gcTime: CACHE_TIME,
     staleTime: STALE_TIME,
-    enabled: !!countryId,
+    enabled: !!countrySlug,
     refetchOnWindowFocus: false,
   });
 
@@ -205,7 +205,7 @@ export function useOptimizedCity(citySlug: string) {
     queryFn: fetchCity,
     gcTime: CACHE_TIME,
     staleTime: STALE_TIME,
-    enabled: !!cityId,
+    enabled: !!citySlug,
     refetchOnWindowFocus: false,
   });
 
