@@ -37,6 +37,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Alert from '@mui/material/Alert';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 
@@ -256,6 +257,7 @@ export default function EventDetail() {
 
   const attendeesGoing = event.event_attendees?.filter((a) => a.status === 'going') || [];
   const attendeesInterested = event.event_attendees?.filter((a) => a.status === 'interested') || [];
+  const isPast = new Date(event.end_date || event.start_date) < new Date();
 
   const formatEventDate = (startDate: string, endDate?: string | null) => {
     const start = new Date(startDate);
@@ -383,6 +385,13 @@ export default function EventDetail() {
         />
       )}
 
+      {/* Past event banner */}
+      {isPast && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Dieses Event hat bereits stattgefunden. / This event has ended.
+        </Alert>
+      )}
+
       {/* Title Row */}
       <Box
         sx={{
@@ -500,11 +509,13 @@ export default function EventDetail() {
           sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}
         >
           <FavoriteButton itemId={event.id} type="event" size="md" />
-          <Button variant="outline" size="sm" onClick={() => setAddToTripOpen(true)}>
-            <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
-            Add to Trip
-          </Button>
-          {tripStatus?.isInTrip && (
+          {!isPast && (
+            <Button variant="outline" size="sm" onClick={() => setAddToTripOpen(true)}>
+              <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
+              Add to Trip
+            </Button>
+          )}
+          {!isPast && tripStatus?.isInTrip && (
             <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
               In {tripStatus.count} trip{tripStatus.count !== 1 ? 's' : ''}
             </Badge>
@@ -605,7 +616,7 @@ export default function EventDetail() {
           )}
 
           {/* Attendance Actions */}
-          {user && (
+          {user && !isPast && (
             <Card>
               <CardContent style={{ paddingTop: 24 }}>
                 <Box sx={{ display: 'flex', gap: 1.5 }}>

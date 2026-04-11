@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import {
   Calendar,
@@ -103,6 +104,7 @@ const Events = () => {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [nearMe, setNearMe] = useState(false);
+  const [showPast, setShowPast] = useState(false);
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
@@ -135,6 +137,7 @@ const Events = () => {
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       dateRange,
       nearMe: nearMe ? userLocation : undefined,
+      includePast: showPast || undefined,
     };
     setPage(1);
     setAutoLoadedCount(0);
@@ -167,6 +170,7 @@ const Events = () => {
           eventType: eventType && eventType !== 'all' ? eventType : undefined,
           tags: selectedTags.length > 0 ? selectedTags : undefined,
           nearMe: location,
+          includePast: showPast || undefined,
         });
         toast({
           title: 'Location found',
@@ -197,6 +201,7 @@ const Events = () => {
     setEndDate(undefined);
     setNearMe(false);
     setUserLocation(null);
+    setShowPast(false);
     setPage(1);
     setAutoLoadedCount(0);
     await fetchEvents(
@@ -246,7 +251,7 @@ const Events = () => {
     setSelectedEvent(event);
   };
   const hasActiveFilters =
-    search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe;
+    search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe || showPast;
   const autoInitDone = useRef(false);
   useEffect(() => {
     if (autoInitDone.current) return;
@@ -264,6 +269,17 @@ const Events = () => {
   // run once on mount; visitorLocation may not yet be available but that is fine — user can still see all events
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Re-fetch when the past-events toggle changes
+  const showPastMounted = useRef(false);
+  useEffect(() => {
+    if (!showPastMounted.current) {
+      showPastMounted.current = true;
+      return;
+    }
+    handleFiltersChange();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPast]);
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
@@ -571,6 +587,27 @@ const Events = () => {
                 categories={['events']}
               />
 
+              {/* Past events toggle */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  pt: 1,
+                }}
+              >
+                <Label htmlFor="show-past-events" style={{ cursor: 'pointer' }}>
+                  Vergangene Termine anzeigen
+                </Label>
+                <Switch
+                  id="show-past-events"
+                  checked={showPast}
+                  onCheckedChange={setShowPast}
+                  aria-label="Show past events"
+                />
+              </Box>
+
               {/* Action Buttons */}
               <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
                 <Button onClick={handleFiltersChange}>Apply Filters</Button>
@@ -661,6 +698,17 @@ const Events = () => {
                   />
                 </Badge>
               )}
+              {showPast && (
+                <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
+                  Vergangene Termine
+                  <X
+                    style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
+                    role="button"
+                    aria-label="Clear past events filter"
+                    onClick={() => setShowPast(false)}
+                  />
+                </Badge>
+              )}
               {selectedTags.map((tag) => (
                 <Badge key={tag} variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {tag}
@@ -701,8 +749,12 @@ const Events = () => {
         {!loading && !error && events.length === 0 && (
           <EmptyState
             icon={Calendar}
-            title="The dance floor is empty... for now"
-            description="Check back soon or widen your filters to find something fun."
+            title={showPast ? 'Keine vergangenen Termine gefunden' : 'The dance floor is empty... for now'}
+            description={
+              showPast
+                ? 'Für diese Filter gibt es keine vergangenen Termine. Deaktiviere den Schalter, um kommende Events zu sehen.'
+                : 'Check back soon or widen your filters to find something fun.'
+            }
             mood="encouraging"
             primaryAction={{ label: 'Submit an Event', onClick: () => navigate('/submit/event') }}
             secondaryAction={{ label: 'Clear Filters', onClick: clearFilters }}

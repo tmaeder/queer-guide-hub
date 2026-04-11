@@ -34,6 +34,7 @@ export function useEvents(autoFetch: boolean = true) {
       search?: string;
       nearMe?: { lat: number; lng: number };
       limit?: number;
+      includePast?: boolean;
     },
     options?: { page?: number; pageSize?: number; append?: boolean },
   ) => {
@@ -66,9 +67,15 @@ export function useEvents(autoFetch: boolean = true) {
           { count: 'exact' },
         )
         .eq('status', 'active')
-        .gte('start_date', new Date().toISOString())
         .order('featured', { ascending: false })
-        .order('start_date', { ascending: true });
+        .order('start_date', { ascending: filters?.includePast ? false : true });
+
+      const nowIso = new Date().toISOString();
+      if (filters?.includePast) {
+        query = query.lte('start_date', nowIso);
+      } else {
+        query = query.gte('start_date', nowIso);
+      }
 
       if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
