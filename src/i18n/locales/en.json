@@ -570,5 +570,40 @@
       "ctaSecondary": "Sign in",
       "footer": "Shared via queer.guide"
     }
+  },
+  "help": {
+    "title": "Help & Crisis Hotlines",
+    "subtitle": "You are not alone. Find immediate support here.",
+    "meta_description": "Free, anonymous LGBTQIA+ crisis hotlines and counselling services worldwide. You are not alone.",
+    "emergency_title": "In acute danger?",
+    "emergency_body": "Call emergency services immediately: 112 (EU) or 911 (US/CA). Every second counts.",
+    "filter_country": "Country",
+    "filter_country_all": "All countries",
+    "filter_topic": "Topic",
+    "filter_topic_all": "All topics",
+    "call_now": "Call now",
+    "call_aria": "Call {{name}} {{phone}}",
+    "hours": "Hours",
+    "languages": "Languages",
+    "disclaimer": "Queer Guide does not replace professional help.",
+    "no_results": "No hotlines match these filters. Try \"All countries\" or check the international directories.",
+    "error_title": "Help page unavailable",
+    "error_body": "In acute danger, call your local emergency number: 112 (EU) or 911 (US/CA).",
+    "topic": {
+      "general": "General",
+      "crisis": "Crisis",
+      "suicide": "Suicide prevention",
+      "lgbtq": "LGBTQIA+",
+      "youth": "Youth",
+      "trans": "Trans",
+      "coming-out": "Coming out",
+      "violence": "Violence",
+      "discrimination": "Discrimination",
+      "health": "Health",
+      "hiv": "HIV",
+      "legal": "Legal",
+      "relationships": "Relationships",
+      "women": "Women"
+    }
   }
 }

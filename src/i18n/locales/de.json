@@ -412,5 +412,40 @@
       "ctaSecondary": "Anmelden",
       "footer": "Geteilt über queer.guide"
     }
+  },
+  "help": {
+    "title": "Hilfe & Krisen-Hotlines",
+    "subtitle": "Du bist nicht allein. Hier findest du sofortige Unterstützung.",
+    "meta_description": "Kostenlose, anonyme LGBTQIA+ Krisenhotlines und Beratungsstellen weltweit. Du bist nicht allein.",
+    "emergency_title": "Akute Gefahr?",
+    "emergency_body": "Wähle sofort den Notruf: 112 (EU) oder 911 (US/CA). Bei unmittelbarer Lebensgefahr zählt jede Sekunde.",
+    "filter_country": "Land",
+    "filter_country_all": "Alle Länder",
+    "filter_topic": "Thema",
+    "filter_topic_all": "Alle Themen",
+    "call_now": "Jetzt anrufen",
+    "call_aria": "Anrufen: {{name}} {{phone}}",
+    "hours": "Erreichbar",
+    "languages": "Sprachen",
+    "disclaimer": "Queer Guide ersetzt keine professionelle Hilfe.",
+    "no_results": "Keine Hotlines mit diesen Filtern gefunden. Versuche „Alle Länder“ oder prüfe die internationalen Verzeichnisse.",
+    "error_title": "Hilfe-Seite nicht verfügbar",
+    "error_body": "Bei akuter Gefahr wähle den Notruf: 112 (EU) oder 911 (US/CA).",
+    "topic": {
+      "general": "Allgemein",
+      "crisis": "Krise",
+      "suicide": "Suizidprävention",
+      "lgbtq": "LGBTQIA+",
+      "youth": "Jugendliche",
+      "trans": "Trans*",
+      "coming-out": "Coming-out",
+      "violence": "Gewalt",
+      "discrimination": "Diskriminierung",
+      "health": "Gesundheit",
+      "hiv": "HIV",
+      "legal": "Recht",
+      "relationships": "Beziehungen",
+      "women": "Frauen"
+    }
   }
 }

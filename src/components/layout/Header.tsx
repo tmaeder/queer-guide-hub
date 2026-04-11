@@ -40,6 +40,7 @@ import {
   ChevronRight,
   Building,
   Luggage,
+  LifeBuoy,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -98,6 +99,7 @@ const navigationSections = [
       { to: '/travel', icon: Plane, label: 'Travel', cat: 'travel' },
       { to: '/personalities', icon: Users, label: 'Personalities', cat: 'community' },
       { to: '/hotels', icon: Building, label: 'Hotels', cat: 'hotels' },
+      { to: '/help', icon: LifeBuoy, label: 'Help', cat: 'community' },
     ],
   },
 ];
@@ -123,6 +125,7 @@ const userModes = [
 
 const legalItems = [
   { to: '/about', icon: Info, label: 'About' },
+  { to: '/help', icon: LifeBuoy, label: 'Help' },
   { to: '/accessibility', icon: Accessibility, label: 'Accessibility' },
   { to: '/legal', icon: Scale, label: 'Legal' },
   { to: '/contact', icon: Mail, label: 'Contact' },
@@ -222,7 +225,15 @@ export function Header() {
           onClick={() => setDrawerOpen(false)}
           style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
         >
-          <img src="/images/logo.png" alt="Queer Guide" style={{ height: 28, width: 28 }} />
+          <img
+            src="/images/logo.png"
+            alt="Queer Guide"
+            style={{
+              height: 28,
+              width: 28,
+              filter: theme.palette.mode === 'dark' ? 'brightness(0) invert(1)' : 'brightness(0)',
+            }}
+          />
           <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'text.primary' }}>
             Queer Guide
           </Typography>
@@ -558,7 +569,15 @@ export function Header() {
               textDecoration: 'none',
             }}
           >
-            <img src="/images/logo.png" alt="Queer Guide Logo" style={{ height: 32, width: 32 }} />
+            <img
+              src="/images/logo.png"
+              alt="Queer Guide Logo"
+              style={{
+                height: 32,
+                width: 32,
+                filter: theme.palette.mode === 'dark' ? 'brightness(0) invert(1)' : 'brightness(0)',
+              }}
+            />
             <Box
               component="span"
               sx={{

@@ -186,6 +186,7 @@ const Sitemap = lazyRetry(() => import('./pages/Sitemap'));
 const SubmitHub = lazyRetry(() => import('./pages/SubmitHub'));
 const SubmitForm = lazyRetry(() => import('./pages/SubmitForm'));
 const FeedbackBoard = lazyRetry(() => import('./pages/FeedbackBoard'));
+const HelpHotlines = lazyRetry(() => import('./pages/HelpHotlines'));
 const CMSPage = lazyRetry(() => import('./pages/Page'));
 const ShareTarget = lazyRetry(() => import('./pages/ShareTarget'));
 
@@ -558,6 +559,7 @@ const AppRoutes = () => {
               <Route path="/user/:userId" element={<UserProfile />} />
               <Route path="/sitemap" element={<Sitemap />} />
               <Route path="/feedback" element={<FeedbackBoard />} />
+              <Route path="/help" element={<HelpHotlines />} />
               <Route path="/submit" element={<SubmitHub />} />
               <Route path="/submit/:contentType" element={<SubmitForm />} />
               <Route path="/p/:slug" element={<CMSPage />} />
