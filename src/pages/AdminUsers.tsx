@@ -26,6 +26,7 @@ import { CreateUserDialog } from '@/components/admin/users/CreateUserDialog';
 interface UserRow {
   id: string;
   user_id: string;
+  email: string | null;
   display_name: string | null;
   first_name: string | null;
   last_name: string | null;
@@ -64,7 +65,8 @@ export default function AdminUsers() {
         header: 'User',
         cell: (info) => {
           const row = info.row.original;
-          const name = info.getValue() || row.first_name || row.last_name || 'Anonymous';
+          const name =
+            info.getValue() || row.first_name || row.last_name || row.email || 'Anonymous';
           return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Avatar style={{ width: 32, height: 32, flexShrink: 0 }}>
@@ -84,6 +86,15 @@ export default function AdminUsers() {
                 >
                   {name}
                 </Box>
+                {row.email && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  >
+                    {row.email}
+                  </Typography>
+                )}
                 {row.pronouns && (
                   <Typography variant="caption" color="text.secondary">
                     {row.pronouns}
@@ -94,6 +105,15 @@ export default function AdminUsers() {
           );
         },
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('email', {
+        header: 'Email',
+        cell: (info) => info.getValue() || '-',
+        meta: {
+          serverSortable: true,
+          hideable: true,
+          defaultVisible: false,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.display({
         id: 'role',
@@ -229,13 +249,13 @@ export default function AdminUsers() {
     () => ({
       tableName: 'profiles',
       select:
-        'id,user_id,display_name,first_name,last_name,avatar_url,location,user_mode,is_online,moderation_status,profile_completion_percentage,pronouns,created_at,last_seen_at',
+        'id,user_id,email,display_name,first_name,last_name,avatar_url,location,user_mode,is_online,moderation_status,profile_completion_percentage,pronouns,created_at,last_seen_at',
       columns,
       defaultSort: { column: 'created_at', direction: 'desc' as const },
       defaultPageSize: 25,
       enableSelection: true,
       enableSearch: true,
-      searchColumns: ['display_name', 'first_name', 'last_name'],
+      searchColumns: ['display_name', 'first_name', 'last_name', 'email'],
       entityFilters: [
         { key: 'is_online', label: 'Online', type: 'boolean', column: 'is_online' },
         {
