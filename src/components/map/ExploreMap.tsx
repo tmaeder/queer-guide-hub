@@ -632,11 +632,12 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
           position: 'absolute',
           pointerEvents: 'none',
           zIndex: 20,
-          background: 'rgba(255,255,255,0.95)',
+          background: 'hsl(var(--popover) / 0.95)',
+          color: 'hsl(var(--popover-foreground))',
           borderRadius: 6,
           padding: '5px 10px',
           fontSize: 13,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
           whiteSpace: 'nowrap',
         }}
       />
@@ -650,7 +651,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: 'rgba(255,255,255,0.7)',
+            bgcolor: 'background.default',
+            opacity: 0.7,
             zIndex: 5,
           }}
         >
@@ -678,7 +680,10 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
           display: 'flex',
           alignItems: 'center',
           gap: 0.5,
-          bgcolor: 'rgba(255,255,255,0.9)',
+          bgcolor: 'background.paper',
+          border: '1px solid',
+          borderColor: 'divider',
+          boxShadow: 1,
           borderRadius: 1,
           px: 1,
           py: 0.5,

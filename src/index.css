@@ -227,6 +227,37 @@
   --cat-community:   330 85% 68%;
 }
 
+/* ── MapLibre popup theme adaptation ───────────────────────────────── */
+.maplibregl-popup-content {
+  background: hsl(var(--popover)) !important;
+  color: hsl(var(--popover-foreground)) !important;
+  box-shadow: 0 4px 16px hsl(0 0% 0% / 0.25) !important;
+}
+.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: hsl(var(--popover)) !important;
+}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: hsl(var(--popover)) !important;
+}
+.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: hsl(var(--popover)) !important;
+}
+.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: hsl(var(--popover)) !important;
+}
+.maplibregl-popup-close-button {
+  color: hsl(var(--popover-foreground)) !important;
+  font-size: 18px !important;
+  padding: 2px 6px !important;
+}
+.maplibregl-popup-close-button:hover {
+  background: hsl(var(--muted)) !important;
+}
+
 /* ── Base resets ───────────────────────────────────────────────────── */
 
 *,

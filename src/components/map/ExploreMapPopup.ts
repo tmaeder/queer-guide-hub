@@ -11,6 +11,9 @@ export function renderPopupHTML(marker: MapMarker): string {
       (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' })[c]!,
     );
 
+  const muted = 'hsl(var(--muted-foreground))';
+  const badge = 'background:hsl(var(--muted));color:hsl(var(--muted-foreground))';
+
   const link = marker.linkTo
     ? `<a href="${esc(marker.linkTo)}" style="color:#6366f1;text-decoration:none;font-size:11px;">View details →</a>`
     : '';
@@ -22,8 +25,8 @@ export function renderPopupHTML(marker: MapMarker): string {
       return `
         <div style="min-width:180px;padding:6px 2px;">
           <strong style="font-size:14px;">${esc(marker.name)}</strong><br/>
-          <span style="font-size:12px;color:#6b7280;">${esc(category)}</span><br/>
-          ${city ? `<span style="font-size:11px;color:#9ca3af;">${esc(city)}</span><br/>` : ''}
+          <span style="font-size:12px;color:${muted};">${esc(category)}</span><br/>
+          ${city ? `<span style="font-size:11px;color:${muted};">${esc(city)}</span><br/>` : ''}
           ${link}
         </div>`;
     }
@@ -35,8 +38,8 @@ export function renderPopupHTML(marker: MapMarker): string {
         <div style="min-width:180px;padding:6px 2px;">
           <strong style="font-size:14px;">${esc(marker.name)}</strong><br/>
           ${marker.subtitle ? `<span style="font-size:12px;color:#ec4899;">${esc(marker.subtitle)}</span><br/>` : ''}
-          ${venue ? `<span style="font-size:11px;color:#6b7280;">@ ${esc(venue)}</span><br/>` : ''}
-          ${city ? `<span style="font-size:11px;color:#9ca3af;">${esc(city)}</span><br/>` : ''}
+          ${venue ? `<span style="font-size:11px;color:${muted};">@ ${esc(venue)}</span><br/>` : ''}
+          ${city ? `<span style="font-size:11px;color:${muted};">${esc(city)}</span><br/>` : ''}
           ${link}
         </div>`;
     }
@@ -48,13 +51,13 @@ export function renderPopupHTML(marker: MapMarker): string {
       const capital = marker.meta?.isCapital ? ' <b style="color:#f59e0b;">★ Capital</b>' : '';
       const cityPrecision = marker.meta?.precision as string | undefined;
       const cityBadge = cityPrecision
-        ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:#e2e8f0;color:#475569;font-weight:500;margin-left:6px;">${esc(cityPrecision.charAt(0).toUpperCase() + cityPrecision.slice(1))}</span>`
+        ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;${badge};font-weight:500;margin-left:6px;">${esc(cityPrecision.charAt(0).toUpperCase() + cityPrecision.slice(1))}</span>`
         : '';
       return `
         <div style="min-width:160px;padding:6px 2px;">
           <strong style="font-size:14px;">${esc(marker.name)}</strong>${capital}${cityBadge}<br/>
-          ${marker.subtitle ? `<span style="font-size:12px;color:#6b7280;">${esc(marker.subtitle)}</span><br/>` : ''}
-          ${pop ? `<span style="font-size:11px;color:#9ca3af;">${pop}</span><br/>` : ''}
+          ${marker.subtitle ? `<span style="font-size:12px;color:${muted};">${esc(marker.subtitle)}</span><br/>` : ''}
+          ${pop ? `<span style="font-size:11px;color:${muted};">${pop}</span><br/>` : ''}
           ${link}
         </div>`;
     }
@@ -64,13 +67,13 @@ export function renderPopupHTML(marker: MapMarker): string {
       const continent = marker.meta?.continent ?? '';
       const precision = marker.meta?.precision as string | undefined;
       const precisionBadge = precision
-        ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:#e2e8f0;color:#475569;font-weight:500;margin-left:6px;">${esc(precision.charAt(0).toUpperCase() + precision.slice(1))}</span>`
+        ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;${badge};font-weight:500;margin-left:6px;">${esc(precision.charAt(0).toUpperCase() + precision.slice(1))}</span>`
         : '';
       return `
         <div style="min-width:160px;padding:6px 2px;">
           <strong style="font-size:14px;">${esc(marker.name)}</strong>${precisionBadge}<br/>
-          ${capital ? `<span style="font-size:12px;color:#6b7280;">Capital: ${esc(capital)}</span><br/>` : ''}
-          ${continent ? `<span style="font-size:11px;color:#9ca3af;">${esc(continent)}</span><br/>` : ''}
+          ${capital ? `<span style="font-size:12px;color:${muted};">Capital: ${esc(capital)}</span><br/>` : ''}
+          ${continent ? `<span style="font-size:11px;color:${muted};">${esc(continent)}</span><br/>` : ''}
           ${link}
         </div>`;
     }
@@ -83,13 +86,13 @@ export function renderPopupHTML(marker: MapMarker): string {
         : '';
       const nhPrecision = marker.meta?.precision as string | undefined;
       const nhBadge = nhPrecision
-        ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:#e2e8f0;color:#475569;font-weight:500;margin-left:6px;">${esc(nhPrecision.charAt(0).toUpperCase() + nhPrecision.slice(1))}</span>`
+        ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;${badge};font-weight:500;margin-left:6px;">${esc(nhPrecision.charAt(0).toUpperCase() + nhPrecision.slice(1))}</span>`
         : '';
       return `
         <div style="min-width:180px;padding:6px 2px;">
           <strong style="font-size:14px;">${esc(marker.name)}</strong>${nhBadge}<br/>
-          ${city ? `<span style="font-size:12px;color:#6b7280;">${esc(city)}</span><br/>` : ''}
-          ${desc ? `<span style="font-size:11px;color:#9ca3af;">${desc}</span><br/>` : ''}
+          ${city ? `<span style="font-size:12px;color:${muted};">${esc(city)}</span><br/>` : ''}
+          ${desc ? `<span style="font-size:11px;color:${muted};">${desc}</span><br/>` : ''}
           ${link}
         </div>`;
     }
@@ -101,7 +104,7 @@ export function renderPopupHTML(marker: MapMarker): string {
       return `
         <div style="min-width:160px;padding:6px 2px;">
           <strong style="font-size:14px;">${esc(marker.name)}</strong><br/>
-          ${marker.subtitle ? `<span style="font-size:12px;color:#6b7280;">${esc(marker.subtitle)}</span><br/>` : ''}
+          ${marker.subtitle ? `<span style="font-size:12px;color:${muted};">${esc(marker.subtitle)}</span><br/>` : ''}
           ${badges ? `<span style="font-size:11px;">${badges}</span><br/>` : ''}
         </div>`;
     }
@@ -110,7 +113,7 @@ export function renderPopupHTML(marker: MapMarker): string {
       return `
         <div style="min-width:140px;padding:6px 2px;">
           <strong style="font-size:14px;">${esc(marker.name)}</strong><br/>
-          ${marker.subtitle ? `<span style="font-size:12px;color:#6b7280;">${esc(marker.subtitle)}</span>` : ''}
+          ${marker.subtitle ? `<span style="font-size:12px;color:${muted};">${esc(marker.subtitle)}</span>` : ''}
           ${link}
         </div>`;
   }
