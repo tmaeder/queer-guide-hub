@@ -151,7 +151,7 @@ function SharedTripPage() {
 
   if (isLoading) return <PageLoadingState count={4} />;
 
-  if (error || !data) {
+  if (error || !data || !data.trip) {
     return (
       <Box className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <Typography variant="h5" fontWeight={700} gutterBottom>
@@ -164,7 +164,9 @@ function SharedTripPage() {
     );
   }
 
-  const { trip, permissions, days, places } = data;
+  const { trip, permissions } = data;
+  const days = data.days || [];
+  const places = data.places || [];
   const budgetItems = data.budget_items || [];
   const notes = data.notes || [];
   const packingItems = data.packing_items || [];
