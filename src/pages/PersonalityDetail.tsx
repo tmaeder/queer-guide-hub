@@ -45,7 +45,7 @@ export default function PersonalityDetail() {
   const [loading, setLoading] = useState(true);
   const [similarPersonalities, setSimilarPersonalities] = useState<SimilarPersonality[]>([]);
   const [countryId, setCountryId] = useState<string | null>(null);
-  const { incrementViews } = usePersonalities();
+  const { incrementViews } = usePersonalities(false);
 
   useEffect(() => {
     if (!slug) {

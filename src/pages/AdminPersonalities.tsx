@@ -96,7 +96,7 @@ function VisibilityBadge({ visibility }: { visibility: string }) {
 
 export default function AdminPersonalities() {
   const { isAdmin } = useAdminRoles();
-  const { updatePersonality, refetchPersonalities } = usePersonalities({ limit: 1 });
+  const { updatePersonality, refetchPersonalities } = usePersonalities(false);
   const [selectedPersonality, setSelectedPersonality] = useState<PersonalityRow | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 

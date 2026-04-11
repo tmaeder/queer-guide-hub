@@ -1,208 +1,238 @@
-import { Box, Typography } from '@mui/material';
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { ExternalLink, Eye, Calendar, MapPin, Check, AlertCircle, Star, Clock, Heart } from "lucide-react";
-import { Personality } from "@/hooks/usePersonalities";
-import { Skeleton } from 'boneyard-js/react';
-import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { useState } from 'react';
+import { Link } from 'react-router';
+import { Star } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
+import type { Personality } from '@/hooks/usePersonalities';
 
 interface PersonalityCardProps {
   personality?: Personality;
   loading?: boolean;
   onClick?: () => void;
 }
-export function PersonalityCard({
-  personality,
-  loading = false,
-  onClick
-}: PersonalityCardProps) {
+
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function formatEra(p: Personality): string | null {
+  if (p.is_living) return 'Living';
+  const birthYear = p.birth_date ? new Date(p.birth_date).getFullYear() : null;
+  const deathYear = p.death_date ? new Date(p.death_date).getFullYear() : null;
+  if (birthYear && deathYear) return `${birthYear}\u2013${deathYear}`;
+  if (birthYear) return `b. ${birthYear}`;
+  if (deathYear) return `d. ${deathYear}`;
+  return 'Historical';
+}
+
+export function PersonalityCardSkeleton() {
+  return (
+    <Box
+      sx={{
+        borderRadius: 2,
+        border: 1,
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+        overflow: 'hidden',
+      }}
+    >
+      <Box sx={{ position: 'relative', width: '100%', pt: '133.33%', bgcolor: 'action.hover' }}>
+        <Skeleton
+          variant="rectangular"
+          sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        />
+      </Box>
+      <Box sx={{ p: 1.5 }}>
+        <Skeleton variant="text" width="75%" />
+        <Skeleton variant="text" width="55%" />
+        <Skeleton variant="text" width="65%" />
+      </Box>
+    </Box>
+  );
+}
+
+export function PersonalityCard({ personality, loading, onClick }: PersonalityCardProps) {
+  const [imgError, setImgError] = useState(false);
+
   if (loading || !personality) {
-    return (
-      <Skeleton name="personality-card" loading={true} fallback={<PageLoadingState count={1} />}>
-        <div />
-      </Skeleton>
-    );
+    return <PersonalityCardSkeleton />;
   }
-  const getInitials = (name: string) => {
-    return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
-  };
 
-  const getVerificationBadge = () => {
-    switch (personality.verification_status) {
-      case 'verified':
-        return (
-          <Badge variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'success.light', color: 'success.dark', borderColor: 'success.light' }}>
-            <Check sx={{ height: '12px', width: '12px' }} />
-            Verified
-          </Badge>
-        );
-      case 'disputed':
-        return (
-          <Badge variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'warning.light', color: 'warning.dark', borderColor: 'warning.light' }}>
-            <AlertCircle sx={{ height: '12px', width: '12px' }} />
-            Disputed
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const calculateAge = () => {
-    if (!personality.birth_date) return null;
-    const birthDate = new Date(personality.birth_date);
-    const endDate = personality.death_date ? new Date(personality.death_date) : new Date();
-    const age = endDate.getFullYear() - birthDate.getFullYear();
-    return personality.is_living ? `${age} years old` : `${age} years`;
-  };
-
-  const handleCardClick = () => {
-    // Navigate to detail page
-    window.location.href = `/personalities/${personality.slug}`;
-  };
-
-  const handleProfessionClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    window.location.href = `/personalities?profession=${encodeURIComponent(personality.profession || '')}`;
-  };
-
-  const handleNationalityClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    window.location.href = `/countries?search=${encodeURIComponent(personality.nationality || '')}`;
-  };
-
-  const handleWebsiteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    window.open(personality.website_url, '_blank');
-  };
+  const era = formatEra(personality);
+  const showImage = Boolean(personality.image_url) && !imgError;
+  const metaParts = [era, personality.nationality].filter(Boolean) as string[];
+  const ariaLabel = personality.profession
+    ? `${personality.name}, ${personality.profession}`
+    : personality.name;
+  const href = `/personalities/${personality.slug ?? personality.id}`;
 
   return (
-    <Card sx={{ '&:hover': { boxShadow: 3 }, transition: 'box-shadow 0.2s', cursor: 'pointer' }} onClick={handleCardClick}>
-      <CardContent sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-          <Avatar sx={{ height: '64px', width: '64px' }}>
-            <AvatarImage
-              src={personality.image_url}
-              alt={personality.name}
-              sx={{ objectFit: 'cover' }}
-            />
-            <AvatarFallback sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
+    <Box
+      component={Link}
+      to={href}
+      onClick={onClick}
+      aria-label={ariaLabel}
+      sx={{
+        display: 'block',
+        textDecoration: 'none',
+        color: 'inherit',
+        borderRadius: 2,
+        border: 1,
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+        overflow: 'hidden',
+        transition: 'all 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: 3,
+          borderColor: 'brand.main',
+          '& .personality-card-image': { transform: 'scale(1.04)' },
+        },
+        '&:focus-visible': {
+          outline: '2px solid',
+          outlineColor: 'brand.main',
+          outlineOffset: 2,
+        },
+      }}
+    >
+      {/* Image */}
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%',
+          pt: '133.33%',
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, rgba(219,39,119,0.18) 0%, rgba(245,158,11,0.18) 100%)',
+        }}
+      >
+        {showImage ? (
+          <Box
+            component="img"
+            src={personality.image_url}
+            alt={personality.name}
+            loading="lazy"
+            onError={() => setImgError(true)}
+            className="personality-card-image"
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transition: 'transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: '50%',
+                bgcolor: 'background.paper',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
+                fontWeight: 700,
+                fontSize: '1.25rem',
+                color: 'text.primary',
+                boxShadow: 1,
+              }}
+            >
               {getInitials(personality.name)}
-            </AvatarFallback>
-          </Avatar>
-
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {personality.name}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 1 }}>
-                {personality.is_featured && (
-                  <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
-                    <Star sx={{ height: '12px', width: '12px', mr: 0.5 }} />
-                    Featured
-                  </Badge>
-                )}
-                {getVerificationBadge()}
-              </Box>
             </Box>
-
-            {personality.pronouns && (
-              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
-                {personality.pronouns}
-              </Typography>
-            )}
-
-            {personality.profession && (
-              <Button
-                variant="ghost"
-                size="sm"
-                sx={{ height: 'auto', p: 0, fontSize: '0.875rem', color: 'primary.main' }}
-                onClick={handleProfessionClick}
-              >
-                {personality.profession}
-              </Button>
-            )}
           </Box>
-        </Box>
+        )}
 
-        {personality.description && (
-          <Typography variant="body2" sx={{ color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', mb: 2 }}>
-            {personality.description}
+        {personality.is_featured && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              px: 1,
+              py: 0.375,
+              borderRadius: 999,
+              bgcolor: 'rgba(255,255,255,0.88)',
+              backdropFilter: 'blur(4px)',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: 'text.primary',
+              boxShadow: 1,
+            }}
+          >
+            <Star size={12} fill="#DB2777" color="#DB2777" aria-hidden="true" />
+            <span>Featured</span>
+          </Box>
+        )}
+      </Box>
+
+      {/* Content */}
+      <Box sx={{ p: 1.5 }}>
+        <Typography
+          component="h3"
+          sx={{
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            lineHeight: 1.3,
+            color: 'text.primary',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {personality.name}
+        </Typography>
+        {personality.profession && (
+          <Typography
+            sx={{
+              fontSize: '0.8125rem',
+              color: 'text.secondary',
+              mt: 0.25,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {personality.profession}
           </Typography>
         )}
-
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              {personality.is_living ? (
-                <>
-                  <Heart sx={{ height: '12px', width: '12px', color: 'success.main' }} />
-                  <Typography component="span">Living</Typography>
-                </>
-              ) : (
-                <>
-                  <Clock sx={{ height: '12px', width: '12px' }} />
-                  <Typography component="span">Historical</Typography>
-                </>
-              )}
-            </Box>
-
-            {personality.birth_date && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Calendar sx={{ height: '12px', width: '12px' }} />
-                <Typography component="span">{calculateAge()}</Typography>
-              </Box>
-            )}
-
-            {personality.nationality && (
-              <Button
-                variant="ghost"
-                size="sm"
-                sx={{ height: 'auto', p: 0, fontSize: '0.75rem' }}
-                onClick={handleNationalityClick}
-              >
-                <MapPin sx={{ height: '12px', width: '12px', mr: 0.5 }} />
-                {personality.nationality}
-              </Button>
-            )}
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Eye sx={{ height: '12px', width: '12px' }} />
-            <Typography component="span">{personality.view_count.toLocaleString()}</Typography>
-          </Box>
-        </Box>
-
-        {personality.fields && personality.fields.length > 0 && (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-            {personality.fields.slice(0, 3).map((field, index) => (
-              <Badge key={index} variant="outline" sx={{ fontSize: '0.75rem' }}>
-                {field}
-              </Badge>
-            ))}
-            {personality.fields.length > 3 && (
-              <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
-                +{personality.fields.length - 3} more
-              </Badge>
-            )}
-          </Box>
-        )}
-
-        {personality.website_url && (
-          <Button
-            variant="outline"
-            size="sm"
-            sx={{ width: '100%' }}
-            onClick={handleWebsiteClick}
+        {metaParts.length > 0 && (
+          <Typography
+            sx={{
+              fontSize: '0.75rem',
+              color: 'text.secondary',
+              opacity: 0.85,
+              mt: 0.25,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
           >
-            <ExternalLink sx={{ height: '16px', width: '16px', mr: 1 }} />
-            Visit Website
-          </Button>
+            {metaParts.join(' \u00b7 ')}
+          </Typography>
         )}
-      </CardContent>
-    </Card>
+      </Box>
+    </Box>
   );
 }

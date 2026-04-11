@@ -1,191 +1,420 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router';
-import { useMeta } from '@/hooks/useMeta';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { PersonalityCard } from '@/components/personalities/PersonalityCard';
-import { PersonalitiesFilters } from '@/components/personalities/PersonalitiesFilters';
-import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';
-import { usePersonalities, PersonalityFilters } from '@/hooks/usePersonalities';
-import { useAuth } from '@/hooks/useAuth';
-import { Users } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import { Users, X } from 'lucide-react';
+
+import { useMeta } from '@/hooks/useMeta';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  usePersonalities,
+  type PersonalityFilters,
+  type PersonalitySort,
+} from '@/hooks/usePersonalities';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { StaggerGrid } from '@/components/animation/StaggerGrid';
+
+import { PersonalityCard, PersonalityCardSkeleton } from '@/components/personalities/PersonalityCard';
+import { PersonalitiesFiltersBar } from '@/components/personalities/PersonalitiesFiltersBar';
+import { StickyLetterBar } from '@/components/personalities/StickyLetterBar';
+import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
+import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';
+
+const PAGE_SIZE = 24;
+const AUTO_LOAD_CAP = 48;
+
+const GRID_SX = {
+  display: 'grid',
+  gridTemplateColumns: {
+    xs: 'repeat(2, minmax(0, 1fr))',
+    sm: 'repeat(3, minmax(0, 1fr))',
+    md: 'repeat(4, minmax(0, 1fr))',
+    lg: 'repeat(5, minmax(0, 1fr))',
+  },
+  gap: { xs: 1.5, sm: 2, md: 2.5 },
+  '& > *': { minWidth: 0 },
+} as const;
+
+function filtersFromParams(params: URLSearchParams): PersonalityFilters {
+  return {
+    profession: params.get('profession') || undefined,
+    search: params.get('q') || undefined,
+    name_starts_with: params.get('letter') || undefined,
+    sortBy: (params.get('sort') as PersonalitySort) || 'featured',
+    is_living:
+      params.get('status') === 'living'
+        ? true
+        : params.get('status') === 'historical'
+          ? false
+          : undefined,
+    featured_only: params.get('featured') === '1' || undefined,
+    exclude_adult: params.get('include_adult') === '1' ? false : true,
+  };
+}
+
+function paramsFromFilters(filters: PersonalityFilters): URLSearchParams {
+  const p = new URLSearchParams();
+  if (filters.profession) p.set('profession', filters.profession);
+  if (filters.search) p.set('q', filters.search);
+  if (filters.name_starts_with) p.set('letter', filters.name_starts_with);
+  if (filters.sortBy && filters.sortBy !== 'featured') p.set('sort', filters.sortBy);
+  if (filters.is_living === true) p.set('status', 'living');
+  if (filters.is_living === false) p.set('status', 'historical');
+  if (filters.featured_only) p.set('featured', '1');
+  if (filters.exclude_adult === false) p.set('include_adult', '1');
+  return p;
+}
+
+function activeFilterCount(f: PersonalityFilters): number {
+  let c = 0;
+  if (f.search) c++;
+  if (f.profession) c++;
+  if (f.is_living !== undefined) c++;
+  if (f.featured_only) c++;
+  if (f.verification_status) c++;
+  if (f.name_starts_with) c++;
+  if (f.exclude_adult === false) c++;
+  return c;
+}
 
 export default function Personalities() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useMeta({
     title: 'Personalities',
     description:
-      'Explore notable LGBTQ+ personalities — activists, artists, leaders, and historical figures.',
+      'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.',
     canonicalPath: '/personalities',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'Notable LGBTQ+ Personalities',
       description:
-        'Explore notable LGBTQ+ personalities — activists, artists, leaders, and historical figures.',
+        'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.',
       url: 'https://queer.guide/personalities',
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },
   });
 
-  // Get profession from URL parameters
-  const professionFromUrl = searchParams.get('profession');
+  const [filters, setFilters] = useState<PersonalityFilters>(() =>
+    filtersFromParams(searchParams),
+  );
+  const [page, setPage] = useState(1);
+  const [autoLoadedCount, setAutoLoadedCount] = useState(0);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const [filters, setFilters] = useState<PersonalityFilters>({
-    page: 1,
-    limit: 100,
-    profession: professionFromUrl || undefined,
-  });
-  const [selectedPersonality, setSelectedPersonality] = useState(null);
+  const {
+    personalities,
+    totalCount,
+    loading,
+    error,
+    hasMore,
+    fetchPersonalities,
+  } = usePersonalities(false);
 
-  // Update filters when URL changes
+  // Initial + filter-change fetch
   useEffect(() => {
-    const profession = searchParams.get('profession');
-    if (profession !== filters.profession) {
-      setFilters((prev) => ({ ...prev, profession: profession || undefined, page: 1 }));
+    setPage(1);
+    setAutoLoadedCount(0);
+    fetchPersonalities(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
+    // Sync URL
+    const nextParams = paramsFromFilters(filters);
+    if (nextParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextParams, { replace: true });
     }
-  }, [searchParams, filters.profession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    filters.search,
+    filters.profession,
+    filters.is_living,
+    filters.featured_only,
+    filters.verification_status,
+    filters.name_starts_with,
+    filters.sortBy,
+    filters.exclude_adult,
+  ]);
 
-  const { personalities, totalCount, loading, error } = usePersonalities(filters);
-
-  const [sortBy, setSortBy] = useState<string>('az');
-
-  const sortedPersonalities = useMemo(() => {
-    const sorted = [...personalities];
-    switch (sortBy) {
-      case 'az':
-        return sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-      case 'za':
-        return sorted.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
-      default:
-        return sorted;
+  // React to browser back/forward (external URL changes)
+  useEffect(() => {
+    const fromUrl = filtersFromParams(searchParams);
+    // Only overwrite local filters if URL has genuinely different content
+    const a = JSON.stringify(fromUrl);
+    const b = JSON.stringify(filters);
+    if (a !== b) {
+      setFilters(fromUrl);
     }
-  }, [personalities, sortBy]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
-  const handlePersonalityClick = (personality: any) => {
-    setSelectedPersonality(personality);
-    navigate(`/personalities/${personality.slug}`);
-  };
+  const handleFiltersChange = useCallback((next: PersonalityFilters) => {
+    setFilters((prev) => ({ ...prev, ...next }));
+  }, []);
 
-  const handleFiltersChange = (newFilters: PersonalityFilters) => {
-    setFilters({ ...newFilters, page: 1, limit: 100 }); // Reset to page 1 when filters change
-  };
+  const handleLetterChange = useCallback((letter: string | null) => {
+    setFilters((prev) => ({ ...prev, name_starts_with: letter ?? undefined }));
+  }, []);
 
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ px: 2, py: { xs: 6, md: 10 } }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
-          {Array.from({ length: 8 }).map((_, i) => (<PersonalityCard key={i} loading />))}
-        </Box>
-      </Container>
+  const clearAll = useCallback(() => {
+    setFilters({ sortBy: 'featured' });
+  }, []);
+
+  // Infinite scroll sentinel
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        const [entry] = entries;
+        if (
+          entry.isIntersecting &&
+          !loading &&
+          hasMore &&
+          autoLoadedCount < AUTO_LOAD_CAP
+        ) {
+          const nextPage = page + 1;
+          setPage(nextPage);
+          const result = await fetchPersonalities(filters, {
+            page: nextPage,
+            pageSize: PAGE_SIZE,
+            append: true,
+          });
+          const fetched = result?.fetched ?? PAGE_SIZE;
+          setAutoLoadedCount((c) => Math.min(AUTO_LOAD_CAP, c + fetched));
+        }
+      },
+      { rootMargin: '200px' },
     );
-  }
 
-  if (error) {
-    return (
-      <Container maxWidth="lg" sx={{ px: 2, py: { xs: 6, md: 10 } }}>
-        <ErrorState message={error} onRetry={() => window.location.reload()} />
-      </Container>
-    );
-  }
+    observer.observe(el);
+    return () => observer.unobserve(el);
+  }, [page, loading, hasMore, filters, autoLoadedCount, fetchPersonalities]);
+
+  const loadMoreManual = useCallback(async () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    await fetchPersonalities(filters, {
+      page: nextPage,
+      pageSize: PAGE_SIZE,
+      append: true,
+    });
+  }, [page, filters, fetchPersonalities]);
+
+  const hasAnyFilter = useMemo(() => activeFilterCount(filters) > 0, [filters]);
+
+  const activeChips = useMemo(() => {
+    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+    if (filters.search) {
+      chips.push({
+        key: 'search',
+        label: `"${filters.search}"`,
+        onRemove: () => handleFiltersChange({ search: undefined }),
+      });
+    }
+    if (filters.profession) {
+      chips.push({
+        key: 'profession',
+        label: filters.profession,
+        onRemove: () => handleFiltersChange({ profession: undefined }),
+      });
+    }
+    if (filters.is_living === true) {
+      chips.push({
+        key: 'living',
+        label: 'Living',
+        onRemove: () => handleFiltersChange({ is_living: undefined }),
+      });
+    }
+    if (filters.is_living === false) {
+      chips.push({
+        key: 'historical',
+        label: 'Historical',
+        onRemove: () => handleFiltersChange({ is_living: undefined }),
+      });
+    }
+    if (filters.name_starts_with) {
+      chips.push({
+        key: 'letter',
+        label: `Letter: ${filters.name_starts_with}`,
+        onRemove: () => handleFiltersChange({ name_starts_with: undefined }),
+      });
+    }
+    if (filters.featured_only) {
+      chips.push({
+        key: 'featured',
+        label: 'Featured only',
+        onRemove: () => handleFiltersChange({ featured_only: undefined }),
+      });
+    }
+    if (filters.exclude_adult === false) {
+      chips.push({
+        key: 'adult',
+        label: 'Includes adult performers',
+        onRemove: () => handleFiltersChange({ exclude_adult: true }),
+      });
+    }
+    return chips;
+  }, [filters, handleFiltersChange]);
+
+  const showLoadMoreButton =
+    !loading && hasMore && autoLoadedCount >= AUTO_LOAD_CAP;
+  const loadedCount = personalities.length;
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ px: 2, py: { xs: 6, md: 10 } }}>
-        {/* Header */}
+      <Container maxWidth="lg" sx={{ px: 2, py: { xs: 4, md: 8 } }}>
         <PageHeader
           title="Personalities"
-          subtitle="Discover inspiring LGBTQ+ personalities who have made significant contributions to society"
+          subtitle="Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons."
           center
           actions={
             user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : undefined
           }
         />
 
-        <Box sx={{ mb: 4 }}>
-          <PersonalitiesFilters filters={filters} onFiltersChange={handleFiltersChange} />
+        {/* Featured rail — only on the cold default view */}
+        {!hasAnyFilter && <FeaturedPersonalityRail />}
+
+        <Box sx={{ mb: 2 }}>
+          <PersonalitiesFiltersBar filters={filters} onFiltersChange={handleFiltersChange} />
         </Box>
 
-        {/* Results */}
-        {!loading && sortedPersonalities.length > 0 && (
+        <StickyLetterBar
+          letter={filters.name_starts_with ?? null}
+          onChange={handleLetterChange}
+        />
+
+        {/* Active filter chips */}
+        {activeChips.length > 0 && (
           <Box
             sx={{
               display: 'flex',
+              flexWrap: 'wrap',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              mb: 3,
-              p: 2,
-              bgcolor: 'background.paper',
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
+              gap: 1,
+              mb: 2,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                Found {totalCount} result{totalCount !== 1 ? 's' : ''}
-              </Typography>
-              {filters.search && <Badge variant="secondary">Searching: "{filters.search}"</Badge>}
-              {filters.profession && (
-                <Badge variant="secondary">Profession: "{filters.profession}"</Badge>
-              )}
-            </Box>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger style={{ width: 140 }} aria-label="Sort personalities">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="az">A{'\u2013'}Z</SelectItem>
-                <SelectItem value="za">Z{'\u2013'}A</SelectItem>
-              </SelectContent>
-            </Select>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mr: 0.5 }}>
+              Active:
+            </Typography>
+            {activeChips.map((chip) => (
+              <Badge
+                key={chip.key}
+                variant="secondary"
+                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, pr: 0.5 }}
+              >
+                {chip.label}
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={chip.onRemove}
+                  aria-label={`Remove ${chip.label}`}
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    p: 0,
+                    ml: 0.25,
+                  }}
+                >
+                  <X size={12} />
+                </Box>
+              </Badge>
+            ))}
+            <Button variant="ghost" size="sm" onClick={clearAll}>
+              Clear all
+            </Button>
           </Box>
         )}
 
-        {sortedPersonalities.length === 0 ? (
+        {/* Results toolbar */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 2,
+          }}
+        >
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+            {loading && personalities.length === 0
+              ? 'Loading…'
+              : totalCount > 0
+                ? `Showing ${loadedCount.toLocaleString()} of ${totalCount.toLocaleString()}`
+                : 'No results'}
+          </Typography>
+        </Box>
+
+        {/* Error state */}
+        {error && personalities.length === 0 && (
+          <ErrorState
+            message={error}
+            onRetry={() =>
+              fetchPersonalities(filters, { page: 1, pageSize: PAGE_SIZE, append: false })
+            }
+          />
+        )}
+
+        {/* Initial loading skeleton */}
+        {loading && personalities.length === 0 && !error && (
+          <Box sx={GRID_SX}>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <PersonalityCardSkeleton key={i} />
+            ))}
+          </Box>
+        )}
+
+        {/* Empty state */}
+        {!loading && !error && personalities.length === 0 && (
           <EmptyState
             icon={Users}
-            title="No profiles match"
-            description="Try a different search or browse all."
+            title="No personalities match your filters"
+            description="Try clearing a filter or searching for a different name."
             mood="encouraging"
           />
-        ) : (
-          <StaggerGrid
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                md: '1fr 1fr',
-                lg: 'repeat(3, 1fr)',
-                xl: 'repeat(4, 1fr)',
-              },
-              gap: 3,
-            }}
-          >
-            {sortedPersonalities.map((personality) => (
-              <PersonalityCard
-                key={personality.id}
-                personality={personality}
-                onClick={() => handlePersonalityClick(personality)}
-              />
-            ))}
-          </StaggerGrid>
+        )}
+
+        {/* Grid */}
+        {personalities.length > 0 && (
+          <>
+            <StaggerGrid sx={GRID_SX as any}>
+              {personalities.map((p) => (
+                <PersonalityCard key={p.id} personality={p} />
+              ))}
+            </StaggerGrid>
+
+            {/* Sentinel for auto-load */}
+            {hasMore && autoLoadedCount < AUTO_LOAD_CAP && (
+              <Box ref={sentinelRef} sx={{ height: 40, mt: 4 }} aria-hidden="true" />
+            )}
+
+            {/* Manual load more after cap */}
+            {showLoadMoreButton && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Button onClick={loadMoreManual} variant="outline">
+                  Load more ({(totalCount - loadedCount).toLocaleString()} more)
+                </Button>
+              </Box>
+            )}
+
+            {loading && personalities.length > 0 && (
+              <Typography
+                variant="body2"
+                sx={{ textAlign: 'center', color: 'text.secondary', mt: 3 }}
+              >
+                Loading more…
+              </Typography>
+            )}
+          </>
         )}
       </Container>
     </Box>

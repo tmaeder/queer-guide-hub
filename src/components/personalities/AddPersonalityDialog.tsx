@@ -28,7 +28,7 @@ const FIELD_OPTIONS = [
 ];
 
 export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
-  const { createPersonality } = usePersonalities();
+  const { createPersonality } = usePersonalities(false);
   const { resolveNationality, resolveBirthPlace, resolving: resolvingGeo } = useAddressResolver();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
