@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { useParams } from 'react-router';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, Link as RouterLink } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
+import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
-import { MapPin, Calendar, Shield, AlertTriangle } from 'lucide-react';
+import { MapPin, AlertTriangle, Heart, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { TripMap } from '@/components/trips/TripMap';
+import { AuthDialog } from '@/components/auth/AuthDialog';
 
 interface SharedTripData {
   trip: {
@@ -22,6 +24,7 @@ interface SharedTripData {
     start_date: string | null;
     end_date: string | null;
     currency: string;
+    cover_image_url?: string | null;
   };
   permissions: {
     itinerary: boolean;
@@ -83,9 +86,34 @@ function formatAmount(amount: number, currency: string): string {
   }
 }
 
+/**
+ * Stable deterministic gradient keyed off the trip id — mirrors the
+ * TripCoverBand palette so a shared trip feels visually coherent with
+ * the private planner view. Kept local to avoid pulling the full
+ * TripCoverBand component (which expects TripWithDetails shape).
+ */
+function gradientForTrip(tripId: string): string {
+  const palettes = [
+    ['#7C3AED', '#DB2777'],
+    ['#F59E0B', '#EF4444'],
+    ['#06B6D4', '#3B82F6'],
+    ['#10B981', '#6366F1'],
+    ['#EC4899', '#8B5CF6'],
+    ['#0EA5E9', '#22C55E'],
+  ];
+  let hash = 0;
+  for (let i = 0; i < tripId.length; i += 1) {
+    hash = (hash * 31 + tripId.charCodeAt(i)) >>> 0;
+  }
+  const [a, b] = palettes[hash % palettes.length];
+  return `linear-gradient(135deg, ${a} 0%, ${b} 100%)`;
+}
+
 function SharedTripPage() {
   const { token } = useParams<{ token: string }>();
   const theme = useTheme();
+  const { t, i18n } = useTranslation();
+  const [authOpen, setAuthOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['shared-trip', token],
@@ -98,16 +126,39 @@ function SharedTripPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Set document title + OG-style meta for social previews. Client-side only
+  // (we don't have SSR); search crawlers that execute JS will still pick it up.
+  useEffect(() => {
+    if (!data?.trip) return;
+    const title = `${data.trip.title} · Queer Guide`;
+    document.title = title;
+    const desc = data.trip.description || t('trips.shared.metaDescription');
+    const setMeta = (name: string, content: string, property = false) => {
+      const attr = property ? 'property' : 'name';
+      let el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, name);
+        document.head.appendChild(el);
+      }
+      el.content = content;
+    };
+    setMeta('description', desc);
+    setMeta('og:title', title, true);
+    setMeta('og:description', desc, true);
+    setMeta('og:type', 'article', true);
+  }, [data?.trip, t]);
+
   if (isLoading) return <PageLoadingState count={4} />;
 
   if (error || !data) {
     return (
       <Box className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <Typography variant="h5" fontWeight={700} gutterBottom>
-          Trip not found
+          {t('trips.shared.notFoundTitle')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          This share link may have expired or been removed.
+          {t('trips.shared.notFoundDescription')}
         </Typography>
       </Box>
     );
@@ -169,92 +220,194 @@ function SharedTripPage() {
     sort_order: d.sort_order,
   }));
 
-  const availableTabs: string[] = ['itinerary'];
-  if (permissions.budget && budgetItems.length > 0) availableTabs.push('budget');
-  if (permissions.notes && notes.length > 0) availableTabs.push('notes');
-  if (permissions.packing && packingItems.length > 0) availableTabs.push('packing');
+  const fallbackGradient = gradientForTrip(trip.id);
+  const hasCover = !!trip.cover_image_url;
 
   return (
-    <Box sx={{ maxWidth: 720, mx: 'auto', px: 2, py: 4 }}>
-      {/* Header */}
-      <Box className="text-center mb-4">
-        <Typography variant="h4" fontWeight={700} gutterBottom>
-          {trip.title}
-        </Typography>
-        {trip.start_date && trip.end_date && (
-          <Typography variant="body2" color="text.secondary">
-            {format(new Date(trip.start_date), 'MMM d, yyyy')} - {format(new Date(trip.end_date), 'MMM d, yyyy')}
+    <Box sx={{ maxWidth: 880, mx: 'auto', pb: 6 }}>
+      {/* Branded cover band — matches the private planner visually */}
+      <Box
+        sx={{
+          position: 'relative',
+          borderRadius: { xs: 0, sm: 3 },
+          overflow: 'hidden',
+          mb: 3,
+          mx: { xs: 0, sm: 2 },
+          mt: { xs: 0, sm: 2 },
+          minHeight: { xs: 180, md: 220 },
+          display: 'flex',
+          alignItems: 'flex-end',
+          background: hasCover ? undefined : fallbackGradient,
+          backgroundImage: hasCover ? `url(${trip.cover_image_url})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <Box
+          aria-hidden
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%)',
+            pointerEvents: 'none',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            width: '100%',
+            px: { xs: 2.5, md: 4 },
+            py: { xs: 2.5, md: 3 },
+          }}
+        >
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.5,
+              px: 1.25,
+              py: 0.25,
+              borderRadius: 999,
+              bgcolor: 'rgba(255,255,255,0.18)',
+              color: 'common.white',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              mb: 1.25,
+            }}
+          >
+            <Sparkles style={{ width: 12, height: 12 }} />
+            {t('trips.shared.badge')}
+          </Box>
+          <Typography
+            component="h1"
+            sx={{
+              color: 'common.white',
+              fontFamily: 'var(--font-heading)',
+              fontSize: { xs: '1.75rem', md: '2.25rem' },
+              fontWeight: 800,
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
+              textShadow: '0 2px 16px rgba(0,0,0,0.4)',
+            }}
+          >
+            {trip.title}
           </Typography>
-        )}
-        {trip.description && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            {trip.description}
-          </Typography>
-        )}
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-          Shared via queer.guide
-        </Typography>
+          {trip.start_date && trip.end_date && (
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.92)', mt: 1 }}>
+              {format(new Date(trip.start_date), 'MMM d, yyyy')} – {format(new Date(trip.end_date), 'MMM d, yyyy')}
+            </Typography>
+          )}
+          {trip.description && (
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'rgba(255,255,255,0.85)',
+                mt: 0.75,
+                maxWidth: 640,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
+              {trip.description}
+            </Typography>
+          )}
+        </Box>
       </Box>
 
-      {/* Safety warnings */}
-      {unsafeCountries.size > 0 && (
-        <Card className="mb-3">
-          <CardContent>
-            <Box className="flex items-start gap-2" sx={{ bgcolor: 'warning.light', mx: -2, mt: -1, mb: -1, p: 2, borderRadius: 1 }}>
-              <AlertTriangle size={16} style={{ color: theme.palette.warning?.main, flexShrink: 0, marginTop: 2 }} />
-              <div>
-                <Typography variant="subtitle2" fontWeight={600}>Safety Notice</Typography>
-                {Array.from(unsafeCountries.entries()).map(([name, score]) => (
-                  <Typography key={name} variant="body2">
-                    {name} has a lower equality score ({score}). Research local conditions before traveling.
-                  </Typography>
-                ))}
-              </div>
-            </Box>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Map */}
-      {mapPlaces.some((p) => p.latitude && p.longitude) && (
-        <Box sx={{ height: 300, mb: 3, borderRadius: 2, overflow: 'hidden' }}>
-          <TripMap places={mapPlaces as any} days={mapDays} />
-        </Box>
-      )}
-
-      <Tabs defaultValue="itinerary">
-        <TabsList>
-          <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
-          {permissions.budget && budgetItems.length > 0 && <TabsTrigger value="budget">Budget</TabsTrigger>}
-          {permissions.notes && notes.length > 0 && <TabsTrigger value="notes">Notes</TabsTrigger>}
-          {permissions.packing && packingItems.length > 0 && <TabsTrigger value="packing">Packing</TabsTrigger>}
-        </TabsList>
-
-        {/* Itinerary tab */}
-        <TabsContent value="itinerary">
-          {days.map((day, dayIdx) => {
-            const dayPlaces = placesByDay.get(day.id) || [];
-            return (
-              <Card key={day.id} className="mb-2">
-                <CardContent>
-                  <Box className="flex items-center gap-2 mb-1">
-                    <Badge variant="default">Day {dayIdx + 1}</Badge>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      {format(new Date(day.date), 'EEEE, MMM d')}
+      <Box sx={{ px: { xs: 2, sm: 2 } }}>
+        {/* Safety warnings */}
+        {unsafeCountries.size > 0 && (
+          <Card className="mb-3">
+            <CardContent>
+              <Box className="flex items-start gap-2" sx={{ bgcolor: 'warning.light', mx: -2, mt: -1, mb: -1, p: 2, borderRadius: 1 }}>
+                <AlertTriangle size={16} style={{ color: theme.palette.warning?.main, flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <Typography variant="subtitle2" fontWeight={600}>{t('trips.shared.safetyNotice')}</Typography>
+                  {Array.from(unsafeCountries.entries()).map(([name, score]) => (
+                    <Typography key={name} variant="body2">
+                      {t('trips.shared.safetyCountry', { country: name, score })}
                     </Typography>
-                    {day.title && (
-                      <Typography variant="body2" color="text.secondary">-- {day.title}</Typography>
+                  ))}
+                </div>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Map */}
+        {mapPlaces.some((p) => p.latitude && p.longitude) && (
+          <Box sx={{ height: 300, mb: 3, borderRadius: 2, overflow: 'hidden' }}>
+            <TripMap places={mapPlaces as never} days={mapDays} />
+          </Box>
+        )}
+
+        <Tabs defaultValue="itinerary">
+          <TabsList>
+            <TabsTrigger value="itinerary">{t('trips.shared.tabs.itinerary')}</TabsTrigger>
+            {permissions.budget && budgetItems.length > 0 && <TabsTrigger value="budget">{t('trips.shared.tabs.budget')}</TabsTrigger>}
+            {permissions.notes && notes.length > 0 && <TabsTrigger value="notes">{t('trips.shared.tabs.notes')}</TabsTrigger>}
+            {permissions.packing && packingItems.length > 0 && <TabsTrigger value="packing">{t('trips.shared.tabs.packing')}</TabsTrigger>}
+          </TabsList>
+
+          <TabsContent value="itinerary">
+            {days.map((day, dayIdx) => {
+              const dayPlaces = placesByDay.get(day.id) || [];
+              return (
+                <Card key={day.id} className="mb-2">
+                  <CardContent>
+                    <Box className="flex items-center gap-2 mb-1">
+                      <Badge variant="default">{t('trips.shared.dayLabel', { number: dayIdx + 1 })}</Badge>
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        {format(new Date(day.date), 'EEEE, MMM d')}
+                      </Typography>
+                      {day.title && (
+                        <Typography variant="body2" color="text.secondary">— {day.title}</Typography>
+                      )}
+                    </Box>
+
+                    {dayPlaces.length === 0 && (
+                      <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+                        {t('trips.shared.noPlaces')}
+                      </Typography>
                     )}
-                  </Box>
 
-                  {dayPlaces.length === 0 && (
-                    <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
-                      No places scheduled
-                    </Typography>
-                  )}
+                    {dayPlaces.map((place) => {
+                      const name = place.venue_name || place.event_title || place.hotel_name || place.custom_name || t('trips.shared.unknownPlace');
+                      return (
+                        <Box
+                          key={place.id}
+                          className="flex items-center gap-2 py-1.5"
+                          sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+                        >
+                          <MapPin size={14} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
+                          <div className="flex-1 min-w-0">
+                            <Typography variant="body2" fontWeight={500}>{name}</Typography>
+                            {place.custom_address && (
+                              <Typography variant="caption" color="text.secondary">{place.custom_address}</Typography>
+                            )}
+                          </div>
+                          {place.category && <Badge variant="outline">{place.category}</Badge>}
+                        </Box>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              );
+            })}
 
-                  {dayPlaces.map((place) => {
-                    const name = place.venue_name || place.event_title || place.hotel_name || place.custom_name || 'Unknown';
+            {(placesByDay.get(null) || []).length > 0 && (
+              <Card className="mb-2">
+                <CardContent>
+                  <Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 1 }}>
+                    {t('trips.shared.unassigned')}
+                  </Typography>
+                  {(placesByDay.get(null) || []).map((place) => {
+                    const name = place.venue_name || place.event_title || place.hotel_name || place.custom_name || t('trips.shared.unknownPlace');
                     return (
                       <Box
                         key={place.id}
@@ -262,157 +415,213 @@ function SharedTripPage() {
                         sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
                       >
                         <MapPin size={14} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
-                        <div className="flex-1 min-w-0">
-                          <Typography variant="body2" fontWeight={500}>{name}</Typography>
-                          {place.custom_address && (
-                            <Typography variant="caption" color="text.secondary">{place.custom_address}</Typography>
-                          )}
-                        </div>
+                        <Typography variant="body2" fontWeight={500} className="flex-1">{name}</Typography>
                         {place.category && <Badge variant="outline">{place.category}</Badge>}
                       </Box>
                     );
                   })}
                 </CardContent>
               </Card>
-            );
-          })}
+            )}
+          </TabsContent>
 
-          {/* Unassigned places */}
-          {(placesByDay.get(null) || []).length > 0 && (
-            <Card className="mb-2">
-              <CardContent>
-                <Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 1 }}>
-                  Unassigned
-                </Typography>
-                {(placesByDay.get(null) || []).map((place) => {
-                  const name = place.venue_name || place.event_title || place.hotel_name || place.custom_name || 'Unknown';
-                  return (
-                    <Box
-                      key={place.id}
-                      className="flex items-center gap-2 py-1.5"
-                      sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
-                    >
-                      <MapPin size={14} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
-                      <Typography variant="body2" fontWeight={500} className="flex-1">{name}</Typography>
-                      {place.category && <Badge variant="outline">{place.category}</Badge>}
+          {permissions.budget && (
+            <TabsContent value="budget">
+              {budgetItems.map((item, i) => (
+                <Box
+                  key={i}
+                  className="flex items-center justify-between py-2"
+                  sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+                >
+                  <div>
+                    <Typography variant="body2" fontWeight={500}>{item.title}</Typography>
+                    <Box className="flex items-center gap-1.5">
+                      {item.category && <Badge variant="outline">{item.category}</Badge>}
+                      {item.date && <Typography variant="caption" color="text.secondary">{item.date}</Typography>}
                     </Box>
-                  );
-                })}
-              </CardContent>
-            </Card>
+                  </div>
+                  <Typography variant="body2" fontWeight={700}>
+                    {formatAmount(item.amount, item.currency)}
+                  </Typography>
+                </Box>
+              ))}
+            </TabsContent>
           )}
-        </TabsContent>
 
-        {/* Budget tab */}
-        {permissions.budget && (
-          <TabsContent value="budget">
-            {budgetItems.map((item, i) => (
+          {permissions.notes && (
+            <TabsContent value="notes">
+              <Box className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {notes.map((note, i) => (
+                  <Card key={i}>
+                    <CardContent>
+                      <Box className="flex items-start justify-between gap-1">
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          {note.title || t('trips.shared.untitled')}
+                        </Typography>
+                        {note.category && <Badge variant="outline">{note.category}</Badge>}
+                      </Box>
+                      {note.content && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            mt: 0.5,
+                            fontSize: 12,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 4,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {note.content}
+                        </Typography>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </Box>
+            </TabsContent>
+          )}
+
+          {permissions.packing && (
+            <TabsContent value="packing">
+              <SharedPackingList items={packingItems} />
+            </TabsContent>
+          )}
+        </Tabs>
+
+        {/* Conversion CTA: turn viewers into signups */}
+        <Card
+          className="mt-5"
+          sx={{
+            background: `linear-gradient(135deg, ${theme.palette.brand?.main || '#DB2777'}14 0%, ${theme.palette.accent?.main || '#F59E0B'}14 100%)`,
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <CardContent>
+            <Box className="flex flex-col sm:flex-row items-center gap-3">
               <Box
-                key={i}
-                className="flex items-center justify-between py-2"
-                sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  background: `linear-gradient(135deg, ${theme.palette.brand?.main || '#DB2777'} 0%, ${theme.palette.accent?.main || '#F59E0B'} 100%)`,
+                  color: 'common.white',
+                }}
               >
-                <div>
-                  <Typography variant="body2" fontWeight={500}>{item.title}</Typography>
-                  <Box className="flex items-center gap-1.5">
-                    {item.category && <Badge variant="outline">{item.category}</Badge>}
-                    {item.date && <Typography variant="caption" color="text.secondary">{item.date}</Typography>}
-                  </Box>
-                </div>
-                <Typography variant="body2" fontWeight={700}>
-                  {formatAmount(item.amount, item.currency)}
+                <Heart size={22} />
+              </Box>
+              <Box sx={{ flex: 1, textAlign: { xs: 'center', sm: 'left' } }}>
+                <Typography
+                  sx={{
+                    fontFamily: 'var(--font-heading)',
+                    fontWeight: 800,
+                    fontSize: '1.1rem',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  {t('trips.shared.ctaTitle')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('trips.shared.ctaSubtitle')}
+                </Typography>
+              </Box>
+              <Box className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="contained"
+                  component={RouterLink}
+                  to="/trips"
+                  sx={{
+                    bgcolor: 'brand.main',
+                    '&:hover': { bgcolor: 'brand.dark' },
+                    fontWeight: 700,
+                  }}
+                >
+                  {t('trips.shared.ctaPrimary')}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setAuthOpen(true)}
+                  sx={{ fontWeight: 600 }}
+                >
+                  {t('trips.shared.ctaSecondary')}
+                </Button>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', textAlign: 'center', mt: 3 }}
+        >
+          {t('trips.shared.footer')}
+        </Typography>
+      </Box>
+
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
+      {/* suppress unused lint for i18n instance used for potential future locale formatting */}
+      <span hidden>{i18n.language}</span>
+    </Box>
+  );
+}
+
+function SharedPackingList({ items }: { items: SharedTripData['packing_items'] }) {
+  const { t } = useTranslation();
+  const list = useMemo(() => items || [], [items]);
+  const grouped = new Map<string, typeof list>();
+  for (const item of list) {
+    const cat = item.category || 'other';
+    if (!grouped.has(cat)) grouped.set(cat, []);
+    grouped.get(cat)!.push(item);
+  }
+  const checked = list.filter((i) => i.is_checked).length;
+
+  return (
+    <>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        {t('trips.shared.packed', { checked, total: list.length })}
+      </Typography>
+      {Array.from(grouped.entries()).map(([cat, catItems]) => (
+        <Card key={cat} className="mb-2">
+          <CardContent>
+            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5 }}>
+              {cat.charAt(0).toUpperCase() + cat.replace(/-/g, ' ').slice(1)}
+            </Typography>
+            {catItems.map((item, i) => (
+              <Box key={i} className="flex items-center gap-2 py-0.5">
+                <Box
+                  sx={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: '4px',
+                    border: '2px solid',
+                    borderColor: item.is_checked ? 'success.main' : 'divider',
+                    bgcolor: item.is_checked ? 'success.main' : 'transparent',
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    textDecoration: item.is_checked ? 'line-through' : 'none',
+                    color: item.is_checked ? 'text.disabled' : 'text.primary',
+                  }}
+                >
+                  {item.name}
+                  {item.quantity > 1 && ` (x${item.quantity})`}
                 </Typography>
               </Box>
             ))}
-          </TabsContent>
-        )}
-
-        {/* Notes tab */}
-        {permissions.notes && (
-          <TabsContent value="notes">
-            <Box className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {notes.map((note, i) => (
-                <Card key={i}>
-                  <CardContent>
-                    <Box className="flex items-start justify-between gap-1">
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        {note.title || 'Untitled'}
-                      </Typography>
-                      {note.category && <Badge variant="outline">{note.category}</Badge>}
-                    </Box>
-                    {note.content && (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          mt: 0.5, fontSize: 12,
-                          display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                        }}
-                      >
-                        {note.content}
-                      </Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </Box>
-          </TabsContent>
-        )}
-
-        {/* Packing tab */}
-        {permissions.packing && (
-          <TabsContent value="packing">
-            {(() => {
-              const grouped = new Map<string, typeof packingItems>();
-              for (const item of packingItems) {
-                const cat = item.category || 'other';
-                if (!grouped.has(cat)) grouped.set(cat, []);
-                grouped.get(cat)!.push(item);
-              }
-              const checked = packingItems.filter((i) => i.is_checked).length;
-
-              return (
-                <>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {checked}/{packingItems.length} packed
-                  </Typography>
-                  {Array.from(grouped.entries()).map(([cat, items]) => (
-                    <Card key={cat} className="mb-2">
-                      <CardContent>
-                        <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5 }}>
-                          {cat.charAt(0).toUpperCase() + cat.replace(/-/g, ' ').slice(1)}
-                        </Typography>
-                        {items.map((item, i) => (
-                          <Box key={i} className="flex items-center gap-2 py-0.5">
-                            <Box
-                              sx={{
-                                width: 16, height: 16, borderRadius: '4px',
-                                border: '2px solid', borderColor: item.is_checked ? 'success.main' : 'divider',
-                                bgcolor: item.is_checked ? 'success.main' : 'transparent',
-                              }}
-                            />
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                textDecoration: item.is_checked ? 'line-through' : 'none',
-                                color: item.is_checked ? 'text.disabled' : 'text.primary',
-                              }}
-                            >
-                              {item.name}
-                              {item.quantity > 1 && ` (x${item.quantity})`}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </>
-              );
-            })()}
-          </TabsContent>
-        )}
-      </Tabs>
-    </Box>
+          </CardContent>
+        </Card>
+      ))}
+    </>
   );
 }
 

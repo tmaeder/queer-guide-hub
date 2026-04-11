@@ -90,6 +90,12 @@ export type TripListItem = Trip & {
   member_count: number;
   place_count: number;
   day_count: number;
+  /**
+   * Minimum LGBTQ+ equality score across countries touched by this trip.
+   * `null` when no places have countries resolved yet. Used by TripCard
+   * to render a safety badge without a second round-trip.
+   */
+  min_equality_score: number | null;
 };
 
 // ── List user's trips ──────────────────────────────────────────
@@ -112,20 +118,29 @@ export function useTrips() {
 
       const { data, error } = await supabase
         .from('trips')
-        .select('*, trip_members(id), trip_places(id), trip_days(id)')
+        .select(
+          '*, trip_members(id), trip_days(id), trip_places(id, countries:country_id(equality_score))',
+        )
         .in('id', tripIds)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map((t: any) => ({
-        ...t,
-        member_count: t.trip_members?.length || 0,
-        place_count: t.trip_places?.length || 0,
-        day_count: t.trip_days?.length || 0,
-        trip_members: undefined,
-        trip_places: undefined,
-        trip_days: undefined,
-      }));
+      return (data || []).map((t: any) => {
+        const scores: number[] = (t.trip_places || [])
+          .map((p: any) => p.countries?.equality_score)
+          .filter((s: unknown): s is number => typeof s === 'number');
+        const min_equality_score = scores.length ? Math.min(...scores) : null;
+        return {
+          ...t,
+          member_count: t.trip_members?.length || 0,
+          place_count: t.trip_places?.length || 0,
+          day_count: t.trip_days?.length || 0,
+          min_equality_score,
+          trip_members: undefined,
+          trip_places: undefined,
+          trip_days: undefined,
+        };
+      });
     },
     enabled: !!user,
     staleTime: 5 * 60 * 1000,

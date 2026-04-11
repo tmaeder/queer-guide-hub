@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
@@ -8,7 +9,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import CircularProgress from '@mui/material/CircularProgress';
 import InputAdornment from '@mui/material/InputAdornment';
-import { Search, MapPin, Star } from 'lucide-react';
+import { Search, MapPin, Star, Clock, X } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,33 @@ const customCategories = [
   'beach', 'shopping', 'accommodation', 'transport', 'other',
 ];
 
+const RECENT_SEARCHES_KEY = 'trips.addPlace.recentSearches';
+const MAX_RECENT = 5;
+
+type TypeFilter = 'all' | 'venue' | 'event' | 'hotel';
+
+function loadRecentSearches(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((s) => typeof s === 'string').slice(0, MAX_RECENT) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentSearch(query: string): string[] {
+  try {
+    const existing = loadRecentSearches().filter((s) => s.toLowerCase() !== query.toLowerCase());
+    const next = [query, ...existing].slice(0, MAX_RECENT);
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+    return next;
+  } catch {
+    return [];
+  }
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -58,6 +86,12 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selected, setSelected] = useState<SearchResult | null>(null);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (open) setRecentSearches(loadRecentSearches());
+  }, [open]);
 
   const [customName, setCustomName] = useState('');
   const [customAddress, setCustomAddress] = useState('');
@@ -79,13 +113,15 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
     onClose();
   };
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+  const runSearch = async (rawQuery: string) => {
+    const query = rawQuery.trim();
+    if (!query) return;
     setSearching(true);
     setSelected(null);
+    setTypeFilter('all');
 
     try {
-      const query = searchQuery.trim();
+      setSearchQuery(query);
       const [venuesRes, eventsRes, hotelsRes] = await Promise.all([
         supabase
           .from('venues')
@@ -124,12 +160,29 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
         })),
       ];
       setResults(mapped);
+      if (mapped.length > 0) {
+        setRecentSearches(saveRecentSearch(query));
+      }
     } catch (err) {
       console.error('Search error:', err);
     } finally {
       setSearching(false);
     }
   };
+
+  const handleSearch = () => runSearch(searchQuery);
+
+  const clearRecent = () => {
+    try {
+      localStorage.removeItem(RECENT_SEARCHES_KEY);
+    } catch {
+      // ignore
+    }
+    setRecentSearches([]);
+  };
+
+  const filteredResults = typeFilter === 'all' ? results : results.filter((r) => r.type === typeFilter);
+  const countFor = (t: TypeFilter) => (t === 'all' ? results.length : results.filter((r) => r.type === t).length);
 
   const handleSubmit = async () => {
     try {
@@ -224,9 +277,64 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
               Search
             </Button>
 
+            {results.length === 0 && !searching && recentSearches.length > 0 && (
+              <Box sx={{ mt: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.75 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                    <Clock size={12} /> Recent
+                  </Typography>
+                  <Button variant="ghost" size="sm" onClick={clearRecent} className="h-6 px-2 text-xs">
+                    Clear
+                  </Button>
+                </Box>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                  {recentSearches.map((q) => (
+                    <Chip
+                      key={q}
+                      label={q}
+                      size="small"
+                      variant="outlined"
+                      onClick={() => runSearch(q)}
+                      onDelete={() => {
+                        const next = recentSearches.filter((s) => s !== q);
+                        setRecentSearches(next);
+                        try {
+                          localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+                        } catch {
+                          // ignore
+                        }
+                      }}
+                      deleteIcon={<X size={12} />}
+                      sx={{ cursor: 'pointer' }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+
             {results.length > 0 && (
+              <Box sx={{ mt: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                {(['all', 'venue', 'event', 'hotel'] as TypeFilter[]).map((t) => {
+                  const count = countFor(t);
+                  if (t !== 'all' && count === 0) return null;
+                  return (
+                    <Chip
+                      key={t}
+                      label={`${t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)} (${count})`}
+                      size="small"
+                      color={typeFilter === t ? 'primary' : 'default'}
+                      variant={typeFilter === t ? 'filled' : 'outlined'}
+                      onClick={() => setTypeFilter(t)}
+                      sx={{ cursor: 'pointer' }}
+                    />
+                  );
+                })}
+              </Box>
+            )}
+
+            {filteredResults.length > 0 && (
               <List dense sx={{ mt: 1, maxHeight: 280, overflow: 'auto' }}>
-                {results.map((r) => (
+                {filteredResults.map((r) => (
                   <ListItemButton
                     key={`${r.type}-${r.id}`}
                     selected={selected?.id === r.id && selected?.type === r.type}

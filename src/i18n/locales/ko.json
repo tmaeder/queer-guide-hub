@@ -149,7 +149,12 @@
       "deleting": "삭제 중…",
       "cancel": "취소",
       "deleteTitle": "여행 삭제",
-      "deleteConfirm": "정말 \"{{title}}\"을(를) 삭제하시겠습니까? 되돌릴 수 없습니다."
+      "deleteConfirm": "정말 \"{{title}}\"을(를) 삭제하시겠습니까? 되돌릴 수 없습니다.",
+      "safety": {
+        "safe": "안전한 목적지",
+        "caution": "현지 상황 확인 필요",
+        "danger": "이 여행에 고위험 목적지가 있습니다"
+      }
     },
     "toast": {
       "created": "여행이 생성되었습니다",
@@ -367,6 +372,31 @@
       "chat": "채팅",
       "notes": "메모",
       "polls": "투표"
+    },
+    "shared": {
+      "badge": "공유된 여행",
+      "metaDescription": "Queer Guide — LGBTQ+ 여행 플래너의 여행.",
+      "notFoundTitle": "여행을 찾을 수 없습니다",
+      "notFoundDescription": "이 공유 링크는 만료되었거나 제거되었을 수 있습니다.",
+      "safetyNotice": "안전 안내",
+      "safetyCountry": "{{country}}의 평등 지수가 낮습니다 ({{score}}). 여행 전에 현지 상황을 확인하세요.",
+      "tabs": {
+        "itinerary": "일정",
+        "budget": "예산",
+        "notes": "메모",
+        "packing": "짐"
+      },
+      "dayLabel": "{{number}}일차",
+      "noPlaces": "예정된 장소 없음",
+      "unknownPlace": "알 수 없음",
+      "unassigned": "미할당",
+      "untitled": "제목 없음",
+      "packed": "{{checked}}/{{total}} 포장됨",
+      "ctaTitle": "나만의 queer-friendly 여행 계획",
+      "ctaSubtitle": "무료 일정, LGBTQ+ 안전 정보, 그리고 함께하는 여행 계획.",
+      "ctaPrimary": "계획 시작",
+      "ctaSecondary": "로그인",
+      "footer": "queer.guide에서 공유"
     }
   }
 }
