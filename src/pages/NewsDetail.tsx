@@ -617,7 +617,7 @@ export default function NewsDetail() {
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {article.published_at && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Calendar style={{ width: 16, height: 16, color: '#999999', flexShrink: 0 }} />
+                  <Calendar style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Published
@@ -630,7 +630,7 @@ export default function NewsDetail() {
               )}
               {authorName && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <User style={{ width: 16, height: 16, color: '#999999', flexShrink: 0 }} />
+                  <User style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Author
@@ -641,7 +641,7 @@ export default function NewsDetail() {
               )}
               {sourceName && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Newspaper style={{ width: 16, height: 16, color: '#999999', flexShrink: 0 }} />
+                  <Newspaper style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Source
@@ -652,7 +652,7 @@ export default function NewsDetail() {
               )}
               {article.views_count > 0 && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Eye style={{ width: 16, height: 16, color: '#999999', flexShrink: 0 }} />
+                  <Eye style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Views

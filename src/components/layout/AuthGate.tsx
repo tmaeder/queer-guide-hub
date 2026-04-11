@@ -52,7 +52,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
               width: 48,
               height: 48,
               margin: '0 auto 16px',
-              color: '#999999',
+              color: 'hsl(var(--muted-foreground))',
             }}
           />
           <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>

@@ -211,7 +211,7 @@ const Marketplace = () => {
                     style={{ fontSize: '0.75rem' }}
                   >
                     {category.label}
-                    <span style={{ marginLeft: 4, fontSize: '0.75rem', color: '#999999' }}>
+                    <span style={{ marginLeft: 4, fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))' }}>
                       ({category.count})
                     </span>
                   </TabsTrigger>

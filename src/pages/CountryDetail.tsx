@@ -172,7 +172,7 @@ export default function CountryDetail() {
       >
         <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-            <Globe style={{ height: 48, width: 48, margin: '0 auto', color: '#999999' }} />
+            <Globe style={{ height: 48, width: 48, margin: '0 auto', color: 'hsl(var(--muted-foreground))' }} />
           </Box>
           <Typography sx={{ color: 'text.secondary' }}>Loading country details...</Typography>
         </Box>
@@ -533,7 +533,7 @@ export default function CountryDetail() {
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Star style={{ height: 14, width: 14, color: '#999999' }} />
+                            <Star style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
                             <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
                               Capital
                             </Typography>
@@ -553,7 +553,7 @@ export default function CountryDetail() {
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <TrendingUp style={{ height: 14, width: 14, color: '#999999' }} />
+                            <TrendingUp style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
                             <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
                               Currency
                             </Typography>
@@ -573,7 +573,7 @@ export default function CountryDetail() {
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Globe style={{ height: 14, width: 14, color: '#999999' }} />
+                            <Globe style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
                             <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
                               Languages
                             </Typography>
@@ -600,7 +600,7 @@ export default function CountryDetail() {
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Calendar style={{ height: 14, width: 14, color: '#999999' }} />
+                            <Calendar style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
                             <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
                               Timezone
                             </Typography>
@@ -620,7 +620,7 @@ export default function CountryDetail() {
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <MapPin style={{ height: 14, width: 14, color: '#999999' }} />
+                            <MapPin style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
                             <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
                               Calling Code
                             </Typography>
@@ -765,7 +765,7 @@ export default function CountryDetail() {
                             justifyContent: 'center',
                           }}
                         >
-                          <Building2 style={{ height: 40, width: 40, color: '#999999' }} />
+                          <Building2 style={{ height: 40, width: 40, color: 'hsl(var(--muted-foreground))' }} />
                         </Box>
                         <Box>
                           <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
@@ -844,7 +844,7 @@ export default function CountryDetail() {
                             justifyContent: 'center',
                           }}
                         >
-                          <MapPin style={{ height: 40, width: 40, color: '#999999' }} />
+                          <MapPin style={{ height: 40, width: 40, color: 'hsl(var(--muted-foreground))' }} />
                         </Box>
                         <Box>
                           <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
@@ -923,7 +923,7 @@ export default function CountryDetail() {
                             justifyContent: 'center',
                           }}
                         >
-                          <Calendar style={{ height: 40, width: 40, color: '#999999' }} />
+                          <Calendar style={{ height: 40, width: 40, color: 'hsl(var(--muted-foreground))' }} />
                         </Box>
                         <Box>
                           <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
@@ -1043,7 +1043,7 @@ export default function CountryDetail() {
                             justifyContent: 'center',
                           }}
                         >
-                          <Newspaper style={{ height: 40, width: 40, color: '#999999' }} />
+                          <Newspaper style={{ height: 40, width: 40, color: 'hsl(var(--muted-foreground))' }} />
                         </Box>
                         <Box>
                           <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>

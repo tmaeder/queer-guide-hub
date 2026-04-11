@@ -90,7 +90,7 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
             transform: 'translateY(-50%)',
             pointerEvents: 'none',
             zIndex: 0,
-            color: '#999999',
+            color: 'hsl(var(--muted-foreground))',
           }}>
             <TextType
               text={placeholders}

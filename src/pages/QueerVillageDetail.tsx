@@ -484,7 +484,7 @@ export default function QueerVillageDetail() {
               ) : (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
                   <Building
-                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                    style={{ height: 48, width: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                   />
                   <Typography variant="h6" color="text.secondary">
                     No venues found
@@ -520,7 +520,7 @@ export default function QueerVillageDetail() {
               ) : (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
                   <Calendar
-                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                    style={{ height: 48, width: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                   />
                   <Typography variant="h6" color="text.secondary">
                     No upcoming events
@@ -564,7 +564,7 @@ export default function QueerVillageDetail() {
               ) : (
                 <Box sx={{ textAlign: 'center', py: 8 }}>
                   <ImageIcon
-                    style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                    style={{ height: 48, width: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                   />
                   <Typography variant="h6" color="text.secondary">
                     No photos yet

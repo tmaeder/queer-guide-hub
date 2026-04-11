@@ -68,7 +68,7 @@ export const GroupFilters = ({
                 width: 16,
                 height: 16,
               }}
-              color="#999999"
+              color="hsl(var(--muted-foreground))"
             />
             <Input
               placeholder="Search groups..."

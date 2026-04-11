@@ -44,11 +44,11 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
           font-weight: 600;
         }
         .rdp-outside .rdp-day_button {
-          color: #999999;
+          color: hsl(var(--muted-foreground));
           opacity: 0.5;
         }
         .rdp-disabled .rdp-day_button {
-          color: #999999;
+          color: hsl(var(--muted-foreground));
           opacity: 0.5;
         }
         .rdp-range_middle .rdp-day_button {
@@ -65,7 +65,7 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
           opacity: 1;
         }
         .rdp-weekday {
-          color: #999999;
+          color: hsl(var(--muted-foreground));
           font-weight: 400;
           font-size: 0.8rem;
         }

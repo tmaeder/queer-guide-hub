@@ -506,7 +506,7 @@ export default function Directory() {
                     fallback={
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384, bgcolor: 'action.hover' }}>
                         <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                          <Map style={{ width: 48, height: 48, margin: '0 auto', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', color: '#999999' }} />
+                          <Map style={{ width: 48, height: 48, margin: '0 auto', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', color: 'hsl(var(--muted-foreground))' }} />
                           <Typography color="text.secondary">Loading interactive map...</Typography>
                         </Box>
                       </Box>

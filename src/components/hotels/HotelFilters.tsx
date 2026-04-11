@@ -31,7 +31,7 @@ export function HotelFilters({
             transform: 'translateY(-50%)',
             width: 16,
             height: 16,
-            color: '#999999',
+            color: 'hsl(var(--muted-foreground))',
           }}
         />
         <Input

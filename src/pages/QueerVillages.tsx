@@ -28,7 +28,7 @@ export default function QueerVillages() {
       </Box>
 
       <Box sx={{ position: 'relative', maxWidth: 320, mb: 3 }}>
-        <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: '#999999' }} />
+        <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
         <Input placeholder="Search villages..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 32 }} />
       </Box>
 
@@ -38,7 +38,7 @@ export default function QueerVillages() {
         </Box>
       ) : villages.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Landmark style={{ width: 48, height: 48, color: '#999999', margin: '0 auto 16px' }} />
+          <Landmark style={{ width: 48, height: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }} />
           <Typography variant="h6" color="text.secondary">No queer villages found</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Check back later as we continue to add neighborhoods.

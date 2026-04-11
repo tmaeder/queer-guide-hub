@@ -202,7 +202,7 @@ export default function MyGroups() {
                     width: 48,
                     height: 48,
                     margin: '0 auto 16px',
-                    color: '#999999',
+                    color: 'hsl(var(--muted-foreground))',
                   }}
                 />
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>

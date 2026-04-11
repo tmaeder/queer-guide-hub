@@ -32,7 +32,7 @@ export function DatePickerWithRange({
               justifyContent: 'flex-start',
               textAlign: 'left',
               fontWeight: 400,
-              ...(!date ? { color: '#999999' } : {}),
+              ...(!date ? { color: 'hsl(var(--muted-foreground))' } : {}),
             }}
           >
             <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />

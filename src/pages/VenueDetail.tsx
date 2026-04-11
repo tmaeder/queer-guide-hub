@@ -608,7 +608,7 @@ export default function VenueDetail() {
                         style={{
                           width: 16,
                           height: 16,
-                          color: '#999999',
+                          color: 'hsl(var(--muted-foreground))',
                           flexShrink: 0,
                           marginTop: 2,
                         }}
@@ -621,7 +621,7 @@ export default function VenueDetail() {
                   )}
                   {venue.phone && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Phone style={{ width: 16, height: 16, color: '#999999' }} />
+                      <Phone style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                       <Typography
                         component="a"
                         href={`tel:${venue.phone}`}
@@ -635,7 +635,7 @@ export default function VenueDetail() {
                   )}
                   {venue.email && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Mail style={{ width: 16, height: 16, color: '#999999' }} />
+                      <Mail style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                       <Typography
                         component="a"
                         href={`mailto:${venue.email}`}
@@ -649,7 +649,7 @@ export default function VenueDetail() {
                   )}
                   {venue.website && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Globe style={{ width: 16, height: 16, color: '#999999' }} />
+                      <Globe style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                       <Typography
                         component="a"
                         href={venue.website}
@@ -670,7 +670,7 @@ export default function VenueDetail() {
                   )}
                   {venue.instagram && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Instagram style={{ width: 16, height: 16, color: '#999999' }} />
+                      <Instagram style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                       <Typography
                         component="a"
                         href={`https://instagram.com/${venue.instagram}`}

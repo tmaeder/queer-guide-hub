@@ -41,11 +41,11 @@ interface MessageItemProps {
 const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
   switch (status) {
     case 'sending':
-      return <Clock style={{ height: 12, width: 12, color: '#999999' }} />;
+      return <Clock style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />;
     case 'sent':
-      return <Check style={{ height: 12, width: 12, color: '#999999' }} />;
+      return <Check style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />;
     case 'delivered':
-      return <CheckCheck style={{ height: 12, width: 12, color: '#999999' }} />;
+      return <CheckCheck style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />;
     case 'read':
       return <Eye style={{ height: 12, width: 12 }} />;
     default:
@@ -698,7 +698,7 @@ export const MessagingInterface = () => {
                 transform: 'translateY(-50%)',
                 height: 16,
                 width: 16,
-                color: '#999999',
+                color: 'hsl(var(--muted-foreground))',
               }}
             />
             <Input
@@ -715,7 +715,7 @@ export const MessagingInterface = () => {
             {filteredConversations.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <MessageCircle
-                  style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                  style={{ height: 48, width: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                 />
                 <p style={{ color: 'var(--muted-foreground)' }}>No conversations yet</p>
               </Box>
@@ -848,7 +848,7 @@ export const MessagingInterface = () => {
                 {currentMessages.length === 0 ? (
                   <Box sx={{ textAlign: 'center', py: 4 }}>
                     <MessageCircle
-                      style={{ height: 48, width: 48, color: '#999999', margin: '0 auto 16px' }}
+                      style={{ height: 48, width: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                     />
                     <p style={{ color: 'var(--muted-foreground)' }}>
                       No messages yet. Start the conversation!
@@ -894,7 +894,7 @@ export const MessagingInterface = () => {
           >
             <Box sx={{ textAlign: 'center', px: 2 }}>
               <MessageCircle
-                style={{ height: 64, width: 64, color: '#999999', margin: '0 auto 16px' }}
+                style={{ height: 64, width: 64, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
               />
               <Typography variant="h6" sx={{ fontSize: '1.125rem', fontWeight: 500, mb: 1 }}>
                 Select a conversation

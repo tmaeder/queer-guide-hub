@@ -356,7 +356,7 @@ export function LocationAutocomplete({
               <Check style={{ height: 16, width: 16, color: '#22c55e' }} />
             )}
             {isLoading && (
-              <Loader2 style={{ height: 12, width: 12, color: '#999999', animation: 'spin 1s linear infinite' }} />
+              <Loader2 style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />
             )}
             <Button
               type="button"
@@ -423,7 +423,7 @@ export function LocationAutocomplete({
               onClick={() => handleSuggestionSelect(suggestion)}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <MapPin style={{ height: 16, width: 16, color: '#999999', marginTop: 2, flexShrink: 0 }} />
+                <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))', marginTop: 2, flexShrink: 0 }} />
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {suggestion.place_name}

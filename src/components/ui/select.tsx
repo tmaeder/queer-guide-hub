@@ -152,7 +152,7 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
           renderValue={(selected) => {
             if (!selected || selected === "") {
               return (
-                <span style={{ color: "#999999" }}>
+                <span style={{ color: "hsl(var(--muted-foreground))" }}>
                   {placeholder || "Select…"}
                 </span>
               );

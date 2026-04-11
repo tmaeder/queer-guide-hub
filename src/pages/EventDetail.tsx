@@ -793,26 +793,26 @@ export default function EventDetail() {
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Calendar style={{ width: 16, height: 16, color: '#999999' }} />
+                <Calendar style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                 <Typography variant="body2">
                   {formatEventDate(event.start_date, event.end_date)}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Clock style={{ width: 16, height: 16, color: '#999999' }} />
+                <Clock style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                 <Typography variant="body2">
                   {formatEventTime(event.start_date, event.end_date)}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <DollarSign style={{ width: 16, height: 16, color: '#999999' }} />
+                <DollarSign style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                 <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   {getPriceDisplay()}
                 </Typography>
               </Box>
               {event.max_attendees && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Users style={{ width: 16, height: 16, color: '#999999' }} />
+                  <Users style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                   <Typography variant="body2">Max {event.max_attendees} attendees</Typography>
                 </Box>
               )}

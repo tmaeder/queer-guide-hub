@@ -230,7 +230,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               >
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                   <ExternalLink
-                    style={{ height: 20, width: 20, color: '#999999', marginTop: 4, flexShrink: 0 }}
+                    style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))', marginTop: 4, flexShrink: 0 }}
                   />
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     {post.link_title && (

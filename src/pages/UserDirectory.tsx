@@ -499,7 +499,7 @@ const UserDirectory = () => {
                     transform: 'translateY(-50%)',
                     height: 16,
                     width: 16,
-                    color: '#999999',
+                    color: 'hsl(var(--muted-foreground))',
                   }}
                 />
                 <Input
@@ -831,7 +831,7 @@ const UserDirectory = () => {
                                   height: 16,
                                   width: 16,
                                   flexShrink: 0,
-                                  color: '#999999',
+                                  color: 'hsl(var(--muted-foreground))',
                                 }}
                               />
                             </Button>

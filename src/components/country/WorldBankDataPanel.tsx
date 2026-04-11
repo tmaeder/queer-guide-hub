@@ -49,7 +49,7 @@ const DataRow = ({
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        {Icon && <Icon style={{ height: 14, width: 14, color: '#999999' }} />}
+        {Icon && <Icon style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />}
         <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{label}</Typography>
       </Box>
       <Typography sx={{ fontWeight: 700, textAlign: 'right' }}>

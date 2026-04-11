@@ -103,7 +103,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
                 height: '100%',
               }}
             >
-              <MapPin style={{ width: 32, height: 32, color: '#999999' }} />
+              <MapPin style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))' }} />
             </Box>
           )}
           {hotel.featured && (

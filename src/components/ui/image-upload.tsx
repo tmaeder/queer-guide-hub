@@ -238,16 +238,16 @@ export function ImageUpload({
           <CardContent style={{ padding: 32, textAlign: 'center' }}>
             {uploading ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <Loader2 style={{ height: 32, width: 32, color: '#999999', animation: 'spin 1s linear infinite' }} />
-                <p style={{ fontSize: '0.875rem', color: '#999999', margin: 0 }}>Uploading...</p>
+                <Loader2 style={{ height: 32, width: 32, color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />
+                <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', margin: 0 }}>Uploading...</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <Upload style={{ height: 32, width: 32, color: '#999999' }} />
-                <p style={{ fontSize: '0.875rem', color: '#999999', margin: 0 }}>
+                <Upload style={{ height: 32, width: 32, color: 'hsl(var(--muted-foreground))' }} />
+                <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', margin: 0 }}>
                   Click to upload an image
                 </p>
-                <p style={{ fontSize: '0.75rem', color: '#999999', margin: 0 }}>
+                <p style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', margin: 0 }}>
                   Max size: {maxSize}MB
                 </p>
               </div>

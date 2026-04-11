@@ -98,8 +98,8 @@ export default function Feed() {
               <CardContent style={{ padding: 16 }}>
                 <CreatePostDialog>
                   <Button variant="outline" style={{ width: '100%', justifyContent: 'flex-start', height: 56, textAlign: 'left' }}>
-                    <PenSquare style={{ height: 20, width: 20, marginRight: 12, color: '#999999' }} />
-                    <span style={{ color: '#999999' }}>
+                    <PenSquare style={{ height: 20, width: 20, marginRight: 12, color: 'hsl(var(--muted-foreground))' }} />
+                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>
                       What's on your mind? Share with the community...
                     </span>
                   </Button>
@@ -111,7 +111,7 @@ export default function Feed() {
             <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2 }}>
                 <Box sx={{ position: 'relative', flex: 1 }}>
-                  <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: '#999999' }} />
+                  <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                   <Input
                     placeholder="Search posts or users..."
                     value={searchTerm}

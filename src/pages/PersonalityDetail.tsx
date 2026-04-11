@@ -473,7 +473,7 @@ export default function PersonalityDetail() {
                 <CardTitle>About</CardTitle>
               </CardHeader>
               <CardContent>
-                <p style={{ color: '#999999' }}>{personality.description}</p>
+                <p style={{ color: 'hsl(var(--muted-foreground))' }}>{personality.description}</p>
               </CardContent>
             </Card>
           )}
@@ -489,7 +489,7 @@ export default function PersonalityDetail() {
                   {personality.bio.split('\n').map(
                     (paragraph, index) =>
                       paragraph.trim() && (
-                        <p key={index} style={{ color: '#999999' }}>
+                        <p key={index} style={{ color: 'hsl(var(--muted-foreground))' }}>
                           {paragraph}
                         </p>
                       ),
@@ -523,7 +523,7 @@ export default function PersonalityDetail() {
                           flexShrink: 0,
                         }}
                       />
-                      <span style={{ color: '#999999' }}>{achievement}</span>
+                      <span style={{ color: 'hsl(var(--muted-foreground))' }}>{achievement}</span>
                     </Box>
                   ))}
                 </Box>
@@ -623,7 +623,7 @@ export default function PersonalityDetail() {
             <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {personality.birth_date && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
+                  <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Born
@@ -636,7 +636,7 @@ export default function PersonalityDetail() {
               )}
               {personality.death_date && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Calendar style={{ height: 16, width: 16, color: '#999999' }} />
+                  <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Died
@@ -649,7 +649,7 @@ export default function PersonalityDetail() {
               )}
               {personality.nationality && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <MapPin style={{ height: 16, width: 16, color: '#999999' }} />
+                  <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Nationality
@@ -675,7 +675,7 @@ export default function PersonalityDetail() {
               )}
               {personality.profession && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Briefcase style={{ height: 16, width: 16, color: '#999999' }} />
+                  <Briefcase style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Profession
@@ -697,7 +697,7 @@ export default function PersonalityDetail() {
               )}
               {personality.birth_place && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <MapPin style={{ height: 16, width: 16, color: '#999999' }} />
+                  <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                   <div>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                       Birth Place

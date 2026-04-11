@@ -138,7 +138,7 @@ export default function GroupDetail() {
           <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
             Group not found
           </Typography>
-          <p style={{ color: '#999999' }}>
+          <p style={{ color: 'hsl(var(--muted-foreground))' }}>
             The group you're looking for doesn't exist or you don't have access to it.
           </p>
           <Button asChild>
@@ -211,9 +211,9 @@ export default function GroupDetail() {
                     {group.name}
                   </Typography>
                   {group.is_private ? (
-                    <Lock style={{ height: 20, width: 20, color: '#999999' }} />
+                    <Lock style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
                   ) : (
-                    <Globe style={{ height: 20, width: 20, color: '#999999' }} />
+                    <Globe style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
                   )}
                 </Box>
 
@@ -259,7 +259,7 @@ export default function GroupDetail() {
                 )}
               </div>
 
-              {group.description && <p style={{ color: '#999999' }}>{group.description}</p>}
+              {group.description && <p style={{ color: 'hsl(var(--muted-foreground))' }}>{group.description}</p>}
 
               {group.tags && group.tags.length > 0 && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -368,24 +368,24 @@ export default function GroupDetail() {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Users style={{ height: 16, width: 16, color: '#999999' }} />
+                    <Users style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                     <span>{group.member_count} members</span>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {group.is_private ? (
                       <>
-                        <Lock style={{ height: 16, width: 16, color: '#999999' }} />
+                        <Lock style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                         <span>Private group</span>
                       </>
                     ) : (
                       <>
-                        <Globe style={{ height: 16, width: 16, color: '#999999' }} />
+                        <Globe style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                         <span>Public group</span>
                       </>
                     )}
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Clock style={{ height: 16, width: 16, color: '#999999' }} />
+                    <Clock style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                     <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
                   </Box>
                 </Box>
@@ -492,7 +492,7 @@ export default function GroupDetail() {
             <Card>
               <CardContent style={{ padding: '32px', textAlign: 'center' }}>
                 <MessageSquare
-                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }}
+                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' }}
                 />
                 <Typography
                   variant="h6"
@@ -562,7 +562,7 @@ export default function GroupDetail() {
             <Card>
               <CardContent style={{ padding: '32px', textAlign: 'center' }}>
                 <Calendar
-                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: '#999999' }}
+                  style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' }}
                 />
                 <Typography
                   variant="h6"

@@ -457,7 +457,7 @@ const Events = () => {
                             width: 16,
                             height: 16,
                             flexShrink: 0,
-                            color: '#999999',
+                            color: 'hsl(var(--muted-foreground))',
                           }}
                         />
                       </Button>

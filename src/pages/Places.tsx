@@ -31,7 +31,7 @@ const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 const ICON_SM: React.CSSProperties = { height: 16, width: 16 };
 const ICON_MD: React.CSSProperties = { height: 20, width: 20 };
 const ICON_LG: React.CSSProperties = { height: 32, width: 32 };
-const ICON_XL: React.CSSProperties = { height: 48, width: 48, margin: '0 auto 16px', color: '#999999' };
+const ICON_XL: React.CSSProperties = { height: 48, width: 48, margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' };
 const BACK_BTN_STYLE: React.CSSProperties = { marginBottom: 16, transition: 'all 200ms' };
 const BACK_ICON_STYLE: React.CSSProperties = { height: 16, width: 16, marginRight: 8 };
 const TABS_STYLE: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 32 };

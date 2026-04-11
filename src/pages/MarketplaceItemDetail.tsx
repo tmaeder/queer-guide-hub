@@ -350,7 +350,7 @@ export default function MarketplaceItemDetail() {
               {listing.business_type && getBusinessTypeIcon(listing.business_type)}
               {listing.location && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <MapPin style={{ width: 12, height: 12, color: '#999999' }} />
+                  <MapPin style={{ width: 12, height: 12, color: 'hsl(var(--muted-foreground))' }} />
                   <Typography variant="body2" color="text.secondary">
                     {listing.location}
                   </Typography>
@@ -374,7 +374,7 @@ export default function MarketplaceItemDetail() {
               )}
               {listing.views_count && listing.views_count > 0 && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Eye style={{ width: 16, height: 16, color: '#999999' }} />
+                  <Eye style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                   <Typography variant="body2" color="text.secondary">
                     {listing.views_count} views
                   </Typography>

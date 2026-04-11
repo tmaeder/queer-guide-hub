@@ -82,7 +82,7 @@ export function ResourcesFilterBar({
               transform: 'translateY(-50%)',
               width: 20,
               height: 20,
-              color: '#999999',
+              color: 'hsl(var(--muted-foreground))',
             }}
           />
           <Input

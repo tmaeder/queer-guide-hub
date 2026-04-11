@@ -263,10 +263,10 @@ export function ModernAudioPlayer({
       <div style={{ padding: 16, textAlign: 'center' }}>
         <h3 style={{ fontWeight: 600, fontSize: '1.125rem', marginBottom: 4, margin: 0 }}>{audio.title}</h3>
         {audio.artist && (
-          <p style={{ color: '#999999', marginBottom: 8, margin: '4px 0' }}>{audio.artist}</p>
+          <p style={{ color: 'hsl(var(--muted-foreground))', marginBottom: 8, margin: '4px 0' }}>{audio.artist}</p>
         )}
         {audio.album && (
-          <p style={{ fontSize: '0.875rem', color: '#999999', margin: 0 }}>{audio.album}</p>
+          <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', margin: 0 }}>{audio.album}</p>
         )}
       </div>
 
@@ -282,7 +282,7 @@ export function ModernAudioPlayer({
               onValueChange={handleSeek}
               style={{ width: '100%' }}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: '#999999' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))' }}>
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
@@ -363,7 +363,7 @@ export function ModernAudioPlayer({
           </div>
 
           {/* Format Info */}
-          <div style={{ fontSize: '0.75rem', color: '#999999', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>
             Available: {audio.renditions.map(r => r.codec.toUpperCase()).join(', ')}
           </div>
         </div>
