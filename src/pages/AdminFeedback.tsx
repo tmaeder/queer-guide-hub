@@ -30,6 +30,7 @@ import {
   Wifi,
   Camera,
   MessageSquarePlus,
+  Copy,
 } from 'lucide-react';
 
 const kanbanColumns = [
@@ -86,6 +87,70 @@ function timeAgo(dateStr: string): string {
   const days = Math.floor(hours / 24);
   if (days < 30) return `${days}d ago`;
   return `${Math.floor(days / 30)}mo ago`;
+}
+
+function formatClaudePrompt(item: FeedbackSubmission): string {
+  const d = item.data;
+  const ctx = d.context || {};
+  const lines: string[] = [];
+
+  lines.push('Fix this user-reported issue from queer.guide:');
+  lines.push('');
+  lines.push(`## ${d.title}`);
+  lines.push(
+    `Category: ${d.category} | Submission ID: ${item.id} | Reported: ${item.submitted_at}`,
+  );
+  lines.push('');
+  lines.push('### Description');
+  lines.push(d.description || '_(no description)_');
+  lines.push('');
+
+  const contextLines: string[] = [];
+  if (ctx.url) contextLines.push(`- URL: ${ctx.url}`);
+  if (ctx.viewport) contextLines.push(`- Viewport: ${ctx.viewport.width}×${ctx.viewport.height}`);
+  if (ctx.color_scheme) contextLines.push(`- Color scheme: ${ctx.color_scheme}`);
+  if (ctx.user_agent) contextLines.push(`- User agent: ${ctx.user_agent}`);
+  if (d.contact_email) contextLines.push(`- Contact: ${d.contact_email}`);
+  if (contextLines.length > 0) {
+    lines.push('### Context');
+    lines.push(...contextLines);
+    lines.push('');
+  }
+
+  if (d.screenshot_url) {
+    lines.push('### Screenshot');
+    lines.push(d.screenshot_url);
+    lines.push('');
+  }
+
+  if (ctx.errors && ctx.errors.length > 0) {
+    lines.push(`### Console errors (${ctx.errors.length})`);
+    lines.push('```');
+    for (const err of ctx.errors) {
+      lines.push(`[${err.ts}] ${err.message}`);
+      if (err.stack) lines.push(err.stack.split('\n').slice(0, 5).join('\n'));
+    }
+    lines.push('```');
+    lines.push('');
+  }
+
+  if (ctx.network_failures && ctx.network_failures.length > 0) {
+    lines.push(`### Network failures (${ctx.network_failures.length})`);
+    lines.push('```');
+    for (const nf of ctx.network_failures) {
+      lines.push(`[${nf.ts}] ${nf.method} ${nf.url} → ${nf.status}`);
+    }
+    lines.push('```');
+    lines.push('');
+  }
+
+  lines.push('---');
+  lines.push('Repo: queer-guide-hub');
+  lines.push(
+    'Please investigate, find root cause, and propose a fix. Check relevant components based on the URL path and error messages.',
+  );
+
+  return lines.join('\n');
 }
 
 export default function AdminFeedback() {
@@ -445,10 +510,26 @@ function FeedbackDetailDrawer({
   onForward,
   isForwarding,
 }: FeedbackDetailDrawerProps) {
+  const { toast } = useToast();
   const [errorsExpanded, setErrorsExpanded] = useState(false);
   const [networkExpanded, setNetworkExpanded] = useState(false);
   const [screenshotOpen, setScreenshotOpen] = useState(false);
   const [localNotes, setLocalNotes] = useState('');
+
+  const handleCopyPrompt = async () => {
+    if (!item) return;
+    const prompt = formatClaudePrompt(item);
+    try {
+      await navigator.clipboard.writeText(prompt);
+      toast({ title: 'Prompt kopiert', description: 'In Claude Code einfügen' });
+    } catch {
+      toast({
+        title: 'Copy fehlgeschlagen',
+        description: 'Clipboard nicht verfügbar',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Sync notes when item changes
   const itemId = item?.id;
@@ -820,6 +901,14 @@ function FeedbackDetailDrawer({
 
       {/* Actions */}
       <Box sx={{ display: 'flex', gap: 1, mt: 'auto', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+        <Button
+          variant="outline"
+          onClick={handleCopyPrompt}
+          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <Copy style={{ width: 14, height: 14 }} />
+          Copy Prompt
+        </Button>
         {isForwarded ? (
           <Button
             variant="outline"
