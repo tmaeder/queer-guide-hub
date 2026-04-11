@@ -7,7 +7,8 @@ import AvatarGroup from '@mui/material/AvatarGroup';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { MoreVertical, Calendar, Luggage, MapPin } from 'lucide-react';
+import { MoreVertical, Calendar, Luggage, MapPin, ShieldCheck, ShieldAlert, AlertTriangle } from 'lucide-react';
+import Tooltip from '@mui/material/Tooltip';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Card, CardImage, CardContent } from '@/components/ui/card';
@@ -30,8 +31,19 @@ interface Props {
     member_count: number;
     place_count?: number;
     day_count?: number;
+    /** Minimum equality score across countries on the trip (null if unknown). */
+    min_equality_score?: number | null;
     trip_members?: TripMember[];
   };
+}
+
+type SafetyLevel = 'safe' | 'caution' | 'danger';
+
+function safetyLevelFromScore(score: number | null | undefined): SafetyLevel | null {
+  if (score == null) return null;
+  if (score >= 70) return 'safe';
+  if (score >= 40) return 'caution';
+  return 'danger';
 }
 
 export function TripCard({ trip }: Props) {
@@ -56,6 +68,7 @@ export function TripCard({ trip }: Props) {
 
   const placeCount = trip.place_count ?? 0;
   const dayCount = trip.day_count ?? 0;
+  const safetyLevel = safetyLevelFromScore(trip.min_equality_score);
 
   const handleNavigate = () => navigate(`/trips/${trip.id}`);
 
@@ -144,6 +157,48 @@ export function TripCard({ trip }: Props) {
           height={180}
           fallbackIcon={Luggage}
         >
+          {safetyLevel && (
+            <Tooltip
+              title={t(`trips.card.safety.${safetyLevel}`)}
+              arrow
+              placement="top"
+            >
+              <Box
+                component="span"
+                aria-label={t(`trips.card.safety.${safetyLevel}`)}
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  left: 8,
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor:
+                    safetyLevel === 'safe'
+                      ? 'success.main'
+                      : safetyLevel === 'caution'
+                        ? 'warning.main'
+                        : 'error.main',
+                  color: 'common.white',
+                  boxShadow: 1,
+                  cursor: 'help',
+                }}
+              >
+                {safetyLevel === 'safe' && (
+                  <ShieldCheck style={{ width: 16, height: 16 }} />
+                )}
+                {safetyLevel === 'caution' && (
+                  <ShieldAlert style={{ width: 16, height: 16 }} />
+                )}
+                {safetyLevel === 'danger' && (
+                  <AlertTriangle style={{ width: 16, height: 16 }} />
+                )}
+              </Box>
+            </Tooltip>
+          )}
           <IconButton
             className="trip-card-menu"
             size="small"

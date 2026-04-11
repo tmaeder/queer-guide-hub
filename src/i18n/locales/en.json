@@ -67,7 +67,7 @@
     "community": "Community",
     "resources": "Resources",
     "legal": "Legal",
-    "copyright": "\u00a9 {{year}} Made with love and pride."
+    "copyright": "© {{year}} Made with love and pride."
   },
   "auth": {
     "welcome": "Welcome!",
@@ -311,7 +311,12 @@
       "deleting": "Deleting…",
       "cancel": "Cancel",
       "deleteTitle": "Delete trip",
-      "deleteConfirm": "Are you sure you want to delete \"{{title}}\"? This can't be undone."
+      "deleteConfirm": "Are you sure you want to delete \"{{title}}\"? This can't be undone.",
+      "safety": {
+        "safe": "Safe destinations",
+        "caution": "Check local conditions",
+        "danger": "High-risk destination on this trip"
+      }
     },
     "toast": {
       "created": "Trip created",
@@ -539,6 +544,31 @@
       "chat": "Chat",
       "notes": "Notes",
       "polls": "Polls"
+    },
+    "shared": {
+      "badge": "Shared trip",
+      "metaDescription": "A trip on Queer Guide — the LGBTQ+ travel planner.",
+      "notFoundTitle": "Trip not found",
+      "notFoundDescription": "This share link may have expired or been removed.",
+      "safetyNotice": "Safety notice",
+      "safetyCountry": "{{country}} has a lower equality score ({{score}}). Research local conditions before traveling.",
+      "tabs": {
+        "itinerary": "Itinerary",
+        "budget": "Budget",
+        "notes": "Notes",
+        "packing": "Packing"
+      },
+      "dayLabel": "Day {{number}}",
+      "noPlaces": "No places scheduled",
+      "unknownPlace": "Unknown",
+      "unassigned": "Unassigned",
+      "untitled": "Untitled",
+      "packed": "{{checked}}/{{total}} packed",
+      "ctaTitle": "Plan your own queer-friendly trip",
+      "ctaSubtitle": "Free itineraries, LGBTQ+ safety briefings, and shared planning with your people.",
+      "ctaPrimary": "Start planning",
+      "ctaSecondary": "Sign in",
+      "footer": "Shared via queer.guide"
     }
   }
 }

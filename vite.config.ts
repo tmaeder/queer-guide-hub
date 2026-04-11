@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
     globals: true,
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    setupFiles: [],
+    setupFiles: ['./src/test/setup.ts'],
   },
   server: {
     host: "127.0.0.1",

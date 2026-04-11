@@ -153,7 +153,12 @@
       "deleting": "Wird gelöscht…",
       "cancel": "Abbrechen",
       "deleteTitle": "Reise löschen",
-      "deleteConfirm": "Möchtest du \"{{title}}\" wirklich löschen? Das lässt sich nicht rückgängig machen."
+      "deleteConfirm": "Möchtest du \"{{title}}\" wirklich löschen? Das lässt sich nicht rückgängig machen.",
+      "safety": {
+        "safe": "Sichere Reiseziele",
+        "caution": "Lokale Bedingungen prüfen",
+        "danger": "Hochrisiko-Ziel auf dieser Reise"
+      }
     },
     "toast": {
       "created": "Reise erstellt",
@@ -381,6 +386,31 @@
       "chat": "Chat",
       "notes": "Notizen",
       "polls": "Abstimmungen"
+    },
+    "shared": {
+      "badge": "Geteilte Reise",
+      "metaDescription": "Eine Reise auf Queer Guide — dem LGBTQ+ Reiseplaner.",
+      "notFoundTitle": "Reise nicht gefunden",
+      "notFoundDescription": "Dieser Link ist möglicherweise abgelaufen oder wurde entfernt.",
+      "safetyNotice": "Sicherheitshinweis",
+      "safetyCountry": "{{country}} hat eine niedrigere Gleichstellungsbewertung ({{score}}). Informiere dich vor der Reise.",
+      "tabs": {
+        "itinerary": "Reiseplan",
+        "budget": "Budget",
+        "notes": "Notizen",
+        "packing": "Gepäck"
+      },
+      "dayLabel": "Tag {{number}}",
+      "noPlaces": "Keine Orte geplant",
+      "unknownPlace": "Unbekannt",
+      "unassigned": "Nicht zugewiesen",
+      "untitled": "Ohne Titel",
+      "packed": "{{checked}}/{{total}} gepackt",
+      "ctaTitle": "Plane deine eigene queer-friendly Reise",
+      "ctaSubtitle": "Kostenlose Reisepläne, LGBTQ+ Sicherheitsinfos und gemeinsame Planung.",
+      "ctaPrimary": "Jetzt planen",
+      "ctaSecondary": "Anmelden",
+      "footer": "Geteilt über queer.guide"
     }
   }
 }

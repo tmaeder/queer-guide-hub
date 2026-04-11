@@ -149,7 +149,12 @@
       "deleting": "削除中…",
       "cancel": "キャンセル",
       "deleteTitle": "旅を削除",
-      "deleteConfirm": "「{{title}}」を削除しますか？この操作は取り消せません。"
+      "deleteConfirm": "「{{title}}」を削除しますか？この操作は取り消せません。",
+      "safety": {
+        "safe": "安全な目的地",
+        "caution": "現地状況を確認",
+        "danger": "この旅程に高リスクの目的地があります"
+      }
     },
     "toast": {
       "created": "旅を作成しました",
@@ -367,6 +372,31 @@
       "chat": "チャット",
       "notes": "メモ",
       "polls": "投票"
+    },
+    "shared": {
+      "badge": "共有された旅程",
+      "metaDescription": "Queer Guide — LGBTQ+ 旅行プランナーの旅程。",
+      "notFoundTitle": "旅程が見つかりません",
+      "notFoundDescription": "この共有リンクは期限切れか削除されています。",
+      "safetyNotice": "安全に関する注意",
+      "safetyCountry": "{{country}} は平等スコアが低めです ({{score}})。旅行前に現地情報を確認してください。",
+      "tabs": {
+        "itinerary": "旅程",
+        "budget": "予算",
+        "notes": "ノート",
+        "packing": "持ち物"
+      },
+      "dayLabel": "{{number}} 日目",
+      "noPlaces": "予定された場所はありません",
+      "unknownPlace": "不明",
+      "unassigned": "未割り当て",
+      "untitled": "無題",
+      "packed": "{{checked}}/{{total}} 個パック済み",
+      "ctaTitle": "あなた自身の queer-friendly な旅程を作る",
+      "ctaSubtitle": "無料プラン、LGBTQ+ 安全情報、そして仲間との共同プランニング。",
+      "ctaPrimary": "プランニングを始める",
+      "ctaSecondary": "サインイン",
+      "footer": "queer.guide で共有"
     }
   }
 }

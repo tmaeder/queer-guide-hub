@@ -149,7 +149,12 @@
       "deleting": "正在删除…",
       "cancel": "取消",
       "deleteTitle": "删除行程",
-      "deleteConfirm": "确定要删除「{{title}}」吗？此操作不可撤销。"
+      "deleteConfirm": "确定要删除「{{title}}」吗？此操作不可撤销。",
+      "safety": {
+        "safe": "安全目的地",
+        "caution": "请了解当地情况",
+        "danger": "此行程包含高风险目的地"
+      }
     },
     "toast": {
       "created": "行程已创建",
@@ -367,6 +372,31 @@
       "chat": "聊天",
       "notes": "笔记",
       "polls": "投票"
+    },
+    "shared": {
+      "badge": "分享的行程",
+      "metaDescription": "Queer Guide 上的行程 — LGBTQ+ 旅行规划工具。",
+      "notFoundTitle": "行程未找到",
+      "notFoundDescription": "此分享链接可能已过期或被删除。",
+      "safetyNotice": "安全提示",
+      "safetyCountry": "{{country}} 的平等指数较低 ({{score}})。出行前请了解当地情况。",
+      "tabs": {
+        "itinerary": "行程",
+        "budget": "预算",
+        "notes": "笔记",
+        "packing": "行李"
+      },
+      "dayLabel": "第 {{number}} 天",
+      "noPlaces": "未安排地点",
+      "unknownPlace": "未知",
+      "unassigned": "未分配",
+      "untitled": "无标题",
+      "packed": "已打包 {{checked}}/{{total}}",
+      "ctaTitle": "规划你自己的 queer-friendly 行程",
+      "ctaSubtitle": "免费行程、LGBTQ+ 安全信息,以及与旅伴共享规划。",
+      "ctaPrimary": "开始规划",
+      "ctaSecondary": "登录",
+      "footer": "通过 queer.guide 分享"
     }
   }
 }
