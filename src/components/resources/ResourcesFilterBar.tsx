@@ -24,7 +24,7 @@ import {
   SortAsc,
   SortDesc,
 } from 'lucide-react';
-import { getCategoryShortName } from './categoryMeta';
+import { getCategoryShortName, parentOrder } from './categoryMeta';
 import type { CategoryTreeNode } from '@/hooks/useCentralizedTags';
 
 type DisplayMode = 'chips' | 'grid' | 'list';
@@ -131,18 +131,21 @@ export function ResourcesFilterBar({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {categoriesTree.map((cat) => (
-              <React.Fragment key={cat.id}>
-                <SelectItem value={cat.name}>{getCategoryShortName(cat.name)}</SelectItem>
-                {cat.children.map((child) => (
-                  <SelectItem key={child.id} value={child.name}>
-                    <span style={{ paddingLeft: 16, fontSize: '0.85em', opacity: 0.85 }}>
-                      {getCategoryShortName(child.name)}
-                    </span>
-                  </SelectItem>
-                ))}
-              </React.Fragment>
-            ))}
+            {parentOrder
+              .map((name) => categoriesTree.find((c) => c.name === name))
+              .filter((cat): cat is CategoryTreeNode => !!cat)
+              .map((cat) => (
+                <React.Fragment key={cat.id}>
+                  <SelectItem value={cat.name}>{getCategoryShortName(cat.name)}</SelectItem>
+                  {cat.children.map((child) => (
+                    <SelectItem key={child.id} value={child.name}>
+                      <span style={{ paddingLeft: 16, fontSize: '0.85em', opacity: 0.85 }}>
+                        {getCategoryShortName(child.name)}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </React.Fragment>
+              ))}
           </SelectContent>
         </Select>
 

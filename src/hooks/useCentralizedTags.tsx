@@ -130,21 +130,19 @@ async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
     categories: tagCatsMap.get(tag.id) || [],
   }));
 
-  // Group tags by category name
+  // Group tags by their (one) primary category AND every ancestor parent, so
+  // `tagsByCategory['Sexuality & Kink']` contains every tag whose primary
+  // child lives under that parent. Each tag lands in exactly one child.
   const categoryMap = new Map<string, CentralizedTag[]>();
   for (const tag of enrichedTags) {
-    const cats =
-      tag.categories && tag.categories.length > 0
-        ? tag.categories.map((c) => c.name)
-        : tag.category
-          ? [tag.category]
-          : [];
-
-    for (const catName of cats) {
-      if (catName && catName !== 'general') {
-        if (!categoryMap.has(catName)) categoryMap.set(catName, []);
-        categoryMap.get(catName)!.push(tag);
-      }
+    const primary = tag.categories?.find((c) => c.is_primary) ?? tag.categories?.[0];
+    if (!primary) continue;
+    const buckets = new Set<string>();
+    buckets.add(primary.name);
+    if (primary.parent_name) buckets.add(primary.parent_name);
+    for (const catName of buckets) {
+      if (!categoryMap.has(catName)) categoryMap.set(catName, []);
+      categoryMap.get(catName)!.push(tag);
     }
   }
 
@@ -185,24 +183,18 @@ export const useCentralizedTags = () => {
   const tagsByCategory = data?.tagsByCategory ?? [];
   const categoriesTree = data?.categoriesTree ?? [];
 
-  const searchTags = async (query: string, category?: string): Promise<CentralizedTag[]> => {
+  const searchTags = async (query: string): Promise<CentralizedTag[]> => {
     try {
       // Sanitize query to prevent PostgREST filter injection —
       // strip characters that have special meaning in PostgREST filter syntax.
       const sanitized = query.replace(/[,%()\\]/g, '');
       if (!sanitized) return [];
 
-      let queryBuilder = supabase
+      const { data, error } = await supabase
         .from('unified_tags')
         .select('*')
         .eq('status', 'active')
-        .or(`name.ilike.%${sanitized}%,description.ilike.%${sanitized}%`);
-
-      if (category) {
-        queryBuilder = queryBuilder.eq('category', category);
-      }
-
-      const { data, error } = await queryBuilder
+        .or(`name.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
         .order('usage_count', { ascending: false })
         .limit(20);
 
@@ -215,11 +207,15 @@ export const useCentralizedTags = () => {
   };
 
   const getTagsByCategory = (category: string): CentralizedTag[] => {
+    return allTags.filter((tag) =>
+      tag.categories?.some((c) => c.name === category || c.parent_name === category)
+    );
+  };
+
+  const getTagsByParent = (parentName: string): CentralizedTag[] => {
     return allTags.filter((tag) => {
-      if (tag.categories && tag.categories.length > 0) {
-        return tag.categories.some((c) => c.name === category);
-      }
-      return tag.category === category || (!tag.category && category === 'general');
+      const primary = tag.categories?.find((c) => c.is_primary) ?? tag.categories?.[0];
+      return primary?.parent_name === parentName || primary?.name === parentName;
     });
   };
 
@@ -313,6 +309,7 @@ export const useCentralizedTags = () => {
       : null,
     searchTags,
     getTagsByCategory,
+    getTagsByParent,
     getTagsBySubcategory,
     getParentCategory,
     getPopularTags,
