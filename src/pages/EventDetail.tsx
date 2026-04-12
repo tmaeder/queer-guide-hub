@@ -18,6 +18,7 @@ import {
   Music,
   Luggage,
   Navigation2,
+  RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -85,6 +86,7 @@ export default function EventDetail() {
   const [event, setEvent] = useState<Event | null>(null);
   const [userAttendance, setUserAttendance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [showEventTz, setShowEventTz] = useState(true);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
   const [sendEventOpen, setSendEventOpen] = useState(false);
@@ -94,6 +96,7 @@ export default function EventDetail() {
   const fetchEventData = async () => {
     if (!slug) return;
     try {
+      setFetchError(false);
       const selectFields = `
           *,
           venues (id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
@@ -130,6 +133,7 @@ export default function EventDetail() {
         setEvent({ ...eventData, event_attendees: [] });
       }
     } catch (error) {
+      setFetchError(true);
       toast({ title: 'Error', description: 'Failed to load event details.', variant: 'destructive' });
     }
   };
@@ -239,6 +243,31 @@ export default function EventDetail() {
             <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 2 }} />
             <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 2 }} />
           </Box>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (fetchError && !event) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Failed to Load
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          Could not load event details. Check your connection and try again.
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+          <Button onClick={() => { setLoading(true); fetchEventData().finally(() => setLoading(false)); }}>
+            <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
+            Try Again
+          </Button>
+          <Link to="/events">
+            <Button variant="outline">
+              <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+              Back to Events
+            </Button>
+          </Link>
         </Box>
       </Container>
     );

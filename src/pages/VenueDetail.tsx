@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Luggage,
   Navigation2,
+  RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -63,6 +64,7 @@ export default function VenueDetail() {
   const [venue, setVenue] = useState<VenueWithRelations | null>(null);
   const [reviews, setReviews] = useState<VenueReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [checkinRefresh, setCheckinRefresh] = useState(0);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
@@ -70,53 +72,54 @@ export default function VenueDetail() {
 
   const venueEvents = events.filter((event) => event.venue_id === venue?.id);
 
-  useEffect(() => {
+  const fetchVenue = async () => {
     if (!slug) return;
+    try {
+      setLoading(true);
+      setFetchError(false);
 
-    const fetchVenue = async () => {
-      try {
-        setLoading(true);
+      // Try slug first, fall back to ID for backwards compatibility
+      const selectFields = '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization)';
+      let { data: venueData, error: venueError } = await supabase
+        .from('venues')
+        .select(selectFields)
+        .eq('slug', slug)
+        .single();
 
-        // Try slug first, fall back to ID for backwards compatibility
-        const selectFields = '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization)';
-        let { data: venueData, error: venueError } = await supabase
-          .from('venues')
-          .select(selectFields)
-          .eq('slug', slug)
-          .single();
-
-        if (venueError && /uuid|invalid|no rows/i.test(venueError.message || '')) {
-          const fallback = await supabase.from('venues').select(selectFields).eq('id', slug).single();
-          venueData = fallback.data;
-          venueError = fallback.error;
-        }
-
-        if (venueError) throw venueError;
-        setVenue(venueData);
-
-        const { data: reviewsData, error: reviewsError } = await supabase
-          .from('venue_reviews')
-          .select(
-            `
-            *,
-            profiles:user_id (
-              display_name,
-              avatar_url
-            )
-          `,
-          )
-          .eq('venue_id', venueData.id)
-          .order('created_at', { ascending: false });
-
-        if (reviewsError) throw reviewsError;
-        setReviews(reviewsData || []);
-      } catch (error) {
-        toast({ title: 'Error', description: 'Failed to load venue details.', variant: 'destructive' });
-      } finally {
-        setLoading(false);
+      if (venueError && /uuid|invalid|no rows/i.test(venueError.message || '')) {
+        const fallback = await supabase.from('venues').select(selectFields).eq('id', slug).single();
+        venueData = fallback.data;
+        venueError = fallback.error;
       }
-    };
 
+      if (venueError) throw venueError;
+      setVenue(venueData);
+
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('venue_reviews')
+        .select(
+          `
+          *,
+          profiles:user_id (
+            display_name,
+            avatar_url
+          )
+        `,
+        )
+        .eq('venue_id', venueData.id)
+        .order('created_at', { ascending: false });
+
+      if (reviewsError) throw reviewsError;
+      setReviews(reviewsData || []);
+    } catch (error) {
+      setFetchError(true);
+      toast({ title: 'Error', description: 'Failed to load venue details.', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchVenue();
   }, [slug]);
 
@@ -145,6 +148,31 @@ export default function VenueDetail() {
             <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 2 }} />
             <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 2 }} />
           </Box>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (fetchError && !venue) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Failed to Load
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          Could not load venue details. Check your connection and try again.
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+          <Button onClick={() => fetchVenue()}>
+            <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
+            Try Again
+          </Button>
+          <Link to="/venues">
+            <Button variant="outline">
+              <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+              Back to Venues
+            </Button>
+          </Link>
         </Box>
       </Container>
     );
