@@ -47,6 +47,7 @@ import { SendEventDialog } from '@/components/messaging/SendEventDialog';
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
     id: string;
+    slug?: string;
     name: string;
     address: string;
     city: string;
@@ -55,6 +56,8 @@ type Event = Database['public']['Tables']['events']['Row'] & {
     phone: string | null;
     website: string | null;
     email: string | null;
+    latitude: number | null;
+    longitude: number | null;
   } | null;
   cities?: { id: string; name: string } | null;
   countries?: {
@@ -93,7 +96,7 @@ export default function EventDetail() {
     try {
       const selectFields = `
           *,
-          venues (id, slug, name, address, city, state, country, phone, website, email),
+          venues (id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
           cities:city_id(id, slug, name),
           countries:country_id(id, slug, name, equality_score, lgbti_criminalization),
           festivals:festival_id(id, name)
