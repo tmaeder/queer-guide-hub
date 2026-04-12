@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Calendar,
@@ -11,11 +11,13 @@ import {
   Phone,
   Globe,
   Share2,
+  Send,
   Download,
   ChevronRight,
   Tag,
   Music,
   Luggage,
+  Navigation2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +42,7 @@ import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
+import { SendEventDialog } from '@/components/messaging/SendEventDialog';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -81,7 +84,9 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [showEventTz, setShowEventTz] = useState(true);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
+  const [sendEventOpen, setSendEventOpen] = useState(false);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
+  const venueRef = useRef<HTMLDivElement>(null);
 
   const fetchEventData = async () => {
     if (!slug) return;
@@ -544,6 +549,12 @@ export default function EventDetail() {
             <Share2 style={{ width: 16, height: 16, marginRight: 6 }} />
             Share
           </Button>
+          {user && (
+            <Button variant="outline" size="sm" onClick={() => setSendEventOpen(true)}>
+              <Send style={{ width: 16, height: 16, marginRight: 6 }} />
+              Send
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -577,6 +588,8 @@ export default function EventDetail() {
           label={locationLabel}
           size="small"
           variant="outlined"
+          onClick={() => venueRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+          sx={{ cursor: 'pointer' }}
         />
         <Chip
           icon={<DollarSign style={{ width: 14, height: 14 }} />}
@@ -763,7 +776,7 @@ export default function EventDetail() {
             const lat = event.latitude ?? event.venues?.latitude;
             const lng = event.longitude ?? event.venues?.longitude;
             return typeof lat === 'number' && typeof lng === 'number' ? (
-              <Card>
+              <Card ref={venueRef}>
                 <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
                   <EntityMap
                     center={[Number(lng), Number(lat)]}
@@ -906,7 +919,23 @@ export default function EventDetail() {
                   {event.venues.city}
                   {event.venues.state ? `, ${event.venues.state}` : ''} {event.venues.country}
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
+                  {(() => {
+                    const lat = event.latitude ?? event.venues?.latitude;
+                    const lng = event.longitude ?? event.venues?.longitude;
+                    return typeof lat === 'number' && typeof lng === 'number' ? (
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Navigation2 style={{ width: 14, height: 14, marginRight: 6 }} />
+                          Directions
+                        </a>
+                      </Button>
+                    ) : null;
+                  })()}
                   {event.venues.phone && (
                     <Button variant="outline" size="sm" asChild>
                       <a href={`tel:${event.venues.phone}`}>
@@ -940,6 +969,15 @@ export default function EventDetail() {
           country_id: event.country_id,
           category: event.event_type,
         }}
+      />
+
+      <SendEventDialog
+        open={sendEventOpen}
+        onOpenChange={setSendEventOpen}
+        eventTitle={event.title}
+        eventDate={formatEventDate(event.start_date, event.end_date)}
+        eventVenue={event.venues?.name}
+        eventPath={`/events/${event.slug || event.id}`}
       />
     </Container>
   );
