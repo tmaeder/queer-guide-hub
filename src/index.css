@@ -297,6 +297,40 @@ body {
   animation: fade-in 0.5s ease-out;
 }
 
+/* ── Link defaults ────────────────────────────────────────────────── */
+
+a,
+a:link,
+a:visited {
+  color: hsl(var(--brand));
+  text-decoration: none;
+  transition: color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+a:hover {
+  color: hsl(var(--brand) / 0.8);
+}
+
+/* ── Focus-visible (global accessibility) ─────────────────────────── */
+
+*:focus-visible {
+  outline: 2px solid hsl(var(--brand));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Touch target minimum ─────────────────────────────────────────── */
+
+a, button, [role="button"], input, select, textarea {
+  min-height: 44px;
+}
+
+/* Inline links inside paragraphs should not enforce min-height */
+p a, li a, td a, span a, label a {
+  min-height: unset;
+  display: inline;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: -0.025em;

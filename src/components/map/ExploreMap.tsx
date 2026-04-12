@@ -259,6 +259,14 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
+    // Graceful WebGL check — avoid hard crash when GPU is unavailable
+    const testCanvas = document.createElement('canvas');
+    const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl');
+    if (!gl) {
+      console.warn('WebGL not available — map disabled');
+      return;
+    }
+
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: mapStyle,
@@ -625,19 +633,22 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       <Box ref={containerRef} sx={{ height, width: '100%' }} />
 
       {/* Lightweight hover tooltip for boundary polygons */}
-      <div
+      <Box
         ref={tooltipRef}
-        style={{
+        sx={{
           display: 'none',
           position: 'absolute',
           pointerEvents: 'none',
           zIndex: 20,
-          background: 'hsl(var(--popover) / 0.95)',
-          color: 'hsl(var(--popover-foreground))',
-          borderRadius: 6,
-          padding: '5px 10px',
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          px: 1.25,
+          py: 0.625,
           fontSize: 13,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+          boxShadow: 2,
           whiteSpace: 'nowrap',
         }}
       />

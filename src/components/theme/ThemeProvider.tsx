@@ -1,7 +1,8 @@
 import * as React from "react";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { createAppTheme } from "@/theme/muiTheme";
+import GlobalStyles from "@mui/material/GlobalStyles";
+import { createAppTheme, brandColors } from "@/theme/muiTheme";
 
 type Theme = "dark" | "light" | "system";
 
@@ -84,6 +85,19 @@ export function ThemeProvider({
     <ThemeProviderContext.Provider {...props} value={value}>
       <MuiThemeProvider theme={muiTheme}>
         <CssBaseline />
+        <GlobalStyles styles={{
+          'a, a:link, a:visited': {
+            color: brandColors.main,
+            textDecoration: 'none',
+            transition: 'color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
+          },
+          'a:hover': { color: brandColors.dark },
+          '*:focus-visible': {
+            outline: `2px solid ${brandColors.main}`,
+            outlineOffset: '2px',
+            borderRadius: '4px',
+          },
+        }} />
         {children}
       </MuiThemeProvider>
     </ThemeProviderContext.Provider>
