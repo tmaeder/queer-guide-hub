@@ -10,6 +10,7 @@ export interface TagVenue {
   image_url: string | null;
   foursquare_rating: number | null;
   address: string | null;
+  slug: string | null;
 }
 
 export interface TagNewsArticle {
@@ -32,6 +33,7 @@ export interface TagEvent {
   venue_name: string | null;
   image_url: string | null;
   event_type: string | null;
+  slug: string | null;
 }
 
 export interface TagPersonality {
@@ -42,6 +44,7 @@ export interface TagPersonality {
   image_url: string | null;
   birth_date: string | null;
   death_date: string | null;
+  slug: string | null;
 }
 
 export interface TagGroup {
