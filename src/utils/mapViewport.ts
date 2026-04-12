@@ -72,12 +72,12 @@ export function padBbox(bbox: Bbox, padding = 0.15): Bbox {
  */
 export function quantizeBbox(bbox: Bbox, bucket: ZoomBucket): Bbox {
   const step = bucket === 'low' ? 5 : bucket === 'mid' ? 1 : 0.1;
-  return {
+  return clampBbox({
     west: Math.floor(bbox.west / step) * step,
     south: Math.floor(bbox.south / step) * step,
     east: Math.ceil(bbox.east / step) * step,
     north: Math.ceil(bbox.north / step) * step,
-  };
+  });
 }
 
 /**
@@ -139,22 +139,6 @@ export class LRUCache<V> {
   get size(): number {
     return this.map.size;
   }
-}
-
-// ── Validation & Clamping ────────────────────────────────────────────────
-
-/**
- * Clamp bbox to valid geographic ranges.
- * Prevents garbage values (e.g. from MapLibre getBounds on a 0-size container)
- * from reaching Supabase queries.
- */
-export function clampBbox(bbox: Bbox): Bbox {
-  return {
-    west: Math.max(-180, Math.min(180, bbox.west)),
-    south: Math.max(-90, Math.min(90, bbox.south)),
-    east: Math.max(-180, Math.min(180, bbox.east)),
-    north: Math.max(-90, Math.min(90, bbox.north)),
-  };
 }
 
 /**

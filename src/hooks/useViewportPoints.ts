@@ -228,7 +228,7 @@ export function useViewportPoints({
   // Generation counter: incremented on each fetch, stale results are discarded
   const genRef = useRef(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastPaddedBboxRef = useRef<Bbox | null>(null);
+  const lastRawBboxRef = useRef<Bbox | null>(null);
   const lastZoomRef = useRef<number>(2);
 
   const enabledRef = useRef(enabledLayers);
@@ -236,7 +236,7 @@ export function useViewportPoints({
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
 
-  const doFetch = useCallback(async (bbox: Bbox, zoom: number) => {
+  const doFetch = useCallback(async (rawBbox: Bbox, zoom: number) => {
     const enabled = enabledRef.current.filter((l) => POINT_LAYER_TYPES.includes(l));
     if (enabled.length === 0) {
       setGeojson(EMPTY_FC);
@@ -244,12 +244,14 @@ export function useViewportPoints({
       return;
     }
 
+    // Clamp to valid geo ranges — guards against MapLibre garbage on init/certain devices
+    const bbox = clampBbox(rawBbox);
+
     // Bump generation — any in-flight request with an older gen will be discarded
     const gen = ++genRef.current;
 
     const bucket = getZoomBucket(zoom);
-    const clamped = clampBbox(bbox);
-    const padded = padBbox(clamped, 0.15);
+    const padded = padBbox(bbox, 0.15);
     const quantized = quantizeBbox(padded, bucket);
     const bk = bboxKey(quantized);
     const fh = computeFiltersHash(filtersRef.current ?? {});
@@ -298,7 +300,7 @@ export function useViewportPoints({
 
       setGeojson({ type: 'FeatureCollection', features: allFeatures });
       setLayerCounts(counts);
-      lastPaddedBboxRef.current = padded;
+      lastRawBboxRef.current = bbox;
     } catch (err: any) {
       if (gen !== genRef.current) return; // Stale error — ignore
       console.error('[useViewportPoints] fetch error:', err?.message ?? err);
@@ -317,9 +319,9 @@ export function useViewportPoints({
 
       // Skip refetch if still inside padded region and zoom bucket unchanged
       if (
-        lastPaddedBboxRef.current &&
+        lastRawBboxRef.current &&
         prevBucket === newBucket &&
-        !bboxExceedsPadded(bbox, lastPaddedBboxRef.current)
+        !bboxExceedsPadded(bbox, padBbox(lastRawBboxRef.current, 0.15))
       ) {
         return;
       }
@@ -332,8 +334,8 @@ export function useViewportPoints({
 
   // Refetch when layers or filters change
   useEffect(() => {
-    if (lastPaddedBboxRef.current) {
-      doFetch(lastPaddedBboxRef.current, lastZoomRef.current);
+    if (lastRawBboxRef.current) {
+      doFetch(lastRawBboxRef.current, lastZoomRef.current);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabledLayers, filters]);
