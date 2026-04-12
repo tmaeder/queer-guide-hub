@@ -169,7 +169,7 @@ const LatestNewsSlider = React.memo(() => {
                 style={{ width: isMobile ? 20 : 24, height: isMobile ? 20 : 24 }}
                 color="var(--mui-palette-primary-main)"
               />
-              <Typography variant={isMobile ? 'h6' : 'h4'} sx={{ fontWeight: 700 }}>
+              <Typography variant={isMobile ? 'h6' : 'h2'} sx={{ fontWeight: 700, fontSize: { xs: '1.25rem', md: '2.25rem' } }}>
                 Latest News
               </Typography>
             </Box>

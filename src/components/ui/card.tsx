@@ -23,6 +23,9 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
         bgcolor: 'background.paper',
         boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
+        '&:hover': {
+          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
+        },
         ...(hoverable && {
           cursor: 'pointer',
           '&:hover': {

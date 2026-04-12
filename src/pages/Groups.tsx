@@ -99,8 +99,9 @@ export default function Groups() {
               <EmptyState
                 icon={Users}
                 title="No groups here yet"
-                description="Start one and be the first."
+                description="Be the spark — create the first group and bring people together."
                 mood="encouraging"
+                primaryAction={{ label: 'Create a Group', onClick: () => {} }}
               />
             ) : (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
@@ -116,8 +117,9 @@ export default function Groups() {
               <EmptyState
                 icon={Users}
                 title="No groups here yet"
-                description="Start one and be the first."
+                description="Be the spark — create the first group and bring people together."
                 mood="encouraging"
+                primaryAction={{ label: 'Create a Group', onClick: () => {} }}
               />
             ) : (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>

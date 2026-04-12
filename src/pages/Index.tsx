@@ -258,7 +258,7 @@ const Index = React.memo(() => {
       <Box component="section" className="content-enter" sx={{ py: { xs: 8, md: 14 } }}>
         <Container maxWidth="lg">
           <Typography
-            variant="h3"
+            variant="h2"
             className="reveal-up"
             sx={{
               fontWeight: 800,
@@ -411,7 +411,7 @@ const Index = React.memo(() => {
           >
             <Box>
               <Typography
-                variant="h3"
+                variant="h2"
                 sx={{
                   fontWeight: 800,
                   mb: 0.5,

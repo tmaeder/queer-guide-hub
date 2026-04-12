@@ -19,14 +19,16 @@ export function CookieConsentBanner() {
       <Box
         sx={{
           position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
+          bottom: { xs: 0, md: 16 },
+          left: { xs: 0, md: 'auto' },
+          right: { xs: 0, md: 16 },
           zIndex: 60,
           p: 2,
-          bgcolor: 'rgba(var(--background), 0.95)',
-          backdropFilter: 'blur(8px)',
-          borderTop: 1,
+          maxWidth: { md: 480 },
+          bgcolor: 'background.paper',
+          borderRadius: { xs: 0, md: 2 },
+          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
+          border: 1,
           borderColor: 'divider',
         }}
       >
