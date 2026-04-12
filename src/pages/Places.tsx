@@ -99,8 +99,8 @@ export default function Places() {
     populationRange: 'all',
     isCapital: 'all',
     isMajorCity: 'all',
-    sortBy: 'name',
-    sortOrder: 'asc',
+    sortBy: 'population',
+    sortOrder: 'desc',
   });
 
   // Animation states for better UX

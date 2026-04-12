@@ -38,8 +38,8 @@ export const PlacesSearch = ({
     populationRange: "all",
     isCapital: "all",
     isMajorCity: "all",
-    sortBy: "name",
-    sortOrder: "asc"
+    sortBy: "population",
+    sortOrder: "desc"
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -69,15 +69,15 @@ export const PlacesSearch = ({
       populationRange: "all",
       isCapital: "all",
       isMajorCity: "all",
-      sortBy: "name",
-      sortOrder: "asc"
+      sortBy: "population",
+      sortOrder: "desc"
     };
     setFilters(defaultFilters);
     onFiltersChange(defaultFilters);
   };
 
   const getActiveFilterCount = () => {
-    return Object.values(filters).filter(value => value !== "all" && value !== "name" && value !== "asc").length;
+    return Object.values(filters).filter(value => value !== "all" && value !== "population" && value !== "desc").length;
   };
 
   const detectLocation = async () => {
@@ -311,12 +311,12 @@ export const PlacesSearch = ({
                       Major: {filters.isMajorCity === "true" ? "Yes" : "No"}
                     </Badge>
                   )}
-                  {filters.sortBy !== "name" && (
+                  {filters.sortBy !== "population" && (
                     <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
                       Sort: {filters.sortBy}
                     </Badge>
                   )}
-                  {filters.sortOrder !== "asc" && (
+                  {filters.sortOrder !== "desc" && (
                     <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
                       Order: {filters.sortOrder}
                     </Badge>
