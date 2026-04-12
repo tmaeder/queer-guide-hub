@@ -132,9 +132,11 @@ export const useNotifications = () => {
           setUnreadCount(prev => prev + 1);
           
           // Show toast for new notification
+          const isSOS = (newNotification.metadata as any)?.sos;
           toast({
             title: newNotification.title,
             description: newNotification.content,
+            variant: isSOS ? 'destructive' : undefined,
           });
         }
       )

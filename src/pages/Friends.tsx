@@ -5,21 +5,35 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Clock, Check, X } from 'lucide-react';
+import { Users, Clock, Check, X, Siren } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
+import { useSOS } from '@/hooks/useSOS';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function Friends() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const {
     acceptFriendRequest,
     rejectFriendRequest,
@@ -31,6 +45,11 @@ export default function Friends() {
 
   const friends = getFriends();
   const pendingRequests = getPendingRequests();
+
+  const friendIds = user
+    ? friends.map((f) => (f.user_id === user.id ? f.target_user_id : f.user_id))
+    : [];
+  const { sendSOS, canSend, loading: sosLoading, cooldownSeconds, friendCount } = useSOS(friendIds);
 
   // Fetch profile data for friends and pending requests
   const { data: friendProfiles } = useQuery({
@@ -78,12 +97,47 @@ export default function Friends() {
             title="Friends"
             subtitle="Manage your connections"
             actions={
-              <Badge variant="secondary">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Users style={{ width: 16, height: 16 }} />
-                  {friends.length} Friends
-                </Box>
-              </Badge>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={!canSend || sosLoading}
+                      style={{ gap: 6 }}
+                    >
+                      <Siren style={{ width: 16, height: 16 }} />
+                      {cooldownSeconds > 0
+                        ? `${Math.floor(cooldownSeconds / 60)}:${String(cooldownSeconds % 60).padStart(2, '0')}`
+                        : t('sos.button')}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t('sos.confirmTitle')}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t('sos.confirmBody', { count: friendCount })}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('common.cancel', 'Cancel')}</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={sendSOS}
+                        style={{ backgroundColor: '#DC2626' }}
+                      >
+                        <Siren style={{ width: 16, height: 16, marginRight: 6 }} />
+                        {sosLoading ? t('sos.sending') : t('sos.send')}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Badge variant="secondary">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Users style={{ width: 16, height: 16 }} />
+                    {friends.length} Friends
+                  </Box>
+                </Badge>
+              </Box>
             }
           />
 
