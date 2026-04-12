@@ -4,38 +4,38 @@ import './theme.d.ts';
 
 // ─── Brand Colors (importable outside React context) ─────────────────────────
 export const brandColors = {
-  main: '#DB2777',
-  light: '#F472B6',
-  dark: '#BE185D',
+  main: '#b60d3d',
+  light: '#ff7386',
+  dark: '#a20033',
 } as const;
 
 // ─── Palettes ─────────────────────────────────────────────────────────────────
 // All colors are solid (alpha = 1). No rgba/hsla with transparency allowed.
 
 const lightPalette = {
-  primary: { main: '#222222', contrastText: '#ffffff' },
-  secondary: { main: '#f4f4f5', contrastText: '#18181b' },
-  brand: { main: brandColors.main, light: brandColors.light, dark: brandColors.dark, contrastText: '#ffffff' },
-  accent: { main: '#F59E0B', light: '#FCD34D', dark: '#D97706', contrastText: '#111111' },
-  error: { main: '#ef4444', contrastText: '#ffffff' },
-  warning: { main: '#f59e0b', contrastText: '#ffffff' },
+  primary: { main: '#0e0e0e', contrastText: '#ffffff' },
+  secondary: { main: '#f3f0ef', contrastText: '#2f2e2e' },
+  brand: { main: brandColors.main, light: brandColors.light, dark: brandColors.dark, contrastText: '#ffefef' },
+  accent: { main: '#feb700', light: '#ffcf4d', dark: '#694a00', contrastText: '#392700' },
+  error: { main: '#b31b25', contrastText: '#ffefee' },
+  warning: { main: '#feb700', contrastText: '#392700' },
   success: { main: '#22c55e', contrastText: '#ffffff' },
-  background: { default: '#fcfcfc', paper: '#ffffff' },
-  text: { primary: '#171717', secondary: '#666666' },
-  divider: '#e4e4e7',
+  background: { default: '#f9f6f5', paper: '#ffffff' },
+  text: { primary: '#2f2e2e', secondary: '#5c5b5b' },
+  divider: '#eae7e7',
 };
 
 const darkPalette = {
-  primary: { main: '#ffffff', contrastText: '#111111' },
-  secondary: { main: '#27272a', contrastText: '#f2f2f2' },
-  brand: { main: brandColors.light, light: '#F9A8D4', dark: brandColors.main, contrastText: '#111111' },
-  accent: { main: '#FBBF24', light: '#FDE68A', dark: '#F59E0B', contrastText: '#111111' },
-  error: { main: '#dc2626', contrastText: '#ffffff' },
-  warning: { main: '#f59e0b', contrastText: '#ffffff' },
+  primary: { main: '#ffffff', contrastText: '#0e0e0e' },
+  secondary: { main: '#1a1a1a', contrastText: '#f2f2f2' },
+  brand: { main: brandColors.light, light: '#ff9dab', dark: brandColors.main, contrastText: '#0e0e0e' },
+  accent: { main: '#ffcf4d', light: '#ffe08a', dark: '#feb700', contrastText: '#0e0e0e' },
+  error: { main: '#fb5151', contrastText: '#ffffff' },
+  warning: { main: '#feb700', contrastText: '#392700' },
   success: { main: '#22c55e', contrastText: '#ffffff' },
-  background: { default: '#0c0c0f', paper: '#111114' },
-  text: { primary: '#f2f2f2', secondary: '#a8a8b3' },
-  divider: '#27272a',
+  background: { default: '#0d0d0d', paper: '#121212' },
+  text: { primary: '#f2f2f2', secondary: '#9e9c9c' },
+  divider: '#1a1a1a',
 };
 
 // ─── Shared theme options ─────────────────────────────────────────────────────
@@ -43,20 +43,20 @@ const darkPalette = {
 
 const baseThemeOptions: ThemeOptions = {
   shape: {
-    borderRadius: 12,
+    borderRadius: 16,
   },
   typography: {
     fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-    h1: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.05 },
-    h2: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1 },
-    h3: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.15 },
-    h4: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 },
-    h5: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, letterSpacing: '-0.015em' },
-    h6: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, letterSpacing: '-0.01em' },
+    h1: { fontFamily: "'Inter', sans-serif", fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 0.85 },
+    h2: { fontFamily: "'Inter', sans-serif", fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.0 },
+    h3: { fontFamily: "'Inter', sans-serif", fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1 },
+    h4: { fontFamily: "'Inter', sans-serif", fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.15 },
+    h5: { fontFamily: "'Inter', sans-serif", fontWeight: 700, letterSpacing: '-0.015em' },
+    h6: { fontFamily: "'Inter', sans-serif", fontWeight: 600, letterSpacing: '-0.01em' },
     subtitle1: { fontWeight: 500 },
     subtitle2: { fontWeight: 500 },
-    body1: { lineHeight: 1.7 },
-    body2: { lineHeight: 1.65 },
+    body1: { lineHeight: 1.6 },
+    body2: { lineHeight: 1.6 },
     button: { textTransform: 'none', fontWeight: 600 },
   },
   components: {
@@ -70,12 +70,11 @@ const baseThemeOptions: ThemeOptions = {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 9999,
           transition: `all ${duration.fast}s ${ease.smooth}`,
           fontWeight: 600,
           '&:hover': {
-            transform: 'translateY(-1px)',
-            filter: 'brightness(1.1)',
+            opacity: 0.9,
           },
           '&:active': {
             transform: 'scale(0.97)',
@@ -103,7 +102,7 @@ const baseThemeOptions: ThemeOptions = {
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 16,
           transition: transition.normal,
         },
       },
@@ -114,7 +113,7 @@ const baseThemeOptions: ThemeOptions = {
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 16,
         },
       },
       defaultProps: {
@@ -129,7 +128,7 @@ const baseThemeOptions: ThemeOptions = {
           fontSize: '0.75rem',
           transition: transition.fast,
           '&:hover': {
-            transform: 'scale(1.04) translateY(-1px)',
+            transform: 'scale(1.04)',
           },
         },
       },
@@ -142,7 +141,7 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 12,
+            borderRadius: 16,
           },
         },
       },
@@ -170,14 +169,14 @@ const baseThemeOptions: ThemeOptions = {
     MuiAlert: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 16,
         },
       },
     },
     MuiSkeleton: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 16,
         },
       },
       defaultProps: {
@@ -217,7 +216,7 @@ const baseThemeOptions: ThemeOptions = {
       },
       styleOverrides: {
         root: {
-          borderRadius: '12px !important',
+          borderRadius: '16px !important',
           '&:before': {
             display: 'none',
           },
@@ -249,13 +248,13 @@ const baseThemeOptions: ThemeOptions = {
   },
 };
 
-// ─── Shadows (solid only — no rgba) ───────────────────────────────────────────
+// ─── Shadows (tonal layering — ambient only for modals/FABs) ────────────────
 const customShadows = [
   'none',
-  '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
-  '0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
-  '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
-  '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.04)',
+  'none',
+  'none',
+  '0 40px 60px -15px rgb(47 46 46 / 0.06)',
+  '0 50px 60px -15px rgb(47 46 46 / 0.08)',
   ...Array(20).fill('none'),
 ] as unknown as ThemeOptions['shadows'];
 
