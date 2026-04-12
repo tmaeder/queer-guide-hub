@@ -33,7 +33,7 @@ export function useSearchSuggestions(query: string) {
       promises.push(
         supabase
           .from('venues')
-          .select('id, name, location')
+          .select('id, name, city')
           .neq('data_source', 'refuge_restrooms')
           .ilike('name', `%${searchTerm}%`)
           .limit(3)
@@ -42,7 +42,7 @@ export function useSearchSuggestions(query: string) {
               ...item,
               type: 'venue' as const,
               icon: MapPin,
-              subtitle: item.location,
+              subtitle: item.city,
             })),
           ),
       );
