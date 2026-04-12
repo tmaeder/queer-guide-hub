@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -294,7 +294,7 @@ export function usePersonalities(autoFetch: boolean = true) {
     }
   };
 
-  const incrementViews = async (personalityId: string) => {
+  const incrementViews = useCallback(async (personalityId: string) => {
     try {
       await supabase.rpc('increment_personality_views', {
         personality_id: personalityId,
@@ -302,7 +302,7 @@ export function usePersonalities(autoFetch: boolean = true) {
     } catch (err) {
       console.error('Error incrementing personality views:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (autoFetch) {
