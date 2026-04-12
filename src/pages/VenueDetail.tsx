@@ -15,6 +15,7 @@ import {
   Accessibility,
   ChevronRight,
   Luggage,
+  Navigation2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -613,10 +614,24 @@ export default function VenueDetail() {
                           marginTop: 2,
                         }}
                       />
-                      <Typography variant="body2">
-                        {venue.address}
-                        {venue.postal_code ? `, ${venue.postal_code}` : ''}
-                      </Typography>
+                      <Box>
+                        <Typography variant="body2">
+                          {venue.address}
+                          {venue.postal_code ? `, ${venue.postal_code}` : ''}
+                        </Typography>
+                        {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
+                          <Button variant="outline" size="sm" asChild style={{ marginTop: 8 }}>
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Navigation2 style={{ width: 14, height: 14, marginRight: 6 }} />
+                              Directions
+                            </a>
+                          </Button>
+                        )}
+                      </Box>
                     </Box>
                   )}
                   {venue.phone && (
