@@ -472,19 +472,25 @@ const Index = React.memo(() => {
       </ScrollReveal>
 
       {/* ── Weekly Events Near You ────────────────────────────────────── */}
-      <React.Suspense fallback={null}>
-        <WeeklyEventsSlider />
-      </React.Suspense>
+      <ErrorBoundary section="weekly-events" fallback={null}>
+        <React.Suspense fallback={null}>
+          <WeeklyEventsSlider />
+        </React.Suspense>
+      </ErrorBoundary>
 
       {/* ── Regional Events Calendar ─────────────────────────────────── */}
-      <React.Suspense fallback={null}>
-        <RegionalEventsCalendar />
-      </React.Suspense>
+      <ErrorBoundary section="regional-calendar" fallback={null}>
+        <React.Suspense fallback={null}>
+          <RegionalEventsCalendar />
+        </React.Suspense>
+      </ErrorBoundary>
 
       {/* ── Latest News ──────────────────────────────────────────────── */}
-      <React.Suspense fallback={null}>
-        <LatestNewsSlider />
-      </React.Suspense>
+      <ErrorBoundary section="latest-news" fallback={null}>
+        <React.Suspense fallback={null}>
+          <LatestNewsSlider />
+        </React.Suspense>
+      </ErrorBoundary>
     </Box>
   );
 });
