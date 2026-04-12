@@ -11,7 +11,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getCorsHeaders, requireAdmin } from '../_shared/supabase-client.ts'
-import { encrypt, decrypt, getOpenAIAccessToken } from '../_shared/openai-client.ts'
+import { encrypt, getOpenAIAccessToken } from '../_shared/openai-client.ts'
 
 // ---------------------------------------------------------------------------
 // Request-scoped CORS helpers — set once per request in the main handler
@@ -95,7 +95,7 @@ async function verifyState(stateToken: string): Promise<Record<string, string> |
   }
 }
 
-async function handleAuthorize(supabase: any) {
+async function handleAuthorize(_supabase: unknown) {
   const config = getOAuthConfig()
   if (!config.clientId || !config.redirectUri) {
     return errorResponse('OAuth not configured: missing OPENAI_OAUTH_CLIENT_ID or OPENAI_OAUTH_REDIRECT_URI', 400)
@@ -134,7 +134,7 @@ async function handleAuthorize(supabase: any) {
 // Action: callback — exchange code for tokens
 // ---------------------------------------------------------------------------
 
-async function handleCallback(supabase: any, body: any, userId: string) {
+async function handleCallback(supabase: unknown, body: unknown, userId: string) {
   const { code, state: statePayload } = body
 
   if (!code) {
@@ -232,7 +232,7 @@ async function handleCallback(supabase: any, body: any, userId: string) {
 // Action: status — check connection status
 // ---------------------------------------------------------------------------
 
-async function handleStatus(supabase: any) {
+async function handleStatus(supabase: unknown) {
   const { data: tokenRow } = await supabase
     .from('chatgpt_oauth_tokens')
     .select('id, expires_at, scope, openai_organization_id, created_at, updated_at, is_active')
@@ -273,7 +273,7 @@ async function handleStatus(supabase: any) {
 // Action: disconnect — revoke and delete tokens
 // ---------------------------------------------------------------------------
 
-async function handleDisconnect(supabase: any) {
+async function handleDisconnect(supabase: unknown) {
   // Deactivate all tokens
   const { error } = await supabase
     .from('chatgpt_oauth_tokens')
@@ -292,7 +292,7 @@ async function handleDisconnect(supabase: any) {
 // Action: test — verify the connection works
 // ---------------------------------------------------------------------------
 
-async function handleTest(supabase: any) {
+async function handleTest(supabase: unknown) {
   try {
     const accessToken = await getOpenAIAccessToken(supabase)
 
@@ -312,7 +312,7 @@ async function handleTest(supabase: any) {
 
     const data = await response.json()
     const models = (data.data || [])
-      .map((m: any) => m.id)
+      .map((m: unknown) => m.id)
       .filter((id: string) => id.startsWith('gpt-'))
       .sort()
 
@@ -373,7 +373,7 @@ Deno.serve(async (req) => {
     const url = new URL(req.url)
     let action = url.searchParams.get('action')
 
-    let body: any = {}
+    let body: unknown = {}
     if (req.method === 'POST') {
       body = await req.json().catch(() => ({}))
       if (!action) action = body.action

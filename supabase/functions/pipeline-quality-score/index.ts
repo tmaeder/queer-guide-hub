@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string
     const entityType = body.entityType as string
-    const minScore = body.minScore ?? 40
+    const _minScore = body.minScore ?? 40
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
 
@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
   }
 })
 
-function computeScore(data: Record<string, unknown>, entityType: string): number {
+function computeScore(data: Record<string, unknown>, _entityType: string): number {
   let score = 0
   const max = 100
 

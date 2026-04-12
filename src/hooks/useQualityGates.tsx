@@ -4,7 +4,7 @@
  * sent to review queue, or rejected.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -146,7 +146,7 @@ function scoreValidity(data: Record<string, unknown>): { score: number; details:
 
 export function useQualityGates(thresholds?: Partial<QualityThresholds>) {
   const { user } = useAuth();
-  const t = { ...DEFAULT_THRESHOLDS, ...thresholds };
+  const t = useMemo(() => ({ ...DEFAULT_THRESHOLDS, ...thresholds }), [thresholds]);
 
   const scoreItem = useCallback(
     (data: Record<string, unknown>, contentType: string): QualityScore => {
@@ -187,7 +187,7 @@ export function useQualityGates(thresholds?: Partial<QualityThresholds>) {
 
       // Record the quality assessment
       try {
-        await supabase.from('content_flags' as any).insert({
+        await supabase.from('content_flags' as 'venues').insert({
           module_name: 'quality-gate',
           content_type: contentType,
           content_id: stagingId,

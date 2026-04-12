@@ -40,7 +40,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       } else {
         onOpenChange(false);
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Something went wrong',
         description: 'Please try again later.',
@@ -56,7 +56,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     navigate('/auth');
   };
 
-  const resetForm = () => {
+  const _resetForm = () => {
     setEmail('');
     setPassword('');
     setShowPassword(false);

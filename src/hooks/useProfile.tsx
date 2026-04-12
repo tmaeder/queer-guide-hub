@@ -61,7 +61,7 @@ export const useProfile = () => {
     }
   };
 
-  const saveAvatarConfig = async (avatarConfig: any) => {
+  const saveAvatarConfig = async (avatarConfig: Record<string, unknown>) => {
     if (!user) {
       return { error: "No user found" };
     }
@@ -134,6 +134,7 @@ export const useProfile = () => {
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchProfile defined above, re-run on user change
   }, [user]);
 
   return {

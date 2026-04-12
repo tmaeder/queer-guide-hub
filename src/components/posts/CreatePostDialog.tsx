@@ -49,8 +49,8 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
   const [linkTitle, setLinkTitle] = useState('');
   const [linkDescription, setLinkDescription] = useState('');
   const [pollOptions, setPollOptions] = useState<string[]>(['', '']);
-  const [mentions, setMentions] = useState<Array<{ user_id: string; username: string }>>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [_mentions, setMentions] = useState<Array<{ user_id: string; username: string }>>([]);
+  const [_tags, setTags] = useState<string[]>([]);
 
   const handleSubmit = async () => {
     if (!content.trim()) {
@@ -145,7 +145,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
         description: "Post created successfully!",
       });
       handleClose();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to create post. Please try again.",
@@ -388,7 +388,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           {/* Visibility Selection */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label>Post Visibility</Label>
-            <Select value={visibility} onValueChange={(value: any) => setVisibility(value)}>
+            <Select value={visibility} onValueChange={(value: string) => setVisibility(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

@@ -20,7 +20,6 @@ import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import Box from '@mui/material/Box';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
@@ -57,7 +56,7 @@ const Marketplace = () => {
     },
   });
 
-  const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
+  const [_selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState<string>('newest');
@@ -89,7 +88,7 @@ const Marketplace = () => {
     }
   }, [listings, sortBy]);
 
-  const handleFiltersChange = (filters: any) => {
+  const handleFiltersChange = (filters: Record<string, unknown>) => {
     fetchListings(filters);
   };
   const handleToggleFavorite = async (listingId: string) => {

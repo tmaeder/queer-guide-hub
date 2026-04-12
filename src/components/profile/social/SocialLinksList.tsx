@@ -21,14 +21,14 @@ interface SocialLinksListProps {
 }
 
 export function SocialLinksList({
-  socialLinks,
+  _socialLinks,
   customLinks,
-  onSocialLinkChange,
+  _onSocialLinkChange,
   onCustomLinkChange,
   onRemoveCustomLink,
   onValidateUrl
 }: SocialLinksListProps) {
-  const validateAndPreview = async (url: string) => {
+  const _validateAndPreview = async (url: string) => {
     if (onValidateUrl) {
       const isValid = await onValidateUrl(url);
       return isValid;

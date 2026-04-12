@@ -26,7 +26,7 @@ export interface EntityMapMarker {
   color?: string;
   linkTo?: string;
   type?: 'venues' | 'events' | 'cities' | 'countries' | 'restrooms' | 'neighbourhoods';
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
   /** Whether this is the primary/focused marker */
   primary?: boolean;
 }
@@ -244,8 +244,8 @@ export const EntityMap: React.FC<EntityMapProps> = ({
         map.on('click', NEARBY_LAYER, (e) => {
           const feat = e.features?.[0];
           if (!feat || feat.geometry.type !== 'Point') return;
-          const props = feat.properties as Record<string, any>;
-          let meta: Record<string, any> = {};
+          const props = feat.properties as Record<string, unknown>;
+          let meta: Record<string, unknown> = {};
           try { meta = JSON.parse(props.meta ?? '{}'); } catch { /* ignore */ }
 
           showPopup(map, e.lngLat, {

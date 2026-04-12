@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RecurrencePicker, describeRecurrence } from '../RecurrencePicker';
-import type { RecurrenceRule } from '../RecurrencePicker';
 
 describe('describeRecurrence', () => {
   it('should return null for null rule', () => {

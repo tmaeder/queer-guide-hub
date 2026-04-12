@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
 
     // Transform results - DB returns: id, content_type, title, subtitle, description,
     // image_url, latitude, longitude, slug, featured, relevance_score, similarity_score
-    const hits = (data || []).map((row: any) => ({
+    const hits = (data || []).map((row: Record<string, unknown>) => ({
       objectID: row.id,
       id: row.id,
       type: row.content_type,
@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
     const queryLower = query.toLowerCase().trim()
 
     // Compute a composite relevance score for sorting
-    hits.sort((a: any, b: any) => {
+    hits.sort((a: unknown, b: unknown) => {
       const scoreA = computeRelevance(a, queryLower)
       const scoreB = computeRelevance(b, queryLower)
       return scoreB - scoreA
@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
   }
 })
 
-function computeRelevance(hit: any, queryLower: string): number {
+function computeRelevance(hit: unknown, queryLower: string): number {
   const title = (hit.title || '').toLowerCase()
   let score = 0
 

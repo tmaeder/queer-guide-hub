@@ -25,7 +25,7 @@ function useUserStats() {
         supabase
           .from('profiles')
           .select('id', { count: 'exact', head: true })
-          .neq('moderation_status' as any, 'approved'),
+          .neq('moderation_status' as const, 'approved'),
       ]);
 
       return {

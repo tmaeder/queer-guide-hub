@@ -144,14 +144,14 @@ function SubmissionsCore() {
       if ('featured' in cleanData === false) cleanData.featured = false;
 
       const { data: promoted, error: insertError } = await supabase
-        .from(config.targetTable as any)
+        .from(config.targetTable as 'venues')
         .insert(cleanData)
         .select('id')
         .single();
       if (insertError) throw insertError;
 
       const { error: updateError } = await supabase
-        .from('community_submissions' as any)
+        .from('community_submissions' as const)
         .update({
           status: 'approved',
           reviewed_by: user?.id,
@@ -171,8 +171,8 @@ function SubmissionsCore() {
       setSelectedSubmission(null);
       setReviewerNotes('');
       doRefresh();
-    } catch (err: any) {
-      toast({ title: 'Approval failed', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Approval failed', description: err instanceof Error ? err.message : 'Approval failed', variant: 'destructive' });
     } finally {
       setActionLoading(false);
     }
@@ -182,7 +182,7 @@ function SubmissionsCore() {
     setActionLoading(true);
     try {
       const { error } = await supabase
-        .from('community_submissions' as any)
+        .from('community_submissions' as const)
         .update({
           status: 'rejected',
           reviewed_by: user?.id,
@@ -197,8 +197,8 @@ function SubmissionsCore() {
       setSelectedSubmission(null);
       setReviewerNotes('');
       doRefresh();
-    } catch (err: any) {
-      toast({ title: 'Rejection failed', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Rejection failed', description: err instanceof Error ? err.message : 'Rejection failed', variant: 'destructive' });
     } finally {
       setActionLoading(false);
     }
@@ -356,6 +356,7 @@ function SubmissionsCore() {
         },
       ],
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleApprove/handleReject are stable, adding would defeat memoization
     [columns],
   );
 
@@ -446,7 +447,7 @@ function SubmissionsCore() {
                         }}
                         onClick={async () => {
                           const { error } = await supabase
-                            .from('community_submissions' as any)
+                            .from('community_submissions' as const)
                             .update({ feedback_status: opt.value })
                             .eq('id', selectedSubmission.id);
                           if (!error) {

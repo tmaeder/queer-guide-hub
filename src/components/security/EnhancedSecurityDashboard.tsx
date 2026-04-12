@@ -12,8 +12,8 @@ import Typography from '@mui/material/Typography';
 interface SecurityMetric {
   id: string;
   event_type: string;
-  metadata: any;
-  details: any;
+  metadata: Record<string, unknown>;
+  details: Record<string, unknown>;
   created_at: string;
   user_id?: string;
   ip_address?: unknown;
@@ -46,6 +46,7 @@ export function EnhancedSecurityDashboard() {
 
   useEffect(() => {
     fetchSecurityData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const fetchSecurityData = async () => {
@@ -68,12 +69,12 @@ export function EnhancedSecurityDashboard() {
         acc.totalEvents++;
 
         // Determine severity from event type
-        let severity = 'medium';
+        const severity = 'medium';
         if (event.event_type.includes('CRITICAL') || event.event_type.includes('SECURITY_INCIDENT')) {
-          severity = 'critical';
+          _severity = 'critical';
           acc.criticalEvents++;
         } else if (event.event_type.includes('ADMIN') || event.event_type.includes('ACCESS') || event.event_type.includes('FINANCIAL')) {
-          severity = 'high';
+          _severity = 'high';
           acc.highEvents++;
         } else {
           acc.mediumEvents++;

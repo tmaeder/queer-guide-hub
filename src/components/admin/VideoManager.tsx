@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Play, Download, Trash2, Edit, Eye } from 'lucide-react';
+import { Search, Play, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,7 +38,7 @@ export function VideoManager() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [_selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
   useEffect(() => {
     loadVideos();
@@ -86,7 +86,7 @@ export function VideoManager() {
     }
   };
 
-  const formatFileSize = (bytes: number): string => {
+  const _formatFileSize = (bytes: number): string => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     if (bytes === 0) return '0 Bytes';
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
@@ -212,9 +212,9 @@ export function VideoManager() {
                             captions_path: video.captions_path,
                             renditions: video.renditions.map(r => ({
                               id: r.id,
-                              format: r.format as any,
-                              codec: r.codec as any,
-                              container: r.container as any,
+                              format: r.format as string,
+                              codec: r.codec as string,
+                              container: r.container as string,
                               resolution: r.resolution,
                               file_path: r.file_path,
                               bitrate_kbps: r.bitrate_kbps

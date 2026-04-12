@@ -4,7 +4,7 @@ import { AlertTriangle, Skull } from 'lucide-react';
 import { isCriminalized, hasDeathPenalty } from '@/utils/equalityScore';
 
 interface SafetyAlertBannerProps {
-  criminalization: Record<string, any> | null | undefined;
+  criminalization: Record<string, unknown> | null | undefined;
   countryName: string;
 }
 

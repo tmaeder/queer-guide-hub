@@ -14,17 +14,17 @@ vi.mock('@/hooks/use-toast', () => ({
 }));
 
 vi.mock('@/integrations/supabase/client', () => {
-  const handler: ProxyHandler<any> = {
+  const handler: ProxyHandler<object> = {
     get: (_t, p) => {
       if (p === 'then') return undefined;
-      return (..._a: any[]) => new Proxy(() => {}, handler);
+      return (..._a: unknown[]) => new Proxy(() => {}, handler);
     },
     apply: () => new Proxy(() => {}, handler),
   };
   return {
     supabase: {
       from: () => new Proxy(() => {}, handler),
-      functions: { invoke: (...a: any[]) => mockInvoke(...a) },
+      functions: { invoke: (...a: unknown[]) => mockInvoke(...a) },
       auth: { getUser: () => Promise.resolve({ data: { user: { id: 'user-1' } } }) },
     },
   };

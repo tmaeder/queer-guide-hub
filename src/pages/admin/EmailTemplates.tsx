@@ -4,14 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye, Edit, Save, X, Plus, Mail, Code, Loader2, FileText, TestTube } from 'lucide-react';
+import { Eye, Edit, Save, X, Mail, Loader2, FileText, TestTube } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +27,7 @@ interface EmailTemplate {
   subject: string;
   html_content: string;
   text_content?: string;
-  variables: any; // Using any to handle Json type from Supabase
+  variables: Record<string, unknown>;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -50,6 +49,7 @@ export default function EmailTemplates() {
 
   useEffect(() => {
     fetchTemplates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const fetchTemplates = async () => {

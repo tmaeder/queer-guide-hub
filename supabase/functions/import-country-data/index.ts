@@ -64,7 +64,7 @@ interface RestCountry {
   };
 }
 
-async function initializeSupabaseClient() {
+async function _initializeSupabaseClient() {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   
@@ -110,7 +110,7 @@ async function fetchRestCountriesData(): Promise<RestCountry[]> {
   return countries;
 }
 
-async function ensureContinents(supabase: any, countries: RestCountry[]): Promise<Map<string, string>> {
+async function ensureContinents(supabase: unknown, countries: RestCountry[]): Promise<Map<string, string>> {
   console.log('Processing continents...');
   
   const continentMap = new Map<string, string>();
@@ -118,7 +118,7 @@ async function ensureContinents(supabase: any, countries: RestCountry[]): Promis
     .from('continents')
     .select('id, name');
 
-  existingContinents?.forEach((continent: any) => {
+  existingContinents?.forEach((continent: unknown) => {
     continentMap.set(continent.name, continent.id);
   });
 
@@ -147,7 +147,7 @@ async function ensureContinents(supabase: any, countries: RestCountry[]): Promis
   return continentMap;
 }
 
-async function getExistingCountries(supabase: any): Promise<Map<string, any>> {
+async function getExistingCountries(supabase: unknown): Promise<Map<string, unknown>> {
   console.log('Fetching existing countries to preserve LGBTI data...');
   
   const { data: existingCountries } = await supabase
@@ -155,7 +155,7 @@ async function getExistingCountries(supabase: any): Promise<Map<string, any>> {
     .select('*');
 
   const existingCountriesMap = new Map();
-  existingCountries?.forEach((country: any) => {
+  existingCountries?.forEach((country: unknown) => {
     existingCountriesMap.set(country.code, country);
   });
   
@@ -166,7 +166,7 @@ async function getExistingCountries(supabase: any): Promise<Map<string, any>> {
 function processCountriesData(
   countries: RestCountry[], 
   continentMap: Map<string, string>, 
-  existingCountriesMap: Map<string, any>
+  existingCountriesMap: Map<string, unknown>
 ) {
   console.log('Processing countries data...');
   
@@ -243,7 +243,7 @@ function processCountriesData(
   });
 }
 
-function processCapitalCities(countries: RestCountry[], processedCountries: any[]) {
+function processCapitalCities(countries: RestCountry[], processedCountries: unknown[]) {
   console.log('Processing capital cities...');
   
   const capitalCities = countries
@@ -271,7 +271,7 @@ function processCapitalCities(countries: RestCountry[], processedCountries: any[
   return capitalCities;
 }
 
-async function insertDataInBatches(supabase: any, tableName: string, data: any[], batchSize = 50) {
+async function insertDataInBatches(supabase: unknown, tableName: string, data: unknown[], batchSize = 50) {
   console.log(`Inserting ${data.length} records into ${tableName} in batches of ${batchSize}...`);
   
   for (let i = 0; i < data.length; i += batchSize) {
@@ -291,7 +291,7 @@ async function insertDataInBatches(supabase: any, tableName: string, data: any[]
   console.log(`Successfully inserted all ${data.length} records into ${tableName}`);
 }
 
-async function clearExistingData(supabase: any) {
+async function clearExistingData(supabase: unknown) {
   console.log('Clearing existing data...');
   
   // Delete existing cities first (foreign key constraint)

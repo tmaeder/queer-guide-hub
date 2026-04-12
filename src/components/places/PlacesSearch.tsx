@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Search, X, Filter, ChevronDown, SortAsc, SortDesc, Navigation, Loader2 } from "lucide-react";
+import { Search, X, Filter, SortAsc, SortDesc, Navigation, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 

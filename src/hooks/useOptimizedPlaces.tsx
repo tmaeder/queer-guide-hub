@@ -260,7 +260,7 @@ export async function findNearbyCities(userLocation: {
         Number(city.longitude),
       ),
     }))
-    .filter((c: any) => c.distance <= 500)
-    .sort((a: any, b: any) => a.distance - b.distance)
+    .filter((c: { distance: number }) => c.distance <= 500)
+    .sort((a: { distance: number }, b: { distance: number }) => a.distance - b.distance)
     .slice(0, 20);
 }

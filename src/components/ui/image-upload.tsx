@@ -178,6 +178,7 @@ export function ImageUpload({
         <Card style={{ position: 'relative' }}>
           <CardContent style={{ padding: 16 }}>
             <div
+              role="presentation"
               style={{ position: 'relative' }}
               onMouseEnter={(e) => {
                 const overlay = e.currentTarget.querySelector('[data-overlay]') as HTMLElement;

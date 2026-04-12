@@ -19,7 +19,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
       style={style}
       icon={false}
       sx={{ '& .MuiAlert-message': { width: '100%' } }}
-      {...(props as any)}
+      {...(props as Record<string, unknown>)}
     >
       {children}
     </MuiAlert>
@@ -29,7 +29,7 @@ Alert.displayName = "Alert"
 
 const AlertTitleComponent = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, children, style, ...props }, ref) => (
-    <AlertTitle ref={ref as any} className={className} style={style} sx={{ fontWeight: 600, mb: 0.5 }} {...(props as any)}>
+    <AlertTitle ref={ref as Record<string, unknown>} className={className} style={style} sx={{ fontWeight: 600, mb: 0.5 }} {...(props as Record<string, unknown>)}>
       {children}
     </AlertTitle>
   )
@@ -38,7 +38,7 @@ AlertTitleComponent.displayName = "AlertTitle"
 
 const AlertDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, children, style, ...props }, ref) => (
-    <Typography ref={ref} variant="body2" className={className} style={style} {...(props as any)}>
+    <Typography ref={ref} variant="body2" className={className} style={style} {...(props as Record<string, unknown>)}>
       {children}
     </Typography>
   )

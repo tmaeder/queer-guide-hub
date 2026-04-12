@@ -1,6 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
 
 interface TagRow {
   name: string;
@@ -198,7 +198,7 @@ serve(async (req) => {
     let insertedTags = [];
     const updatedTags = [];
     let insertError = null;
-    let updateError = null;
+    const _updateError = null;
 
     // Insert new tags
     if (newTags.length > 0) {
@@ -238,7 +238,7 @@ serve(async (req) => {
 
           if (updateErr) {
             console.error('Update error for tag:', tag.name, updateErr);
-            updateError = updateErr;
+            _updateError = updateErr;
           } else if (updated) {
             updatedTags.push(...updated);
           }

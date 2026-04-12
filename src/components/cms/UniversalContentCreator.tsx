@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { Plus, Save, X, Tag, Globe, Building, User, Calendar, MapPin, Star, Upload, Clock, Users, Eye } from 'lucide-react';
+import { Plus, Save, X, Tag, Globe, Building, User, Calendar, Users } from 'lucide-react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +12,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { ImageUpload } from '@/components/ui/image-upload';
 
 interface UniversalContentCreatorProps {
   onContentCreated: () => void;
@@ -25,7 +22,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [contentType, setContentType] = useState<string>('');
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
 
@@ -43,7 +40,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
     { value: 'news_articles', label: 'News Articles', icon: <Tag style={{ height: 16, width: 16 }} /> }
   ];
 
-  const handleFieldChange = (field: string, value: any) => {
+  const handleFieldChange = (field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -278,7 +275,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
     }
   };
 
-  const renderField = (field: any) => {
+  const renderField = (field: { key: string; label: string; type: string; required?: boolean; options?: string[] }) => {
     const { key, label, type, required, options } = field;
     const fieldValue = formData[key];
 

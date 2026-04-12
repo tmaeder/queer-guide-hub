@@ -82,8 +82,8 @@ export const useGroupEvents = (groupId: string) => {
 
       return (data || []).map(event => ({
         ...event,
-        attendee_count: event.event_attendees?.filter((a: any) => a.status === 'going').length || 0,
-        user_attending: event.event_attendees?.some((a: any) => a.user_id === user?.id && a.status === 'going') || false
+        attendee_count: event.event_attendees?.filter((a: { status: string }) => a.status === 'going').length || 0,
+        user_attending: event.event_attendees?.some((a: { user_id: string; status: string }) => a.user_id === user?.id && a.status === 'going') || false
       }));
     },
     enabled: !!user && !!groupId

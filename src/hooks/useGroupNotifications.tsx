@@ -63,7 +63,7 @@ export const useGroupNotifications = () => {
         
         return {
           ...notification,
-          notification_type: notification.notification_type as any,
+          notification_type: notification.notification_type as string,
           community_groups: { name: group?.name || 'Unknown Group' },
           triggered_by_profile: {
             display_name: profile?.display_name || 'Unknown User',

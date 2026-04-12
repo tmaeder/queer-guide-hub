@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 
 const mockSelect = vi.fn();
 vi.mock('@/integrations/supabase/client', () => ({

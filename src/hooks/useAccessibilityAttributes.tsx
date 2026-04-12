@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useAccessibilityAttributes() {
-  const [accessibilityAttributes, setAccessibilityAttributes] = useState<any[]>([]);
+  const [accessibilityAttributes, setAccessibilityAttributes] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchAccessibilityAttributes = async () => {

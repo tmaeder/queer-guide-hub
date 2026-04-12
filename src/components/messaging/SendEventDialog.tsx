@@ -58,6 +58,7 @@ export function SendEventDialog({
     setNote('');
     setSearch('');
     fetchMembers('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchMembers defined below, re-run on open/user change
   }, [open, user]);
 
   const fetchMembers = async (query: string) => {
@@ -92,6 +93,7 @@ export function SendEventDialog({
     if (!open) return;
     const timer = setTimeout(() => fetchMembers(search), 300);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchMembers defined above, re-run on search/open change
   }, [search, open]);
 
   const handleSend = async () => {

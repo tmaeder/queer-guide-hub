@@ -71,7 +71,7 @@ serve(async (req: Request) => {
       console.log(`[scan-links] Request body: link_ids=${JSON.stringify(linkIds)}, batch=${batch}, batchLimit=${batchLimit}`)
     }
 
-    let links: any[]
+    let links: Record<string, unknown>[]
 
     if (linkIds?.length) {
       console.log(`[scan-links] Querying content_links for ${linkIds.length} IDs: ${JSON.stringify(linkIds)}`)
@@ -104,7 +104,7 @@ serve(async (req: Request) => {
           .limit(3)
         console.log(`[scan-links] Debug: any rows accessible? ${anyData?.length ?? 0} rows, error: ${JSON.stringify(anyErr)}`)
         if (anyData?.length) {
-          console.log(`[scan-links] Debug: sample accessible IDs: ${JSON.stringify(anyData.map((r: any) => r.id))}`)
+          console.log(`[scan-links] Debug: sample accessible IDs: ${JSON.stringify(anyData.map((r: unknown) => r.id))}`)
         }
       }
     } else if (batch) {
@@ -346,11 +346,11 @@ async function fetchScanResult(apiKey: string, uuid: string): Promise<ScanVerdic
     if (urlscan.categories?.length) categories.push(...urlscan.categories)
     if (overall.tags?.length) categories.push(...overall.tags)
     const maliciousEngines = verdicts.engines?.malicious ?? []
-    if (maliciousEngines.length) categories.push(...maliciousEngines.map((e: any) => e.engine ?? e))
+    if (maliciousEngines.length) categories.push(...maliciousEngines.map((e: unknown) => e.engine ?? e))
 
     const brands: string[] = []
-    if (urlscan.brands?.length) brands.push(...urlscan.brands.map((b: any) => typeof b === 'string' ? b : b.name ?? String(b)))
-    if (data.meta?.processors?.['urlscan.io']?.brands?.length) brands.push(...data.meta.processors['urlscan.io'].brands.map((b: any) => b.name ?? String(b)))
+    if (urlscan.brands?.length) brands.push(...urlscan.brands.map((b: unknown) => typeof b === 'string' ? b : b.name ?? String(b)))
+    if (data.meta?.processors?.['urlscan.io']?.brands?.length) brands.push(...data.meta.processors['urlscan.io'].brands.map((b: unknown) => b.name ?? String(b)))
 
     console.log(`[scan-links] Parsed result for ${uuid}: verdict=${verdict} score=${score} categories=${categories.join(',')} brands=${brands.join(',')}`)
     return { uuid, verdict, score, categories: [...new Set(categories)], screenshotUrl: `https://urlscan.io/screenshots/${uuid}.png`, brands: [...new Set(brands)] }

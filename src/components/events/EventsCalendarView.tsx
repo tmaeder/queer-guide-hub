@@ -5,9 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Clock, MapPin, Users, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Eye, Star, Ticket, ExternalLink } from 'lucide-react';
-import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths } from 'date-fns';
+import { Clock, MapPin, Users, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Eye, Star, Ticket } from 'lucide-react';
+import { format, isSameDay, parseISO, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
 import Box from '@mui/material/Box';
@@ -32,7 +31,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
   const {
     eventsForSelectedDate,
     datesWithEvents,
-    eventCountByDate
+    _eventCountByDate
   } = useMemo(() => {
     const eventsForDate = events.filter(event => isSameDay(parseISO(event.start_date), selectedDate));
     const eventDates = events.map(event => parseISO(event.start_date));

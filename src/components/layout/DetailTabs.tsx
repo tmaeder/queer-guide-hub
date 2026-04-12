@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { LucideIcon } from 'lucide-react';

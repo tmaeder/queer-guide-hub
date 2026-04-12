@@ -30,7 +30,7 @@ interface EmailIngestion {
   extracted_venues: number;
   inserted_event_ids: string[];
   inserted_venue_ids: string[];
-  ai_extraction: any;
+  ai_extraction: { events?: Array<{ title: string; city: string; country: string; start_date?: string; event_type?: string }>; venues?: Array<{ name: string; city: string; country: string; venue_type?: string }> };
   status: string;
   error_message: string | null;
   processing_ms: number | null;
@@ -87,7 +87,7 @@ export function EmailIngestionsManager() {
 
       if (error) throw error;
       setIngestions((data as EmailIngestion[]) || []);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to fetch email ingestions',
@@ -479,7 +479,7 @@ export function EmailIngestionsManager() {
                               mt: 0.5,
                             }}
                           >
-                            {ing.ai_extraction.events.map((ev: any, i: number) => (
+                            {ing.ai_extraction.events.map((ev, i: number) => (
                               <Box
                                 key={i}
                                 sx={{
@@ -519,7 +519,7 @@ export function EmailIngestionsManager() {
                               mt: 0.5,
                             }}
                           >
-                            {ing.ai_extraction.venues.map((v: any, i: number) => (
+                            {ing.ai_extraction.venues.map((v, i: number) => (
                               <Box
                                 key={i}
                                 sx={{

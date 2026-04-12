@@ -23,7 +23,7 @@ interface WikipediaRequest {
   language?: string;
 }
 
-async function fetchWikipediaSummary(query: string, language = 'en'): Promise<any> {
+async function fetchWikipediaSummary(query: string, language = 'en'): Promise<unknown> {
   const summaryUrl = `https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
   
   console.log('Fetching Wikipedia summary from:', summaryUrl);
@@ -64,11 +64,11 @@ async function fetchWikipediaContent(query: string, language = 'en'): Promise<st
     
     if (contentData.mobileview && contentData.mobileview.sections) {
       const introSections = contentData.mobileview.sections
-        .filter((section: any) => section.level <= 2 && section.text)
+        .filter((section: unknown) => section.level <= 2 && section.text)
         .slice(0, 3);
         
       return introSections
-        .map((section: any) => section.text)
+        .map((section: unknown) => section.text)
         .join(' ')
         .replace(/<[^>]*>/g, '') // Remove HTML tags
         .substring(0, 2000); // Limit length
@@ -88,7 +88,7 @@ async function searchWikipediaData(query: string, language = 'en'): Promise<Wiki
   let summaryData;
   try {
     summaryData = await fetchWikipediaSummary(query, language);
-  } catch (error) {
+  } catch (_error) {
     // If exact match fails, try search API
     console.log('Exact match failed, trying search API...');
     
@@ -136,7 +136,7 @@ async function searchWikipediaData(query: string, language = 'en'): Promise<Wiki
 }
 
 async function updateEntityWithWikipediaData(
-  supabase: any, 
+  supabase: unknown, 
   entityType: 'city' | 'country', 
   entityId: string, 
   wikipediaData: WikipediaData
@@ -171,7 +171,7 @@ async function updateEntityWithWikipediaData(
 }
 
 async function processSingleEntity(
-  supabase: any,
+  supabase: unknown,
   query: string,
   entityType?: 'city' | 'country',
   entityId?: string,
@@ -195,7 +195,7 @@ async function processSingleEntity(
   };
 }
 
-async function processBatchMode(supabase: any, entityType: 'city' | 'country', language = 'en') {
+async function processBatchMode(supabase: unknown, entityType: 'city' | 'country', language = 'en') {
   console.log(`Starting batch mode for ${entityType}s...`);
   
   const tableName = entityType === 'city' ? 'cities' : 'countries';

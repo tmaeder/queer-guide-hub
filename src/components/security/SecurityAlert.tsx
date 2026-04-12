@@ -6,7 +6,7 @@ interface SecurityAlertProps {
   level: 'info' | 'warning' | 'error' | 'success';
   title: string;
   description: string;
-  sx?: any;
+  sx?: Record<string, unknown>;
 }
 
 export function SecurityAlert({ level, title, description, sx }: SecurityAlertProps) {

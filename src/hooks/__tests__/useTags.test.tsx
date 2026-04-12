@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { renderHook } from '@testing-library/react';
 
 vi.mock('@/integrations/supabase/client', () => {
-  const handler: ProxyHandler<any> = {
-    get: (_t, p) => (p === 'then' ? undefined : (..._a: any[]) => new Proxy(() => {}, handler)),
+  const handler: ProxyHandler<object> = {
+    get: (_t, p) => (p === 'then' ? undefined : (..._a: unknown[]) => new Proxy(() => {}, handler)),
     apply: () => new Proxy(() => {}, handler),
   };
   return { supabase: { from: () => new Proxy(() => {}, handler) } };

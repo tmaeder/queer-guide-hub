@@ -62,7 +62,7 @@ export function useUserEvents() {
         id: attendance.id,
         status: attendance.status as 'going' | 'interested' | 'not_going',
         created_at: attendance.created_at,
-        event: attendance.event as any
+        event: attendance.event as Record<string, unknown>
       })) || [];
 
       setAttendances(formattedData);
@@ -75,6 +75,7 @@ export function useUserEvents() {
 
   useEffect(() => {
     fetchUserEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchUserEvents defined above, re-run on user change
   }, [user]);
 
   return {

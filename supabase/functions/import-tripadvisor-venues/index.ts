@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateAmenity, getOrCreateService } from '../_shared/venue-import-helpers.ts';
@@ -53,7 +53,7 @@ interface TripAdvisorLocation {
   }>;
 }
 
-async function mapVenueCategoryAndAmenities(supabase: any, venue: TripAdvisorLocation, keyword: string) {
+async function mapVenueCategoryAndAmenities(supabase: SupabaseClient, venue: TripAdvisorLocation, keyword: string) {
   let categoryName = 'Entertainment & Nightlife'
   let categorySlug = 'entertainment-nightlife'
   let category = 'bar'
@@ -252,10 +252,10 @@ serve(async (req) => {
               // Get or create city
               const cityName = venue.address_obj?.city || location
               const countryCode = venue.address_obj?.country || 'US'
-              const cityId = await getOrCreateCity(supabase, cityName, countryCode, parseFloat(venue.latitude), parseFloat(venue.longitude))
+              const _cityId = await getOrCreateCity(supabase, cityName, countryCode, parseFloat(venue.latitude), parseFloat(venue.longitude))
 
               // Map category, amenities, and services
-              const { category, categoryId, amenityNames, serviceNames, amenityIds, serviceIds } = await mapVenueCategoryAndAmenities(supabase, venue, keyword)
+              const { category, _categoryId, amenityNames, serviceNames, _amenityIds, _serviceIds } = await mapVenueCategoryAndAmenities(supabase, venue, keyword)
 
               // Download and store photos
               const imageUrls: string[] = [];
@@ -360,7 +360,7 @@ serve(async (req) => {
               } catch (e) { console.warn('AI enrichment skipped:', e) }
 
               // Insert venue
-              const { data: insertedVenue, error: insertError } = await supabase
+              const { data: _insertedVenue, error: insertError } = await supabase
                 .from('venues')
                 .insert(venueData)
                 .select()

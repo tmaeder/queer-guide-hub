@@ -28,7 +28,7 @@ interface PhotoGalleryProps {
 }
 
 export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
-  const { user } = useAuth();
+  const { _user } = useAuth();
   const { photos, isLoading, uploadPhoto, deletePhoto, updateCaption, getSignedPhotoUrl } = useUserPhotos(userId);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [caption, setCaption] = useState('');

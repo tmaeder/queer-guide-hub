@@ -38,7 +38,7 @@ function mapVariantToMui(variant: ShadcnVariant = "default"): {
     case "link":
       return { muiVariant: "text", muiColor: "primary" };
     case "brand":
-      return { muiVariant: "contained", muiColor: "brand" as any };
+      return { muiVariant: "contained", muiColor: "brand" as MuiButtonProps["color"] };
     default:
       return { muiVariant: "contained", muiColor: "primary" };
   }
@@ -70,11 +70,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild) {
       return (
         <MotionSlot
-          ref={ref as any}
+          ref={ref as React.Ref<HTMLButtonElement>}
           className={className}
           style={style}
           {...motionInteractions}
-          {...(props as any)}
+          {...(props as Record<string, unknown>)}
         >
           {children}
         </MotionSlot>
@@ -85,7 +85,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (size === "icon") {
       return (
         <MotionMuiIconButton
-          ref={ref as any}
+          ref={ref as React.Ref<HTMLButtonElement>}
           className={className}
           color={variant === "destructive" ? "error" : variant === "default" ? "primary" : "default"}
           sx={{
@@ -94,7 +94,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           }}
           style={style}
           {...motionInteractions}
-          {...(props as any)}
+          {...(props as Record<string, unknown>)}
         >
           {children}
         </MotionMuiIconButton>
@@ -106,7 +106,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <MotionMuiButton
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLButtonElement>}
         variant={muiVariant}
         color={muiColor}
         size={muiSize}
@@ -122,7 +122,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           },
         }}
         {...motionInteractions}
-        {...(props as any)}
+        {...(props as Record<string, unknown>)}
       >
         {children}
       </MotionMuiButton>
@@ -132,6 +132,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button"
 
 // Keep buttonVariants export for compatibility (some files import it)
-const buttonVariants = (() => "") as any;
+const buttonVariants = (() => "") as Record<string, unknown>;
 
 export { Button, buttonVariants }

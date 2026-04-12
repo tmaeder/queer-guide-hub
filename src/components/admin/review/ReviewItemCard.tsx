@@ -14,7 +14,7 @@ import CardContent from '@mui/material/CardContent';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
-import { Check, X, Eye, ExternalLink, Clock, AlertTriangle } from 'lucide-react';
+import { Check, X, Eye, AlertTriangle } from 'lucide-react';
 import { SensitivityBadges } from '@/components/ui/ContentWarningBanner';
 
 export interface ReviewItem {

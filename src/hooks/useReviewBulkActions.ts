@@ -112,7 +112,7 @@ export function useReviewBulkActions(
     setBulkRunning(true);
 
     try {
-      const { data, error } = await supabase.rpc('admin_bulk_review_action' as any, {
+      const { data, error } = await supabase.rpc('admin_bulk_review_action' as 'venues', {
         p_action: bulkAction,
         p_user_id: userId,
       });

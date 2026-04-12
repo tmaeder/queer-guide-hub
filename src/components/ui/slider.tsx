@@ -16,7 +16,7 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
   ({ className, value, defaultValue, onValueChange, min, max, step, disabled, ...props }, ref) => {
     return (
       <MuiSlider
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLSpanElement>}
         value={value}
         defaultValue={defaultValue}
         onChange={(_, newValue) => onValueChange?.(Array.isArray(newValue) ? newValue : [newValue])}
@@ -27,7 +27,7 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
         className={className}
         color="primary"
         size="small"
-        {...(props as any)}
+        {...(props as Record<string, unknown>)}
       />
     )
   }

@@ -11,7 +11,7 @@ import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-cl
 import {
   loadModuleConfig, checkRateLimit, writeChanges, logRun,
   getContentName, CONTENT_TYPE_CONFIG,
-  type ProposedChange, type AutomationRule,
+  type ProposedChange,
 } from '../_shared/automation-utils.ts'
 
 const MODULE_SLUG = 'link-sanitizer'

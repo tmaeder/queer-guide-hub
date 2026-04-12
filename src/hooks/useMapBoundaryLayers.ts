@@ -202,7 +202,7 @@ export function useMapBoundaryLayers({
       const feat = e.features?.[0];
       if (!feat) return;
       const props = feat.properties as Record<string, string>;
-      const meta: Record<string, any> = {};
+      const meta: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(props)) {
         if (k.startsWith('meta_')) {
           try { meta[k.slice(5)] = JSON.parse(v); } catch { meta[k.slice(5)] = v; }

@@ -40,7 +40,7 @@ export async function sendEmail(msg: EmailMessage): Promise<EmailResult> {
     throw new Error("Email service not configured (RESEND_API_KEY missing)");
   }
 
-  const payload: any = {
+  const payload: Record<string, unknown> = {
     from: msg.from,
     to: msg.to,
     subject: msg.subject,

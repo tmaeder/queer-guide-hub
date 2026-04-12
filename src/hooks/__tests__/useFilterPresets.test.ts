@@ -66,7 +66,7 @@ describe('useFilterPresets', () => {
 
   it('should limit to 10 presets', () => {
     let counter = 0;
-    vi.mocked(crypto.randomUUID).mockImplementation(() => `uuid-${counter++}` as any);
+    vi.mocked(crypto.randomUUID).mockImplementation(() => `uuid-${counter++}` as unknown as `${string}-${string}-${string}-${string}-${string}`);
     const { result } = renderHook(() => useFilterPresets('limit'));
     for (let i = 0; i < 12; i++) {
       act(() => {

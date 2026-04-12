@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getServiceClient, getCorsHeaders, corsResponse, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
+import { getServiceClient, corsResponse, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
@@ -45,7 +45,7 @@ serve(async (req) => {
       }
 
       // Calculate distance manually
-      const nearest = fallback.reduce((best: any, airport: any) => {
+      const nearest = fallback.reduce((best: Record<string, unknown> | null, airport: Record<string, unknown>) => {
         const dist = haversine(latitude, longitude, airport.latitude, airport.longitude);
         if (!best || dist < best.dist) {
           return { ...airport, dist };

@@ -243,10 +243,10 @@ export default function AdminEvents() {
       resetForm();
       setIsCreateDialogOpen(false);
       invalidateTable();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error?.message || 'Failed to save event',
+        description: error instanceof Error ? error.message :'Failed to save event',
         variant: 'destructive',
       });
     }
@@ -293,17 +293,17 @@ export default function AdminEvents() {
       if (error) throw new Error(error);
       toast({ title: 'Success', description: 'Event deleted' });
       invalidateTable();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error?.message || 'Failed to delete',
+        description: error instanceof Error ? error.message :'Failed to delete',
         variant: 'destructive',
       });
     }
   };
 
   const handleExportExcel = async () => {
-    const columns: ExportColumnDef<any>[] = [
+    const columns: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Title', accessor: (r) => r.title },
       { header: 'Event Type', accessor: (r) => r.event_type },
       { header: 'Start Date', accessor: (r) => formatDateTime(r.start_date) },
@@ -483,6 +483,7 @@ export default function AdminEvents() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDeleteEvent/invalidateTable are stable, adding would defeat memoization
     [columns],
   );
 

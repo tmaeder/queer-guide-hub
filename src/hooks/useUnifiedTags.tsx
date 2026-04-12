@@ -246,7 +246,7 @@ export const useUnifiedTags = () => {
 
       if (error) throw error;
 
-      return data?.map((assignment) => (assignment as any).unified_tags).filter(Boolean) || [];
+      return data?.map((assignment) => (assignment as Record<string, unknown>).unified_tags).filter(Boolean) || [];
     } catch (err) {
       console.error('Failed to fetch entity tags:', err);
       return [];
@@ -300,6 +300,7 @@ export const useUnifiedTags = () => {
 
   useEffect(() => {
     fetchTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   return {

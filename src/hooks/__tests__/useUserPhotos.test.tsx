@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u-1' } }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
-vi.mock('@/integrations/supabase/client', () => { const h: ProxyHandler<any> = { get: (_t, p) => (p === 'then' ? undefined : (..._a: any[]) => new Proxy(() => {}, h)), apply: () => new Proxy(() => {}, h) }; return { supabase: { from: () => new Proxy(() => {}, h), storage: { from: () => new Proxy(() => {}, h) } } }; });
+vi.mock('@/integrations/supabase/client', () => { const h: ProxyHandler<object> = { get: (_t, p) => (p === 'then' ? undefined : (..._a: unknown[]) => new Proxy(() => {}, h)), apply: () => new Proxy(() => {}, h) }; return { supabase: { from: () => new Proxy(() => {}, h), storage: { from: () => new Proxy(() => {}, h) } } }; });
 import { useUserPhotos } from '../useUserPhotos';
 const w = () => { const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } }); return ({ children }: { children: ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>; };
 describe('useUserPhotos', () => { it('should return photos query', () => { const { result } = renderHook(() => useUserPhotos(), { wrapper: w() }); expect(result.current).toHaveProperty('photos'); expect(result.current).toHaveProperty('isLoading'); expect(typeof result.current.uploadPhoto).toBe('object'); expect(typeof result.current.deletePhoto).toBe('object'); }); });

@@ -180,7 +180,7 @@ export function useGeoLink() {
       if (error) throw new Error(error.message || 'Batch all geo-link failed');
 
       const response = data as GeoLinkBatchAllResponse;
-      if (!response.success) throw new Error((response as any).error || 'Unknown error');
+      if (!response.success) throw new Error((response as unknown as { error?: string }).error || 'Unknown error');
 
       setBatchAllResult(response);
 
@@ -236,7 +236,7 @@ export function useGeoLink() {
         ]);
 
       const linkedNewsIds = new Set(
-        (newsLinkedRes.data || []).map((r: any) => r.article_id)
+        (newsLinkedRes.data || []).map((r: Record<string, unknown>) => r.article_id as string)
       );
 
       const counts: UnlinkedCounts = {

@@ -14,7 +14,7 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { Calendar, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react';
-import { format, addDays, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { Link } from 'react-router';
 import { formatEventTime } from '@/lib/event-time';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';

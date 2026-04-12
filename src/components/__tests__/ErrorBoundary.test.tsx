@@ -34,7 +34,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('should recover when Try Again is clicked', () => {
-    const { rerender } = render(<ErrorBoundary><ThrowingComponent /></ErrorBoundary>);
+    const { rerender: _rerender } = render(<ErrorBoundary><ThrowingComponent /></ErrorBoundary>);
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Try Again'));
     // After retry, the throwing component throws again

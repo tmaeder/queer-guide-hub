@@ -157,7 +157,7 @@ async function fetchFromPexels(apiKey: string, query: string): Promise<ImageResu
     )
     if (!res.ok) return []
     const data = await res.json()
-    return (data.photos ?? []).map((p: any) => ({
+    return (data.photos ?? []).map((p: Record<string, unknown>) => ({
       url: p.src.large2x || p.src.large,
       thumbnail: p.src.medium,
       alt: p.alt || query,
@@ -180,7 +180,7 @@ async function fetchFromUnsplash(apiKey: string, query: string): Promise<ImageRe
     )
     if (!res.ok) return []
     const data = await res.json()
-    return (data.results ?? []).map((p: any) => ({
+    return (data.results ?? []).map((p: Record<string, unknown>) => ({
       url: p.urls.regular,
       thumbnail: p.urls.small,
       alt: p.alt_description || p.description || query,
@@ -205,7 +205,7 @@ async function fetchFromWikimedia(query: string): Promise<ImageResult[]> {
     if (!pages) return []
 
     const results: ImageResult[] = []
-    for (const page of Object.values(pages) as any[]) {
+    for (const page of Object.values(pages) as unknown[]) {
       const info = page.imageinfo?.[0]
       if (!info) continue
       const mime = info.mime || ''
@@ -293,7 +293,7 @@ async function findBestImage(
 // Storage
 // ---------------------------------------------------------------------------
 
-async function storeImage(supabase: any, img: ImageResult, countryId: string): Promise<string> {
+async function storeImage(supabase: unknown, img: ImageResult, countryId: string): Promise<string> {
   try {
     const imageRes = await fetch(img.url)
     if (!imageRes.ok) return img.url
@@ -328,7 +328,7 @@ async function storeImage(supabase: any, img: ImageResult, countryId: string): P
 // ---------------------------------------------------------------------------
 
 async function processCountry(
-  supabase: any,
+  supabase: unknown,
   countryId: string,
   countryName: string,
   capital: string | undefined,
@@ -384,7 +384,7 @@ async function processCountry(
 // ---------------------------------------------------------------------------
 
 async function processBatch(
-  supabase: any,
+  supabase: unknown,
   pexelsKey?: string,
   unsplashKey?: string,
   forceUpdate = false,
@@ -402,7 +402,7 @@ async function processBatch(
   if (error) throw new Error(`Failed to fetch countries: ${error.message}`)
   if (!countries?.length) return { success: true, message: 'No countries to process', processed: 0 }
 
-  const results: any[] = []
+  const results: unknown[] = []
   let ok = 0, fail = 0
 
   for (const country of countries) {
@@ -414,7 +414,7 @@ async function processBatch(
       if (r.success) ok++; else fail++
       results.push({ country: country.name, ...r })
       console.log(`[${ok + fail}/${countries.length}] ${country.name}: ${r.success ? 'OK' : r.error}`)
-    } catch (e: any) {
+    } catch (e: unknown) {
       fail++
       results.push({ country: country.name, success: false, error: e.message })
     }
@@ -450,7 +450,7 @@ Deno.serve(async (req) => {
 
     const { countryId, countryName, capital, batchMode, forceUpdate, batchLimit } = body
 
-    let result: any
+    let result: unknown
     if (batchMode) {
       result = await processBatch(supabase, pexelsKey, unsplashKey, forceUpdate ?? false, batchLimit ?? 50)
     } else {
@@ -464,7 +464,7 @@ Deno.serve(async (req) => {
     }
 
     return jsonResponse({ ...result, timestamp: new Date().toISOString() }, result.success ? 200 : 400, req)
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('fetch-country-images error:', e)
     return errorResponse('Internal error', 500, req)
   }

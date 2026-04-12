@@ -18,7 +18,7 @@ vi.mock('@/hooks/use-toast', () => ({
 }));
 
 vi.mock('react-router', async () => {
-  const actual = await vi.importActual<any>('react-router');
+  const actual = await vi.importActual<Record<string, unknown>>('react-router');
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
@@ -56,7 +56,7 @@ describe('StartConversationButton', () => {
   });
 
   it('should show loading text while starting', async () => {
-    let resolve: any;
+    let resolve: (value: unknown) => void;
     mockStartConversation.mockReturnValue(new Promise(r => { resolve = r; }));
     render(<StartConversationButton userId="other" />);
     fireEvent.click(screen.getByText('Send DM'));

@@ -5,7 +5,6 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import LinearProgress from '@mui/material/LinearProgress';
 import { useTheme } from '@mui/material/styles';
 import { Plus, X, Lock, Clock, BarChart3 } from 'lucide-react';
 import { formatDistanceToNow, isPast } from 'date-fns';
@@ -22,7 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useTripPolls, type PollOption } from '@/hooks/useTripCollaboration';
+import { useTripPolls } from '@/hooks/useTripCollaboration';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Props {

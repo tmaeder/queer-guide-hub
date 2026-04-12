@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('boneyard-js/react', () => ({
-  Skeleton: ({ children, loading, fixture }: any) => loading ? fixture : children,
+  Skeleton: ({ children, loading, fixture }: Record<string, unknown>) => loading ? fixture : children,
 }));
 
 vi.mock('@/components/layout/PageLoadingState', () => ({
@@ -12,7 +12,7 @@ vi.mock('@/components/layout/PageLoadingState', () => ({
 
 import { GroupCard } from '../GroupCard';
 
-function makeGroup(overrides: Record<string, any> = {}) {
+function makeGroup(overrides: Record<string, unknown> = {}) {
   return {
     id: 'g-1',
     name: 'Zurich Queers',
@@ -35,7 +35,7 @@ describe('GroupCard', () => {
   it('should render group name', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as any} />
+        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Zurich Queers')).toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('GroupCard', () => {
   it('should render member count', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as any} />
+        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('42')).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe('GroupCard', () => {
   it('should render description', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as any} />
+        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
       </MemoryRouter>,
     );
     expect(screen.getByText(/community group/i)).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe('GroupCard', () => {
   it('should render tags', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as any} />
+        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('zurich')).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe('GroupCard', () => {
   it('should show Join button when not a member', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as any} onJoin={vi.fn()} />
+        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} onJoin={vi.fn()} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Join')).toBeInTheDocument();
@@ -82,7 +82,7 @@ describe('GroupCard', () => {
   it('should show Leave button when a member', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup({ is_member: true }) as any} onLeave={vi.fn()} />
+        <GroupCard group={makeGroup({ is_member: true }) as unknown as React.ComponentProps<typeof GroupCard>['group']} onLeave={vi.fn()} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Leave')).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe('GroupCard', () => {
   it('should link to group detail page', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup() as any} />
+        <GroupCard group={makeGroup() as unknown as React.ComponentProps<typeof GroupCard>['group']} />
       </MemoryRouter>,
     );
     const links = screen.getAllByRole('link');
@@ -110,7 +110,7 @@ describe('GroupCard', () => {
   it('should show +N more for excess tags', () => {
     render(
       <MemoryRouter>
-        <GroupCard group={makeGroup({ tags: ['a', 'b', 'c', 'd', 'e'] }) as any} />
+        <GroupCard group={makeGroup({ tags: ['a', 'b', 'c', 'd', 'e'] }) as unknown as React.ComponentProps<typeof GroupCard>['group']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('+2 more')).toBeInTheDocument();

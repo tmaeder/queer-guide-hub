@@ -140,7 +140,7 @@ export default function Ressources() {
           )
           .eq('tag_id', data.id);
         const cats = (catAssignments || [])
-          .map((a: any) => {
+          .map((a: { tag_categories: { id: string; name: string; slug: string; level: number; parent_id: string | null } | null; is_primary: boolean }) => {
             const c = a.tag_categories;
             return c
               ? {
@@ -154,7 +154,7 @@ export default function Ressources() {
                 }
               : null;
           })
-          .filter(Boolean) as any[];
+          .filter(Boolean) as { id: string; name: string; slug: string; level: number; parent_id: string | null; parent_name: string | null; is_primary: boolean }[];
         if (cats.length > 0) {
           const parentIds = cats.filter((c) => c.parent_id).map((c) => c.parent_id);
           if (parentIds.length > 0) {
@@ -162,7 +162,7 @@ export default function Ressources() {
               .from('tag_categories')
               .select('id, name')
               .in('id', parentIds);
-            const pm = new Map((parents || []).map((p: any) => [p.id, p.name]));
+            const pm = new Map((parents || []).map((p: { id: string; name: string }) => [p.id, p.name]));
             cats.forEach((c) => {
               if (c.parent_id) c.parent_name = pm.get(c.parent_id) || null;
             });
@@ -491,7 +491,7 @@ export default function Ressources() {
           >
             <RelatedTagsCard
               tagId={selectedTag.id}
-              onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as any)}
+              onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as CentralizedTag)}
             />
           </Box>
         </Box>
@@ -566,7 +566,7 @@ export default function Ressources() {
             <CardContent>
               <Box sx={{ width: '100%', height: { xs: 400, md: 600 } }}>
                 <TagRelationshipGraph
-                  onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as any)}
+                  onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as CentralizedTag)}
                   categoryFilter={filterCategory !== 'all' ? filterCategory : null}
                   categories={orderedParents.map((p) => p.name)}
                 />

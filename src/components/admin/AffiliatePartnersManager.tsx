@@ -44,7 +44,7 @@ export function AffiliatePartnersManager() {
       url_patterns: (p.url_patterns ?? []).join(', '),
       parameters: JSON.stringify(p.parameters, null, 2),
       redirect_template: p.redirect_template ?? '',
-      notes: (p as any).notes ?? '',
+      notes: (p as Record<string, unknown>).notes as string ?? '',
       enabled: p.enabled,
     });
     setDialogOpen(true);
@@ -79,8 +79,8 @@ export function AffiliatePartnersManager() {
       }
       setDialogOpen(false);
       fetchPartners();
-    } catch (e: any) {
-      toast.error(e.message ?? 'Save failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message :'Save failed');
     } finally {
       setSaving(false);
     }
@@ -92,8 +92,8 @@ export function AffiliatePartnersManager() {
       await deletePartner(id);
       toast.success('Partner deleted');
       fetchPartners();
-    } catch (e: any) {
-      toast.error(e.message ?? 'Delete failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message :'Delete failed');
     }
   };
 

@@ -1,6 +1,4 @@
 import * as React from "react"
-import MuiButton from "@mui/material/Button"
-import MuiIconButton from "@mui/material/IconButton"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 
 const Pagination = ({ className, style, ...props }: React.ComponentProps<"nav">) => (

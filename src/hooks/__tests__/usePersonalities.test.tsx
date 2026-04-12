@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 
 const { mockQueryResult } = vi.hoisted(() => ({
   mockQueryResult: vi.fn(),
@@ -14,8 +14,8 @@ vi.mock('@/hooks/use-toast', () => ({
 }));
 
 vi.mock('@/integrations/supabase/client', () => {
-  const handler: ProxyHandler<any> = {
-    get: (_t, p) => (p === 'then' ? undefined : (..._a: any[]) => new Proxy(() => {}, handler)),
+  const handler: ProxyHandler<object> = {
+    get: (_t, p) => (p === 'then' ? undefined : (..._a: unknown[]) => new Proxy(() => {}, handler)),
     apply: () => mockQueryResult(),
   };
   return { supabase: { from: () => new Proxy(() => {}, handler) } };

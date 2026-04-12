@@ -1,4 +1,4 @@
-import { Heart, Users, MapPin, Calendar, ShoppingBag, MessageCircle, Globe } from "lucide-react";
+import { Heart, Users, MapPin, Calendar, ShoppingBag, MessageCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useConsolidatedStats } from "@/hooks/useConsolidatedStats";
 import Container from "@mui/material/Container";

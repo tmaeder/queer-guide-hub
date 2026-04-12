@@ -41,7 +41,7 @@ export default function InterestsStep({ data, updateData }: Props) {
   const toggle = <K extends 'lookingFor' | 'interests'>(key: K, value: string) => {
     const current = data[key] || [];
     const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
-    updateData({ [key]: next } as any);
+    updateData({ [key]: next } as Partial<typeof data>);
   };
 
   const Section = ({

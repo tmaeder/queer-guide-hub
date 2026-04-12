@@ -1,4 +1,4 @@
-import { getServiceClient, getCorsHeaders, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 
 // ============================================================
 // Pipeline Deduplicate Node

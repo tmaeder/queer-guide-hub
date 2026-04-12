@@ -1,4 +1,4 @@
-import { getServiceClient, getCorsHeaders, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 
 // ============================================================
 // Pipeline Validate Node
@@ -15,8 +15,8 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string
     const entityType = body.entityType as string
-    const minConfidence = body.minConfidence ?? 0.5
-    const useAI = body.useAI ?? false // AI validation is opt-in
+    const _minConfidence = body.minConfidence ?? 0.5
+    const _useAI = body.useAI ?? false // AI validation is opt-in
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
 

@@ -5,7 +5,7 @@
  * and provides a button to link or re-link the item to its city/country.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

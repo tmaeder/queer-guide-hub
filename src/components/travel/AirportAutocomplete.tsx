@@ -27,7 +27,7 @@ export function AirportAutocomplete({
   placeholder = 'Search airports...',
   label,
 }: AirportAutocompleteProps) {
-  const [query, setQuery] = useState('');
+  const [_query, setQuery] = useState('');
   const [displayValue, setDisplayValue] = useState(displayLabel || '');
   const [results, setResults] = useState<Airport[]>([]);
   const [open, setOpen] = useState(false);
@@ -56,6 +56,7 @@ export function AirportAutocomplete({
       };
       loadLabel();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- displayValue excluded to avoid infinite loop (effect sets it)
   }, [value, displayLabel]);
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export function AirportAutocomplete({
     setLoading(true);
 
     // Exact IATA match gets priority (e.g. "LHR")
-    const isIataQuery = q.length === 3 && /^[A-Za-z]{3}$/.test(q);
+    const _isIataQuery = q.length === 3 && /^[A-Za-z]{3}$/.test(q);
 
     const { data } = await supabase
       .from('airports')

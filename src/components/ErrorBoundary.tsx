@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
     // Report to Umami if available
     try {
-      const umami = (window as any).umami;
+      const umami = (window as unknown as Record<string, unknown>).umami as { track?: (event: string, data: Record<string, string>) => void } | undefined;
       if (umami?.track) {
         umami.track('error_boundary_caught', {
           section,

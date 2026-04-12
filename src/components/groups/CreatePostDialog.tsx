@@ -15,8 +15,7 @@ import {
   Plus,
   X,
   Pin,
-  AtSign,
-  Search
+  AtSign
 } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -36,7 +35,7 @@ interface CreatePostDialogProps {
     content: string;
     postType: 'text' | 'announcement' | 'poll';
     isPinned?: boolean;
-    pollData?: any;
+    pollData?: { question: string; options: string[] };
     mentions?: Array<{ user_id: string; username: string }>;
   }) => void;
   isCreating: boolean;
@@ -78,7 +77,7 @@ export const CreatePostDialog = ({
     if (!content.trim() && postType !== 'poll') return;
     if (postType === 'poll' && (!pollQuestion.trim() || pollOptions.filter(opt => opt.trim()).length < 2)) return;
 
-    const postData: any = {
+    const postData: Record<string, unknown> = {
       content: postType === 'poll' ? pollQuestion : content,
       postType,
       mentions
@@ -155,7 +154,7 @@ export const CreatePostDialog = ({
         </DialogHeader>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Tabs value={postType} onValueChange={(value: any) => setPostType(value)}>
+          <Tabs value={postType} onValueChange={(value: string) => setPostType(value as 'text' | 'announcement' | 'poll')}>
             <TabsList sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
               <TabsTrigger value="text">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

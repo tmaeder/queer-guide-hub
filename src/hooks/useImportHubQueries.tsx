@@ -81,7 +81,7 @@ export function useStagingItems(
         p_per_page: perPage,
         p_sort_field: sort.field,
         p_sort_dir: sort.dir,
-      } as any);
+      } as Record<string, unknown>);
 
       if (error) {
         console.error('Failed to fetch staging page:', error);
@@ -137,11 +137,11 @@ export function useDuplicatePairs(entityType: string | null) {
 export function useEntityById(entityType: string | null, entityId: string | null) {
   return useQuery({
     queryKey: ['entity', entityType, entityId],
-    queryFn: async (): Promise<Record<string, any> | null> => {
+    queryFn: async (): Promise<Record<string, unknown> | null> => {
       if (!entityType || !entityId) return null;
 
       const { data, error } = await supabase
-        .from(entityType as any)
+        .from(entityType as 'venues')
         .select('*')
         .eq('id', entityId)
         .single();
@@ -150,7 +150,7 @@ export function useEntityById(entityType: string | null, entityId: string | null
         console.error(`Failed to fetch ${entityType} ${entityId}:`, error);
         return null;
       }
-      return data as Record<string, any>;
+      return data as Record<string, unknown>;
     },
     enabled: !!entityType && !!entityId,
     staleTime: 60_000,
@@ -169,7 +169,7 @@ export function useImportStatistics() {
         console.error('Failed to fetch import stats:', error);
         return null;
       }
-      const raw = (data as Record<string, any>) || {};
+      const raw = (data as Record<string, unknown>) || {};
       return {
         total_jobs: raw.total_imports || 0,
         completed_jobs: raw.successful_imports || 0,
@@ -233,7 +233,7 @@ export function useBatchFindDuplicates() {
       const { data, error } = await supabase.rpc('batch_find_duplicates', {
         p_target_table: params.targetTable || null,
         p_batch_limit: params.batchLimit || 100,
-      } as any);
+      } as Record<string, unknown>);
       if (error) throw error;
       return data as unknown as BatchDedupResult;
     },
@@ -260,7 +260,7 @@ export function useScanTableDuplicates() {
         p_entity_type: params.entityType,
         p_threshold: params.threshold || 0.7,
         p_limit: params.limit || 200,
-      } as any);
+      } as Record<string, unknown>);
       if (error) throw error;
       return data as unknown as ScanDedupResult;
     },
@@ -286,14 +286,14 @@ export function useMergeEntities() {
       entityType: string;
       keepId: string;
       removeId: string;
-      mergedData?: Record<string, any>;
+      mergedData?: Record<string, unknown>;
     }) => {
       const { data, error } = await supabase.rpc('merge_entities', {
         p_entity_type: params.entityType,
         p_keep_id: params.keepId,
         p_remove_id: params.removeId,
         p_merged_data: params.mergedData || null,
-      } as any);
+      } as Record<string, unknown>);
       if (error) throw error;
       const result = data as unknown as MergeResult;
       if (result.error) throw new Error(result.error);

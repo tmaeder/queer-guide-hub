@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/location-autocomplete';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { supabase } from '@/integrations/supabase/client';
-import { Check, Loader2 } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 /**

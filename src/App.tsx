@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router';
 import './i18n';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -93,7 +93,7 @@ const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'))
 const AdminHotels = lazy(() => import('./pages/AdminHotels'));
 const AdminQueerVillages = lazy(() => import('./pages/AdminQueerVillages'));
 const AdminReview = lazy(() => import('./pages/AdminReview'));
-const AdminSubmissions = lazy(() => import('./pages/AdminSubmissions'));
+const _AdminSubmissions = lazy(() => import('./pages/AdminSubmissions'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 // CMS components rendered as admin views
@@ -101,7 +101,7 @@ const AdminCMS = lazy(() => import('./pages/AdminCMS'));
 const ContentListPanel = lazy(() =>
   import('./components/cms/ContentListPanel').then((m) => ({ default: m.ContentListPanel })),
 );
-const CMSOverview = lazy(() =>
+const _CMSOverview = lazy(() =>
   import('./components/cms/CMSOverview').then((m) => ({ default: m.CMSOverview })),
 );
 // ReviewQueue (CMS) is now loaded inside AdminReview page
@@ -113,7 +113,7 @@ const AuditLog = lazy(() =>
 );
 
 // Import Hub components rendered as admin views
-const ImportJobCreator = lazy(() =>
+const _ImportJobCreator = lazy(() =>
   import('./components/admin/ImportJobCreator').then((m) => ({ default: m.ImportJobCreator })),
 );
 const NewsSourcesManager = lazy(() =>
@@ -122,7 +122,7 @@ const NewsSourcesManager = lazy(() =>
 const PipelineMonitor = lazy(() =>
   import('./components/admin/PipelineMonitor').then((m) => ({ default: m.PipelineMonitor })),
 );
-const EnrichmentDashboard = lazy(() =>
+const _EnrichmentDashboard = lazy(() =>
   import('./components/admin/EnrichmentDashboard').then((m) => ({
     default: m.EnrichmentDashboard,
   })),
@@ -140,7 +140,7 @@ const AffiliatePartnersManager = lazy(() =>
     default: m.AffiliatePartnersManager,
   })),
 );
-const LinkHealthDashboard = lazy(() =>
+const _LinkHealthDashboard = lazy(() =>
   import('./components/admin/LinkHealthDashboard').then((m) => ({
     default: m.LinkHealthDashboard,
   })),
@@ -157,7 +157,7 @@ const CloudflareDashboard = lazy(() =>
     default: m.CloudflareDashboard,
   })),
 );
-const UmamiAnalyticsDashboard = lazy(() =>
+const _UmamiAnalyticsDashboard = lazy(() =>
   import('./components/analytics/UmamiAnalyticsDashboard').then((m) => ({
     default: m.UmamiAnalyticsDashboard,
   })),
@@ -195,7 +195,7 @@ const ShareTarget = lazyRetry(() => import('./pages/ShareTarget'));
 const queryClient = createOptimizedQueryClient();
 
 // Retry wrapper for React.lazy — handles chunk load failures after deploys
-function lazyRetry<T extends React.ComponentType<any>>(
+function lazyRetry<T extends React.ComponentType<unknown>>(
   factory: () => Promise<{ default: T }>,
 ): React.LazyExoticComponent<T> {
   return lazy(() =>

@@ -16,7 +16,7 @@ export interface TagDetails {
   total_count: number;
   usage_by_category: { category: string; count: number }[];
   related_tags: string[];
-  recent_items: any[];
+  recent_items: Record<string, unknown>[];
 }
 
 export const useTags = () => {
@@ -46,7 +46,7 @@ export const useTags = () => {
       const tagCatsMap = new Map<string, string[]>();
       if (catAssignments) {
         for (const a of catAssignments) {
-          const cat = (a as any).tag_categories;
+          const cat = (a as Record<string, unknown>).tag_categories as Record<string, unknown> | null;
           if (!cat) continue;
           if (!tagCatsMap.has(a.tag_id)) tagCatsMap.set(a.tag_id, []);
           tagCatsMap.get(a.tag_id)!.push(cat.name);
@@ -103,9 +103,9 @@ export const useTags = () => {
       const tagCounts: Record<string, { total: number; categories: Set<string>; usage: Record<string, number> }> = {};
 
       // Helper function to process tags from a result
-      const processTags = (result: any, category: string) => {
+      const processTags = (result: { data: Record<string, unknown>[] | null }, category: string) => {
         if (result.data) {
-          result.data.forEach((item: any) => {
+          result.data.forEach((item: Record<string, unknown>) => {
             if (item.tags && Array.isArray(item.tags)) {
               item.tags.forEach((tag: string) => {
                 if (!tagCounts[tag]) {
@@ -205,7 +205,7 @@ export const useTags = () => {
       })).filter(item => item.count > 0);
 
       // For recent items, we'll need to fetch the actual entities
-      const recent_items: any[] = [];
+      const recent_items: Record<string, unknown>[] = [];
       // This would require separate queries for each entity type based on assignments
 
       const details: TagDetails = {

@@ -4,8 +4,7 @@
  */
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import {
-  getContentName, CONTENT_TYPE_CONFIG,
+import { CONTENT_TYPE_CONFIG,
   type ModuleConfig, type SharedRefs, type ProposedChange,
 } from '../../_shared/automation-utils.ts'
 import { logoUrlFromWebsite } from '../../_shared/logo-enrichment.ts'

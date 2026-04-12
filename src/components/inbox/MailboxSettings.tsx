@@ -8,7 +8,7 @@ import { Check, Loader2, AlertCircle } from 'lucide-react';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
 
 export const MailboxSettings: React.FC = () => {
-  const { currentAddress, fullEmail, checkAvailability, claimAddress, loading } =
+  const { currentAddress, fullEmail, checkAvailability, claimAddress, _loading } =
     useMailboxAddress();
 
   const [handle, setHandle] = useState('');
@@ -49,8 +49,8 @@ export const MailboxSettings: React.FC = () => {
     try {
       await claimAddress(handle);
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message || 'Failed to claim address');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to claim address');
     } finally {
       setClaiming(false);
     }

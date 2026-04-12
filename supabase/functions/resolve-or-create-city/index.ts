@@ -1,5 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { getServiceClient, getCorsHeaders, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
 
 /**
  * resolve-or-create-city
@@ -229,14 +229,14 @@ serve(async (req) => {
       country_name: country.name,
       created: !!newCity,
     }, 200, req)
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('resolve-or-create-city error:', err)
     return errorResponse('Internal server error', 500, req)
   }
 })
 
 async function createCity(
-  supabase: any,
+  supabase: unknown,
   cityName: string,
   countryId: string,
   countryName: string,
@@ -262,7 +262,7 @@ async function createCity(
             }
             // Also get region_name from Photon properties
             const props = geoData.features[0].properties || {}
-            const regionName = props.state || null
+            const _regionName = props.state || null
           }
         }
       } catch (geoErr) {
@@ -271,7 +271,7 @@ async function createCity(
     }
 
     // Insert with ON CONFLICT handling (race condition safe)
-    const insertData: Record<string, any> = {
+    const insertData: Record<string, unknown> = {
       name: cityName,
       country_id: countryId,
     }

@@ -523,7 +523,7 @@ async function fetchUnlinkedItems(
           .or('nationality.neq.,birth_place.neq.');
       }
       const { data } = await query.limit(batchLimit);
-      return (data || []).filter((p: any) =>
+      return (data || []).filter((p: Record<string, unknown>) =>
         p.nationality || p.birth_place || contentId
       );
     }
@@ -539,14 +539,14 @@ async function fetchUnlinkedItems(
       const { data: linkedIds } = await supabase
         .from('news_article_countries')
         .select('article_id');
-      const linked = new Set((linkedIds || []).map((r: any) => r.article_id));
+      const linked = new Set((linkedIds || []).map((r: unknown) => r.article_id));
 
       const { data: articles } = await supabase
         .from('news_articles')
         .select('id, title, excerpt')
         .limit(batchLimit * 2);
 
-      return (articles || []).filter((a: any) => !linked.has(a.id)).slice(0, batchLimit);
+      return (articles || []).filter((a: unknown) => !linked.has(a.id)).slice(0, batchLimit);
     }
     default:
       return [];

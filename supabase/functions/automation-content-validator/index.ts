@@ -8,7 +8,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
 import {
-  loadModuleConfig, checkRateLimit, writeChanges, logRun, delay,
+  loadModuleConfig, checkRateLimit, writeChanges, logRun,
   getContentName, CONTENT_TYPE_CONFIG,
   type ProposedChange, type AutomationRule,
 } from '../_shared/automation-utils.ts'
@@ -18,7 +18,7 @@ const MODULE_SLUG = 'content-validator'
 // ── Rule processors ─────────────────────────────────────────────────────────────
 
 const HTML_ENTITY_RE = /&(?:amp|lt|gt|quot|apos|#\d{2,4}|#x[0-9a-fA-F]{2,4});/g
-const PLACEHOLDER_RE = /(?:lorem ipsum|todo|tbd|placeholder|coming soon|test content|sample text|insert .* here)/i
+const _PLACEHOLDER_RE = /(?:lorem ipsum|todo|tbd|placeholder|coming soon|test content|sample text|insert .* here)/i
 const MOJIBAKE_RE = /[\u00C3][\u0080-\u00BF]|\u00C3[\u0080-\u00BF]|\u00E2\u0080[\u0099\u201C\u201D\u007C\u02DC\u0153\u009C\u009D]/
 
 function decodeHtmlEntities(text: string): string {

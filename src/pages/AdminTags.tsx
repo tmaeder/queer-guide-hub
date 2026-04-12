@@ -39,7 +39,6 @@ import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
 import BatchAutoTagDialog from '@/components/admin/BatchAutoTagDialog';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
 import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
-import BulkEnrichDialog from '@/components/admin/BulkEnrichDialog';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -324,7 +323,7 @@ export default function AdminTags() {
           <TagsCsvImport onImportComplete={() => window.location.reload()} />
           <ExportExcelButton
             onExport={async () => {
-              const cols: ExportColumnDef<any>[] = [
+              const cols: ExportColumnDef<Record<string, unknown>>[] = [
                 { header: 'Name', accessor: (r) => r.name },
                 { header: 'Slug', accessor: (r) => r.slug },
                 { header: 'Category', accessor: (r) => r.category },
@@ -422,6 +421,7 @@ export default function AdminTags() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers are stable, adding would defeat memoization
     [columns, categoriesTree, isCreateDialogOpen, editingTag, formData],
   );
 

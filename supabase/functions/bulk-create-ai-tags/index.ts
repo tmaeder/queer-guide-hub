@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       const categoryRows = dbCategories || [];
       const categories = categoryRows.map(c => c.slug);
       const slugToId = new Map(categoryRows.map(c => [c.slug, c.id]));
-      const validSlugs = new Set(categories);
+      const _validSlugs = new Set(categories);
 
       for (const term of terms) {
         if (!term.trim()) continue;
@@ -258,7 +258,7 @@ Respond with JSON in this format:
   }
 }
 
-async function fetchAndStoreImage(term: string, supabaseClient: any): Promise<string | null> {
+async function fetchAndStoreImage(term: string, supabaseClient: unknown): Promise<string | null> {
   try {
     console.log(`Fetching image for term: ${term}`);
     
@@ -352,7 +352,7 @@ async function getUnsplashImage(term: string): Promise<string | null> {
   return null;
 }
 
-async function downloadAndStoreImage(imageUrl: string, term: string, supabaseClient: any): Promise<string | null> {
+async function downloadAndStoreImage(imageUrl: string, term: string, supabaseClient: unknown): Promise<string | null> {
   try {
     console.log(`Downloading image from: ${imageUrl}`);
     
@@ -370,7 +370,7 @@ async function downloadAndStoreImage(imageUrl: string, term: string, supabaseCli
     const fileName = `${term.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}.${fileExtension}`;
     
     // Upload to Supabase storage
-    const { data, error } = await supabaseClient.storage
+    const { _data, error } = await supabaseClient.storage
       .from('tag-images')
       .upload(fileName, arrayBuffer, {
         contentType: imageBlob.type || 'image/jpeg',

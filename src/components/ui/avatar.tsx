@@ -18,7 +18,7 @@ const Avatar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElem
           className={className}
           style={style}
           sx={{ position: 'relative', borderRadius: 1.25 }}
-          {...(props as any)}
+          {...(props as Record<string, unknown>)}
         >
           {children}
         </MuiAvatar>
@@ -30,7 +30,7 @@ Avatar.displayName = "Avatar"
 
 const AvatarImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   ({ className, src, alt, style, onLoad, onError, ...props }, ref) => {
-    const { status, setStatus } = React.useContext(AvatarContext);
+    const { _status, setStatus } = React.useContext(AvatarContext);
     const [hasError, setHasError] = React.useState(false);
 
     React.useEffect(() => {
@@ -49,6 +49,7 @@ const AvatarImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<H
         ref={ref}
         src={src}
         alt={alt || ""}
+        role="presentation"
         className={className}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', ...style }}
         onLoad={(e) => {

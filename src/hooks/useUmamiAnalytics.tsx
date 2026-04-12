@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface UmamiEventData {
   name: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   url?: string;
   title?: string;
 }

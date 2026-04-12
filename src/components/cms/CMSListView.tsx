@@ -31,10 +31,10 @@ import { CMSAdvancedFilters } from './CMSAdvancedFilters';
 import { useCMSFilters } from '@/hooks/useCMSFilters';
 
 interface CMSListViewProps {
-  data: any[];
+  data: Record<string, unknown>[];
   loading: boolean;
   error: string | null;
-  onEdit: (content: any) => void;
+  onEdit: (content: Record<string, unknown>) => void;
   onDelete?: (id: string) => void;
   onRefresh: () => void;
   viewMode: 'grid' | 'list';
@@ -59,7 +59,7 @@ export function CMSListView({
     updateSort,
     resetFilters,
     filteredData,
-    allFilteredData,
+    _allFilteredData,
     filterOptions,
     totalResults,
     totalRecords,

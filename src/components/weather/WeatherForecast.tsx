@@ -34,6 +34,7 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
     if (latitude && longitude) {
       fetchWeatherForecast();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchWeatherForecast defined below, re-run on lat/lng/city change
   }, [latitude, longitude, cityName]);
 
   const fetchWeatherForecast = async () => {

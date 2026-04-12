@@ -38,7 +38,7 @@ export function useCMSAudit(): UseCMSAuditReturn {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('cms_audit_log' as any)
+        .from('cms_audit_log' as 'venues')
         .select('*')
         .eq('source_table', sourceTable)
         .eq('source_id', sourceId)
@@ -70,7 +70,7 @@ export function useCMSAudit(): UseCMSAuditReturn {
 
     try {
       let query = supabase
-        .from('cms_audit_log' as any)
+        .from('cms_audit_log' as 'venues')
         .select('*', { count: 'exact' })
         .order('timestamp', { ascending: false })
         .range(from, to);
@@ -105,7 +105,7 @@ export function useCMSAudit(): UseCMSAuditReturn {
       const { data: { user } } = await supabase.auth.getUser();
 
       await supabase
-        .from('cms_audit_log' as any)
+        .from('cms_audit_log' as 'venues')
         .insert({
           source_table: entry.sourceTable,
           source_id: entry.sourceId,
@@ -133,18 +133,18 @@ export function useCMSAudit(): UseCMSAuditReturn {
 
 // ── Helpers ────────────────────────────────────────────────────────
 
-async function enrichWithActors(entries: any[]): Promise<CMSAuditEntry[]> {
+async function enrichWithActors(entries: Record<string, unknown>[]): Promise<CMSAuditEntry[]> {
   const actorIds = [...new Set(entries.filter(e => e.actor_id).map(e => e.actor_id))];
 
   if (actorIds.length === 0) return entries as CMSAuditEntry[];
 
   const { data: profiles } = await supabase
-    .from('profiles' as any)
+    .from('profiles' as 'venues')
     .select('id, display_name, email')
     .in('id', actorIds);
 
   const profileMap = new Map(
-    (profiles || []).map((p: any) => [p.id, { display_name: p.display_name, email: p.email }])
+    (profiles || []).map((p: Record<string, unknown>) => [p.id as string, { display_name: p.display_name, email: p.email }])
   );
 
   return entries.map(entry => ({

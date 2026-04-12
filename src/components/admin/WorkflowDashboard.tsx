@@ -121,7 +121,7 @@ export function WorkflowDashboard() {
     retryRun,
     cancelRun,
     dispatchNow,
-    healthCheck,
+    _healthCheck,
     refetchMetrics,
     isEnqueuing,
     isDispatching,

@@ -86,7 +86,7 @@ serve(async (req) => {
 
       case 'verify-enrollment': {
         // Verify the credential and attestation
-        const { id, response, type } = credentialData;
+        const { id, response, _type } = credentialData;
         
         // Get the stored challenge
         const { data: challengeData, error: challengeError } = await supabaseClient

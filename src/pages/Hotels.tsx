@@ -4,8 +4,6 @@ import { Hotel as HotelIcon, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HotelCard } from '@/components/hotels/HotelCard';
 import { HotelFilters } from '@/components/hotels/HotelFilters';
-import { ReportButton } from '@/components/moderation/ReportButton';
-import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { useHotels, type HotelFilters as HotelFilterType } from '@/hooks/useHotels';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';

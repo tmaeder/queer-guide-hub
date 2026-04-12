@@ -10,10 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Search, Filter, Plus, Edit, Trash2, Eye, RefreshCw, BarChart3, Database } from 'lucide-react';
-import { UniversalContentCreator } from './UniversalContentCreator';
-import { UniversalContentEditor } from './UniversalContentEditor';
 import { formatDistanceToNow } from 'date-fns';
-import { toast } from '@/components/ui/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,13 +23,13 @@ export function UniversalContentDashboard() {
     error,
     totalCount,
     currentPage,
-    hasNextPage,
+    _hasNextPage,
     fetchAllContent,
     deleteUniversalContent
   } = useUniversalCMS();
 
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedContent, setSelectedContent] = useState<any>(null);
+  const [_selectedContent, setSelectedContent] = useState<Record<string, unknown> | null>(null);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
@@ -58,9 +55,10 @@ export function UniversalContentDashboard() {
   // Fetch content when filters change
   useEffect(() => {
     fetchAllContent(filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchAllContent defined outside, re-run on filters change
   }, [filters]);
 
-  const handleFilterChange = (key: keyof ContentFilters, value: any) => {
+  const handleFilterChange = (key: keyof ContentFilters, value: unknown) => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
   };
 

@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { FestivalCard } from '../FestivalCard';
 
-function makeFestival(overrides: Record<string, any> = {}) {
+function makeFestival(overrides: Record<string, unknown> = {}) {
   return {
     id: 'f-1',
     name: 'Zurich Pride',
@@ -24,7 +24,7 @@ describe('FestivalCard', () => {
   it('should render festival name', () => {
     render(
       <MemoryRouter>
-        <FestivalCard festival={makeFestival() as any} />
+        <FestivalCard festival={makeFestival() as unknown as React.ComponentProps<typeof FestivalCard>['festival']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Zurich Pride')).toBeInTheDocument();
@@ -33,7 +33,7 @@ describe('FestivalCard', () => {
   it('should render type chip', () => {
     render(
       <MemoryRouter>
-        <FestivalCard festival={makeFestival() as any} />
+        <FestivalCard festival={makeFestival() as unknown as React.ComponentProps<typeof FestivalCard>['festival']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Pride')).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe('FestivalCard', () => {
   it('should render location', () => {
     render(
       <MemoryRouter>
-        <FestivalCard festival={makeFestival() as any} />
+        <FestivalCard festival={makeFestival() as unknown as React.ComponentProps<typeof FestivalCard>['festival']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Zurich, Switzerland')).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('FestivalCard', () => {
   it('should render description', () => {
     render(
       <MemoryRouter>
-        <FestivalCard festival={makeFestival() as any} />
+        <FestivalCard festival={makeFestival() as unknown as React.ComponentProps<typeof FestivalCard>['festival']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Annual pride festival in Zurich')).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe('FestivalCard', () => {
   it('should show Featured badge when featured', () => {
     render(
       <MemoryRouter>
-        <FestivalCard festival={makeFestival({ featured: true }) as any} />
+        <FestivalCard festival={makeFestival({ featured: true }) as unknown as React.ComponentProps<typeof FestivalCard>['festival']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Featured')).toBeInTheDocument();
@@ -69,7 +69,7 @@ describe('FestivalCard', () => {
   it('should show Recurring chip when recurring', () => {
     render(
       <MemoryRouter>
-        <FestivalCard festival={makeFestival({ is_recurring: true }) as any} />
+        <FestivalCard festival={makeFestival({ is_recurring: true }) as unknown as React.ComponentProps<typeof FestivalCard>['festival']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Recurring')).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe('FestivalCard', () => {
   it('should show Dates TBA when no start_date', () => {
     render(
       <MemoryRouter>
-        <FestivalCard festival={makeFestival({ start_date: null }) as any} />
+        <FestivalCard festival={makeFestival({ start_date: null }) as unknown as React.ComponentProps<typeof FestivalCard>['festival']} />
       </MemoryRouter>,
     );
     expect(screen.getByText('Dates TBA')).toBeInTheDocument();
@@ -87,7 +87,7 @@ describe('FestivalCard', () => {
   it('should link to festival detail page', () => {
     render(
       <MemoryRouter>
-        <FestivalCard festival={makeFestival() as any} />
+        <FestivalCard festival={makeFestival() as unknown as React.ComponentProps<typeof FestivalCard>['festival']} />
       </MemoryRouter>,
     );
     const link = screen.getByRole('link');

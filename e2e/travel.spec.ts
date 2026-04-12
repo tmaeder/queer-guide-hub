@@ -43,7 +43,7 @@ test.describe('Travel page (/travel)', () => {
     await page.waitForTimeout(500); // debounce
 
     // Should show at least LHR and LGW
-    const dropdown = page.locator('[class*="autocomplete"], [role="listbox"]').or(
+    const _dropdown = page.locator('[class*="autocomplete"], [role="listbox"]').or(
       page.locator('text=London Heathrow Airport').first()
     );
     // Look for any London airport in the dropdown
@@ -97,17 +97,17 @@ test.describe('Travel page (/travel)', () => {
     // Intercept the window.open call to capture the URL
     let openedUrl = '';
     await page.evaluate(() => {
-      (window as any).__testOpenUrl = '';
-      const origOpen = window.open;
-      window.open = function(url: any, ...args: any[]) {
-        (window as any).__testOpenUrl = url;
+      (window as unknown).__testOpenUrl = '';
+      const _origOpen = window.open;
+      window.open = function(url: unknown, ..._args: unknown[]) {
+        (window as unknown).__testOpenUrl = url;
         return null; // Prevent actually opening
       };
     });
 
     await bookButton.click();
 
-    openedUrl = await page.evaluate(() => (window as any).__testOpenUrl);
+    openedUrl = await page.evaluate(() => (window as unknown).__testOpenUrl);
 
     // Validate URL format — must use ?params= query format (NOT path-based)
     expect(openedUrl).toBeTruthy();
@@ -125,7 +125,7 @@ test.describe('Travel page (/travel)', () => {
 
 test.describe('/flights route redirect', () => {
   test('/flights redirects to /travel', async ({ page }) => {
-    const response = await page.goto('/flights');
+    const _response = await page.goto('/flights');
 
     // Should end up at /travel (client-side redirect via React Router)
     await page.waitForURL('**/travel', { timeout: 10000 });

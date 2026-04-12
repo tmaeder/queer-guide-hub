@@ -13,9 +13,9 @@ Deno.serve((_req) => {
 // Original code below is preserved for reference but unreachable.
 // ------------------------------------------------------------------
 
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
-interface ImportJob {
+interface _ImportJob {
   id: string;
   type: string;
   status: 'queued' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
@@ -31,7 +31,7 @@ interface ImportJob {
   error_details?: string;
   retry_count: number;
   max_retries: number;
-  data: any;
+  data: unknown;
   batch_size: number;
   import_config: ImportConfig;
 }
@@ -42,7 +42,7 @@ interface ImportConfig {
   validation: {
     strict: boolean;
     required_fields: string[];
-    custom_validations: Record<string, any>;
+    custom_validations: Record<string, unknown>;
   };
   filters: {
     location?: string;
@@ -150,7 +150,7 @@ serve(async (req) => {
   }
 });
 
-async function createJob(supabase: any, type: string, data: any, batchSize: number, importConfig?: ImportConfig) {
+async function createJob(supabase: unknown, type: string, data: unknown, batchSize: number, importConfig?: ImportConfig) {
   console.log(`Creating job for type: ${type}`);
   
   // Validate import type
@@ -250,7 +250,7 @@ async function createJob(supabase: any, type: string, data: any, batchSize: numb
   );
 }
 
-function applyFilters(data: any, filters: any, type: string): any {
+function applyFilters(data: unknown, filters: unknown, type: string): unknown {
   console.log(`Applying filters to ${type}:`, filters);
   
   // Apply location filter for venue/event imports
@@ -276,7 +276,7 @@ function applyFilters(data: any, filters: any, type: string): any {
   return data;
 }
 
-function limitData(data: any, limit: number, type: string): any {
+function limitData(data: unknown, limit: number, _type: string): unknown {
   if (Array.isArray(data)) {
     return data.slice(0, limit);
   } else if (data.names && Array.isArray(data.names)) {
@@ -292,7 +292,7 @@ function limitData(data: any, limit: number, type: string): any {
   return data;
 }
 
-function calculateTotalItems(data: any, type: string): number {
+function calculateTotalItems(data: unknown, _type: string): number {
   if (Array.isArray(data)) {
     return data.length;
   } else if (data.names && Array.isArray(data.names)) {
@@ -312,7 +312,7 @@ function calculateTotalItems(data: any, type: string): number {
   return 1;
 }
 
-async function processJobInBackground(supabase: any, jobId: string) {
+async function processJobInBackground(supabase: unknown, jobId: string) {
   try {
     console.log(`Starting background processing for job ${jobId}`);
     
@@ -400,7 +400,7 @@ async function processJobInBackground(supabase: any, jobId: string) {
   }
 }
 
-function createBatches(data: any, batchSize: number, type: string): any[] {
+function createBatches(data: unknown, batchSize: number, type: string): unknown[] {
   console.log(`Creating batches for type ${type} with batch size ${batchSize}`);
   
   if (Array.isArray(data)) {
@@ -451,7 +451,7 @@ function createBatches(data: any, batchSize: number, type: string): any[] {
   return [data];
 }
 
-async function processBatch(supabase: any, type: string, batchData: any, jobId: string, batchIndex: number) {
+async function processBatch(supabase: unknown, type: string, batchData: unknown, jobId: string, batchIndex: number) {
   console.log(`Processing batch ${batchIndex + 1} for type ${type}`);
   
   const functionName = IMPORT_TYPE_MAPPING[type];
@@ -459,7 +459,7 @@ async function processBatch(supabase: any, type: string, batchData: any, jobId: 
     throw new Error(`No function mapping found for type: ${type}`);
   }
 
-  let payload: any;
+  let payload: unknown;
 
   // Prepare payload based on import type
   switch (type) {
@@ -536,7 +536,7 @@ async function processBatch(supabase: any, type: string, batchData: any, jobId: 
   return data;
 }
 
-async function handleBatchError(supabase: any, jobId: string, error: any, batchNumber: number) {
+async function handleBatchError(supabase: unknown, jobId: string, error: unknown, batchNumber: number) {
   console.error(`Handling batch error for job ${jobId}, batch ${batchNumber}:`, error);
   
   const { data: job } = await supabase
@@ -571,8 +571,8 @@ async function handleBatchError(supabase: any, jobId: string, error: any, batchN
   }
 }
 
-async function updateJobStatus(supabase: any, jobId: string, status: string, message: string, errorDetails?: string) {
-  const updates: any = {
+async function updateJobStatus(supabase: unknown, jobId: string, status: string, message: string, errorDetails?: string) {
+  const updates: unknown = {
     status,
     message,
     updated_at: new Date().toISOString()
@@ -594,7 +594,7 @@ async function updateJobStatus(supabase: any, jobId: string, status: string, mes
   }
 }
 
-async function updateJob(supabase: any, jobId: string, updates: any) {
+async function updateJob(supabase: unknown, jobId: string, updates: unknown) {
   const { error } = await supabase
     .from('import_jobs')
     .update({
@@ -608,7 +608,7 @@ async function updateJob(supabase: any, jobId: string, updates: any) {
   }
 }
 
-async function listJobs(supabase: any) {
+async function listJobs(supabase: unknown) {
   const { data, error } = await supabase
     .from('import_jobs')
     .select('*')
@@ -623,7 +623,7 @@ async function listJobs(supabase: any) {
   );
 }
 
-async function cleanupOldJobs(supabase: any) {
+async function cleanupOldJobs(supabase: unknown) {
   // Clean up completed/failed jobs older than 24 hours
   const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   
@@ -641,7 +641,7 @@ async function cleanupOldJobs(supabase: any) {
   );
 }
 
-async function retryJob(supabase: any, jobId: string) {
+async function retryJob(supabase: unknown, jobId: string) {
   console.log(`Retrying job ${jobId}`);
   
   await updateJob(supabase, jobId, {
@@ -662,7 +662,7 @@ async function retryJob(supabase: any, jobId: string) {
   );
 }
 
-async function pauseJob(supabase: any, jobId: string) {
+async function pauseJob(supabase: unknown, jobId: string) {
   await updateJobStatus(supabase, jobId, 'paused', 'Job paused by user');
 
   return new Response(
@@ -671,7 +671,7 @@ async function pauseJob(supabase: any, jobId: string) {
   );
 }
 
-async function resumeJob(supabase: any, jobId: string) {
+async function resumeJob(supabase: unknown, jobId: string) {
   await updateJobStatus(supabase, jobId, 'queued', 'Job resumed by user');
   
   // Resume background processing
@@ -683,7 +683,7 @@ async function resumeJob(supabase: any, jobId: string) {
   );
 }
 
-async function cancelJob(supabase: any, jobId: string) {
+async function cancelJob(supabase: unknown, jobId: string) {
   await updateJobStatus(supabase, jobId, 'cancelled', 'Job cancelled by user');
 
   return new Response(
@@ -692,7 +692,7 @@ async function cancelJob(supabase: any, jobId: string) {
   );
 }
 
-async function processJobs(supabase: any) {
+async function processJobs(supabase: unknown) {
   // This can be called by a cron job to process queued jobs
   const { data: queuedJobs } = await supabase
     .from('import_jobs')

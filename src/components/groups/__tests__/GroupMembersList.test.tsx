@@ -28,13 +28,13 @@ const mockMembers = [
 
 describe('GroupMembersList', () => {
   it('should render member names', () => {
-    render(<GroupMembersList members={mockMembers as any} canManage={false} />);
+    render(<GroupMembersList members={mockMembers as unknown as React.ComponentProps<typeof GroupMembersList>['members']} canManage={false} />);
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('Bob')).toBeInTheDocument();
   });
 
   it('should show role badges', () => {
-    render(<GroupMembersList members={mockMembers as any} canManage={false} />);
+    render(<GroupMembersList members={mockMembers as unknown as React.ComponentProps<typeof GroupMembersList>['members']} canManage={false} />);
     expect(screen.getByText(/admin/i)).toBeInTheDocument();
   });
 

@@ -23,14 +23,14 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: SignUpMetadata) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: any }>;
-  resendVerification: (email: string) => Promise<{ error: any }>;
-  resetPassword: (email: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, metadata?: SignUpMetadata) => Promise<{ error: unknown }>;
+  signIn: (email: string, password: string) => Promise<{ error: unknown }>;
+  signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: unknown }>;
+  resendVerification: (email: string) => Promise<{ error: unknown }>;
+  resetPassword: (email: string) => Promise<{ error: unknown }>;
   signOut: () => Promise<void>;
-  enrollPasskey: () => Promise<{ error: any }>;
-  signInWithPasskey: () => Promise<{ error: any }>;
+  enrollPasskey: () => Promise<{ error: unknown }>;
+  signInWithPasskey: () => Promise<{ error: unknown }>;
   hasPasskey: boolean;
 }
 
@@ -62,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- checkPasskeyEnrollment defined below, run once on mount to set up auth listener
   }, []);
 
   // Secure passkey enrollment check using database
@@ -89,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.removeItem('hasPasskey');
         localStorage.removeItem(`passkey_enrolled_${user.id}`);
-      } catch (e) {
+      } catch (_e) {
         // Ignore localStorage errors
       }
     } catch (error) {
@@ -163,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             password,
           });
           break; // Success, exit retry loop
-        } catch (networkError: any) {
+        } catch (networkError: unknown) {
           attempts++;
           if (attempts >= maxAttempts) {
             throw networkError;
@@ -231,7 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isInIframe = () => {
     try {
       return window.self !== window.top;
-    } catch (e) {
+    } catch (_e) {
       return true;
     }
   };
@@ -372,7 +373,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Convert allowCredentials IDs if needed
       if (options.allowCredentials) {
-        options.allowCredentials = options.allowCredentials.map((cred: any) => ({
+        options.allowCredentials = options.allowCredentials.map((cred: Record<string, unknown>) => ({
           ...cred,
           id: typeof cred.id === 'string' ? new TextEncoder().encode(cred.id) : cred.id
         }));

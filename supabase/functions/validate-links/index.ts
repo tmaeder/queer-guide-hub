@@ -3,7 +3,7 @@ import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supab
 
 const HEAD_TIMEOUT = 5_000
 const GET_TIMEOUT = 10_000
-const MAX_REDIRECTS = 5
+const _MAX_REDIRECTS = 5
 const BETWEEN_CHECK_DELAY = 500
 const DEFAULT_BATCH_LIMIT = 50
 
@@ -117,7 +117,7 @@ serve(async (req: Request) => {
 
     console.log(`[validate-links] mode=${mode}, linkIds=${linkIds?.length ?? 'none'}, batchLimit=${batchLimit}`)
 
-    let links: any[]
+    let links: unknown[]
 
     if (mode === 'single' && linkIds?.length) {
       // Validate specific links by ID

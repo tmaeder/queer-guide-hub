@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   Carousel,
   CarouselContent,
@@ -28,7 +27,7 @@ const decodeHtmlEntities = (text: string) => {
 const LatestNewsSlider = React.memo(() => {
   const { articles, loading, error, getFeaturedArticles } = useNews();
   const isMobile = useIsMobile();
-  const [featuredArticles, setFeaturedArticles] = useState<any[]>([]);
+  const [featuredArticles, setFeaturedArticles] = useState<Record<string, unknown>[]>([]);
 
   // Use getFeaturedArticles() which returns data directly without
   // mutating the shared hook state (avoids race with useNews auto-fetch)

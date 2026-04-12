@@ -59,7 +59,7 @@ export function useGranularRoles(): GranularRolesReturn {
     async function fetchPermissions() {
       try {
         const { data } = await supabase
-          .from('user_role_permissions' as any)
+          .from('user_role_permissions' as 'venues')
           .select('*')
           .eq('user_id', user!.id);
 

@@ -46,9 +46,9 @@ export function useTripExport(tripId: string | undefined) {
         URL.revokeObjectURL(url);
         setError('Pop-up blocked. Please allow pop-ups and try again.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Trip export error:', err);
-      setError(err.message || 'Export failed');
+      setError(err instanceof Error ? err.message : 'Export failed');
     } finally {
       setIsExporting(false);
     }

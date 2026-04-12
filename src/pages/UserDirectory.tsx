@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/command';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import {
   Search,
   MapPin,
@@ -50,7 +49,6 @@ import {
 } from 'lucide-react';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
-import { Tables } from '@/integrations/supabase/types';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -217,13 +215,13 @@ const UserDirectory = () => {
   const {
     data: profiles,
     isLoading,
-    error,
-    refetch,
+    _error,
+    _refetch,
   } = useQuery({
     queryKey: ['user-directory', filters, nearMe, userLocation],
     enabled: !!user,
     queryFn: async () => {
-      let query: any = supabase.from('profiles').select('*');
+      let query = supabase.from('profiles').select('*');
 
       // Search query
       if (filters.searchQuery) {
@@ -959,7 +957,7 @@ const UserDirectory = () => {
                         <Select
                           value={filters.sortBy}
                           onValueChange={(value) =>
-                            setFilters((prev) => ({ ...prev, sortBy: value as any }))
+                            setFilters((prev) => ({ ...prev, sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active' }))
                           }
                         >
                           <SelectTrigger style={{ width: 200, border: '2px solid' }}>
@@ -1097,7 +1095,7 @@ const UserDirectory = () => {
               </Box>
               <Select
                 value={filters.sortBy}
-                onValueChange={(value) => setFilters((prev) => ({ ...prev, sortBy: value as any }))}
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active' }))}
               >
                 <SelectTrigger style={{ width: 'auto', border: 0 }}>
                   <SelectValue />
@@ -1224,8 +1222,8 @@ const UserDirectory = () => {
                         </Box>
                       )}
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {(profile as any)?.user_mode && (
-                          <UserModeBadge mode={(profile as any).user_mode} size="sm" />
+                        {(profile as Record<string, unknown>)?.user_mode && (
+                          <UserModeBadge mode={(profile as Record<string, unknown>).user_mode} size="sm" />
                         )}
                         {profile.is_business && (
                           <Badge

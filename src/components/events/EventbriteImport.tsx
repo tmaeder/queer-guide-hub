@@ -71,11 +71,11 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
       setLocation("");
       setCategoryId("");
       onImportComplete?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Import error:', error);
       toast({
         title: "Import failed",
-        description: error.message || "Failed to import events from Eventbrite",
+        description: error instanceof Error ? error.message : "Failed to import events from Eventbrite",
         variant: "destructive"
       });
     } finally {

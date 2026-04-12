@@ -41,7 +41,7 @@ export function usePipelineRuns(limit = 20) {
   return useQuery({
     queryKey: ['pipeline-runs', limit],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('pipeline_runs')
         .select('*')
         .order('created_at', { ascending: false })
@@ -59,7 +59,7 @@ export function usePipelineRun(runId: string | undefined) {
     queryKey: ['pipeline-run', runId],
     queryFn: async () => {
       if (!runId) return null;
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('pipeline_runs')
         .select('*')
         .eq('id', runId)
@@ -77,7 +77,7 @@ export function useCircuitBreakers() {
   return useQuery({
     queryKey: ['circuit-breakers'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('api_circuit_breakers')
         .select('*')
         .order('api_name', { ascending: true });
@@ -93,7 +93,7 @@ export function useStagingStats() {
   return useQuery({
     queryKey: ['staging-stats'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('ingestion_staging')
         .select('disposition')
         .limit(5000);
@@ -115,7 +115,7 @@ export function usePipelineDefinitionsList() {
   return useQuery({
     queryKey: ['pipeline-definitions-list'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('pipeline_definitions')
         .select('id, name, display_name, is_template, is_enabled, schedule, created_at')
         .order('created_at', { ascending: false });

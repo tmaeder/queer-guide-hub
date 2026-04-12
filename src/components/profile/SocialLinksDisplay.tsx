@@ -12,13 +12,13 @@ import {
 import { Button } from '@/components/ui/button';
 import Box from '@mui/material/Box';
 
-interface SocialLink {
+interface _SocialLink {
   platform: string;
   url: string;
 }
 
 interface SocialLinksDisplayProps {
-  socialLinks: Record<string, any>;
+  socialLinks: Record<string, unknown>;
   showLabels?: boolean;
   size?: 'sm' | 'md' | 'lg';
 }

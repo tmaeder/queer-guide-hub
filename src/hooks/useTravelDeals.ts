@@ -37,7 +37,7 @@ export function useTravelDeals({
     queryFn: async (): Promise<TravelDeal[]> => {
       if (!origin) return [];
 
-      const body: Record<string, any> = { origin, type, currency, limit };
+      const body: Record<string, unknown> = { origin, type, currency, limit };
       if (destination) body.destination = destination;
 
       const { data, error } = await supabase.functions.invoke('travel-deals', { body });

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useModeration, ModerationFilters } from '@/hooks/useModeration';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,8 +6,6 @@ import {
   Flag,
   CheckCircle,
   XCircle,
-  Clock,
-  AlertTriangle,
   Eye,
   ChevronDown,
   ChevronUp,
@@ -93,7 +91,7 @@ export function ModerationQueue() {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
-  const [selectAllCount, setSelectAllCount] = useState(0);
+  const [_selectAllCount, setSelectAllCount] = useState(0);
 
   const toggleSelectAll = async () => {
     if (selectedIds.length > 0) {
@@ -113,7 +111,7 @@ export function ModerationQueue() {
       if (filters.source) query = query.eq('source', filters.source);
 
       const { data } = await query;
-      const allIds = (data || []).map((f: any) => f.id);
+      const allIds = (data || []).map((f: { id: string }) => f.id);
       setSelectedIds(allIds);
       setSelectAllCount(allIds.length);
     }
@@ -154,7 +152,7 @@ export function ModerationQueue() {
     setSelectedIds([]);
   };
 
-  const openCounts = flags.filter((f) => f.status === 'OPEN').length;
+  const _openCounts = flags.filter((f) => f.status === 'OPEN').length;
 
   if (!canManageContent()) {
     return (

@@ -4,7 +4,7 @@ import { isAcceptedFile } from '../fileExtractors';
 // extractFileContent and internal functions need Canvas/PDF/mammoth — tested via integration.
 // Test the synchronous guard function here.
 
-function makeFile(name: string, type: string, size: number = 100): File {
+function makeFile(name: string, type: string, _size: number = 100): File {
   return new File(['x'], name, { type });
 }
 

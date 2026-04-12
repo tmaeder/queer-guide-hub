@@ -79,7 +79,7 @@ export function usePipelineExecution(
     const channel = supabase
       .channel(`pipeline-run-${activeRunId}`)
       .on(
-        'postgres_changes' as any,
+        'postgres_changes' as const,
         {
           event: 'UPDATE',
           schema: 'public',

@@ -17,7 +17,7 @@ export const BulkCreatePersonalities = () => {
   const [names, setNames] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
-  const [results, setResults] = useState<{ created: any[], errors: any[] } | null>(null);
+  const [results, setResults] = useState<{ created: Array<{ name: string; image_url?: string; profession?: string; nationality?: string }>, errors: Array<{ name: string; error: string }> } | null>(null);
   const [sources, setSources] = useState({
     wikidata: true,
     wikipedia: true,
@@ -396,7 +396,7 @@ export const BulkCreatePersonalities = () => {
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
-                  {results.created.map((personality: any, index: number) => (
+                  {results.created.map((personality, index: number) => (
                     <Box key={index} sx={{ fontSize: '0.875rem', p: 1, bgcolor: 'success.light', borderRadius: 1, borderLeft: 4, borderColor: 'success.main' }}>
                       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                         {personality.image_url && (
@@ -435,7 +435,7 @@ export const BulkCreatePersonalities = () => {
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
-                  {results.errors.map((error: any, index: number) => (
+                  {results.errors.map((error, index: number) => (
                     <Box key={index} sx={{ fontSize: '0.875rem', p: 1, bgcolor: 'error.light', borderRadius: 1, borderLeft: 4, borderColor: 'error.main' }}>
                       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                         <Box sx={{ flex: 1 }}>

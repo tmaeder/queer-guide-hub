@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface ProcessingConfig {
@@ -180,9 +181,9 @@ function calculateTotalRenditions(config: ProcessingConfig): number {
 }
 
 async function processVideoInBackground(
-  supabase: any,
+  supabase: SupabaseClient,
   jobId: string,
-  video: any,
+  video: unknown,
   config: ProcessingConfig
 ) {
   try {
@@ -292,13 +293,13 @@ async function processVideoInBackground(
 }
 
 async function updateJobProgress(
-  supabase: any,
+  supabase: unknown,
   jobId: string,
   percent: number,
   stage: string,
   completedRenditions?: number
 ) {
-  const updates: any = {
+  const updates: unknown = {
     progress_percent: Math.round(percent),
     current_stage: stage,
     updated_at: new Date().toISOString()
@@ -315,7 +316,7 @@ async function updateJobProgress(
 }
 
 async function generateProgressiveRendition(
-  supabase: any,
+  supabase: unknown,
   videoId: string,
   codec: string,
   container: string
@@ -350,7 +351,7 @@ async function generateProgressiveRendition(
 }
 
 async function generateHLSRendition(
-  supabase: any,
+  supabase: unknown,
   videoId: string,
   resolution: string,
   codec: string
@@ -384,7 +385,7 @@ async function generateHLSRendition(
   console.log(`✅ Generated HLS ${resolution} ${codec} rendition`)
 }
 
-async function generateVideoThumbnails(supabase: any, videoId: string) {
+async function generateVideoThumbnails(supabase: unknown, videoId: string) {
   console.log(`🖼️ Generating video thumbnails...`)
 
   // Simulate thumbnail generation
@@ -406,7 +407,7 @@ async function generateVideoThumbnails(supabase: any, videoId: string) {
   console.log(`✅ Generated video thumbnails`)
 }
 
-async function generateCaptionsPlaceholder(supabase: any, videoId: string) {
+async function generateCaptionsPlaceholder(supabase: unknown, videoId: string) {
   console.log(`📝 Generating captions placeholder...`)
 
   // Simulate caption processing

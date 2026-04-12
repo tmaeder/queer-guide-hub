@@ -57,7 +57,7 @@ describe('OAuthButtons', () => {
   });
 
   it('should disable buttons while loading', async () => {
-    let resolve: any;
+    let resolve: (value: unknown) => void;
     mockSignInWithOAuth.mockReturnValue(new Promise(r => { resolve = r; }));
     render(<OAuthButtons />);
     fireEvent.click(screen.getByText('Continue with Google'));

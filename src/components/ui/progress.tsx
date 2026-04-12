@@ -12,12 +12,12 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
 
     return (
       <MuiLinearProgress
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLDivElement>}
         variant="determinate"
         value={normalizedValue}
         className={className}
         color="primary"
-        {...(props as any)}
+        {...(props as Record<string, unknown>)}
       />
     )
   }

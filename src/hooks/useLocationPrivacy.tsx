@@ -35,6 +35,7 @@ export function useLocationPrivacy() {
     if (user) {
       fetchLocationSettings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchLocationSettings defined below, re-run on user change
   }, [user]);
 
   const fetchLocationSettings = async () => {
@@ -50,7 +51,7 @@ export function useLocationPrivacy() {
       if (error) throw error;
 
       if (profile?.privacy_settings) {
-        const settings = profile.privacy_settings as any;
+        const settings = profile.privacy_settings as Record<string, unknown>;
         setLocationSettings({
           preciseLocation: settings.location_public || false,
           regionOnly: !settings.location_public || true,
@@ -77,7 +78,7 @@ export function useLocationPrivacy() {
         .eq('user_id', user.id)
         .single();
 
-      const currentSettings = (currentProfile?.privacy_settings as any) || {};
+      const currentSettings = (currentProfile?.privacy_settings as Record<string, unknown>) || {};
       const updatedPrivacySettings = {
         ...currentSettings,
         location_public: updatedSettings.preciseLocation,

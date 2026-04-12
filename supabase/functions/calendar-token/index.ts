@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders } from '../_shared/supabase-client.ts'
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
@@ -51,7 +51,7 @@ serve(async (req) => {
     }
 
     // Reuse existing non-revoked token if available
-    const { data: existing, error: existingErr } = await supabase
+    const { data: existing, error: _existingErr } = await supabase
       .from('calendar_feed_tokens')
       .select('token')
       .eq('user_id', user.id)

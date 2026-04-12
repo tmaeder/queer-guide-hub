@@ -17,7 +17,7 @@ interface SecurityMetrics {
 
 interface SecurityAction {
   type: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 const DEFAULT_METRICS: SecurityMetrics = {
@@ -104,7 +104,7 @@ export function useConsolidatedSecurity() {
   const triggerSecurityIncident = useCallback(async (
     incidentType: string, 
     severity: 'critical' | 'high' | 'medium' = 'high',
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) => {
     try {
       await supabase.rpc('log_security_event', {
@@ -129,7 +129,7 @@ export function useConsolidatedSecurity() {
         variant: "destructive"
       });
     }
-  }, [toast, fetchSecurityMetrics]);
+  }, [toast, fetchSecurityMetrics, user?.id]);
 
   const anonymizeLocationData = useCallback(async () => {
     return withLoading(async () => {

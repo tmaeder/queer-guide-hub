@@ -15,8 +15,8 @@ Deno.serve((_req) => {
 // Original code below is preserved for reference but unreachable.
 // ------------------------------------------------------------------
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 import { enrichVenueWithAI, enrichEventWithAI, enrichPersonalityWithAI, enrichNewsWithAI } from '../_shared/ai-enrichment.ts'
 import { preClassify, computeReviewPriority, type ClassificationInput, type ClassificationResult, type SensitivityFlag, type ContentType } from '../_shared/content-classifier.ts'
 
@@ -124,7 +124,7 @@ interface DedupResult {
   details: Record<string, unknown>
 }
 
-async function deduplicateItem(supabase: any, targetTable: string, data: Record<string, unknown>): Promise<DedupResult> {
+async function deduplicateItem(supabase: SupabaseClient, targetTable: string, data: Record<string, unknown>): Promise<DedupResult> {
   try {
     switch (targetTable) {
       case 'venues': {
@@ -178,7 +178,7 @@ async function deduplicateItem(supabase: any, targetTable: string, data: Record<
 
 // --- Commit to target table ---
 
-async function commitItem(supabase: any, targetTable: string, normalizedData: Record<string, unknown>, enrichedData: Record<string, unknown> | null, classificationResult?: Record<string, unknown> | null): Promise<{ id: string; action: 'inserted' | 'updated' }> {
+async function commitItem(supabase: unknown, targetTable: string, normalizedData: Record<string, unknown>, enrichedData: Record<string, unknown> | null, classificationResult?: Record<string, unknown> | null): Promise<{ id: string; action: 'inserted' | 'updated' }> {
   // Merge enriched data into normalized
   const finalData = { ...normalizedData }
   if (enrichedData) {
@@ -220,7 +220,7 @@ async function commitItem(supabase: any, targetTable: string, normalizedData: Re
 
 // --- Enrichment ---
 
-async function enrichItem(supabase: any, targetTable: string, normalizedData: Record<string, unknown>): Promise<Record<string, unknown> | null> {
+async function enrichItem(supabase: unknown, targetTable: string, normalizedData: Record<string, unknown>): Promise<Record<string, unknown> | null> {
   const enriched: Record<string, unknown> = {}
 
   // For venues: fetch Pexels image if no images
@@ -290,7 +290,7 @@ async function enrichItem(supabase: any, targetTable: string, normalizedData: Re
 const BATCH_SIZE = 20
 const ESTIMATED_COST_PER_AI_CALL = 0.0025
 
-async function processAIValidation(supabase: any, jobId: string): Promise<{ processed: number; hasMore: boolean }> {
+async function processAIValidation(supabase: unknown, jobId: string): Promise<{ processed: number; hasMore: boolean }> {
   const { data: items, error } = await supabase
     .from('ingestion_staging')
     .select('*')
@@ -432,7 +432,7 @@ async function processAIValidation(supabase: any, jobId: string): Promise<{ proc
   return { processed: items.length, hasMore: (count || 0) > 0 }
 }
 
-async function processDedup(supabase: any, jobId: string): Promise<{ processed: number; hasMore: boolean }> {
+async function processDedup(supabase: unknown, jobId: string): Promise<{ processed: number; hasMore: boolean }> {
   const { data: items, error } = await supabase
     .from('ingestion_staging')
     .select('*')
@@ -481,7 +481,7 @@ async function processDedup(supabase: any, jobId: string): Promise<{ processed: 
   return { processed: items.length, hasMore: (count || 0) > 0 }
 }
 
-async function processEnrichment(supabase: any, jobId: string): Promise<{ processed: number; hasMore: boolean }> {
+async function processEnrichment(supabase: unknown, jobId: string): Promise<{ processed: number; hasMore: boolean }> {
   const { data: items, error } = await supabase
     .from('ingestion_staging')
     .select('*')
@@ -521,7 +521,7 @@ async function processEnrichment(supabase: any, jobId: string): Promise<{ proces
   return { processed: items.length, hasMore: (count || 0) > 0 }
 }
 
-async function processCommit(supabase: any, jobId: string): Promise<{ processed: number; hasMore: boolean }> {
+async function processCommit(supabase: unknown, jobId: string): Promise<{ processed: number; hasMore: boolean }> {
   const { data: items, error } = await supabase
     .from('ingestion_staging')
     .select('*')
@@ -575,7 +575,7 @@ async function processCommit(supabase: any, jobId: string): Promise<{ processed:
 
 // --- Resume stalled jobs ---
 
-async function resumeStalledJobs(supabase: any): Promise<{ resumed: number }> {
+async function resumeStalledJobs(supabase: unknown): Promise<{ resumed: number }> {
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
 
   const { data: stalledJobs } = await supabase

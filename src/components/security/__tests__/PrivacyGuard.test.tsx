@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-let mockUser: any = { id: 'u-1' };
+let mockUser: { id: string } | null = { id: 'u-1' };
 let mockIsAdmin = false;
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mockUser }) }));
 vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: () => ({ isAdmin: mockIsAdmin }) }));

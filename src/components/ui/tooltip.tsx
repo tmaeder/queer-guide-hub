@@ -12,7 +12,7 @@ function TooltipProvider({ children }: { children: React.ReactNode; delayDuratio
 
 function Tooltip({ children, delayDuration }: { children: React.ReactNode; delayDuration?: number }) {
   const [title, setTitle] = React.useState<React.ReactNode>("");
-  const [placement, setPlacement] = React.useState<
+  const [placement, _setPlacement] = React.useState<
     'top' | 'right' | 'bottom' | 'left'
   >('top');
 
@@ -53,7 +53,7 @@ function Tooltip({ children, delayDuration }: { children: React.ReactNode; delay
 const TooltipTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }>(
   ({ children, asChild, ...props }, ref) => {
     if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<any>, { ref, ...props });
+      return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { ref, ...props });
     }
     return <button ref={ref} type="button" {...props}>{children}</button>;
   }
@@ -67,7 +67,7 @@ interface TooltipContentProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const TooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps>(
-  ({ className, children, side = "top", ...props }, ref) => {
+  ({ _className, children, _side = "top", ..._props }, _ref) => {
     const { setTitle } = React.useContext(TooltipContext);
 
     // Push children as the tooltip title into MUI Tooltip via context

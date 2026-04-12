@@ -15,7 +15,6 @@ import {
   Building,
   Star,
   Heart,
-  ExternalLink,
   Clock,
   Thermometer,
   Mountain,
@@ -79,7 +78,7 @@ export default function CityDetail() {
   const { user } = useAuth();
 
   const hasAirport = !!(city?.major_airport_code || (city?.airport_codes && city.airport_codes.length > 0));
-  const { nearestAirport, loading: nearestAirportLoading } = useNearestAirport({
+  const { nearestAirport, loading: _nearestAirportLoading } = useNearestAirport({
     latitude: city?.latitude ?? null,
     longitude: city?.longitude ?? null,
     hasAirport,
@@ -108,6 +107,7 @@ export default function CityDetail() {
       loadCityImage();
       loadRelatedContent();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadCityImage/loadRelatedContent defined below, re-run on city change
   }, [city]);
   useEffect(() => {
     if (city?.id) fetchVillages({ cityId: city.id });
@@ -126,7 +126,7 @@ export default function CityDetail() {
     try {
       const result = await fetchCityImage(city.id, city.name, city.countries?.name || '');
       setImageUrl(result.image_url || '');
-    } catch (error) {
+    } catch (_error) {
       // Image loading failure is non-critical, fallback to no image
     }
   };
@@ -139,7 +139,7 @@ export default function CityDetail() {
         title: isFavorited(city.id) ? 'Removed from favorites' : 'Added to favorites',
         description: `${city.name} ${isFavorited(city.id) ? 'removed from' : 'added to'} your favorites`,
       });
-    } catch (error) {
+    } catch (_error) {
       toast({ title: 'Error', description: 'Failed to update favorites', variant: 'destructive' });
     }
   };
@@ -210,7 +210,7 @@ export default function CityDetail() {
       {/* Safety Alert — above fold, before title */}
       <SafetyAlertBanner
         criminalization={
-          city.countries?.lgbti_criminalization as Record<string, any> | null | undefined
+          city.countries?.lgbti_criminalization as Record<string, unknown> | null | undefined
         }
         countryName={city.countries?.name || ''}
       />

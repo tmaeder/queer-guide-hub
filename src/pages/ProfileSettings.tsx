@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import { AvatarSettings } from '@/components/profile/AvatarSettings';
 import {
   Select,
@@ -32,7 +31,6 @@ import {
   Lock,
   CalendarIcon,
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
@@ -83,7 +81,7 @@ function ProfileSettingsWrapper({
   navigate,
   hasPasskey,
   user,
-}: any) {
+}: Record<string, unknown>) {
   const { profile, isLoading, isError, errors, profileLoading, profileError } =
     useOptimizedProfileData();
 
@@ -123,59 +121,59 @@ function ProfileSettingsContent({
   navigate,
   hasPasskey,
   user,
-}: any) {
+}: Record<string, unknown>) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
 
   const [formData, setFormData] = useState({
     display_name: profile?.display_name || '',
-    first_name: (profile as any)?.first_name || '',
-    last_name: (profile as any)?.last_name || '',
+    first_name: (profile as Record<string, unknown>)?.first_name || '',
+    last_name: (profile as Record<string, unknown>)?.last_name || '',
     bio: profile?.bio || '',
     location: profile?.location || '',
     pronouns: profile?.pronouns || '',
     phone: profile?.phone || '',
     website: profile?.website || '',
     date_of_birth: profile?.date_of_birth || '',
-    age_range: (profile as any)?.age_range || '',
-    gender_identity: (profile as any)?.gender_identity || '',
-    sexual_orientation: (profile as any)?.sexual_orientation || '',
-    relationship_status: (profile as any)?.relationship_status || '',
-    occupation: (profile as any)?.occupation || '',
-    education: (profile as any)?.education || '',
+    age_range: (profile as Record<string, unknown>)?.age_range || '',
+    gender_identity: (profile as Record<string, unknown>)?.gender_identity || '',
+    sexual_orientation: (profile as Record<string, unknown>)?.sexual_orientation || '',
+    relationship_status: (profile as Record<string, unknown>)?.relationship_status || '',
+    occupation: (profile as Record<string, unknown>)?.occupation || '',
+    education: (profile as Record<string, unknown>)?.education || '',
 
     // New LGBTQ+ specific fields
-    chosen_name: (profile as any)?.chosen_name || '',
-    name_pronunciation: (profile as any)?.name_pronunciation || '',
-    coming_out_status: (profile as any)?.coming_out_status || {
+    chosen_name: (profile as Record<string, unknown>)?.chosen_name || '',
+    name_pronunciation: (profile as Record<string, unknown>)?.name_pronunciation || '',
+    coming_out_status: (profile as Record<string, unknown>)?.coming_out_status || {
       family: 'not_out',
       friends: 'not_out',
       work: 'not_out',
       public: 'not_out',
     },
-    chosen_family_status: (profile as any)?.chosen_family_status || '',
+    chosen_family_status: (profile as Record<string, unknown>)?.chosen_family_status || '',
 
     // Sexuality and relationships fields
-    romantic_orientation: (profile as any)?.romantic_orientation || '',
-    relationship_style: (profile as any)?.relationship_style || '',
-    current_relationship_status: (profile as any)?.current_relationship_status || '',
-    romance_style: (profile as any)?.romance_style || '',
-    physical_affection_preference: (profile as any)?.physical_affection_preference || '',
-    sexual_frequency_preference: (profile as any)?.sexual_frequency_preference || '',
-    communication_about_sex: (profile as any)?.communication_about_sex || '',
-    sexual_exploration_openness: (profile as any)?.sexual_exploration_openness || '',
-    sexual_health_status: (profile as any)?.sexual_health_status || '',
-    kink_experience_level: (profile as any)?.kink_experience_level || '',
-    bdsm_role: (profile as any)?.bdsm_role || '',
-    jealousy_comfort_level: (profile as any)?.jealousy_comfort_level || '',
+    romantic_orientation: (profile as Record<string, unknown>)?.romantic_orientation || '',
+    relationship_style: (profile as Record<string, unknown>)?.relationship_style || '',
+    current_relationship_status: (profile as Record<string, unknown>)?.current_relationship_status || '',
+    romance_style: (profile as Record<string, unknown>)?.romance_style || '',
+    physical_affection_preference: (profile as Record<string, unknown>)?.physical_affection_preference || '',
+    sexual_frequency_preference: (profile as Record<string, unknown>)?.sexual_frequency_preference || '',
+    communication_about_sex: (profile as Record<string, unknown>)?.communication_about_sex || '',
+    sexual_exploration_openness: (profile as Record<string, unknown>)?.sexual_exploration_openness || '',
+    sexual_health_status: (profile as Record<string, unknown>)?.sexual_health_status || '',
+    kink_experience_level: (profile as Record<string, unknown>)?.kink_experience_level || '',
+    bdsm_role: (profile as Record<string, unknown>)?.bdsm_role || '',
+    jealousy_comfort_level: (profile as Record<string, unknown>)?.jealousy_comfort_level || '',
 
     privacy_settings: {
-      profile_visibility: (profile?.privacy_settings as any)?.profile_visibility || 'public',
-      email_visible: (profile?.privacy_settings as any)?.email_visible || false,
-      phone_visible: (profile?.privacy_settings as any)?.phone_visible || false,
+      profile_visibility: (profile?.privacy_settings as Record<string, unknown> | undefined)?.profile_visibility || 'public',
+      email_visible: (profile?.privacy_settings as Record<string, unknown> | undefined)?.email_visible || false,
+      phone_visible: (profile?.privacy_settings as Record<string, unknown> | undefined)?.phone_visible || false,
     },
-    user_mode: (profile as any)?.user_mode || 'exploration',
+    user_mode: (profile as Record<string, unknown>)?.user_mode || 'exploration',
   });
 
   // Calculate profile completion percentage
@@ -225,7 +223,7 @@ function ProfileSettingsContent({
     setHasUnsavedChanges(true);
   };
 
-  const handleAvatarSave = async (avatarData: any) => {
+  const handleAvatarSave = async (avatarData: { avatarUrl?: string; avatarConfig?: Record<string, unknown>; avatarType?: string }) => {
     // Update the local form data to reflect the avatar change
     setFormData((prev) => ({
       ...prev,
@@ -238,7 +236,7 @@ function ProfileSettingsContent({
     setHasUnsavedChanges(false);
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const _handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 

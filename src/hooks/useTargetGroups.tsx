@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useTargetGroups() {
-  const [targetGroups, setTargetGroups] = useState<any[]>([]);
+  const [targetGroups, setTargetGroups] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchTargetGroups = async () => {

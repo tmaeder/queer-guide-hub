@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -85,7 +84,7 @@ export const useGroupPosts = (groupId: string) => {
       const votes = votesResult.data;
 
       return (data || []).map((post) => {
-        const profile = (post as any).profiles;
+        const profile = (post as Record<string, unknown>).profiles as Record<string, unknown> | null;
         return {
           ...post,
           post_type: post.post_type as 'text' | 'announcement' | 'poll',
@@ -97,8 +96,8 @@ export const useGroupPosts = (groupId: string) => {
             : { display_name: 'Unknown User', avatar_url: '' },
           user_liked: likes?.some((like) => like.post_id === post.id) || false,
           user_vote: votes?.find((vote) => vote.post_id === post.id)?.option_index || null,
-          poll_data: post.poll_data as any,
-          mentions: (post.mentions as any) || [],
+          poll_data: post.poll_data as Record<string, unknown> | null,
+          mentions: (post.mentions as Array<{ user_id: string; username: string }>) || [],
         };
       });
     },
@@ -122,7 +121,7 @@ export const useGroupPosts = (groupId: string) => {
 
       return (
         memberships?.map((membership) => {
-          const profile = (membership as any).profiles;
+          const profile = (membership as Record<string, unknown>).profiles as Record<string, unknown> | null;
           return {
             user_id: membership.user_id,
             role: membership.role,
@@ -151,7 +150,7 @@ export const useGroupPosts = (groupId: string) => {
       content: string;
       postType?: 'text' | 'announcement' | 'poll';
       isPinned?: boolean;
-      pollData?: any;
+      pollData?: Record<string, unknown> | null;
       mentions?: Array<{ user_id: string; username: string }>;
     }) => {
       if (!user?.id) throw new Error('User not authenticated');

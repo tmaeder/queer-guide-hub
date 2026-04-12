@@ -102,7 +102,7 @@ export function FeedbackButton() {
         }
       }
 
-      const { error } = await supabase.from('community_submissions' as any).insert({
+      const { error } = await supabase.from('community_submissions' as const).insert({
         content_type: 'feedback',
         data: {
           title: title.trim(),
@@ -118,10 +118,10 @@ export function FeedbackButton() {
 
       setIsSubmitted(true);
       toast({ title: 'Feedback submitted! Thank you.' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Submission failed',
-        description: err.message || 'Please try again.',
+        description: err instanceof Error ? err.message : 'Please try again.',
         variant: 'destructive',
       });
     } finally {

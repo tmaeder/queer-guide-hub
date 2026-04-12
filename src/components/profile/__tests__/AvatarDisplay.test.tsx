@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 
 // Mock BigHead since it's a heavy SVG library
 vi.mock('@bigheads/core', () => ({
-  BigHead: (props: any) => <div data-testid="bighead-avatar">BigHead</div>,
+  BigHead: (_props: unknown) => <div data-testid="bighead-avatar">BigHead</div>,
 }));
 
 import { AvatarDisplay } from '../AvatarDisplay';
@@ -23,7 +23,7 @@ describe('AvatarDisplay', () => {
   });
 
   it('should render BigHead when avatarConfig provided', () => {
-    const config = { body: 'chest', eyes: 'normal', hair: 'short' } as any;
+    const config = { body: 'chest', eyes: 'normal', hair: 'short' } as unknown;
     render(<AvatarDisplay avatarConfig={config} />);
     expect(screen.getByTestId('bighead-avatar')).toBeInTheDocument();
   });
@@ -36,7 +36,7 @@ describe('AvatarDisplay', () => {
   });
 
   it('should prioritize avatarUrl over avatarConfig', () => {
-    render(<AvatarDisplay avatarUrl="https://example.com/a.jpg" avatarConfig={{} as any} />);
+    render(<AvatarDisplay avatarUrl="https://example.com/a.jpg" avatarConfig={{} as unknown} />);
     expect(screen.queryByTestId('bighead-avatar')).not.toBeInTheDocument();
   });
 

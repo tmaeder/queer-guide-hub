@@ -78,7 +78,7 @@ export const GroupPostCard = ({
   const renderPoll = () => {
     if (!post.poll_data) return null;
 
-    const totalVotes = post.poll_data.options.reduce((sum: number, _: string, index: number) => {
+    const totalVotes = post.poll_data.options.reduce((sum: number, _: string, _index: number) => {
       // This would need to be calculated from actual vote data
       return sum + 0; // Placeholder
     }, 0);

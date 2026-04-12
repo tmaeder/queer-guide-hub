@@ -40,13 +40,13 @@ export function useFavorites(type: FavoriteType) {
     const fetchFavorites = async () => {
       setLoading(true);
       const { data, error } = await supabase
-        .from(config.table as any)
+        .from(config.table as 'venues')
         .select(config.idColumn)
         .eq('user_id', user.id);
 
       if (!cancelled) {
         if (!error && data) {
-          setFavoriteIds(new Set(data.map((row: any) => row[config.idColumn])));
+          setFavoriteIds(new Set(data.map((row: Record<string, unknown>) => row[config.idColumn] as string)));
         }
         setLoading(false);
       }
@@ -56,6 +56,7 @@ export function useFavorites(type: FavoriteType) {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- config derived from type; config?.table and config?.idColumn already cover it
   }, [user, config?.table, config?.idColumn]);
 
   const isFavorited = useCallback((itemId: string) => favoriteIds.has(itemId), [favoriteIds]);
@@ -80,7 +81,7 @@ export function useFavorites(type: FavoriteType) {
 
       if (currentlyFavorited) {
         const { error } = await supabase
-          .from(config.table as any)
+          .from(config.table as 'venues')
           .delete()
           .eq('user_id', user.id)
           .eq(config.idColumn, itemId);
@@ -92,8 +93,8 @@ export function useFavorites(type: FavoriteType) {
         }
       } else {
         const { error } = await supabase
-          .from(config.table as any)
-          .insert({ user_id: user.id, [config.idColumn]: itemId } as any);
+          .from(config.table as 'venues')
+          .insert({ user_id: user.id, [config.idColumn]: itemId } as Record<string, unknown>);
 
         if (error) {
           // Revert

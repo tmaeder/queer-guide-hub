@@ -26,7 +26,7 @@ const SheetTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttribu
   ({ children, asChild, onClick, ...props }, ref) => {
     const { onOpenChange } = React.useContext(SheetContext);
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => { onOpenChange(true); onClick?.(e); };
-    if (asChild && React.isValidElement(children)) return React.cloneElement(children as React.ReactElement<any>, { onClick: handleClick, ref });
+    if (asChild && React.isValidElement(children)) return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { onClick: handleClick, ref });
     return <button ref={ref} onClick={handleClick} type="button" {...props}>{children}</button>;
   }
 );
@@ -36,7 +36,7 @@ const SheetClose = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttribute
   ({ children, asChild, onClick, ...props }, ref) => {
     const { onOpenChange } = React.useContext(SheetContext);
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => { onOpenChange(false); onClick?.(e); };
-    if (asChild && React.isValidElement(children)) return React.cloneElement(children as React.ReactElement<any>, { onClick: handleClick, ref });
+    if (asChild && React.isValidElement(children)) return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { onClick: handleClick, ref });
     return <button ref={ref} onClick={handleClick} type="button" {...props}>{children}</button>;
   }
 );
@@ -53,7 +53,7 @@ interface SheetContentProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
-  ({ className, children, side = "right", style, ...props }, ref) => {
+  ({ className, children, side = "right", _style, ..._props }, ref) => {
     const { open, onOpenChange } = React.useContext(SheetContext);
     const anchor = side === "left" ? "left" : side === "top" ? "top" : side === "bottom" ? "bottom" : "right";
     return (
@@ -63,7 +63,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
         anchor={anchor}
         className={className}
         PaperProps={{
-          ref: ref as any,
+          ref: ref as React.Ref<HTMLDivElement>,
           sx: {
             width: side === "left" || side === "right" ? { xs: '100%', sm: 400 } : '100%',
             height: side === "top" || side === "bottom" ? 'auto' : '100%',
@@ -99,14 +99,14 @@ SheetFooter.displayName = "SheetFooter"
 const SheetTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, children, style, ...props }, ref) => (
     <Typography ref={ref} variant="h6" component="h2" className={className} style={style}
-      sx={{ fontWeight: 600 }} {...(props as any)}>{children}</Typography>
+      sx={{ fontWeight: 600 }} {...(props as Record<string, unknown>)}>{children}</Typography>
   )
 );
 SheetTitle.displayName = "SheetTitle"
 
 const SheetDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, children, style, ...props }, ref) => (
-    <Typography ref={ref} variant="body2" color="text.secondary" className={className} style={style} {...(props as any)}>{children}</Typography>
+    <Typography ref={ref} variant="body2" color="text.secondary" className={className} style={style} {...(props as Record<string, unknown>)}>{children}</Typography>
   )
 );
 SheetDescription.displayName = "SheetDescription"

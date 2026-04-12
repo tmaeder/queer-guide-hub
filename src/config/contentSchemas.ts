@@ -7,7 +7,7 @@
 
 import { z } from 'zod';
 import { getContentType } from '@/config/contentTypeRegistry';
-import type { FieldConfig, FieldType } from '@/types/cms';
+import type { FieldConfig } from '@/types/cms';
 
 /**
  * Map a single FieldConfig to its corresponding Zod schema.

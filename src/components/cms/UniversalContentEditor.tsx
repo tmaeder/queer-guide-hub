@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Eye, Trash2, Upload, Plus, X, MapPin, Clock, Users, Tag, Globe, Calendar, User, Building, Star } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Trash2, Upload, MapPin, Clock, Users, Tag, Globe, Calendar, User, Building, Star } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
@@ -24,16 +24,16 @@ import { AutoTagPanel } from '@/components/cms/AutoTagPanel';
 import { GeoLinkPanel } from '@/components/cms/GeoLinkPanel';
 
 interface UniversalContentEditorProps {
-  content: any;
+  content: Record<string, unknown>;
   onClose: () => void;
 }
 
 export function UniversalContentEditor({ content, onClose }: UniversalContentEditorProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(false);
-  const [originalData, setOriginalData] = useState<any>({});
+  const [originalData, setOriginalData] = useState<Record<string, unknown>>({});
   const [activeTab, setActiveTab] = useState('basic');
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
     }
   }, [content]);
 
-  const handleFieldChange = (field: string, value: any) => {
+  const handleFieldChange = (field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -367,44 +367,44 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
           ]
         };
 
-      default:
+      default: {
         // Create comprehensive field groups for unknown content types
         const allFields = Object.keys(formData).filter(key => !['id', 'created_at', 'updated_at', 'content_type'].includes(key));
-        
+
         // Group fields by common patterns
-        const basicFields = allFields.filter(key => 
+        const basicFields = allFields.filter(key =>
           ['name', 'title', 'description', 'bio', 'content', 'slug', 'type', 'category', 'status'].some(pattern => key.includes(pattern))
         );
-        
-        const locationFields = allFields.filter(key => 
+
+        const locationFields = allFields.filter(key =>
           ['latitude', 'longitude', 'address', 'city', 'country', 'location', 'timezone', 'region'].some(pattern => key.includes(pattern))
         );
-        
-        const mediaFields = allFields.filter(key => 
+
+        const mediaFields = allFields.filter(key =>
           ['image_url', 'images', 'video', 'audio', 'media', 'avatar', 'photo', 'picture'].some(pattern => key.includes(pattern))
         );
-        
-        const contactFields = allFields.filter(key => 
+
+        const contactFields = allFields.filter(key =>
           ['email', 'phone', 'website', 'social', 'contact'].some(pattern => key.includes(pattern))
         );
-        
-        const metaFields = allFields.filter(key => 
+
+        const metaFields = allFields.filter(key =>
           ['tags', 'categories', 'meta_', 'seo_', 'keywords', 'featured', 'priority', 'weight', 'order'].some(pattern => key.includes(pattern))
         );
-        
-        const statsFields = allFields.filter(key => 
+
+        const statsFields = allFields.filter(key =>
           ['count', 'views', 'likes', 'shares', 'rating', 'score', 'popularity', 'usage'].some(pattern => key.includes(pattern))
         );
-        
-        const dateFields = allFields.filter(key => 
+
+        const dateFields = allFields.filter(key =>
           ['_at', '_date', 'published', 'expires', 'start', 'end', 'birth', 'death'].some(pattern => key.includes(pattern))
         );
-        
-        const otherFields = allFields.filter(key => 
+
+        const otherFields = allFields.filter(key =>
           ![...basicFields, ...locationFields, ...mediaFields, ...contactFields, ...metaFields, ...statsFields, ...dateFields].includes(key)
         );
-        
-        const fieldGroups: any = {};
+
+        const fieldGroups: Record<string, Array<{ key: string; label: string; type: string; required?: boolean; readonly?: boolean; options?: string[]; icon?: React.ReactNode }>> = {};
         
         if (basicFields.length > 0) {
           fieldGroups.basic = basicFields.map(key => ({ 
@@ -490,10 +490,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         }
         
         return fieldGroups;
+      }
     }
   };
 
-  const renderField = (field: any) => {
+  const renderField = (field: { key: string; label: string; type: string; required?: boolean; readonly?: boolean; options?: string[]; icon?: React.ReactNode }) => {
     const { key, label, type, required, readonly, options, icon } = field;
     const fieldValue = formData[key];
 
@@ -751,7 +752,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
           </Box>
         );
 
-      case 'array':
+      case 'array': {
         // Handle different array data formats
         let displayValue = '';
         if (fieldValue) {
@@ -775,7 +776,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             displayValue = Object.values(fieldValue).join(', ');
           }
         }
-        
+
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -800,8 +801,9 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             )}
           </Box>
         );
+      }
 
-      case 'json':
+      case 'json': {
         // Handle different JSON data formats
         let jsonDisplayValue = '';
         if (fieldValue) {
@@ -820,7 +822,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             jsonDisplayValue = String(fieldValue);
           }
         }
-        
+
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -850,6 +852,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             )}
           </Box>
         );
+      }
 
       default:
         // Auto-detect type

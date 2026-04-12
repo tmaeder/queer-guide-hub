@@ -69,7 +69,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
 
     try {
       let query = supabase
-        .from('cms_media' as any)
+        .from('cms_media' as 'venues')
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -130,7 +130,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
 
       // Create cms_media record
       const { data, error: insertError } = await supabase
-        .from('cms_media' as any)
+        .from('cms_media' as 'venues')
         .insert({
           filename,
           original_filename: file.name,
@@ -162,7 +162,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
     try {
       // Get storage path first
       const { data: mediaItem } = await supabase
-        .from('cms_media' as any)
+        .from('cms_media' as 'venues')
         .select('storage_path')
         .eq('id', mediaId)
         .single();
@@ -176,7 +176,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
 
       // Delete record (attachments cascade)
       const { error: deleteError } = await supabase
-        .from('cms_media' as any)
+        .from('cms_media' as 'venues')
         .delete()
         .eq('id', mediaId);
 
@@ -201,7 +201,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
 
     try {
       const { error: insertError } = await supabase
-        .from('cms_media_attachments' as any)
+        .from('cms_media_attachments' as 'venues')
         .insert({
           media_id: mediaId,
           source_table: sourceTable,
@@ -221,7 +221,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
   const detachMedia = useCallback(async (attachmentId: string): Promise<boolean> => {
     try {
       const { error: deleteError } = await supabase
-        .from('cms_media_attachments' as any)
+        .from('cms_media_attachments' as 'venues')
         .delete()
         .eq('id', attachmentId);
 
@@ -239,7 +239,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
   ): Promise<CMSMediaAttachment[]> => {
     try {
       const { data, error: fetchError } = await supabase
-        .from('cms_media_attachments' as any)
+        .from('cms_media_attachments' as 'venues')
         .select('*, media:cms_media(*)')
         .eq('source_table', sourceTable)
         .eq('source_id', sourceId)
@@ -259,7 +259,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
   ): Promise<boolean> => {
     try {
       const { error: updateError } = await supabase
-        .from('cms_media' as any)
+        .from('cms_media' as 'venues')
         .update({
           alt_text: updates.alt_text,
           caption: updates.caption,
@@ -287,7 +287,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
 
     try {
       const { data, error: insertError } = await supabase
-        .from('cms_media' as any)
+        .from('cms_media' as 'venues')
         .insert({
           filename: `${image.source}-${image.id}`,
           original_filename: image.alt || `${image.source}-image`,

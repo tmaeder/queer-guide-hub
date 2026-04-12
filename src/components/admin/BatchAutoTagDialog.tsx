@@ -20,7 +20,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -47,7 +46,7 @@ interface BatchAutoTagDialogProps {
 }
 
 export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogProps) {
-  const { loading, batchProgress, batchAutoTag } = useAutoTag();
+  const { loading, batchProgress: _batchProgress, batchAutoTag } = useAutoTag();
   const [open, setOpen] = useState(false);
   const [contentType, setContentType] = useState('venues');
   const [batchLimit, setBatchLimit] = useState(20);

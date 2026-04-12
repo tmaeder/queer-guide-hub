@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
-import { formatICalDateTime, escapeICalText, generateVEvent, wrapICalendar } from '../_shared/ical-generator.ts'
+import { getCorsHeaders } from '../_shared/supabase-client.ts'
+import { formatICalDateTime, generateVEvent, wrapICalendar } from '../_shared/ical-generator.ts'
 
 interface Event {
   id: string;
@@ -188,7 +188,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error generating calendar feed:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),

@@ -103,10 +103,10 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
       queryClient.invalidateQueries({ queryKey: ['admin-user-stats'] });
       reset();
       onOpenChange(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Failed to create user',
-        description: err.message || 'Unknown error',
+        description: err instanceof Error ? err.message : 'Unknown error',
         variant: 'destructive',
       });
     } finally {

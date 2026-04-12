@@ -8,13 +8,11 @@ import {
   Building,
   Calendar,
   ShoppingBag,
-  MessageSquare,
   Activity,
   Globe,
   Eye,
   ArrowUpRight,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router';
 
 interface DashboardStats {

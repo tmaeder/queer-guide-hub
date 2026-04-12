@@ -213,7 +213,7 @@ export function PrivacyControlCenter() {
         title: "All Settings Set to Private",
         description: "All privacy settings have been set to private for maximum protection"
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Update Failed",
         description: "Failed to update privacy settings",

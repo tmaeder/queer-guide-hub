@@ -99,10 +99,10 @@ export default function AdminEventAmenities() {
       }
       setDialogOpen(false);
       invalidateTable();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Error',
-        description: err?.message || 'Failed to save',
+        description: err instanceof Error ? err.message : 'Failed to save',
         variant: 'destructive',
       });
     }
@@ -193,6 +193,7 @@ export default function AdminEventAmenities() {
         </Button>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete is stable in practice, adding would defeat memoization
     [columns],
   );
 

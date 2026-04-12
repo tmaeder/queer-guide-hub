@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Merge, X, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { Merge, X, Eye, ChevronUp } from 'lucide-react';
 import { useEntityById, useDismissDuplicate } from '@/hooks/useImportHubQueries';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import type { DuplicatePair } from '@/hooks/useImportHubQueries';

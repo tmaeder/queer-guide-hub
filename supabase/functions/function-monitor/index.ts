@@ -1,5 +1,5 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { getCorsHeaders, jsonResponse, errorResponse, corsResponse, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts'
+import { jsonResponse, errorResponse, corsResponse, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts'
 
 // Complete registry of deployed edge functions and their metadata.
 // category: 'workflow' = registered in workflow_definitions,

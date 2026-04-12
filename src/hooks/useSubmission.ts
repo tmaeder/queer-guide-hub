@@ -123,7 +123,7 @@ export function useSubmission(config: SubmissionTypeConfig) {
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('community_submissions' as any).insert({
+      const { error } = await supabase.from('community_submissions' as 'venues').insert({
         content_type: config.id,
         data: data,
         submitted_by: user.id,
@@ -136,10 +136,10 @@ export function useSubmission(config: SubmissionTypeConfig) {
         title: `${config.label} submitted!`,
         description: 'Thank you — your submission will be reviewed shortly.',
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Submission failed',
-        description: err.message || 'Please try again later.',
+        description: err instanceof Error ? err.message : 'Please try again later.',
         variant: 'destructive',
       });
     } finally {

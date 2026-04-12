@@ -136,7 +136,7 @@ export default function AdminRedirects() {
     }
   };
 
-  const handleToggle = async (row: RedirectRow) => {
+  const _handleToggle = async (row: RedirectRow) => {
     const ok = await toggleEnabled(row.id, !row.is_enabled);
     if (ok) doRefresh();
   };
@@ -342,7 +342,7 @@ export default function AdminRedirects() {
           </Button>
           <ExportExcelButton
             onExport={async () => {
-              const cols: ExportColumnDef<any>[] = [
+              const cols: ExportColumnDef<Record<string, unknown>>[] = [
                 { header: 'Type', accessor: (r) => r.type },
                 { header: 'Slug', accessor: (r) => r.slug },
                 { header: 'Source Path', accessor: (r) => r.source_path },
@@ -377,6 +377,7 @@ export default function AdminRedirects() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete/handleShowEvents are stable, adding would defeat memoization
     [columns],
   );
 
@@ -681,7 +682,7 @@ function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: Redirect
               select
               label="Match"
               value={matchKind}
-              onChange={(e) => setMatchKind(e.target.value as any)}
+              onChange={(e) => setMatchKind(e.target.value as 'EXACT' | 'WILDCARD' | 'REGEX')}
               sx={{ minWidth: 120 }}
             >
               <MenuItem value="EXACT">Exact</MenuItem>
@@ -845,7 +846,7 @@ function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogProps) {
         .slice(1)
         .map((line) => {
           const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
-          const obj: any = {};
+          const obj: Record<string, string | number | boolean | undefined> = {};
           headers.forEach((h, i) => {
             if (h === 'slug') obj.slug = values[i];
             if (h === 'source_path') obj.source_path = values[i];
@@ -858,8 +859,8 @@ function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogProps) {
         .filter((item) => item.target);
       const res = await onImport(items);
       setResult(res);
-    } catch (err: any) {
-      setResult({ success: 0, errors: [err.message] });
+    } catch (err: unknown) {
+      setResult({ success: 0, errors: [err instanceof Error ? err.message : 'Import failed'] });
     } finally {
       setImporting(false);
     }

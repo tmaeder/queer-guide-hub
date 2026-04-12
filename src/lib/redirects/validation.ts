@@ -194,7 +194,7 @@ export function mergeQueryParams(targetUrl: string, options: QueryMergeOptions):
 export function detectLoop(
   requestPath: string,
   targetUrl: string,
-  maxHops: number = 3,
+  _maxHops: number = 3,
 ): { safe: boolean; error?: string } {
   // Normalize both to compare
   const normalizeForCompare = (url: string): string => {

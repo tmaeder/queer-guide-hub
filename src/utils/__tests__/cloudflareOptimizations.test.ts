@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   optimizeImageForCloudflare,
   getCloudflareGeoData,
@@ -39,11 +39,11 @@ describe('optimizeImageForCloudflare', () => {
 
 describe('getCloudflareGeoData', () => {
   afterEach(() => {
-    delete (window as any).CF;
+    delete (window as unknown as Record<string, unknown>).CF;
   });
 
   it('should return CF data when available', () => {
-    (window as any).CF = { country: 'CH', city: 'Zurich', timezone: 'Europe/Zurich' };
+    (window as unknown as Record<string, unknown>).CF = { country: 'CH', city: 'Zurich', timezone: 'Europe/Zurich' };
     const data = getCloudflareGeoData();
     expect(data.country).toBe('CH');
     expect(data.city).toBe('Zurich');

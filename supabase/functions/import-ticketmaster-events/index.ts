@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
 
 interface TicketmasterEvent {
   id: string;

@@ -105,7 +105,7 @@ export function AutomatedSecurityScheduler() {
         title: enabled ? "Task Enabled" : "Task Disabled",
         description: `Security task has been ${enabled ? 'enabled' : 'disabled'} successfully`
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to update task status",
@@ -136,7 +136,7 @@ export function AutomatedSecurityScheduler() {
         title: "Task Executed",
         description: `${taskName} has been executed successfully`
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Execution Error",
         description: `Failed to execute ${taskName}`,

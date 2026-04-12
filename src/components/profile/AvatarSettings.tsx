@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Upload, Palette, User, RefreshCw, Mail } from 'lucide-react';
@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 
 interface AvatarData {
   avatarUrl?: string;
-  avatarConfig?: any;
+  avatarConfig?: Record<string, unknown>;
   avatarType?: 'upload' | 'builder' | 'gravatar';
   email: string;
 }
@@ -59,7 +59,7 @@ export const AvatarSettings = ({
     }
   };
 
-  const handleSaveAvatar = (avatarConfig: any) => {
+  const handleSaveAvatar = (avatarConfig: Record<string, unknown>) => {
     updateData({
       avatarConfig,
       avatarUrl: undefined,
@@ -80,7 +80,7 @@ export const AvatarSettings = ({
     updateData({
       avatarUrl: undefined,
       avatarConfig: undefined,
-      avatarType: 'initials' as any,
+      avatarType: 'initials' as 'upload' | 'builder' | 'gravatar',
     });
   };
 
@@ -112,7 +112,7 @@ export const AvatarSettings = ({
       }
 
       // Update profile in database
-      const profileUpdate: any = {
+      const profileUpdate: Record<string, unknown> = {
         avatar_url: data.avatarType === 'upload' ? finalAvatarUrl : null,
         avatar_config: data.avatarType === 'builder' ? data.avatarConfig : null,
         avatar_type: data.avatarType,

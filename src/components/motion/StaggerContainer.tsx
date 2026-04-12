@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, type Variants } from 'motion/react';
-import { staggerContainerVariants, defaultViewport } from '@/lib/motion';
+import { staggerContainerVariants } from '@/lib/motion';
 import { stagger as staggerTokens } from '@/lib/animation';
 
 interface StaggerContainerProps {

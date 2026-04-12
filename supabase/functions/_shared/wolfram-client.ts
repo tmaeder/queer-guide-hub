@@ -62,9 +62,9 @@ export async function queryWolfram(
       const json = await res.json()
       const qr = json?.queryresult
       if (qr?.success && Array.isArray(qr.pods) && qr.pods.length > 0) {
-        const pods: WolframPod[] = qr.pods.map((p: any) => ({
+        const pods: WolframPod[] = qr.pods.map((p: Record<string, unknown>) => ({
           title: p.title ?? '',
-          subpods: (p.subpods ?? []).map((s: any) => ({
+          subpods: (p.subpods ?? []).map((s: unknown) => ({
             title: s.title ?? '',
             plaintext: s.plaintext ?? '',
           })),

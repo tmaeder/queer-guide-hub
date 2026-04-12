@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 const VALID_VENUE_CATEGORIES = [
   'bar', 'club', 'restaurant', 'hotel', 'sauna', 'theater',
@@ -83,7 +83,7 @@ function parseCSV(csvText: string): VenueData[] {
       continue;
     }
 
-    const venueData: any = {};
+    const venueData: Record<string, unknown> = {};
     headers.forEach((header, index) => {
       const value = values[index];
       
@@ -106,10 +106,11 @@ function parseCSV(csvText: string): VenueData[] {
         case 'longitude':
           venueData[header] = value && !isNaN(parseFloat(value)) ? parseFloat(value) : null;
           break;
-        case 'price_range':
+        case 'price_range': {
           const priceRange = value && !isNaN(parseInt(value)) ? parseInt(value) : null;
           venueData[header] = priceRange && priceRange >= 1 && priceRange <= 4 ? priceRange : null;
           break;
+        }
         case 'tags':
         case 'amenities':
           // Parse comma-separated values or JSON arrays

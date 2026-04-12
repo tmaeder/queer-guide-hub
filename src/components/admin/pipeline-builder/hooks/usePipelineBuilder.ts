@@ -47,7 +47,7 @@ export function usePipelineNodeTypes() {
   return useQuery({
     queryKey: ['pipeline-node-types'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('pipeline_node_types')
         .select('*')
         .eq('is_enabled', true)
@@ -64,7 +64,7 @@ export function usePipelineDefinitions() {
   return useQuery({
     queryKey: ['pipeline-definitions'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('pipeline_definitions')
         .select('*')
         .order('created_at', { ascending: false });
@@ -80,7 +80,7 @@ export function usePipelineDefinition(id: string | undefined) {
     queryKey: ['pipeline-definition', id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('pipeline_definitions')
         .select('*')
         .eq('id', id)
@@ -162,13 +162,13 @@ export function usePipelineBuilder(pipelineId?: string) {
       };
 
       if (pipelineId) {
-        const { error } = await (supabase as any)
+        const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
           .from('pipeline_definitions')
           .update(payload)
           .eq('id', pipelineId);
         if (error) throw error;
       } else {
-        const { error } = await (supabase as any)
+        const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
           .from('pipeline_definitions')
           .insert(payload);
         if (error) throw error;

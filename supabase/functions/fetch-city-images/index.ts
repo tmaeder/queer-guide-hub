@@ -35,7 +35,7 @@ async function fetchFromPexels(apiKey: string, query: string): Promise<ImageResu
     )
     if (!res.ok) return []
     const data = await res.json()
-    return (data.photos ?? []).map((p: any) => ({
+    return (data.photos ?? []).map((p: Record<string, unknown>) => ({
       url: p.src.large2x || p.src.large,
       thumbnail: p.src.medium,
       alt: p.alt || query,
@@ -58,7 +58,7 @@ async function fetchFromUnsplash(apiKey: string, query: string): Promise<ImageRe
     )
     if (!res.ok) return []
     const data = await res.json()
-    return (data.results ?? []).map((p: any) => ({
+    return (data.results ?? []).map((p: Record<string, unknown>) => ({
       url: p.urls.regular,
       thumbnail: p.urls.small,
       alt: p.alt_description || p.description || query,
@@ -87,7 +87,7 @@ async function fetchFromWikimedia(query: string): Promise<ImageResult[]> {
     if (!pages) return []
 
     const results: ImageResult[] = []
-    for (const page of Object.values(pages) as any[]) {
+    for (const page of Object.values(pages) as unknown[]) {
       const info = page.imageinfo?.[0]
       if (!info) continue
 
@@ -212,7 +212,7 @@ async function findBestImage(
 // Storage
 // ---------------------------------------------------------------------------
 
-async function storeImage(supabase: any, img: ImageResult, entityId: string, bucket: string): Promise<string> {
+async function storeImage(supabase: unknown, img: ImageResult, entityId: string, bucket: string): Promise<string> {
   try {
     const imageRes = await fetch(img.url)
     if (!imageRes.ok) return img.url
@@ -247,7 +247,7 @@ async function storeImage(supabase: any, img: ImageResult, entityId: string, buc
 // ---------------------------------------------------------------------------
 
 async function processSingleCity(
-  supabase: any,
+  supabase: unknown,
   cityId: string,
   cityName: string,
   countryName: string,
@@ -304,7 +304,7 @@ async function processSingleCity(
 // ---------------------------------------------------------------------------
 
 async function processBatch(
-  supabase: any,
+  supabase: unknown,
   pexelsKey?: string,
   unsplashKey?: string,
   forceUpdate = false,
@@ -323,7 +323,7 @@ async function processBatch(
   if (error) throw new Error(`Failed to fetch cities: ${error.message}`)
   if (!cities?.length) return { success: true, message: 'No cities to process', processed: 0 }
 
-  const results: any[] = []
+  const results: unknown[] = []
   let ok = 0, fail = 0
 
   for (const city of cities) {
@@ -334,7 +334,7 @@ async function processBatch(
       )
       if (r.success) ok++; else fail++
       results.push({ city: city.name, ...r })
-    } catch (e: any) {
+    } catch (e: unknown) {
       fail++
       results.push({ city: city.name, success: false, error: e.message })
     }
@@ -371,7 +371,7 @@ Deno.serve(async (req) => {
 
     const { cityId, cityName, countryName, batchMode, forceUpdate, batchLimit } = body
 
-    let result: any
+    let result: unknown
     if (batchMode) {
       result = await processBatch(supabase, pexelsKey, unsplashKey, forceUpdate ?? false, batchLimit ?? 50)
     } else {
@@ -385,7 +385,7 @@ Deno.serve(async (req) => {
     }
 
     return jsonResponse({ ...result, timestamp: new Date().toISOString() }, result.success ? 200 : 400, req)
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('fetch-city-images error:', e)
     return errorResponse('Internal error', 500, req)
   }

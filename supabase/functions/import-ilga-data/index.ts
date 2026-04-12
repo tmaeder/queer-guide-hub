@@ -1,11 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
 
 const ILGA_GRAPHQL = 'https://database.ilga.org/graphql';
 
 // ── GraphQL helpers ────────────────────────────────────────────────
 
-async function gql(query: string): Promise<any> {
+async function gql(query: string): Promise<unknown> {
   const resp = await fetch(ILGA_GRAPHQL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -18,7 +18,7 @@ async function gql(query: string): Promise<any> {
 }
 
 /** Filter to national-level entries only (no subjurisdictions) */
-function national<T extends { motherEntry?: { subjurisdiction?: any } }>(entries: T[]): T[] {
+function national<T extends { motherEntry?: { subjurisdiction?: unknown } }>(entries: T[]): T[] {
   return entries.filter(e => !e.motherEntry?.subjurisdiction);
 }
 
@@ -143,9 +143,9 @@ async function fetchIntersex() {
   }`);
   // Filter to entry_type_id A1-17 (intersex) at national level
   const filtered = data.entriesPnc.filter(
-    (e: any) => !e.motherEntry?.subjurisdiction && e.motherEntry?.entry_type_id === 'A1-17'
+    (e: unknown) => !e.motherEntry?.subjurisdiction && e.motherEntry?.entry_type_id === 'A1-17'
   );
-  const map = new Map<string, any>();
+  const map = new Map<string, unknown>();
   for (const e of filtered) {
     const code = e.motherEntry?.jurisdiction?.a2_code;
     if (code) map.set(code, e);
@@ -172,7 +172,7 @@ async function fetchGenderRecognition() {
 
 // ── Mappers: ILGA GraphQL → DB column format ──────────────────────
 
-function mapCriminalization(entry: any): Record<string, any> {
+function mapCriminalization(entry: unknown): Record<string, unknown> {
   if (!entry) return {};
   return {
     legal: entry.legal,
@@ -191,7 +191,7 @@ function mapCriminalization(entry: any): Record<string, any> {
   };
 }
 
-function mapProtection(entry: any): Record<string, any> {
+function mapProtection(entry: unknown): Record<string, unknown> {
   if (!entry) return {};
   return {
     so: entry.so_protection_type?.name || null,
@@ -205,7 +205,7 @@ function mapProtection(entry: any): Record<string, any> {
   };
 }
 
-function mapFoe(entry: any): Record<string, any> {
+function mapFoe(entry: unknown): Record<string, unknown> {
   if (!entry) return {};
   return {
     summary: entry.entry_foe_barrier_summary_value?.name || null,
@@ -215,19 +215,19 @@ function mapFoe(entry: any): Record<string, any> {
   };
 }
 
-function mapFoa(entry: any): Record<string, any> {
+function mapFoa(entry: unknown): Record<string, unknown> {
   if (!entry) return {};
   return {
     status: entry.barrier_value?.name || null,
   };
 }
 
-function mapSsu(entry: any): string {
+function mapSsu(entry: unknown): string {
   if (!entry) return 'No data';
   return entry.summary_type?.name || 'No data';
 }
 
-function mapSsuFull(entry: any): Record<string, any> {
+function mapSsuFull(entry: unknown): Record<string, unknown> {
   if (!entry) return {};
   return {
     summary: entry.summary_type?.name || null,
@@ -238,12 +238,12 @@ function mapSsuFull(entry: any): Record<string, any> {
   };
 }
 
-function mapAdoption(entry: any): string {
+function mapAdoption(entry: unknown): string {
   if (!entry) return 'No data';
   return entry.map_type?.name || 'No data';
 }
 
-function mapCt(entry: any): string {
+function mapCt(entry: unknown): string {
   if (!entry) return 'No data';
   const ban = entry.general_ban_type?.name;
   if (!ban) return 'No data';
@@ -253,12 +253,12 @@ function mapCt(entry: any): string {
   return ban;
 }
 
-function mapIntersex(entry: any): string {
+function mapIntersex(entry: unknown): string {
   if (!entry) return 'No data';
   return entry.pnc_type?.name || 'No data';
 }
 
-function mapGenderRecognition(entry: any): Record<string, any> {
+function mapGenderRecognition(entry: unknown): Record<string, unknown> {
   if (!entry) return {};
   return {
     name_change: entry.name_change_lgr_type?.name || null,
@@ -273,7 +273,7 @@ function mapGenderRecognition(entry: any): Record<string, any> {
 
 // ── Equality score calculator ─────────────────────────────────────
 
-function calculateEqualityScore(row: Record<string, any>): number {
+function calculateEqualityScore(row: Record<string, unknown>): number {
   let score = 50; // Start from middle
 
   // Criminalization (biggest factor)
@@ -424,7 +424,7 @@ serve(async (req) => {
 
     // If filtering to one country
     const countriesToProcess = countryCode
-      ? countries.filter((c: any) => c.code === countryCode.toUpperCase())
+      ? countries.filter((c: unknown) => c.code === countryCode.toUpperCase())
       : countries;
 
     for (const country of countriesToProcess) {
@@ -439,7 +439,7 @@ serve(async (req) => {
         continue;
       }
 
-      const row: Record<string, any> = {
+      const row: Record<string, unknown> = {
         lgbti_criminalization: mapCriminalization(crimMap.get(code)),
         lgbti_expression_restrictions: mapFoe(foeMap.get(code)),
         lgbti_association_restrictions: mapFoa(foaMap.get(code)),

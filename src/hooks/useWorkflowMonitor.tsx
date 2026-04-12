@@ -294,7 +294,7 @@ export function useWorkflowMonitor() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: Record<string, unknown>) => {
       const dispatched = data?.dispatched ?? 0;
       toast({
         title: 'Dispatcher ran',

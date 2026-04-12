@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link as RouterLink } from 'react-router';
 import {
-  Link2, AlertTriangle, CheckCircle, Clock, ArrowRight, RefreshCw,
+  Link2, CheckCircle, ArrowRight, RefreshCw,
   ExternalLink, MoreVertical, Pencil, Trash2, EyeOff, RotateCcw, Search,
   ShieldCheck, ShieldAlert, ShieldQuestion, Scan, Zap, Flag,
 } from 'lucide-react';
@@ -63,7 +63,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
     queryKey: ['broken-link-flags-count'],
     queryFn: async () => {
       const { count } = await supabase
-        .from('content_flags' as any)
+        .from('content_flags' as const)
         .select('id', { count: 'exact', head: true })
         .eq('status', 'pending')
         .eq('flag_type', 'broken_link');
@@ -136,10 +136,10 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
       });
       if (resp.error) throw resp.error;
-      toast.success(`Synced: ${(resp.data as any)?.synced ?? 0} links extracted`);
+      toast.success(`Synced: ${(resp.data as Record<string, unknown>)?.synced ?? 0} links extracted`);
       fetchStats();
-    } catch (e: any) {
-      toast.error(e.message ?? 'Sync failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message :'Sync failed');
     } finally {
       setSyncing(false);
     }
@@ -156,8 +156,8 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
       toast.success(parts.join(', '));
       fetchStats();
       fetchLinks({ status: statusFilter === 'all' ? undefined : statusFilter, limit: 200 });
-    } catch (e: any) {
-      toast.error(e.message ?? 'Validation failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message :'Validation failed');
     } finally {
       setValidating(false);
     }
@@ -170,8 +170,8 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
       toast.success(`Scanned ${d?.scanned ?? 0} links, ${d?.malicious ?? 0} malicious`);
       fetchStats();
       fetchLinks({ status: statusFilter === 'all' ? undefined : statusFilter, limit: 200 });
-    } catch (e: any) {
-      toast.error(e.message ?? 'Deep scan failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message :'Deep scan failed');
     } finally {
       setScanning(false);
     }
@@ -190,8 +190,8 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
       // Refresh the dialog link data
       const { data } = await supabase.from('content_links').select('*').eq('id', scanResultLink.id).single();
       if (data) setScanResultLink(data as ContentLink);
-    } catch (e: any) {
-      toast.error(e.message ?? 'Scan failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message :'Scan failed');
     } finally {
       setSingleScanning(false);
     }
@@ -235,7 +235,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
           toast.success('Redirect applied');
           break;
         case 'recheck': {
-          const recheckResult = await recheckLink(menuLink.id) as any;
+          const recheckResult = await recheckLink(menuLink.id) as { results?: Array<{ status?: string; http_status?: number }> };
           const linkResult = recheckResult?.results?.[0];
           if (linkResult?.status === 'OK') {
             toast.success(`Link is OK (HTTP ${linkResult.http_status ?? '200'})`);
@@ -261,8 +261,8 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
           handleScanResult(menuLink);
           break;
       }
-    } catch (e: any) {
-      toast.error(e.message ?? 'Action failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message :'Action failed');
     }
   };
 
@@ -303,8 +303,8 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
           break;
       }
       setSelectedIds(new Set());
-    } catch (e: any) {
-      toast.error(e.message ?? 'Bulk action failed');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message :'Bulk action failed');
     } finally {
       setBulkAction(null);
       setMenuLink(null);

@@ -1,6 +1,6 @@
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
-import { fetchOpenSanctionsData, fetchWikidataEntityLabel, formatWikidataDate, WIKIDATA_USER_AGENT } from '../_shared/personality-fetcher.ts'
+import { fetchOpenSanctionsData, fetchWikidataEntityLabel } from '../_shared/personality-fetcher.ts'
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
@@ -368,7 +368,7 @@ Deno.serve(async (req) => {
   }
 })
 
-async function enhanceWithLGBTIContext(supabaseClient: SupabaseClient, basicData: any): Promise<PersonalityData> {
+async function enhanceWithLGBTIContext(supabaseClient: SupabaseClient, basicData: Record<string, unknown>): Promise<PersonalityData> {
   try {
     if (!(await isOpenAIAvailable(supabaseClient))) {
       console.log('OpenAI not available, returning basic data');
@@ -478,7 +478,7 @@ Return ONLY valid JSON, no additional text.`;
   }
 }
 
-async function fetchCelebrityData(name: string): Promise<any | null> {
+async function fetchCelebrityData(name: string): Promise<unknown | null> {
   try {
     const apiNinjasKey = Deno.env.get('API_NINJAS_KEY');
     if (!apiNinjasKey) {

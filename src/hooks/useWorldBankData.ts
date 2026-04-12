@@ -39,7 +39,7 @@ export interface WorldBankData {
  * Extracts World Bank data from a country object (already loaded by useOptimizedCountry).
  * No extra API call needed — this just parses the existing data.
  */
-export function useWorldBankData(country: any | null): WorldBankData {
+export function useWorldBankData(country: Record<string, unknown> | null): WorldBankData {
   return useMemo(() => {
     if (!country) {
       return { indicators: {}, hasData: false };

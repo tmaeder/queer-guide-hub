@@ -15,7 +15,6 @@ import { Link } from 'react-router';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
 import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';

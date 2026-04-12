@@ -4,7 +4,6 @@ import { useMeta } from "@/hooks/useMeta";
 import { NewsCard } from "@/components/news/NewsCard";
 import { NewsFilters } from "@/components/news/NewsFilters";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { PageLoadingState } from "@/components/layout/PageLoadingState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,7 +83,7 @@ export default function News() {
     getTrendingTags,
     loadingTimedOut
   } = useNews();
-  const [featuredArticles, setFeaturedArticles] = useState<any[]>([]);
+  const [_featuredArticles, setFeaturedArticles] = useState<Record<string, unknown>[]>([]);
   const [trendingTags, setTrendingTags] = useState<{
     tag: string;
     count: number;
@@ -93,7 +92,7 @@ export default function News() {
   const [sortBy, setSortBy] = useState('date-desc');
   const [quickSearch, setQuickSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [currentFilters, setCurrentFilters] = useState<any>({});
+  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>({});
   const [currentPage, setCurrentPage] = useState(1);
 
   // City/country name lookup maps for location display
@@ -103,7 +102,7 @@ export default function News() {
   // Build a sources lookup map (source_id → {id, name, url})
   const sourcesMap = useMemo(() => {
     const map: Record<string, { id: string; name: string; url?: string }> = {};
-    sources.forEach((s: any) => { map[s.id] = s; });
+    sources.forEach((s: { id: string; name: string; url?: string }) => { map[s.id] = s; });
     return map;
   }, [sources]);
 
@@ -112,7 +111,7 @@ export default function News() {
     if (articles.length === 0) return;
     const allCityIds = new Set<string>();
     const allCountryIds = new Set<string>();
-    articles.forEach((a: any) => {
+    articles.forEach((a: { city_ids?: string[]; country_ids?: string[] }) => {
       (a.city_ids || []).forEach((id: string) => allCityIds.add(id));
       (a.country_ids || []).forEach((id: string) => allCountryIds.add(id));
     });
@@ -125,7 +124,7 @@ export default function News() {
           .in('id', Array.from(allCityIds));
         if (data) {
           const map: Record<string, string> = {};
-          data.forEach((c: any) => { map[c.id] = c.name; });
+          data.forEach((c: { id: string; name: string }) => { map[c.id] = c.name; });
           setCityNames(map);
         }
       }
@@ -136,7 +135,7 @@ export default function News() {
           .in('id', Array.from(allCountryIds));
         if (data) {
           const map: Record<string, string> = {};
-          data.forEach((c: any) => { map[c.id] = c.name; });
+          data.forEach((c: { id: string; name: string }) => { map[c.id] = c.name; });
           setCountryNames(map);
         }
       }
@@ -153,16 +152,17 @@ export default function News() {
     if (!loading) {
       loadAdditionalData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getFeaturedArticles/getTrendingTags are stable, re-run when loading completes
   }, [loading]);
 
   // Reset page when filters change
-  const applyFiltersAndFetch = (filters: any) => {
+  const applyFiltersAndFetch = (filters: Record<string, unknown>) => {
     setCurrentFilters(filters);
     setCurrentPage(1);
     fetchArticles(filters);
   };
 
-  const handleFiltersChange = (filters: any) => {
+  const handleFiltersChange = (filters: Record<string, unknown>) => {
     const option = sortOptions.find(opt => opt.value === sortBy);
     const filtersWithSort = {
       ...filters,
@@ -471,7 +471,7 @@ export default function News() {
                   ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: 'repeat(3, 1fr)' }, gap: 3 }
                   : { display: 'flex', flexDirection: 'column', gap: 2 }
                 }>
-                  {paginatedArticles.map((article: any) => (
+                  {paginatedArticles.map((article) => (
                     <NewsCard
                       key={article.id}
                       article={article}

@@ -72,9 +72,9 @@ export const NewsFilters = ({
   }, []);
 
   // Use a ref to track latest filter state and emit changes
-  const filtersRef = useRef<any>({});
+  const _filtersRef = useRef<Record<string, unknown>>({});
 
-  const emitFilters = useCallback((overrides: any = {}) => {
+  const emitFilters = useCallback((overrides: Record<string, unknown> = {}) => {
     const current = {
       source: overrides.source !== undefined ? overrides.source : source,
       tags: overrides.selectedTags !== undefined ? overrides.selectedTags : selectedTags,
@@ -87,7 +87,7 @@ export const NewsFilters = ({
     };
 
     // Build the filter object
-    const filters: any = {};
+    const filters: Record<string, unknown> = {};
 
     if (current.tags?.length > 0) filters.tags = current.tags;
     if (current.countryIds?.length > 0) filters.countryIds = current.countryIds;
@@ -192,7 +192,7 @@ export const NewsFilters = ({
           title: "Location found",
           description: "Showing news relevant to your location"
         });
-      } catch (error) {
+      } catch (_error) {
         toast({
           title: "Location Error",
           description: "Unable to get your location. Please allow location access.",
@@ -407,7 +407,7 @@ export const NewsFilters = ({
                 <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Trending Topics</Box>
               </Box>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {trendingTags.slice(0, 10).map(({ tag, count }) => (
+                {trendingTags.slice(0, 10).map(({ tag, _count }) => (
                   <Badge
                     key={tag}
                     variant={selectedTags.includes(tag) ? "default" : "outline"}

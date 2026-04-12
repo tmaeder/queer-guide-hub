@@ -8,7 +8,7 @@ interface ValidationResult {
   security_level?: string;
   strength_score?: number;
   strength_level?: string;
-  file_info?: any;
+  file_info?: Record<string, unknown>;
 }
 
 interface DatabaseValidationResult {
@@ -17,7 +17,7 @@ interface DatabaseValidationResult {
   security_level?: string;
   strength_score?: number;
   strength_level?: string;
-  file_info?: any;
+  file_info?: Record<string, unknown>;
 }
 
 export function useSecurityValidation() {

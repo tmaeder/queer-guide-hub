@@ -12,8 +12,7 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
-import Paper from '@mui/material/Paper';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface PageLoadingStateProps {
   /** Number of skeleton items to show */

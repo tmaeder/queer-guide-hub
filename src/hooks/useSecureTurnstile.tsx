@@ -41,12 +41,12 @@ export function useSecureTurnstile() {
       }
 
       setConfig(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to fetch Turnstile config:', err);
-      const errorMessage = err.message || 'Failed to load captcha configuration';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load captcha configuration';
       setError(errorMessage);
-      
-      if (err.message?.includes('Rate limit')) {
+
+      if (errorMessage?.includes('Rate limit')) {
         toast({
           title: "Rate Limited",
           description: "Too many requests. Please wait a moment and try again.",
@@ -69,6 +69,7 @@ export function useSecureTurnstile() {
       setConfig(null);
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchConfig defined above, re-run on user change
   }, [user]);
 
   return {

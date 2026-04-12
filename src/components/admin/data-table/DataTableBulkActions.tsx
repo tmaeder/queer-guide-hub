@@ -55,7 +55,7 @@ export function DataTableBulkActions({
       toast.success(`Deleted ${selectedCount} items`);
       onClearSelection();
       onSuccess();
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to delete items');
     } finally {
       setDeleting(false);

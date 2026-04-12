@@ -107,7 +107,7 @@ export function AddReservationDialog({ open, onClose, tripId, existing }: Props)
 
     try {
       if (isEdit && existing) {
-        const { trip_id, place_id, attachment_urls, ...updatePayload } = payload;
+        const { _trip_id, _place_id, _attachment_urls, ...updatePayload } = payload;
         await updateReservation.mutateAsync({ id: existing.id, ...updatePayload });
         toast({ title: 'Reservation updated' });
       } else {

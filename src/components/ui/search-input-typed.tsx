@@ -13,7 +13,7 @@ interface SearchInputTypedProps extends React.InputHTMLAttributes<HTMLInputEleme
 
 const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProps>(
   ({
-    className,
+    _className,
     placeholders = ["Search..."],
     typingSpeed = 50,
     pauseDuration = 2000,

@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 // Simplified type definitions to avoid TypeScript recursion issues
-type NewsArticle = any;
-type NewsCategory = any;
-type NewsSource = any;
+type NewsArticle = Record<string, unknown>;
+type _NewsCategory = Record<string, unknown>;
+type NewsSource = Record<string, unknown>;
 
 interface NewsFilters {
   tags?: string[];
@@ -67,61 +67,61 @@ export const useNews = () => {
 
       // Apply city filtering if provided
       if (filters?.cityIds && filters.cityIds.length > 0) {
-        queryBuilder = (queryBuilder as any).in('city_id', filters.cityIds);
+        queryBuilder = (queryBuilder as typeof queryBuilder).in('city_id', filters.cityIds);
       }
 
       // Apply country filtering if provided
       if (filters?.countryIds && filters.countryIds.length > 0) {
-        queryBuilder = (queryBuilder as any).in('country_id', filters.countryIds);
+        queryBuilder = (queryBuilder as typeof queryBuilder).in('country_id', filters.countryIds);
       }
 
       // Apply location filtering if provided
       if (filters?.location?.city_id) {
-        queryBuilder = (queryBuilder as any).eq('city_id', filters.location.city_id);
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq('city_id', filters.location.city_id);
       }
 
       if (filters?.location?.country_id) {
-        queryBuilder = (queryBuilder as any).eq('country_id', filters.location.country_id);
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq('country_id', filters.location.country_id);
       }
 
       // Apply search filtering if provided
       if (filters?.search) {
-        queryBuilder = (queryBuilder as any).or(
+        queryBuilder = (queryBuilder as typeof queryBuilder).or(
           `title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`,
         );
       }
 
       // Apply source filtering if provided
       if (filters?.sourceId) {
-        queryBuilder = (queryBuilder as any).eq('source_id', filters.sourceId);
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq('source_id', filters.sourceId);
       }
 
       // Apply category filtering if provided
       if (filters?.category) {
-        queryBuilder = (queryBuilder as any).eq('category', filters.category);
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq('category', filters.category);
       }
 
       // Apply featured filtering if provided
       if (filters?.featured !== undefined) {
-        queryBuilder = (queryBuilder as any).eq('is_featured', filters.featured);
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq('is_featured', filters.featured);
       }
 
       // Apply date range filtering if provided
       if (filters?.dateRange?.from) {
-        queryBuilder = (queryBuilder as any).gte('published_at', filters.dateRange.from);
+        queryBuilder = (queryBuilder as typeof queryBuilder).gte('published_at', filters.dateRange.from);
       }
 
       if (filters?.dateRange?.to) {
-        queryBuilder = (queryBuilder as any).lte('published_at', filters.dateRange.to);
+        queryBuilder = (queryBuilder as typeof queryBuilder).lte('published_at', filters.dateRange.to);
       }
 
       // Apply tags filtering if provided
       if (filters?.tags && filters.tags.length > 0) {
-        queryBuilder = (queryBuilder as any).overlaps('tags', filters.tags);
+        queryBuilder = (queryBuilder as typeof queryBuilder).overlaps('tags', filters.tags);
       }
 
       // Execute the query directly (no retry wrapper — simpler and more reliable)
-      const { data, error: fetchError } = await (queryBuilder as any).limit(200);
+      const { data, error: fetchError } = await (queryBuilder as typeof queryBuilder).limit(200);
 
       if (fetchError) {
         console.error('Error fetching articles:', fetchError);
@@ -132,7 +132,7 @@ export const useNews = () => {
       if (data) {
         // Deduplicate by URL (same article from different sources)
         const seen = new Set<string>();
-        const deduped = data.filter((article: any) => {
+        const deduped = data.filter((article: Record<string, unknown>) => {
           const key = article.url || article.id;
           if (seen.has(key)) return false;
           seen.add(key);
@@ -225,7 +225,7 @@ export const useNews = () => {
       }
 
       return (
-        data?.map((item: any) => ({
+        data?.map((item: { name: string; usage_count: number }) => ({
           tag: item.name,
           count: item.usage_count || 0,
         })) || []
@@ -244,6 +244,7 @@ export const useNews = () => {
 
   useEffect(() => {
     Promise.all([fetchArticles(), fetchSources()]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchArticles/fetchSources are useCallbacks with [] deps, stable
   }, []);
 
   return {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
-vi.mock('@/components/motion', () => ({ Parallax: ({ children }: any) => <div>{children}</div> }));
+vi.mock('@/components/motion', () => ({ Parallax: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 import { DetailHero } from '../DetailHero';
 describe('DetailHero', () => {
   it('should return null when no imageUrl', () => { const { container } = render(<DetailHero imageUrl={null} alt="test" />); expect(container.innerHTML).toBe(''); });

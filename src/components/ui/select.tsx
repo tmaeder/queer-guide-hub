@@ -141,7 +141,7 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
       <FormControl
         size="small"
         disabled={disabled}
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLDivElement>}
         className={className}
         style={style}
       >
@@ -176,7 +176,7 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
               },
             },
           }}
-          {...(props as any)}
+          {...(props as Record<string, unknown>)}
         >
           {items.map((item) => (
             <MuiMenuItem
@@ -270,7 +270,7 @@ function SelectLabel({ children, className, ...props }: React.HTMLAttributes<HTM
       disabled
       className={className}
       sx={{ opacity: 0.7, fontWeight: 600, fontSize: "0.75rem" }}
-      {...(props as any)}
+      {...(props as Record<string, unknown>)}
     >
       {children}
     </MuiMenuItem>

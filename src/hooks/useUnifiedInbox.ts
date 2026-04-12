@@ -15,7 +15,7 @@ export interface UnifiedInboxItem {
   isRead: boolean;
   isStarred: boolean;
   actionUrl: string;
-  raw: MailboxEmail | any;
+  raw: MailboxEmail | unknown;
 }
 
 export const useUnifiedInbox = (filter?: InboxItemType | 'all') => {

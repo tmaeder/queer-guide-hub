@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentType } from '@/config/contentTypeRegistry';
-import type { EditorState, CMSContentMetadata, WorkflowState, FieldGroup } from '@/types/cms';
+import type { EditorState, CMSContentMetadata, FieldGroup } from '@/types/cms';
 
 interface UseCMSEditorOptions {
   contentType: string;
@@ -64,6 +64,7 @@ export function useCMSEditor({
   useEffect(() => {
     if (!itemId || !config) return;
     loadContent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- config/loadContent derived from contentType, re-run on itemId/contentType change
   }, [itemId, contentType]);
 
   const loadContent = useCallback(async () => {
@@ -74,7 +75,7 @@ export function useCMSEditor({
     try {
       // Fetch content from source table
       const { data, error } = await supabase
-        .from(config.tableName as any)
+        .from(config.tableName as 'venues')
         .select('*')
         .eq(config.primaryKey, itemId)
         .single();
@@ -85,7 +86,7 @@ export function useCMSEditor({
 
       // Fetch CMS metadata if exists
       const { data: meta } = await supabase
-        .from('cms_content_metadata' as any)
+        .from('cms_content_metadata' as 'venues')
         .select('*')
         .eq('source_table', config.tableName)
         .eq('source_id', itemId)
@@ -160,7 +161,7 @@ export function useCMSEditor({
       // Conflict detection: check updated_at hasn't changed
       if (itemId && serverUpdatedAt.current) {
         const { data: current } = await supabase
-          .from(config.tableName as any)
+          .from(config.tableName as 'venues')
           .select('updated_at')
           .eq(config.primaryKey, itemId)
           .single();
@@ -196,7 +197,7 @@ export function useCMSEditor({
       if (itemId) {
         // UPDATE
         const { error } = await supabase
-          .from(config.tableName as any)
+          .from(config.tableName as 'venues')
           .update(saveData)
           .eq(config.primaryKey, itemId);
 
@@ -207,7 +208,7 @@ export function useCMSEditor({
           saveData.created_by = user.id;
         }
         const { data: inserted, error } = await supabase
-          .from(config.tableName as any)
+          .from(config.tableName as 'venues')
           .insert(saveData)
           .select('id')
           .single();
@@ -219,7 +220,7 @@ export function useCMSEditor({
       // Ensure cms_content_metadata exists for ALL content types (workflow support)
       if (savedId && !metadata) {
         const { data: newMeta } = await supabase
-          .from('cms_content_metadata' as any)
+          .from('cms_content_metadata' as 'venues')
           .upsert(
             {
               source_table: config.tableName,
@@ -270,7 +271,7 @@ export function useCMSEditor({
       }));
       return false;
     }
-  }, [config, state.data, state.originalData, itemId, user]);
+  }, [config, state.data, state.originalData, itemId, user, metadata]);
 
   // ── Reset ──────────────────────────────────────────────────────
 
@@ -308,7 +309,7 @@ export function useCMSEditor({
         if (metadata) {
           // Update existing
           const { data, error } = await supabase
-            .from('cms_content_metadata' as any)
+            .from('cms_content_metadata' as 'venues')
             .update(metaData)
             .eq('id', metadata.id)
             .select()
@@ -319,7 +320,7 @@ export function useCMSEditor({
         } else {
           // Insert new
           const { data, error } = await supabase
-            .from('cms_content_metadata' as any)
+            .from('cms_content_metadata' as 'venues')
             .insert({
               ...metaData,
               created_at: new Date().toISOString(),
@@ -376,7 +377,7 @@ async function createRevision(
   try {
     // Get next revision number
     const { data: lastRevision } = await supabase
-      .from('cms_revisions' as any)
+      .from('cms_revisions' as 'venues')
       .select('revision_number')
       .eq('source_table', sourceTable)
       .eq('source_id', sourceId)
@@ -404,7 +405,7 @@ async function createRevision(
       data: { user },
     } = await supabase.auth.getUser();
 
-    await supabase.from('cms_revisions' as any).insert({
+    await supabase.from('cms_revisions' as 'venues').insert({
       source_table: sourceTable,
       source_id: sourceId,
       revision_number: nextNumber,
@@ -425,7 +426,7 @@ async function writeAuditLog(
   actorId: string,
 ) {
   try {
-    await supabase.from('cms_audit_log' as any).insert({
+    await supabase.from('cms_audit_log' as 'venues').insert({
       source_table: sourceTable,
       source_id: sourceId,
       action,

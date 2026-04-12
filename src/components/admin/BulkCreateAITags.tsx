@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 interface BulkCreateResult {
   term: string;
   status: 'created' | 'exists' | 'error';
-  tag?: any;
+  tag?: Record<string, unknown>;
   category?: string;
   description?: string;
   image_url?: string;

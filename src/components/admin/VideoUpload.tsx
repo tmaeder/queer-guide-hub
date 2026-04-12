@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Upload, Video, X, Play } from 'lucide-react';
+import { Upload, Video, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,7 +27,7 @@ interface UploadedVideo {
 
 export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
   const [videos, setVideos] = useState<UploadedVideo[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const [_isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const videoFiles = acceptedFiles.filter(file => file.type.startsWith('video/'));
@@ -48,6 +48,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
 
     setVideos(prev => [...prev, ...newVideos]);
     newVideos.forEach(video => uploadVideo(video));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- uploadVideo defined below, stable in practice
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -65,14 +66,14 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
       // Upload to storage
       const filePath = `uploads/${video.id}/${video.file.name}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { data: _uploadData, error: uploadError } = await supabase.storage
         .from('videos')
         .upload(filePath, video.file);
 
       if (uploadError) throw uploadError;
 
       // Create video record
-      const { data: videoRecord, error: dbError } = await supabase
+      const { data: _videoRecord, error: dbError } = await supabase
         .from('videos')
         .insert([{
           id: video.id,

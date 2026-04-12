@@ -142,7 +142,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
 
     // Persist to DB
     const { error: updateError } = await supabase
-      .from('cms_media_attachments' as any)
+      .from('cms_media_attachments' as const)
       .update({ media_role: newRole })
       .eq('id', attachmentId);
 

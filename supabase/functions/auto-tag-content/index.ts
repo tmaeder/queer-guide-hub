@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
 
       if (allItems && allItems.length > 0) {
         // Check which already have assignments
-        const itemIds = allItems.map(i => (i as any).id);
+        const itemIds = allItems.map(i => (i as Record<string, unknown>).id);
         const { data: existing } = await supabase
           .from('unified_tag_assignments')
           .select('entity_id')
@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
           .in('entity_id', itemIds);
 
         const assignedIds = new Set((existing || []).map(e => e.entity_id));
-        items = allItems.filter(i => !assignedIds.has((i as any).id)).slice(0, batch_limit);
+        items = allItems.filter(i => !assignedIds.has((i as Record<string, unknown>).id)).slice(0, batch_limit);
       }
 
       if (items.length === 0) {

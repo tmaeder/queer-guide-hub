@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Card, CardImage, CardContent } from '@/components/ui/card';
+import { Card, CardImage } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, MoreVertical, Share2, Luggage } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
-import { VenueEvents } from './VenueEvents';
 import { Link } from 'react-router';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import Box from '@mui/material/Box';
@@ -63,26 +62,26 @@ const VenueCardFixture = () => (
 export function VenueCard({
   venue,
   loading = false,
-  events = [],
-  onViewDetails,
-  onAmenityClick,
-  onServiceClick,
+  _events = [],
+  _onViewDetails,
+  _onAmenityClick,
+  _onServiceClick,
   onTagClick,
 }: VenueCardProps) {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
 
-  const averageRating = venue?.venue_reviews?.length
+  const _averageRating = venue?.venue_reviews?.length
     ? venue.venue_reviews.reduce((sum, review) => sum + review.rating, 0) /
       venue.venue_reviews.length
     : 0;
 
-  const getPriceRange = (range: number | null) => {
+  const _getPriceRange = (range: number | null) => {
     if (!range) return '';
     return '$'.repeat(range);
   };
 
-  const getCategoryColor = (category: string) => {
+  const _getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       bar: 'bg-primary/10 text-primary',
       restaurant: 'bg-accent/10 text-accent',
@@ -217,8 +216,7 @@ export function VenueCard({
                   <Menu
                     anchorEl={menuAnchor}
                     open={Boolean(menuAnchor)}
-                    onClose={(e: any) => {
-                      e?.stopPropagation?.();
+                    onClose={(_e: Record<string, unknown>, _reason: string) => {
                       setMenuAnchor(null);
                     }}
                     onClick={(e) => e.stopPropagation()}

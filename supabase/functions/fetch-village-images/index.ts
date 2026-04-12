@@ -22,7 +22,7 @@ async function fetchFromPexels(apiKey: string, q: string): Promise<ImageResult[]
     )
     if (!r.ok) return []
     const d = await r.json()
-    return (d.photos ?? []).map((p: any) => ({
+    return (d.photos ?? []).map((p: Record<string, unknown>) => ({
       url: p.src.large2x || p.src.large, thumbnail: p.src.medium, alt: p.alt || q,
       photographer: p.photographer, photographer_url: p.photographer_url,
       source: 'pexels' as const, source_id: String(p.id),
@@ -39,7 +39,7 @@ async function fetchFromUnsplash(apiKey: string, q: string): Promise<ImageResult
     )
     if (!r.ok) return []
     const d = await r.json()
-    return (d.results ?? []).map((p: any) => ({
+    return (d.results ?? []).map((p: Record<string, unknown>) => ({
       url: p.urls.regular, thumbnail: p.urls.small,
       alt: p.alt_description || p.description || q,
       photographer: p.user.name, photographer_url: p.user.links.html,
@@ -59,7 +59,7 @@ async function fetchFromWikimedia(q: string): Promise<ImageResult[]> {
     const pages = d.query?.pages
     if (!pages) return []
     const out: ImageResult[] = []
-    for (const pg of Object.values(pages) as any[]) {
+    for (const pg of Object.values(pages) as unknown[]) {
       const i = pg.imageinfo?.[0]
       if (!i) continue
       const m = i.mime || ''
@@ -145,7 +145,7 @@ async function findBestImage(
   return res[0]
 }
 
-async function storeImage(supabase: any, img: ImageResult, id: string): Promise<string> {
+async function storeImage(supabase: unknown, img: ImageResult, id: string): Promise<string> {
   try {
     const r = await fetch(img.url)
     if (!r.ok) return img.url
@@ -163,7 +163,7 @@ async function storeImage(supabase: any, img: ImageResult, id: string): Promise<
 }
 
 async function processVillage(
-  supabase: any, id: string, name: string, city: string, country: string,
+  supabase: unknown, id: string, name: string, city: string, country: string,
   pK?: string, uK?: string,
 ) {
   const best = await findBestImage(name, city, country, pK, uK)
@@ -186,7 +186,7 @@ async function processVillage(
 }
 
 async function processBatch(
-  supabase: any, pK?: string, uK?: string, limit = 25, offset = 0,
+  supabase: unknown, pK?: string, uK?: string, limit = 25, _offset = 0,
 ) {
   const { data: rows, error } = await supabase
     .from('queer_villages')
@@ -196,7 +196,7 @@ async function processBatch(
     .limit(limit)
   if (error) throw new Error(error.message)
   if (!rows?.length) return { success: true, message: 'Nothing to process', processed: 0 }
-  const res: any[] = []
+  const res: unknown[] = []
   let ok = 0, fail = 0
   for (const v of rows) {
     try {
@@ -206,7 +206,7 @@ async function processBatch(
       if (r.success) ok++; else fail++
       res.push({ village: v.name, ...r })
       console.log(`[${ok + fail}/${rows.length}] ${v.name}: ${r.success ? 'OK' : r.error}`)
-    } catch (e: any) {
+    } catch (e: unknown) {
       fail++
       res.push({ village: v.name, success: false, error: e.message })
     }
@@ -224,7 +224,7 @@ Deno.serve(async (req) => {
     const auth = await requireAdmin(req, supabase)
     if (auth instanceof Response) return auth
 
-    let body: any = {}
+    let body: unknown = {}
     if (req.method === 'POST') body = await req.json().catch(() => ({}))
 
     const pK = Deno.env.get('PEXELS_API_KEY')
@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
     if (!pK && !uK) return errorResponse('No image API keys configured', 500, req)
 
     const { batchMode, batchLimit, villageId, villageName, cityName, countryName } = body
-    let result: any
+    let result: unknown
     if (batchMode) {
       result = await processBatch(supabase, pK, uK, batchLimit ?? 25)
     } else {
@@ -240,7 +240,7 @@ Deno.serve(async (req) => {
       result = await processVillage(supabase, villageId, villageName, cityName || '', countryName || '', pK, uK)
     }
     return jsonResponse({ ...result, timestamp: new Date().toISOString() }, result.success ? 200 : 400, req)
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('fetch-village-images:', e)
     return errorResponse('Internal error', 500, req)
   }

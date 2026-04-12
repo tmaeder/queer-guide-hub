@@ -13,7 +13,6 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Skeleton from '@mui/material/Skeleton';
-import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import {
   Plus,
@@ -29,7 +28,6 @@ import {
   MapPin,
   Calendar,
   Newspaper,
-  Users,
   Layers,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -196,6 +194,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
   useEffect(() => {
     loadCounts();
     loadRecentActivity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   async function loadCounts() {
@@ -208,7 +207,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         if (!config) continue;
 
         const { count } = await supabase
-          .from(config.tableName as any)
+          .from(config.tableName as 'events')
           .select('*', { count: 'exact', head: true });
 
         results.push({
@@ -222,7 +221,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
 
       // Pages count
       const { count: pagesCount } = await supabase
-        .from('cms_pages' as any)
+        .from('cms_pages' as 'events')
         .select('*', { count: 'exact', head: true });
 
       const pagesConfig = getContentType('cms_pages');
@@ -238,7 +237,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
 
       // Review queue count
       const { count: revCount } = await supabase
-        .from('cms_content_metadata' as any)
+        .from('cms_content_metadata' as 'events')
         .select('*', { count: 'exact', head: true })
         .eq('workflow_state', 'review');
 
@@ -254,7 +253,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
   async function loadRecentActivity() {
     try {
       const { data: entries, error } = await supabase
-        .from('cms_audit_log' as any)
+        .from('cms_audit_log' as 'events')
         .select('id, action, actor_id, source_table, source_id, timestamp')
         .order('timestamp', { ascending: false })
         .limit(5);
@@ -346,7 +345,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                   '&:hover': isQueue
                     ? {
                         transform: 'translateY(-2px)',
-                        boxShadow: (theme) => `0 4px 12px ${alpha(card.color, 0.15)}`,
+                        boxShadow: (_theme) => `0 4px 12px ${alpha(card.color, 0.15)}`,
                       }
                     : {},
                 }}
@@ -454,7 +453,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: (theme) => `0 4px 16px ${alpha(ct.color, 0.18)}`,
+                    boxShadow: (_theme) => `0 4px 16px ${alpha(ct.color, 0.18)}`,
                   },
                 }}
                 onClick={() =>
@@ -625,7 +624,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           { label: 'New Event', icon: Calendar, color: '#ec4899', onClick: () => onEdit('events', null) },
           { label: 'New Article', icon: Newspaper, color: '#3b82f6', onClick: () => onEdit('news_articles', null) },
         ].map((action) => {
-          const ActionIcon = action.icon;
+          const _ActionIcon = action.icon;
           return (
             <Grid key={action.label} size={{ xs: 6, sm: 3 }}>
               <Paper
@@ -641,7 +640,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                   '&:hover': {
                     bgcolor: alpha(action.color, 0.06),
                     transform: 'translateY(-1px)',
-                    boxShadow: (theme) => `0 2px 8px ${alpha(action.color, 0.12)}`,
+                    boxShadow: (_theme) => `0 2px 8px ${alpha(action.color, 0.12)}`,
                   },
                 }}
               >
@@ -697,7 +696,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                   '&:hover': {
                     bgcolor: alpha(action.color, 0.06),
                     transform: 'translateY(-1px)',
-                    boxShadow: (theme) => `0 2px 8px ${alpha(action.color, 0.12)}`,
+                    boxShadow: (_theme) => `0 2px 8px ${alpha(action.color, 0.12)}`,
                   },
                 }}
               >

@@ -100,7 +100,7 @@ export class CloudflareAPI {
       }
       
       return data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Cloudflare API request failed for ${action}:`, error)
       
       // Provide fallback data for specific actions

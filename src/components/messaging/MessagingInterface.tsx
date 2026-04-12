@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Send,
   MoreVertical,
@@ -435,7 +435,7 @@ const MessageInput = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
     }
   };
 
@@ -562,6 +562,7 @@ export const MessagingInterface = () => {
         handleSelectConversation(conversationId);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleSelectConversation is stable, re-run on searchParams/conversations/selectedConversation
   }, [searchParams, conversations, selectedConversation]);
 
   // Auto-focus input when conversation is selected

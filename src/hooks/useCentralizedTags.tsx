@@ -104,7 +104,7 @@ async function fetchAllTagsWithCategories(): Promise<CentralizedTagsData> {
   const tagCatsMap = new Map<string, TagCategoryInfo[]>();
   if (catAssignments) {
     for (const a of catAssignments) {
-      const cat = (a as any).tag_categories;
+      const cat = (a as Record<string, unknown>).tag_categories as Record<string, unknown> | null;
       if (!cat) continue;
       const parentInfo = cat.parent_id ? catLookup.get(cat.parent_id) : null;
       if (!tagCatsMap.has(a.tag_id)) tagCatsMap.set(a.tag_id, []);
@@ -329,7 +329,7 @@ export function useTagUsageCounts() {
     queryKey: ['tag-usage-counts'],
     queryFn: async (): Promise<Record<string, number>> => {
       const { data, error } = await supabase
-        .from('tag_usage_summary' as any)
+        .from('tag_usage_summary' as 'venues')
         .select('name, usage_count, venue_count, event_count, group_count');
 
       if (error) {
@@ -348,7 +348,7 @@ export function useTagUsageCounts() {
       }
 
       const map: Record<string, number> = {};
-      for (const row of (data || []) as any[]) {
+      for (const row of (data || []) as Array<Record<string, unknown>>) {
         // Sum all entity-type counts for a true cross-content usage count
         const total = (row.venue_count || 0) + (row.event_count || 0) + (row.group_count || 0);
         map[row.name] = total > 0 ? total : row.usage_count || 0;

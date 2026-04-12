@@ -31,7 +31,7 @@ export default function Directory() {
   const error = null;
 
   // Fetch continents for grouping countries
-  const [continents, setContinents] = useState<any[]>([]);
+  const [continents, setContinents] = useState<Record<string, unknown>[]>([]);
 
   useEffect(() => {
     const fetchContinents = async () => {
@@ -52,10 +52,10 @@ export default function Directory() {
   }, []);
 
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
-  const [selectedCountry, setSelectedCountry] = useState<any>(null);
-  const [selectedCity, setSelectedCity] = useState<any>(null);
-  const [countryCities, setCountryCities] = useState<any[]>([]);
-  const [searchResults, setSearchResults] = useState<any>({ countries: [], cities: [] });
+  const [selectedCountry, setSelectedCountry] = useState<Record<string, unknown> | null>(null);
+  const [selectedCity, setSelectedCity] = useState<Record<string, unknown> | null>(null);
+  const [countryCities, setCountryCities] = useState<Record<string, unknown>[]>([]);
+  const [searchResults, setSearchResults] = useState<{ countries: Record<string, unknown>[]; cities: Record<string, unknown>[] }>({ countries: [], cities: [] });
   const [filters, setFilters] = useState<DirectoryFilters>({
     continent: "all",
     populationRange: "all",
@@ -68,7 +68,7 @@ export default function Directory() {
   // Animation states for better UX
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const handleCityClick = (city: any) => {
+  const handleCityClick = (city: Record<string, unknown>) => {
     setIsTransitioning(true);
     setTimeout(() => {
       setSelectedCity(city);
@@ -77,7 +77,7 @@ export default function Directory() {
     }, 150);
   };
 
-  const handleCountryClick = async (country: any) => {
+  const handleCountryClick = async (country: Record<string, unknown>) => {
     setIsTransitioning(true);
     setTimeout(async () => {
       setSelectedCountry(country);
@@ -670,7 +670,7 @@ export default function Directory() {
                     </Badge>
                   </Box>
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
-                    {searchResults.countries.map((country: any, index: number) => (
+                    {searchResults.countries.map((country, index: number) => (
                       <Box
                         key={country.id}
                         sx={{ animationDelay: `${index * 50}ms` }}
@@ -698,7 +698,7 @@ export default function Directory() {
                     </Badge>
                   </Box>
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
-                    {searchResults.cities.map((city: any, index: number) => (
+                    {searchResults.cities.map((city, index: number) => (
                       <Box
                         key={city.id}
                         sx={{ animationDelay: `${(searchResults.countries?.length || 0) * 50 + index * 50}ms` }}

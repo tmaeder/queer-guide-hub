@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-  Activity, AlertTriangle, CheckCircle, Clock, Database,
-  Play, RefreshCw, Shield, XCircle, Zap,
+import { AlertTriangle, CheckCircle, Database,
+  Play, Shield, XCircle, Zap,
 } from 'lucide-react';
 import { usePipelineRuns, useCircuitBreakers, useStagingStats, usePipelineDefinitionsList } from './hooks/usePipelineHistory';
 import { useNavigate } from 'react-router';

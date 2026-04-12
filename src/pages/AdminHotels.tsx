@@ -18,7 +18,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { useHotels, type Hotel } from '@/hooks/useHotels';
+import { useHotels } from '@/hooks/useHotels';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
@@ -34,7 +34,7 @@ import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
-import { Edit, Trash2, Star, Hotel as HotelIcon, Plus } from 'lucide-react';
+import { Edit, Trash2, Star, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const HOTEL_TYPES = [
@@ -142,8 +142,8 @@ export default function AdminHotels() {
       await deleteHotel(hotel.id);
       toast.success('Hotel deleted');
       invalidateTable();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to delete');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete');
     }
   };
 
@@ -174,28 +174,28 @@ export default function AdminHotels() {
       featured: formData.featured,
       verified: formData.verified,
     };
-    if ((formData as any).city_id) payload.city_id = (formData as any).city_id;
-    if ((formData as any).country_id) payload.country_id = (formData as any).country_id;
+    if ((formData as Record<string, unknown>).city_id) payload.city_id = (formData as Record<string, unknown>).city_id;
+    if ((formData as Record<string, unknown>).country_id) payload.country_id = (formData as Record<string, unknown>).country_id;
 
     try {
       if (editingHotel) {
-        await updateHotel(editingHotel.id, payload as any);
+        await updateHotel(editingHotel.id, payload as Record<string, unknown>);
         toast.success('Hotel updated');
       } else {
         payload.created_by = user?.id;
-        await createHotel(payload as any);
+        await createHotel(payload as Record<string, unknown>);
         toast.success('Hotel created');
       }
       resetForm();
       setIsDialogOpen(false);
       invalidateTable();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to save');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save');
     }
   };
 
   const handleExportExcel = async () => {
-    const columns: ExportColumnDef<any>[] = [
+    const columns: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Name', accessor: (r) => r.name },
       { header: 'Hotel Type', accessor: (r) => r.hotel_type },
       { header: 'City', accessor: (r) => r.city },
@@ -351,6 +351,7 @@ export default function AdminHotels() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete is stable in practice, adding would defeat memoization
     [columns],
   );
 

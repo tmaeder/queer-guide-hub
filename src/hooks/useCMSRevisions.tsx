@@ -39,7 +39,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('cms_revisions' as any)
+        .from('cms_revisions' as 'venues')
         .select('*')
         .eq('source_table', sourceTable)
         .eq('source_id', sourceId)
@@ -50,11 +50,11 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
 
       // Fetch author info for each revision
       const revisionsWithAuthors = await Promise.all(
-        (data || []).map(async (rev: any) => {
+        (data || []).map(async (rev: Record<string, unknown>) => {
           let author;
           if (rev.created_by) {
             const { data: profile } = await supabase
-              .from('profiles' as any)
+              .from('profiles' as 'venues')
               .select('display_name, email')
               .eq('id', rev.created_by)
               .maybeSingle();
@@ -76,7 +76,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
   const getRevision = useCallback(async (revisionId: string): Promise<CMSRevision | null> => {
     try {
       const { data, error: fetchError } = await supabase
-        .from('cms_revisions' as any)
+        .from('cms_revisions' as 'venues')
         .select('*')
         .eq('id', revisionId)
         .single();
@@ -95,11 +95,11 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
       if (!snapshot) return false;
 
       // Strip system fields from snapshot
-      const { id, created_at, created_by, ...restoreData } = snapshot as any;
+      const { _id, _created_at, _created_by, ...restoreData } = snapshot as Record<string, unknown>;
       restoreData.updated_at = new Date().toISOString();
 
       const { error: updateError } = await supabase
-        .from(revision.source_table as any)
+        .from(revision.source_table as 'venues')
         .update(restoreData)
         .eq('id', revision.source_id);
 
@@ -110,7 +110,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
 
       const nextNumber = revision.revision_number + 1;
       await supabase
-        .from('cms_revisions' as any)
+        .from('cms_revisions' as 'venues')
         .insert({
           source_table: revision.source_table,
           source_id: revision.source_id,

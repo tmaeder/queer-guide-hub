@@ -168,10 +168,10 @@ export default function AdminMarketplace() {
       if (error) throw error;
       toast({ title: 'Import Successful', description: `Imported ${data.imported} products` });
       setIsAwinImportOpen(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Import Failed',
-        description: err.message || 'Failed to import',
+        description: err instanceof Error ? err.message : 'Failed to import',
         variant: 'destructive',
       });
     } finally {
@@ -328,7 +328,7 @@ export default function AdminMarketplace() {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <ExportExcelButton
             onExport={async () => {
-              const cols: ExportColumnDef<any>[] = [
+              const cols: ExportColumnDef<Record<string, unknown>>[] = [
                 { header: 'Title', accessor: (r) => r.title },
                 { header: 'Business Name', accessor: (r) => r.business_name },
                 { header: 'Category', accessor: (r) => r.category },
@@ -361,6 +361,7 @@ export default function AdminMarketplace() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is stable in practice, adding would defeat memoization
     [columns],
   );
 

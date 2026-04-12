@@ -22,7 +22,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown, Landmark } from 'lucide-react';
+import { ArrowLeft, Globe, MapPin, Building2, Map, Landmark } from 'lucide-react';
 
 // Lazy load the map component
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
@@ -30,7 +30,7 @@ const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 // Extracted style constants to avoid creating new objects on every render
 const ICON_SM: React.CSSProperties = { height: 16, width: 16 };
 const ICON_MD: React.CSSProperties = { height: 20, width: 20 };
-const ICON_LG: React.CSSProperties = { height: 32, width: 32 };
+const _ICON_LG: React.CSSProperties = { height: 32, width: 32 };
 const ICON_XL: React.CSSProperties = { height: 48, width: 48, margin: '0 auto 16px', color: 'hsl(var(--muted-foreground))' };
 const BACK_BTN_STYLE: React.CSSProperties = { marginBottom: 16, transition: 'all 200ms' };
 const BACK_ICON_STYLE: React.CSSProperties = { height: 16, width: 16, marginRight: 8 };
@@ -38,14 +38,14 @@ const TABS_STYLE: React.CSSProperties = { display: 'flex', flexDirection: 'colum
 const TABS_LIST_STYLE: React.CSSProperties = { display: 'grid', width: '100%', maxWidth: 600, gridTemplateColumns: 'repeat(4, 1fr)' };
 const TAB_CONTENT_STYLE: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24 };
 const BADGE_STYLE: React.CSSProperties = { paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 };
-const LINK_STYLE: React.CSSProperties = { display: 'block' };
-const CARD_HEADER_STYLE: React.CSSProperties = { paddingTop: 0 };
+const _LINK_STYLE: React.CSSProperties = { display: 'block' };
+const _CARD_HEADER_STYLE: React.CSSProperties = { paddingTop: 0 };
 const MAP_ICON_STYLE: React.CSSProperties = { height: 32, width: 32, margin: '0 auto', color: 'text.secondary' };
 
 type ViewMode = 'overview' | 'country' | 'city' | 'search';
 
 export default function Places() {
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const { countries, loading: countriesLoading, error: countriesError } = useOptimizedCountries();
   const { cities, loading: citiesLoading, error: citiesError } = useOptimizedCities();
   // fetchCitiesByCountry, searchLocations, findNearbyCities imported as standalone functions
@@ -69,7 +69,7 @@ export default function Places() {
   }, [loading]);
 
   // Fetch continents for grouping countries
-  const [continents, setContinents] = useState<any[]>([]);
+  const [continents, setContinents] = useState<Record<string, unknown>[]>([]);
 
   useEffect(() => {
     const fetchContinents = async () => {
@@ -90,10 +90,10 @@ export default function Places() {
   }, []);
 
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
-  const [selectedCountry, setSelectedCountry] = useState<any>(null);
-  const [selectedCity, setSelectedCity] = useState<any>(null);
-  const [countryCities, setCountryCities] = useState<any[]>([]);
-  const [searchResults, setSearchResults] = useState<any>({ countries: [], cities: [] });
+  const [selectedCountry, setSelectedCountry] = useState<Record<string, unknown> | null>(null);
+  const [selectedCity, setSelectedCity] = useState<Record<string, unknown> | null>(null);
+  const [countryCities, setCountryCities] = useState<Record<string, unknown>[]>([]);
+  const [searchResults, setSearchResults] = useState<{ countries: Record<string, unknown>[]; cities: Record<string, unknown>[] }>({ countries: [], cities: [] });
   const [filters, setFilters] = useState<PlacesFilters>({
     continent: 'all',
     populationRange: 'all',
@@ -104,9 +104,9 @@ export default function Places() {
   });
 
   // Animation states for better UX
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [_isTransitioning, setIsTransitioning] = useState(false);
 
-  const handleCityClick = (city: any) => {
+  const handleCityClick = (city: Record<string, unknown>) => {
     setIsTransitioning(true);
     setTimeout(() => {
       setSelectedCity(city);
@@ -115,7 +115,7 @@ export default function Places() {
     }, 150);
   };
 
-  const handleCountryClick = async (country: any) => {
+  const handleCountryClick = async (country: Record<string, unknown>) => {
     setIsTransitioning(true);
     setTimeout(async () => {
       setSelectedCountry(country);
@@ -895,7 +895,7 @@ export default function Places() {
                       gap: 2,
                     }}
                   >
-                    {searchResults.countries.map((country: any, index: number) => (
+                    {searchResults.countries.map((country, index: number) => (
                       <Box key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
                         <PlacesCard
                           type="country"
@@ -935,7 +935,7 @@ export default function Places() {
                       gap: 2,
                     }}
                   >
-                    {searchResults.cities.map((city: any, index: number) => (
+                    {searchResults.cities.map((city, index: number) => (
                       <Box key={city.id} style={{ animationDelay: `${index * 50}ms` }}>
                         <PlacesCard
                           type="city"

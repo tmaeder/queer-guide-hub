@@ -44,7 +44,7 @@ const PopoverTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttri
       onClick?.(e);
     };
     if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<any>, { onClick: handleClick, ref });
+      return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { onClick: handleClick, ref });
     }
     return <button ref={ref} onClick={handleClick} type="button" {...props}>{children}</button>;
   }
@@ -55,11 +55,11 @@ interface PopoverContentProps extends React.HTMLAttributes<HTMLDivElement> {
   align?: 'start' | 'center' | 'end';
   sideOffset?: number;
   side?: 'top' | 'right' | 'bottom' | 'left';
-  onOpenAutoFocus?: (e: any) => void;
+  onOpenAutoFocus?: (e: Event) => void;
 }
 
 const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
-  ({ className, children, align = "center", sideOffset = 4, style, ...props }, ref) => {
+  ({ className, children, align = "center", sideOffset = 4, style, ..._props }, ref) => {
     const { anchorEl, setAnchorEl, controlledOpen, onOpenChange } = React.useContext(PopoverContext);
 
     // Determine if open: controlled mode uses controlledOpen, uncontrolled uses anchorEl
@@ -83,7 +83,7 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
         disableRestoreFocus
         anchorOrigin={{ vertical: 'bottom', horizontal: align === 'start' ? 'left' : align === 'end' ? 'right' : 'center' }}
         transformOrigin={{ vertical: 'top', horizontal: align === 'start' ? 'left' : align === 'end' ? 'right' : 'center' }}
-        slotProps={{ paper: { ref: ref as any, className, style: { marginTop: sideOffset, ...style }, sx: { borderRadius: 1.25, minWidth: 288, p: 2 } } }}
+        slotProps={{ paper: { ref: ref as React.Ref<HTMLDivElement>, className, style: { marginTop: sideOffset, ...style }, sx: { borderRadius: 1.25, minWidth: 288, p: 2 } } }}
       >
         {children}
       </MuiPopover>

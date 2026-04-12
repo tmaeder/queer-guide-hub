@@ -16,7 +16,7 @@ interface SecurityEvent {
   user_id?: string;
   ip_address?: unknown;
   user_agent?: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
   severity?: 'low' | 'medium' | 'high' | 'critical';
   created_at: string;
 }
@@ -73,6 +73,7 @@ export function SecurityMonitoring() {
 
   useEffect(() => {
     fetchSecurityEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchSecurityEvents defined above, re-run on user/isAdmin change
   }, [user, isAdmin]);
 
   if (!user || !isAdmin) {

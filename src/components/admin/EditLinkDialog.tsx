@@ -47,8 +47,8 @@ export function EditLinkDialog({ open, link, onClose, onSave }: EditLinkDialogPr
     try {
       await onSave(newUrl);
       onClose();
-    } catch (e: any) {
-      setUrlError(e.message ?? 'Save failed');
+    } catch (e: unknown) {
+      setUrlError(e instanceof Error ? e.message : 'Save failed');
     } finally {
       setSaving(false);
     }

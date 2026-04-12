@@ -86,7 +86,7 @@ export const useNotifications = () => {
     content?: string,
     actionUrl?: string,
     relatedId?: string,
-    metadata?: any
+    metadata?: Record<string, unknown>
   ) => {
     try {
       const { data, error } = await supabase.rpc('create_notification', {
@@ -132,7 +132,7 @@ export const useNotifications = () => {
           setUnreadCount(prev => prev + 1);
           
           // Show toast for new notification
-          const isSOS = (newNotification.metadata as any)?.sos;
+          const isSOS = (newNotification.metadata as Record<string, unknown> | null)?.sos;
           toast({
             title: newNotification.title,
             description: newNotification.content,
@@ -145,6 +145,7 @@ export const useNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchNotifications defined above, re-run on user/toast change
   }, [user, toast]);
 
   return {

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
-let mockUser: any = null;
+let mockUser: { id: string } | null = null;
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mockUser }) }));
 
 import { AuthGate } from '../AuthGate';

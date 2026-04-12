@@ -90,7 +90,7 @@ const EventCardFixture = () => (
   </Card>
 );
 
-export const EventCard = memo(function EventCard({ event, loading = false, onViewDetails, onUpdateAttendance }: EventCardProps) {
+export const EventCard = memo(function EventCard({ event, loading = false, _onViewDetails, onUpdateAttendance }: EventCardProps) {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   const attendeeCount = event?.event_attendees?.filter((a) => a.status === 'going').length || 0;
@@ -453,8 +453,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, onVie
             <Menu
               anchorEl={menuAnchor}
               open={Boolean(menuAnchor)}
-              onClose={(e: any) => {
-                e?.stopPropagation?.();
+              onClose={(_e: Record<string, unknown>, _reason: string) => {
                 setMenuAnchor(null);
               }}
               onClick={(e) => e.stopPropagation()}

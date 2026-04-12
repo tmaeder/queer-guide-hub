@@ -1,0 +1,14 @@
+# Tor hidden service configuration for queer.guide
+# The onion address is auto-generated on first run and persisted in HiddenServiceDir
+
+HiddenServiceDir /var/lib/tor/queer_guide/
+HiddenServicePort 80 127.0.0.1:8080
+HiddenServiceVersion 3
+
+# Logging: minimal
+Log notice syslog
+SafeLogging 1
+
+# Performance tuning for a static site
+HiddenServiceMaxStreams 128
+HiddenServiceMaxStreamsCloseCircuit 1

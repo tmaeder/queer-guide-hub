@@ -1,26 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, ArrowRight, Merge } from 'lucide-react';
+import { Check, ArrowRight, Merge } from 'lucide-react';
 import { getFieldsForEntity, type FieldDef } from './StructuredFieldDisplay';
 import { brandColors } from '@/theme/muiTheme';
 
 interface SideBySideComparisonProps {
   entityType: string;
-  leftData: Record<string, any>;
-  rightData: Record<string, any>;
+  leftData: Record<string, unknown>;
+  rightData: Record<string, unknown>;
   leftLabel?: string;
   rightLabel?: string;
   leftId?: string;
   rightId?: string;
-  onMerge?: (mergedData: Record<string, any>, keepId: string, removeId: string) => void;
+  onMerge?: (mergedData: Record<string, unknown>, keepId: string, removeId: string) => void;
   onKeepLeft?: () => void;
   onKeepRight?: () => void;
   onCancel?: () => void;
@@ -29,7 +25,7 @@ interface SideBySideComparisonProps {
 
 type FieldChoice = 'left' | 'right';
 
-function pickBetterValue(leftVal: any, rightVal: any, type: FieldDef['type']): FieldChoice {
+function pickBetterValue(leftVal: unknown, rightVal: unknown, type: FieldDef['type']): FieldChoice {
   const leftEmpty = leftVal === null || leftVal === undefined || leftVal === '';
   const rightEmpty = rightVal === null || rightVal === undefined || rightVal === '';
 
@@ -54,13 +50,13 @@ function pickBetterValue(leftVal: any, rightVal: any, type: FieldDef['type']): F
   return 'left';
 }
 
-function valuesAreDifferent(a: any, b: any): boolean {
+function valuesAreDifferent(a: unknown, b: unknown): boolean {
   if (a === b) return false;
   if ((a === null || a === undefined || a === '') && (b === null || b === undefined || b === '')) return false;
   return String(a) !== String(b);
 }
 
-function formatCellValue(val: any): string {
+function formatCellValue(val: unknown): string {
   if (val === null || val === undefined || val === '') return '—';
   if (typeof val === 'boolean') return val ? 'Yes' : 'No';
   const s = String(val);
@@ -100,8 +96,8 @@ export function SideBySideComparison({
     setChoices(prev => ({ ...prev, [key]: value }));
   };
 
-  const buildMergedData = (): Record<string, any> => {
-    const merged: Record<string, any> = {};
+  const buildMergedData = (): Record<string, unknown> => {
+    const merged: Record<string, unknown> = {};
     for (const field of fields) {
       merged[field.key] = choices[field.key] === 'left' ? leftData[field.key] : rightData[field.key];
     }

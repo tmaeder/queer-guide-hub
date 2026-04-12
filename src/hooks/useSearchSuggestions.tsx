@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MapPin, Calendar, Store, Tag, Users, User } from 'lucide-react';
 
@@ -6,7 +6,7 @@ export interface SearchSuggestion {
   id: string;
   name: string;
   type: 'venue' | 'event' | 'marketplace' | 'tag' | 'user' | 'personality' | 'group';
-  icon: any;
+  icon: React.ComponentType;
   subtitle?: string;
   title?: string;
   location?: string;
@@ -38,7 +38,7 @@ export function useSearchSuggestions(query: string) {
           .ilike('name', `%${searchTerm}%`)
           .limit(3)
           .then(({ data }) =>
-            (data || []).map((item: any) => ({
+            (data || []).map((item: Record<string, unknown>) => ({
               ...item,
               type: 'venue' as const,
               icon: MapPin,
@@ -55,7 +55,7 @@ export function useSearchSuggestions(query: string) {
           .ilike('title', `%${searchTerm}%`)
           .limit(3)
           .then(({ data }) =>
-            (data || []).map((item: any) => ({
+            (data || []).map((item: Record<string, unknown>) => ({
               ...item,
               type: 'event' as const,
               icon: Calendar,
@@ -74,7 +74,7 @@ export function useSearchSuggestions(query: string) {
           .eq('status', 'active')
           .limit(3)
           .then(({ data }) =>
-            (data || []).map((item: any) => ({
+            (data || []).map((item: Record<string, unknown>) => ({
               ...item,
               type: 'marketplace' as const,
               icon: Store,
@@ -92,7 +92,7 @@ export function useSearchSuggestions(query: string) {
           .ilike('name', `%${searchTerm}%`)
           .limit(3)
           .then(({ data }) =>
-            (data || []).map((item: any) => ({
+            (data || []).map((item: Record<string, unknown>) => ({
               ...item,
               type: 'tag' as const,
               icon: Tag,
@@ -109,7 +109,7 @@ export function useSearchSuggestions(query: string) {
           .ilike('display_name', `%${searchTerm}%`)
           .limit(2)
           .then(({ data }) =>
-            (data || []).map((item: any) => ({
+            (data || []).map((item: Record<string, unknown>) => ({
               id: item.user_id,
               name: item.display_name || 'Anonymous User',
               type: 'user' as const,
@@ -127,7 +127,7 @@ export function useSearchSuggestions(query: string) {
           .ilike('name', `%${searchTerm}%`)
           .limit(2)
           .then(({ data }) =>
-            (data || []).map((item: any) => ({
+            (data || []).map((item: Record<string, unknown>) => ({
               ...item,
               type: 'personality' as const,
               icon: User,
@@ -144,7 +144,7 @@ export function useSearchSuggestions(query: string) {
           .ilike('name', `%${searchTerm}%`)
           .limit(2)
           .then(({ data }) =>
-            (data || []).map((item: any) => ({
+            (data || []).map((item: Record<string, unknown>) => ({
               ...item,
               type: 'group' as const,
               icon: Users,

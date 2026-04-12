@@ -13,10 +13,9 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import {
   computeSimilarity, computeTitleSimilarity, normalizeText,
-  type SimilarityResult,
 } from './fuzzy-match.ts'
 import {
-  computeDedupConfidence, type ConfidenceResult, type ReviewAction,
+  computeDedupConfidence, type ConfidenceResult,
 } from './confidence-scoring.ts'
 
 // ── Types ────────────────────────────────────────────────────────────────────

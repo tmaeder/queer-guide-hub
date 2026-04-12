@@ -93,6 +93,7 @@ export function ScanResultDialog({ open, link, onClose, onRescan, scanning }: Sc
                 <img
                   src={screenshotUrl}
                   alt="Page screenshot"
+                  role="presentation"
                   style={{ width: '100%', display: 'block' }}
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />

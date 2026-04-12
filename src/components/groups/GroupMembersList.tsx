@@ -15,7 +15,7 @@ interface GroupMember {
   profiles: {
     display_name: string;
     avatar_url: string;
-    social_links?: Record<string, any>;
+    social_links?: Record<string, unknown>;
   };
 }
 
@@ -69,7 +69,7 @@ export function GroupMembersList({ members, canManage, onStartConversation }: Gr
                     {member.profiles.display_name}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Badge variant={getRoleColor(member.role) as any}>
+                    <Badge variant={getRoleColor(member.role) as 'default' | 'secondary' | 'destructive' | 'outline'}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         {getRoleIcon(member.role)}
                         {member.role}

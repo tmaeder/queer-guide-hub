@@ -49,12 +49,12 @@ export const cloudflareOptimizedFetch = async (
 export const getCloudflareGeoData = () => {
   if (typeof window !== 'undefined') {
     return {
-      country: (window as any).CF?.country || 'US',
-      region: (window as any).CF?.region || 'CA',
-      city: (window as any).CF?.city || 'San Francisco',
-      timezone: (window as any).CF?.timezone || 'America/Los_Angeles',
-      latitude: (window as any).CF?.latitude || '37.7749',
-      longitude: (window as any).CF?.longitude || '-122.4194'
+      country: (window as unknown as Record<string, Record<string, string>>).CF?.country || 'US',
+      region: (window as unknown as Record<string, Record<string, string>>).CF?.region || 'CA',
+      city: (window as unknown as Record<string, Record<string, string>>).CF?.city || 'San Francisco',
+      timezone: (window as unknown as Record<string, Record<string, string>>).CF?.timezone || 'America/Los_Angeles',
+      latitude: (window as unknown as Record<string, Record<string, string>>).CF?.latitude || '37.7749',
+      longitude: (window as unknown as Record<string, Record<string, string>>).CF?.longitude || '-122.4194'
     };
   }
 

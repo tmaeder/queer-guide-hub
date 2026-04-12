@@ -83,7 +83,7 @@ const getIncomeBadgeColor = (level?: string | null): string => {
   return '#6b7280';
 };
 
-export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data, countryName }) => {
+export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data, _countryName }) => {
   const { indicators } = data;
   const hasEconomyData =
     data.gdp_usd ||

@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  contentTypeRegistry,
   getContentTypeIds,
   getContentType,
   getFieldsByGroup,
@@ -57,7 +56,7 @@ describe('contentTypeRegistry', () => {
     for (const id of getContentTypeIds()) {
       const config = getContentType(id)!;
       const fields = config.fields;
-      const hasNameOrTitle = fields.some(f =>
+      const _hasNameOrTitle = fields.some(f =>
         (f.name === 'name' || f.name === 'title') && f.required
       );
       // Most content types should have a name/title

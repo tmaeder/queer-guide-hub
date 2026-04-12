@@ -33,7 +33,7 @@ export function normalizeText(text: string): string {
 
 /** Normalize for title comparison: also strips common prefixes/suffixes. */
 const TITLE_NOISE = /\b(the|a|an|der|die|das|le|la|les|el|los|las|de|du|des|von|van)\b/g
-const EDITION_RE = /\b(\d{4}|\d{1,3}(?:st|nd|rd|th)\s+(?:edition|annual))\b/gi
+const _EDITION_RE = /\b(\d{4}|\d{1,3}(?:st|nd|rd|th)\s+(?:edition|annual))\b/gi
 const YEAR_RE = /\b(20\d{2})\b/g
 
 export function normalizeTitle(text: string): string {

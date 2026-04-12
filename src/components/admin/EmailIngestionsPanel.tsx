@@ -57,6 +57,7 @@ export const EmailIngestionsPanel: React.FC = () => {
 
   useEffect(() => {
     fetchIngestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchIngestions defined below, re-run on statusFilter change
   }, [statusFilter]);
 
   const fetchIngestions = async () => {

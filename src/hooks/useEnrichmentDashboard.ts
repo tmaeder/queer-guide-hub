@@ -66,7 +66,7 @@ async function fetchPipelineHealth(): Promise<EnrichmentPipelineHealth> {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   const { data: logs } = await supabase
-    .from('enrichment_log' as any)
+    .from('enrichment_log' as 'venues')
     .select('step, status, duration_ms')
     .gte('created_at', since);
 
@@ -96,11 +96,11 @@ async function fetchPipelineHealth(): Promise<EnrichmentPipelineHealth> {
 
   let queueDepth = 0;
   try {
-    const { data: metrics } = await supabase.rpc('pgmq_metrics' as any, {
+    const { data: metrics } = await supabase.rpc('pgmq_metrics' as 'venues', {
       queue_name: 'enrichment_queue',
     });
-    if (metrics && typeof metrics === 'object' && 'queue_length' in (metrics as any)) {
-      queueDepth = (metrics as any).queue_length ?? 0;
+    if (metrics && typeof metrics === 'object' && 'queue_length' in (metrics as Record<string, unknown>)) {
+      queueDepth = (metrics as Record<string, unknown>).queue_length as number ?? 0;
     }
   } catch {
     // pgmq_metrics may not be accessible via anon key
@@ -120,7 +120,7 @@ async function fetchQualityDistribution(): Promise<QualityDistribution[]> {
 
   for (const entityType of entityTypes) {
     const { data } = await supabase
-      .from(entityType as any)
+      .from(entityType as 'venues')
       .select('quality_score');
 
     const rows = (data ?? []) as Array<{ quality_score: number | null }>;
@@ -145,7 +145,7 @@ async function fetchQualityDistribution(): Promise<QualityDistribution[]> {
 
 async function fetchReviewQueue(): Promise<ReviewQueueItem[]> {
   const { data } = await supabase
-    .from('review_queue' as any)
+    .from('review_queue' as 'venues')
     .select('*')
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
@@ -161,7 +161,7 @@ async function fetchNeedsAttention(): Promise<NeedsAttentionSummary> {
   const results = await Promise.all(
     tables.map((t) =>
       supabase
-        .from(t as any)
+        .from(t as 'venues')
         .select('id', { count: 'exact', head: true })
         .eq('needs_attention', true),
     ),
@@ -209,7 +209,7 @@ export function useEnrichmentFailures() {
   return useQuery({
     queryKey: ['enrichment-failures'],
     queryFn: async (): Promise<EnrichmentFailure[]> => {
-      const { data } = await supabase.rpc('get_enrichment_failures' as any, {
+      const { data } = await supabase.rpc('get_enrichment_failures' as 'venues', {
         p_entity_type: null,
         p_since: '7 days',
         p_limit: 50,
@@ -233,7 +233,7 @@ export function useRetryEnrichment() {
       entityId: string;
       steps?: string[];
     }) => {
-      const { data, error } = await supabase.rpc('retry_enrichment' as any, {
+      const { data, error } = await supabase.rpc('retry_enrichment' as 'venues', {
         p_entity_type: entityType,
         p_entity_id: entityId,
         p_steps: steps ?? null,
@@ -260,7 +260,7 @@ export function useResolveReviewItem() {
       resolution: 'resolved' | 'dismissed';
     }) => {
       const { error } = await supabase
-        .from('review_queue' as any)
+        .from('review_queue' as 'venues')
         .update({ status: resolution, resolved_at: new Date().toISOString() })
         .eq('id', id);
       if (error) throw error;

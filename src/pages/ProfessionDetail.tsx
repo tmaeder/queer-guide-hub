@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 
 interface ProfessionData {
   name: string;
-  personalities: any[];
+  personalities: Record<string, unknown>[];
   totalCount: number;
 }
 

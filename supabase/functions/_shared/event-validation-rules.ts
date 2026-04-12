@@ -8,7 +8,7 @@ import {
   computeTitleSimilarity, computeSimilarity, normalizeText,
 } from './fuzzy-match.ts'
 import {
-  computeDedupConfidence, type ConfidenceResult, type ReviewAction,
+  computeDedupConfidence, type ConfidenceResult,
 } from './confidence-scoring.ts'
 
 // ── Types ────────────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 const REFUGE_API = 'https://www.refugerestrooms.org/api/v1/restrooms'
 const PER_PAGE = 100 // Refuge API max per page
@@ -111,8 +111,8 @@ serve(async (req) => {
       totalFetched += restrooms.length
 
       // Build batch arrays
-      const toInsert: any[] = []
-      const toUpdate: { id: string; data: any }[] = []
+      const toInsert: Record<string, unknown>[] = []
+      const toUpdate: { id: string; data: unknown }[] = []
 
       for (const r of restrooms) {
         if (!r.latitude || !r.longitude) {
@@ -130,7 +130,7 @@ serve(async (req) => {
 
         const cityId = r.city ? cityMap.get(r.city.trim().toLowerCase()) ?? null : null
 
-        const venueData: Record<string, any> = {
+        const venueData: Record<string, unknown> = {
           name: r.name || `Restroom at ${r.street || 'Unknown'}`,
           description: [r.comment, r.directions].filter(Boolean).join(' — ') || null,
           address: r.street || null,
@@ -171,7 +171,7 @@ serve(async (req) => {
 
       // Batch insert new venues
       if (toInsert.length > 0) {
-        const { error: insertErr, count } = await supabase
+        const { error: insertErr, _count } = await supabase
           .from('venues')
           .insert(toInsert)
 

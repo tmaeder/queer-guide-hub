@@ -165,8 +165,8 @@ export default function AdminFeedback() {
     queryKey: ['admin-feedback-board'],
     queryFn: async () => {
       const { data, error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('community_submissions' as any)
+         
+        .from('community_submissions' as const)
         .select(
           'id,data,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at',
         )
@@ -202,8 +202,8 @@ export default function AdminFeedback() {
   const statusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: KanbanStatus }) => {
       const { error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('community_submissions' as any)
+         
+        .from('community_submissions' as const)
         .update({
           feedback_status: status,
           reviewed_by: user?.id,
@@ -223,8 +223,8 @@ export default function AdminFeedback() {
   const notesMutation = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
       const { error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('community_submissions' as any)
+         
+        .from('community_submissions' as const)
         .update({ reviewer_notes: notes })
         .eq('id', id);
       if (error) throw error;
@@ -532,10 +532,10 @@ function FeedbackDetailDrawer({
   };
 
   // Sync notes when item changes
-  const itemId = item?.id;
+  const _itemId = item?.id;
   useMemo(() => {
     if (item) setLocalNotes(item.reviewer_notes || '');
-  }, [item, itemId]);
+  }, [item]);
 
   if (!item) return null;
 

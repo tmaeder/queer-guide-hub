@@ -55,7 +55,7 @@ export const EmailView: React.FC<EmailViewProps> = ({ email, onReply, onDelete, 
       })
     : null;
 
-  const attachments = (email.attachments as any[]) || [];
+  const attachments = (email.attachments as Array<{ name: string; url: string; size?: number }>) || [];
 
   return (
     <Card className="overflow-hidden">

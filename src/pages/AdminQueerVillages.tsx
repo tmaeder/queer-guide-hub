@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useQueerVillages, type QueerVillageWithRelations } from '@/hooks/useQueerVillages';
+import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
@@ -145,7 +145,7 @@ export default function AdminQueerVillages() {
 
     setSaving(true);
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         name: form.name.trim(),
         slug: form.slug.trim(),
         description: form.description.trim() || null,
@@ -181,8 +181,8 @@ export default function AdminQueerVillages() {
       }
       setDialogOpen(false);
       invalidateTable();
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to save village');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save village');
     } finally {
       setSaving(false);
     }
@@ -196,8 +196,8 @@ export default function AdminQueerVillages() {
       setDeleteDialogOpen(false);
       setDeleteTarget(null);
       invalidateTable();
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to delete village');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete village');
     }
   };
 

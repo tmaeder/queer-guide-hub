@@ -5,10 +5,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
+interface VenueData {
+  name: string;
+  category?: string;
+  featured?: boolean;
+  verified?: boolean;
+  city?: string;
+  state?: string;
+  price_range?: number;
+  description?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  tags?: string[];
+}
+
 interface VenueCardProps {
-  venue: any;
-  onEdit: (venue: any) => void;
-  onDelete: (venue: any) => void;
+  venue: VenueData;
+  onEdit: (venue: VenueData) => void;
+  onDelete: (venue: VenueData) => void;
 }
 
 export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {

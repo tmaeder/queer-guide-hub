@@ -116,7 +116,7 @@ serve(async (req) => {
   }
 });
 
-async function fetchUpcomingConcerts(artistName: string): Promise<any[] | null> {
+async function fetchUpcomingConcerts(artistName: string): Promise<unknown[] | null> {
   try {
     // Clean artist name for search (remove common suffixes that might interfere)
     const cleanedName = artistName

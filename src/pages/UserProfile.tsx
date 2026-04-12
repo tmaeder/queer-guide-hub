@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -9,7 +8,6 @@ import { ArrowLeft, MapPin, Calendar, Check, Shield, User, Share2, Flag } from '
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
-import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { UserPostsList } from '@/components/posts/UserPostsList';
 import { SecureProfileViewer } from '@/components/profile/SecureProfileViewer';
@@ -23,7 +21,7 @@ import Typography from '@mui/material/Typography';
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const { user: currentUser } = useAuth();
+  const { user: _currentUser } = useAuth();
   const { toast } = useToast();
 
   // Use the new secure profile hook
@@ -32,7 +30,7 @@ export default function UserProfile() {
     loading: isLoading,
     error,
     isOwnProfile,
-    canViewSensitiveField,
+    _canViewSensitiveField,
   } = useSecurePublicProfile(userId);
 
   const handleShare = async () => {
@@ -58,7 +56,7 @@ export default function UserProfile() {
         title: 'Link copied!',
         description: 'Profile link copied to clipboard',
       });
-    } catch (error) {
+    } catch (_error) {
       // Final fallback: manual copy instruction
       toast({
         title: 'Share this profile',
@@ -118,7 +116,7 @@ export default function UserProfile() {
   };
 
   const getProfileVisibility = () => {
-    const privacy = profile.privacy_settings as any;
+    const privacy = profile.privacy_settings as Record<string, unknown> | null;
     return privacy?.profile_visibility || 'public';
   };
 
@@ -196,7 +194,7 @@ export default function UserProfile() {
                     {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                {(profile as any)?.verified_identity && (
+                {(profile as Record<string, unknown>)?.verified_identity && (
                   <Badge variant="secondary" sx={{ mb: 1 }}>
                     <Check style={{ width: 12, height: 12, marginRight: 4 }} />
                     Verified
@@ -218,8 +216,8 @@ export default function UserProfile() {
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {profile.display_name || 'Anonymous User'}
                     </Typography>
-                    {(profile as any)?.user_mode && (
-                      <UserModeBadge mode={(profile as any).user_mode} size="lg" />
+                    {(profile as Record<string, unknown>)?.user_mode && (
+                      <UserModeBadge mode={(profile as Record<string, unknown>).user_mode} size="lg" />
                     )}
                   </Box>
 
@@ -235,10 +233,10 @@ export default function UserProfile() {
                     {profile.pronouns && (
                       <Typography variant="body2">{profile.pronouns}</Typography>
                     )}
-                    {(profile as any)?.age_range && (
+                    {(profile as Record<string, unknown>)?.age_range && (
                       <>
                         {profile.pronouns && <Typography variant="body2">&#8226;</Typography>}
-                        <Typography variant="body2">{(profile as any).age_range}</Typography>
+                        <Typography variant="body2">{(profile as Record<string, unknown>).age_range}</Typography>
                       </>
                     )}
                     {profile.location && (

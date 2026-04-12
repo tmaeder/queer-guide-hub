@@ -17,7 +17,7 @@ const restCountriesAdapter: SourceAdapter = {
   name: 'rest-countries',
   entityType: 'country',
 
-  async fetch(config: AdapterConfig): Promise<RawItem[]> {
+  async fetch(_config: AdapterConfig): Promise<RawItem[]> {
     const supabase = getServiceClient()
 
     const [data1, data2] = await withCircuitBreaker(supabase, 'rest_countries', async () => {

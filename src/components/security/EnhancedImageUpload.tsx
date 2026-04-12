@@ -44,7 +44,7 @@ export function EnhancedImageUpload({
       throw new Error('File validation failed');
     }
 
-      const result = validation as any;
+      const result = validation as { is_valid: boolean; errors: string[] };
       if (!result.is_valid) {
         setValidationErrors(result.errors);
       return false;
@@ -94,11 +94,11 @@ export function EnhancedImageUpload({
         title: "Success",
         description: "Image uploaded successfully",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to upload image",
+        description: error instanceof Error ? error.message : "Failed to upload image",
         variant: "destructive",
       });
     } finally {

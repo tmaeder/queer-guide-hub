@@ -10,10 +10,10 @@ vi.mock('@/hooks/use-toast', () => ({
 }));
 
 vi.mock('@/integrations/supabase/client', () => {
-  const handler: ProxyHandler<any> = {
+  const handler: ProxyHandler<object> = {
     get: (_t, p) => {
       if (p === 'then') return undefined;
-      return (..._a: any[]) => new Proxy(() => {}, handler);
+      return (..._a: unknown[]) => new Proxy(() => {}, handler);
     },
     apply: () => new Proxy(() => {}, handler),
   };

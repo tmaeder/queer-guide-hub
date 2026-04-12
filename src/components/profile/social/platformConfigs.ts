@@ -14,7 +14,7 @@ export interface PlatformConfig {
   platform: string;
   urlDetectionRegex: string;
   idValidationRegex: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ style?: React.CSSProperties }>;
 }
 
 export const PLATFORM_CONFIGS: PlatformConfig[] = [

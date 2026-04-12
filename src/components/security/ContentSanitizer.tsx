@@ -33,7 +33,7 @@ function ensureSanitizerHooks() {
 
 interface ContentSanitizerProps {
   content: string;
-  sx?: any;
+  sx?: Record<string, unknown>;
   allowedTags?: string[];
   allowedAttrs?: string[];
   stripAll?: boolean; // Enhanced security option to strip all HTML

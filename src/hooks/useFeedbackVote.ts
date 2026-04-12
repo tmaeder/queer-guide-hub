@@ -20,7 +20,7 @@ export function useFeedbackVote(submissionId: string) {
     queryKey,
     queryFn: async () => {
       const { count, error: countErr } = await supabase
-        .from('feedback_votes' as any)
+        .from('feedback_votes' as 'venues')
         .select('*', { count: 'exact', head: true })
         .eq('submission_id', submissionId);
       if (countErr) throw countErr;
@@ -28,7 +28,7 @@ export function useFeedbackVote(submissionId: string) {
       let hasVoted = false;
       if (user) {
         const { data: vote } = await supabase
-          .from('feedback_votes' as any)
+          .from('feedback_votes' as 'venues')
           .select('id')
           .eq('submission_id', submissionId)
           .eq('user_id', user.id)
@@ -47,14 +47,14 @@ export function useFeedbackVote(submissionId: string) {
 
       if (data?.hasVoted) {
         const { error } = await supabase
-          .from('feedback_votes' as any)
+          .from('feedback_votes' as 'venues')
           .delete()
           .eq('submission_id', submissionId)
           .eq('user_id', user.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('feedback_votes' as any)
+          .from('feedback_votes' as 'venues')
           .insert({ submission_id: submissionId, user_id: user.id });
         if (error) throw error;
       }
@@ -109,7 +109,7 @@ export function useFeedbackVoteCounts(submissionIds: string[]) {
 
       // Get all vote counts in one query
       const { data: votes, error } = await supabase
-        .from('feedback_votes' as any)
+        .from('feedback_votes' as 'venues')
         .select('submission_id')
         .in('submission_id', submissionIds);
       if (error) throw error;
@@ -123,7 +123,7 @@ export function useFeedbackVoteCounts(submissionIds: string[]) {
       const userVotes: Record<string, boolean> = {};
       if (user) {
         const { data: myVotes } = await supabase
-          .from('feedback_votes' as any)
+          .from('feedback_votes' as 'venues')
           .select('submission_id')
           .in('submission_id', submissionIds)
           .eq('user_id', user.id);

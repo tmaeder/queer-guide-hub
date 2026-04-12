@@ -13,7 +13,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrips, useTrip, useTripMutations } from '@/hooks/useTrips';
@@ -93,10 +92,10 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         description: `${entity.name} has been added to your trip.`,
       });
       handleOpenChange(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Failed to add',
-        description: err?.message || 'Something went wrong.',
+        description: err instanceof Error ? err.message : 'Something went wrong.',
         variant: 'destructive',
       });
     }
@@ -138,10 +137,10 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         description: `${entity.name} has been added to your new trip.`,
       });
       handleOpenChange(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Error',
-        description: err?.message || 'Failed to create trip.',
+        description: err instanceof Error ? err.message : 'Failed to create trip.',
         variant: 'destructive',
       });
     }

@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -125,7 +124,7 @@ export const NotificationList = () => {
           .order('created_at', { ascending: false })
           .limit(20);
         if (commentsErr) throw commentsErr;
-        const commentsEnriched: CommentItem[] = (commentsData || []).map((c: any) => ({
+        const commentsEnriched: CommentItem[] = (commentsData || []).map((c: Record<string, unknown> & { profiles?: { display_name?: string; avatar_url?: string } }) => ({
           id: c.id,
           post_id: c.post_id,
           user_id: c.user_id,
@@ -152,7 +151,7 @@ export const NotificationList = () => {
     };
   }, [user?.id]);
 
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: { id: string; read?: boolean; action_url?: string }) => {
     if (!notification.read) {
       markAsRead(notification.id);
     }
@@ -173,10 +172,10 @@ export const NotificationList = () => {
     loading || messagingLoading || groupsLoading || likesLoading || commentsLoading;
 
   const combinedItems = useMemo(() => {
-    const items: Array<{ type: string; createdAt: Date; data: any; key: string }> = [];
+    const items: Array<{ type: string; createdAt: Date; data: Record<string, unknown>; key: string }> = [];
 
     // App notifications
-    notifications.forEach((n: any) => {
+    notifications.forEach((n: Record<string, unknown>) => {
       items.push({
         type: 'notification',
         createdAt: new Date(n.created_at),
@@ -186,13 +185,13 @@ export const NotificationList = () => {
     });
 
     // Direct messages (use last_message_at or updated_at)
-    directMessages.forEach((c: any) => {
+    directMessages.forEach((c: Record<string, unknown>) => {
       const ts = c.last_message_at || c.updated_at || c.created_at || new Date().toISOString();
       items.push({ type: 'dm', createdAt: new Date(ts), data: c, key: `dm-${c.id}` });
     });
 
     // Group notifications
-    groupNotifs.forEach((g: any) => {
+    groupNotifs.forEach((g: Record<string, unknown>) => {
       items.push({
         type: 'group',
         createdAt: new Date(g.created_at),
@@ -219,7 +218,7 @@ export const NotificationList = () => {
     return items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }, [notifications, directMessages, groupNotifs, likes, comments]);
 
-  const renderItem = (item: any) => {
+  const renderItem = (item: { type: string; createdAt: Date; data: Record<string, unknown>; key: string }) => {
     switch (item.type) {
       case 'notification': {
         const n = item.data;
@@ -305,9 +304,9 @@ export const NotificationList = () => {
       }
       case 'dm': {
         const c = item.data;
-        const others = (c.participants || []).filter((p: any) => p.user_id !== user?.id);
+        const others = (c.participants || []).filter((p: { user_id: string }) => p.user_id !== user?.id);
         const title =
-          c.title || others.map((o: any) => o.profile?.display_name || 'User').join(', ');
+          c.title || others.map((o: { profile?: { display_name?: string } }) => o.profile?.display_name || 'User').join(', ');
         const avatar = others[0]?.profile?.avatar_url || '';
         return (
           <Box

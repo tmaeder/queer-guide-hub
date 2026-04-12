@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Play, Download, Trash2, Eye, Music } from 'lucide-react';
+import { Search, Play, Trash2, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,7 +37,7 @@ export function AudioManager() {
   const [audios, setAudios] = useState<AudioFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
+  const [_selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
 
   useEffect(() => {
     loadAudios();
@@ -83,7 +83,7 @@ export function AudioManager() {
     }
   };
 
-  const formatFileSize = (bytes?: number): string => {
+  const _formatFileSize = (bytes?: number): string => {
     if (!bytes) return 'Unknown';
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     if (bytes === 0) return '0 Bytes';

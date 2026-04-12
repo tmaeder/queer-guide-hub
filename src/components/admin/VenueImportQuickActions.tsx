@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
   MapPin, Search, Download, RefreshCw, CheckCircle, AlertTriangle,
-  Clock, Zap, Globe, Navigation, Plane, Activity, TrendingUp, AlertCircle,
+  Clock, Globe, Navigation, Plane, AlertCircle,
   XCircle, Key, Database
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
@@ -226,7 +226,7 @@ export const VenueImportQuickActions = () => {
       // Scraper — invoke directly
       setLoadingStates(prev => ({ ...prev, [source.slug]: true }));
       try {
-        const { data, error } = await supabase.functions.invoke(source.edge_function, {
+        const { _data, error } = await supabase.functions.invoke(source.edge_function, {
           body: {}
         });
         if (error) throw error;
@@ -246,13 +246,13 @@ export const VenueImportQuickActions = () => {
     }
   };
 
-  const handleImportConfig = async (config: any) => {
+  const handleImportConfig = async (config: Record<string, unknown>) => {
     if (!importDialog.provider) return;
     setLoadingStates(prev => ({ ...prev, [importDialog.provider!]: true }));
 
     try {
       const functionName = `import-${importDialog.provider}-venues`;
-      const { data, error } = await supabase.functions.invoke(functionName, {
+      const { _data, error } = await supabase.functions.invoke(functionName, {
         body: { config }
       });
       if (error) throw error;

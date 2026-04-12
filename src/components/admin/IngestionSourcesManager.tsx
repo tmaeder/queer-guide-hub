@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -127,7 +127,7 @@ export const IngestionSourcesManager = () => {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {sources.map((source) => {
           const hasError = !!source.last_error;
-          const needsKey = source.requires_api_key && !source.is_enabled;
+          const _needsKey = source.requires_api_key && !source.is_enabled;
           const isTriggering = triggeringId === source.id;
 
           return (

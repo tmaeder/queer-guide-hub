@@ -1,6 +1,5 @@
-import Box from '@mui/material/Box';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertTriangle, Clock, RefreshCw, X, Pause } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Clock, RefreshCw, X } from 'lucide-react';
 import { ImportJob } from '@/hooks/useImportHub';
 
 interface ImportStatusBadgeProps {

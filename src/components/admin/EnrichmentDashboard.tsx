@@ -376,7 +376,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
             const typeMeta = REVIEW_TYPE_META[item.review_type] ?? REVIEW_TYPE_META.anomaly;
             const entityMeta = ENTITY_META[item.entity_type];
             const TypeIcon = typeMeta.icon;
-            const details = item.details as Record<string, any>;
+            const details = item.details as Record<string, unknown>;
 
             return (
               <Box

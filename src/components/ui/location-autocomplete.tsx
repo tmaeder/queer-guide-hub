@@ -11,7 +11,7 @@ interface LocationSuggestion {
   place_name: string;
   center: [number, number];
   context?: Array<{ id: string; text: string }>;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
 }
 
 export interface AddressComponents {
@@ -78,7 +78,7 @@ export function LocationAutocomplete({
 
       setSuggestions(data.features || []);
       setShowSuggestions(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Geocoding error:', error);
 
       toast({

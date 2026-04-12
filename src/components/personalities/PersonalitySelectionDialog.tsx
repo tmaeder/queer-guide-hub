@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, User, Calendar, Briefcase, MapPin } from "lucide-react";
 

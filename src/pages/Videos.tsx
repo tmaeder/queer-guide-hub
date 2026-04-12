@@ -89,9 +89,9 @@ export default function Videos() {
                       captions_path: video.captions_path,
                       renditions: video.renditions.map(r => ({
                         id: r.id,
-                        format: r.format as any,
-                        codec: r.codec as any,
-                        container: r.container as any,
+                        format: r.format as 'mp4' | 'webm',
+                        codec: r.codec as 'h264' | 'vp9' | 'av1',
+                        container: r.container as 'mp4' | 'webm',
                         resolution: r.resolution,
                         file_path: r.file_path,
                         width: r.width,

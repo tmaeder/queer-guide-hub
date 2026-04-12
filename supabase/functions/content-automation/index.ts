@@ -15,11 +15,10 @@
  */
 
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { corsHeaders, jsonResponse, errorResponse, requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts'
+import { jsonResponse, errorResponse, requireAdmin, getCorsHeaders } from '../_shared/supabase-client.ts'
 import {
-  loadModuleConfig, checkRateLimit, writeChangesBatch, logRun,
-  getContentName, CONTENT_TYPE_CONFIG, loadSharedReferenceData,
-  type ProposedChange, type AutomationRule, type ModuleConfig, type SharedRefs,
+  loadModuleConfig, checkRateLimit, writeChangesBatch, logRun, loadSharedReferenceData,
+  type ProposedChange, type ModuleConfig, type SharedRefs,
 } from '../_shared/automation-utils.ts'
 
 // ── Module processors ─────────────────────────────────────────────────────────

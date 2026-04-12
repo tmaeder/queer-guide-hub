@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Cookie, Settings } from 'lucide-react';
+import { Cookie, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCookieConsent } from '@/hooks/useCookieConsent';

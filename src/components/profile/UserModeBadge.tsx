@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { Heart, Users, Map, Smile, Handshake, Home } from 'lucide-react';
 import Box from '@mui/material/Box';
 

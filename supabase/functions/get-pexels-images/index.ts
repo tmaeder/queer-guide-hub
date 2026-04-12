@@ -1,6 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders } from '../_shared/supabase-client.ts'
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
@@ -45,7 +45,7 @@ serve(async (req) => {
       searchQuery = `${query} ${queerKeywords.join(' ')} ${additionalKeywords}`.trim();
     }
 
-    const allImages: any[] = [];
+    const allImages: Record<string, unknown>[] = [];
     const perPage = type === 'tag' ? 1 : 3; // Fetch fewer from each source
 
     // Fetch from Pexels if API key is available
@@ -62,7 +62,7 @@ serve(async (req) => {
 
         if (pexelsResponse.ok) {
           const pexelsData = await pexelsResponse.json();
-          const pexelsImages = pexelsData.photos?.map((photo: any) => ({
+          const pexelsImages = pexelsData.photos?.map((photo: unknown) => ({
             id: `pexels-${photo.id}`,
             url: photo.src.large,
             thumbnail: photo.src.medium,
@@ -95,7 +95,7 @@ serve(async (req) => {
 
         if (unsplashResponse.ok) {
           const unsplashData = await unsplashResponse.json();
-          const unsplashImages = unsplashData.results?.map((photo: any) => ({
+          const unsplashImages = unsplashData.results?.map((photo: unknown) => ({
             id: `unsplash-${photo.id}`,
             url: photo.urls.regular,
             thumbnail: photo.urls.small,

@@ -9,7 +9,7 @@ import { AddToTripMenuItem } from '../AddToTripMenuItem';
 
 describe('AddToTripMenuItem', () => {
   it('should render Add to Trip when authenticated', () => {
-    render(<AddToTripMenuItem entity={{ type: 'venue', id: 'v-1', name: 'Test' } as any} />);
+    render(<AddToTripMenuItem entity={{ type: 'venue', id: 'v-1', name: 'Test' } as unknown as React.ComponentProps<typeof AddToTripMenuItem>['entity']} />);
     expect(screen.getByText('Add to Trip')).toBeInTheDocument();
   });
 });

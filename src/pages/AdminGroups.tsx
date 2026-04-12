@@ -208,7 +208,7 @@ export default function AdminGroups() {
       toolbarActions: (
         <ExportExcelButton
           onExport={async () => {
-            const cols: ExportColumnDef<any>[] = [
+            const cols: ExportColumnDef<Record<string, unknown>>[] = [
               { header: 'Name', accessor: (r) => r.name },
               { header: 'Description', accessor: (r) => r.description },
               { header: 'Private', accessor: (r) => formatBoolean(r.is_private) },
@@ -226,6 +226,7 @@ export default function AdminGroups() {
         />
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete/navigate are stable, adding would defeat memoization
     [columns, isAdmin],
   );
 

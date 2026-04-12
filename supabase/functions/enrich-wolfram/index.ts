@@ -1,3 +1,4 @@
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import {
   corsResponse,
   errorResponse,
@@ -7,13 +8,11 @@ import {
 } from '../_shared/supabase-client.ts'
 import {
   extractAllPlaintext,
-  extractPlaintext,
   parseArray,
   parseAreaKm2,
   parseElevationM,
   parseNumber,
   queryWolfram,
-  type WolframResult,
 } from '../_shared/wolfram-client.ts'
 
 // ---------------------------------------------------------------------------
@@ -128,7 +127,7 @@ function emptyResult(): EnrichResult {
 // ---------------------------------------------------------------------------
 
 async function enrichCountries(
-  supabase: any, appId: string, limit: number, ids?: string[], dryRun?: boolean,
+  supabase: SupabaseClient, appId: string, limit: number, ids?: string[], dryRun?: boolean,
 ): Promise<EnrichResult> {
   const res = emptyResult()
 
@@ -155,7 +154,7 @@ async function enrichCountries(
 
   for (const country of countries) {
     try {
-      const updates: Record<string, any> = {}
+      const updates: Record<string, unknown> = {}
       let anyUpdate = false
 
       // Query 1: economic / demographic data (only if any field is null)
@@ -252,7 +251,7 @@ async function enrichCountries(
 // ---------------------------------------------------------------------------
 
 async function enrichCities(
-  supabase: any, appId: string, limit: number, ids?: string[], dryRun?: boolean,
+  supabase: unknown, appId: string, limit: number, ids?: string[], dryRun?: boolean,
 ): Promise<EnrichResult> {
   const res = emptyResult()
 
@@ -292,7 +291,7 @@ async function enrichCities(
       }
 
       const wa = await queryWolfram(`${city.name} ${countryName} population area elevation climate`, appId)
-      const updates: Record<string, any> = {}
+      const updates: Record<string, unknown> = {}
       let anyUpdate = false
 
       if (wa.success) {
@@ -347,7 +346,7 @@ async function enrichCities(
 // ---------------------------------------------------------------------------
 
 async function enrichTags(
-  supabase: any, appId: string, limit: number, ids?: string[], dryRun?: boolean,
+  supabase: unknown, appId: string, limit: number, ids?: string[], dryRun?: boolean,
 ): Promise<EnrichResult> {
   const res = emptyResult()
 
@@ -356,14 +355,14 @@ async function enrichTags(
     .from('tag_categories')
     .select('id')
     .in('slug', SCIENTIFIC_CATEGORY_SLUGS)
-  const sciCatIds = (sciCats ?? []).map((c: any) => c.id)
+  const sciCatIds = (sciCats ?? []).map((c: unknown) => c.id)
 
   // Resolve skip category IDs
   const { data: skipCats } = await supabase
     .from('tag_categories')
     .select('id')
     .in('slug', SKIP_CATEGORY_SLUGS)
-  const skipCatIds = new Set((skipCats ?? []).map((c: any) => c.id))
+  const skipCatIds = new Set((skipCats ?? []).map((c: unknown) => c.id))
 
   if (!sciCatIds.length) {
     console.warn('No scientific categories found')
@@ -378,7 +377,7 @@ async function enrichTags(
 
   if (!assignments?.length) return res
 
-  const candidateTagIds = [...new Set(assignments.map((a: any) => a.tag_id))]
+  const candidateTagIds = [...new Set(assignments.map((a: unknown) => a.tag_id))]
 
   // Also find tags in skip categories to exclude
   const { data: skipAssignments } = await supabase
@@ -386,7 +385,7 @@ async function enrichTags(
     .select('tag_id')
     .in('category_id', [...skipCatIds])
 
-  const skipTagIds = new Set((skipAssignments ?? []).map((a: any) => a.tag_id))
+  const skipTagIds = new Set((skipAssignments ?? []).map((a: unknown) => a.tag_id))
   const eligibleTagIds = candidateTagIds.filter((id: string) => !skipTagIds.has(id))
 
   if (!eligibleTagIds.length) return res
@@ -417,7 +416,7 @@ async function enrichTags(
     try {
       const wa = await queryWolfram(`${tag.name} definition medical biology`, appId)
 
-      const scientificData: Record<string, any> = {
+      const scientificData: Record<string, unknown> = {
         fetched_at: new Date().toISOString(),
         source_query: `${tag.name} definition medical biology`,
       }
@@ -455,7 +454,7 @@ async function enrichTags(
         scientificData.source = 'none'
       }
 
-      const updates: Record<string, any> = {
+      const updates: Record<string, unknown> = {
         scientific_data: scientificData,
         wolfram_enriched_at: new Date().toISOString(),
       }

@@ -140,7 +140,7 @@ function extractPhotos(photos: Array<Record<string, unknown>> | undefined): stri
 function extractFsqTags(
   categories: Array<Record<string, unknown>>,
   tastes: string[] | undefined,
-  features: Record<string, unknown> | undefined
+  _features: Record<string, unknown> | undefined
 ): string[] {
   const tags = new Set<string>()
   for (const cat of categories) {

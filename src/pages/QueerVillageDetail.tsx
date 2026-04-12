@@ -41,7 +41,7 @@ type VillageWithRelations = {
   images: string[] | null;
   latitude: number | null;
   longitude: number | null;
-  boundaries: any | null;
+  boundaries: Record<string, unknown> | null;
   notable_landmarks: string[] | null;
   tags: string[] | null;
   website: string | null;
@@ -75,6 +75,7 @@ export default function QueerVillageDetail() {
 
   useEffect(() => {
     if (slug) fetchVillage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVillage defined below, re-run on slug change
   }, [slug]);
 
   const fetchVillage = async () => {
@@ -554,7 +555,7 @@ export default function QueerVillageDetail() {
                     >
                       <img
                         src={img}
-                        alt={`${village.name} - Photo ${i + 1}`}
+                        alt={`${village.name} ${i + 1}`}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         loading="lazy"
                       />
@@ -592,7 +593,7 @@ export default function QueerVillageDetail() {
                       type: 'neighbourhoods',
                       primary: true,
                     },
-                    ...(venues as any[]).filter((v: any) => typeof v.latitude === 'number' && typeof v.longitude === 'number').map((v: any) => ({
+                    ...venues.filter((v) => typeof v.latitude === 'number' && typeof v.longitude === 'number').map((v) => ({
                       id: v.id,
                       lat: Number(v.latitude),
                       lng: Number(v.longitude),

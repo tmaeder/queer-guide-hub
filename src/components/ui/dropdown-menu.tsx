@@ -3,7 +3,6 @@ import MuiMenu from "@mui/material/Menu"
 import MuiMenuItem from "@mui/material/MenuItem"
 import MuiDivider from "@mui/material/Divider"
 import ListItemIcon from "@mui/material/ListItemIcon"
-import ListItemText from "@mui/material/ListItemText"
 import Typography from "@mui/material/Typography"
 import MuiCheckbox from "@mui/material/Checkbox"
 import MuiRadio from "@mui/material/Radio"
@@ -27,7 +26,7 @@ const DropdownMenuTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTML
       onClick?.(e);
     };
     if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<any>, { onClick: handleClick, ref });
+      return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { onClick: handleClick, ref });
     }
     return <button ref={ref} onClick={handleClick} type="button" {...props}>{children}</button>;
   }
@@ -41,7 +40,7 @@ interface DropdownMenuContentProps extends React.HTMLAttributes<HTMLDivElement> 
 }
 
 const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContentProps>(
-  ({ className, children, align = "end", sideOffset = 4, style, ...props }, ref) => {
+  ({ className, children, align = "end", sideOffset = 4, style, ..._props }, ref) => {
     const { anchorEl, setAnchorEl } = React.useContext(DropdownMenuContext);
     return (
       <MuiMenu
@@ -50,7 +49,7 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
         onClose={() => setAnchorEl(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: align === 'start' ? 'left' : align === 'end' ? 'right' : 'center' }}
         transformOrigin={{ vertical: 'top', horizontal: align === 'start' ? 'left' : align === 'end' ? 'right' : 'center' }}
-        slotProps={{ paper: { ref: ref as any, className, style: { marginTop: sideOffset, ...style }, sx: { borderRadius: 1.25, minWidth: 180 } } }}
+        slotProps={{ paper: { ref: ref as React.Ref<HTMLDivElement>, className, style: { marginTop: sideOffset, ...style }, sx: { borderRadius: 1.25, minWidth: 180 } } }}
       >
         {children}
       </MuiMenu>
@@ -62,7 +61,7 @@ DropdownMenuContent.displayName = "DropdownMenuContent"
 const DropdownMenuItem = React.forwardRef<HTMLLIElement, React.LiHTMLAttributes<HTMLLIElement> & { inset?: boolean; disabled?: boolean }>(
   ({ className, children, inset, disabled, style, ...props }, ref) => (
     <MuiMenuItem ref={ref} className={className} disabled={disabled} style={style}
-      sx={{ fontSize: '0.875rem', pl: inset ? 4 : 2 }} {...(props as any)}>
+      sx={{ fontSize: '0.875rem', pl: inset ? 4 : 2 }} {...(props as Record<string, unknown>)}>
       {children}
     </MuiMenuItem>
   )
@@ -72,7 +71,7 @@ DropdownMenuItem.displayName = "DropdownMenuItem"
 const DropdownMenuCheckboxItem = React.forwardRef<HTMLLIElement, React.LiHTMLAttributes<HTMLLIElement> & { checked?: boolean; onCheckedChange?: (checked: boolean) => void }>(
   ({ className, children, checked, onCheckedChange, style, ...props }, ref) => (
     <MuiMenuItem ref={ref} className={className} style={style}
-      onClick={() => onCheckedChange?.(!checked)} sx={{ fontSize: '0.875rem' }} {...(props as any)}>
+      onClick={() => onCheckedChange?.(!checked)} sx={{ fontSize: '0.875rem' }} {...(props as Record<string, unknown>)}>
       <ListItemIcon sx={{ minWidth: 28 }}><MuiCheckbox checked={checked} size="small" sx={{ p: 0 }} /></ListItemIcon>
       {children}
     </MuiMenuItem>
@@ -82,7 +81,7 @@ DropdownMenuCheckboxItem.displayName = "DropdownMenuCheckboxItem"
 
 const DropdownMenuRadioItem = React.forwardRef<HTMLLIElement, React.LiHTMLAttributes<HTMLLIElement> & { value?: string }>(
   ({ className, children, style, ...props }, ref) => (
-    <MuiMenuItem ref={ref} className={className} style={style} sx={{ fontSize: '0.875rem' }} {...(props as any)}>
+    <MuiMenuItem ref={ref} className={className} style={style} sx={{ fontSize: '0.875rem' }} {...(props as Record<string, unknown>)}>
       <ListItemIcon sx={{ minWidth: 28 }}><MuiRadio size="small" sx={{ p: 0 }} /></ListItemIcon>
       {children}
     </MuiMenuItem>
@@ -93,7 +92,7 @@ DropdownMenuRadioItem.displayName = "DropdownMenuRadioItem"
 const DropdownMenuLabel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & { inset?: boolean }>(
   ({ className, children, inset, style, ...props }, ref) => (
     <Typography ref={ref} className={className} style={style} variant="caption" component="div"
-      sx={{ px: 2, py: 0.75, fontWeight: 600, pl: inset ? 4 : 2 }} {...(props as any)}>
+      sx={{ px: 2, py: 0.75, fontWeight: 600, pl: inset ? 4 : 2 }} {...(props as Record<string, unknown>)}>
       {children}
     </Typography>
   )
@@ -101,11 +100,11 @@ const DropdownMenuLabel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
 DropdownMenuLabel.displayName = "DropdownMenuLabel"
 
 function DropdownMenuSeparator({ className, ...props }: React.HTMLAttributes<HTMLHRElement>) {
-  return <MuiDivider className={className} sx={{ my: 0.5 }} {...(props as any)} />;
+  return <MuiDivider className={className} sx={{ my: 0.5 }} {...(props as Record<string, unknown>)} />;
 }
 
 function DropdownMenuShortcut({ className, children, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
-  return <Typography component="span" className={className} variant="caption" sx={{ ml: 'auto', opacity: 0.6, letterSpacing: '0.1em' }} {...(props as any)}>{children}</Typography>;
+  return <Typography component="span" className={className} variant="caption" sx={{ ml: 'auto', opacity: 0.6, letterSpacing: '0.1em' }} {...(props as Record<string, unknown>)}>{children}</Typography>;
 }
 
 function DropdownMenuGroup({ children }: { children: React.ReactNode }) { return <>{children}</>; }
@@ -114,7 +113,7 @@ function DropdownMenuSub({ children }: { children: React.ReactNode }) { return <
 
 const DropdownMenuSubTrigger = React.forwardRef<HTMLLIElement, React.LiHTMLAttributes<HTMLLIElement> & { inset?: boolean }>(
   ({ className, children, inset, style, ...props }, ref) => (
-    <MuiMenuItem ref={ref} className={className} style={style} sx={{ fontSize: '0.875rem', pl: inset ? 4 : 2 }} {...(props as any)}>
+    <MuiMenuItem ref={ref} className={className} style={style} sx={{ fontSize: '0.875rem', pl: inset ? 4 : 2 }} {...(props as Record<string, unknown>)}>
       {children}
       <ChevronRight style={{ width: 16, height: 16, marginLeft: 'auto' }} />
     </MuiMenuItem>
@@ -127,7 +126,7 @@ const DropdownMenuSubContent = React.forwardRef<HTMLDivElement, React.HTMLAttrib
 );
 DropdownMenuSubContent.displayName = "DropdownMenuSubContent"
 
-function DropdownMenuRadioGroup({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { value?: string; onValueChange?: (value: string) => void }) { return <>{children}</>; }
+function DropdownMenuRadioGroup({ children, ..._props }: React.HTMLAttributes<HTMLDivElement> & { value?: string; onValueChange?: (value: string) => void }) { return <>{children}</>; }
 
 export {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,

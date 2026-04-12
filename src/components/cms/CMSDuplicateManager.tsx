@@ -97,7 +97,7 @@ export function CMSDuplicateManager() {
     },
   ]);
 
-  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null);
+  const [_selectedCandidate, _setSelectedCandidate] = useState<string | null>(null);
   const [reviewReason, setReviewReason] = useState('');
   const [isRunningDetection, setIsRunningDetection] = useState(false);
 
@@ -133,7 +133,7 @@ export function CMSDuplicateManager() {
         .select('id, name, created_at, description')
         .limit(100);
 
-      const { data: personalities, error: personalitiesError } = await supabase
+      const { data: _personalities, error: personalitiesError } = await supabase
         .from('personalities')
         .select('id, name, created_at, description')
         .limit(100);
@@ -144,7 +144,7 @@ export function CMSDuplicateManager() {
         return;
       }
 
-      const newCandidates: any[] = [];
+      const newCandidates: Array<{ id: string; type: string; item1: Record<string, unknown>; item2: Record<string, unknown>; similarity_score: number }> = [];
 
       if (events) {
         for (let i = 0; i < events.length; i++) {
@@ -246,7 +246,7 @@ export function CMSDuplicateManager() {
     console.log(`Decision for ${candidateId}: ${decision}`);
   };
 
-  const CandidateComparison = ({ candidate }: { candidate: any }) => (
+  const CandidateComparison = ({ candidate }: { candidate: { id: string; type: string; item1: Record<string, unknown>; item2: Record<string, unknown>; similarity_score: number } }) => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Similarity Score */}
       <Box sx={{ textAlign: 'center' }}>

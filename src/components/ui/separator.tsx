@@ -7,14 +7,14 @@ interface SeparatorProps extends React.HTMLAttributes<HTMLHRElement> {
 }
 
 const Separator = React.forwardRef<HTMLHRElement, SeparatorProps>(
-  ({ className, orientation = "horizontal", decorative = true, style, ...props }, ref) => (
+  ({ className, orientation = "horizontal", _decorative = true, style, ...props }, ref) => (
     <MuiDivider
       ref={ref}
       orientation={orientation}
       className={className}
       style={style}
       sx={orientation === "vertical" ? { height: '100%', borderRightWidth: 1 } : {}}
-      {...(props as any)}
+      {...(props as Record<string, unknown>)}
     />
   )
 );

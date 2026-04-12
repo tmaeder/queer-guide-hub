@@ -87,7 +87,7 @@ export function useRedirects() {
     setError(null);
     try {
       let query = supabase
-        .from('redirects' as any)
+        .from('redirects' as 'venues')
         .select('*', { count: 'exact' });
 
       if (filters.type) {
@@ -115,8 +115,8 @@ export function useRedirects() {
       if (fetchError) throw fetchError;
       setRedirects((data || []) as unknown as Redirect[]);
       setTotal(count || 0);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch redirects');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch redirects');
     } finally {
       setLoading(false);
     }
@@ -126,19 +126,19 @@ export function useRedirects() {
     setError(null);
     try {
       const { data, error: insertError } = await supabase
-        .from('redirects' as any)
+        .from('redirects' as 'venues')
         .insert({
           ...formData,
           preserve_query: formData.query_mode === 'PRESERVE',
           created_by: user?.id || null,
-        } as any)
+        } as Record<string, unknown>)
         .select()
         .single();
 
       if (insertError) throw insertError;
       return data as unknown as Redirect;
-    } catch (err: any) {
-      setError(err.message || 'Failed to create redirect');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create redirect');
       return null;
     }
   }, [user]);
@@ -149,12 +149,12 @@ export function useRedirects() {
   ): Promise<Redirect | null> => {
     setError(null);
     try {
-      const updatePayload: any = { ...formData };
+      const updatePayload: Record<string, unknown> = { ...formData };
       if (formData.query_mode !== undefined) {
         updatePayload.preserve_query = formData.query_mode === 'PRESERVE';
       }
       const { data, error: updateError } = await supabase
-        .from('redirects' as any)
+        .from('redirects' as 'venues')
         .update(updatePayload)
         .eq('id', id)
         .select()
@@ -162,8 +162,8 @@ export function useRedirects() {
 
       if (updateError) throw updateError;
       return data as unknown as Redirect;
-    } catch (err: any) {
-      setError(err.message || 'Failed to update redirect');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update redirect');
       return null;
     }
   }, []);
@@ -172,14 +172,14 @@ export function useRedirects() {
     setError(null);
     try {
       const { error: deleteError } = await supabase
-        .from('redirects' as any)
+        .from('redirects' as 'venues')
         .delete()
         .eq('id', id);
 
       if (deleteError) throw deleteError;
       return true;
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete redirect');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete redirect');
       return false;
     }
   }, []);
@@ -188,14 +188,14 @@ export function useRedirects() {
     setError(null);
     try {
       const { error: updateError } = await supabase
-        .from('redirects' as any)
-        .update({ is_enabled } as any)
+        .from('redirects' as 'venues')
+        .update({ is_enabled } as Record<string, unknown>)
         .eq('id', id);
 
       if (updateError) throw updateError;
       return true;
-    } catch (err: any) {
-      setError(err.message || 'Failed to toggle redirect');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to toggle redirect');
       return false;
     }
   }, []);
@@ -206,7 +206,7 @@ export function useRedirects() {
   ): Promise<RedirectEvent[]> => {
     try {
       const { data, error: fetchError } = await supabase
-        .from('redirect_events' as any)
+        .from('redirect_events' as 'venues')
         .select('*')
         .eq('redirect_id', redirectId)
         .order('ts', { ascending: false })
@@ -238,7 +238,7 @@ export function useRedirects() {
       try {
         const type: RedirectType = item.type || (item.slug ? 'SHORT' : 'PATH');
         const { error: insertError } = await supabase
-          .from('redirects' as any)
+          .from('redirects' as 'venues')
           .insert({
             type,
             slug: type === 'SHORT' ? item.slug?.toLowerCase().trim() : null,
@@ -250,15 +250,15 @@ export function useRedirects() {
             query_mode: 'PRESERVE',
             preserve_query: true,
             created_by: user?.id || null,
-          } as any);
+          } as Record<string, unknown>);
 
         if (insertError) {
           errors.push(`Row ${i + 1}: ${insertError.message}`);
         } else {
           success++;
         }
-      } catch (err: any) {
-        errors.push(`Row ${i + 1}: ${err.message}`);
+      } catch (err: unknown) {
+        errors.push(`Row ${i + 1}: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     }
 
@@ -268,7 +268,7 @@ export function useRedirects() {
   // Export all redirects as CSV-ready objects
   const exportAll = useCallback(async (): Promise<Redirect[]> => {
     const { data, error: fetchError } = await supabase
-      .from('redirects' as any)
+      .from('redirects' as 'venues')
       .select('*')
       .order('updated_at', { ascending: false });
 

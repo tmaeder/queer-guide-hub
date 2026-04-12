@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, corsResponse, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
+import { getCorsHeaders, corsResponse, errorResponse } from "../_shared/supabase-client.ts";
 
 /**
  * Aviasales affiliate URL builder — params query format.
@@ -79,7 +79,7 @@ serve(async (req) => {
       return errorResponse('Internal server error', 500, req);
     }
 
-    let deals: any[] = [];
+    let deals: Record<string, unknown>[] = [];
 
     if (type === 'popular_routes') {
       deals = await fetchPopularRoutes(apiToken, origin, currency, limit);
@@ -104,7 +104,7 @@ serve(async (req) => {
 
 async function fetchFlightDeals(
   token: string, origin: string, destination: string | undefined, currency: string, limit: number
-): Promise<any[]> {
+): Promise<unknown[]> {
   const url = new URL('https://api.travelpayouts.com/aviasales/v3/prices_for_dates');
   url.searchParams.set('origin', origin);
   if (destination) url.searchParams.set('destination', destination);
@@ -121,12 +121,12 @@ async function fetchFlightDeals(
   }
 
   const data = await res.json();
-  return (data.data || []).map((f: any) => formatDeal(f, data.currency || currency));
+  return (data.data || []).map((f: unknown) => formatDeal(f, data.currency || currency));
 }
 
 async function fetchCheapPrices(
   token: string, origin: string, destination: string | undefined, currency: string, limit: number
-): Promise<any[]> {
+): Promise<unknown[]> {
   const url = new URL('https://api.travelpayouts.com/v1/prices/cheap');
   url.searchParams.set('origin', origin);
   if (destination) url.searchParams.set('destination', destination);
@@ -142,9 +142,9 @@ async function fetchCheapPrices(
   const data = await res.json();
   if (!data.data) return [];
 
-  const results: any[] = [];
+  const results: unknown[] = [];
   for (const [destCode, transfers] of Object.entries(data.data)) {
-    for (const [, flight] of Object.entries(transfers as Record<string, any>)) {
+    for (const [, flight] of Object.entries(transfers as Record<string, unknown>)) {
       results.push({
         origin,
         destination: destCode,
@@ -165,7 +165,7 @@ async function fetchCheapPrices(
 
 async function fetchPopularRoutes(
   token: string, origin: string, currency: string, limit: number
-): Promise<any[]> {
+): Promise<unknown[]> {
   const url = new URL('https://api.travelpayouts.com/v1/city-directions-prices');
   url.searchParams.set('origin', origin);
   url.searchParams.set('currency', currency);
@@ -180,8 +180,8 @@ async function fetchPopularRoutes(
   const data = await res.json();
   if (!data.data) return [];
 
-  const results: any[] = [];
-  for (const [destCode, flight] of Object.entries(data.data as Record<string, any>)) {
+  const results: unknown[] = [];
+  for (const [destCode, flight] of Object.entries(data.data as Record<string, unknown>)) {
     results.push({
       origin: flight.origin || origin,
       destination: destCode,
@@ -198,7 +198,7 @@ async function fetchPopularRoutes(
   return results.sort((a, b) => a.price - b.price).slice(0, limit);
 }
 
-function formatDeal(flight: any, currency: string) {
+function formatDeal(flight: unknown, currency: string) {
   return {
     origin: flight.origin,
     destination: flight.destination,

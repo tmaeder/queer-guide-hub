@@ -29,7 +29,7 @@ export function AccessibilityControls() {
             <Label htmlFor="font-size">Font Size</Label>
             <Select
               value={settings.fontSize}
-              onValueChange={(value) => updateSetting('fontSize', value as any)}
+              onValueChange={(value) => updateSetting('fontSize', value as 'small' | 'medium' | 'large' | 'extra-large')}
             >
               <SelectTrigger id="font-size">
                 <SelectValue />

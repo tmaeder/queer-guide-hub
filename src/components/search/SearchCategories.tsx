@@ -22,7 +22,7 @@ interface SearchCategoriesProps {
 
 export function SearchCategories({
   selectedCategory,
-  query,
+  _query,
   onSelectCategory
 }: SearchCategoriesProps) {
   return (

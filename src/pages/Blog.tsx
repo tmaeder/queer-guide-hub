@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Calendar, User, Search, Heart, ArrowRight, Tag } from "lucide-react";
-import { format } from "date-fns";
+import { BookOpen, Calendar, User, Search, Heart, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -16,7 +15,7 @@ export default function Blog() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Real blog posts - currently empty until blog content is added
-  const blogPosts: any[] = [];
+  const blogPosts: Record<string, unknown>[] = [];
 
   const categories = ["All Posts", "Community", "Travel", "Business", "Events", "Resources"];
 

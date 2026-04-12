@@ -1,6 +1,6 @@
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
-interface LocationData {
+interface _LocationData {
   city?: string
   country?: string
   latitude?: number
@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
   }
 })
 
-async function linkVenueToLocation(supabase: any, venue: VenueRow) {
+async function linkVenueToLocation(supabase: unknown, venue: VenueRow) {
   let createdCity = false
   let createdCountry = false
 
@@ -202,7 +202,7 @@ async function linkVenueToLocation(supabase: any, venue: VenueRow) {
 
   // Update venue with linked IDs
   if (cityId || countryId) {
-    const updateData: any = {}
+    const updateData: unknown = {}
     if (cityId && !venue.city_id) updateData.city_id = cityId
     if (countryId && !venue.country_id) updateData.country_id = countryId
 
@@ -223,7 +223,7 @@ async function linkVenueToLocation(supabase: any, venue: VenueRow) {
   return { createdCity, createdCountry }
 }
 
-async function linkEventToLocation(supabase: any, event: EventRow) {
+async function linkEventToLocation(supabase: unknown, event: EventRow) {
   // Try to find a venue in the same city/country
   if (event.city && event.country) {
     const { data: matchingVenue } = await supabase

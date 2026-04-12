@@ -18,7 +18,7 @@ const Label = React.forwardRef<
         opacity: 0.7,
       },
     }}
-    {...(props as any)}
+    {...(props as Record<string, unknown>)}
   />
 ))
 Label.displayName = "Label"

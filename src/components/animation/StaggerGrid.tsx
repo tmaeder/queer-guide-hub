@@ -10,7 +10,7 @@ interface StaggerGridProps {
   /** @deprecated motion cascades via variants; prop kept for source compat */
   childSelector?: string;
   className?: string;
-  sx?: Record<string, any>;
+  sx?: Record<string, unknown>;
 }
 
 const MotionBox = motion.create(Box);

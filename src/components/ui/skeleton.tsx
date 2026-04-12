@@ -18,7 +18,7 @@ function Skeleton({ className, variant = "rounded", width, height, animation = "
       className={className}
       style={style}
       sx={{ bgcolor: 'action.hover' }}
-      {...(props as any)}
+      {...(props as Record<string, unknown>)}
     />
   );
 }

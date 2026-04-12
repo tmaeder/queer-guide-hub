@@ -39,12 +39,12 @@ function Badge({ className, variant = "default", children, ...props }: BadgeProp
         fontWeight: 600,
         fontSize: '0.75rem',
       }}
-      {...(props as any)}
+      {...(props as Record<string, unknown>)}
     />
   )
 }
 
 // Keep badgeVariants export for compatibility
-const badgeVariants = (() => "") as any;
+const badgeVariants = (() => "") as Record<string, unknown>;
 
 export { Badge, badgeVariants }

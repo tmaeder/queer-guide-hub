@@ -17,7 +17,7 @@ export interface MailboxEmail {
   body_text: string | null;
   body_html: string | null;
   snippet: string | null;
-  attachments: any[];
+  attachments: Record<string, unknown>[];
   status: string;
   folder: MailboxFolder;
   is_read: boolean;
@@ -175,10 +175,10 @@ export const useMailbox = () => {
         if (!res.ok) throw new Error(result.error || 'Failed to send');
         toast({ title: 'Email sent', description: `To: ${params.to}` });
         return result;
-      } catch (err: any) {
+      } catch (err: unknown) {
         toast({
           title: 'Failed to send email',
-          description: err.message,
+          description: err instanceof Error ? err.message : 'Failed to send email',
           variant: 'destructive',
         });
         throw err;

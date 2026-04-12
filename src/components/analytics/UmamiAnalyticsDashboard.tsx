@@ -10,12 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import {
-  Calendar,
-  MapPin,
   Monitor,
   Users,
   Eye,
@@ -36,8 +33,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -161,7 +156,7 @@ export const UmamiAnalyticsDashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'custom'>('7d');
   const [deviceFilter, setDeviceFilter] = useState<'all' | 'desktop' | 'mobile' | 'tablet'>('all');
-  const [countryFilter, setCountryFilter] = useState<string>('all');
+  const [countryFilter, _setCountryFilter] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   useEffect(() => {
@@ -181,6 +176,7 @@ export const UmamiAnalyticsDashboard = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchUmamiStats defined below, re-run on filter changes
   }, [dateRange, deviceFilter, countryFilter, autoRefresh]);
 
   const fetchUmamiStats = async (isRefresh = false) => {
@@ -938,7 +934,7 @@ export const UmamiAnalyticsDashboard = () => {
               </CardHeader>
               <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {stats.topDevices.map((device, index) => (
+                  {stats.topDevices.map((device, _index) => (
                     <Box
                       key={device.device}
                       sx={{
@@ -977,7 +973,7 @@ export const UmamiAnalyticsDashboard = () => {
               </CardHeader>
               <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {stats.topScreens.map((screen, index) => (
+                  {stats.topScreens.map((screen, _index) => (
                     <Box
                       key={screen.screen}
                       sx={{

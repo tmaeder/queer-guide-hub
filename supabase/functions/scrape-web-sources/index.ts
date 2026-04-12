@@ -21,7 +21,7 @@
  */
 
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -754,7 +754,7 @@ function extractWikiList(
 
   let currentCountry = ''
   $('h2, h3, ul > li').each((_, el) => {
-    const tag = (el as any).tagName?.toLowerCase()
+    const tag = (el as Record<string, unknown>).tagName?.toLowerCase()
     if (tag === 'h2' || tag === 'h3') {
       const text = $(el).find('.mw-headline').text().trim() || $(el).text().replace(/\[edit\]/gi, '').trim()
       if (text && !skipHeadings.has(text.toLowerCase())) {
@@ -819,7 +819,7 @@ function extractWikiCountryTables(
     let country = ''
     let prev = $(table).prev()
     while (prev.length) {
-      const tag = (prev[0] as any).tagName?.toLowerCase()
+      const tag = (prev[0] as unknown).tagName?.toLowerCase()
       if (tag === 'h2' || tag === 'h3') {
         country = prev.find('.mw-headline').text().trim() || prev.text().replace(/\[edit\]/gi, '').trim()
         break

@@ -1,4 +1,3 @@
-import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ContentValidationResult {
@@ -60,7 +59,7 @@ export class EnhancedContentValidator {
 
   private static async logSecurityEvent(
     eventType: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
     severity: string,
     userId?: string,
   ) {

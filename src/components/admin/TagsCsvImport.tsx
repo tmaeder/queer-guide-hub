@@ -77,10 +77,10 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
         });
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Import error:', error);
 
-      const errorMessage = error.message || 'Failed to import CSV file';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to import CSV file';
       toast({
         title: "Import error",
         description: errorMessage,

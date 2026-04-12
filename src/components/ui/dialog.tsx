@@ -1,8 +1,6 @@
 import * as React from "react"
 import MuiDialog from "@mui/material/Dialog"
-import MuiDialogTitle from "@mui/material/DialogTitle"
 import MuiDialogContent from "@mui/material/DialogContent"
-import MuiDialogActions from "@mui/material/DialogActions"
 import IconButton from "@mui/material/IconButton"
 import Typography from "@mui/material/Typography"
 import Zoom from "@mui/material/Zoom"
@@ -43,7 +41,7 @@ const DialogTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttrib
       onClick?.(e);
     };
     if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<any>, { onClick: handleClick, ref });
+      return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { onClick: handleClick, ref });
     }
     return <button ref={ref} onClick={handleClick} type="button" {...props}>{children}</button>;
   }
@@ -62,7 +60,7 @@ const DialogClose = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttribut
       onClick?.(e);
     };
     if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<any>, { onClick: handleClick, ref });
+      return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { onClick: handleClick, ref });
     }
     return <button ref={ref} onClick={handleClick} type="button" {...props}>{children}</button>;
   }
@@ -70,12 +68,12 @@ const DialogClose = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttribut
 DialogClose.displayName = "DialogClose"
 
 interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
-  onInteractOutside?: (e: any) => void;
-  onPointerDownOutside?: (e: any) => void;
+  onInteractOutside?: (e: Event) => void;
+  onPointerDownOutside?: (e: Event) => void;
 }
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
-  ({ className, children, style, ...props }, ref) => {
+  ({ className, children, _style, ..._props }, ref) => {
     const { open, onOpenChange } = React.useContext(DialogContext);
     return (
       <MuiDialog
@@ -89,7 +87,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           enter: duration.normal * 1000,
           exit: 150,
         }}
-        PaperProps={{ ref: ref as any, sx: { borderRadius: 1.5 } }}
+        PaperProps={{ ref: ref as React.Ref<HTMLDivElement>, sx: { borderRadius: 1.5 } }}
       >
         <MuiDialogContent sx={{ p: 3 }}>
           {children}
@@ -129,7 +127,7 @@ DialogFooter.displayName = "DialogFooter"
 const DialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, children, style, ...props }, ref) => (
     <Typography ref={ref} variant="h6" component="h2" className={className} style={style}
-      sx={{ fontWeight: 600, lineHeight: 1, letterSpacing: '-0.015em', mb: 0.5 }} {...(props as any)}>
+      sx={{ fontWeight: 600, lineHeight: 1, letterSpacing: '-0.015em', mb: 0.5 }} {...(props as Record<string, unknown>)}>
       {children}
     </Typography>
   )
@@ -138,7 +136,7 @@ DialogTitle.displayName = "DialogTitle"
 
 const DialogDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, children, style, ...props }, ref) => (
-    <Typography ref={ref} variant="body2" color="text.secondary" className={className} style={style} {...(props as any)}>
+    <Typography ref={ref} variant="body2" color="text.secondary" className={className} style={style} {...(props as Record<string, unknown>)}>
       {children}
     </Typography>
   )

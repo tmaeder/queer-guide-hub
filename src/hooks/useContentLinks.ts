@@ -162,7 +162,7 @@ export function useContentLinks() {
   const updateSourceUrl = useCallback(async (link: ContentLink, newUrl: string) => {
     // 1. Update the source content table (e.g. venues.website, events.ticket_url)
     const { error: srcErr } = await supabase
-      .from(link.content_type as any)
+      .from(link.content_type as 'venues')
       .update({ [link.field_name]: newUrl })
       .eq('id', link.content_id);
     if (srcErr) throw srcErr;
@@ -182,7 +182,7 @@ export function useContentLinks() {
 
     // 1. Update source content to use the final URL
     const { error: srcErr } = await supabase
-      .from(link.content_type as any)
+      .from(link.content_type as 'venues')
       .update({ [link.field_name]: link.final_url })
       .eq('id', link.content_id);
     if (srcErr) throw srcErr;
@@ -201,7 +201,7 @@ export function useContentLinks() {
     for (const link of linksToApply) {
       if (!link.final_url) continue;
       await supabase
-        .from(link.content_type as any)
+        .from(link.content_type as 'venues')
         .update({ [link.field_name]: link.final_url })
         .eq('id', link.content_id);
       await supabase
@@ -219,7 +219,7 @@ export function useContentLinks() {
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
     if (resp.error) throw resp.error;
-    const result = resp.data as { scanned?: number; errors?: number; results?: any[] } | undefined;
+    const result = resp.data as { scanned?: number; errors?: number; results?: Record<string, unknown>[] } | undefined;
     if (result?.errors && result.errors > 0 && result.scanned === 0) {
       const firstErr = result.results?.[0]?.error;
       throw new Error(firstErr ?? 'Scan failed — check edge function logs');
@@ -236,7 +236,7 @@ export function useContentLinks() {
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
     if (resp.error) throw resp.error;
-    const result = resp.data as { scanned?: number; errors?: number; results?: any[] } | undefined;
+    const result = resp.data as { scanned?: number; errors?: number; results?: Record<string, unknown>[] } | undefined;
     await refresh();
     return result;
   }, [refresh]);
@@ -248,7 +248,7 @@ export function useContentLinks() {
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
     });
     if (resp.error) throw resp.error;
-    const result = resp.data as { scanned?: number; errors?: number; results?: any[] } | undefined;
+    const result = resp.data as { scanned?: number; errors?: number; results?: Record<string, unknown>[] } | undefined;
     await refresh();
     return result;
   }, [refresh]);

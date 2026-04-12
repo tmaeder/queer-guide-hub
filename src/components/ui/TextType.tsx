@@ -136,6 +136,7 @@ const TextType = ({
     }
 
     return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getRandomSpeed uses variableSpeed/typingSpeed already in deps
   }, [
     currentCharIndex,
     displayedText,

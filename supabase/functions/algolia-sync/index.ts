@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     const algoliaBaseUrl = `https://${algoliaAppId}-dsn.algolia.net/1/indexes`
 
     // Helper function to save objects to an index
-    const saveObjectsToIndex = async (indexName: string, records: any[]) => {
+    const saveObjectsToIndex = async (indexName: string, records: Record<string, unknown>[]) => {
       const response = await fetch(`${algoliaBaseUrl}/${indexName}/batch`, {
         method: 'POST',
         headers: {
@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
   }
 })
 
-async function syncIndexData(client: any, supabase: any, indexName: string) {
+async function syncIndexData(client: unknown, supabase: unknown, indexName: string) {
   switch (indexName) {
     case 'venues':
       await syncVenues(client, supabase, indexName)
@@ -111,7 +111,7 @@ async function syncIndexData(client: any, supabase: any, indexName: string) {
   }
 }
 
-async function syncVenues(client: any, supabase: any, indexName: string) {
+async function syncVenues(client: unknown, supabase: unknown, indexName: string) {
   const { data: venues, error } = await supabase
     .from('venues')
     .select(`
@@ -124,7 +124,7 @@ async function syncVenues(client: any, supabase: any, indexName: string) {
 
   if (error) throw error
 
-  const records = venues.map((venue: any) => ({
+  const records = venues.map((venue: unknown) => ({
     objectID: venue.id,
     title: venue.name,
     description: venue.description,
@@ -144,7 +144,7 @@ async function syncVenues(client: any, supabase: any, indexName: string) {
   await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncEvents(client: any, supabase: any, indexName: string) {
+async function syncEvents(client: unknown, supabase: unknown, indexName: string) {
   const { data: events, error } = await supabase
     .from('events')
     .select(`
@@ -158,7 +158,7 @@ async function syncEvents(client: any, supabase: any, indexName: string) {
 
   if (error) throw error
 
-  const records = events.map((event: any) => ({
+  const records = events.map((event: unknown) => ({
     objectID: event.id,
     title: event.title,
     description: event.description,
@@ -178,7 +178,7 @@ async function syncEvents(client: any, supabase: any, indexName: string) {
   await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncUsers(client: any, supabase: any, indexName: string) {
+async function syncUsers(client: unknown, supabase: unknown, indexName: string) {
   const { data: profiles, error } = await supabase
     .from('profiles')
     .select(`
@@ -190,7 +190,7 @@ async function syncUsers(client: any, supabase: any, indexName: string) {
 
   if (error) throw error
 
-  const records = profiles.map((profile: any) => ({
+  const records = profiles.map((profile: unknown) => ({
     objectID: profile.user_id,
     title: profile.display_name || profile.username,
     description: profile.bio,
@@ -206,7 +206,7 @@ async function syncUsers(client: any, supabase: any, indexName: string) {
   await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncNews(client: any, supabase: any, indexName: string) {
+async function syncNews(client: unknown, supabase: unknown, indexName: string) {
   const { data: news, error } = await supabase
     .from('news_articles')
     .select('*')
@@ -214,7 +214,7 @@ async function syncNews(client: any, supabase: any, indexName: string) {
 
   if (error) throw error
 
-  const records = news.map((article: any) => ({
+  const records = news.map((article: unknown) => ({
     objectID: article.id,
     title: article.headline,
     description: article.summary,
@@ -231,7 +231,7 @@ async function syncNews(client: any, supabase: any, indexName: string) {
   await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncMarketplace(client: any, supabase: any, indexName: string) {
+async function syncMarketplace(client: unknown, supabase: unknown, indexName: string) {
   const { data: listings, error } = await supabase
     .from('marketplace_listings')
     .select(`
@@ -244,7 +244,7 @@ async function syncMarketplace(client: any, supabase: any, indexName: string) {
 
   if (error) throw error
 
-  const records = listings.map((listing: any) => ({
+  const records = listings.map((listing: unknown) => ({
     objectID: listing.id,
     title: listing.title,
     description: listing.description,
@@ -261,7 +261,7 @@ async function syncMarketplace(client: any, supabase: any, indexName: string) {
   await client.saveObjectsToIndex(indexName, records)
 }
 
-async function syncLocations(client: any, supabase: any, indexName: string) {
+async function syncLocations(client: unknown, supabase: unknown, indexName: string) {
   // Sync cities
   const { data: cities, error: citiesError } = await supabase
     .from('cities')
@@ -272,7 +272,7 @@ async function syncLocations(client: any, supabase: any, indexName: string) {
 
   if (citiesError) throw citiesError
 
-  const cityRecords = cities.map((city: any) => ({
+  const cityRecords = cities.map((city: unknown) => ({
     objectID: `city_${city.id}`,
     title: city.name,
     description: city.description,
@@ -293,7 +293,7 @@ async function syncLocations(client: any, supabase: any, indexName: string) {
 
   if (countriesError) throw countriesError
 
-  const countryRecords = countries.map((country: any) => ({
+  const countryRecords = countries.map((country: unknown) => ({
     objectID: `country_${country.id}`,
     title: country.name,
     description: country.description,
@@ -307,7 +307,7 @@ async function syncLocations(client: any, supabase: any, indexName: string) {
   await client.saveObjectsToIndex(indexName, [...cityRecords, ...countryRecords])
 }
 
-async function syncPersonalities(client: any, supabase: any, indexName: string) {
+async function syncPersonalities(client: unknown, supabase: unknown, indexName: string) {
   const { data: personalities, error } = await supabase
     .from('personalities')
     .select('*')
@@ -315,7 +315,7 @@ async function syncPersonalities(client: any, supabase: any, indexName: string) 
 
   if (error) throw error
 
-  const records = personalities.map((personality: any) => ({
+  const records = personalities.map((personality: unknown) => ({
     objectID: personality.id,
     title: personality.name,
     description: personality.bio,
@@ -332,6 +332,6 @@ async function syncPersonalities(client: any, supabase: any, indexName: string) 
   await client.saveObjectsToIndex(indexName, records)
 }
 
-async function updateRecords(client: any, indexName: string, records: any[]) {
+async function updateRecords(client: unknown, indexName: string, records: unknown[]) {
   await client.saveObjectsToIndex(indexName, records)
 }

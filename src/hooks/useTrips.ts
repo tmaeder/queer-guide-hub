@@ -125,9 +125,9 @@ export function useTrips() {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map((t: any) => {
-        const scores: number[] = (t.trip_places || [])
-          .map((p: any) => p.countries?.equality_score)
+      return (data || []).map((t: Record<string, unknown>) => {
+        const scores: number[] = ((t.trip_places as Array<Record<string, unknown>>) || [])
+          .map((p: Record<string, unknown>) => (p.countries as Record<string, unknown>)?.equality_score)
           .filter((s: unknown): s is number => typeof s === 'number');
         const min_equality_score = scores.length ? Math.min(...scores) : null;
         return {
@@ -261,7 +261,7 @@ export function useTripMutations() {
   });
 
   const updatePlace = useMutation({
-    mutationFn: async ({ id, ...input }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...input }: { id: string; [key: string]: unknown }) => {
       const { data, error } = await supabase
         .from('trip_places')
         .update(input)

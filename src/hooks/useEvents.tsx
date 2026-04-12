@@ -117,7 +117,7 @@ export function useEvents(autoFetch: boolean = true) {
         query = query.range(from, to);
       }
 
-      const { data, error, count } = (await queryWithRetry(() => query)) as any;
+      const { data, error, count } = (await queryWithRetry(() => query)) as { data: Event[] | null; error: Error | null; count: number | null };
 
       if (error) throw error;
 
@@ -137,8 +137,8 @@ export function useEvents(autoFetch: boolean = true) {
               event.longitude!,
             ),
           }))
-          .filter((event: any) => event.distance <= 50)
-          .sort((a: any, b: any) => a.distance - b.distance);
+          .filter((event: Event & { distance: number }) => event.distance <= 50)
+          .sort((a: Event & { distance: number }, b: Event & { distance: number }) => a.distance - b.distance);
       }
 
       if (options?.append) {
@@ -168,7 +168,7 @@ export function useEvents(autoFetch: boolean = true) {
     } finally {
       setLoading(false);
     }
-    return { fetched: fetchedCount, total: totalCount } as any;
+    return { fetched: fetchedCount, total: totalCount } as { fetched: number; total: number | null };
   };
 
   const createEvent = async (event: EventInsert) => {

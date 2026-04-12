@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 
 type ModerationFlag = Database['public']['Tables']['moderation_flags']['Row'];
-type ModerationFlagInsert = Database['public']['Tables']['moderation_flags']['Insert'];
+type _ModerationFlagInsert = Database['public']['Tables']['moderation_flags']['Insert'];
 
 export interface CreateFlagParams {
   content_type: string;
@@ -36,8 +36,8 @@ export function useModeration() {
       if (data?.error) throw new Error(data.error);
 
       return { success: true, flag: data.flag };
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Failed to create report' };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) || 'Failed to create report' };
     } finally {
       setLoading(false);
     }
@@ -103,8 +103,8 @@ export function useModeration() {
       if (error) throw error;
       setFlags(prev => prev.map(f => f.id === flagId ? data : f));
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
     } finally {
       setLoading(false);
     }
@@ -136,8 +136,8 @@ export function useModeration() {
         flagIds.includes(f.id) ? { ...f, ...updates } as ModerationFlag : f
       ));
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
     } finally {
       setLoading(false);
     }

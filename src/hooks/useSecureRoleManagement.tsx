@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
-type AuditLog = Database['public']['Tables']['user_role_audit_log']['Row'];
+type _AuditLog = Database['public']['Tables']['user_role_audit_log']['Row'];
 
 export function useSecureRoleManagement() {
   const [loading, setLoading] = useState(false);
@@ -44,7 +44,7 @@ export function useSecureRoleManagement() {
       });
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error assigning role:', error);
       
       // Log failed role assignment attempt
@@ -94,7 +94,7 @@ export function useSecureRoleManagement() {
       });
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error removing role:', error);
       toast({
         title: "Error",
@@ -121,7 +121,7 @@ export function useSecureRoleManagement() {
 
       if (error) throw error;
       return { data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching audit logs:', error);
       return { data: null, error };
     }

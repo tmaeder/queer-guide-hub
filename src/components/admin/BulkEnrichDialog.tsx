@@ -19,7 +19,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -32,7 +31,7 @@ import { Wand2, Loader2, CheckCircle, AlertTriangle, FileText, Zap } from 'lucid
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const CONTENT_TYPES = [
+const _CONTENT_TYPES = [
   { value: 'venues', label: 'Venues' },
   { value: 'events', label: 'Events' },
   { value: 'personalities', label: 'Personalities' },
@@ -121,8 +120,8 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
         auto_approved: data.changes_auto_approved ?? 0,
         errors: data.results
           ? Object.entries(data.results)
-              .filter(([, v]: [string, any]) => v.first_error)
-              .map(([k, v]: [string, any]) => `${k}: ${v.first_error}`)
+              .filter(([, v]: [string, unknown]) => v.first_error)
+              .map(([k, v]: [string, unknown]) => `${k}: ${v.first_error}`)
           : [],
       });
 

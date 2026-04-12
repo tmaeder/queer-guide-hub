@@ -239,7 +239,7 @@ export function useTripPolls(tripId: string | undefined) {
       isMultipleChoice?: boolean;
       deadline?: string;
     }) => {
-      const optionsJson: PollOption[] = input.options.map((text, i) => ({
+      const optionsJson: PollOption[] = input.options.map((text, _i) => ({
         id: crypto.randomUUID(),
         text,
         votes: [],
@@ -381,7 +381,7 @@ export function useTripRealtime(tripId: string | undefined) {
         const state = presenceChannel.presenceState();
         const members: PresenceMember[] = [];
         for (const [, presences] of Object.entries(state)) {
-          for (const p of presences as any[]) {
+          for (const p of presences as Array<{ userId: string; displayName: string }>) {
             members.push({
               userId: p.userId,
               displayName: p.displayName,

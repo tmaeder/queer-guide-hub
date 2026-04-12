@@ -13,7 +13,7 @@ interface SecurityEvent {
   id: string;
   user_id: string | null;
   event_type: string;
-  details: any;
+  details: Record<string, unknown>;
   created_at: string;
 }
 
@@ -292,7 +292,7 @@ export function SecurityMonitoringDashboard() {
                 overflowY: 'auto',
               }}
             >
-              {auditLogs.map((log: any) => (
+              {auditLogs.map((log: Record<string, unknown>) => (
                 <Box
                   key={log.id}
                   sx={{
@@ -353,7 +353,7 @@ export function SecurityMonitoringDashboard() {
                 overflowY: 'auto',
               }}
             >
-              {recentFailedLogins.map((attempt: any) => (
+              {recentFailedLogins.map((attempt: Record<string, unknown>) => (
                 <Box
                   key={attempt.id}
                   sx={{

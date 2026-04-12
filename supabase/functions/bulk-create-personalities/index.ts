@@ -21,7 +21,7 @@ interface PersonalityData {
   image_url: string | null;
   bio: string;
   top_book?: string | null;
-  next_concerts?: any[] | null;
+  next_concerts?: unknown[] | null;
 }
 
 Deno.serve(async (req) => {
@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: string, sources: any): Promise<PersonalityData | null> {
+async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: string, sources: unknown): Promise<PersonalityData | null> {
   try {
     if (!sources.wikidata) {
       console.log(`Wikidata source disabled for: ${searchTerm}`);
@@ -350,7 +350,7 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
   }
 }
 
-async function enhanceWithLGBTIContext(supabaseClient: SupabaseClient, basicData: any): Promise<any> {
+async function enhanceWithLGBTIContext(supabaseClient: SupabaseClient, basicData: unknown): Promise<unknown> {
   try {
     if (!(await isOpenAIAvailable(supabaseClient))) {
       console.log('OpenAI not available, returning basic data');

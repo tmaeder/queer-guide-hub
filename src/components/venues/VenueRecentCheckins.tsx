@@ -11,7 +11,7 @@ interface VenueRecentCheckinsProps {
 }
 
 export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentCheckinsProps) {
-  const [stats, setStats] = useState<any[]>([]);
+  const [stats, setStats] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const { getVenueCheckins } = useVenueCheckins();
 

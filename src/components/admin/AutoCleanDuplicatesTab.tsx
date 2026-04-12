@@ -69,7 +69,7 @@ export function AutoCleanDuplicatesTab() {
   const [threshold, setThreshold] = useState(0.9);
   const [showHistory, setShowHistory] = useState(false);
 
-  const { data: counts, refetch: refetchCounts } = useDuplicateCounts();
+  const { data: counts, refetch: _refetchCounts } = useDuplicateCounts();
   const { run, abort, progress, lastResult, isRunning } = useBatchedAutoClean();
 
   const handleScanAll = () => {
@@ -99,7 +99,7 @@ export function AutoCleanDuplicatesTab() {
         }}
       >
         {ENTITY_TYPES.map(({ key, label, icon: Icon, color }) => {
-          const count = (counts as any)?.[key] ?? 0;
+          const count = (counts as Record<string, number>)?.[key] ?? 0;
           const bg = count === 0 ? '#10b98115' : count <= 5 ? '#f59e0b15' : '#ef444415';
           const border = count === 0 ? '#10b98130' : count <= 5 ? '#f59e0b30' : '#ef444430';
           return (
@@ -853,7 +853,7 @@ function MergeHistorySection() {
           </Typography>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {history.map((entry: any) => {
+            {history.map((entry: Record<string, unknown>) => {
               const details = entry.details || {};
               return (
                 <Box

@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  queer-guide-onion:
+    build:
+      context: ../..
+      dockerfile: infra/tor/Dockerfile
+    container_name: queer-guide-onion
+    restart: unless-stopped
+    volumes:
+      # Persist the onion key so the .onion address survives restarts
+      - tor-keys:/var/lib/tor/queer_guide
+      # Mount the pre-rendered static site
+      - ../../dist-static:/var/www/queer-guide:ro
+    # No ports exposed — onion service only
+    networks:
+      - tor-net
+
+    # After first run, get the .onion address:
+    #   docker exec queer-guide-onion cat /var/lib/tor/queer_guide/hostname
+
+volumes:
+  tor-keys:
+    driver: local
+
+networks:
+  tor-net:
+    driver: bridge

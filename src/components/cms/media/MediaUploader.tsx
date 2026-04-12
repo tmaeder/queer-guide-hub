@@ -15,7 +15,7 @@ import {
   Alert,
   IconButton,
 } from '@mui/material';
-import { Upload, X, Image as ImageIcon, FileText } from 'lucide-react';
+import { Upload, X, FileText } from 'lucide-react';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import type { CMSMedia } from '@/types/cms';
 

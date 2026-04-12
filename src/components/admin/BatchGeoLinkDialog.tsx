@@ -20,7 +20,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -29,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MapPin, Loader2, CheckCircle, AlertCircle, Globe } from 'lucide-react';
-import { useGeoLink, type GeoLinkResponse, type GeoLinkBatchAllResponse } from '@/hooks/useGeoLink';
+import { useGeoLink } from '@/hooks/useGeoLink';
 
 const CONTENT_TYPES = [
   { value: 'all', label: 'All Content Types' },

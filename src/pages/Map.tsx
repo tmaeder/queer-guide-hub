@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
 import { ExploreMap } from '@/components/map/ExploreMap';
@@ -21,7 +21,7 @@ function parseLayers(raw?: string | null): LayerType[] | undefined {
  * Saved prefs in localStorage.
  */
 const MapPage: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, _setSearchParams] = useSearchParams();
 
   // Load saved preferences from localStorage
   const savedPrefs = useMemo(() => {

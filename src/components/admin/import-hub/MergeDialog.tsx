@@ -30,7 +30,7 @@ export function MergeDialog({
   const loading = loadingA || loadingB;
   const nameField = entityType === 'events' ? 'title' : 'name';
 
-  const handleMerge = async (mergedData: Record<string, any>, keepId: string, removeId: string) => {
+  const handleMerge = async (mergedData: Record<string, unknown>, keepId: string, removeId: string) => {
     await mergeMutation.mutateAsync({
       entityType,
       keepId,

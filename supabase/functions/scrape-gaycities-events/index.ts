@@ -205,7 +205,7 @@ function parseEventsPage(html: string, pageUrl: string, citySlug: string): Scrap
     existingTitles.add(title.toLowerCase())
 
     // Get event link
-    const eventLink = $titleEl.attr('href') || ''
+    const _eventLink = $titleEl.attr('href') || ''
 
     // Get image
     const image = $el.find('img').first().attr('src') || $el.find('img').first().attr('data-src') || ''
@@ -370,7 +370,7 @@ Deno.serve(async (req) => {
         // AI enrichment — normalize scraped content before staging
         const rows = []
         for (const event of events) {
-          const normalized: Record<string, any> = {
+          const normalized: Record<string, unknown> = {
             title: event.title,
             description: event.description || null,
             event_type: event.event_type,

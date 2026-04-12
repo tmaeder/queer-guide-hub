@@ -13,7 +13,7 @@ interface ActivityItem {
   title: string;
   description: string;
   timestamp: string;
-  icon: any;
+  icon: React.ComponentType<{ style?: React.CSSProperties }>;
   badge: string;
 }
 

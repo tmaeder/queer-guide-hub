@@ -1,4 +1,3 @@
-import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
 export const WIKIDATA_USER_AGENT = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
 
@@ -29,7 +28,7 @@ export function formatWikidataDate(dateString: string | null): string | null {
   return null
 }
 
-export async function fetchOpenSanctionsData(name: string): Promise<any | null> {
+export async function fetchOpenSanctionsData(name: string): Promise<unknown> {
   try {
     console.log(`Fetching OpenSanctions data for: ${name}`);
 
@@ -171,7 +170,7 @@ export async function fetchTopBook(authorName: string): Promise<string | null> {
   }
 }
 
-export async function fetchUpcomingConcerts(artistName: string): Promise<any[] | null> {
+export async function fetchUpcomingConcerts(artistName: string): Promise<unknown[] | null> {
   try {
     // Clean artist name for search (remove common suffixes that might interfere)
     const cleanedName = artistName

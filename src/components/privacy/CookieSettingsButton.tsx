@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
 import { CookiePreferencesDialog } from './CookiePreferencesDialog';
-import Box from '@mui/material/Box';
 
 interface CookieSettingsButtonProps {
   variant?: 'default' | 'outline' | 'ghost' | 'link';

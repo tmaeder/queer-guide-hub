@@ -52,6 +52,7 @@ export function ImageField({ field, value, onChange, error, disabled }: FieldPro
             <img
               src={imageUrl}
               alt={field.label}
+              role="presentation"
               className="w-full h-48 object-cover"
               onError={() => setImgError(true)}
             />

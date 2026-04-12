@@ -1,5 +1,4 @@
-import { getServiceClient, getCorsHeaders, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
-import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { logoUrlFromWebsite } from '../_shared/logo-enrichment.ts'
 
 // ============================================================
@@ -16,7 +15,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string
-    const nodeId = body.node_id as string
+    const _nodeId = body.node_id as string
     const targetTable = body.targetTable as string
     const strategy = (body.strategy as string) || 'upsert'
     const conflictKey = body.conflictKey as string
@@ -122,7 +121,7 @@ function buildRecord(
   table: string,
   normalized: Record<string, unknown>,
   enriched: Record<string, unknown>,
-  entityType: string | null
+  _entityType: string | null
 ): Record<string, unknown> {
   const meta = (normalized.metadata || {}) as Record<string, unknown>
   const loc = (normalized.location || {}) as Record<string, unknown>

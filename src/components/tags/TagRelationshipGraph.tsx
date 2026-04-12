@@ -4,7 +4,7 @@ import ForceGraph2D, {
   type NodeObject,
   type LinkObject,
 } from 'react-force-graph-2d';
-import { useTagGraph, type GraphNode, type GraphEdge } from '@/hooks/useTagRelationships';
+import { useTagGraph } from '@/hooks/useTagRelationships';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Maximize2, ZoomIn, ZoomOut, Filter } from 'lucide-react';
+import { Maximize2, Filter } from 'lucide-react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 interface TagRelationshipGraphProps {

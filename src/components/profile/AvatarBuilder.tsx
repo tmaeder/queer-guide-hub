@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RefreshCw, Save } from "lucide-react";
 import { BigHead } from "@bigheads/core";
@@ -78,7 +78,7 @@ const generateRandomConfig = (): AvatarConfig => ({
 export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => {
   const [config, setConfig] = useState<AvatarConfig>(initialConfig || generateRandomConfig());
 
-  const updateConfig = (key: keyof AvatarConfig, value: any) => {
+  const updateConfig = (key: keyof AvatarConfig, value: AvatarConfig[keyof AvatarConfig]) => {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 
@@ -141,7 +141,7 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {options.map((option: any) => (
+                    {options.map((option: string | boolean) => (
                       <SelectItem key={String(option)} value={String(option)}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           {key.includes('Color') && typeof option === 'string' && (

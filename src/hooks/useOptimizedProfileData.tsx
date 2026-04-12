@@ -1,4 +1,4 @@
-import { useQuery, useQueries } from '@tanstack/react-query';
+import { useQueries } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { queryKeys } from '@/utils/queryOptimizations';

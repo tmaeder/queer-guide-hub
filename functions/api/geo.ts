@@ -3,7 +3,7 @@
  * Replaces ipapi.co — zero external calls, data stays in trust boundary.
  */
 export const onRequest: PagesFunction = async (context) => {
-  const cf = (context.request as any).cf || {};
+  const cf = (context.request as unknown as { cf?: Record<string, string> }).cf || {};
   return new Response(
     JSON.stringify({
       latitude: cf.latitude ? parseFloat(cf.latitude) : null,

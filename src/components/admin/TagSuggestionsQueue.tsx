@@ -9,7 +9,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
-import { Tag, CheckCircle, XCircle, AlertTriangle, Inbox, Bot, Sparkles } from 'lucide-react';
+import { Tag, CheckCircle, XCircle, AlertTriangle, Bot, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +40,7 @@ const SOURCE_LABELS: Record<string, { label: string; icon: typeof Bot }> = {
 
 async function fetchPendingSuggestions(): Promise<{ items: TagSuggestionRow[]; total: number }> {
   const { data, count, error } = await supabase
-    .from('tag_suggestions' as any)
+    .from('tag_suggestions' as const)
     .select('*', { count: 'exact' })
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
@@ -55,7 +55,7 @@ export function TagSuggestionsQueue() {
   const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, _refetch } = useQuery({
     queryKey: ['tag-suggestions-pending'],
     queryFn: fetchPendingSuggestions,
     staleTime: 30_000,
@@ -79,13 +79,13 @@ export function TagSuggestionsQueue() {
       queryClient.invalidateQueries({ queryKey: ['review-counts'] });
       setSelectedIds(new Set());
     },
-    onError: (err: any) => toast.error(err.message || 'Failed to approve'),
+    onError: (err: unknown) => toast.error(err instanceof Error ? err.message : 'Failed to approve'),
   });
 
   const rejectMutation = useMutation({
     mutationFn: async (ids: string[]) => {
       const { error } = await supabase
-        .from('tag_suggestions' as any)
+        .from('tag_suggestions' as const)
         .update({
           status: 'rejected',
           reviewed_by: user?.id,
@@ -101,7 +101,7 @@ export function TagSuggestionsQueue() {
       queryClient.invalidateQueries({ queryKey: ['review-counts'] });
       setSelectedIds(new Set());
     },
-    onError: (err: any) => toast.error(err.message || 'Failed to reject'),
+    onError: (err: unknown) => toast.error(err instanceof Error ? err.message : 'Failed to reject'),
   });
 
   const toggleSelect = (id: string) => {
@@ -119,11 +119,11 @@ export function TagSuggestionsQueue() {
     } else {
       // Fetch ALL pending suggestion IDs (not just the loaded batch)
       const { data } = await supabase
-        .from('tag_suggestions' as any)
+        .from('tag_suggestions' as const)
         .select('id')
         .eq('status', 'pending')
         .limit(5000);
-      setSelectedIds(new Set((data || []).map((i: any) => i.id)));
+      setSelectedIds(new Set((data || []).map((i: { id: string }) => i.id)));
     }
   };
 

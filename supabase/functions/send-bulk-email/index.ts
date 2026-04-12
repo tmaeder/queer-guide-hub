@@ -143,7 +143,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         // Process template variables
         const templateVariables = Array.isArray(template.variables) ? template.variables : [];
-        templateVariables.forEach((variable: any) => {
+        templateVariables.forEach((variable: Record<string, unknown>) => {
           const value = variables[variable.name] || `{{${variable.name}}}`;
           const regex = new RegExp(`\\{\\{${variable.name}\\}\\}`, 'g');
           htmlContent = htmlContent.replace(regex, escapeHtml(value));
@@ -197,7 +197,7 @@ const handler = async (req: Request): Promise<Response> => {
         // Add a small delay between emails to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 100));
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error sending email to', recipient.email, ':', error);
         errors.push({
           email: recipient.email,
@@ -224,7 +224,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in send-bulk-email function:", error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),

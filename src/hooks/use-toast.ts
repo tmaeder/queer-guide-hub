@@ -16,7 +16,7 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
-const actionTypes = {
+const _actionTypes = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",
   DISMISS_TOAST: "DISMISS_TOAST",
@@ -143,7 +143,7 @@ type Toast = Omit<ToasterToast, "id">
 function toast({ ...props }: Toast) {
   const id = genId()
 
-  const variant = (props as any).variant as string | undefined;
+  const variant = (props as Record<string, unknown>).variant as string | undefined;
   if (variant === 'destructive') hapticTrigger('error');
   else hapticTrigger('nudge');
 

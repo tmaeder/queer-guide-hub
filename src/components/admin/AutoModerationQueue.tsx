@@ -103,7 +103,7 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export function AutoModerationQueue() {
-  const { pendingFlags, stats, flagStats, isLoading, isReviewing, reviewFlag, bulkReviewFlags } =
+  const { pendingFlags, stats: _stats, flagStats, isLoading, isReviewing, reviewFlag, bulkReviewFlags } =
     useAutomationMonitor();
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);

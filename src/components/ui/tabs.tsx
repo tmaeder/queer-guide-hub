@@ -34,11 +34,11 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
 Tabs.displayName = "Tabs"
 
 const TabsList = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, style, ...props }, ref) => {
+  ({ className, children, _style, ..._props }, ref) => {
     const { value, onValueChange } = React.useContext(TabsContext);
     return (
       <MuiTabs
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLDivElement>}
         value={value}
         onChange={(_, newValue) => onValueChange(newValue)}
         className={className}
@@ -77,7 +77,7 @@ interface TabsTriggerProps extends React.HTMLAttributes<HTMLButtonElement> {
 
 const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
   ({ className, value, children, disabled, ...props }, ref) => (
-    <MuiTab ref={ref as any} value={value} label={children} disabled={disabled} className={className} {...props} />
+    <MuiTab ref={ref as React.Ref<HTMLDivElement>} value={value} label={children} disabled={disabled} className={className} {...props} />
   )
 );
 TabsTrigger.displayName = "TabsTrigger"

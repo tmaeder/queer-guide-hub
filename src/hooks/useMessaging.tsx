@@ -19,8 +19,8 @@ export interface Message {
   updated_at: string;
   edited_at: string | null;
   reply_to_id: string | null;
-  attachments: any;
-  metadata: any;
+  attachments: Record<string, unknown>[] | null;
+  metadata: Record<string, unknown> | null;
   sender?: MessageProfile;
   reactions?: MessageReaction[];
   status?: 'sending' | 'sent' | 'delivered' | 'read';
@@ -106,7 +106,7 @@ export const useMessaging = () => {
 
       if (error) throw error;
 
-      setConversations((data as any) || []);
+      setConversations((data as Conversation[]) || []);
     } catch (error) {
       console.error('Error fetching conversations:', error);
       toast({
@@ -134,7 +134,7 @@ export const useMessaging = () => {
         if (error) throw error;
 
         const messagesWithStatus =
-          (data as any)?.map((msg: any) => ({
+          (data as Message[])?.map((msg: Message) => ({
             ...msg,
             sender: msg.sender || null,
             status: msg.sender_id === user?.id ? 'sent' : 'delivered',
@@ -210,7 +210,7 @@ export const useMessaging = () => {
           ...prev,
           [conversationId]:
             prev[conversationId]?.map((msg) =>
-              msg.id === tempId ? { ...(data as any), status: 'sent' } : msg,
+              msg.id === tempId ? { ...(data as Message), status: 'sent' as const } : msg,
             ) || [],
         }));
 
@@ -447,7 +447,7 @@ export const useMessaging = () => {
   useEffect(() => {
     if (!user) return;
 
-    const channels: { [key: string]: any } = {};
+    const channels: { [key: string]: ReturnType<typeof supabase.channel> } = {};
 
     // Set up typing channels for each conversation
     conversations.forEach((conversation) => {

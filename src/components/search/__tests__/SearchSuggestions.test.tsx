@@ -41,7 +41,7 @@ describe('SearchSuggestions', () => {
   it('should render suggestions with name and type badge', () => {
     renderWithCommand(
       <SearchSuggestions
-        suggestions={[mockSuggestion as any]}
+        suggestions={[mockSuggestion as unknown as React.ComponentProps<typeof SearchSuggestions>['suggestions'][number]]}
         loading={false}
         query="bar"
         onSelectSuggestion={vi.fn()}
@@ -54,7 +54,7 @@ describe('SearchSuggestions', () => {
   it('should render subtitle when provided', () => {
     renderWithCommand(
       <SearchSuggestions
-        suggestions={[mockSuggestion as any]}
+        suggestions={[mockSuggestion as unknown as React.ComponentProps<typeof SearchSuggestions>['suggestions'][number]]}
         loading={false}
         query="bar"
         onSelectSuggestion={vi.fn()}

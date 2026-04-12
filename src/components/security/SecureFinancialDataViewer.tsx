@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -46,6 +45,7 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
       setAccessGranted(true);
       fetchFinancialData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchFinancialData defined below, re-run on isOwner/userId change
   }, [isOwner, userId]);
 
   const fetchFinancialData = async () => {

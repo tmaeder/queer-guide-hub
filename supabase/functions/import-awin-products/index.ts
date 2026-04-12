@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 interface AwinCsvRow {
   aw_deep_link?: string
@@ -150,7 +150,7 @@ function mapAwinRowToMarketplace(row: AwinCsvRow) {
 }
 
 // Function to create categories dynamically and get their IDs
-async function getCategoryId(supabase: any, categoryName: string, subcategoryName?: string): Promise<string> {
+async function getCategoryId(supabase: SupabaseClient, categoryName: string, subcategoryName?: string): Promise<string> {
   try {
     // Use the database function to get or create the category
     const { data, error } = await supabase.rpc('get_or_create_marketplace_category', {
@@ -205,11 +205,11 @@ Deno.serve(async (req) => {
     }
 
     // Parse request body for parameters
-    let requestBody: any = {}
+    let requestBody: unknown = {}
     if (req.method === 'POST') {
       try {
         requestBody = await req.json()
-      } catch (e) {
+      } catch (_e) {
         console.log('No request body or invalid JSON, using defaults')
       }
     }

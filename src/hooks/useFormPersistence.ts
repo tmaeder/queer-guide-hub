@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
  * Persist form state to localStorage. Skips password fields.
  * Call clear() on successful submit to wipe stored data.
  */
-export function useFormPersistence<T extends Record<string, any>>(
+export function useFormPersistence<T extends Record<string, unknown>>(
   key: string,
   initial: T,
   excludeKeys: (keyof T)[] = []
@@ -32,9 +32,9 @@ export function useFormPersistence<T extends Record<string, any>>(
       return;
     }
     try {
-      const toStore: Record<string, any> = {};
+      const toStore: Record<string, unknown> = {};
       for (const k of Object.keys(data)) {
-        if (!excludeKeys.includes(k as keyof T)) toStore[k] = (data as any)[k];
+        if (!excludeKeys.includes(k as keyof T)) toStore[k] = data[k as keyof T];
       }
       window.localStorage.setItem(storageKey, JSON.stringify(toStore));
     } catch {

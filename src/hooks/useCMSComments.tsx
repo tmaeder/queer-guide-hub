@@ -40,7 +40,7 @@ export function useCMSComments(): UseCMSCommentsReturn {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('cms_review_comments' as any)
+        .from('cms_review_comments' as 'venues')
         .select('*')
         .eq('source_table', sourceTable)
         .eq('source_id', sourceId)
@@ -49,22 +49,22 @@ export function useCMSComments(): UseCMSCommentsReturn {
       if (fetchError) throw fetchError;
 
       // Resolve author info
-      const actorIds = [...new Set((data || []).filter((c: any) => c.created_by).map((c: any) => c.created_by))];
+      const actorIds = [...new Set((data || []).filter((c: Record<string, unknown>) => c.created_by).map((c: Record<string, unknown>) => c.created_by as string))];
       let profileMap = new Map<string, { display_name?: string; email?: string }>();
 
       if (actorIds.length > 0) {
         const { data: profiles } = await supabase
-          .from('profiles' as any)
+          .from('profiles' as 'venues')
           .select('id, display_name, email')
           .in('id', actorIds);
 
         profileMap = new Map(
-          (profiles || []).map((p: any) => [p.id, { display_name: p.display_name, email: p.email }])
+          (profiles || []).map((p: Record<string, unknown>) => [p.id as string, { display_name: p.display_name as string | undefined, email: p.email as string | undefined }])
         );
       }
 
       // Build threaded structure
-      const allComments = (data || []).map((c: any) => ({
+      const allComments = (data || []).map((c: Record<string, unknown>) => ({
         ...c,
         author: c.created_by ? profileMap.get(c.created_by) : undefined,
         replies: [],
@@ -105,7 +105,7 @@ export function useCMSComments(): UseCMSCommentsReturn {
 
     try {
       const { error: insertError } = await supabase
-        .from('cms_review_comments' as any)
+        .from('cms_review_comments' as 'venues')
         .insert({
           source_table: sourceTable,
           source_id: sourceId,
@@ -132,7 +132,7 @@ export function useCMSComments(): UseCMSCommentsReturn {
 
     try {
       const { error: updateError } = await supabase
-        .from('cms_review_comments' as any)
+        .from('cms_review_comments' as 'venues')
         .update({
           resolved: true,
           resolved_by: user.id,
@@ -153,7 +153,7 @@ export function useCMSComments(): UseCMSCommentsReturn {
   const unresolveComment = useCallback(async (commentId: string): Promise<boolean> => {
     try {
       const { error: updateError } = await supabase
-        .from('cms_review_comments' as any)
+        .from('cms_review_comments' as 'venues')
         .update({
           resolved: false,
           resolved_by: null,

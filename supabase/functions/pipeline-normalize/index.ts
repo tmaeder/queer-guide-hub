@@ -1,4 +1,4 @@
-import { getServiceClient, getCorsHeaders, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 
 // ============================================================
 // Pipeline Normalize Node
@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string
-    const nodeId = body.node_id as string
+    const _nodeId = body.node_id as string
     const entityType = body.entityType as string
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false

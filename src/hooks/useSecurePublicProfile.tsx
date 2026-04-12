@@ -13,11 +13,11 @@ interface PublicProfileData {
   location?: string;
   pronouns?: string;
   website?: string;
-  social_links?: any;
+  social_links?: Record<string, unknown>;
   interests?: string[];
   occupation?: string;
   education?: string;
-  privacy_settings?: any;
+  privacy_settings?: Record<string, unknown>;
   verified_identity?: boolean;
   age_range?: string;
   phone?: string;
@@ -89,6 +89,7 @@ export function useSecurePublicProfile(targetUserId?: string) {
 
   useEffect(() => {
     fetchSecureProfile(targetUserId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchSecureProfile defined above, re-run on user/targetUserId change
   }, [user, targetUserId]);
 
   const canViewSensitiveField = (fieldName: string) => {

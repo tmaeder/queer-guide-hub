@@ -262,7 +262,7 @@ async function structureExtraction(
   try {
     const parsed = JSON.parse(content)
     const rawItems = Array.isArray(parsed.items) ? parsed.items : [parsed]
-    const items: ExtractedItem[] = rawItems.slice(0, 10).map((item: any) => {
+    const items: ExtractedItem[] = rawItems.slice(0, 10).map((item: Record<string, unknown>) => {
       const detectedType = item.detected_type === 'venue' ? 'venue' : 'event'
       const fields = detectedType === 'event'
         ? { ...item.event_fields, ...pickVenueFieldsForEvent(item.venue_fields) }
@@ -293,9 +293,9 @@ async function structureExtraction(
 }
 
 /** When type is event, pull venue_name/address/city from venue_fields if event_fields is missing them */
-function pickVenueFieldsForEvent(venueFields: Record<string, any> | undefined): Record<string, any> {
+function pickVenueFieldsForEvent(venueFields: Record<string, unknown> | undefined): Record<string, unknown> {
   if (!venueFields) return {}
-  const extras: Record<string, any> = {}
+  const extras: Record<string, unknown> = {}
   // Only use venue_fields to fill gaps — don't override event_fields
   for (const key of ['venue_name', 'address', 'city', 'country', 'postal_code']) {
     const venueKey = key === 'venue_name' ? 'name' : key
@@ -310,7 +310,7 @@ function pickVenueFieldsForEvent(venueFields: Record<string, any> | undefined): 
 
 async function resolveCountry(
   name: string | null | undefined,
-  supabase: any,
+  supabase: unknown,
 ): Promise<{ id: string; name: string } | null> {
   if (!name) return null
   const normalized = name.trim().toLowerCase()
@@ -342,7 +342,7 @@ async function resolveCountry(
 async function resolveCity(
   name: string | null | undefined,
   countryId: string | null,
-  supabase: any,
+  supabase: unknown,
 ): Promise<{ id: string; name: string } | null> {
   if (!name) return null
   const trimmed = name.trim()
@@ -373,7 +373,7 @@ async function resolveCity(
 async function matchVenues(
   venueName: string | null | undefined,
   cityId: string | null,
-  supabase: any,
+  supabase: unknown,
 ): Promise<VenueCandidate[]> {
   if (!venueName || venueName.trim().length < 2) return []
 
@@ -412,7 +412,7 @@ async function matchVenues(
     if (cityId) query = query.eq('city_id', cityId)
 
     const { data: fallbackData } = await query
-    return (fallbackData || []).map((v: any) => ({
+    return (fallbackData || []).map((v: unknown) => ({
       ...v,
       score: v.name.toLowerCase() === name.toLowerCase() ? 1.0 : 0.5,
     }))
@@ -425,7 +425,7 @@ async function checkEventDuplicates(
   title: string | null | undefined,
   startDate: string | null | undefined,
   cityId: string | null,
-  supabase: any,
+  supabase: unknown,
 ): Promise<Array<{ id: string; title: string; start_date: string; score: number }>> {
   if (!title || !startDate) return []
 
@@ -438,7 +438,7 @@ async function checkEventDuplicates(
     .lte('start_date', new Date(new Date(startDate).getTime() + 86400000).toISOString())
     .limit(5)
 
-  return (data || []).map((e: any) => ({
+  return (data || []).map((e: unknown) => ({
     ...e,
     score: e.title.toLowerCase() === title.toLowerCase() ? 1.0 : 0.6,
   }))
@@ -447,7 +447,7 @@ async function checkEventDuplicates(
 async function checkVenueDuplicates(
   name: string | null | undefined,
   cityId: string | null,
-  supabase: any,
+  supabase: unknown,
 ): Promise<Array<{ id: string; name: string; score: number }>> {
   if (!name) return []
 
@@ -460,12 +460,12 @@ async function checkVenueDuplicates(
   if (cityId) query = query.eq('city_id', cityId)
 
   const { data } = await query
-  return (data || []).map((v: any) => ({ ...v, score: 0.9 }))
+  return (data || []).map((v: unknown) => ({ ...v, score: 0.9 }))
 }
 
 // ── Rate Limiting ─────────────────────────────────────────────────────────
 
-async function checkRateLimit(userId: string, supabase: any): Promise<boolean> {
+async function checkRateLimit(userId: string, supabase: unknown): Promise<boolean> {
   const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
   const { count } = await supabase
     .from('flyer_scans')

@@ -15,7 +15,7 @@ describe('hapticTrigger', () => {
     Object.defineProperty(navigator, 'vibrate', { value: vibrateMock, configurable: true });
     hapticTrigger('success');
     expect(vibrateMock).toHaveBeenCalledWith([30, 60, 40]);
-    delete (navigator as any).vibrate;
+    delete (navigator as unknown as Record<string, unknown>).vibrate;
   });
 
   it('should not vibrate when prefers-reduced-motion', () => {
@@ -35,6 +35,6 @@ describe('hapticTrigger', () => {
     });
     hapticTrigger('nudge');
     expect(vibrateMock).not.toHaveBeenCalled();
-    delete (navigator as any).vibrate;
+    delete (navigator as unknown as Record<string, unknown>).vibrate;
   });
 });

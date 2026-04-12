@@ -87,11 +87,11 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
       setCountryCode("US");
       setClassificationName("");
       onImportComplete?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Import error:', error);
       toast({
         title: "Import failed",
-        description: error.message || "Failed to import events from Ticketmaster",
+        description: error instanceof Error ? error.message : "Failed to import events from Ticketmaster",
         variant: "destructive"
       });
     } finally {

@@ -96,7 +96,7 @@ export default function MarketplaceItemDetail() {
 
           setIsFavorited(!!favoriteData);
         }
-      } catch (error) {
+      } catch (_error) {
         toast({ title: 'Error', description: 'Failed to load listing details.', variant: 'destructive' });
       } finally {
         setLoading(false);
@@ -197,7 +197,7 @@ export default function MarketplaceItemDetail() {
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
-  const getCategoryColor = (category: string) => {
+  const _getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       products: 'bg-primary/10 text-primary',
       services: 'bg-accent/10 text-accent',

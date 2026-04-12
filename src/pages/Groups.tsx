@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GroupCard } from "@/components/groups/GroupCard";
 import { CreateGroupDialog } from "@/components/groups/CreateGroupDialog";
@@ -12,7 +11,6 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { AuthGate } from "@/components/layout/AuthGate";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { PageLoadingState } from "@/components/layout/PageLoadingState";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function Groups() {

@@ -89,6 +89,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
                 <img
                   src={url}
                   alt={`${field.label} ${index + 1}`}
+                  role="presentation"
                   className="w-full h-24 object-cover"
                   onError={() => handleImageError(url)}
                 />

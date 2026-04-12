@@ -163,7 +163,7 @@ export default function AdminCities() {
   };
 
   const handleExportExcel = async () => {
-    const cols: ExportColumnDef<any>[] = [
+    const cols: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Name', accessor: (r) => r.name },
       { header: 'Country', accessor: (r) => r.countries?.name },
       { header: 'Region', accessor: (r) => r.region_name },
@@ -316,6 +316,7 @@ export default function AdminCities() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete is stable in practice, adding would defeat memoization
     [columns],
   );
 

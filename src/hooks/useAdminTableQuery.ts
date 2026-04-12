@@ -80,12 +80,12 @@ export function useAdminTableQuery<T = Record<string, unknown>>(
       const countBuilder = supabase
         .from(tableName as 'venues')
         .select(select, { count: 'exact', head: true });
-      const filtered = applyFilters(countBuilder as any, state, searchColumns, baseFilters);
-      const { count, error: countError } = await (filtered as any);
+      const filtered = applyFilters(countBuilder as ReturnType<typeof supabase.from>, state, searchColumns, baseFilters);
+      const { count, error: countError } = await (filtered as ReturnType<typeof supabase.from>);
       if (countError) throw countError;
 
       // Data query
-      let dataBuilder = supabase.from(tableName as 'venues').select(select) as any;
+      let dataBuilder: ReturnType<ReturnType<typeof supabase.from>['select']> = supabase.from(tableName as 'venues').select(select);
       dataBuilder = applyFilters(dataBuilder, state, searchColumns, baseFilters);
 
       // Sorting

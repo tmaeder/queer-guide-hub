@@ -1,6 +1,5 @@
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Shield, AlertTriangle, Database, Zap } from 'lucide-react';
+import { Shield, Zap } from 'lucide-react';
 import { useCircuitBreakers, useStagingStats, usePipelineDefinitionsList } from '../hooks/usePipelineHistory';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +26,7 @@ export default function HealthTab() {
   const { data: workflowDefs } = useQuery({
     queryKey: ['workflow-definitions-list'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from>; rpc: typeof supabase.rpc })
         .from('workflow_definitions')
         .select('id, name, display_name, edge_function, schedule, is_enabled, queue_name')
         .order('name', { ascending: true });
@@ -40,7 +39,7 @@ export default function HealthTab() {
   const { data: queueMetrics } = useQuery({
     queryKey: ['queue-metrics'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).rpc('pgmq_metrics_all');
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from>; rpc: typeof supabase.rpc }).rpc('pgmq_metrics_all');
       if (error) throw error;
       return data;
     },

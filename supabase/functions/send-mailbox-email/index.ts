@@ -156,7 +156,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Store sent copy
-    const { data: sentEmail, error: insertError } = await supabase
+    const { data: sentEmail, error: _insertError } = await supabase
       .from("mailbox_emails")
       .insert({
         owner_id: userId,

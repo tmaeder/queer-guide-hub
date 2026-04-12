@@ -42,7 +42,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           },
         }),
       }}
-      {...(props as any)}
+      {...(props as Record<string, unknown>)}
     >
       {children}
     </MuiCard>
@@ -65,7 +65,7 @@ const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
         }
     return (
       <MotionMuiCardBase
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLDivElement>}
         className={className}
         style={style}
         variant="outlined"
@@ -73,7 +73,7 @@ const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
           bgcolor: 'background.paper',
         }}
         {...hover}
-        {...(props as any)}
+        {...(props as Record<string, unknown>)}
       >
         {children}
       </MotionMuiCardBase>
@@ -165,18 +165,18 @@ CardImage.displayName = "CardImage"
 
 /* ── Other card sub-components ─────────────────────────────────────── */
 
-const CardHeader = React.forwardRef<
+const _CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, children, style, ...props }, ref) => (
+>(({ className, _children, style, ...props }, ref) => (
   <MuiCardHeader
-    ref={ref as any}
+    ref={ref as React.Ref<HTMLDivElement>}
     className={className}
     style={style}
     title={undefined}
     sx={{ pb: 0 }}
     component="div"
-    {...(props as any)}
+    {...(props as Record<string, unknown>)}
   >
     {/* MuiCardHeader doesn't render children the same way; use a wrapper */}
   </MuiCardHeader>
@@ -219,7 +219,7 @@ const CardTitle = React.forwardRef<
       lineHeight: 1,
       letterSpacing: '-0.015em',
     }}
-    {...(props as any)}
+    {...(props as Record<string, unknown>)}
   >
     {children}
   </Typography>
@@ -236,7 +236,7 @@ const CardDescription = React.forwardRef<
     color="text.secondary"
     className={className}
     style={style}
-    {...(props as any)}
+    {...(props as Record<string, unknown>)}
   >
     {children}
   </Typography>
@@ -248,11 +248,11 @@ const CardContent = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, style, ...props }, ref) => (
   <MuiCardContent
-    ref={ref as any}
+    ref={ref as React.Ref<HTMLDivElement>}
     className={className}
     style={style}
     sx={{ pt: 0, '&:last-child': { pb: 3 } }}
-    {...(props as any)}
+    {...(props as Record<string, unknown>)}
   >
     {children}
   </MuiCardContent>
@@ -264,11 +264,11 @@ const CardFooter = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, style, ...props }, ref) => (
   <MuiCardActions
-    ref={ref as any}
+    ref={ref as React.Ref<HTMLDivElement>}
     className={className}
     style={style}
     sx={{ px: 3, pt: 0 }}
-    {...(props as any)}
+    {...(props as Record<string, unknown>)}
   >
     {children}
   </MuiCardActions>

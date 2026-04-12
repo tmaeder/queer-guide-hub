@@ -9,7 +9,6 @@ import {
   Building2,
   Calendar,
   Star,
-  Heart,
   TrendingUp,
   MapIcon,
   Newspaper,
@@ -50,8 +49,6 @@ import { NewsCard } from '@/components/news/NewsCard';
 import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -59,8 +56,8 @@ const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
-  const { t } = useTranslation();
-  const [weatherData, setWeatherData] = useState<any>(null);
+  const { _t } = useTranslation();
+  const [weatherData, setWeatherData] = useState<Record<string, unknown> | null>(null);
 
   const { country, loading: countryLoading } = useOptimizedCountry(countrySlug ?? '');
   const { cities, loading: citiesLoading } = useOptimizedCities({
@@ -231,8 +228,8 @@ export default function CountryDetail() {
   }
 
   // Extract continent/region from joined data
-  const continentName = (country as any).continents?.name;
-  const regionName = (country as any).regions?.name;
+  const continentName = (country as unknown as Record<string, { name?: string }>).continents?.name;
+  const regionName = (country as unknown as Record<string, { name?: string }>).regions?.name;
   const subtitle = [continentName, regionName].filter(Boolean).join(', ');
 
   return (
@@ -402,7 +399,7 @@ export default function CountryDetail() {
 
       {/* Safety Alert Banner */}
       <SafetyAlertBanner
-        criminalization={country.lgbti_criminalization as Record<string, any> | null}
+        criminalization={country.lgbti_criminalization as Record<string, unknown> | null}
         countryName={country.name}
       />
 

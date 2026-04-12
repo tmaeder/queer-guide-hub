@@ -9,7 +9,7 @@
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import {
-  fetchBatch, getContentName, CONTENT_TYPE_CONFIG,
+  fetchBatch,
   type ModuleConfig, type SharedRefs, type ProposedChange,
 } from '../../_shared/automation-utils.ts'
 import { deduplicateNews, deduplicatePersonality } from '../../_shared/dedup-engine.ts'

@@ -1,6 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Calendar,
   MapPin,
@@ -12,7 +11,6 @@ import {
   UserMinus,
   Trash2
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { formatEventDateTime } from '@/lib/event-time';
 import { GroupEvent } from '@/hooks/useGroupEvents';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,7 +51,7 @@ export function GroupEventCard({
   isDeleting,
   canManage
 }: GroupEventCardProps) {
-  const { user } = useAuth();
+  const { _user } = useAuth();
 
   const formatEventDate = (startDate: string, endDate?: string) => {
     return formatEventDateTime(startDate, endDate);

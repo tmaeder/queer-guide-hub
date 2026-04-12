@@ -1,5 +1,4 @@
 import * as React from 'react';
-import TextField from '@mui/material/TextField';
 import InputBase from '@mui/material/InputBase';
 
 export type InputProps = React.ComponentProps<'input'>;
@@ -33,7 +32,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             opacity: 0.5,
           },
         }}
-        {...(props as any)}
+        {...(props as Record<string, unknown>)}
       />
     );
   },

@@ -1,3 +1,4 @@
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { enrichNewsWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
 
@@ -100,7 +101,7 @@ function cleanExcerptText(raw: string): string {
 }
 
 // Auto-apply tags by matching keywords
-async function autoApplyTags(title: string, content: string, supabaseClient: any): Promise<string[]> {
+async function autoApplyTags(title: string, content: string, supabaseClient: SupabaseClient): Promise<string[]> {
   try {
     const { data: tags } = await supabaseClient
       .from('unified_tags')
@@ -154,7 +155,7 @@ function escapeRegexStr(str: string): string {
 }
 
 // Extract geographic information from article title only (not full content)
-async function extractGeoInfo(title: string, _content: string, _sourceUrl: string, supabaseClient: any) {
+async function extractGeoInfo(title: string, _content: string, _sourceUrl: string, supabaseClient: unknown) {
   const countryIds: string[] = [];
   const cityIds: string[] = [];
 
@@ -212,7 +213,7 @@ async function extractGeoInfo(title: string, _content: string, _sourceUrl: strin
 }
 
 // Simple XML/RSS parser using regex (Deno-compatible)
-async function parseRSSFeed(url: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function parseRSSFeed(url: string, sourceId: string, supabaseClient: unknown): Promise<NewsArticle[]> {
   try {
     const urlObj = new URL(url);
     if (!['http:', 'https:'].includes(urlObj.protocol)) {
@@ -312,7 +313,7 @@ async function parseRSSFeed(url: string, sourceId: string, supabaseClient: any):
 }
 
 // Fetch from NewsAPI.org
-async function fetchFromNewsAPI(apiKey: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function fetchFromNewsAPI(apiKey: string, sourceId: string, supabaseClient: unknown): Promise<NewsArticle[]> {
   try {
     const response = await fetch(`https://newsapi.org/v2/everything?q=LGBT OR LGBTQ OR queer OR gay OR lesbian OR transgender&language=en&sortBy=publishedAt&pageSize=10`, {
       headers: {
@@ -358,7 +359,7 @@ async function fetchFromNewsAPI(apiKey: string, sourceId: string, supabaseClient
 }
 
 // Fetch from NewsData.io
-async function fetchFromNewsData(apiKey: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function fetchFromNewsData(apiKey: string, sourceId: string, supabaseClient: unknown): Promise<NewsArticle[]> {
   try {
     const response = await fetch(`https://newsdata.io/api/1/news?apikey=${apiKey}&q=LGBT OR LGBTQ&language=en&size=10`);
     
@@ -400,7 +401,7 @@ async function fetchFromNewsData(apiKey: string, sourceId: string, supabaseClien
 }
 
 // Fetch from GNews.io
-async function fetchFromGNews(apiKey: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function fetchFromGNews(apiKey: string, sourceId: string, supabaseClient: unknown): Promise<NewsArticle[]> {
   try {
     const response = await fetch(`https://gnews.io/api/v4/search?q=LGBT OR LGBTQ&lang=en&max=10&apikey=${apiKey}`);
     
@@ -442,7 +443,7 @@ async function fetchFromGNews(apiKey: string, sourceId: string, supabaseClient: 
 }
 
 // Fetch from TheNewsAPI.com
-async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, supabaseClient: any): Promise<NewsArticle[]> {
+async function fetchFromTheNewsAPI(apiKey: string, sourceId: string, supabaseClient: unknown): Promise<NewsArticle[]> {
   try {
     const response = await fetch(`https://api.thenewsapi.com/v1/news/all?api_token=${apiKey}&search=LGBT OR LGBTQ&language=en&limit=10`);
     

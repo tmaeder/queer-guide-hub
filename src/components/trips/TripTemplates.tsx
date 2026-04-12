@@ -61,7 +61,7 @@ export function TripTemplates() {
   const navigate = useNavigate();
   const { createTrip } = useTripMutations();
   const { toast } = useToast();
-  const theme = useTheme();
+  const _theme = useTheme();
 
   const handleUseTemplate = (template: TripTemplate) => {
     const startDate = startOfDay(addMonths(new Date(), 1));

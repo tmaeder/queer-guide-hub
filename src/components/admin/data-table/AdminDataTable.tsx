@@ -10,7 +10,6 @@ import {
   type VisibilityState,
   type GroupingState,
 } from '@tanstack/react-table';
-import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import { MoreVertical } from 'lucide-react';
@@ -185,7 +184,7 @@ export function AdminDataTable<TData extends { id: string }>({
     onBulkEditSuccess?.();
   };
 
-  const handleDeleteSuccess = () => {
+  const _handleDeleteSuccess = () => {
     refetch();
     onBulkDeleteSuccess?.();
   };

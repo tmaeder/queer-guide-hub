@@ -3,24 +3,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useSecureRoleManagement } from '@/hooks/useSecureRoleManagement';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,7 +35,6 @@ import {
   Clock,
   User as UserIcon,
   Shield,
-  ShieldAlert,
   Trash2,
 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
@@ -93,8 +82,8 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
   const [rolesLoading, setRolesLoading] = useState(false);
   const [confirmAdminRole, setConfirmAdminRole] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<string>('');
-  const [fullProfile, setFullProfile] = useState<Record<string, any> | null>(null);
+  const [_selectedRole, setSelectedRole] = useState<string>('');
+  const [fullProfile, setFullProfile] = useState<Record<string, unknown> | null>(null);
 
   const displayName = user?.display_name || user?.first_name || 'Anonymous';
 
@@ -103,6 +92,7 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
       fetchUserRoles();
       fetchFullProfile();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchUserRoles/fetchFullProfile/user are stable, re-run on user_id/open change
   }, [user?.user_id, open]);
 
   const fetchUserRoles = async () => {

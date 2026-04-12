@@ -1,5 +1,4 @@
 import { MotionCard as Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, Globe, Building2, Crown } from 'lucide-react';
 import type {
   CountryWithRegions as Country,
@@ -15,16 +14,16 @@ import Typography from '@mui/material/Typography';
 interface PlacesCardProps {
   type: 'continent' | 'country' | 'city';
   name: string;
-  data?: Country | City | any;
+  data?: Country | City | unknown;
   onClick?: () => void;
 }
 
 export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }: PlacesCardProps) {
   const [countryImage, setCountryImage] = useState<string | null>(data?.image_url || null);
-  const [imageLoading, setImageLoading] = useState(false);
+  const [_imageLoading, setImageLoading] = useState(false);
 
   // City images hook
-  const { fetchCityImage, loading: cityImageLoading } = useCityImages();
+  const { fetchCityImage, loading: _cityImageLoading } = useCityImages();
   const [cityImageUrl, setCityImageUrl] = useState<string | null>(data?.image_url || null);
   const [cityImageError, setCityImageError] = useState(false);
 
@@ -83,7 +82,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
 
         // Save to DB so future visits don't need Pexels
         supabase.from('countries').update({ image_url: imageUrl }).eq('id', data.id).then();
-      } catch (err) {
+      } catch (_err) {
         // Silently fail — fallback image handles it
       } finally {
         setImageLoading(false);
@@ -107,7 +106,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
           } else {
             setCityImageError(true);
           }
-        } catch (error) {
+        } catch (_error) {
           setCityImageError(true);
         }
       };
@@ -317,5 +316,5 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   }
 
   // For continents or items without detail pages, use onClick
-  return <div onClick={onClick}>{cardContent}</div>;
+  return <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}>{cardContent}</div>;
 });

@@ -61,7 +61,7 @@ export function VenueCombobox({
         });
       }}
       renderOption={(props, option) => {
-        const { key, ...rest } = props as any;
+        const { key, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & { key: string };
         return (
           <Box component="li" key={key} {...rest}>
             <Box>

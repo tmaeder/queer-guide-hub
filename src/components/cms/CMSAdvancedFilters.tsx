@@ -17,7 +17,7 @@ import type { CMSFilters } from '@/hooks/useCMSFilters';
 
 interface CMSAdvancedFiltersProps {
   filters: CMSFilters;
-  onFilterChange: (key: keyof CMSFilters, value: any) => void;
+  onFilterChange: (key: keyof CMSFilters, value: unknown) => void;
   onReset: () => void;
   filterOptions: {
     contentTypes: string[];

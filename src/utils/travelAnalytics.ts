@@ -39,7 +39,7 @@ export function trackTravelEvent(event: TravelEventName, data?: EventData): void
     }
 
     // Umami analytics (if loaded)
-    const umami = (window as any).umami;
+    const umami = (window as unknown as Record<string, unknown>).umami as { track?: (event: string, data: Record<string, string>) => void } | undefined;
     if (umami?.track) {
       // Flatten data for Umami (string values only, no PII)
       const safeData: Record<string, string> = {};

@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars and fill in real values
+# NEVER commit terraform.tfvars to git
+
+cloudflare_api_token  = "your-cloudflare-api-token"
+cloudflare_zone_id    = "fe9b9da8a08af32e10bb3ba7fdb04440"
+cloudflare_account_id = "7aa3765cc5f50f2b681b782eb4a8d296"
+
+# Infomaniak (Swiss mirror) — existing hosting
+infomaniak_ssh_host        = "8s0af.ftp.infomaniak.com"
+infomaniak_ssh_user        = "8s0af_kwiir_ruben"
+infomaniak_ssh_private_key = "~/.ssh/id_ed25519"
+infomaniak_web_root        = "/web/queer-guide-mirror"
+infomaniak_ip              = ""

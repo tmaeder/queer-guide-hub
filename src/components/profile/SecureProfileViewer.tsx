@@ -17,12 +17,12 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 interface SecureProfileViewerProps {
-  profile: any;
+  profile: Record<string, unknown>;
   isOwnProfile: boolean;
 }
 
 export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileViewerProps) {
-  const { user } = useAuth();
+  const { _user } = useAuth();
   const { isAdmin } = useAdminRoles();
 
   if (!profile) return null;

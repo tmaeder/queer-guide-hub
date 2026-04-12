@@ -9,8 +9,8 @@ export interface ImportJob {
   source_type: 'csv' | 'api' | 'web_scraping' | 'file_upload';
   duplicate_strategy: 'skip' | 'overwrite' | 'create_new';
   unique_key_fields: string[];
-  validation_rules: Record<string, any>;
-  filters: Record<string, any>;
+  validation_rules: Record<string, unknown>;
+  filters: Record<string, unknown>;
   status: 'pending' | 'validating' | 'processing' | 'completed' | 'failed' | 'cancelled';
   phase: 'queued' | 'pre_validation' | 'processing' | 'post_validation' | 'cleanup';
   progress_percentage: number;
@@ -21,10 +21,10 @@ export interface ImportJob {
   successful_records: number;
   failed_records: number;
   duplicate_records: number;
-  source_data?: any;
-  validation_report: Record<string, any>;
-  error_report: Record<string, any>;
-  import_summary: Record<string, any>;
+  source_data?: unknown;
+  validation_report: Record<string, unknown>;
+  error_report: Record<string, unknown>;
+  import_summary: Record<string, unknown>;
   file_name?: string;
   file_size?: number;
   file_hash?: string;
@@ -55,7 +55,7 @@ export interface IngestionSource {
   source_type: 'api' | 'scraper' | 'csv' | 'rss';
   target_table: string;
   edge_function: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   schedule: string | null;
   is_enabled: boolean;
   requires_api_key: string | null;
@@ -76,15 +76,15 @@ export interface StagingItem {
   job_id: string;
   source_type: string;
   target_table: string;
-  raw_data: Record<string, any>;
-  normalized_data: Record<string, any> | null;
+  raw_data: Record<string, unknown>;
+  normalized_data: Record<string, unknown> | null;
   ai_validation_status: string;
   ai_confidence_score: number | null;
-  ai_validation_result: Record<string, any>;
+  ai_validation_result: Record<string, unknown>;
   dedup_status: string;
   dedup_match_id: string | null;
   dedup_match_score: number | null;
-  dedup_details: Record<string, any>;
+  dedup_details: Record<string, unknown>;
   review_status: string;
   reviewed_by: string | null;
   reviewed_at: string | null;
@@ -113,7 +113,7 @@ export interface PipelineJob {
 
 export interface ValidationResult {
   record_index: number;
-  record_data: any;
+  record_data: unknown;
   is_valid: boolean;
   validation_errors: string[];
   validation_warnings: string[];
@@ -167,7 +167,7 @@ export const useImportHub = () => {
       if (error) throw error;
 
       // Map RPC response fields to our interface fields
-      const raw = data as Record<string, any> || {};
+      const raw = data as Record<string, unknown> || {};
       setStatistics({
         total_jobs: raw.total_imports || 0,
         completed_jobs: raw.successful_imports || 0,
@@ -203,13 +203,13 @@ export const useImportHub = () => {
     config: {
       duplicateStrategy?: ImportJob['duplicate_strategy'];
       uniqueKeyFields?: string[];
-      validationRules?: Record<string, any>;
-      filters?: Record<string, any>;
-      sourceData?: any;
+      validationRules?: Record<string, unknown>;
+      filters?: Record<string, unknown>;
+      sourceData?: unknown;
       fileName?: string;
       fileSize?: number;
       apiEndpoint?: string;
-      venueImportConfig?: any;
+      venueImportConfig?: Record<string, unknown>;
     } = {}
   ): Promise<string> => {
     setLoading(true);
@@ -218,7 +218,7 @@ export const useImportHub = () => {
       if (type.startsWith('venues-') && !type.endsWith('-csv') && config.venueImportConfig) {
         const provider = type.replace('venues-', '');
         const functionName = `import-${provider}-venues`;
-        const { data, error } = await supabase.functions.invoke(functionName, {
+        const { _data, error } = await supabase.functions.invoke(functionName, {
           body: { config: config.venueImportConfig }
         });
         
@@ -308,7 +308,7 @@ export const useImportHub = () => {
   }, [loadJobs, loadStatistics, toast]);
 
   // Validate import data
-  const validateImportData = useCallback(async (jobId: string): Promise<any> => {
+  const validateImportData = useCallback(async (jobId: string): Promise<unknown> => {
     try {
       const { data, error } = await supabase.rpc('validate_import_data', {
         data: { job_id: jobId, validation_rules: {} }
@@ -493,7 +493,7 @@ export const useImportHub = () => {
 
   const triggerSource = useCallback(async (source: IngestionSource) => {
     try {
-      const { data, error } = await supabase.functions.invoke(source.edge_function, {
+      const { _data, error } = await supabase.functions.invoke(source.edge_function, {
         body: {}
       });
       if (error) throw error;
@@ -535,7 +535,7 @@ export const useImportHub = () => {
     }
   }, []);
 
-  const fetchReviewStats = useCallback(async (): Promise<Record<string, any>> => {
+  const fetchReviewStats = useCallback(async (): Promise<Record<string, unknown>> => {
     try {
       const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
         body: { action: 'stats' }
@@ -627,7 +627,7 @@ export const useImportHub = () => {
 
       if (error) throw error;
 
-      const stats = (data || []).reduce((acc: Record<string, number>, venue: any) => {
+      const stats = (data || []).reduce((acc: Record<string, number>, venue: { data_source?: string }) => {
         if (venue.data_source) {
           acc[venue.data_source] = (acc[venue.data_source] || 0) + 1;
         }

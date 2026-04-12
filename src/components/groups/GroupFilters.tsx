@@ -1,9 +1,8 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Search, Filter, Users, Lock, Globe, X } from "lucide-react";
+import { Search, Users, Lock, Globe, X } from "lucide-react";
 import { TagSelector } from "@/components/tags/TagSelector";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";

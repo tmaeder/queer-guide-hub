@@ -9,9 +9,9 @@ vi.mock('@/hooks/useAuth', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, dOrOpts: any) => {
+    t: (key: string, dOrOpts: unknown) => {
       if (typeof dOrOpts === 'string') return dOrOpts;
-      return dOrOpts?.defaultValue || key;
+      return (dOrOpts as Record<string, string>)?.defaultValue || key;
     },
   }),
 }));

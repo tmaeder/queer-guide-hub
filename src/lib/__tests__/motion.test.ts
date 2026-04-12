@@ -10,7 +10,6 @@ import {
   fadeIn,
   scaleIn,
   slideUpLarge,
-  slideDownLarge,
   pageVariants,
   staggerContainerVariants,
   staggerItem,
@@ -47,19 +46,19 @@ describe('tweens', () => {
 describe('variants', () => {
   it('fadeUp should start hidden below', () => {
     expect(fadeUp.hidden).toHaveProperty('opacity', 0);
-    expect((fadeUp.hidden as any).y).toBeGreaterThan(0);
+    expect((fadeUp.hidden as Record<string, unknown>).y).toBeGreaterThan(0);
   });
 
   it('fadeDown should start hidden above', () => {
-    expect((fadeDown.hidden as any).y).toBeLessThan(0);
+    expect((fadeDown.hidden as Record<string, unknown>).y).toBeLessThan(0);
   });
 
   it('fadeLeft should start hidden to the left', () => {
-    expect((fadeLeft.hidden as any).x).toBeLessThan(0);
+    expect((fadeLeft.hidden as Record<string, unknown>).x).toBeLessThan(0);
   });
 
   it('fadeRight should start hidden to the right', () => {
-    expect((fadeRight.hidden as any).x).toBeGreaterThan(0);
+    expect((fadeRight.hidden as Record<string, unknown>).x).toBeGreaterThan(0);
   });
 
   it('fadeIn should only animate opacity', () => {
@@ -67,11 +66,11 @@ describe('variants', () => {
   });
 
   it('scaleIn should animate scale', () => {
-    expect((scaleIn.hidden as any).scale).toBeLessThan(1);
+    expect((scaleIn.hidden as Record<string, unknown>).scale).toBeLessThan(1);
   });
 
   it('slideUpLarge should use larger distance than fadeUp', () => {
-    expect((slideUpLarge.hidden as any).y).toBeGreaterThan((fadeUp.hidden as any).y);
+    expect((slideUpLarge.hidden as Record<string, unknown>).y).toBeGreaterThan((fadeUp.hidden as Record<string, unknown>).y);
   });
 
   it('pageVariants should have initial, enter, and exit', () => {
@@ -84,13 +83,13 @@ describe('variants', () => {
 describe('staggerContainerVariants', () => {
   it('should return variants with staggerChildren', () => {
     const variants = staggerContainerVariants(0.1);
-    const visible = variants.visible as any;
+    const visible = variants.visible as Record<string, unknown>;
     expect(visible.transition.staggerChildren).toBe(0.1);
   });
 
   it('should accept delayChildren', () => {
     const variants = staggerContainerVariants(0.1, 0.5);
-    const visible = variants.visible as any;
+    const visible = variants.visible as Record<string, unknown>;
     expect(visible.transition.delayChildren).toBe(0.5);
   });
 });

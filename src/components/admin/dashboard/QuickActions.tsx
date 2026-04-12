@@ -5,7 +5,6 @@ import Box from '@mui/material/Box';
 import {
   Plus,
   Upload,
-  Download,
   Settings,
   Users,
   Building,

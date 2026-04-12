@@ -6,7 +6,7 @@ const mockNavigate = vi.fn();
 const mockToast = vi.fn();
 
 vi.mock('react-router', async () => {
-  const actual = await vi.importActual<any>('react-router');
+  const actual = await vi.importActual<Record<string, unknown>>('react-router');
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
@@ -14,7 +14,7 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
-let mockUser: any = { id: 'u-1' };
+let mockUser: { id: string } | null = { id: 'u-1' };
 let mockAuthLoading = false;
 let mockIsAdmin = true;
 let mockIsModerator = false;
@@ -87,7 +87,7 @@ describe('AdminRouteGuard', () => {
 
   it('should show loading state while checking permissions', () => {
     mockRolesLoading = true;
-    const { container } = render(
+    const { _container } = render(
       <MemoryRouter>
         <AdminRouteGuard><div>Content</div></AdminRouteGuard>
       </MemoryRouter>,

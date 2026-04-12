@@ -14,7 +14,7 @@ interface ErrorBoundaryProps {
 interface ErrorFallbackProps {
   error?: Error;
   resetErrorBoundary?: () => void;
-  errors?: any[];
+  errors?: Array<{ message?: string }>;
 }
 
 class OptimizedErrorBoundary extends React.Component<
@@ -129,7 +129,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
 
 // Specialized error fallback for data loading errors
 export const DataErrorFallback: React.FC<ErrorFallbackProps> = ({
-  error,
+  _error,
   resetErrorBoundary,
   errors = []
 }) => {

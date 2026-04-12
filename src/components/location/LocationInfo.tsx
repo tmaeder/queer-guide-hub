@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Globe, Image as ImageIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,6 +49,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
     if (name) {
       fetchLocationInfo();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchLocationInfo defined below, re-run on name/type change
   }, [name, type]);
 
   const fetchLocationInfo = async () => {
@@ -195,11 +196,14 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
           <CardContent>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
               {images.map((image, index) => (
-                <div 
-                  key={image.id} 
+                <div
+                  key={image.id}
+                  role="button"
+                  tabIndex={0}
                   /* group removed */
                   style={{ position: 'relative', cursor: 'pointer', overflow: 'hidden', borderRadius: '0.5rem', border: '1px solid var(--muted)', transition: 'all 0.3s' }}
                   onClick={() => openModal(index)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(index); } }}
                 >
                   <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
                     <Box

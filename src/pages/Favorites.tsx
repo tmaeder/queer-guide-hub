@@ -79,6 +79,7 @@ export default function Favorites() {
     if (user) {
       fetchAllFavorites();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchAllFavorites defined below, re-run on user change
   }, [user]);
 
   const fetchAllFavorites = async () => {
@@ -203,7 +204,7 @@ export default function Favorites() {
           })) || [],
       };
       setFavorites(transformedFavorites);
-    } catch (error) {
+    } catch (_error) {
       toast({ title: 'Error', description: 'Failed to load favorites. Please try again.', variant: 'destructive' });
     } finally {
       setLoading(false);

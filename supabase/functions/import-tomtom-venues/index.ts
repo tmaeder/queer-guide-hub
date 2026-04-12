@@ -1,6 +1,6 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 import { getOrCreateCity, getOrCreateVenueCategory, getOrCreateAmenity, getOrCreateService } from '../_shared/venue-import-helpers.ts'
 
 interface TomTomPOI {
@@ -79,7 +79,7 @@ interface TomTomPOI {
   }
 }
 
-async function mapVenueCategory(supabase: any, classifications: any[], searchTerm: string) {
+async function mapVenueCategory(supabase: SupabaseClient, classifications: unknown[], searchTerm: string) {
   let categoryName = 'Entertainment & Nightlife'
   let categorySlug = 'entertainment-nightlife'
 
@@ -119,7 +119,7 @@ async function mapVenueCategory(supabase: any, classifications: any[], searchTer
   }
 }
 
-async function mapAmenitiesAndServices(supabase: any, poi: TomTomPOI, searchTerm: string) {
+async function mapAmenitiesAndServices(supabase: unknown, poi: TomTomPOI, searchTerm: string) {
   const amenityIds = []
   const serviceIds = []
   const amenityNames = []
@@ -283,13 +283,13 @@ Deno.serve(async (req) => {
               // Get or create city
               const cityName = poi.address.municipality || city.name
               const countryCode = poi.address.countryCode || city.country
-              const cityId = await getOrCreateCity(supabase, cityName, countryCode, poi.position.lat, poi.position.lon)
+              const _cityId = await getOrCreateCity(supabase, cityName, countryCode, poi.position.lat, poi.position.lon)
 
               // Map category
-              const { categorySlug, categoryId } = await mapVenueCategory(supabase, poi.poi.classifications, searchTerm)
+              const { categorySlug, _categoryId } = await mapVenueCategory(supabase, poi.poi.classifications, searchTerm)
 
               // Map amenities and services
-              const { amenityIds, serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, poi, searchTerm)
+              const { _amenityIds, _serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, poi, searchTerm)
 
               // Add search term specific tags
               const enhancedTags = ['lgbt-friendly']

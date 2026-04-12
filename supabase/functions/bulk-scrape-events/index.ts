@@ -21,16 +21,16 @@ interface FirecrawlCrawlResponse {
 }
 
 // Extract JSON-LD events from a page's HTML (supports @graph)
-function extractJsonLdEvents(html: string): any[] {
+function extractJsonLdEvents(html: string): unknown[] {
   try {
-    const events: any[] = [];
+    const events: unknown[] = [];
     const scriptRegex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
     let match: RegExpExecArray | null;
     while ((match = scriptRegex.exec(html)) !== null) {
       const jsonText = match[1].trim();
       try {
         const parsed = JSON.parse(jsonText);
-        const visit = (node: any) => {
+        const visit = (node: unknown) => {
           if (!node) return;
           if (Array.isArray(node)) {
             for (const x of node) visit(x);
@@ -59,7 +59,7 @@ function extractJsonLdEvents(html: string): any[] {
 }
 
 // Map schema.org Event JSON-LD to our events table shape
-function mapJsonLdToEvent(e: any) {
+function mapJsonLdToEvent(e: unknown) {
   // Dates
   const start = e.startDate || e.start_time || e.start_date;
   const end = e.endDate || e.end_time || e.end_date || null;
@@ -113,9 +113,9 @@ function mapJsonLdToEvent(e: any) {
   };
 }
 
-function dedupeEvents(events: any[]) {
+function dedupeEvents(events: unknown[]) {
   const seen = new Set<string>();
-  const out: any[] = [];
+  const out: unknown[] = [];
   for (const ev of events) {
     const key = `${(ev.title || '').toLowerCase()}|${ev.start_date}|${(ev.venue_name || ev.city || '').toLowerCase()}`;
     if (!seen.has(key)) {
@@ -186,7 +186,7 @@ serve(async (req) => {
     }
 
     // Extract and map events
-    const rawEvents: any[] = [];
+    const rawEvents: unknown[] = [];
     for (const p of pages) {
       if (!p.html) continue;
       const html = p.html;
@@ -197,20 +197,20 @@ serve(async (req) => {
 
       // 2) Microdata & RDFa parsing
       try {
-        const doc: any = new DOMParser().parseFromString(html, 'text/html');
+        const doc: unknown = new DOMParser().parseFromString(html, 'text/html');
         if (doc) {
           // Microdata: itemscope itemtype*=Event
           const microNodes = doc.querySelectorAll('[itemscope][itemtype*="Event"]');
           for (const node of microNodes) {
             const pick = (prop: string) => {
-              const el = node.querySelector(`[itemprop="${prop}"]`) as any;
+              const el = node.querySelector(`[itemprop="${prop}"]`) as unknown;
               if (!el) return null;
               const val = (el.getAttribute('content') || el.getAttribute('datetime') || el.textContent || '').trim();
               return val || null;
             };
-            const locationEl: any = node.querySelector('[itemprop="location"]');
+            const locationEl: unknown = node.querySelector('[itemprop="location"]');
             const locName = locationEl?.querySelector('[itemprop="name"]')?.textContent?.trim() || null;
-            const addrEl: any = locationEl?.querySelector('[itemprop="address"]');
+            const addrEl: unknown = locationEl?.querySelector('[itemprop="address"]');
             const city = addrEl?.querySelector('[itemprop="addressLocality"]')?.textContent?.trim() || null;
             const region = addrEl?.querySelector('[itemprop="addressRegion"]')?.textContent?.trim() || null;
             const country = addrEl?.querySelector('[itemprop="addressCountry"]')?.textContent?.trim() || 'US';
@@ -258,7 +258,7 @@ serve(async (req) => {
             }
           }
         }
-      } catch (e) {
+      } catch (_e) {
         // DOM parsing failed; ignore
       }
     }
@@ -305,7 +305,7 @@ serve(async (req) => {
       total_extracted: normalized.length,
       message: `Imported ${inserted}/${normalized.length} events`,
     }), { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('bulk-scrape-events error', err);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,

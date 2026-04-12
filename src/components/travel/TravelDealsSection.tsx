@@ -17,7 +17,7 @@ interface TravelDealsSectionProps {
 export function TravelDealsSection({
   destinationIata,
   destinationCity,
-  destinationCountryCode,
+  _destinationCountryCode,
 }: TravelDealsSectionProps) {
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 

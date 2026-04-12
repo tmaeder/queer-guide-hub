@@ -386,7 +386,7 @@ export default function Personalities() {
         {/* Grid */}
         {personalities.length > 0 && (
           <>
-            <StaggerGrid sx={GRID_SX as any}>
+            <StaggerGrid sx={GRID_SX as Record<string, unknown>}>
               {personalities.map((p) => (
                 <PersonalityCard key={p.id} personality={p} />
               ))}

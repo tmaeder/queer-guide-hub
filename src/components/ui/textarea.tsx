@@ -31,7 +31,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             opacity: 0.5,
           },
         }}
-        {...(props as any)}
+        {...(props as Record<string, unknown>)}
       />
     );
   },

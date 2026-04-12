@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { formatDate, formatDateTime, formatArray, formatBoolean, generateFilename } from '../excelExport';
 
 // Only test pure formatting helpers — exportToExcel and fetchAllRows need

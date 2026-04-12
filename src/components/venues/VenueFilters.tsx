@@ -120,6 +120,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   useEffect(() => {
     // Fetch the main tags for venues/organizations
     fetchTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const handleSearch = () => {

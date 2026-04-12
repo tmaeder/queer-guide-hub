@@ -21,7 +21,6 @@ import {
   Newspaper,
   Settings,
   Users,
-  MessageSquare,
   LogOut,
   Accessibility,
   Tags,

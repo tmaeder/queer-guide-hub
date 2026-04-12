@@ -185,7 +185,7 @@ class QueryBuilder<T = unknown> {
     return this;
   }
 
-  upsert(data: Partial<T> | Partial<T>[], opts?: { onConflict?: string }) {
+  upsert(data: Partial<T> | Partial<T>[], _opts?: { onConflict?: string }) {
     this.method = 'POST';
     this.body = data;
     this.extraHeaders['Prefer'] = 'resolution=merge-duplicates';

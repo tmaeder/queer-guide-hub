@@ -34,7 +34,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Link } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
@@ -115,7 +114,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
 
     // Handle mentions
     if (post.mentions && Array.isArray(post.mentions)) {
-      (post.mentions as any[]).forEach((mention: any) => {
+      (post.mentions as Array<{ username: string }>).forEach((mention) => {
         const mentionRegex = new RegExp(`@${mention.username}`, 'g');
         content = content.replace(
           mentionRegex,
@@ -293,7 +292,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 Poll
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {(post.poll_options as any)?.options?.map((option: string, index: number) => (
+                {(post.poll_options as { options?: string[] })?.options?.map((option: string, index: number) => (
                   <Button
                     key={index}
                     variant="outline"

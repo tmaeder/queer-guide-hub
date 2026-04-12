@@ -54,7 +54,7 @@ type VenueWithRelations = Venue & {
     id: string;
     name: string;
     equality_score: number | null;
-    lgbti_criminalization: Record<string, any> | null;
+    lgbti_criminalization: Record<string, unknown> | null;
   } | null;
 };
 
@@ -111,7 +111,7 @@ export default function VenueDetail() {
 
       if (reviewsError) throw reviewsError;
       setReviews(reviewsData || []);
-    } catch (error) {
+    } catch (_error) {
       setFetchError(true);
       toast({ title: 'Error', description: 'Failed to load venue details.', variant: 'destructive' });
     } finally {
@@ -121,6 +121,7 @@ export default function VenueDetail() {
 
   useEffect(() => {
     fetchVenue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVenue defined above, re-run on slug change
   }, [slug]);
 
   if (loading) {
@@ -206,7 +207,7 @@ export default function VenueDetail() {
     return '$'.repeat(range);
   };
 
-  const formatHours = (hours: any) => {
+  const formatHours = (hours: Record<string, unknown>) => {
     if (!hours || typeof hours !== 'object')
       return (
         <Typography variant="body2" color="text.secondary">

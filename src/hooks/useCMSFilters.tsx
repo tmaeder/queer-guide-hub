@@ -16,7 +16,7 @@ export interface CMSFilters {
 }
 
 export interface UseCMSFiltersProps {
-  data: any[];
+  data: Record<string, unknown>[];
 }
 
 export function useCMSFilters({ data }: UseCMSFiltersProps) {
@@ -35,7 +35,7 @@ export function useCMSFilters({ data }: UseCMSFiltersProps) {
     pageSize: 10
   });
 
-  const updateFilter = (key: keyof CMSFilters, value: any) => {
+  const updateFilter = (key: keyof CMSFilters, value: CMSFilters[keyof CMSFilters]) => {
     setFilters(prev => ({
       ...prev,
       [key]: value,

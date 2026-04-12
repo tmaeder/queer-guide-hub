@@ -29,7 +29,7 @@ export interface ImportConfig {
   validation: {
     strict: boolean;
     required_fields: string[];
-    custom_validations: Record<string, any>;
+    custom_validations: Record<string, unknown>;
   };
   filters: {
     location?: string;
@@ -130,7 +130,7 @@ export const useBackgroundImports = () => {
       if (error) throw error;
 
       const mappedJobs: BackgroundJob[] =
-        data?.map((job: any) => ({
+        data?.map((job: Record<string, unknown>) => ({
           id: job.id,
           type: job.type,
           status: job.status,
@@ -178,7 +178,7 @@ export const useBackgroundImports = () => {
 
   // Create a new background import job
   const createImportJob = useCallback(
-    async (type: string, data: any, batchSize: number = 5): Promise<string> => {
+    async (type: string, data: unknown, batchSize: number = 5): Promise<string> => {
       if (!SUPPORTED_IMPORT_TYPES.includes(type)) {
         throw new Error(`Unsupported import type: ${type}`);
       }
@@ -229,7 +229,7 @@ export const useBackgroundImports = () => {
   const createAdvancedImportJob = useCallback(
     async (
       type: string,
-      data: any,
+      data: unknown,
       importConfig: ImportConfig,
       batchSize: number = 5,
     ): Promise<string> => {

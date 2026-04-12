@@ -1,7 +1,6 @@
 import * as React from "react"
 import MuiDialog from "@mui/material/Dialog"
 import MuiDialogContent from "@mui/material/DialogContent"
-import MuiDialogActions from "@mui/material/DialogActions"
 import MuiButton from "@mui/material/Button"
 import Typography from "@mui/material/Typography"
 import Zoom from "@mui/material/Zoom"
@@ -39,7 +38,7 @@ const AlertDialogTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLA
       onClick?.(e);
     };
     if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<any>, { onClick: handleClick, ref });
+      return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { onClick: handleClick, ref });
     }
     return <button ref={ref} onClick={handleClick} type="button" {...props}>{children}</button>;
   }
@@ -51,13 +50,13 @@ const AlertDialogOverlay = React.forwardRef<HTMLDivElement, React.HTMLAttributes
 AlertDialogOverlay.displayName = "AlertDialogOverlay"
 
 const AlertDialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, style, ...props }, ref) => {
+  ({ className, children, _style, ..._props }, ref) => {
     const { open, onOpenChange } = React.useContext(AlertDialogContext);
     return (
       <MuiDialog open={open} onClose={() => onOpenChange(false)} maxWidth="sm" fullWidth className={className}
         TransitionComponent={Zoom}
         transitionDuration={{ enter: duration.normal * 1000, exit: 150 }}
-        PaperProps={{ ref: ref as any, sx: { borderRadius: 1.5 } }}>
+        PaperProps={{ ref: ref as React.Ref<HTMLDivElement>, sx: { borderRadius: 1.5 } }}>
         <MuiDialogContent sx={{ p: 3 }}>{children}</MuiDialogContent>
       </MuiDialog>
     );
@@ -82,14 +81,14 @@ AlertDialogFooter.displayName = "AlertDialogFooter"
 const AlertDialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, children, style, ...props }, ref) => (
     <Typography ref={ref} variant="h6" component="h2" className={className} style={style}
-      sx={{ fontWeight: 600, lineHeight: 1.2 }} {...(props as any)}>{children}</Typography>
+      sx={{ fontWeight: 600, lineHeight: 1.2 }} {...(props as Record<string, unknown>)}>{children}</Typography>
   )
 );
 AlertDialogTitle.displayName = "AlertDialogTitle"
 
 const AlertDialogDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, children, style, ...props }, ref) => (
-    <Typography ref={ref} variant="body2" color="text.secondary" className={className} style={style} {...(props as any)}>{children}</Typography>
+    <Typography ref={ref} variant="body2" color="text.secondary" className={className} style={style} {...(props as Record<string, unknown>)}>{children}</Typography>
   )
 );
 AlertDialogDescription.displayName = "AlertDialogDescription"
@@ -99,7 +98,7 @@ const AlertDialogAction = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAt
     const { onOpenChange } = React.useContext(AlertDialogContext);
     return (
       <MuiButton ref={ref} variant="contained" color="primary" className={className} style={style}
-        onClick={(e) => { props.onClick?.(e as any); onOpenChange(false); }} {...(props as any)}>{children}</MuiButton>
+        onClick={(e) => { props.onClick?.(e as React.MouseEvent<HTMLButtonElement>); onOpenChange(false); }} {...(props as Record<string, unknown>)}>{children}</MuiButton>
     );
   }
 );
@@ -110,7 +109,7 @@ const AlertDialogCancel = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAt
     const { onOpenChange } = React.useContext(AlertDialogContext);
     return (
       <MuiButton ref={ref} variant="outlined" color="inherit" className={className} style={style}
-        onClick={(e) => { props.onClick?.(e as any); onOpenChange(false); }} {...(props as any)}>{children}</MuiButton>
+        onClick={(e) => { props.onClick?.(e as React.MouseEvent<HTMLButtonElement>); onOpenChange(false); }} {...(props as Record<string, unknown>)}>{children}</MuiButton>
     );
   }
 );

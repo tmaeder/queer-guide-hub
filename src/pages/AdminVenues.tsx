@@ -119,7 +119,7 @@ const commonAmenities = [
 ];
 
 export default function AdminVenues() {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, canManageContent } = useAdminRoles();
   const { createVenue, updateVenue, deleteVenue, refetch } = useVenues(false);
@@ -129,7 +129,7 @@ export default function AdminVenues() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState<VenueRow | null>(null);
   const [isEnrichingVenue, setIsEnrichingVenue] = useState(false);
-  const [enrichmentResults, setEnrichmentResults] = useState<any[]>([]);
+  const [enrichmentResults, setEnrichmentResults] = useState<Record<string, unknown>[]>([]);
   const [showEnrichmentPreview, setShowEnrichmentPreview] = useState(false);
   const [enrichmentVenueName, setEnrichmentVenueName] = useState('');
   const [importDialog, setImportDialog] = useState<{
@@ -232,7 +232,7 @@ export default function AdminVenues() {
       return;
     }
     try {
-      const venueData: Record<string, any> = {
+      const venueData: Record<string, unknown> = {
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         address: formData.address.trim() || null,
@@ -287,7 +287,7 @@ export default function AdminVenues() {
   };
 
   // --- Import handlers ---
-  const handleImport = async (provider: string, fnName: string, config?: any) => {
+  const handleImport = async (provider: string, fnName: string, config?: Record<string, unknown>) => {
     setIsImporting((prev) => ({ ...prev, [provider]: true }));
     try {
       toast({ title: 'Import Started', description: `${provider} import triggered...` });
@@ -307,7 +307,7 @@ export default function AdminVenues() {
     }
   };
 
-  const handleImportDialogSubmit = (config: any) => {
+  const handleImportDialogSubmit = (config: Record<string, unknown>) => {
     const fnMap: Record<string, string> = {
       foursquare: 'import-foursquare-venues',
       tripadvisor: 'import-tripadvisor-venues',
@@ -388,14 +388,14 @@ export default function AdminVenues() {
     }
   };
 
-  const handleSelectEnrichmentResult = (selectedData: any) => {
+  const handleSelectEnrichmentResult = (selectedData: Record<string, unknown>) => {
     const updated = { ...formData };
     Object.entries(selectedData).forEach(([key, value]) => {
       if (
         value &&
         (!updated[key as keyof typeof updated] || updated[key as keyof typeof updated] === '')
       ) {
-        (updated as any)[key] = value;
+        (updated as Record<string, unknown>)[key] = value;
       }
     });
     setFormData(updated);
@@ -405,7 +405,7 @@ export default function AdminVenues() {
 
   // --- Export ---
   const handleExportExcel = async () => {
-    const cols: ExportColumnDef<any>[] = [
+    const cols: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Name', accessor: (r) => r.name },
       { header: 'Category', accessor: (r) => r.category },
       { header: 'Address', accessor: (r) => r.address },
@@ -671,6 +671,7 @@ export default function AdminVenues() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDeleteVenue/refetch are stable, adding would defeat memoization
     [columns, isImporting],
   );
 

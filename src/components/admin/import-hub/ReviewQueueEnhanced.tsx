@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -41,7 +41,6 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import { SideBySideComparison } from './SideBySideComparison';
-import type { StagingItem } from '@/hooks/useImportHub';
 
 const CONFIDENCE_COLORS: Record<string, string> = {
   high: '#16a34a',
@@ -124,6 +123,7 @@ export function ReviewQueueEnhanced() {
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleApprove/handleReject are stable handlers, only re-bind on expandedId/items change
   }, [expandedId, items]);
 
   const handleApprove = (id: string) => {
@@ -172,7 +172,7 @@ export function ReviewQueueEnhanced() {
         p_search: filters.search || null,
         p_limit: 50000,
         p_review_status: filters.review_status || null,
-      } as any);
+      } as Record<string, unknown>);
       const ids: string[] = Array.isArray(data) ? data : [];
       setSelectedIds(new Set(ids));
     }

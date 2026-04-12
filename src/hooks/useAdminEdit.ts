@@ -24,7 +24,7 @@ export function useAdminEdit() {
     try {
       // 1. Fetch current row for before_data snapshot
       const { data: before, error: fetchErr } = await supabase
-        .from(contentType as any)
+        .from(contentType as 'venues')
         .select('*')
         .eq('id', contentId)
         .single();
@@ -33,7 +33,7 @@ export function useAdminEdit() {
 
       // 2. Update the target table directly
       const { data: record, error: updateErr } = await supabase
-        .from(contentType as any)
+        .from(contentType as 'venues')
         .update(changes)
         .eq('id', contentId)
         .select()
@@ -48,15 +48,15 @@ export function useAdminEdit() {
           content_type: contentType,
           content_id: contentId,
           editor_id: user.id,
-          before_data: before as any,
-          after_data: record as any,
+          before_data: before as Record<string, unknown>,
+          after_data: record as Record<string, unknown>,
           changed_fields: Object.keys(changes),
         });
       }
 
       return { success: true, record };
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Failed to save changes' };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to save changes' };
     } finally {
       setLoading(false);
     }

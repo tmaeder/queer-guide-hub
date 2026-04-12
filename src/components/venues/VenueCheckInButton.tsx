@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Loader2, Shield, Settings } from 'lucide-react';
+import { MapPin, Loader2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,12 +21,12 @@ interface VenueCheckInButtonProps {
 
 export function VenueCheckInButton({
   venueId,
-  venueName,
+  _venueName,
   venueLatitude,
   venueLongitude,
   onCheckInSuccess
 }: VenueCheckInButtonProps) {
-  const { checkInAtVenue, loading, MAX_CHECKIN_DISTANCE_METERS } = useVenueCheckins();
+  const { checkInAtVenue, loading, _MAX_CHECKIN_DISTANCE_METERS } = useVenueCheckins();
   const { user } = useAuth();
   const [isPublic, setIsPublic] = useState(false);
   const [locationVisibility, setLocationVisibility] = useState<'private' | 'friends' | 'public'>('private');

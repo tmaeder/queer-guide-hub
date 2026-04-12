@@ -32,7 +32,6 @@ import {
   Link2,
   Handshake,
   Workflow,
-  Zap,
   Hotel,
   Home,
   History,

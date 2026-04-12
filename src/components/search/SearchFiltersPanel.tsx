@@ -5,15 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane, Tag } from 'lucide-react';
 import { SearchFilters } from '@/hooks/useSearch';
-import { format } from 'date-fns';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface SearchFiltersPanelProps {
   filters: SearchFilters;

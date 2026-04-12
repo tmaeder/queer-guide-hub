@@ -11,11 +11,11 @@ export interface CountrySafety {
   scoreBreakdown: EqualityScoreBreakdown;
   criminalized: boolean;
   deathPenalty: boolean;
-  lgbti_criminalization: any;
-  lgbti_protection_employment: any;
-  lgbti_recognition_ssu: any;
-  lgbti_adoption: any;
-  lgbti_conversion_therapy: any;
+  lgbti_criminalization: unknown;
+  lgbti_protection_employment: unknown;
+  lgbti_recognition_ssu: unknown;
+  lgbti_adoption: unknown;
+  lgbti_conversion_therapy: unknown;
 }
 
 export interface CrossBorderWarning {
@@ -70,8 +70,8 @@ export function useTripSafety(countryIds: string[]) {
       code: c.code,
       equality_score: c.equality_score,
       scoreBreakdown: getScoreLabel(c.equality_score),
-      criminalized: isCriminalized(c.lgbti_criminalization as any),
-      deathPenalty: hasDeathPenalty(c.lgbti_criminalization as any),
+      criminalized: isCriminalized(c.lgbti_criminalization as string | null),
+      deathPenalty: hasDeathPenalty(c.lgbti_criminalization as string | null),
       lgbti_criminalization: c.lgbti_criminalization,
       lgbti_protection_employment: c.lgbti_protection_employment,
       lgbti_recognition_ssu: c.lgbti_recognition_ssu,

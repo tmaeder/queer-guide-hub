@@ -8,7 +8,7 @@ interface CityDataImportRequest {
   language?: string;
 }
 
-async function initializeSupabaseClient() {
+async function _initializeSupabaseClient() {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   
@@ -19,7 +19,7 @@ async function initializeSupabaseClient() {
   return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-async function callEdgeFunction(functionName: string, params: any = {}) {
+async function callEdgeFunction(functionName: string, params: unknown = {}) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   
   if (!supabaseUrl) {
@@ -46,7 +46,7 @@ async function callEdgeFunction(functionName: string, params: any = {}) {
   return await response.json();
 }
 
-async function getCitiesForProcessing(supabase: any, cityIds?: string[], action = 'fetch_all') {
+async function getCitiesForProcessing(supabase: unknown, cityIds?: string[], action = 'fetch_all') {
   let query = supabase
     .from('cities')
     .select('id, name, countries(name)')
@@ -78,7 +78,7 @@ async function getCitiesForProcessing(supabase: any, cityIds?: string[], action 
   return cities || [];
 }
 
-async function processImagesFetch(cities: any[], batchSize = 10) {
+async function processImagesFetch(cities: unknown[], batchSize = 10) {
   console.log(`Processing images for ${cities.length} cities...`);
   
   const results = [];
@@ -137,7 +137,7 @@ async function processImagesFetch(cities: any[], batchSize = 10) {
   return { results, successCount, errorCount };
 }
 
-async function processWikipediaFetch(cities: any[], language = 'en', batchSize = 5) {
+async function processWikipediaFetch(cities: unknown[], language = 'en', batchSize = 5) {
   console.log(`Processing Wikipedia data for ${cities.length} cities...`);
   
   const results = [];

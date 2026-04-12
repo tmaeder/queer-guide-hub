@@ -39,8 +39,8 @@ export const ComposeEmail: React.FC<ComposeEmailProps> = ({ replyTo, onSent, onC
     try {
       await sendEmail(to.trim(), subject.trim(), body, replyTo?.id);
       onSent?.();
-    } catch (err: any) {
-      setError(err.message || 'Failed to send email');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to send email');
     }
   };
 

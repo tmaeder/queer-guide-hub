@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -136,7 +135,7 @@ export default function AdminPersonalities() {
   };
 
   const handleExportExcel = async () => {
-    const cols: ExportColumnDef<any>[] = [
+    const cols: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Name', accessor: (r) => r.name },
       { header: 'Pronouns', accessor: (r) => r.pronouns },
       { header: 'Profession', accessor: (r) => r.profession },
@@ -415,6 +414,7 @@ export default function AdminPersonalities() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers are stable, adding would defeat memoization
     [columns],
   );
 

@@ -47,7 +47,7 @@ export function useSimilarTags(tagId: string | null, limit: number = 10) {
         p_tag_id: tagId,
         p_limit: limit,
         p_min_score: 0.7,
-      } as any);
+      } as Record<string, unknown>);
 
       if (error) {
         console.error('Error fetching similar tags:', error);
@@ -69,10 +69,10 @@ export function useTagGraph(minScore: number = 0.8, categoryFilter: string | nul
   return useQuery({
     queryKey: ['tag-graph', minScore, categoryFilter],
     queryFn: async (): Promise<GraphData> => {
-      const params: Record<string, any> = { p_min_score: minScore };
+      const params: Record<string, unknown> = { p_min_score: minScore };
       if (categoryFilter) params.p_category_filter = categoryFilter;
 
-      const { data, error } = await supabase.rpc('get_tag_graph_data', params as any);
+      const { data, error } = await supabase.rpc('get_tag_graph_data', params as Record<string, unknown>);
 
       if (error) {
         console.error('Error fetching tag graph data:', error);
@@ -98,7 +98,7 @@ export function useComputeTagSimilarities() {
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.rpc('compute_tag_similarities' as any);
+      const { data, error } = await supabase.rpc('compute_tag_similarities' as 'venues');
 
       if (error) throw error;
       return data as unknown as {

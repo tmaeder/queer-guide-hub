@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 // SECURITY FIX: Proper AES encryption for API keys
@@ -31,7 +30,7 @@ async function secureEncrypt(text: string): Promise<string> {
   return btoa(String.fromCharCode(...combined));
 }
 
-async function secureDecrypt(encryptedText: string): Promise<string> {
+async function _secureDecrypt(encryptedText: string): Promise<string> {
   const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY');
   if (!masterKey) throw new Error('MASTER_ENCRYPTION_KEY environment variable is not configured');
   const key = await crypto.subtle.importKey(
@@ -78,7 +77,7 @@ serve(async (req) => {
         .select('name, slug, requires_api_key, is_enabled, source_type')
         .not('requires_api_key', 'is', null);
 
-      const requiredKeys: any[] = [];
+      const requiredKeys: unknown[] = [];
       const seen = new Set<string>();
 
       for (const source of (sources || [])) {
@@ -209,7 +208,7 @@ serve(async (req) => {
         );
       }
 
-      const updateData: any = {};
+      const updateData: unknown = {};
       if (service_name !== undefined) updateData.service_name = service_name;
       if (key_name !== undefined) updateData.key_name = key_name;
       if (description !== undefined) updateData.description = description;

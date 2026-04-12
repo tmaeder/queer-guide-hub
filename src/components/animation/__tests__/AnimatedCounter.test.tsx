@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 vi.mock('motion/react', () => ({
-  motion: { span: (props: any) => <span {...props} /> },
+  motion: { span: (props: Record<string, unknown>) => <span {...props} /> },
   useInView: () => true,
   useMotionValue: () => ({ on: () => () => {}, set: vi.fn(), get: () => 0 }),
   animate: vi.fn(() => ({ stop: vi.fn() })),

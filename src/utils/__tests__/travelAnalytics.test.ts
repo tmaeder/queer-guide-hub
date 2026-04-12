@@ -6,11 +6,11 @@ describe('trackTravelEvent', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (window as any).umami = { track: mockTrack };
+    (window as unknown as Record<string, unknown>).umami = { track: mockTrack };
   });
 
   afterEach(() => {
-    delete (window as any).umami;
+    delete (window as unknown as Record<string, unknown>).umami;
   });
 
   it('should call umami.track with prefixed event name', () => {
@@ -37,12 +37,12 @@ describe('trackTravelEvent', () => {
   });
 
   it('should not throw when umami is not available', () => {
-    delete (window as any).umami;
+    delete (window as unknown as Record<string, unknown>).umami;
     expect(() => trackTravelEvent('origin_failed')).not.toThrow();
   });
 
   it('should not throw when umami.track is undefined', () => {
-    (window as any).umami = {};
+    (window as unknown as Record<string, unknown>).umami = {};
     expect(() => trackTravelEvent('url_generation_failure')).not.toThrow();
   });
 

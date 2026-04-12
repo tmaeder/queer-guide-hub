@@ -21,7 +21,7 @@ export interface Personality {
   fields: string[];
   achievements: string[];
   image_url?: string;
-  social_links: Record<string, any>;
+  social_links: Record<string, unknown>;
   website_url?: string;
   nationality?: string;
   birth_place?: string;
@@ -71,10 +71,10 @@ function transformRow(row: PersonalityRow): Personality {
     nationality: row.nationality || undefined,
     birth_place: row.birth_place || undefined,
     created_by: row.created_by || undefined,
-    slug: (row as any).slug || undefined,
+    slug: (row as Record<string, unknown>).slug as string || undefined,
     fields: Array.isArray(row.fields) ? (row.fields as string[]) : [],
     achievements: Array.isArray(row.achievements) ? (row.achievements as string[]) : [],
-    social_links: (row.social_links as Record<string, any>) || {},
+    social_links: (row.social_links as Record<string, unknown>) || {},
     tags: row.tags || [],
     verification_status:
       (row.verification_status as 'pending' | 'verified' | 'disputed') || 'pending',
@@ -82,7 +82,7 @@ function transformRow(row: PersonalityRow): Personality {
   };
 }
 
-function applyFilters(query: any, filters?: PersonalityFilters) {
+function applyFilters(query: ReturnType<typeof supabase.from>, filters?: PersonalityFilters) {
   if (!filters) return query;
 
   if (filters.search) {
@@ -130,7 +130,7 @@ function applyFilters(query: any, filters?: PersonalityFilters) {
   return query;
 }
 
-function applySort(query: any, sortBy: PersonalitySort = 'featured') {
+function applySort(query: ReturnType<typeof supabase.from>, sortBy: PersonalitySort = 'featured') {
   switch (sortBy) {
     case 'az':
       return query
@@ -240,8 +240,8 @@ export function usePersonalities(autoFetch: boolean = true) {
         death_date: personality.death_date || null,
         is_living: personality.is_living,
         profession: personality.profession || null,
-        fields: personality.fields as any,
-        achievements: personality.achievements as any,
+        fields: personality.fields as string[],
+        achievements: personality.achievements as string[],
         image_url: personality.image_url || null,
         social_links: personality.social_links,
         website_url: personality.website_url || null,
@@ -308,7 +308,7 @@ export function usePersonalities(autoFetch: boolean = true) {
     if (autoFetch) {
       fetchPersonalities();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [autoFetch]);
 
   return {
@@ -353,7 +353,7 @@ export function useFeaturedPersonalities(limit: number = 8) {
           return;
         }
         setFeatured((data || []).map(transformRow));
-      } catch (err) {
+      } catch (_err) {
         if (!cancelled) setError('Failed to load featured personalities');
       } finally {
         if (!cancelled) setLoading(false);
@@ -407,7 +407,7 @@ export function useProfessionFacets(limit: number = 15) {
           setFacets([]);
           return;
         }
-        const rows: ProfessionFacet[] = (data || []).map((row: any) => ({
+        const rows: ProfessionFacet[] = (data || []).map((row: Record<string, unknown>) => ({
           profession: row.profession,
           count: Number(row.cnt ?? row.count ?? 0),
         }));

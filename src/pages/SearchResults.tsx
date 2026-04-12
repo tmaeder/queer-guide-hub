@@ -46,7 +46,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
-const contentTypeIcons: Record<string, any> = {
+const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
   venue: MapPin,
   venues: MapPin,
   event: Calendar,
@@ -130,6 +130,7 @@ export default function SearchResults() {
       params.delete('sort');
     }
     setSearchParams(params);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- searchParams/setSearchParams are from useSearchParams, stable refs; only re-run on sortBy
   }, [sortBy]);
 
   const getResultsByType = () => {
@@ -534,7 +535,7 @@ export default function SearchResults() {
     {} as Record<string, SearchResult[]>,
   );
 
-  const availableTabs = ['all', ...Object.keys(resultsByType)];
+  const _availableTabs = ['all', ...Object.keys(resultsByType)];
 
   return (
     <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>

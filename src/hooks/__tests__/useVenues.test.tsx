@@ -7,11 +7,11 @@ const { mockQueryResult } = vi.hoisted(() => ({
 
 // Create a chainable mock that returns itself for any method call,
 // except the final call returns the mock result
-function createChainableMock(): any {
-  const handler: ProxyHandler<any> = {
+function createChainableMock(): unknown {
+  const handler: ProxyHandler<object> = {
     get: (_target, prop) => {
       if (prop === 'then') return undefined; // Not a promise
-      return (..._args: any[]) => new Proxy(() => {}, handler);
+      return (..._args: unknown[]) => new Proxy(() => {}, handler);
     },
     apply: () => new Proxy(() => {}, handler),
   };

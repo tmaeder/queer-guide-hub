@@ -63,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from('user_roles')
       .select('role')
       .eq('user_id', authData.user.id);
-    const isAdmin = roles?.some((r: any) => r.role === 'admin');
+    const isAdmin = roles?.some((r: Record<string, unknown>) => r.role === 'admin');
     if (rolesError || !isAdmin) {
       console.warn("Forbidden: non-admin attempted to send templated email", { rolesError });
       return new Response(
@@ -122,7 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Process template variables
     const templateVariables = Array.isArray(template.variables) ? template.variables : [];
-    templateVariables.forEach((variable: any) => {
+    templateVariables.forEach((variable: unknown) => {
       const value = variables[variable.name] || `{{${variable.name}}}`;
       const regex = new RegExp(`\\{\\{${escapeRegExp(variable.name)}\\}\\}`, 'g');
       htmlContent = htmlContent.replace(regex, escapeHtml(value));
@@ -178,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in send-templated-email function:", error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),

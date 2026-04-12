@@ -172,8 +172,8 @@ export const useDirectory = () => {
             Number(city.longitude)
           )
         }))
-        .filter((city: any) => city.distance <= 500) // Within 500km
-        .sort((a: any, b: any) => a.distance - b.distance)
+        .filter((city: { distance: number }) => city.distance <= 500) // Within 500km
+        .sort((a: { distance: number }, b: { distance: number }) => a.distance - b.distance)
         .slice(0, 20); // Show top 20 closest cities
 
       setCities(citiesWithDistance);

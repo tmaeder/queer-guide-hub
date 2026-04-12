@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useImportHub, PipelineJob } from '@/hooks/useImportHub';
 import {
-  RefreshCw, Activity, CheckCircle, AlertTriangle, Clock,
+  RefreshCw, Activity, CheckCircle, AlertTriangle,
   ArrowRight, Zap, Eye, Brain, GitMerge, Sparkles, Database, DollarSign
 } from 'lucide-react';
 import { brandColors } from '@/theme/muiTheme';
@@ -142,7 +142,7 @@ export const PipelineMonitor = () => {
           {jobs.map((job) => {
             const currentStageIdx = getStageIndex(job.pipeline_stage);
             const progress = getStageProgress(job.pipeline_stage);
-            const totalProcessed = (job.items_ai_approved || 0) + (job.items_ai_rejected || 0) + (job.items_needs_review || 0);
+            const _totalProcessed = (job.items_ai_approved || 0) + (job.items_ai_rejected || 0) + (job.items_needs_review || 0);
 
             return (
               <Card key={job.id} style={{ backgroundColor: 'var(--card)' }}>

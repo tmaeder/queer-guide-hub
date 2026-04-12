@@ -29,7 +29,6 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { useAuth } from '@/hooks/useAuth';
 import { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
-import { getTimezoneAbbr } from '@/utils/timezone';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { EntityMap } from '@/components/map/EntityMap';
@@ -65,7 +64,7 @@ type Event = Database['public']['Tables']['events']['Row'] & {
     id: string;
     name: string;
     equality_score: number | null;
-    lgbti_criminalization: Record<string, any> | null;
+    lgbti_criminalization: Record<string, unknown> | null;
   } | null;
   festivals?: { id: string; name: string } | null;
   event_attendees?: Array<{
@@ -127,12 +126,12 @@ export default function EventDetail() {
         const fullEvent = { ...eventData, event_attendees: attendeesData || [] };
         setEvent(fullEvent);
 
-        const userAttendee = attendeesData?.find((a: any) => a.user_id === user.id);
+        const userAttendee = attendeesData?.find((a: { user_id: string; status: string }) => a.user_id === user.id);
         setUserAttendance(userAttendee?.status || null);
       } else {
         setEvent({ ...eventData, event_attendees: [] });
       }
-    } catch (error) {
+    } catch (_error) {
       setFetchError(true);
       toast({ title: 'Error', description: 'Failed to load event details.', variant: 'destructive' });
     }
@@ -146,6 +145,7 @@ export default function EventDetail() {
       setLoading(false);
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchEventData defined below, re-run on slug/user change
   }, [slug, user]);
 
   const handleAttendanceUpdate = async (status: 'going' | 'interested' | 'not_going') => {

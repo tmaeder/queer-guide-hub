@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useApiKeys, ApiKey, CreateApiKeyRequest, RequiredKeyStatus } from '@/hooks/useApiKeys';
+import { useApiKeys, ApiKey, CreateApiKeyRequest } from '@/hooks/useApiKeys';
 import { ChatGPTConnection } from './ChatGPTConnection';
 import {
   Plus,
@@ -108,7 +108,7 @@ export const ApiKeysManager = () => {
     createApiKey,
     updateApiKey,
     deleteApiKey,
-    toggleApiKey,
+    toggleApiKey: _toggleApiKey,
     refreshKeys,
   } = useApiKeys();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -144,7 +144,7 @@ export const ApiKeysManager = () => {
     e.preventDefault();
     if (!editingKey) return;
     try {
-      const updateData: any = { description: editForm.description, is_active: editForm.is_active };
+      const updateData: Record<string, unknown> = { description: editForm.description, is_active: editForm.is_active };
       if (editForm.service_name && editForm.service_name !== editingKey.service_name)
         updateData.service_name = editForm.service_name;
       if (editForm.key_name && editForm.key_name !== editingKey.key_name)

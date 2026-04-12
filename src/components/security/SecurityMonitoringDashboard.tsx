@@ -16,12 +16,12 @@ interface SecurityEvent {
   severity: string;
   user_id?: string;
   target_user_id?: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 
 export function SecurityMonitoringDashboard() {
-  const { user } = useAuth();
+  const { _user } = useAuth();
   const { isAdmin } = useAdminRoles();
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [loading, setLoading] = useState(true);

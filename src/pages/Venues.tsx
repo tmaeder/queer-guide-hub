@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { MapPin, Plus, Grid, Map, SortAsc, SortDesc, Filter } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import Container from '@mui/material/Container';
@@ -30,7 +29,7 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 
 const Venues = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { _user } = useAuth();
   const { venues, loading, error, hasMore, fetchVenues, loadingTimedOut } = useVenues(false);
 
   useMeta({
@@ -48,8 +47,8 @@ const Venues = () => {
     },
   });
   const { events } = useEvents();
-  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [currentFilters, setCurrentFilters] = useState<any>({});
+  const [_selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>({});
   const [sortBy, setSortBy] = useState<string>('featured');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -59,7 +58,7 @@ const Venues = () => {
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
   // removed duplicate pagination state
-  const handleFiltersChange = async (filters: any) => {
+  const handleFiltersChange = async (filters: Record<string, unknown>) => {
     setCurrentFilters(filters);
     setPage(1);
     setAutoLoadedCount(0);
@@ -110,7 +109,7 @@ const Venues = () => {
 
     // Regular sorting for other options
     return [...venues].sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: string | Date, bValue: string | Date;
 
       switch (sortBy) {
         case 'name':
@@ -163,7 +162,7 @@ const Venues = () => {
         if (entry.isIntersecting && !loading && hasMore && autoLoadedCount < 50) {
           const nextPage = page + 1;
           setPage(nextPage);
-          const result: any = await fetchVenues(currentFilters, {
+          const result = await fetchVenues(currentFilters, {
             page: nextPage,
             pageSize: PAGE_SIZE,
             append: true,
@@ -177,6 +176,7 @@ const Venues = () => {
 
     observer.observe(el);
     return () => observer.unobserve(el);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVenues is stable from hook, re-run on scroll/filter state changes
   }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
   return (
     <Box sx={{ minHeight: '100vh' }}>

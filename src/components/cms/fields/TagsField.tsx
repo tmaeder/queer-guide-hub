@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { FieldWrapper } from './FieldWrapper';
 import type { FieldProps } from './FieldRenderer';
 import { X } from 'lucide-react';
@@ -73,6 +72,8 @@ export function TagsField({ field, value, onChange, error, disabled }: FieldProp
   return (
     <FieldWrapper field={field} error={error}>
       <div
+        role="button"
+        tabIndex={0}
         className={`
           rounded-lg border border-input bg-muted/30 p-2 min-h-[42px]
           flex flex-wrap items-center gap-1.5
@@ -80,6 +81,7 @@ export function TagsField({ field, value, onChange, error, disabled }: FieldProp
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-text'}
         `}
         onClick={() => inputRef.current?.focus()}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.focus(); } }}
       >
         {/* Tag badges */}
         {tags.map((tag) => (

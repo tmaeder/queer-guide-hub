@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Search, Merge, Database, Clock, AlertTriangle, Zap,
+  Search, Merge, Database,
   Inbox, RefreshCw, History,
 } from 'lucide-react';
 import {
@@ -322,7 +322,7 @@ function MergeHistorySection() {
             </Typography>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {history.map((entry: any) => {
+              {history.map((entry: Record<string, unknown>) => {
                 const details = entry.details || {};
                 return (
                   <Box

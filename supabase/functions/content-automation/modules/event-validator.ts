@@ -5,15 +5,14 @@
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import {
-  fetchBatch, getContentName, CONTENT_TYPE_CONFIG,
+  fetchBatch, CONTENT_TYPE_CONFIG,
   type ModuleConfig, type SharedRefs, type ProposedChange, type AutomationRule,
 } from '../../_shared/automation-utils.ts'
 import {
   checkTimeWindow, checkDayOfWeek, checkTimeOrder,
   findTimePlaceDuplicates, pickPrimary, computeMergeChanges,
   findDuplicateAddressVenues, findSimilarNameSameStreetVenues,
-  type EventRecord, type VenueRecord, type ValidationIssue, type TimeWindowConfig,
-  type DayCheckConfig, type DedupConfig, type DuplicatePair, type VenueDuplicatePair,
+  type EventRecord, type VenueRecord, type ValidationIssue, type DedupConfig, type DuplicatePair, type VenueDuplicatePair,
 } from '../../_shared/event-validation-rules.ts'
 import {
   upsertModerationFlag, loadExistingAutomationFlags,

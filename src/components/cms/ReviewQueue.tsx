@@ -109,7 +109,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     setActionError(null);
     try {
       const { data, error } = await supabase
-        .from('cms_content_metadata' as any)
+        .from('cms_content_metadata' as 'events')
         .select('*')
         .eq('workflow_state', 'review')
         .order('last_edited_at', { ascending: false });
@@ -125,7 +125,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
         if (!config) continue;
 
         const { data: record } = await supabase
-          .from(config.tableName as any)
+          .from(config.tableName as 'events')
           .select(config.titleField)
           .eq(config.primaryKey, meta.source_id)
           .single();
@@ -246,11 +246,11 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
     setBulkLoading(true);
     setActionError(null);
-    let successCount = 0;
+    const _successCount = 0;
 
     for (const item of items) {
       const ok = await transition(item.metadata.source_table, item.metadata.source_id, 'published');
-      if (ok) successCount++;
+      if (ok) _successCount++;
     }
 
     setBulkLoading(false);

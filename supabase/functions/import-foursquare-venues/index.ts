@@ -12,7 +12,7 @@ interface VenueImportRequest {
 }
 
 // Validation functions
-function validateImportRequest(data: any): VenueImportRequest {
+function _validateImportRequest(data: unknown): VenueImportRequest {
   if (!data || typeof data !== 'object') {
     throw new Error('Invalid request body');
   }
@@ -37,7 +37,7 @@ function validateImportRequest(data: any): VenueImportRequest {
   };
 }
 
-function sanitizeVenueData(venue: FoursquareVenue): any {
+function sanitizeVenueData(venue: FoursquareVenue): unknown {
   // Remove any potentially harmful data and validate required fields
   if (!venue.fsq_id || !venue.name || !venue.geocodes?.main) {
     throw new Error('Invalid venue data: missing required fields');
@@ -66,7 +66,7 @@ function sanitizeVenueData(venue: FoursquareVenue): any {
   };
 }
 
-async function mapVenueCategory(supabase: any, categoryName: string) {
+async function mapVenueCategory(supabase: unknown, categoryName: string) {
   let venueCategory = 'Entertainment & Nightlife'
   let categorySlug = 'entertainment-nightlife'
 
@@ -86,7 +86,7 @@ async function mapVenueCategory(supabase: any, categoryName: string) {
   }
 }
 
-async function mapAmenitiesAndServices(supabase: any, venue: FoursquareVenue, categoryName: string) {
+async function mapAmenitiesAndServices(supabase: unknown, venue: FoursquareVenue, categoryName: string) {
   const amenityIds = []
   const serviceIds = []
   const amenityNames = []
@@ -241,7 +241,7 @@ interface FoursquareVenue {
   store_id?: string
 }
 
-const FOURSQUARE_CATEGORIES = {
+const _FOURSQUARE_CATEGORIES = {
   'LGBTQ Organization': '19065',
   'Gay Bar': '13003'
 }
@@ -278,8 +278,8 @@ Deno.serve(async (req) => {
     const searchTerms = config.searchTerms || ['LGBTQ friendly bar', 'gay bar'];
     const limit = Math.min(config.limit || 5, 20); // Limit venues per search to prevent timeouts
     const radius = config.radius || 30000;
-    const includeImages = config.includeImages !== false;
-    const includeReviews = config.includeReviews || false;
+    const _includeImages = config.includeImages !== false;
+    const _includeReviews = config.includeReviews || false;
     const isReimport = config.isReimport || false;
     const minRating = config.filters?.minRating;
     
@@ -303,7 +303,7 @@ Deno.serve(async (req) => {
     let totalUpdated = 0
 
     // Reduced city list for faster processing
-    const majorCities = [
+    const _majorCities = [
       { name: 'New York', lat: 40.7128, lng: -74.0060, country: 'US' },
       { name: 'Los Angeles', lat: 34.0522, lng: -118.2437, country: 'US' },
       { name: 'San Francisco', lat: 37.7749, lng: -122.4194, country: 'US' },
@@ -408,14 +408,14 @@ Deno.serve(async (req) => {
               // Get or create city
               const cityName = venue.location.locality || location.split(',')[0].trim()
               const countryCode = venue.location.country || 'US'
-              const cityId = await getOrCreateCity(supabase, cityName, countryCode, venue.geocodes.main.latitude, venue.geocodes.main.longitude)
+              const _cityId = await getOrCreateCity(supabase, cityName, countryCode, venue.geocodes.main.latitude, venue.geocodes.main.longitude)
 
               // Determine category from venue categories or default to Gay Bar
               const venueCategoryName = venue.categories?.[0]?.name || 'Gay Bar'
-              const { categorySlug, categoryId: venueCategoryId } = await mapVenueCategory(supabase, venueCategoryName)
+              const { categorySlug, categoryId: _venueCategoryId } = await mapVenueCategory(supabase, venueCategoryName)
 
               // Map amenities and services
-              const { amenityIds, serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, venue, venueCategoryName)
+              const { _amenityIds, _serviceIds, amenityNames, serviceNames } = await mapAmenitiesAndServices(supabase, venue, venueCategoryName)
 
               // Process photos from Foursquare
               const imageUrls = venue.photos?.slice(0, 3).map(photo => {

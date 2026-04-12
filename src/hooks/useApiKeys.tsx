@@ -85,11 +85,11 @@ export function useApiKeys() {
       });
 
       return data.key;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating API key:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create API key',
+        description: error instanceof Error ? error.message : 'Failed to create API key',
         variant: 'destructive',
       });
       throw error;
@@ -112,11 +112,11 @@ export function useApiKeys() {
       });
 
       return data.key;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating API key:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update API key',
+        description: error instanceof Error ? error.message : 'Failed to update API key',
         variant: 'destructive',
       });
       throw error;
@@ -137,11 +137,11 @@ export function useApiKeys() {
         title: 'Success',
         description: 'API key deleted successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting API key:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete API key',
+        description: error instanceof Error ? error.message : 'Failed to delete API key',
         variant: 'destructive',
       });
       throw error;
@@ -154,6 +154,7 @@ export function useApiKeys() {
 
   useEffect(() => {
     loadKeyStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   return {

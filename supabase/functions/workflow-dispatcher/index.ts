@@ -1,5 +1,5 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { getCorsHeaders, jsonResponse, errorResponse, corsResponse, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts'
+import { jsonResponse, errorResponse, corsResponse, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts'
 
 // Queue configuration: name → visibility timeout in seconds
 const QUEUE_CONFIG: Record<string, number> = {
@@ -224,7 +224,7 @@ async function handleDispatch(
       }
 
       // Merge default payload with message payload
-      const { workflow, triggered_by, idempotency_key: _idk, ...messagePayload } = msg.message
+      const { _workflow, _triggered_by, idempotency_key: _idk, ...messagePayload } = msg.message
       const mergedPayload = { ...def.default_payload, ...messagePayload }
 
       const { data: run, error: insertError } = await supabase
@@ -436,7 +436,7 @@ async function handleEnqueue(
 
   if (error || !def) return errorResponse(`Unknown workflow: ${workflowName}`, 404)
 
-  const { workflow, action, ...restPayload } = payload
+  const { _workflow, _action, ...restPayload } = payload
   const msgPayload = {
     workflow: workflowName,
     triggered_by: 'admin',

@@ -13,8 +13,8 @@ export interface UniversalContent {
   updated_at: string;
   created_by?: string;
   image_url?: string;
-  metadata?: any;
-  raw_data: any;
+  metadata?: Record<string, unknown>;
+  raw_data: Record<string, unknown>;
 }
 
 export interface ContentTypeStats {
@@ -81,7 +81,7 @@ export function useUniversalCMS() {
   // Core pagination fetch function with explicit queries to avoid TypeScript deep inference
   const fetchContentByType = async (contentType: string, limit: number, offset: number, search: string, status?: string) => {
     try {
-      let queryResult: any;
+      let queryResult: { data: Record<string, unknown>[] | null; error: { message: string } | null; count: number | null };
 
       // Use explicit queries for each type to avoid TypeScript issues
       switch (contentType) {
@@ -124,7 +124,7 @@ export function useUniversalCMS() {
             // Ensure status is a valid workflow_state value
             const validStates = ['draft', 'review', 'published', 'archived'];
             if (validStates.includes(status)) {
-              query = query.eq('workflow_state', status as any);
+              query = query.eq('workflow_state', status as string);
             }
           }
           queryResult = await query.order('updated_at', { ascending: false }).range(offset, offset + limit - 1);
@@ -169,7 +169,7 @@ export function useUniversalCMS() {
       if (error) throw error;
 
       return {
-        data: (data || []).map((item: any) => transformContentItem(item, contentType)),
+        data: (data || []).map((item: Record<string, unknown>) => transformContentItem(item, contentType)),
         totalCount: count || 0
       };
     } catch (error) {
@@ -179,7 +179,7 @@ export function useUniversalCMS() {
   };
 
   // Transform function
-  const transformContentItem = (item: any, contentType: string): UniversalContent => {
+  const transformContentItem = (item: Record<string, unknown>, contentType: string): UniversalContent => {
     const baseItem = {
       id: item.id,
       content_type: contentType,
@@ -448,6 +448,7 @@ export function useUniversalCMS() {
   useEffect(() => {
     fetchAllContent();
     fetchContentStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   return {

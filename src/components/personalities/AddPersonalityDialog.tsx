@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, X, Upload, ImageIcon, Search, Loader2, Check, Globe } from "lucide-react";
-import { usePersonalities, Personality } from "@/hooks/usePersonalities";
+import { Plus, X, Upload, ImageIcon, Search, Loader2, Check } from "lucide-react";
+import { usePersonalities } from "@/hooks/usePersonalities";
 import { useAddressResolver } from "@/hooks/useAddressResolver";
 import { CountryAutocomplete } from "@/components/ui/country-autocomplete";
 import { toast } from "@/hooks/use-toast";
@@ -83,7 +83,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [lookupLoading, setLookupLoading] = useState(false);
   const [selectionDialogOpen, setSelectionDialogOpen] = useState(false);
-  const [candidates, setCandidates] = useState<any[]>([]);
+  const [candidates, setCandidates] = useState<Array<{ id: string; name: string; description?: string }>>([]);
 
   const handleFieldToggle = (field: string) => {
     setFormData(prev => ({
@@ -268,7 +268,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     }
   };
 
-  const handleCandidateSelection = async (candidate: any) => {
+  const handleCandidateSelection = async (candidate: { id: string; name: string; description?: string }) => {
     setLookupLoading(true);
 
     try {
@@ -297,7 +297,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     }
   };
 
-  const prefillFormData = (personalityData: any) => {
+  const prefillFormData = (personalityData: Record<string, unknown>) => {
     setFormData(prev => ({
       ...prev,
       name: personalityData.name || prev.name,
@@ -348,7 +348,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
     try {
       console.log('Calling createPersonality...');
-      const personalityData: Record<string, any> = {
+      const personalityData: Record<string, unknown> = {
         ...formData,
         social_links: {},
       };

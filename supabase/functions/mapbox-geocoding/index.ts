@@ -43,7 +43,7 @@ function buildCors(origin: string) {
 /**
  * Build a Mapbox-compatible place_name string from Photon properties.
  */
-function buildPlaceName(props: Record<string, any>): string {
+function buildPlaceName(props: Record<string, unknown>): string {
   const parts: string[] = [];
   if (props.housenumber && props.street) {
     parts.push(`${props.street} ${props.housenumber}`);
@@ -62,7 +62,7 @@ function buildPlaceName(props: Record<string, any>): string {
  * Transform a Photon GeoJSON feature into a Mapbox-compatible feature.
  * The frontend expects: { id, place_name, center: [lng, lat], context }
  */
-function photonToMapbox(feature: any): any {
+function photonToMapbox(feature: unknown): unknown {
   const props = feature.properties || {};
   const coords = feature.geometry?.coordinates || [0, 0]; // [lng, lat]
 

@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from 'lucide-react';
 import { Country, City } from '@/hooks/useDirectory';
 import { useState, useEffect } from 'react';
@@ -9,7 +8,7 @@ import { useCityImages } from '@/hooks/useCityImages';
 interface DirectoryCardProps {
   type: 'continent' | 'country' | 'city';
   name: string;
-  data?: Country | City | any;
+  data?: Country | City | unknown;
   onClick?: () => void;
 }
 export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps) => {
@@ -119,7 +118,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     data?.countries?.name,
     data?.country_name,
   ]);
-  const refreshImage = () => {
+  const _refreshImage = () => {
     setImageKey((prev) => prev + 1);
   };
   const formatPopulation = (population?: number | null) => {
@@ -267,6 +266,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           ) : (
             <img
               loading="lazy"
+              role="presentation"
               src={
                 countryImage ||
                 `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`
@@ -315,6 +315,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           ) : cityImageUrl && !cityImageError ? (
             <img
               loading="lazy"
+              role="presentation"
               src={cityImageUrl}
               alt={`${name} cityscape`}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -386,5 +387,5 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
   }
 
   // For continents or items without detail pages, use onClick
-  return <div onClick={onClick}>{cardContent}</div>;
+  return <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}>{cardContent}</div>;
 };

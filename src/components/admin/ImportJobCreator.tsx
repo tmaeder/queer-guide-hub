@@ -157,7 +157,7 @@ export const ImportJobCreator = () => {
       .then(({ data }) => {
         if (data)
           setAllCities(
-            data.map((c: any) => ({ name: c.name, country: (c.countries as any)?.name || '' })),
+            data.map((c: { name: string; countries?: { name?: string } }) => ({ name: c.name, country: c.countries?.name || '' })),
           );
       });
   }, []);
@@ -219,7 +219,7 @@ export const ImportJobCreator = () => {
 
     if (selected.mode === 'scraper') {
       try {
-        let body: Record<string, any> = {};
+        let body: Record<string, unknown> = {};
         let desc = '';
         if (importType === 'scrape-gaycities-events') {
           const cityInfoMap: Record<string, { displayName: string; country: string }> = {};
@@ -274,7 +274,7 @@ export const ImportJobCreator = () => {
     }
   };
 
-  const handleVenueImport = async (config: any) => {
+  const handleVenueImport = async (config: Record<string, unknown>) => {
     try {
       await createImportJob(importType, 'api', {
         duplicateStrategy,
@@ -411,7 +411,7 @@ export const ImportJobCreator = () => {
                       <Label>Duplicates</Label>
                       <Select
                         value={duplicateStrategy}
-                        onValueChange={(v) => setDuplicateStrategy(v as any)}
+                        onValueChange={(v) => setDuplicateStrategy(v as 'skip' | 'update' | 'create')}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -712,7 +712,7 @@ export const ImportJobCreator = () => {
         <VenueImportDialog
           open={showVenueImportDialog}
           onOpenChange={setShowVenueImportDialog}
-          provider={(selected as any).provider}
+          provider={(selected as Record<string, unknown>).provider as string}
           onImport={handleVenueImport}
           isImporting={loading}
         />

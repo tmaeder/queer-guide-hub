@@ -149,12 +149,13 @@ export function useFlyerScan() {
             };
 
             setResults((prev) => [...prev, scanResult]);
-          } catch (err: any) {
+          } catch (err: unknown) {
+            const errMsg = err instanceof Error ? err.message : String(err);
             console.error(`Flyer scan error (file ${i + 1}):`, err);
-            fileErrors.push(`${file.name}: ${err.message}`);
+            fileErrors.push(`${file.name}: ${errMsg}`);
             // Rate limit error — stop processing remaining files
-            if (err.message?.includes('scan limit')) {
-              setError(err.message);
+            if (errMsg?.includes('scan limit')) {
+              setError(errMsg);
               setScanState('error');
               return;
             }
@@ -171,9 +172,9 @@ export function useFlyerScan() {
           }
           return prev;
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Flyer scan error:', err);
-        setError(err.message || 'Failed to analyze files');
+        setError(err instanceof Error ? err.message : 'Failed to analyze files');
         setScanState('error');
       }
     },

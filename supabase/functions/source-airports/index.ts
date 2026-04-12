@@ -15,7 +15,7 @@ const airportsAdapter: SourceAdapter = {
   name: 'airports',
   entityType: 'airport',
 
-  async fetch(config: AdapterConfig): Promise<RawItem[]> {
+  async fetch(_config: AdapterConfig): Promise<RawItem[]> {
     const supabase = getServiceClient()
 
     const [airportsData, citiesData] = await withCircuitBreaker(supabase, 'travelpayouts', async () => {

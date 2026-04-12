@@ -121,6 +121,7 @@ export function AdminEditDialog({
         setLogLoading(false);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchEditLog is stable, only re-run on open/contentType/contentId change
   }, [open, contentType, contentId]);
 
   const handleChange = (key: string, value: unknown) => {
@@ -395,7 +396,7 @@ export function AdminEditDialog({
     const isReadOnly = field.readOnly === true;
     const isEnriched = enrichedFields.has(field.name);
     const enrichedSx = isEnriched
-      ? { '& .MuiOutlinedInput-root': { borderColor: 'brand.main', boxShadow: (t: any) => `0 0 0 1px ${t.palette.brand.main}` } }
+      ? { '& .MuiOutlinedInput-root': { borderColor: 'brand.main', boxShadow: (t: { palette: { brand: { main: string } } }) => `0 0 0 1px ${t.palette.brand.main}` } }
       : {};
 
     switch (field.type) {

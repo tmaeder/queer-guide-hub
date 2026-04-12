@@ -17,8 +17,6 @@ import {
   Settings,
   Calendar,
   MessageSquare,
-  Image as ImageIcon,
-  MapPin,
   Clock,
   Shield,
   Crown,
@@ -153,7 +151,7 @@ export default function GroupDetail() {
   }
 
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
-  const isOwner = group.user_role === 'admin';
+  const _isOwner = group.user_role === 'admin';
 
   return (
     <Box
@@ -445,7 +443,7 @@ export default function GroupDetail() {
                 <GroupMembersList
                   members={groupMembers}
                   canManage={canManage}
-                  onStartConversation={(userId) => {
+                  onStartConversation={(_userId) => {
                     // TODO: Implement conversation starting
                     toast({
                       title: 'Not yet available',

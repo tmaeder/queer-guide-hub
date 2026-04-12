@@ -96,8 +96,8 @@ export default function AdminVenueCategories() {
       }
       setDialogOpen(false);
       invalidateTable();
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to save');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save');
     }
   };
 
@@ -206,6 +206,7 @@ export default function AdminVenueCategories() {
         </Button>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete is stable in practice, adding would defeat memoization
     [columns],
   );
 

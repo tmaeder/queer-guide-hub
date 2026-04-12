@@ -98,7 +98,7 @@ export const NewsCard = ({
         }
 
         if (data) {
-          const tagNames = data.map((item: any) => item.unified_tags.name);
+          const tagNames = data.map((item: { unified_tags: { name: string } }) => item.unified_tags.name);
           setTags(tagNames);
         }
       } catch (error) {
@@ -179,10 +179,10 @@ export const NewsCard = ({
   // Resolve city/country names from IDs
   const linkedCities = (article.city_ids || [])
     .map((id: string) => ({ id, name: cityNames[id] }))
-    .filter((c: any) => c.name);
+    .filter((c: { id: string; name: string | undefined }) => c.name);
   const linkedCountries = (article.country_ids || [])
     .map((id: string) => ({ id, name: countryNames[id] }))
-    .filter((c: any) => c.name);
+    .filter((c: { id: string; name: string | undefined }) => c.name);
   const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
 
   return (
@@ -200,6 +200,7 @@ export const NewsCard = ({
           {article.image_url ? (
             <img
               loading="lazy"
+              role="presentation"
               src={article.image_url}
               alt={decodeHtmlEntities(article.title)}
               style={{
@@ -310,12 +311,24 @@ export const NewsCard = ({
           {/* Clickable source badge */}
           <Badge
             variant="outline"
+            role="button"
+            tabIndex={0}
             style={{ fontSize: '0.75rem', cursor: onFilterBySource ? 'pointer' : 'default' }}
             onClick={(e) => {
               e.stopPropagation();
               const src = sourcesMap[article.source_id];
               if (onFilterBySource && src?.id) {
                 onFilterBySource(src.id, src.name);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                const src = sourcesMap[article.source_id];
+                if (onFilterBySource && src?.id) {
+                  onFilterBySource(src.id, src.name);
+                }
               }
             }}
           >
@@ -431,7 +444,7 @@ export const NewsCard = ({
             onClick={(e) => e.stopPropagation()}
           >
             <MapPin style={{ height: 14, width: 14, flexShrink: 0 }} />
-            {linkedCities.map((city: any, i: number) => (
+            {linkedCities.map((city: { id: string; name: string | undefined; slug?: string }, i: number) => (
               <span key={city.id}>
                 <Link
                   to={`/city/${city.slug || city.id}`}
@@ -442,7 +455,7 @@ export const NewsCard = ({
                 {(i < linkedCities.length - 1 || linkedCountries.length > 0) && ', '}
               </span>
             ))}
-            {linkedCountries.map((country: any, i: number) => (
+            {linkedCountries.map((country: { id: string; name: string | undefined; slug?: string }, i: number) => (
               <span key={country.id}>
                 <Link
                   to={`/country/${country.slug || country.id}`}

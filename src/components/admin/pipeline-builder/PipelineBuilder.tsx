@@ -4,7 +4,6 @@ import {
   Background,
   Controls,
   MiniMap,
-  ReactFlowProvider,
   type DragEvent,
   type Node,
 } from '@xyflow/react';
@@ -68,7 +67,7 @@ function PipelineBuilderInner() {
           setActiveRunId(data.pipeline_run_id as string);
         }
       },
-    } as any);
+    } as Record<string, unknown>);
   }, [run]);
 
   const nodeTypesByCategory = useMemo(() => {
@@ -155,6 +154,8 @@ function PipelineBuilderInner() {
                       return (
                         <div
                           key={nt.slug}
+                          role="button"
+                          tabIndex={0}
                           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, cursor: 'grab', fontSize: 13 }}
                           draggable
                           onDragStart={(e) => onDragStart(e as unknown as DragEvent<HTMLDivElement>, nt)}
@@ -227,9 +228,9 @@ function PipelineBuilderInner() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
-            onDrop={onDrop as any}
-            onDragOver={onDragOver as any}
-            onNodeClick={onNodeClick as any}
+            onDrop={onDrop as React.DragEventHandler}
+            onDragOver={onDragOver as React.DragEventHandler}
+            onNodeClick={onNodeClick as (event: React.MouseEvent, node: unknown) => void}
             onPaneClick={() => setSelectedNodeId(null)}
             nodeTypes={nodeTypes}
             fitView

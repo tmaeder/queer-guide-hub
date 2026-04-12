@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-  Play, 
   RefreshCw, 
   Download, 
   FileImage, 
@@ -16,8 +15,6 @@ import {
   CheckCircle, 
   AlertCircle,
   FolderOpen,
-  Trash2,
-  Eye,
   Clock,
   Server
 } from 'lucide-react';
@@ -53,7 +50,7 @@ interface OptimizationJob {
   failed_images: number;
   created_at: string;
   updated_at: string;
-  results?: any[];
+  results?: Array<{ fileName: string; status: string }>;
 }
 
 export function ImageOptimizationManager() {
@@ -122,6 +119,7 @@ export function ImageOptimizationManager() {
     }, 3000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- checkJobStatus defined outside, only re-run when currentJob changes
   }, [currentJob]);
 
   // Load jobs on mount
@@ -140,7 +138,7 @@ export function ImageOptimizationManager() {
       
       if (error) throw error;
       
-      const foundImages: ImageFile[] = data.images.map((img: any) => ({
+      const foundImages: ImageFile[] = data.images.map((img: { fileName: string; baseName: string; size: number; bucket: string }) => ({
         fileName: img.fileName,
         baseName: img.baseName,
         originalSize: img.size,

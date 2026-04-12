@@ -25,7 +25,7 @@ describe('useCityImages', () => {
       error: null,
     });
     const { result } = renderHook(() => useCityImages());
-    let res: any;
+    let res: unknown;
     await act(async () => {
       res = await result.current.fetchCityImage('city-1', 'Zurich', 'Switzerland');
     });

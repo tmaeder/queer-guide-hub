@@ -7,14 +7,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import {
   Trash2,
   Search,
-  Filter,
   Download,
   Eye,
   Upload,
@@ -30,9 +28,6 @@ import {
   Settings,
   Zap,
   Archive,
-  Edit3,
-  Copy,
-  Share2,
   FolderOpen,
   Star,
   Sliders,
@@ -78,8 +73,8 @@ interface MediaItem {
   storage_path: string;
   uploaded_by: string;
   created_at: string;
-  alt_text?: any;
-  caption?: any;
+  alt_text?: string;
+  caption?: string;
   usage_count?: number;
   content_items?: string[];
   optimized?: boolean;
@@ -142,7 +137,7 @@ export function MediaLibrary() {
   const [showOptimization, setShowOptimization] = useState(false);
   const [optimizationJobs, setOptimizationJobs] = useState<OptimizationJob[]>([]);
   const [bulkMode, setBulkMode] = useState(false);
-  const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
+  const [_editingItem, _setEditingItem] = useState<MediaItem | null>(null);
   const [optimizingItem, setOptimizingItem] = useState<MediaItem | null>(null);
   const [optimizationSettings, setOptimizationSettings] = useState({
     quality: 80,
@@ -162,10 +157,12 @@ export function MediaLibrary() {
     if (isAdmin) {
       fetchMedia();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchMedia defined below, re-run on isAdmin change
   }, [isAdmin]);
 
   useEffect(() => {
     filterAndSortMedia();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- filterAndSortMedia defined below, re-run on filter changes
   }, [media, searchQuery, sortBy, filterBy]);
 
   const populateOptimizationStatus = async () => {
@@ -247,7 +244,7 @@ export function MediaLibrary() {
         console.error('Error fetching optimization status:', optimizationError);
       }
 
-      const optimizationLookup: Record<string, any> = {};
+      const optimizationLookup: Record<string, Record<string, unknown>> = {};
       if (optimizationData) {
         optimizationData.forEach(opt => {
           const key = `${opt.bucket_name}/${opt.file_path}`;
@@ -258,7 +255,7 @@ export function MediaLibrary() {
       const processCmsMedia = (cmsMediaData || []).map(item => ({
         ...item,
         usage_count: item.cms_content_media?.length || 0,
-        content_items: item.cms_content_media?.map((rel: any) =>
+        content_items: item.cms_content_media?.map((rel: { cms_content?: { title?: string } }) =>
           rel.cms_content?.title || 'Untitled'
         ).filter(Boolean) || [],
         source: 'cms',
@@ -276,7 +273,7 @@ export function MediaLibrary() {
       }));
 
       const buckets = ['adult-model-images', 'city-images', 'tag-images'];
-      let allStorageFiles: any[] = [];
+      let allStorageFiles: Record<string, unknown>[] = [];
 
       for (const bucket of buckets) {
         try {
@@ -318,7 +315,7 @@ export function MediaLibrary() {
                   optimizationStatus = optimizationInfo.optimization_status;
                   if (optimizationInfo.optimized_formats && Array.isArray(optimizationInfo.optimized_formats)) {
                     const formats = optimizationInfo.optimized_formats;
-                    formatsAvailable = [ext.toUpperCase(), ...formats.map((f: any) => f.format?.toUpperCase())].filter(Boolean);
+                    formatsAvailable = [ext.toUpperCase(), ...formats.map((f: { format?: string }) => f.format?.toUpperCase())].filter(Boolean);
 
                     optimizationMetadata = {
                       ...optimizationMetadata,
@@ -555,7 +552,7 @@ export function MediaLibrary() {
   };
 
   const getImageUrl = (item: MediaItem) => {
-    const bucket = (item as any).bucket || 'cms-media';
+    const bucket = (item as Record<string, unknown>).bucket as string || 'cms-media';
 
     const { data } = supabase.storage
       .from(bucket)
@@ -1108,7 +1105,7 @@ export function MediaLibrary() {
           </CardHeader>
           <CardContent>
             <EnhancedImageUpload
-              onUpload={(url) => {
+              onUpload={(_url) => {
                 setShowUpload(false);
                 fetchMedia();
                 toast({

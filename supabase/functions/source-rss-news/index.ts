@@ -2,7 +2,6 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
-import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
 // ============================================================
 // Source: RSS/News APIs — unified adapter for all news sources

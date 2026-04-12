@@ -90,7 +90,7 @@ const FIELD_DEFINITIONS: Record<string, FieldDef[]> = {
 };
 
 // Generic fallback: render any key from the data as a text field
-function getFieldsForEntity(entityType: string, data: Record<string, any>): FieldDef[] {
+function getFieldsForEntity(entityType: string, data: Record<string, unknown>): FieldDef[] {
   const defined = FIELD_DEFINITIONS[entityType];
   if (defined) return defined;
 
@@ -203,7 +203,7 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
 
 interface StructuredFieldDisplayProps {
   entityType: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   compact?: boolean;
   highlightFields?: string[];
 }

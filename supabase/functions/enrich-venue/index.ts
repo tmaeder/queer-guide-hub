@@ -200,7 +200,7 @@ async function searchGooglePlaces(venueName: string, apiKey: string): Promise<Ve
     // Parse address components
     const addressComponents = details.address_components || []
     const getComponent = (types: string[]) => {
-      const component = addressComponents.find((comp: any) => 
+      const component = addressComponents.find((comp: { types: string[]; long_name: string }) =>
         types.some(type => comp.types.includes(type))
       )
       return component?.long_name
@@ -300,7 +300,7 @@ async function searchTripAdvisor(venueName: string, apiKey: string): Promise<Ven
       if (detailsResponse.ok) {
         details = await detailsResponse.json()
       }
-    } catch (e) {
+    } catch (_e) {
       console.log('Could not fetch TripAdvisor details')
     }
 
@@ -338,7 +338,7 @@ function mergeVenueData(currentData: VenueData, results: PromiseSettledResult<Ve
     // Only fill empty fields, don't overwrite existing data
     Object.entries(source).forEach(([key, value]) => {
       if (value && (!merged[key as keyof VenueData] || merged[key as keyof VenueData] === '')) {
-        (merged as any)[key] = value
+        (merged as unknown)[key] = value
       }
     })
   }

@@ -3,7 +3,7 @@
  * Manages workflow state transitions with validation, comments, and side effects.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -42,12 +42,14 @@ export function useCMSWorkflow(currentState?: WorkflowState): UseCMSWorkflowRetu
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Determine user's roles
-  const userRoles: string[] = [];
-  if (isAdmin) userRoles.push('admin');
-  if (isModerator) userRoles.push('moderator');
-  // All authenticated admin/mod users also have editor capabilities
-  if (isAdmin || isModerator) userRoles.push('editor');
+  // Determine user's roles (memoized to keep useCallback deps stable)
+  const userRoles = useMemo(() => {
+    const roles: string[] = [];
+    if (isAdmin) roles.push('admin');
+    if (isModerator) roles.push('moderator');
+    if (isAdmin || isModerator) roles.push('editor');
+    return roles;
+  }, [isAdmin, isModerator]);
 
   // Get available transitions
   const availableTransitions = currentState
@@ -107,7 +109,7 @@ export function useCMSWorkflow(currentState?: WorkflowState): UseCMSWorkflowRetu
 
       // Upsert cms_content_metadata
       const { error: metaError } = await supabase
-        .from('cms_content_metadata' as any)
+        .from('cms_content_metadata' as 'venues')
         .upsert({
           source_table: sourceTable,
           source_id: sourceId,
@@ -126,7 +128,7 @@ export function useCMSWorkflow(currentState?: WorkflowState): UseCMSWorkflowRetu
           : 'comment';
 
         await supabase
-          .from('cms_review_comments' as any)
+          .from('cms_review_comments' as 'venues')
           .insert({
             source_table: sourceTable,
             source_id: sourceId,
@@ -138,7 +140,7 @@ export function useCMSWorkflow(currentState?: WorkflowState): UseCMSWorkflowRetu
 
       // Write audit log
       await supabase
-        .from('cms_audit_log' as any)
+        .from('cms_audit_log' as 'venues')
         .insert({
           source_table: sourceTable,
           source_id: sourceId,

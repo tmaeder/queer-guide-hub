@@ -11,12 +11,11 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import EqualityScoreBadge from './EqualityScoreBadge';
 import {
-  parseSsuDetails, parseSsuSummary, getProtectionStatus,
-  isCriminalized, hasDeathPenalty
+  parseSsuDetails, getProtectionStatus, hasDeathPenalty
 } from '@/utils/equalityScore';
 
 interface LGBTJurisdictionInfoProps {
-  country: any;
+  country: Record<string, unknown>;
   className?: string;
   // Legacy props (no longer used but kept for backward compat)
   countryName?: string;
@@ -57,14 +56,14 @@ function statusBadgeStyle(value: string | null | undefined): React.CSSProperties
 function ProtectionRow({ label, icon: Icon, data }: {
   label: string;
   icon: React.ElementType;
-  data: Record<string, any> | null | undefined;
+  data: Record<string, unknown> | null | undefined;
 }) {
   const status = getProtectionStatus(data);
   const since = data?.so_since || data?.gi_since;
 
   // Determine overall status
   const yesCount = [status.so, status.gi, status.ge, status.sc].filter(s => s === 'Yes').length;
-  const overallValue = yesCount >= 3 ? 'Yes' : yesCount >= 1 ? 'Partial' : (status.so === 'No data' ? null : 'No');
+  const _overallValue = yesCount >= 3 ? 'Yes' : yesCount >= 1 ? 'Partial' : (status.so === 'No data' ? null : 'No');
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
@@ -111,7 +110,7 @@ function ProtectionRow({ label, icon: Icon, data }: {
 }
 
 /** Simple status row for TEXT columns */
-function SimpleRow({ label, icon: Icon, value, detail }: {
+function SimpleRow({ label, icon: Icon, value, _detail }: {
   label: string;
   icon: React.ElementType;
   value: string | null | undefined;
@@ -139,13 +138,13 @@ function SimpleRow({ label, icon: Icon, value, detail }: {
   );
 }
 
-export default function LGBTJurisdictionInfo({ country, className = '', countryName, countryCode, style }: LGBTJurisdictionInfoProps) {
+export default function LGBTJurisdictionInfo({ country, className = '', _countryName, _countryCode, style }: LGBTJurisdictionInfoProps) {
   // If no country object passed, show nothing (legacy usage without data)
   if (!country) return null;
 
-  const crim = country.lgbti_criminalization as Record<string, any> | null;
-  const foe = country.lgbti_expression_restrictions as Record<string, any> | null;
-  const foa = country.lgbti_association_restrictions as Record<string, any> | null;
+  const crim = country.lgbti_criminalization as Record<string, unknown> | null;
+  const foe = country.lgbti_expression_restrictions as Record<string, unknown> | null;
+  const foa = country.lgbti_association_restrictions as Record<string, unknown> | null;
   const ssuDetails = parseSsuDetails(country.lgbti_same_sex_unions);
   const lastUpdated = country.lgbti_data_last_updated
     ? new Date(country.lgbti_data_last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })

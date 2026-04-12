@@ -3,7 +3,6 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   Heart,
   MessageCircle,
@@ -30,7 +29,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useComments, PostComment, CreateCommentData } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
@@ -79,7 +77,7 @@ const CommentItem = ({
 
     // Handle mentions
     if (comment.mentions && Array.isArray(comment.mentions)) {
-      (comment.mentions as any[]).forEach((mention: any) => {
+      (comment.mentions as Array<{ username: string }>).forEach((mention) => {
         const mentionRegex = new RegExp(`@${mention.username}`, 'g');
         content = content.replace(
           mentionRegex,

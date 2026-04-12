@@ -181,7 +181,7 @@ export function CMSSidebar({
       const promises = contentTypes.map(async (ct) => {
         try {
           const { count, error } = await supabase
-            .from(ct.tableName as any)
+            .from(ct.tableName as 'events')
             .select('*', { count: 'exact', head: true });
           if (!error && count !== null) {
             counts[ct.id] = count;

@@ -36,7 +36,7 @@ import { useSearchSuggestions, SearchSuggestion } from '@/hooks/useSearchSuggest
 import { SearchFiltersPanel } from './SearchFiltersPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const contentTypeIcons: Record<string, any> = {
+const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
   venue: MapPin,
   venues: MapPin,
   event: Calendar,
@@ -108,7 +108,7 @@ export const UniversalSearchBar = () => {
     }
   }, [location.pathname]);
 
-  const { results, suggestions: searchResults, loading } = useSearch(query, filters);
+  const { _results, suggestions: searchResults, loading } = useSearch(query, filters);
 
   const { suggestions, loading: suggestionsLoading } = useSearchSuggestions(query);
 
@@ -221,10 +221,11 @@ export const UniversalSearchBar = () => {
       case 'marketplace':
         navigate(`/marketplace/${suggestion.slug || suggestion.id}`);
         break;
-      case 'tag':
+      case 'tag': {
         const tagSlug = suggestion.name.replace(/[^\w\s-]/g, '').replace(/\s+/g, '%20');
         navigate(`/resources/${tagSlug}`);
         break;
+      }
       case 'user':
         navigate(`/user/${suggestion.id}`);
         break;

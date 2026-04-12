@@ -76,7 +76,7 @@ export function useExternalImageSearch(): UseExternalImageSearchReturn {
         throw new Error(data?.error || 'No results returned');
       }
 
-      const mapped: ExternalImage[] = data.images.map((img: any) => ({
+      const mapped: ExternalImage[] = data.images.map((img: Record<string, unknown>) => ({
         id: img.id,
         url: img.url,
         thumbnail: img.thumbnail,

@@ -41,7 +41,7 @@ export function UrlValidator({ url, onValidate }: UrlValidatorProps) {
       setValidationDetails(isValid ? 'URL format is valid' : 'URL appears to be invalid');
 
       onValidate?.(cleanUrl, isValid);
-    } catch (error) {
+    } catch (_error) {
       setValidationState('invalid');
       setValidationDetails('Failed to validate URL');
       onValidate?.(url, false);

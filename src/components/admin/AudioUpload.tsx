@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Upload, Music, X, Play } from 'lucide-react';
+import { Upload, Music, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,7 +36,7 @@ interface UploadedAudio {
 
 export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
   const [audios, setAudios] = useState<UploadedAudio[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const [_isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const audioFiles = acceptedFiles.filter(file => file.type.startsWith('audio/'));
@@ -64,6 +64,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
 
     setAudios(prev => [...prev, ...newAudios]);
     newAudios.forEach(audio => uploadAudio(audio));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- uploadAudio defined below, stable in practice
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -81,7 +82,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       // Upload to storage
       const filePath = `uploads/${audio.id}/${audio.file.name}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { data: _uploadData, error: uploadError } = await supabase.storage
         .from('audio')
         .upload(filePath, audio.file);
 
@@ -92,7 +93,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       ));
 
       // Create audio record
-      const { data: audioRecord, error: dbError } = await supabase
+      const { data: _audioRecord, error: dbError } = await supabase
         .from('audio_files')
         .insert([{
           id: audio.id,
@@ -176,13 +177,13 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
     setTimeout(() => clearInterval(pollInterval), 600000);
   };
 
-  const updateAudioInfo = (id: string, field: keyof UploadedAudio, value: any) => {
+  const updateAudioInfo = (id: string, field: keyof UploadedAudio, value: unknown) => {
     setAudios(prev => prev.map(a =>
       a.id === id ? { ...a, [field]: value } : a
     ));
   };
 
-  const updateAudioConfig = (id: string, field: keyof UploadedAudio['config'], value: any) => {
+  const updateAudioConfig = (id: string, field: keyof UploadedAudio['config'], value: unknown) => {
     setAudios(prev => prev.map(a =>
       a.id === id ? { ...a, config: { ...a.config, [field]: value } } : a
     ));
@@ -293,7 +294,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>Quality</Typography>
                         <Select
                           value={audio.config.quality}
-                          onValueChange={(value: any) => updateAudioConfig(audio.id, 'quality', value)}
+                          onValueChange={(value: string) => updateAudioConfig(audio.id, 'quality', value)}
                         >
                           <SelectTrigger>
                             <SelectValue />

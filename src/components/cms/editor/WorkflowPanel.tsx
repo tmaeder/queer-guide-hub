@@ -43,7 +43,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
   const [currentState, setCurrentState] = useState<WorkflowState>('draft');
   const [publishedAt, setPublishedAt] = useState<string | undefined>(undefined);
   const [visibility, setVisibility] = useState<VisibilityLevel>('public');
-  const [metadataLoaded, setMetadataLoaded] = useState(false);
+  const [_metadataLoaded, setMetadataLoaded] = useState(false);
 
   const {
     availableTransitions,
@@ -60,6 +60,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
   React.useEffect(() => {
     if (!itemId || !config) return;
     loadMetadata();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadMetadata defined below as useCallback, re-run on itemId/config change
   }, [itemId, config]);
 
   const loadMetadata = useCallback(async () => {
@@ -67,7 +68,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       const { data } = await supabase
-        .from('cms_content_metadata' as any)
+        .from('cms_content_metadata' as const)
         .select('workflow_state, visibility_level, published_at')
         .eq('source_table', config.tableName)
         .eq('source_id', itemId)
@@ -131,7 +132,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       try {
         const { supabase } = await import('@/integrations/supabase/client');
         await supabase
-          .from('cms_content_metadata' as any)
+          .from('cms_content_metadata' as const)
           .upsert(
             {
               source_table: config.tableName,

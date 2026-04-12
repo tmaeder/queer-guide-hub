@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { VillageCard } from '../VillageCard';
 
-function makeVillage(overrides: Record<string, any> = {}) {
+function makeVillage(overrides: Record<string, unknown> = {}) {
   return {
     id: 'v-1', slug: 'castro', name: 'The Castro', description: 'Historic LGBTQ+ neighborhood',
     featured: false, image_url: null,
@@ -14,27 +14,27 @@ function makeVillage(overrides: Record<string, any> = {}) {
 
 describe('VillageCard', () => {
   it('should render village name', () => {
-    render(<MemoryRouter><VillageCard village={makeVillage() as any} /></MemoryRouter>);
+    render(<MemoryRouter><VillageCard village={makeVillage() as unknown as React.ComponentProps<typeof VillageCard>['village']} /></MemoryRouter>);
     expect(screen.getByText('The Castro')).toBeInTheDocument();
   });
 
   it('should render location', () => {
-    render(<MemoryRouter><VillageCard village={makeVillage() as any} /></MemoryRouter>);
+    render(<MemoryRouter><VillageCard village={makeVillage() as unknown as React.ComponentProps<typeof VillageCard>['village']} /></MemoryRouter>);
     expect(screen.getByText('San Francisco, USA')).toBeInTheDocument();
   });
 
   it('should render description', () => {
-    render(<MemoryRouter><VillageCard village={makeVillage() as any} /></MemoryRouter>);
+    render(<MemoryRouter><VillageCard village={makeVillage() as unknown as React.ComponentProps<typeof VillageCard>['village']} /></MemoryRouter>);
     expect(screen.getByText(/historic lgbtq/i)).toBeInTheDocument();
   });
 
   it('should show Featured badge when featured', () => {
-    render(<MemoryRouter><VillageCard village={makeVillage({ featured: true }) as any} /></MemoryRouter>);
+    render(<MemoryRouter><VillageCard village={makeVillage({ featured: true }) as unknown as React.ComponentProps<typeof VillageCard>['village']} /></MemoryRouter>);
     expect(screen.getByText('Featured')).toBeInTheDocument();
   });
 
   it('should link to village page', () => {
-    render(<MemoryRouter><VillageCard village={makeVillage() as any} /></MemoryRouter>);
+    render(<MemoryRouter><VillageCard village={makeVillage() as unknown as React.ComponentProps<typeof VillageCard>['village']} /></MemoryRouter>);
     expect(screen.getByRole('link')).toHaveAttribute('href', '/villages/castro');
   });
 });

@@ -12,7 +12,7 @@ export interface AutoCleanTypeResult {
   errors: string[];
   whitespace_fixed?: number;
   junction_fixed?: number;
-  details?: any;
+  details?: Record<string, unknown>;
   total?: number;
   has_more?: boolean;
 }
@@ -96,7 +96,7 @@ async function getAuthToken(): Promise<string> {
   return session.access_token;
 }
 
-async function callEdgeFunction(token: string, params: Record<string, any>): Promise<any> {
+async function callEdgeFunction(token: string, params: Record<string, unknown>): Promise<unknown> {
   const res = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clean-merge-all-duplicates`,
     {
@@ -123,7 +123,7 @@ export function useDuplicateCounts() {
     queryKey: ['duplicate-counts'],
     queryFn: async (): Promise<DuplicateCounts> => {
       const { data, error } = await supabase
-        .from('scraper_dedupe_decisions' as any)
+        .from('scraper_dedupe_decisions' as 'venues')
         .select('entity_type')
         .eq('decision', 'pending');
 
@@ -140,9 +140,9 @@ export function useDuplicateCounts() {
         cities: 0,
         total: 0,
       };
-      for (const row of (data || []) as any[]) {
+      for (const row of (data || []) as Array<{ entity_type: string }>) {
         const t = row.entity_type as keyof Omit<DuplicateCounts, 'total'>;
-        if (t in counts && t !== 'total') (counts as any)[t]++;
+        if (t in counts && t !== 'total') counts[t]++;
         counts.total++;
       }
       return counts;
@@ -282,9 +282,10 @@ export function useBatchedAutoClean() {
               if (result.errors?.length) {
                 allErrors.push(...result.errors);
               }
-            } catch (err: any) {
-              accumulatedByType[type].errors.push(err.message);
-              allErrors.push(`${type}: ${err.message}`);
+            } catch (err: unknown) {
+              const msg = err instanceof Error ? err.message : String(err);
+              accumulatedByType[type].errors.push(msg);
+              allErrors.push(`${type}: ${msg}`);
               hasMore = false; // Move to next type on error
             }
 
@@ -325,7 +326,7 @@ export function useBatchedAutoClean() {
         });
 
         // Merge Phase 2 results (merge/flag counts) into accumulated scan data
-        for (const [type, data] of Object.entries(processResult.by_type || {}) as [string, any][]) {
+        for (const [type, data] of Object.entries((processResult as Record<string, unknown>).by_type as Record<string, AutoCleanTypeResult> || {}) as [string, AutoCleanTypeResult][]) {
           if (accumulatedByType[type]) {
             accumulatedByType[type].auto_merged = data.auto_merged || 0;
             accumulatedByType[type].flagged_for_review = data.flagged_for_review || 0;
@@ -378,9 +379,10 @@ export function useBatchedAutoClean() {
           title: action,
           description: `Scanned: ${totalScanned.toLocaleString()}, ${dryRun ? 'Would merge' : 'Merged'}: ${finalResult.total_auto_merged}, Flagged: ${finalResult.total_flagged}${stagingMsg}`,
         });
-      } catch (err: any) {
-        setProgress((p) => ({ ...p, phase: 'error', message: err.message }));
-        toast({ title: 'Auto-clean Failed', description: err.message, variant: 'destructive' });
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        setProgress((p) => ({ ...p, phase: 'error', message: errMsg }));
+        toast({ title: 'Auto-clean Failed', description: errMsg, variant: 'destructive' });
       } finally {
         setIsRunning(false);
       }

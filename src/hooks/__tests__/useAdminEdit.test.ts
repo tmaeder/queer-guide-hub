@@ -62,7 +62,7 @@ describe('useAdminEdit', () => {
   it('should return error on fetch failure', async () => {
     mockSingle.mockResolvedValue({ data: null, error: { message: 'Not found' } });
     const { result } = renderHook(() => useAdminEdit());
-    let res: any;
+    let res: unknown;
     await act(async () => {
       res = await result.current.editContent('venues', 'v-1', { name: 'New Name' });
     });

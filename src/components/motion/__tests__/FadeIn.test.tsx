@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 vi.mock('motion/react', () => {
-  const handler = (tag: string) => ({ children, className, ...rest }: any) => {
-    const Tag = tag as any;
+  const handler = (tag: string) => ({ children, className, ..._rest }: unknown) => {
+    const Tag = tag as unknown;
     return <Tag className={className}>{children}</Tag>;
   };
   return { motion: new Proxy({}, { get: (_t, tag: string) => handler(tag) }) };

@@ -100,7 +100,7 @@ function relativeTime(dateStr: string): string {
 }
 
 /** Get the status/workflow field value from raw row data. */
-function extractStatus(row: Record<string, unknown>, ct: ContentTypeConfig): string | undefined {
+function extractStatus(row: Record<string, unknown>, _ct: ContentTypeConfig): string | undefined {
   // CMS pages have workflow_state
   if ('workflow_state' in row && typeof row.workflow_state === 'string') return row.workflow_state;
   // Events and marketplace have status
@@ -363,6 +363,7 @@ export function ContentListPanel({
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadAllTypes/loadSingleType defined below, deps control re-fetching
   }, [contentTypeId, config, page, rowsPerPage, debouncedSearch, sortField, sortDir]);
 
   async function loadSingleType(ct: ContentTypeConfig) {
@@ -373,7 +374,7 @@ export function ContentListPanel({
     const dbSortField = sortField === 'title' ? ct.titleField : 'updated_at';
 
     let query = supabase
-      .from(ct.tableName as any)
+      .from(ct.tableName as 'events')
       .select('*', { count: 'exact' })
       .order(dbSortField, { ascending: sortDir === 'asc' })
       .range(from, to);
@@ -385,7 +386,7 @@ export function ContentListPanel({
     const { data, error, count } = await query;
     if (error) throw error;
 
-    const mapped = (data || []).map((row: any) => ({
+    const mapped = (data || []).map((row: Record<string, unknown>) => ({
       id: row[ct.primaryKey],
       title: row[ct.titleField] || '(Untitled)',
       description: ct.descriptionField ? row[ct.descriptionField] : undefined,
@@ -421,7 +422,7 @@ export function ContentListPanel({
 
     for (const ct of configs) {
       let query = supabase
-        .from(ct.tableName as any)
+        .from(ct.tableName as 'events')
         .select('*', { count: 'exact' })
         .order('updated_at', { ascending: false })
         .limit(100);
@@ -432,7 +433,7 @@ export function ContentListPanel({
 
       const { data } = await query;
 
-      const mapped = (data || []).map((row: any) => ({
+      const mapped = (data || []).map((row: Record<string, unknown>) => ({
         id: row[ct.primaryKey],
         title: row[ct.titleField] || '(Untitled)',
         description: ct.descriptionField ? row[ct.descriptionField] : undefined,
@@ -704,9 +705,9 @@ export function ContentListPanel({
                           borderLeftColor: rowColor,
                         },
                         '&.Mui-selected': {
-                          bgcolor: (theme) => alpha(rowColor, 0.04),
+                          bgcolor: (_theme) => alpha(rowColor, 0.04),
                           '&:hover': {
-                            bgcolor: (theme) => alpha(rowColor, 0.07),
+                            bgcolor: (_theme) => alpha(rowColor, 0.07),
                           },
                         },
                       }}

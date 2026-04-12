@@ -100,7 +100,7 @@ async function fetchVenuesInBbox(
   const { data, error } = await query;
   if (error) throw error;
 
-  return (data ?? []).map((v: any) => ({
+  return (data ?? []).map((v: Record<string, unknown>) => ({
     type: 'Feature' as const,
     geometry: { type: 'Point' as const, coordinates: [Number(v.longitude), Number(v.latitude)] },
     properties: {
@@ -147,7 +147,7 @@ async function fetchEventsInBbox(
   if (error) throw error;
 
   return (data ?? [])
-    .map((e: any) => {
+    .map((e: Record<string, unknown>) => {
       let lat = e.latitude;
       let lng = e.longitude;
       if (lat == null && e.venues) {
@@ -189,7 +189,7 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
   });
   if (error) throw error;
 
-  return ((data ?? []) as any[])
+  return ((data ?? []) as Record<string, unknown>[])
     .filter((r) => typeof r.latitude === 'number' && typeof r.longitude === 'number')
     .filter(
       (r) =>
@@ -301,9 +301,9 @@ export function useViewportPoints({
       setGeojson({ type: 'FeatureCollection', features: allFeatures });
       setLayerCounts(counts);
       lastRawBboxRef.current = bbox;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (gen !== genRef.current) return; // Stale error — ignore
-      console.error('[useViewportPoints] fetch error:', err?.message ?? err);
+      console.error('[useViewportPoints] fetch error:', err instanceof Error ? err.message : err);
     } finally {
       if (gen === genRef.current) setIsFetching(false);
     }

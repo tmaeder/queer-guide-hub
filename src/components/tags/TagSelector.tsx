@@ -3,10 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs } from '@/components/ui/tabs';
 import { X, Plus, Search, Tag as TagIcon } from 'lucide-react';
 import { useCentralizedTags, CentralizedTag } from '@/hooks/useCentralizedTags';
 import Box from '@mui/material/Box';
@@ -65,7 +64,7 @@ export const TagSelector = ({
     }
     return tagsByCategory.find(cat => cat.category === activeCategory)?.tags || [];
   };
-  const availableCategories = categories || tagsByCategory.map(cat => cat.category);
+  const _availableCategories = categories || tagsByCategory.map(cat => cat.category);
   return <Box className={className}>
       <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Tags</Label>
 

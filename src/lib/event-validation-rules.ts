@@ -8,7 +8,7 @@
  */
 
 import { computeTitleSimilarity, computeSimilarity, normalizeText } from './fuzzy-match';
-import { computeDedupConfidence, type ConfidenceResult, type ReviewAction } from './confidence-scoring';
+import { computeDedupConfidence, type ConfidenceResult } from './confidence-scoring';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

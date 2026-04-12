@@ -82,7 +82,7 @@ export function useMarketplace() {
 
       // Fetch listings and broken IDs in parallel
       const [listingsResult, brokenResult] = await Promise.all([
-        queryWithRetry(() => query) as any,
+        queryWithRetry(() => query) as Promise<{ data: unknown[]; error: Error | null }>,
         supabase.rpc('get_broken_marketplace_ids'),
       ]);
 

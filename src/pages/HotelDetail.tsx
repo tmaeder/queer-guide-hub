@@ -75,7 +75,7 @@ export default function HotelDetail() {
 
         if (error) throw error;
         setHotel(data);
-      } catch (error) {
+      } catch (_error) {
         toast({ title: 'Error', description: 'Failed to load hotel details.', variant: 'destructive' });
       } finally {
         setLoading(false);
@@ -83,6 +83,7 @@ export default function HotelDetail() {
     };
 
     fetchHotel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is stable, only re-run on slug change
   }, [slug]);
 
   if (loading) {
@@ -375,7 +376,7 @@ export default function HotelDetail() {
                 <Box key={i} sx={{ borderRadius: 2, overflow: 'hidden', height: 200 }}>
                   <img
                     src={img}
-                    alt={`${hotel.name} photo ${i + 1}`}
+                    alt={`${hotel.name} ${i + 1}`}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     loading="lazy"
                   />

@@ -62,7 +62,7 @@ export function UserModerationActions({
       setLoading(true);
       const { error } = await supabase
         .from('profiles')
-        .update({ moderation_status: pendingAction } as any)
+        .update({ moderation_status: pendingAction } as Record<string, unknown>)
         .eq('user_id', userId);
 
       if (error) throw error;
@@ -81,10 +81,10 @@ export function UserModerationActions({
 
       toast({ title: 'Status updated', description: `User has been ${pendingAction}.` });
       onStatusChanged();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Error',
-        description: err.message || 'Failed to update status',
+        description: err instanceof Error ? err.message : 'Failed to update status',
         variant: 'destructive',
       });
     } finally {

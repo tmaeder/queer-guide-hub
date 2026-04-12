@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
 // SECURITY FIX: Proper AES encryption for API keys
-async function secureEncrypt(text: string): Promise<string> {
+async function _secureEncrypt(text: string): Promise<string> {
   const masterKey = Deno.env.get('MASTER_ENCRYPTION_KEY');
   if (!masterKey) throw new Error('MASTER_ENCRYPTION_KEY environment variable is not configured');
   const key = await crypto.subtle.importKey(

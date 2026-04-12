@@ -22,6 +22,7 @@ export default function CountryHeroImages({ countryName, className = "" }: Count
 
   useEffect(() => {
     fetchCountryImages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchCountryImages defined below, re-run on countryName change
   }, [countryName]);
 
   const fetchCountryImages = async () => {

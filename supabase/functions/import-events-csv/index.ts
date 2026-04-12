@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts'
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 const VALID_EVENT_TYPES = [
   'party', 'festival', 'pride', 'fetish', 'community',
@@ -86,7 +86,7 @@ function parseCSV(csvText: string): EventData[] {
       continue;
     }
 
-    const eventData: any = {};
+    const eventData: Record<string, unknown> = {};
     headers.forEach((header, index) => {
       const value = values[index];
       
@@ -129,7 +129,7 @@ function parseCSV(csvText: string): EventData[] {
     }
 
     // Validate event_type against allowed values
-    if (!VALID_EVENT_TYPES.includes(eventData.event_type.toLowerCase() as any)) {
+    if (!VALID_EVENT_TYPES.includes(eventData.event_type.toLowerCase() as unknown)) {
       console.warn(`Skipping row ${i + 1}: invalid event_type '${eventData.event_type}'. Allowed: ${VALID_EVENT_TYPES.join(', ')}`);
       continue;
     }
@@ -141,7 +141,7 @@ function parseCSV(csvText: string): EventData[] {
       if (eventData.end_date) {
         new Date(eventData.end_date).toISOString();
       }
-    } catch (error) {
+    } catch (_error) {
       console.warn(`Skipping row ${i + 1}: invalid date format`);
       continue;
     }

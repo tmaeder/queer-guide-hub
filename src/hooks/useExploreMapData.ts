@@ -26,7 +26,7 @@ export interface MapMarker {
   color: string;
   scale?: number;
   linkTo?: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 }
 
 export interface MapViewport {
@@ -80,7 +80,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   const venueMarkers = useMemo<MapMarker[]>(() => {
     if (!venuesEnabled) return [];
-    return (rawVenues as any[])
+    return (rawVenues as Record<string, unknown>[])
       .filter((v) => typeof v?.latitude === 'number' && typeof v?.longitude === 'number')
       .map((v) => ({
         id: `venue-${v.id}`,
@@ -111,7 +111,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];
-    return (rawEvents as any[])
+    return (rawEvents as Record<string, unknown>[])
       .map((e) => {
         // Try event's own coords, then venue's coords, then city coords
         let lat: number | null = null;
@@ -163,7 +163,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   const cityMarkers = useMemo<MapMarker[]>(() => {
     if (!citiesEnabled) return [];
-    return (rawCities as any[])
+    return (rawCities as Record<string, unknown>[])
       .filter((c) => typeof c?.latitude === 'number' && typeof c?.longitude === 'number')
       .map((c) => ({
         id: `city-${c.id}`,
@@ -196,7 +196,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   const countryMarkers = useMemo<MapMarker[]>(() => {
     if (!countriesEnabled) return [];
-    return (rawCountries as any[])
+    return (rawCountries as Record<string, unknown>[])
       .filter((c) => typeof c?.latitude === 'number' && typeof c?.longitude === 'number')
       .map((c) => ({
         id: `country-${c.id}`,
@@ -292,8 +292,8 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   const neighbourhoodMarkers = useMemo<MapMarker[]>(() => {
     if (!neighbourhoodsEnabled) return [];
     return rawVillages
-      .filter((v: any) => typeof v?.latitude === 'number' && typeof v?.longitude === 'number')
-      .map((v: any) => ({
+      .filter((v: Record<string, unknown>) => typeof v?.latitude === 'number' && typeof v?.longitude === 'number')
+      .map((v: Record<string, unknown>) => ({
         id: `neighbourhood-${v.id}`,
         type: 'neighbourhoods' as const,
         lat: Number(v.latitude),

@@ -9,7 +9,6 @@ import { EventsCalendarView } from '@/components/events/EventsCalendarView';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { SearchInputTyped } from '@/components/ui/search-input-typed';
 import { Label } from '@/components/ui/label';
 import {
@@ -91,7 +90,7 @@ const Events = () => {
     },
   });
 
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid');
 
@@ -114,7 +113,7 @@ const Events = () => {
   const { location: visitorLocation } = useVisitorLocation();
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const _sentinelRef = useRef<HTMLDivElement | null>(null);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
   // Get unique cities from events for auto-suggest
@@ -176,7 +175,7 @@ const Events = () => {
           title: 'Location found',
           description: 'Showing events near your location',
         });
-      } catch (error) {
+      } catch (_error) {
         toast({
           title: 'Location Error',
           description: 'Unable to get your location. Please allow location access.',

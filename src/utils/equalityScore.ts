@@ -64,20 +64,20 @@ export function parseSsuDetails(ssu: string | null | undefined): {
 }
 
 /** Check if a country is criminalized */
-export function isCriminalized(crim: Record<string, any> | null | undefined): boolean {
+export function isCriminalized(crim: Record<string, unknown> | null | undefined): boolean {
   if (!crim) return false;
   return crim.legal === false;
 }
 
 /** Check if death penalty applies */
-export function hasDeathPenalty(crim: Record<string, any> | null | undefined): boolean {
+export function hasDeathPenalty(crim: Record<string, unknown> | null | undefined): boolean {
   if (!crim) return false;
-  const dp = crim.death_penalty || '';
+  const dp = String(crim.death_penalty || '');
   return dp.includes('Death') || dp === 'Yes';
 }
 
 /** Get protection status string for a specific dimension */
-export function getProtectionStatus(protection: Record<string, any> | null | undefined): {
+export function getProtectionStatus(protection: Record<string, unknown> | null | undefined): {
   so: string;
   gi: string;
   ge: string;
@@ -85,9 +85,9 @@ export function getProtectionStatus(protection: Record<string, any> | null | und
 } {
   if (!protection) return { so: 'No data', gi: 'No data', ge: 'No data', sc: 'No data' };
   return {
-    so: protection.so || 'No data',
-    gi: protection.gi || 'No data',
-    ge: protection.ge || 'No data',
-    sc: protection.sc || 'No data',
+    so: String(protection.so || 'No data'),
+    gi: String(protection.gi || 'No data'),
+    ge: String(protection.ge || 'No data'),
+    sc: String(protection.sc || 'No data'),
   };
 }

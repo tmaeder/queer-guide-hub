@@ -24,7 +24,7 @@ import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
-import { Edit, Trash2, Globe } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CountryRow {
@@ -125,7 +125,7 @@ export default function AdminCountries() {
   };
 
   const handleExportExcel = async () => {
-    const cols: ExportColumnDef<any>[] = [
+    const cols: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Name', accessor: (r) => r.name },
       { header: 'Code', accessor: (r) => r.code },
       { header: 'Continent', accessor: (r) => r.continents?.name },
@@ -237,6 +237,7 @@ export default function AdminCountries() {
       ],
       toolbarActions: <ExportExcelButton onExport={handleExportExcel} />,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete is stable in practice, adding would defeat memoization
     [columns],
   );
 

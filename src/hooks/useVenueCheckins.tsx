@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-type VenueCheckin = {
+type _VenueCheckin = {
   id: string;
   venue_id: string;
   user_id: string;
@@ -94,16 +94,16 @@ export function useVenueCheckins() {
       });
 
       return { success: true, distance, checkin: data };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Check-in error:', error);
-      
-      if (error.code === 1) {
+      const err = error as { code?: number; message?: string };
+      if (err.code === 1) {
         toast({
           title: "Location permission denied",
           description: "Please allow location access to check in at venues.",
           variant: "destructive"
         });
-      } else if (error.code === 3) {
+      } else if (err.code === 3) {
         toast({
           title: "Location timeout",
           description: "Unable to get your location. Please try again.",
@@ -112,7 +112,7 @@ export function useVenueCheckins() {
       } else {
         toast({
           title: "Check-in failed",
-          description: error.message || "Unable to check in. Please try again.",
+          description: err.message || "Unable to check in. Please try again.",
           variant: "destructive"
         });
       }
@@ -137,7 +137,7 @@ export function useVenueCheckins() {
 
     // Transform the secure data for compatibility
     const checkinArray = Array.isArray(data) ? data : [];
-    return checkinArray.map((checkin: any) => ({
+    return checkinArray.map((checkin: Record<string, unknown>) => ({
       id: checkin.id,
       venue_id: checkin.venue_id,
       user_id: checkin.user_id,
@@ -166,7 +166,7 @@ export function useVenueCheckins() {
 
     // Get venue details for user's check-ins
     const checkinData = Array.isArray(data) ? data : [];
-    const venueIds = [...new Set(checkinData.map((c: any) => c.venue_id))] as string[];
+    const venueIds = [...new Set(checkinData.map((c: Record<string, unknown>) => c.venue_id as string))];
     
     if (venueIds.length === 0) return [];
 
@@ -181,7 +181,7 @@ export function useVenueCheckins() {
     }
 
     // Merge venue data with check-ins
-    return checkinData.map((checkin: any) => ({
+    return checkinData.map((checkin: Record<string, unknown>) => ({
       ...checkin,
       venues: venues?.find(v => v.id === checkin.venue_id) || null
     }));

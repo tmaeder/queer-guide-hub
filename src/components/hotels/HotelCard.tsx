@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { MapPin, Star, Wifi, DollarSign } from 'lucide-react';
+import { MapPin, Star, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';

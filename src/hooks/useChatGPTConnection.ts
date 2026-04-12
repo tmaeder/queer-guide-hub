@@ -26,7 +26,7 @@ export function useChatGPTConnection() {
 
       if (error) throw error;
       setStatus(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching ChatGPT status:', error);
       setStatus({ connected: false });
     } finally {
@@ -64,11 +64,11 @@ export function useChatGPTConnection() {
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error initiating ChatGPT OAuth:', error);
       toast({
         title: 'Connection Error',
-        description: error.message || 'Failed to start ChatGPT connection',
+        description: error instanceof Error ? error.message : 'Failed to start ChatGPT connection',
         variant: 'destructive',
       });
     }
@@ -87,11 +87,11 @@ export function useChatGPTConnection() {
         title: 'Disconnected',
         description: 'ChatGPT has been disconnected successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error disconnecting ChatGPT:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to disconnect ChatGPT',
+        description: error instanceof Error ? error.message : 'Failed to disconnect ChatGPT',
         variant: 'destructive',
       });
     }
@@ -118,11 +118,11 @@ export function useChatGPTConnection() {
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error testing ChatGPT connection:', error);
       toast({
         title: 'Test Failed',
-        description: error.message || 'Failed to test ChatGPT connection',
+        description: error instanceof Error ? error.message : 'Failed to test ChatGPT connection',
         variant: 'destructive',
       });
     } finally {

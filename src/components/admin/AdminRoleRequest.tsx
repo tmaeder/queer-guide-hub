@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -7,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 
 export function AdminRoleRequest() {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const { isAdmin, loading } = useAdminRoles();
 
   if (loading) {

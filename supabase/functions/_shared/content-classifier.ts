@@ -441,7 +441,7 @@ export function classificationToFlags(
   contentId: string,
   contentName: string,
   result: ClassificationResult,
-  moduleId: string,
+  _moduleId: string,
 ): Array<{
   module_name: string
   content_type: string

@@ -96,7 +96,7 @@ export default function PersonalityDetail() {
           ...data,
           fields: Array.isArray(data.fields) ? (data.fields as string[]) : [],
           achievements: Array.isArray(data.achievements) ? (data.achievements as string[]) : [],
-          social_links: (data.social_links as Record<string, any>) || {},
+          social_links: (data.social_links as Record<string, unknown>) || {},
           tags: data.tags || [],
           verification_status:
             (data.verification_status as 'pending' | 'verified' | 'disputed') || 'pending',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { EnhancedContentValidator, useContentValidation } from './EnhancedContentValidator';
+import { useContentValidation } from './EnhancedContentValidator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import Box from '@mui/material/Box';
@@ -25,7 +25,7 @@ export function EnhancedFormValidator({
   const [isBlocked, setIsBlocked] = useState(false);
   const { validateContent } = useContentValidation();
 
-  const validateForm = async (formData: FormData | Record<string, any>) => {
+  const validateForm = async (formData: FormData | Record<string, unknown>) => {
     const errors: string[] = [];
     const isFormData = formData instanceof FormData;
 
@@ -167,7 +167,7 @@ export function useFormValidation() {
   const { user } = useAuth();
   const { validateContent } = useContentValidation();
 
-  const validateFormData = async (data: Record<string, any>, contentFields: string[] = ['content']) => {
+  const validateFormData = async (data: Record<string, unknown>, contentFields: string[] = ['content']) => {
     const errors: string[] = [];
 
     for (const fieldName of contentFields) {

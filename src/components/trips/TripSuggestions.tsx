@@ -65,7 +65,7 @@ interface Props {
   endDate?: string;
 }
 
-export function TripSuggestions({ tripId, places, days, startDate, endDate }: Props) {
+export function TripSuggestions({ tripId, places, _days, startDate, endDate }: Props) {
   const theme = useTheme();
   const { toast } = useToast();
   const { addPlace } = useTripMutations();

@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
-interface Personality {
+interface _Personality {
   id: string;
   name: string;
   image_url: string | null;
@@ -174,7 +174,7 @@ async function getWikipediaImage(name: string): Promise<string | null> {
 
       if (imagesResponse.ok) {
         const imagesData = await imagesResponse.json();
-        const mainImage = imagesData.items?.find((item: any) =>
+        const mainImage = imagesData.items?.find((item: unknown) =>
           item.type === 'image' &&
           item.srcset &&
           !item.title.toLowerCase().includes('commons-logo') &&
@@ -189,7 +189,7 @@ async function getWikipediaImage(name: string): Promise<string | null> {
             return { url, width };
           });
 
-          const highestRes = srcsetEntries.reduce((prev: any, current: any) =>
+          const highestRes = srcsetEntries.reduce((prev: unknown, current: unknown) =>
             current.width > prev.width ? current : prev
           );
 

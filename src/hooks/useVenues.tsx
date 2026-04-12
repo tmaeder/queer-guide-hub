@@ -98,7 +98,7 @@ export function useVenues(autoFetch: boolean = true) {
         query = query.range(from, to);
       }
 
-      const { data, error, count } = (await queryWithRetry(() => query)) as any;
+      const { data, error, count } = (await queryWithRetry(() => query)) as { data: Record<string, unknown>[] | null; error: Error | null; count: number | null };
 
       if (error) throw error;
 
@@ -118,8 +118,8 @@ export function useVenues(autoFetch: boolean = true) {
               Number(venue.longitude),
             ),
           }))
-          .filter((venue: any) => venue.distance <= 50) // Within 50km
-          .sort((a: any, b: any) => a.distance - b.distance); // Sort by distance
+          .filter((venue: { distance: number }) => venue.distance <= 50) // Within 50km
+          .sort((a: { distance: number }, b: { distance: number }) => a.distance - b.distance); // Sort by distance
       }
 
       if (options?.append) {

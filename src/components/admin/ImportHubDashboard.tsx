@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -18,9 +18,7 @@ import {
   Eye,
   Download,
   X,
-  FileText,
   Search,
-  Activity,
   Package,
   Inbox,
   ArrowRight,

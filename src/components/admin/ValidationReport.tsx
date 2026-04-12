@@ -9,8 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useImportHub, ImportJob, ValidationResult } from '@/hooks/useImportHub';
 import {
-  CheckCircle, AlertTriangle, XCircle, Download, FileText,
-  AlertCircle, Info, TrendingUp, TrendingDown, Clock
+  CheckCircle, AlertTriangle, XCircle, Download,
+  AlertCircle, TrendingUp, TrendingDown, Clock
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 

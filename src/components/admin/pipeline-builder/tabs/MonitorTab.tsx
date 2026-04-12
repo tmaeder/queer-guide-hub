@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import {
-  Play, CheckCircle, XCircle, BarChart3, Database, ClipboardCheck,
+  Play, CheckCircle, XCircle, BarChart3, Database,
 } from 'lucide-react';
 import { useUnifiedMonitor, type UnifiedRun } from '../hooks/useUnifiedMonitor';
 import { useStagingStats } from '../hooks/usePipelineHistory';

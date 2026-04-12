@@ -1,4 +1,4 @@
-import { getServiceClient, getCorsHeaders, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { evaluateCondition } from '../_shared/condition-evaluator.ts'
 import type { PipelineMessage, PipelineNode, PipelineEdge, NodeState } from '../_shared/pipeline-message.ts'
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
@@ -461,8 +461,8 @@ async function advanceToNextNodes(
 async function handleBuiltInNode(
   supabase: SupabaseClient,
   node: PipelineNode,
-  run: Record<string, unknown>,
-  nodeStates: Record<string, NodeState>
+  _run: Record<string, unknown>,
+  _nodeStates: Record<string, NodeState>
 ): Promise<{ items_out: number }> {
   const config = node.data?.config || {}
 

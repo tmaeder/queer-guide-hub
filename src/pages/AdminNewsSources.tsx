@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -86,7 +85,7 @@ const columnHelper = createColumnHelper<NewsSourceRow>();
 
 export default function AdminNewsSources() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { _user } = useAuth();
   const { canManageContent, loading } = useAdminRoles();
   const { toast } = useToast();
 
@@ -384,7 +383,7 @@ export default function AdminNewsSources() {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <ExportExcelButton
             onExport={async () => {
-              const cols: ExportColumnDef<any>[] = [
+              const cols: ExportColumnDef<Record<string, unknown>>[] = [
                 { header: 'Name', accessor: (r) => r.name },
                 { header: 'URL', accessor: (r) => r.url },
                 { header: 'Source Type', accessor: (r) => r.source_type },
@@ -414,6 +413,7 @@ export default function AdminNewsSources() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast/triggerFetch are stable, adding would defeat memoization
     [columns],
   );
 

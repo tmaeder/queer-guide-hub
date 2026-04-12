@@ -1,11 +1,9 @@
 import React from 'react';
 import { Shield, MapPin, Clock, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface LocationPrivacyGuardProps {
   children: React.ReactNode;
@@ -29,7 +27,7 @@ export function LocationPrivacyGuard({
   showWarning = true,
   allowPreciseLocation = false
 }: LocationPrivacyGuardProps) {
-  const { user } = useAuth();
+  const { _user } = useAuth();
 
   // Check if location data is older than 30 days (anonymization threshold)
   const isLocationAnonymized = locationData?.created_at &&

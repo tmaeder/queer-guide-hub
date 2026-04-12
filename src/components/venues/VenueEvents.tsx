@@ -7,7 +7,6 @@ import { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 
 type Event = Database['public']['Tables']['events']['Row'];
 

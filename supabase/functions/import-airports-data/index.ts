@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from "../_shared/supabase-client.ts";
+import { getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from "../_shared/supabase-client.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
@@ -32,7 +32,7 @@ serve(async (req) => {
 
     // Filter to real airports with IATA codes and coordinates
     const airports = airportsRaw
-      .filter((a: any) =>
+      .filter((a: Record<string, unknown>) =>
         a.code &&
         a.code.length === 3 &&
         a.name &&
@@ -40,7 +40,7 @@ serve(async (req) => {
         a.coordinates?.lon &&
         (!a.iata_type || a.iata_type === 'airport')
       )
-      .map((a: any) => ({
+      .map((a: Record<string, unknown>) => ({
         iata_code: a.code,
         name: a.name,
         city_name: cityNameMap.get(a.city_code) || a.city_code || null,

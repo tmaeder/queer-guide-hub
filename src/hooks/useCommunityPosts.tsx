@@ -22,7 +22,7 @@ export interface CreatePostData {
   link_url?: string;
   link_title?: string;
   link_description?: string;
-  poll_options?: any;
+  poll_options?: Record<string, unknown>;
   mentions?: Array<{ user_id: string; username: string }>;
   tags?: string[];
 }
@@ -115,7 +115,7 @@ export const useCommunityPosts = (userId?: string) => {
         description: "Your post has been shared successfully."
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Failed to create post",
         description: error.message,
@@ -187,7 +187,7 @@ export const useCommunityPosts = (userId?: string) => {
         description: "Your post has been deleted successfully."
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Failed to delete post",
         description: error.message,

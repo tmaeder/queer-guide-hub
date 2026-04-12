@@ -49,7 +49,7 @@ export default function FeedbackBoard() {
     queryKey: ['feedback-board'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('community_submissions' as any)
+        .from('community_submissions' as const)
         .select('id,data,submitted_at,feedback_status')
         .eq('content_type', 'feedback')
         .order('submitted_at', { ascending: false });
@@ -85,13 +85,13 @@ export default function FeedbackBoard() {
       const voteState = votesMap[submissionId];
       if (voteState?.hasVoted) {
         await supabase
-          .from('feedback_votes' as any)
+          .from('feedback_votes' as const)
           .delete()
           .eq('submission_id', submissionId)
           .eq('user_id', user.id);
       } else {
         await supabase
-          .from('feedback_votes' as any)
+          .from('feedback_votes' as const)
           .insert({ submission_id: submissionId, user_id: user.id });
       }
     },

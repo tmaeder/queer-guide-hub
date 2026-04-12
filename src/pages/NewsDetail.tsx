@@ -120,7 +120,7 @@ export default function NewsDetail() {
           .eq('entity_id', data.id)
           .then(({ data: tagData }) => {
             if (tagData) {
-              setTags(tagData.map((t: any) => t.unified_tags.name));
+              setTags(tagData.map((t: { unified_tags: { name: string } }) => t.unified_tags.name));
             }
           });
 
@@ -133,7 +133,7 @@ export default function NewsDetail() {
             .then(({ data: cities }) => {
               if (cities) {
                 const map: Record<string, string> = {};
-                cities.forEach((c: any) => {
+                cities.forEach((c: { id: string; name: string }) => {
                   map[c.id] = c.name;
                 });
                 setCityNames(map);
@@ -150,7 +150,7 @@ export default function NewsDetail() {
             .then(({ data: countries }) => {
               if (countries) {
                 const map: Record<string, string> = {};
-                countries.forEach((c: any) => {
+                countries.forEach((c: { id: string; name: string }) => {
                   map[c.id] = c.name;
                 });
                 setCountryNames(map);

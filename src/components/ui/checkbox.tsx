@@ -12,7 +12,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
   ({ className, checked, defaultChecked, onCheckedChange, disabled, id, ...props }, ref) => {
     return (
       <MuiCheckbox
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLButtonElement>}
         checked={checked}
         defaultChecked={defaultChecked}
         onChange={(e) => onCheckedChange?.(e.target.checked)}
@@ -27,7 +27,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
           p: 0,
           borderRadius: 0.5,
         }}
-        {...(props as any)}
+        {...(props as Record<string, unknown>)}
       />
     )
   }

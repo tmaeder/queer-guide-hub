@@ -30,9 +30,7 @@ import {
   Zap,
   Settings,
   CheckCircle2,
-  XCircle,
   AlertTriangle,
-  Clock,
   Link2,
   MapPin,
   Tag,
@@ -44,11 +42,9 @@ import {
   Eye,
   ThumbsUp,
   ThumbsDown,
-  RefreshCw,
   Activity,
   BarChart3,
   Globe,
-  ExternalLink,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,8 +54,6 @@ import {
   useAutomationMonitor,
   type AutomationModule,
   type ContentFlag,
-  type LinkValidation,
-  type GeoValidation,
 } from '@/hooks/useAutomationMonitor';
 import { formatDistanceToNow } from 'date-fns';
 

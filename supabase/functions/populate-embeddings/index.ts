@@ -34,7 +34,7 @@ async function generateCFEmbeddings(texts: string[], cfApiToken: string): Promis
   }
 
   const data = await response.json();
-  return data.data.map((item: any) => item.embedding);
+  return data.data.map((item: Record<string, unknown>) => item.embedding);
 }
 
 function generateFallbackEmbedding(contentText: string): number[] {
@@ -66,7 +66,7 @@ serve(async (req) => {
   try {
     const {
       content_types = ['venue', 'event', 'tag', 'group', 'marketplace', 'personality', 'city', 'news'],
-      force_refresh = false,
+      _force_refresh = false,
       limit: rawLimit = 100,
       offset: rawOffset = 0
     } = await req.json() as PopulateRequest;
@@ -177,12 +177,12 @@ serve(async (req) => {
       console.log(`Found ${data.length} ${contentType} items`);
 
       // Build content texts for items that need embedding (upsert handles dedup)
-      const itemsToEmbed: { item: any; contentText: string; metadata: any }[] = [];
+      const itemsToEmbed: { item: unknown; contentText: string; metadata: unknown }[] = [];
 
       for (const item of data) {
 
         let contentText = '';
-        const metadata: any = {};
+        const metadata: unknown = {};
 
         switch (contentType) {
           case 'venue':

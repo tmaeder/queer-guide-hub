@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { cloudflareAPI } from '@/integrations/supabase/cloudflare';
+import { cloudflareAPI, type CloudflareAnalytics, type CloudflareZoneInfo, type CloudflareSecuritySettings, type CloudflarePerformanceSettings } from '@/integrations/supabase/cloudflare';
 import { InlineLoading } from '@/components/ui/loading';
 import {
   Cloud,
@@ -24,11 +24,11 @@ import {
 } from 'lucide-react';
 
 interface CloudflareStats {
-  analytics?: any;
-  zoneInfo?: any;
-  securitySettings?: any;
-  performanceSettings?: any;
-  threatAnalytics?: any;
+  analytics?: CloudflareAnalytics | null;
+  zoneInfo?: CloudflareZoneInfo | null;
+  securitySettings?: CloudflareSecuritySettings | null;
+  performanceSettings?: CloudflarePerformanceSettings | null;
+  threatAnalytics?: Record<string, unknown> | null;
 }
 
 export function CloudflareDashboard() {
@@ -68,7 +68,7 @@ export function CloudflareDashboard() {
           description: 'Latest statistics have been loaded successfully.',
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching Cloudflare data:', error);
 
       let errorMessage = 'Failed to fetch Cloudflare data.';
@@ -95,6 +95,7 @@ export function CloudflareDashboard() {
 
   useEffect(() => {
     fetchCloudflareData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const handleRefresh = () => {

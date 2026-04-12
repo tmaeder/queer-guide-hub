@@ -54,9 +54,9 @@ const columnHelper = createColumnHelper<UserRow>();
 export default function AdminUsers() {
   const navigate = useNavigate();
   const { isAdmin } = useAdminRoles();
-  const { data: roleMap } = useUserRoles();
+  const { data: _roleMap } = useUserRoles();
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
-  const [tableKey, setTableKey] = useState(0);
+  const [_tableKey, setTableKey] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
 
   const columns = useMemo(
@@ -158,7 +158,7 @@ export default function AdminUsers() {
         ),
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
-      columnHelper.accessor('moderation_status' as any, {
+      columnHelper.accessor('moderation_status' as const, {
         id: 'moderation_status',
         header: 'Status',
         cell: (info) => {
@@ -319,7 +319,7 @@ export default function AdminUsers() {
           )}
           <ExportExcelButton
             onExport={async () => {
-              const cols: ExportColumnDef<any>[] = [
+              const cols: ExportColumnDef<Record<string, unknown>>[] = [
                 { header: 'Display Name', accessor: (r) => r.display_name },
                 { header: 'Location', accessor: (r) => r.location },
                 { header: 'User Mode', accessor: (r) => r.user_mode },
@@ -337,6 +337,7 @@ export default function AdminUsers() {
         </Box>
       ),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isAdmin/navigate are stable, adding would defeat memoization
     [columns],
   );
 

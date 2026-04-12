@@ -27,6 +27,7 @@ export function useAdminRoles() {
       setIsModerator(false);
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchUserRoles defined below, re-run on user/authLoading change
   }, [user, authLoading]);
 
   const fetchUserRoles = async () => {

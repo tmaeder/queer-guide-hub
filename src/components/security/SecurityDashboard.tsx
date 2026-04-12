@@ -14,8 +14,8 @@ interface SecurityEvent {
   id: string;
   event_type: string;
   severity?: 'low' | 'medium' | 'high' | 'critical';
-  details?: any;
-  metadata?: any;
+  details?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   created_at: string;
   user_id?: string;
 }
@@ -28,7 +28,7 @@ interface SecurityMetrics {
 }
 
 export function SecurityDashboard() {
-  const { user } = useAuth();
+  const { _user } = useAuth();
   const { isAdmin } = useAdminRoles();
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [metrics, setMetrics] = useState<SecurityMetrics>({
@@ -43,6 +43,7 @@ export function SecurityDashboard() {
     if (isAdmin) {
       loadSecurityData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadSecurityData defined below, re-run on isAdmin change
   }, [isAdmin]);
 
   const loadSecurityData = async () => {
@@ -68,7 +69,7 @@ export function SecurityDashboard() {
         const recentEvents = eventsData.filter(e => new Date(e.created_at) > last24h);
         const criticalEvents = recentEvents.filter(e => {
           // Extract severity from metadata if available
-          const severity = (e.metadata as any)?.severity || 'unknown';
+          const severity = (e.metadata as Record<string, unknown> | undefined)?.severity || 'unknown';
           return severity === 'critical';
         });
         const adminAccess = recentEvents.filter(e =>

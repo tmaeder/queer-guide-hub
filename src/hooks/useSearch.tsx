@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "./useDebounce";
-import { supabase } from "@/integrations/supabase/client";
 import { invokeWithRetry } from '@/utils/fetchWithRetry';
 
 export interface SearchResult {
@@ -14,8 +13,8 @@ export interface SearchResult {
   date?: string;
   rating?: number;
   imageUrl?: string;
-  metadata?: Record<string, any>;
-  _highlightResult?: any;
+  metadata?: Record<string, unknown>;
+  _highlightResult?: Record<string, unknown>;
 }
 
 export interface SearchFilters {
@@ -51,6 +50,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
   const filtersRef = useRef(filters);
   useEffect(() => {
     filtersRef.current = filters;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- filters excluded; filtersKey is JSON.stringify(filters) which is semantically equivalent
   }, [filtersKey]);
 
   const performSearch = async (searchQuery: string) => {

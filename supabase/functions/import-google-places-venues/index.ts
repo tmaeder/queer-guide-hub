@@ -224,7 +224,7 @@ serve(async (req) => {
               const countryCode = 'US'; // Most Google Places results will be US-based for our queries
 
               // Get or create city
-              const cityId = await getOrCreateCity(
+              const _cityId = await getOrCreateCity(
                 supabase, 
                 cityName, 
                 countryCode, 
@@ -234,7 +234,7 @@ serve(async (req) => {
 
               // Map category
               const categoryMapping = mapGooglePlaceTypeToCategory(placeDetails.types);
-              const categoryId = await getOrCreateVenueCategory(supabase, categoryMapping.name, categoryMapping.slug, 'Google Places');
+              const _categoryId = await getOrCreateVenueCategory(supabase, categoryMapping.name, categoryMapping.slug, 'Google Places');
 
               // Prepare tags
               const tags = ['lgbt-friendly', 'google-places'];
@@ -302,7 +302,7 @@ serve(async (req) => {
               } catch (e) { console.warn('AI enrichment skipped:', e) }
 
               // Insert venue
-              const { data: insertedVenue, error: insertError } = await supabase
+              const { data: _insertedVenue, error: insertError } = await supabase
                 .from('venues')
                 .insert(venueData)
                 .select()

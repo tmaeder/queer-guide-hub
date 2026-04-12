@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -20,7 +19,6 @@ import {
   Globe,
   Play,
   Tags,
-  Settings2,
   ChevronDown,
   ChevronUp
 } from "lucide-react";
@@ -52,6 +50,7 @@ export function NewsSourcesManager() {
 
   useEffect(() => {
     fetchSources();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const fetchSources = async () => {
@@ -63,7 +62,7 @@ export function NewsSourcesManager() {
 
       if (error) throw error;
       setSources(data || []);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to fetch news sources",
@@ -178,7 +177,7 @@ export function NewsSourcesManager() {
       });
 
       fetchSources();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to delete news source",
@@ -202,7 +201,7 @@ export function NewsSourcesManager() {
       });
 
       fetchSources();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to update news source",
@@ -223,7 +222,7 @@ export function NewsSourcesManager() {
         title: "Success",
         description: "News fetch triggered successfully",
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to trigger news fetch",
@@ -269,7 +268,7 @@ export function NewsSourcesManager() {
       setEditingSource(null);
       setEditingKeywords([]);
       fetchSources();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to update keywords",

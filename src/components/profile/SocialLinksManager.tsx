@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Globe, Save, Plus } from 'lucide-react';
@@ -19,8 +19,8 @@ interface SocialLink {
 }
 
 interface SocialLinksManagerProps {
-  initialSocialLinks?: Record<string, any>;
-  onUpdate?: (socialLinks: Record<string, any>) => void;
+  initialSocialLinks?: Record<string, unknown>;
+  onUpdate?: (socialLinks: Record<string, unknown>) => void;
 }
 
 export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: SocialLinksManagerProps) {
@@ -58,7 +58,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
         if (regex.test(cleanUrl)) {
           return config.platform;
         }
-      } catch (error) {
+      } catch (_error) {
         continue;
       }
     }
@@ -91,7 +91,7 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
     });
   };
 
-  const handleSocialLinkChange = (platform: string, value: string) => {
+  const _handleSocialLinkChange = (platform: string, value: string) => {
     setSocialLinks((prev) => ({
       ...prev,
       [platform]: value,

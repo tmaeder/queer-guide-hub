@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { getCorsHeaders } from '../_shared/supabase-client.ts'
 
 const REFUGE_API = 'https://www.refugerestrooms.org/api/v1/restrooms'
 
@@ -57,7 +57,7 @@ serve(async (req) => {
 
     const data = await response.json()
 
-    const restrooms = data.map((r: any) => ({
+    const restrooms = data.map((r: Record<string, unknown>) => ({
       id: r.id,
       name: r.name,
       street: r.street,

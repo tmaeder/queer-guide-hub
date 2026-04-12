@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
-interface OptimizationJob {
+interface _OptimizationJob {
   id: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   totalImages: number;
@@ -10,7 +10,7 @@ interface OptimizationJob {
   failedImages: number;
   createdAt: string;
   updatedAt: string;
-  results?: any[];
+  results?: unknown[];
 }
 
 serve(async (req) => {
@@ -31,7 +31,7 @@ serve(async (req) => {
       console.log('🚀 Starting batch image optimization...')
 
       const { data: buckets } = await supabase.storage.listBuckets()
-      const allImages: any[] = []
+      const allImages: unknown[] = []
 
       for (const bucket of buckets || []) {
         const { data: files } = await supabase.storage
@@ -140,9 +140,9 @@ serve(async (req) => {
 })
 
 async function processImagesInBatches(
-  supabase: any,
+  supabase: unknown,
   jobId: string,
-  images: any[],
+  images: unknown[],
   batchSize: number
 ) {
   try {
@@ -160,7 +160,7 @@ async function processImagesInBatches(
     let processedCount = 0
     let successCount = 0
     let failCount = 0
-    const results: any[] = []
+    const results: unknown[] = []
 
     // Process in batches
     for (let i = 0; i < images.length; i += batchSize) {
@@ -234,7 +234,7 @@ async function processImagesInBatches(
   }
 }
 
-async function optimizeImage(supabase: any, image: any) {
+async function optimizeImage(supabase: unknown, image: unknown) {
   // Simulate image optimization process
   // In a real implementation, this would:
   // 1. Download the original image from storage

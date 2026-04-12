@@ -13,7 +13,7 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
   ({ className, checked, defaultChecked, onCheckedChange, disabled, id, ...props }, ref) => {
     return (
       <MuiSwitch
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLButtonElement>}
         checked={checked}
         defaultChecked={defaultChecked}
         onChange={(e) => { hapticTrigger('nudge'); onCheckedChange?.(e.target.checked); }}
@@ -22,7 +22,7 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         className={className}
         size="small"
         color="primary"
-        {...(props as any)}
+        {...(props as Record<string, unknown>)}
       />
     )
   }

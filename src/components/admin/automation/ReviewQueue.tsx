@@ -20,7 +20,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import { CheckCircle2, XCircle, Eye, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, XCircle, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ContentChange } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';

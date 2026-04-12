@@ -400,7 +400,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       const radii = AREA_RADIUS[type] ?? AREA_RADIUS.cities;
       const color = LAYER_COLORS[type as LayerType] ?? '#888';
 
-      const radiusExpr: any[] = ['interpolate', ['linear'], ['zoom']];
+      const radiusExpr: unknown[] = ['interpolate', ['linear'], ['zoom']];
       for (const [z, r] of radii) radiusExpr.push(z, r);
 
       const existingSource = map.getSource(sourceId) as GeoJSONSource | undefined;
@@ -414,7 +414,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
           type: 'circle',
           source: sourceId,
           paint: {
-            'circle-radius': radiusExpr as any,
+            'circle-radius': radiusExpr as maplibregl.ExpressionSpecification,
             'circle-color': color,
             'circle-opacity': style.opacity,
             'circle-stroke-color': color,
@@ -453,8 +453,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
         map.on('click', circleLayerId, (e: MapLayerMouseEvent) => {
           const feat = e.features?.[0];
           if (!feat || feat.geometry.type !== 'Point') return;
-          const props = feat.properties as Record<string, any>;
-          const meta: Record<string, any> = {};
+          const props = feat.properties as Record<string, unknown>;
+          const meta: Record<string, unknown> = {};
           for (const [k, v] of Object.entries(props)) {
             if (k.startsWith('meta_')) {
               try { meta[k.slice(5)] = JSON.parse(v); } catch { meta[k.slice(5)] = v; }
@@ -598,8 +598,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     map.on('click', UNCLUSTERED_LAYER, (e: MapLayerMouseEvent) => {
       const feat = e.features?.[0];
       if (!feat || feat.geometry.type !== 'Point') return;
-      const props = feat.properties as Record<string, any>;
-      let meta: Record<string, any> = {};
+      const props = feat.properties as Record<string, unknown>;
+      let meta: Record<string, unknown> = {};
       try { meta = JSON.parse(props.meta ?? '{}'); } catch { /* ignore */ }
 
       showPopup(map, e.lngLat, {

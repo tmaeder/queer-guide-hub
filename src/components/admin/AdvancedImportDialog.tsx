@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -20,7 +19,7 @@ export interface ImportConfig {
   validation: {
     strict: boolean;
     required_fields: string[];
-    custom_validations: Record<string, any>;
+    custom_validations: Record<string, unknown>;
   };
   filters: {
     location?: string;
@@ -189,8 +188,11 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                   {DUPLICATE_STRATEGIES.map((strategy) => (
                     <div
                       key={strategy.value}
+                      role="button"
+                      tabIndex={0}
                       style={{ padding: 16, borderRadius: 8, cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.duplicateStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
-                      onClick={() => setConfig(prev => ({ ...prev, duplicateStrategy: strategy.value as any }))}
+                      onClick={() => setConfig(prev => ({ ...prev, duplicateStrategy: strategy.value as 'skip' | 'update' | 'merge' }))}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfig(prev => ({ ...prev, duplicateStrategy: strategy.value as 'skip' | 'update' | 'merge' })); } }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <div style={{ height: 16, width: 16, borderRadius: 4, backgroundColor: config.duplicateStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />
@@ -219,8 +221,11 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                   {ERROR_STRATEGIES.map((strategy) => (
                     <div
                       key={strategy.value}
+                      role="button"
+                      tabIndex={0}
                       style={{ padding: 16, borderRadius: 8, cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.errorStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
-                      onClick={() => setConfig(prev => ({ ...prev, errorStrategy: strategy.value as any }))}
+                      onClick={() => setConfig(prev => ({ ...prev, errorStrategy: strategy.value as 'continue' | 'stop' | 'retry_batch' }))}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfig(prev => ({ ...prev, errorStrategy: strategy.value as 'continue' | 'stop' | 'retry_batch' })); } }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <div style={{ height: 16, width: 16, borderRadius: 4, backgroundColor: config.errorStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />

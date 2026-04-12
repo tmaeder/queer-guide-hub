@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, getServiceClient, requireAdmin, corsResponse, errorResponse, jsonResponse } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
 
 interface AdultModelRow {
   'pornhub-profile': string;
@@ -98,7 +98,7 @@ serve(async (req) => {
           continue;
         }
 
-        const row: any = {};
+        const row: Record<string, unknown> = {};
         headers.forEach((header, index) => {
           row[header] = values[index]?.replace(/"/g, '') || '';
         });
@@ -156,7 +156,7 @@ serve(async (req) => {
               const fileName = `${row.name.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${fileExtension}`;
               
               // Upload to Supabase storage
-              const { data: uploadData, error: uploadError } = await supabase.storage
+              const { data: _uploadData, error: uploadError } = await supabase.storage
                 .from('adult-model-images')
                 .upload(fileName, imageBlob, {
                   contentType: imageResponse.headers.get('content-type') || 'image/jpeg',

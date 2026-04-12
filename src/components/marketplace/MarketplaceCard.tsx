@@ -1,10 +1,10 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { MotionCard as Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MotionCard as Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, Heart, MapPin, Globe, Phone, Mail, ExternalLink, Eye, Building } from 'lucide-react';
+import { Star, MapPin, Globe, Phone, Mail, ExternalLink, Eye } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { Link } from 'react-router';
 import { FavoriteButton } from '@/components/ui/favorite-button';
@@ -28,8 +28,8 @@ interface MarketplaceCardProps {
 export function MarketplaceCard({
   listing,
   loading = false,
-  onViewDetails,
-  onToggleFavorite,
+  _onViewDetails,
+  _onToggleFavorite,
   showFavoriteButton = false,
 }: MarketplaceCardProps) {
   if (loading || !listing) {
@@ -45,9 +45,9 @@ export function MarketplaceCard({
       listing.marketplace_reviews.length
     : 0;
 
-  const isFavorited = listing.marketplace_favorites && listing.marketplace_favorites.length > 0;
+  const _isFavorited = listing.marketplace_favorites && listing.marketplace_favorites.length > 0;
 
-  const getCategoryColor = (category: string) => {
+  const _getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       products: 'bg-muted text-foreground',
       services: 'bg-muted text-foreground',
@@ -75,7 +75,7 @@ export function MarketplaceCard({
     }
   };
 
-  const getBusinessTypeIcon = (type: string) => {
+  const _getBusinessTypeIcon = (type: string) => {
     switch (type) {
       case 'online':
         return <Globe style={{ height: 12, width: 12 }} />;
