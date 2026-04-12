@@ -18,7 +18,6 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -413,17 +412,19 @@ export default function Ressources() {
           </Typography>
         </Box>
 
-        {selectedTag.image_url && (
-          <Box
-            sx={{
-              width: '100%',
-              aspectRatio: { xs: '16 / 8', md: '16 / 6' },
-              borderRadius: 3,
-              overflow: 'hidden',
-              mb: 3,
-              bgcolor: 'action.hover',
-            }}
-          >
+        {/* Hero — image with overlaid title */}
+        <Box
+          sx={{
+            width: '100%',
+            aspectRatio: { xs: '16 / 9', md: '16 / 6' },
+            borderRadius: 3,
+            overflow: 'hidden',
+            mb: 4,
+            position: 'relative',
+            bgcolor: 'action.hover',
+          }}
+        >
+          {selectedTag.image_url && (
             <Box
               component="img"
               src={selectedTag.image_url}
@@ -433,32 +434,68 @@ export default function Ressources() {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
+          )}
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              p: { xs: 2.5, sm: 3.5 },
+            }}
+          >
+            {primary && (
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', mb: 0.5, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                {parentName ? `${getCategoryShortName(parentName)} › ` : ''}
+                {getCategoryShortName(primary.name)}
+              </Typography>
+            )}
+            <Typography
+              variant="h3"
+              component="h1"
+              sx={{
+                fontWeight: 800,
+                color: '#fff',
+                textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                lineHeight: 1.1,
+                fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' },
+              }}
+            >
+              {selectedTag.name}
+            </Typography>
           </Box>
+        </Box>
+
+        {/* Description */}
+        {selectedTag.description && (
+          <Typography
+            color="text.secondary"
+            sx={{
+              lineHeight: 1.7,
+              mb: 4,
+              maxWidth: 720,
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+            }}
+          >
+            {selectedTag.description}
+          </Typography>
         )}
 
-        <Paper
-          variant="outlined"
-          sx={{ p: { xs: 2.5, sm: 3 }, mb: 3, bgcolor: 'background.paper' }}
-        >
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 0.5 }}>
-            {selectedTag.name}
-          </Typography>
-          {primary && (
-            <Typography variant="body2" color="text.secondary">
-              {parentName ? `${getCategoryShortName(parentName)} › ` : ''}
-              {getCategoryShortName(primary.name)}
-            </Typography>
-          )}
-          {selectedTag.description && (
-            <Typography color="text.secondary" sx={{ lineHeight: 1.7, mt: 1.5 }}>
-              {selectedTag.description}
-            </Typography>
-          )}
-        </Paper>
-
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
+        {/* Content grid */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '5fr 2fr' }, gap: { xs: 4, lg: 5 } }}>
           <TagLinkedContent tagId={selectedTag.id} tagName={selectedTag.name} />
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 3,
+              position: { lg: 'sticky' },
+              top: { lg: 80 },
+              alignSelf: 'start',
+            }}
+          >
             <RelatedTagsCard
               tagId={selectedTag.id}
               onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as any)}
