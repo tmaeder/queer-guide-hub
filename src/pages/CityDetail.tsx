@@ -54,6 +54,7 @@ import { LocationInfo } from '@/components/location/LocationInfo';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import { VillageCard } from '@/components/villages/VillageCard';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
+import { useNearestAirport } from '@/hooks/useNearestAirport';
 import Box from '@mui/material/Box';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
@@ -76,6 +77,14 @@ export default function CityDetail() {
   const [imageUrl, setImageUrl] = useState<string>('');
   const [createTripOpen, setCreateTripOpen] = useState(false);
   const { user } = useAuth();
+
+  const hasAirport = !!(city?.major_airport_code || (city?.airport_codes && city.airport_codes.length > 0));
+  const { nearestAirport, loading: nearestAirportLoading } = useNearestAirport({
+    latitude: city?.latitude ?? null,
+    longitude: city?.longitude ?? null,
+    hasAirport,
+  });
+  const effectiveIata = city?.major_airport_code || nearestAirport?.iata_code || null;
 
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
   const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
@@ -316,10 +325,10 @@ export default function CityDetail() {
             variant="outlined"
           />
         )}
-        {city.major_airport_code && (
+        {effectiveIata && (
           <Chip
             icon={<Plane style={{ height: 14, width: 14 }} />}
-            label={city.major_airport_code}
+            label={hasAirport ? effectiveIata : `~${effectiveIata} (nearest)`}
             size="small"
             variant="outlined"
           />
@@ -756,7 +765,7 @@ export default function CityDetail() {
                         </Box>
                       </Box>
                     )}
-                    {city.major_airport_code && (
+                    {effectiveIata && (
                       <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                           <Plane style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
@@ -764,10 +773,15 @@ export default function CityDetail() {
                             component="span"
                             sx={{ fontSize: '0.875rem', fontWeight: 500 }}
                           >
-                            Major Airport
+                            {hasAirport ? 'Major Airport' : 'Nearest Airport'}
                           </Typography>
                         </Box>
-                        <Badge variant="outline">{city.major_airport_code}</Badge>
+                        <Badge variant="outline">{effectiveIata}</Badge>
+                        {!hasAirport && nearestAirport && (
+                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
+                            {nearestAirport.city_name} — {nearestAirport.distanceKm} km
+                          </Typography>
+                        )}
                       </Box>
                     )}
                   </CardContent>
@@ -1187,7 +1201,7 @@ export default function CityDetail() {
               style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}
             >
               <TravelDealsSection
-                destinationIata={city.major_airport_code}
+                destinationIata={effectiveIata}
                 destinationCity={city.name}
                 destinationCountryCode={city.countries?.code}
               />
@@ -1221,6 +1235,25 @@ export default function CityDetail() {
                         </Box>
                         <Typography component="span" sx={{ fontWeight: 700 }}>
                           {city.major_airport_code}
+                        </Typography>
+                      </Box>
+                    )}
+                    {!hasAirport && nearestAirport && (
+                      <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <Plane style={{ height: 16, width: 16 }} />
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                          >
+                            Nearest Airport
+                          </Typography>
+                        </Box>
+                        <Typography component="span" sx={{ fontWeight: 700 }}>
+                          {nearestAirport.iata_code}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
+                          {nearestAirport.city_name} — {nearestAirport.distanceKm} km away
                         </Typography>
                       </Box>
                     )}
