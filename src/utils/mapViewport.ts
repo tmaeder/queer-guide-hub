@@ -141,6 +141,37 @@ export class LRUCache<V> {
   }
 }
 
+// ── Validation & Clamping ────────────────────────────────────────────────
+
+/**
+ * Clamp bbox to valid geographic ranges.
+ * Prevents garbage values (e.g. from MapLibre getBounds on a 0-size container)
+ * from reaching Supabase queries.
+ */
+export function clampBbox(bbox: Bbox): Bbox {
+  return {
+    west: Math.max(-180, Math.min(180, bbox.west)),
+    south: Math.max(-90, Math.min(90, bbox.south)),
+    east: Math.max(-180, Math.min(180, bbox.east)),
+    north: Math.max(-90, Math.min(90, bbox.north)),
+  };
+}
+
+/**
+ * Returns true if a bbox has values within valid geographic ranges
+ * and the bounds are properly ordered (south < north, west < east).
+ */
+export function isBboxValid(bbox: Bbox): boolean {
+  return (
+    bbox.south >= -90 &&
+    bbox.north <= 90 &&
+    bbox.west >= -180 &&
+    bbox.east <= 180 &&
+    bbox.south < bbox.north &&
+    bbox.west < bbox.east
+  );
+}
+
 // ── Debounce ──────────────────────────────────────────────────────────────────
 
 /**

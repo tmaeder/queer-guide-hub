@@ -275,11 +275,15 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     map.on('load', () => {
       setMapReady(true);
       mapRef.current = map;
+      const canvas = map.getCanvas();
+      if (!canvas.clientWidth || !canvas.clientHeight) return;
       const bbox = getMapBbox(map);
       onViewportChange(bbox, map.getZoom());
     });
 
     map.on('moveend', () => {
+      const canvas = map.getCanvas();
+      if (!canvas.clientWidth || !canvas.clientHeight) return;
       const bbox = getMapBbox(map);
       const z = map.getZoom();
       onViewportChange(bbox, z);

@@ -20,8 +20,10 @@ import {
   LRUCache,
   bboxExceedsPadded,
   bboxKey,
+  clampBbox,
   filtersHash as computeFiltersHash,
   getZoomBucket,
+  isBboxValid,
   padBbox,
   quantizeBbox,
 } from '@/utils/mapViewport';
@@ -246,7 +248,8 @@ export function useViewportPoints({
     const gen = ++genRef.current;
 
     const bucket = getZoomBucket(zoom);
-    const padded = padBbox(bbox, 0.15);
+    const clamped = clampBbox(bbox);
+    const padded = padBbox(clamped, 0.15);
     const quantized = quantizeBbox(padded, bucket);
     const bk = bboxKey(quantized);
     const fh = computeFiltersHash(filtersRef.current ?? {});
@@ -306,6 +309,8 @@ export function useViewportPoints({
 
   const onViewportChange = useCallback(
     (bbox: Bbox, zoom: number) => {
+      if (!isBboxValid(bbox)) return;
+
       const prevBucket = getZoomBucket(lastZoomRef.current);
       const newBucket = getZoomBucket(zoom);
       lastZoomRef.current = zoom;

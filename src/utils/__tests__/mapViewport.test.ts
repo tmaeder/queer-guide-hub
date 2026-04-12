@@ -6,6 +6,8 @@ import {
   bboxKey,
   filtersHash,
   bboxExceedsPadded,
+  clampBbox,
+  isBboxValid,
   LRUCache,
   type Bbox,
 } from '../mapViewport';
@@ -232,5 +234,61 @@ describe('LRUCache', () => {
     cache.set('x', 'val');
     expect(cache.has('x')).toBe(true);
     expect(cache.has('y')).toBe(false);
+  });
+});
+
+// ── Bbox Clamping ────────────────────────────────────────────────────────────
+
+describe('clampBbox', () => {
+  it('passes through valid bbox unchanged', () => {
+    const bbox: Bbox = { west: 8, south: 47, east: 9, north: 48 };
+    expect(clampBbox(bbox)).toEqual(bbox);
+  });
+
+  it('clamps extreme values from broken getBounds', () => {
+    const garbage: Bbox = {
+      west: -36470658778,
+      south: -43874387537,
+      east: 36470658795.1,
+      north: 43874387631.7,
+    };
+    const clamped = clampBbox(garbage);
+    expect(clamped.west).toBe(-180);
+    expect(clamped.south).toBe(-90);
+    expect(clamped.east).toBe(180);
+    expect(clamped.north).toBe(90);
+  });
+
+  it('clamps partially out-of-range values', () => {
+    const bbox: Bbox = { west: -200, south: 40, east: 20, north: 100 };
+    const clamped = clampBbox(bbox);
+    expect(clamped.west).toBe(-180);
+    expect(clamped.south).toBe(40);
+    expect(clamped.east).toBe(20);
+    expect(clamped.north).toBe(90);
+  });
+});
+
+// ── Bbox Validation ──────────────────────────────────────────────────────────
+
+describe('isBboxValid', () => {
+  it('returns true for a normal bbox', () => {
+    expect(isBboxValid({ west: 8, south: 47, east: 9, north: 48 })).toBe(true);
+  });
+
+  it('returns true for full world bbox', () => {
+    expect(isBboxValid({ west: -180, south: -90, east: 180, north: 90 })).toBe(true);
+  });
+
+  it('returns false for extreme latitude', () => {
+    expect(isBboxValid({ west: 8, south: -43874387537, east: 9, north: 43874387631 })).toBe(false);
+  });
+
+  it('returns false for inverted bounds (south > north)', () => {
+    expect(isBboxValid({ west: 8, south: 50, east: 9, north: 40 })).toBe(false);
+  });
+
+  it('returns false for inverted bounds (west > east)', () => {
+    expect(isBboxValid({ west: 20, south: 40, east: 10, north: 50 })).toBe(false);
   });
 });
