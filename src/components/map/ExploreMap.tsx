@@ -23,7 +23,7 @@ import { ExploreMapFiltersPanel } from '@/components/map/ExploreMapFilters';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { hapticTrigger } from '@/hooks/useHaptics';
-import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, type Bbox } from '@/utils/mapViewport';
+import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, clampBbox, type Bbox } from '@/utils/mapViewport';
 import {
   useCountryBoundaries,
   useCityBoundaries,
@@ -132,7 +132,6 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   // ── State ────────────────────────────────────────────────────────────────
   const [mapReady, setMapReady] = useState(false);
-  const [locating, setLocating] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(initialZoom ?? DEFAULT_ZOOM);
 
   const [enabledLayers, setEnabledLayers] = useState<LayerType[]>(
@@ -203,30 +202,15 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
   }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter]);
 
-  const handleLocateMe = useCallback(() => {
-    if (!('geolocation' in navigator)) return;
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        sessionStorage.setItem('ip_geo', JSON.stringify({ latitude, longitude }));
-        flyToLocation(longitude, latitude, 13);
-        setLocating(false);
-      },
-      () => setLocating(false),
-      { timeout: 10000, maximumAge: 300000 },
-    );
-  }, [flyToLocation]);
-
   // ── Helper: extract bbox from map ────────────────────────────────────────
   const getMapBbox = useCallback((map: maplibregl.Map): Bbox => {
     const bounds = map.getBounds();
-    return {
+    return clampBbox({
       west: bounds.getWest(),
       south: bounds.getSouth(),
       east: bounds.getEast(),
       north: bounds.getNorth(),
-    };
+    });
   }, []);
 
   // ── Helper: show popup with navigation ───────────────────────────────────
@@ -277,6 +261,14 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserLocation: true,
+      }),
+      'top-right',
+    );
 
     if (linkToFullMap) map.scrollZoom.disable();
 
@@ -733,12 +725,10 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
       {/* Filters bar */}
       {showFilters && (
-        <Box sx={{ mt: 1 }}>
+        <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
           <ExploreMapFiltersPanel
             filters={filters}
             onFiltersChange={setFilters}
-            onLocateMe={handleLocateMe}
-            locating={locating}
           />
         </Box>
       )}

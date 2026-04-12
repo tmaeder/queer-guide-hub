@@ -36,6 +36,19 @@ export interface Bbox {
 }
 
 /**
+ * Clamp bbox to valid geographic ranges (lat: -90..90, lng: -180..180).
+ * Guards against invalid bounds from MapLibre during init or on certain devices.
+ */
+export function clampBbox(bbox: Bbox): Bbox {
+  return {
+    west: Math.max(-180, Math.min(180, bbox.west)),
+    south: Math.max(-90, Math.min(90, bbox.south)),
+    east: Math.max(-180, Math.min(180, bbox.east)),
+    north: Math.max(-90, Math.min(90, bbox.north)),
+  };
+}
+
+/**
  * Expand a bbox by a relative padding factor (e.g. 0.15 = 15%).
  * Helps reduce refetch on small pans.
  */
