@@ -35,7 +35,6 @@ import { EventCard } from '@/components/events/EventCard';
 import { DirectoryCard } from '@/components/directory/DirectoryCard';
 import CountryHeroImages from '@/components/country/CountryHeroImages';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
-import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { WorldBankDataPanel } from '@/components/country/WorldBankDataPanel';
 import { SDGDataPanel } from '@/components/country/SDGDataPanel';
@@ -307,9 +306,6 @@ export default function CountryDetail() {
                 >
                   {country.flag_emoji} {country.name}
                 </Typography>
-                {country.equality_score != null && (
-                  <EqualityScoreBadge score={country.equality_score} size="md" />
-                )}
               </Box>
               {subtitle && (
                 <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary' }}>
@@ -680,9 +676,6 @@ export default function CountryDetail() {
                       Legal protections and rights status in {country.name}
                     </Typography>
                   </Box>
-                  {country.equality_score != null && (
-                    <EqualityScoreBadge score={country.equality_score} size="lg" />
-                  )}
                 </Box>
 
                 <LGBTJurisdictionInfo
