@@ -17,7 +17,7 @@ const Avatar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElem
           ref={ref}
           className={className}
           style={style}
-          sx={{ width: 40, height: 40, borderRadius: 1.25 }}
+          sx={{ position: 'relative', borderRadius: 1.25 }}
           {...(props as any)}
         >
           {children}
@@ -50,7 +50,7 @@ const AvatarImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<H
         src={src}
         alt={alt || ""}
         className={className}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', ...style }}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', ...style }}
         onLoad={(e) => {
           setStatus('loaded');
           onLoad?.(e);
@@ -78,6 +78,8 @@ const AvatarFallback = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HT
         ref={ref}
         className={className}
         style={{
+          position: 'absolute',
+          inset: 0,
           display: 'flex',
           width: '100%',
           height: '100%',

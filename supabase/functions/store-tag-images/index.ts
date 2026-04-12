@@ -204,6 +204,8 @@ function getTagSpecificKeywords(tagName: string): string {
     return 'book reading literature';
   } else if (tag.includes('tech') || tag.includes('gaming')) {
     return 'technology gaming';
+  } else if (tag.includes('bareback') || tag.includes('safe sex') || tag.includes('prep') || tag.includes('condom') || tag.includes('sti') || tag.includes('hiv') || tag.includes('sexual health')) {
+    return 'sexual health awareness rainbow';
   } else {
     // For other tags, don't add extra keywords - let the tag speak for itself
     return '';

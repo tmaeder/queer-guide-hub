@@ -1,4 +1,4 @@
-import { Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MotionCard as Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, Globe, Building2, Crown } from 'lucide-react';
 import type {
@@ -241,7 +241,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   };
 
   const cardContent = (
-    <Card hoverable>
+    <Card>
       {type === 'country' && (
         <CardImage
           src={countryImage}

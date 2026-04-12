@@ -8,14 +8,16 @@ interface SignUpMetadata {
   first_name?: string;
   last_name?: string;
   location?: string;
-  age_range?: string;
   pronouns?: string;
-  gender_identity?: string;
+  preferred_language?: string;
   looking_for?: string[];
-  bio?: string;
-  avatar_url?: string;
-  avatar_config?: any;
+  interests?: string[];
+  terms_accepted_at?: string;
+  privacy_accepted_at?: string;
+  age_confirmed_at?: string;
 }
+
+type OAuthProvider = 'google' | 'apple';
 
 interface AuthContextType {
   user: User | null;
@@ -23,11 +25,13 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, metadata?: SignUpMetadata) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: any }>;
+  resendVerification: (email: string) => Promise<{ error: any }>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   enrollPasskey: () => Promise<{ error: any }>;
   signInWithPasskey: () => Promise<{ error: any }>;
   hasPasskey: boolean;
-  
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -96,16 +100,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
   const signUp = async (email: string, password: string, metadata?: SignUpMetadata) => {
+    const redirectUrl = `${window.location.origin}/onboarding/welcome`;
 
-    const redirectUrl = `${window.location.origin}/`;
-    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: metadata || {}
-      }
+        data: metadata || {},
+      },
+    });
+    return { error };
+  };
+
+  const signInWithOAuth = async (provider: OAuthProvider) => {
+    const redirectUrl = `${window.location.origin}/onboarding/welcome`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+    return { error };
+  };
+
+  const resendVerification = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/onboarding/welcome`,
+      },
+    });
+    return { error };
+  };
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth?reset=1`,
     });
     return { error };
   };
@@ -366,11 +402,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       signUp,
       signIn,
+      signInWithOAuth,
+      resendVerification,
+      resetPassword,
       signOut,
       enrollPasskey,
       signInWithPasskey,
       hasPasskey,
-      
     }}>
       {children}
     </AuthContext.Provider>

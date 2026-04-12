@@ -22,6 +22,7 @@ import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { MotionPage } from '@/components/motion';
 import { PWAProvider } from '@/components/pwa/PWAProvider';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
@@ -44,6 +45,7 @@ const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
 // CMS-managed pages (content from cms_pages table)
 const CMSRoutePage = lazyRetry(() => import('./pages/CMSRoutePage'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
+const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
 
 // Unified Admin Shell (wraps all /admin/* routes)
 const AdminShell = lazy(() =>
@@ -221,7 +223,6 @@ const AppRoutes = () => {
   // Move focus to main content on route change (a11y: WCAG 2.4.3)
   const mainRef = React.useRef<HTMLElement>(null);
   const isFirstRender = React.useRef(true);
-  const pageRef = React.useRef<HTMLDivElement>(null);
   const [routeAnnouncement, setRouteAnnouncement] = React.useState('');
 
   React.useEffect(() => {
@@ -235,17 +236,6 @@ const AppRoutes = () => {
       const title = document.title || location.pathname.replace(/\//g, ' ').trim() || 'Home';
       setRouteAnnouncement(`Navigated to ${title}`);
     });
-
-    // Page entrance animation
-    const el = pageRef.current;
-    if (!el) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mq.matches) return;
-
-    el.classList.remove('page-transition-enter');
-    // Force reflow to restart animation
-    void el.offsetHeight;
-    el.classList.add('page-transition-enter');
   }, [location.pathname]);
 
   return (
@@ -365,7 +355,7 @@ const AppRoutes = () => {
               </Box>
             }
           >
-            <div ref={pageRef}>
+            <MotionPage>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/venues" element={<Venues />} />
@@ -418,6 +408,7 @@ const AppRoutes = () => {
               <Route path="/cookies" element={<CMSRoutePage slug="cookies" />} />
               <Route path="/dmca" element={<CMSRoutePage slug="dmca" />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
               {/* ── Unified Admin Console ── */}
               {/* All /admin/* routes wrapped in AdminShell layout with sidebar */}
               <Route
@@ -568,7 +559,7 @@ const AppRoutes = () => {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-            </div>
+            </MotionPage>
           </Suspense>
         </ErrorBoundary>
       </Box>

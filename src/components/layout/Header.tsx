@@ -62,6 +62,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import MuiDrawer from '@mui/material/Drawer';
+import { motion } from 'motion/react';
 import IconButton from '@mui/material/IconButton';
 import Divider from '@mui/material/Divider';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -197,6 +198,7 @@ export function Header() {
       open={drawerOpen}
       onClose={() => setDrawerOpen(false)}
       anchor="right"
+      transitionDuration={{ enter: 300, exit: 200 }}
       PaperProps={{
         sx: {
           width: { xs: '100%', sm: 320 },
@@ -569,7 +571,7 @@ export function Header() {
               textDecoration: 'none',
             }}
           >
-            <img
+            <motion.img
               src="/images/logo.png"
               alt="Queer Guide Logo"
               style={{
@@ -577,6 +579,9 @@ export function Header() {
                 width: 32,
                 filter: theme.palette.mode === 'dark' ? 'brightness(0) invert(1)' : 'brightness(0)',
               }}
+              whileHover={{ rotate: -6, scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 18 }}
             />
             <Box
               component="span"

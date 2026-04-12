@@ -1,7 +1,7 @@
 'use client';
 
 import { ElementType, useEffect, useRef, useState, createElement } from 'react';
-import { gsap } from 'gsap';
+import { motion } from 'motion/react';
 import './TextType.css';
 
 interface TextTypeProps {
@@ -51,7 +51,6 @@ const TextType = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(!startOnVisible);
-  const cursorRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLElement>(null);
 
   const textArray = Array.isArray(text) ? text : [text];
@@ -84,19 +83,6 @@ const TextType = ({
     observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, [startOnVisible]);
-
-  useEffect(() => {
-    if (showCursor && cursorRef.current) {
-      gsap.set(cursorRef.current, { opacity: 1 });
-      gsap.to(cursorRef.current, {
-        opacity: 0,
-        duration: cursorBlinkDuration,
-        repeat: -1,
-        yoyo: true,
-        ease: 'power2.inOut',
-      });
-    }
-  }, [showCursor, cursorBlinkDuration]);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -181,12 +167,18 @@ const TextType = ({
       {displayedText}
     </span>,
     showCursor && (
-      <span
-        ref={cursorRef}
+      <motion.span
         className={`text-type__cursor ${cursorClassName} ${shouldHideCursor ? 'text-type__cursor--hidden' : ''}`}
+        animate={{ opacity: [1, 0] }}
+        transition={{
+          duration: cursorBlinkDuration,
+          repeat: Infinity,
+          repeatType: 'reverse',
+          ease: 'easeInOut',
+        }}
       >
         {cursorCharacter}
-      </span>
+      </motion.span>
     ),
   );
 };

@@ -5,7 +5,9 @@ import MuiDialogContent from "@mui/material/DialogContent"
 import MuiDialogActions from "@mui/material/DialogActions"
 import IconButton from "@mui/material/IconButton"
 import Typography from "@mui/material/Typography"
+import Zoom from "@mui/material/Zoom"
 import { X } from "lucide-react"
+import { duration } from "@/lib/animation"
 
 const DialogContext = React.createContext<{
   open: boolean;
@@ -82,6 +84,11 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         maxWidth="sm"
         fullWidth
         className={className}
+        TransitionComponent={Zoom}
+        transitionDuration={{
+          enter: duration.normal * 1000,
+          exit: 150,
+        }}
         PaperProps={{ ref: ref as any, sx: { borderRadius: 1.5 } }}
       >
         <MuiDialogContent sx={{ p: 3 }}>

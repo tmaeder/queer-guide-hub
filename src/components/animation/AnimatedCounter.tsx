@@ -1,6 +1,12 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
+import React from 'react';
+import {
+  motion,
+  useInView,
+  useMotionValue,
+  animate,
+  useReducedMotion,
+} from 'motion/react';
+import { easing, fadeIn } from '@/lib/motion';
 
 interface AnimatedCounterProps {
   value: number;
@@ -19,56 +25,42 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   suffix = '',
   prefix = '',
 }) => {
-  const wrapperRef = useScrollReveal<HTMLSpanElement>();
-  const counterRef = useRef<{ val: number }>({ val: 0 });
-  const [display, setDisplay] = useState(0);
-  const reducedMotion = useReducedMotion();
-  const hasAnimated = useRef(false);
+  const ref = React.useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.1 });
+  const reduced = useReducedMotion();
+  const mv = useMotionValue(0);
+  const [display, setDisplay] = React.useState(0);
 
-  const triggerAnimation = useCallback(() => {
-    if (hasAnimated.current) return;
-    hasAnimated.current = true;
+  React.useEffect(() => {
+    const unsub = mv.on('change', (v) => setDisplay(Math.round(v)));
+    return unsub;
+  }, [mv]);
 
-    if (reducedMotion) {
-      setDisplay(value);
+  React.useEffect(() => {
+    if (!inView) return;
+    if (reduced) {
+      mv.set(value);
       return;
     }
-
-    import('@/lib/gsap').then(({ gsap }) => {
-      counterRef.current.val = 0;
-      gsap.to(counterRef.current, {
-        val: value,
-        duration: dur,
-        ease: 'power2.out',
-        onUpdate: () => setDisplay(Math.round(counterRef.current.val)),
-      });
+    const controls = animate(mv, value, {
+      duration: dur,
+      ease: easing.smooth,
     });
-  }, [value, dur, reducedMotion]);
-
-  useEffect(() => {
-    const el = wrapperRef.current;
-    if (!el) return;
-
-    // If already revealed (e.g. above fold), animate immediately
-    if (el.classList.contains('revealed')) {
-      triggerAnimation();
-      return;
-    }
-
-    const obs = new MutationObserver(() => {
-      if (el.classList.contains('revealed')) {
-        triggerAnimation();
-        obs.disconnect();
-      }
-    });
-
-    obs.observe(el, { attributes: true, attributeFilter: ['class'] });
-    return () => obs.disconnect();
-  }, [triggerAnimation, wrapperRef]);
+    return () => controls.stop();
+  }, [inView, value, dur, reduced, mv]);
 
   return (
-    <span ref={wrapperRef} className={`scroll-reveal scroll-reveal--fade ${className ?? ''}`}>
-      {prefix}{display.toLocaleString(locale)}{suffix}
-    </span>
+    <motion.span
+      ref={ref}
+      className={className}
+      variants={fadeIn}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.1 }}
+    >
+      {prefix}
+      {display.toLocaleString(locale)}
+      {suffix}
+    </motion.span>
   );
 };

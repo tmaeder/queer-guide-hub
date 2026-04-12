@@ -1,327 +1,253 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useAuth } from '@/hooks/useAuth';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { useSignupFunnel } from '@/hooks/useSignupFunnel';
+import { OAuthButtons } from './OAuthButtons';
+import { EmailVerificationScreen } from './EmailVerificationScreen';
+import { isConsentComplete, type ConsentState, emptyConsent } from './ConsentBlock';
 
-// Step components
-import BasicInfoStep from './steps/BasicInfoStep';
-import PersonalDetailsStep from './steps/PersonalDetailsStep';
-import PreferencesStep from './steps/PreferencesStep';
-import AccountSetupStep from './steps/AccountSetupStep';
-import ReviewStep from './steps/ReviewStep';
+import AccountStep from './steps/AccountStep';
+import ProfileStep from './steps/ProfileStep';
+import InterestsStep from './steps/InterestsStep';
 
 export interface SignupData {
-  // Basic Info (Step 1)
   email: string;
   password: string;
-  confirmPassword: string;
-
-  // Personal Details (Step 2)
   displayName: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  location: string;
-
-  // Identity (Step 3)
   pronouns: string;
-  genderIdentity: string;
-  sexualOrientation: string;
-  relationshipStatus: string;
-
-  // Preferences (Step 4)
+  country: string;
+  preferredLanguage: string;
   lookingFor: string[];
   interests: string[];
-  ageRangePreference: string;
-  locationRadius: string;
-
-  // Account Setup (Step 5)
-  bio: string;
-  profileVisibility: string;
-  emailNotifications: boolean;
-  matchNotifications: boolean;
-  avatarUrl?: string;
-  avatarConfig?: any;
-  avatarType?: 'upload' | 'builder' | 'gravatar';
+  consent: ConsentState;
+  passwordScore: 0 | 1 | 2 | 3 | 4;
 }
 
 const initialData: SignupData = {
   email: '',
   password: '',
-  confirmPassword: '',
   displayName: '',
-  firstName: '',
-  lastName: '',
-  dateOfBirth: '',
-  location: '',
   pronouns: '',
-  genderIdentity: '',
-  sexualOrientation: '',
-  relationshipStatus: '',
+  country: '',
+  preferredLanguage: '',
   lookingFor: [],
   interests: [],
-  ageRangePreference: '',
-  locationRadius: '',
-  bio: '',
-  profileVisibility: 'public',
-  emailNotifications: true,
-  matchNotifications: true,
-  avatarUrl: undefined,
-  avatarConfig: undefined,
-  avatarType: undefined,
+  consent: emptyConsent,
+  passwordScore: 0,
 };
 
-interface MultiStepSignupProps {
+interface Props {
   onBack: () => void;
 }
 
-export default function MultiStepSignup({ onBack }: MultiStepSignupProps) {
+export default function MultiStepSignup({ onBack }: Props) {
+  const { t, i18n } = useTranslation();
+  const { signUp } = useAuth();
+  const { emit, reset: resetFunnel } = useSignupFunnel();
+  const { data, update, clear } = useFormPersistence<SignupData>('v2', initialData, [
+    'password',
+    'consent',
+  ]);
+
   const [currentStep, setCurrentStep] = useState(1);
-  const [data, setData] = useState<SignupData>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
 
-  const { signUp } = useAuth();
-  const { toast } = useToast();
+  const totalSteps = 3;
+  const stepKeys = ['account', 'profile', 'interests'] as const;
 
-  const totalSteps = 6;
-  const stepTitles = [
-    'Account Info',
-    'Personal Details',
-    'Identity',
-    'Preferences',
-    'Avatar & Setup',
-    'Review & Complete'
-  ];
+  useEffect(() => {
+    emit('signup_landing_view');
+    // Default preferred language from current i18n
+    if (!data.preferredLanguage) update({ preferredLanguage: i18n.language });
+    emit('step_started', { step: 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const updateData = (updates: Partial<SignupData>) => {
-    setData(prev => ({ ...prev, ...updates }));
-    setError(null);
-  };
-
-  const validateStep = (step: number): boolean => {
-    switch (step) {
-      case 1:
-        if (!data.email || !data.password || !data.confirmPassword) {
-          setError('Please fill in all required fields');
-          return false;
-        }
-        if (data.password !== data.confirmPassword) {
-          setError('Passwords do not match');
-          return false;
-        }
-        if (data.password.length < 8) {
-          setError('Password must be at least 8 characters long');
-          return false;
-        }
-        // Enhanced password security requirements
-        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(data.password)) {
-          setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
-          return false;
-        }
-        break;
-      case 2:
-        if (!data.displayName || !data.firstName || !data.lastName) {
-          setError('Please fill in all required fields');
-          return false;
-        }
-        break;
-      case 3:
-        if (!data.pronouns || !data.genderIdentity) {
-          setError('Please select your pronouns and gender identity');
-          return false;
-        }
-        break;
-      case 4:
-        if (data.lookingFor.length === 0) {
-          setError('Please select what you\'re looking for');
-          return false;
-        }
-        break;
+  const validateStep = (step: number): string | null => {
+    if (step === 1) {
+      if (!data.email) return t('auth.errors.emailRequired', 'Email is required');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
+        return t('auth.errors.emailInvalid', 'Please enter a valid email address');
+      if (!data.password) return t('auth.errors.passwordRequired', 'Password is required');
+      if (data.password.length < 10)
+        return t('auth.errors.passwordTooShort', 'Password must be at least 10 characters');
+      if (data.passwordScore < 2)
+        return t('auth.errors.passwordTooWeak', 'Please choose a stronger password');
+      if (!isConsentComplete(data.consent))
+        return t('auth.errors.consentRequired', 'Please accept the terms, privacy policy, and confirm you are 18+');
     }
-    return true;
+    if (step === 2) {
+      if (!data.displayName.trim())
+        return t('auth.errors.displayNameRequired', 'Display name is required');
+    }
+    return null;
   };
 
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  const goNext = () => {
+    const err = validateStep(currentStep);
+    if (err) {
+      setError(err);
+      emit('step_validation_error', { step: currentStep, metadata: { error: err } });
+      return;
+    }
+    setError(null);
+    emit('step_completed', { step: currentStep });
+    if (currentStep < totalSteps) {
+      const next = currentStep + 1;
+      setCurrentStep(next);
+      emit('step_started', { step: next });
     }
   };
 
-  const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
+  const goPrev = () => {
     setError(null);
+    setCurrentStep((s) => Math.max(1, s - 1));
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(currentStep)) return;
-
+    const err = validateStep(currentStep);
+    if (err) {
+      setError(err);
+      return;
+    }
     setIsLoading(true);
     setError(null);
 
-    try {
-      const { error } = await signUp(data.email, data.password, {
-        display_name: data.displayName,
-        first_name: data.firstName,
-        last_name: data.lastName,
-        location: data.location,
-        pronouns: data.pronouns,
-        gender_identity: data.genderIdentity,
-        looking_for: data.lookingFor,
-        bio: data.bio,
-        avatar_url: data.avatarUrl,
-        avatar_config: data.avatarConfig,
-      });
+    const now = new Date().toISOString();
+    const { error: signUpError } = await signUp(data.email, data.password, {
+      display_name: data.displayName,
+      pronouns: data.pronouns,
+      location: data.country,
+      preferred_language: data.preferredLanguage,
+      looking_for: data.lookingFor,
+      interests: data.interests,
+      terms_accepted_at: now,
+      privacy_accepted_at: now,
+      age_confirmed_at: now,
+    });
 
-      if (error) {
-        if (error.message.includes('User already registered')) {
-          setError('An account with this email already exists. Please sign in instead.');
-        } else if (error.message.includes('Password should be at least')) {
-          setError('Password must be at least 8 characters long with uppercase, lowercase, and number');
-        } else {
-          setError(error.message);
-        }
+    setIsLoading(false);
+
+    if (signUpError) {
+      if (signUpError.message?.includes('User already registered')) {
+        setError(t('auth.errors.alreadyRegistered', 'An account with this email already exists. Try signing in.'));
       } else {
-        toast({
-          title: "Account created successfully!",
-          description: "Please check your email to confirm your account before signing in.",
-        });
-        onBack(); // Switch back to login
+        setError(signUpError.message);
       }
-    } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+      emit('step_validation_error', { step: currentStep, metadata: { error: signUpError.message } });
+      return;
     }
+
+    emit('signup_completed', { provider: 'email' });
+    setVerificationEmail(data.email);
+    clear();
+    resetFunnel();
   };
+
+  if (verificationEmail) {
+    return <EmailVerificationScreen email={verificationEmail} onBackToLogin={onBack} />;
+  }
+
+  const progress = (currentStep / totalSteps) * 100;
 
   const renderStep = () => {
     switch (currentStep) {
-        case 1:
-          return (
-            <BasicInfoStep
-              data={data}
-              updateData={updateData}
-            />
-          );
+      case 1:
+        return <AccountStep data={data} updateData={update} />;
       case 2:
-        return <PersonalDetailsStep data={data} updateData={updateData} />;
+        return <ProfileStep data={data} updateData={update} />;
       case 3:
-        return <PersonalDetailsStep data={data} updateData={updateData} isIdentityStep />;
-      case 4:
-        return <PreferencesStep data={data} updateData={updateData} />;
-      case 5:
-        return <AccountSetupStep data={data} updateData={updateData} />;
-      case 6:
-        return <ReviewStep data={data} updateData={updateData} />;
+        return <InterestsStep data={data} updateData={update} />;
       default:
         return null;
     }
   };
 
-  const progressPercentage = (currentStep / totalSteps) * 100;
-
   return (
-    <Card>
+    <Card sx={{ maxWidth: 560, mx: 'auto' }}>
       <CardHeader>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="h5">Create Your Account</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <CardTitle>{t('auth.signup.title', 'Create your account')}</CardTitle>
               <CardDescription>
-                Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]}
+                {t('auth.signup.stepIndicator', {
+                  defaultValue: 'Step {{current}} of {{total}}',
+                  current: currentStep,
+                  total: totalSteps,
+                })}{' '}
+                — {t(`auth.signup.steps.${stepKeys[currentStep - 1]}`)}
               </CardDescription>
             </Box>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onBack}
-              style={{ flexShrink: 0 }}
-            >
-              Back to Login
+            <Button variant="outline" size="sm" onClick={onBack}>
+              {t('auth.signup.haveAccount', 'Sign in')}
             </Button>
           </Box>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Progress value={progressPercentage} style={{ width: '100%', height: 8 }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              {stepTitles.map((title, index) => (
-                <Box
-                  key={index}
-                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, textAlign: 'center' }}
-                >
-                  <Box
-                    sx={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                      ...(currentStep > index
-                        ? { bgcolor: 'primary.main', color: 'primary.contrastText' }
-                        : currentStep === index + 1
-                        ? { bgcolor: 'rgba(var(--primary), 0.2)', color: 'primary.main', border: 1, borderColor: 'primary.main' }
-                        : { bgcolor: 'action.hover', color: 'text.secondary' }
-                      ),
-                    }}
-                  >
-                    {index + 1}
-                  </Box>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: currentStep >= index + 1 ? 'text.primary' : 'text.secondary',
-                    }}
-                  >
-                    {title}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
+          <Progress value={progress} style={{ width: '100%', height: 6 }} />
         </Box>
       </CardHeader>
 
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {currentStep === 1 && (
+            <>
+              <OAuthButtons onError={setError} />
+              <Box sx={{ position: 'relative', textAlign: 'center', my: 1 }}>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Box sx={{ width: '100%', borderTop: 1, borderColor: 'divider' }} />
+                </Box>
+                <Typography
+                  component="span"
+                  variant="caption"
+                  sx={{ position: 'relative', bgcolor: 'background.paper', px: 1, color: 'text.secondary', textTransform: 'uppercase' }}
+                >
+                  {t('auth.signup.orWithEmail', 'Or with email')}
+                </Typography>
+              </Box>
+            </>
+          )}
+
           {error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" role="alert">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          <Box sx={{ minHeight: 400 }}>
-            {renderStep()}
-          </Box>
+          <Box sx={{ minHeight: 280 }}>{renderStep()}</Box>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 3, borderTop: 1, borderColor: 'divider' }}>
-            <Button
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 1 || isLoading}
-            >
-              <ChevronLeft style={{ width: 16, height: 16, marginRight: 8 }} />
-              Previous
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Button variant="outline" onClick={goPrev} disabled={currentStep === 1 || isLoading}>
+              <ChevronLeft style={{ width: 16, height: 16, marginRight: 6 }} />
+              {t('common.back', 'Back')}
             </Button>
-
             {currentStep < totalSteps ? (
-              <Button onClick={nextStep} disabled={isLoading}>
-                Next
-                <ChevronRight style={{ width: 16, height: 16, marginLeft: 8 }} />
+              <Button onClick={goNext} disabled={isLoading}>
+                {t('common.next', 'Next')}
+                <ChevronRight style={{ width: 16, height: 16, marginLeft: 6 }} />
               </Button>
             ) : (
               <Button onClick={handleSubmit} disabled={isLoading}>
-                {isLoading && <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />}
-                Create Account
+                {isLoading && (
+                  <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+                )}
+                {t('auth.signup.create', 'Create account')}
               </Button>
             )}
           </Box>

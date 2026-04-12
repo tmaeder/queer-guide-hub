@@ -203,6 +203,9 @@ Rules:
 - If you find MULTIPLE distinct events or venues, return one item per event/venue (max 10 items)
 - If only one event or venue is found, return an array with a single item
 - Do NOT merge separate events into one — each gets its own item
+- If a flyer shows MULTIPLE separate dates (e.g. "April 5" and "April 12"), these are DIFFERENT events — create one item per date. Do NOT put them into start_date/end_date of a single item.
+- Only use end_date when an event clearly spans continuously from start to end (e.g. a multi-day festival "April 5-7" or "Friday 22:00 to Saturday 06:00").
+- Recurring events (e.g. "every Friday", multiple listed dates) → separate items per occurrence.
 - Each item should be self-contained with its own location, dates, etc.
 - Set confidence to 0 and value to null for fields you cannot determine
 - For detected_type: "event" if there's a specific date/time; "venue" if it's a business listing/card

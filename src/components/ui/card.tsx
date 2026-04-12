@@ -6,7 +6,9 @@ import MuiCardActions from "@mui/material/CardActions"
 import Typography from "@mui/material/Typography"
 import Box from "@mui/material/Box"
 import { useTheme } from "@mui/material/styles"
+import { motion, useReducedMotion } from "motion/react"
 import type { LucideIcon } from "lucide-react"
+import { springs } from "@/lib/motion"
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean;
@@ -47,6 +49,38 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
   )
 )
 Card.displayName = "Card"
+
+/* ── MotionCard — opt-in hover-lift card powered by motion ────────── */
+
+const MotionMuiCardBase = motion.create(MuiCard)
+
+const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, children, style, ...props }, ref) => {
+    const reduced = useReducedMotion()
+    const hover = reduced
+      ? {}
+      : {
+          whileHover: { y: -4, boxShadow: '0 20px 40px -24px rgba(0,0,0,0.28)' },
+          transition: springs.soft,
+        }
+    return (
+      <MotionMuiCardBase
+        ref={ref as any}
+        className={className}
+        style={style}
+        variant="outlined"
+        sx={{
+          bgcolor: 'background.paper',
+        }}
+        {...hover}
+        {...(props as any)}
+      >
+        {children}
+      </MotionMuiCardBase>
+    )
+  }
+)
+MotionCard.displayName = "MotionCard"
 
 /* ── CardImage ──────────────────────────────────────────────────────── */
 
@@ -241,4 +275,4 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardImage, CardHeaderCompat as CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export { Card, MotionCard, CardImage, CardHeaderCompat as CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

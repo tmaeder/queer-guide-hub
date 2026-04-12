@@ -1,19 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useReducedMotion as useReducedMotionMotion } from 'motion/react';
 
-const QUERY = '(prefers-reduced-motion: reduce)';
-
+/**
+ * Re-exported from motion/react, flattened to always return boolean
+ * (motion's hook returns `boolean | null` during SSR).
+ */
 export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia(QUERY).matches;
-  });
-
-  useEffect(() => {
-    const mql = window.matchMedia(QUERY);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mql.addEventListener('change', handler);
-    return () => mql.removeEventListener('change', handler);
-  }, []);
-
-  return reduced;
+  return useReducedMotionMotion() ?? false;
 }

@@ -1,14 +1,22 @@
 // Service Worker for Queer Guide — optimized for Cloudflare Pages
-const STATIC_CACHE = 'static-v6';
-const DYNAMIC_CACHE = 'dynamic-v6';
+const STATIC_CACHE = 'static-v7';
+const DYNAMIC_CACHE = 'dynamic-v7';
 const DYNAMIC_CACHE_LIMIT = 50;
 
-// Precached during install — HTML shell, offline fallback, manifest
+// Detect if running on a .onion domain (Tor hidden service)
+const IS_ONION = self.location.hostname.endsWith('.onion');
+
+// Precached during install — HTML shell, offline fallback, manifest, + critical pages
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/offline.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/venues',
+  '/events',
+  '/resources',
+  '/help-hotlines',
+  '/map',
 ];
 
 const CACHE_STRATEGIES = {
@@ -75,7 +83,13 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
 
   // Skip external domains — don't cache Supabase API responses (auth data)
-  if (url.origin !== location.origin) return;
+  // On .onion domains, block ALL external fetches to prevent Tor circuit leaks
+  if (url.origin !== location.origin) {
+    if (IS_ONION) {
+      event.respondWith(new Response('', { status: 503, statusText: 'Blocked on onion' }));
+    }
+    return;
+  }
 
   // Navigation requests (HTML pages) — Network First with offline fallback
   if (request.mode === 'navigate') {

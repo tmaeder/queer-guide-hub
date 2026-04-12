@@ -1,6 +1,8 @@
 import * as React from "react"
 import MuiTabs from "@mui/material/Tabs"
 import MuiTab from "@mui/material/Tab"
+import { AnimatePresence, motion } from "motion/react"
+import { tweens } from "@/lib/motion"
 
 const TabsContext = React.createContext<{
   value: string;
@@ -87,11 +89,26 @@ interface TabsContentProps extends React.HTMLAttributes<HTMLDivElement> {
 const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
   ({ className, value, children, style, ...props }, ref) => {
     const { value: activeValue } = React.useContext(TabsContext);
-    if (value !== activeValue) return null;
+    const active = value === activeValue;
     return (
-      <div ref={ref} className={className} style={{ marginTop: 8, ...style }} role="tabpanel" {...props}>
-        {children}
-      </div>
+      <AnimatePresence mode="wait">
+        {active && (
+          <motion.div
+            ref={ref}
+            key={value}
+            className={className}
+            style={{ marginTop: 8, ...style }}
+            role="tabpanel"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={tweens.fast}
+            {...(props as object)}
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
     );
   }
 );

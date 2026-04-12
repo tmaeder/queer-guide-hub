@@ -1,21 +1,30 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import { useScrollReveal } from '@/hooks/useScrollReveal';
-
-type Direction = 'up' | 'down' | 'left' | 'right' | 'fade';
+import { motion, type Variants } from 'motion/react';
+import { variantByDirection, tweens, defaultViewport, type RevealDirection } from '@/lib/motion';
 
 interface ScrollRevealProps {
   children: React.ReactNode;
-  direction?: Direction;
+  direction?: RevealDirection;
   delay?: number;
   duration?: number;
   className?: string;
   component?: React.ElementType;
 }
 
+const STATIC_TAGS: Record<string, keyof typeof motion> = {
+  div: 'div',
+  section: 'section',
+  article: 'article',
+  span: 'span',
+  header: 'header',
+  footer: 'footer',
+  ul: 'ul',
+  li: 'li',
+};
+
 /**
- * Wrapper that reveals children with a CSS animation when scrolled into view.
- * Uses a shared IntersectionObserver for performance.
+ * Reveals children with a scroll-triggered entrance animation.
+ * Drop-in replacement for the old CSS-based ScrollReveal.
  */
 export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   children,
@@ -25,19 +34,54 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   className,
   component = 'div',
 }) => {
-  const ref = useScrollReveal<HTMLDivElement>();
+  const base = variantByDirection[direction];
+
+  const variants: Variants = React.useMemo(() => {
+    const revealTransition = {
+      ...tweens.reveal,
+      ...(duration != null ? { duration } : {}),
+      ...(delay > 0 ? { delay } : {}),
+    };
+    return {
+      hidden: base.hidden,
+      visible: {
+        ...(base.visible as object),
+        transition: revealTransition,
+      },
+    };
+  }, [base, delay, duration]);
+
+  // Pick a static motion.<tag> for common elements to avoid motion.create cost
+  const tagName = typeof component === 'string' ? component : 'div';
+  const motionKey = STATIC_TAGS[tagName] ?? 'div';
+  const MotionTag = motion[motionKey] as typeof motion.div;
+
+  // Fallback: non-string `component` not supported as motion element here;
+  // still render wrapped so children animate inside a motion.div.
+  if (typeof component !== 'string') {
+    const Wrapper = component;
+    return (
+      <motion.div
+        className={className}
+        variants={variants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: defaultViewport.amount, margin: defaultViewport.margin }}
+      >
+        <Wrapper>{children}</Wrapper>
+      </motion.div>
+    );
+  }
 
   return (
-    <Box
-      ref={ref}
-      component={component}
-      className={`scroll-reveal scroll-reveal--${direction} ${className ?? ''}`}
-      sx={{
-        ...(delay > 0 && { transitionDelay: `${delay}s`, animationDelay: `${delay}s` }),
-        ...(duration != null && { '--sr-duration': `${duration}s` }),
-      } as any}
+    <MotionTag
+      className={className}
+      variants={variants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: defaultViewport.amount, margin: defaultViewport.margin }}
     >
       {children}
-    </Box>
+    </MotionTag>
   );
 };

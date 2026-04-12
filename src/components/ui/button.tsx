@@ -2,6 +2,12 @@ import * as React from "react"
 import MuiButton, { type ButtonProps as MuiButtonProps } from "@mui/material/Button"
 import MuiIconButton from "@mui/material/IconButton"
 import { Slot } from "@radix-ui/react-slot"
+import { motion, useReducedMotion } from "motion/react"
+import { springs } from "@/lib/motion"
+
+const MotionMuiButton = motion.create(MuiButton)
+const MotionMuiIconButton = motion.create(MuiIconButton)
+const MotionSlot = motion.create(Slot)
 
 // Variant mapping: shadcn → MUI
 type ShadcnVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand";
@@ -50,26 +56,36 @@ function mapSizeToMui(size: ShadcnSize = "default"): MuiButtonProps["size"] {
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", asChild = false, children, style, ...props }, ref) => {
+    const reduced = useReducedMotion();
+    const motionInteractions = reduced || props.disabled
+      ? {}
+      : {
+          whileHover: { scale: 1.02 },
+          whileTap: { scale: 0.97 },
+          transition: springs.snappy,
+        };
+
     // asChild pattern: render children as the root element
     // This is used for <Button asChild><Link to="...">...</Link></Button>
     if (asChild) {
       return (
-        <Slot
-          ref={ref}
+        <MotionSlot
+          ref={ref as any}
           className={className}
           style={style}
-          {...props}
+          {...motionInteractions}
+          {...(props as any)}
         >
           {children}
-        </Slot>
+        </MotionSlot>
       );
     }
 
     // Icon button — square with icon only
     if (size === "icon") {
       return (
-        <MuiIconButton
-          ref={ref}
+        <MotionMuiIconButton
+          ref={ref as any}
           className={className}
           color={variant === "destructive" ? "error" : variant === "default" ? "primary" : "default"}
           sx={{
@@ -77,10 +93,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             height: 40,
           }}
           style={style}
+          {...motionInteractions}
           {...(props as any)}
         >
           {children}
-        </MuiIconButton>
+        </MotionMuiIconButton>
       );
     }
 
@@ -88,8 +105,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const muiSize = mapSizeToMui(size);
 
     return (
-      <MuiButton
-        ref={ref}
+      <MotionMuiButton
+        ref={ref as any}
         variant={muiVariant}
         color={muiColor}
         size={muiSize}
@@ -104,10 +121,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             pointerEvents: 'none',
           },
         }}
+        {...motionInteractions}
         {...(props as any)}
       >
         {children}
-      </MuiButton>
+      </MotionMuiButton>
     );
   }
 )

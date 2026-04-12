@@ -17,14 +17,6 @@ export const ease = {
   accel: 'cubic-bezier(0.4, 0, 1, 1)',
 } as const;
 
-// GSAP-compatible easing strings (same curves, GSAP syntax)
-export const gsapEase = {
-  smooth: 'power2.out',
-  spring: 'back.out(1.7)',
-  decel: 'power3.out',
-  accel: 'power2.in',
-} as const;
-
 export const distance = {
   xs: 4,
   sm: 8,
