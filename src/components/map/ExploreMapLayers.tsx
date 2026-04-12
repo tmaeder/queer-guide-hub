@@ -61,12 +61,13 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
         size="small"
         onClick={() => setExpanded((v) => !v)}
         sx={{
-          bgcolor: 'rgba(255,255,255,0.92)',
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          bgcolor: 'background.paper',
+          border: '1px solid',
+          borderColor: 'divider',
+          boxShadow: 2,
           width: 36,
           height: 36,
-          '&:hover': { bgcolor: 'rgba(255,255,255,1)' },
+          '&:hover': { bgcolor: 'background.paper' },
         }}
       >
         <Layers size={18} />
@@ -80,11 +81,12 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
             flexWrap: 'wrap',
             gap: 0.5,
             maxWidth: 220,
-            bgcolor: 'rgba(255,255,255,0.92)',
-            backdropFilter: 'blur(8px)',
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
             borderRadius: 2,
             p: 0.75,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            boxShadow: 2,
           }}
         >
           {LAYER_DEFS.map(({ type, label, icon: Icon, comingSoon }) => {
@@ -107,9 +109,9 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
                   fontSize: '0.75rem',
                   fontWeight: enabled ? 600 : 400,
                   bgcolor: enabled ? `${color}18` : 'transparent',
-                  color: enabled ? color : '#64748b',
-                  borderColor: enabled ? color : '#cbd5e1',
-                  '& .MuiChip-icon': { color: enabled ? color : '#94a3b8' },
+                  color: enabled ? color : 'text.secondary',
+                  borderColor: enabled ? color : 'divider',
+                  '& .MuiChip-icon': { color: enabled ? color : 'text.secondary' },
                   '&:hover': {
                     bgcolor: `${color}25`,
                     borderColor: color,
