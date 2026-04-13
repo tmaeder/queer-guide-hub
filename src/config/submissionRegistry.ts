@@ -60,7 +60,7 @@ const eventSubmission: SubmissionTypeConfig = {
   titleField: 'title',
   defaults: { featured: false, is_free: false, status: 'active' },
   steps: [
-    { id: 'basics', label: 'Basics', fields: ['title', 'description', 'event_type'] },
+    { id: 'basics', label: 'Basics', fields: ['title', 'edition', 'description', 'event_type'] },
     {
       id: 'when-where',
       label: 'When & Where',

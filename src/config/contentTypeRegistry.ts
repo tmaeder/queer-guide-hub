@@ -204,6 +204,14 @@ const eventFields: FieldConfig[] = [
   },
   { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
   {
+    name: 'edition',
+    label: 'Edition',
+    type: 'text',
+    group: 'basic',
+    placeholder: 'e.g. 5th, 2026, Vol. 3',
+    maxLength: 100,
+  },
+  {
     name: 'event_type',
     label: 'Event Type',
     type: 'select',
