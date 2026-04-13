@@ -76,7 +76,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <Typography variant="body2" color="text.secondary">
               An unexpected error occurred. Please try refreshing the page.
             </Typography>
-            {this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <Typography variant="caption" sx={{
                 fontFamily: 'monospace',
                 textAlign: 'left',

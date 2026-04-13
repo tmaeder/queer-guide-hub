@@ -22,7 +22,7 @@ const lightPalette = {
   success: { main: '#0a0a0a', contrastText: '#ffffff' },
   background: { default: '#ffffff', paper: '#f5f5f5' },
   text: { primary: '#0a0a0a', secondary: '#666666' },
-  divider: 'transparent',
+  divider: 'rgba(0,0,0,0)',
 };
 
 const darkPalette = {
@@ -35,7 +35,7 @@ const darkPalette = {
   success: { main: '#ffffff', contrastText: '#0a0a0a' },
   background: { default: '#0a0a0a', paper: '#111111' },
   text: { primary: '#f2f2f2', secondary: '#999999' },
-  divider: 'transparent',
+  divider: 'rgba(0,0,0,0)',
 };
 
 // ─── Shared theme options ─────────────────────────────────────────────────────
