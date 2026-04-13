@@ -77,7 +77,7 @@ function ShellSkeleton() {
         <Skeleton variant="text" width={100} sx={{ mb: 3 }} />
         {Array.from({ length: 8 }).map((_, i) => (
           <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-            <Skeleton variant="rounded" width={28} height={28} sx={{ borderRadius: '8px' }} />
+            <Skeleton variant="rounded" width={28} height={28} sx={{ borderRadius: 0 }} />
             <Skeleton variant="text" width={80 + Math.random() * 60} height={20} />
           </Box>
         ))}
@@ -95,7 +95,7 @@ function ShellSkeleton() {
           }}
         >
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} variant="rounded" height={120} sx={{ borderRadius: '12px' }} />
+            <Skeleton key={i} variant="rounded" height={120} sx={{ borderRadius: 0 }} />
           ))}
         </Box>
       </Box>
@@ -144,9 +144,7 @@ export function AdminShell() {
         sx={{
           display: 'flex',
           minHeight: 'calc(100vh - 100px)',
-          // Break out of Container maxWidth="lg" in App.tsx
-          mx: { xs: -1, sm: -2 },
-          width: { xs: 'calc(100% + 16px)', sm: 'calc(100% + 32px)' },
+          width: '100%',
           bgcolor: 'grey.50',
         }}
       >
@@ -163,16 +161,10 @@ export function AdminShell() {
               alignItems: 'center',
               gap: 0.75,
               bgcolor: 'background.paper',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
-              borderRadius: '10px',
               pl: 1,
               pr: 1.5,
               py: 0.75,
               cursor: 'pointer',
-              transition: 'box-shadow 0.2s ease',
-              '&:hover': {
-                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-              },
             }}
           >
             <IconButton size="small" sx={{ p: 0.5 }}>
