@@ -71,7 +71,7 @@ export default function ProfessionDetail() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Container sx={{ py: 3 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Skeleton style={{ height: 40, width: 96 }} />
@@ -106,7 +106,7 @@ export default function ProfessionDetail() {
 
   if (error || !professionData) {
     return (
-      <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Container sx={{ py: 3 }}>
         <Card style={{ borderColor: 'var(--destructive)' }}>
           <CardContent style={{ padding: 24, textAlign: 'center' }}>
             <Typography color="error">{error || 'Profession not found'}</Typography>
@@ -121,7 +121,7 @@ export default function ProfessionDetail() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Container sx={{ py: 3 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

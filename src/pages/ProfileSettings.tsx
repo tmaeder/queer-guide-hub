@@ -357,7 +357,7 @@ function ProfileSettingsContent({
   }, [formData, hasUnsavedChanges, handleSave]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Container sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header with Progress */}
       <PageHeader
         title="Profile Settings"
@@ -618,7 +618,7 @@ function ProfileSettingsContent({
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">
-                                <Box sx={{ p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+                                <Box sx={{ p: 1.5 }}>
                                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
                                     Select Date of Birth
                                   </Typography>
@@ -653,7 +653,7 @@ function ProfileSettingsContent({
                                   defaultMonth={new Date(2000, 0)}
                                 />
                                 {formData.date_of_birth && (
-                                  <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider' }}>
+                                  <Box sx={{ p: 1.5 }}>
                                     <Button
                                       variant="ghost"
                                       size="sm"

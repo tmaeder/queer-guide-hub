@@ -147,7 +147,7 @@ const Marketplace = () => {
   if (error) {
     return (
       <Box sx={{ minHeight: '100vh' }}>
-        <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+        <Container sx={{ py: { xs: 6, md: 10 } }}>
           <ErrorState
             message="Something went wrong while loading the marketplace. Please try again."
             onRetry={() => fetchListings()}
@@ -158,7 +158,7 @@ const Marketplace = () => {
   }
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+      <Container sx={{ py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
           title="Marketplace"

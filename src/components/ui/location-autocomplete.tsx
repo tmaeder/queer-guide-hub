@@ -398,9 +398,6 @@ export function LocationAutocomplete({
             top: '100%',
             marginTop: 4,
             backgroundColor: '#ffffff',
-            border: '1px solid #e5e5e5',
-            borderRadius: 6,
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
             maxHeight: 240,
             overflowY: 'auto',
           }}

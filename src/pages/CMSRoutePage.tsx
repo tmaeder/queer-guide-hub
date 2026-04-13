@@ -38,7 +38,7 @@ interface CMSRoutePageProps {
 /** Skeleton shown while loading */
 function PageSkeleton() {
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       <Skeleton variant="text" width={120} height={24} sx={{ mb: 2 }} />
       <Skeleton variant="text" width="70%" height={48} sx={{ mb: 1 }} />
       <Skeleton variant="text" width="50%" height={28} sx={{ mb: 4 }} />
@@ -187,7 +187,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
   if (notFound || !page) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
+      <Container sx={{ py: 8, textAlign: 'center' }}>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
           Page Not Found
         </Typography>
@@ -201,7 +201,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   const sanitizedHtml = page.body_html ? DOMPurify.sanitize(page.body_html) : '';
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       {/* Breadcrumb with parent link */}
       {parentPage && (
         <Breadcrumbs

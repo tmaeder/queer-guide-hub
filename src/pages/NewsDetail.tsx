@@ -241,7 +241,7 @@ export default function NewsDetail() {
   // Loading skeleton matching 2-column grid pattern
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Box
           sx={{
             '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
@@ -275,7 +275,7 @@ export default function NewsDetail() {
 
   if (!article) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+      <Container sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
           Article Not Found
         </Typography>
@@ -304,7 +304,7 @@ export default function NewsDetail() {
   const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
         <Link
@@ -555,13 +555,11 @@ export default function NewsDetail() {
                         display: 'flex',
                         flexDirection: 'column',
                         borderRadius: 1,
-                        border: '1px solid',
-                        borderColor: 'divider',
                         overflow: 'hidden',
                         textDecoration: 'none',
                         color: 'inherit',
                         transition: 'all 0.2s',
-                        '&:hover': { borderColor: 'primary.main', boxShadow: 2 },
+                        '&:hover': { bgcolor: 'action.hover' },
                       }}
                     >
                       {related.image_url && (

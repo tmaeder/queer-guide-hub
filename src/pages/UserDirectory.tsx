@@ -390,7 +390,7 @@ const UserDirectory = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <Container sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
       {/* Hero Section */}
       <Paper
         variant="outlined"
@@ -990,8 +990,6 @@ const UserDirectory = () => {
                     p: 2,
                     bgcolor: 'action.hover',
                     borderRadius: 2,
-                    border: 1,
-                    borderColor: 'divider',
                   }}
                 >
                   <Typography
@@ -1079,7 +1077,6 @@ const UserDirectory = () => {
                 p: 2,
                 bgcolor: 'action.hover',
                 borderRadius: 2,
-                borderColor: 'divider',
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1394,8 +1391,6 @@ const UserDirectory = () => {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       pt: 2,
-                      borderTop: 1,
-                      borderColor: 'divider',
                     }}
                   >
                     {profile.website ? (

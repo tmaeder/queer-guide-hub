@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { container, responsive, center, pageWrapper, stack, row } from '../sx';
 
 describe('container', () => {
-  it('should have maxWidth lg', () => {
-    expect(container).toHaveProperty('maxWidth', 'lg');
+  it('should have full width', () => {
+    expect(container).toHaveProperty('width', '100%');
   });
 
-  it('should have mx auto', () => {
-    expect(container).toHaveProperty('mx', 'auto');
+  it('should have horizontal padding', () => {
+    expect(container).toHaveProperty('px');
   });
 });
 

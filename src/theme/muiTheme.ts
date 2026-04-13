@@ -10,40 +10,40 @@ export const brandColors = {
 } as const;
 
 // ─── Palettes ─────────────────────────────────────────────────────────────────
-// All colors are solid (alpha = 1). No rgba/hsla with transparency allowed.
+// Strict monochrome + single accent (brand magenta). No transparency.
 
 const lightPalette = {
-  primary: { main: '#0e0e0e', contrastText: '#ffffff' },
-  secondary: { main: '#f3f0ef', contrastText: '#2f2e2e' },
-  brand: { main: brandColors.main, light: brandColors.light, dark: brandColors.dark, contrastText: '#ffefef' },
-  accent: { main: '#feb700', light: '#ffcf4d', dark: '#694a00', contrastText: '#392700' },
-  error: { main: '#b31b25', contrastText: '#ffefee' },
-  warning: { main: '#feb700', contrastText: '#392700' },
-  success: { main: '#22c55e', contrastText: '#ffffff' },
-  background: { default: '#f9f6f5', paper: '#ffffff' },
-  text: { primary: '#2f2e2e', secondary: '#5c5b5b' },
-  divider: '#eae7e7',
+  primary: { main: '#0a0a0a', contrastText: '#ffffff' },
+  secondary: { main: '#f0f0f0', contrastText: '#0a0a0a' },
+  brand: { main: brandColors.main, light: brandColors.light, dark: brandColors.dark, contrastText: '#ffffff' },
+  accent: { main: brandColors.main, light: brandColors.light, dark: brandColors.dark, contrastText: '#ffffff' },
+  error: { main: '#b31b25', contrastText: '#ffffff' },
+  warning: { main: '#b31b25', contrastText: '#ffffff' },
+  success: { main: '#0a0a0a', contrastText: '#ffffff' },
+  background: { default: '#ffffff', paper: '#f5f5f5' },
+  text: { primary: '#0a0a0a', secondary: '#666666' },
+  divider: 'transparent',
 };
 
 const darkPalette = {
-  primary: { main: '#ffffff', contrastText: '#0e0e0e' },
-  secondary: { main: '#1a1a1a', contrastText: '#f2f2f2' },
-  brand: { main: brandColors.light, light: '#ff9dab', dark: brandColors.main, contrastText: '#0e0e0e' },
-  accent: { main: '#ffcf4d', light: '#ffe08a', dark: '#feb700', contrastText: '#0e0e0e' },
+  primary: { main: '#ffffff', contrastText: '#0a0a0a' },
+  secondary: { main: '#1a1a1a', contrastText: '#ffffff' },
+  brand: { main: brandColors.light, light: '#ff9dab', dark: brandColors.main, contrastText: '#0a0a0a' },
+  accent: { main: brandColors.light, light: '#ff9dab', dark: brandColors.main, contrastText: '#0a0a0a' },
   error: { main: '#fb5151', contrastText: '#ffffff' },
-  warning: { main: '#feb700', contrastText: '#392700' },
-  success: { main: '#22c55e', contrastText: '#ffffff' },
-  background: { default: '#0d0d0d', paper: '#121212' },
-  text: { primary: '#f2f2f2', secondary: '#9e9c9c' },
-  divider: '#1a1a1a',
+  warning: { main: '#fb5151', contrastText: '#ffffff' },
+  success: { main: '#ffffff', contrastText: '#0a0a0a' },
+  background: { default: '#0a0a0a', paper: '#111111' },
+  text: { primary: '#f2f2f2', secondary: '#999999' },
+  divider: 'transparent',
 };
 
 // ─── Shared theme options ─────────────────────────────────────────────────────
-// Rule: NO transparent, NO rgba() with alpha<1, NO backdropFilter, NO blur.
+// Strict flat: 0 radius, 0 borders, 0 shadows.
 
 const baseThemeOptions: ThemeOptions = {
   shape: {
-    borderRadius: 16,
+    borderRadius: 0,
   },
   typography: {
     fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
@@ -70,15 +70,24 @@ const baseThemeOptions: ThemeOptions = {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 9999,
+          borderRadius: 0,
+          border: 'none',
           transition: `all ${duration.fast}s ${ease.smooth}`,
           fontWeight: 600,
           '&:hover': {
-            opacity: 0.9,
+            opacity: 0.85,
           },
           '&:active': {
-            transform: 'scale(0.97)',
+            opacity: 0.7,
             transition: `all ${duration.instant}s ${ease.smooth}`,
+          },
+        },
+        outlined: {
+          border: 'none',
+          backgroundColor: 'rgba(128,128,128,0.12)',
+          '&:hover': {
+            border: 'none',
+            backgroundColor: 'rgba(128,128,128,0.18)',
           },
         },
         sizeSmall: {
@@ -102,17 +111,15 @@ const baseThemeOptions: ThemeOptions = {
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 0,
           transition: transition.normal,
-          boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
+          boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
+            boxShadow: 'none',
           },
           '&.MuiPaper-outlined': {
-            boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
-            '&:hover': {
-              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
-            },
+            border: 'none',
+            boxShadow: 'none',
           },
         },
       },
@@ -123,7 +130,7 @@ const baseThemeOptions: ThemeOptions = {
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 0,
         },
       },
       defaultProps: {
@@ -133,13 +140,18 @@ const baseThemeOptions: ThemeOptions = {
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 999,
+          borderRadius: 0,
           fontWeight: 600,
           fontSize: '0.75rem',
+          border: 'none',
           transition: transition.fast,
           '&:hover': {
-            transform: 'scale(1.04)',
+            opacity: 0.85,
           },
+        },
+        outlined: {
+          border: 'none',
+          backgroundColor: 'rgba(128,128,128,0.12)',
         },
       },
     },
@@ -151,7 +163,21 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 16,
+            borderRadius: 0,
+            '& fieldset': {
+              border: 'none',
+            },
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+          backgroundColor: 'rgba(128,128,128,0.06)',
+          '& fieldset': {
+            border: 'none',
           },
         },
       },
@@ -159,7 +185,7 @@ const baseThemeOptions: ThemeOptions = {
     MuiDialog: {
       styleOverrides: {
         paper: {
-          borderRadius: 16,
+          borderRadius: 0,
           animation: `scale-in ${duration.normal}s ${ease.smooth} both`,
         },
       },
@@ -175,18 +201,23 @@ const baseThemeOptions: ThemeOptions = {
       defaultProps: {
         arrow: true,
       },
+      styleOverrides: {
+        tooltip: {
+          borderRadius: 0,
+        },
+      },
     },
     MuiAlert: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 0,
         },
       },
     },
     MuiSkeleton: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 0,
         },
       },
       defaultProps: {
@@ -198,9 +229,10 @@ const baseThemeOptions: ThemeOptions = {
         root: {
           minWidth: 44,
           minHeight: 44,
+          borderRadius: 0,
           transition: transition.fast,
           '&:hover': {
-            transform: 'scale(1.08)',
+            opacity: 0.85,
           },
         },
       },
@@ -215,8 +247,13 @@ const baseThemeOptions: ThemeOptions = {
     MuiDivider: {
       styleOverrides: {
         root: {
-          borderColor: 'inherit',
+          borderWidth: 0,
         },
+      },
+    },
+    MuiContainer: {
+      defaultProps: {
+        maxWidth: false as const,
       },
     },
     MuiAccordion: {
@@ -226,7 +263,7 @@ const baseThemeOptions: ThemeOptions = {
       },
       styleOverrides: {
         root: {
-          borderRadius: '16px !important',
+          borderRadius: '0 !important',
           '&:before': {
             display: 'none',
           },
@@ -236,14 +273,14 @@ const baseThemeOptions: ThemeOptions = {
     MuiTabs: {
       styleOverrides: {
         indicator: {
-          borderRadius: 3,
+          borderRadius: 0,
         },
       },
     },
     MuiLinearProgress: {
       styleOverrides: {
         root: {
-          borderRadius: 6,
+          borderRadius: 0,
           height: 6,
         },
       },
@@ -251,22 +288,43 @@ const baseThemeOptions: ThemeOptions = {
     MuiBadge: {
       styleOverrides: {
         badge: {
-          borderRadius: 999,
+          borderRadius: 0,
+        },
+      },
+    },
+    MuiAvatar: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+        },
+      },
+    },
+    MuiPopover: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 0,
+        },
+      },
+    },
+    MuiMenu: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 0,
+        },
+      },
+    },
+    MuiAutocomplete: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 0,
         },
       },
     },
   },
 };
 
-// ─── Shadows (tonal layering — ambient only for modals/FABs) ────────────────
-const customShadows = [
-  'none',
-  'none',
-  'none',
-  '0 40px 60px -15px rgb(47 46 46 / 0.06)',
-  '0 50px 60px -15px rgb(47 46 46 / 0.08)',
-  ...Array(20).fill('none'),
-] as unknown as ThemeOptions['shadows'];
+// ─── Shadows — all none (strict flat) ─────────────────────────────────────────
+const customShadows = Array(25).fill('none') as unknown as ThemeOptions['shadows'];
 
 export function createAppTheme(mode: 'light' | 'dark') {
   const palette = mode === 'light' ? lightPalette : darkPalette;

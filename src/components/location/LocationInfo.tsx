@@ -201,7 +201,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                   role="button"
                   tabIndex={0}
                   /* group removed */
-                  style={{ position: 'relative', cursor: 'pointer', overflow: 'hidden', borderRadius: '0.5rem', border: '1px solid var(--muted)', transition: 'all 0.3s' }}
+                  style={{ position: 'relative', cursor: 'pointer', overflow: 'hidden', transition: 'all 0.3s' }}
                   onClick={() => openModal(index)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(index); } }}
                 >

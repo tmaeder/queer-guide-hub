@@ -64,9 +64,6 @@ export const ExploreMapFiltersPanel: React.FC<ExploreMapFiltersProps> = ({
           size="small"
           onClick={() => setOpen((o) => !o)}
           sx={{
-            border: '1px solid',
-            borderColor: hasActiveFilters ? 'primary.main' : 'divider',
-            borderRadius: 1,
             width: 36,
             height: 36,
           }}

@@ -4,14 +4,15 @@ import { MemoryRouter } from 'react-router';
 vi.mock('@/components/theme/ThemeToggle', () => ({ ThemeToggle: () => <button>Theme</button> }));
 import { Footer } from '../Footer';
 describe('Footer', () => {
-  it('should render link group titles', () => {
+  it('should render footer links', () => {
     render(<MemoryRouter><Footer /></MemoryRouter>);
-    expect(screen.getByText('Discover')).toBeInTheDocument();
-    expect(screen.getByText('Connect')).toBeInTheDocument();
-    expect(screen.getByText('Company')).toBeInTheDocument();
+    expect(screen.getByText('About')).toBeInTheDocument();
+    expect(screen.getByText('Legal')).toBeInTheDocument();
+    expect(screen.getByText('Privacy')).toBeInTheDocument();
+    expect(screen.getByText('Contact')).toBeInTheDocument();
   });
-  it('should render venue link', () => {
+  it('should render copyright', () => {
     render(<MemoryRouter><Footer /></MemoryRouter>);
-    expect(screen.getByText('Venues')).toBeInTheDocument();
+    expect(screen.getByText(/Queer Guide/)).toBeInTheDocument();
   });
 });

@@ -221,7 +221,7 @@ export default function EventDetail() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Box
           sx={{
             '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
@@ -250,7 +250,7 @@ export default function EventDetail() {
 
   if (fetchError && !event) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+      <Container sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
           Failed to Load
         </Typography>
@@ -275,7 +275,7 @@ export default function EventDetail() {
 
   if (!event) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+      <Container sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
           Event Not Found
         </Typography>
@@ -324,7 +324,7 @@ export default function EventDetail() {
   const locationLabel = event.venues?.name || event.venue_name || 'Location TBA';
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
         <Link
@@ -452,8 +452,6 @@ export default function EventDetail() {
                   height: 40,
                   borderRadius: '10px',
                   objectFit: 'contain',
-                  border: '1px solid',
-                  borderColor: 'divider',
                   p: '3px',
                   flexShrink: 0,
                 }}

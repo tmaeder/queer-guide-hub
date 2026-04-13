@@ -144,7 +144,7 @@ const Venues = () => {
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container sx={{ py: { xs: 3, md: 5 } }}>
         {/* Filters (search is the header now) */}
         <VenueFilters onFiltersChange={handleFiltersChange} />
 
@@ -182,7 +182,7 @@ const Venues = () => {
               </SelectContent>
             </Select>
 
-            <Box sx={{ display: 'flex', border: 1, borderColor: 'divider', borderRadius: 1.5, overflow: 'hidden' }}>
+            <Box sx={{ display: 'flex', borderRadius: 1.5, overflow: 'hidden' }}>
               <IconButton
                 size="small"
                 onClick={() => setViewMode('grid')}
@@ -311,8 +311,6 @@ const Venues = () => {
               width: '100%',
               borderRadius: 2,
               overflow: 'hidden',
-              border: 1,
-              borderColor: 'divider',
             }}
           >
             <ExploreMap height={700} defaultLayers={['venues']} showLayerToggles showFilters />

@@ -36,8 +36,6 @@ export function UserModeBadge({ mode, size = 'md' }: UserModeBadgeProps) {
         gap: 0.5,
         fontWeight: 500,
         borderRadius: 9999,
-        border: 1,
-        borderColor: config.borderColor,
         bgcolor: config.bgcolor,
         color: config.color,
         ...sizeStyle,

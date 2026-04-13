@@ -133,7 +133,6 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
                 top: '100%',
                 marginTop: 4,
                 backgroundColor: 'var(--popover)',
-                border: '1px solid var(--border)',
                 borderRadius: 8,
                 padding: 8,
                 boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
@@ -650,9 +649,6 @@ export const MessagingInterface = () => {
         flexDirection: { xs: 'column', md: 'row' },
         height: { xs: 'calc(100vh - 200px)', md: 600 },
         overflow: 'hidden',
-        borderRadius: 2,
-        border: 1,
-        borderColor: 'divider',
         bgcolor: 'background.default',
       }}
     >

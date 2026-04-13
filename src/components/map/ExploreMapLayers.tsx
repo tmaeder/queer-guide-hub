@@ -62,9 +62,6 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
         onClick={() => setExpanded((v) => !v)}
         sx={{
           bgcolor: 'background.paper',
-          border: '1px solid',
-          borderColor: 'divider',
-          boxShadow: 2,
           width: 36,
           height: 36,
           '&:hover': { bgcolor: 'background.paper' },
@@ -82,11 +79,7 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
             gap: 0.5,
             maxWidth: 220,
             bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 2,
             p: 0.75,
-            boxShadow: 2,
           }}
         >
           {LAYER_DEFS.map(({ type, label, icon: Icon, comingSoon }) => {

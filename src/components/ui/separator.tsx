@@ -13,7 +13,7 @@ const Separator = React.forwardRef<HTMLHRElement, SeparatorProps>(
       orientation={orientation}
       className={className}
       style={style}
-      sx={orientation === "vertical" ? { height: '100%', borderRightWidth: 1 } : {}}
+      sx={orientation === "vertical" ? { height: '100%' } : {}}
       {...(props as Record<string, unknown>)}
     />
   )

@@ -88,7 +88,7 @@ export default function HotelDetail() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Box
           sx={{
             '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
@@ -105,7 +105,7 @@ export default function HotelDetail() {
 
   if (!hotel) {
     return (
-      <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
+      <Container sx={{ py: 8, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ mb: 2 }}>
           Hotel not found
         </Typography>
@@ -121,7 +121,7 @@ export default function HotelDetail() {
   const heroImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Link
         to="/hotels"

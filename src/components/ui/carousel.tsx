@@ -226,7 +226,7 @@ const CarouselPrevious = React.forwardRef<
         position: 'absolute',
         height: 32,
         width: 32,
-        borderRadius: '50%',
+        borderRadius: 0,
         ...(orientation === "horizontal"
           ? { left: -48, top: '50%', transform: 'translateY(-50%)' }
           : { top: -48, left: '50%', transform: 'translateX(-50%) rotate(90deg)' }),
@@ -258,7 +258,7 @@ const CarouselNext = React.forwardRef<
         position: 'absolute',
         height: 32,
         width: 32,
-        borderRadius: '50%',
+        borderRadius: 0,
         ...(orientation === "horizontal"
           ? { right: -48, top: '50%', transform: 'translateY(-50%)' }
           : { bottom: -48, left: '50%', transform: 'translateX(-50%) rotate(90deg)' }),

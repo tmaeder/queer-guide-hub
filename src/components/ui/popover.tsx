@@ -83,7 +83,7 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
         disableRestoreFocus
         anchorOrigin={{ vertical: 'bottom', horizontal: align === 'start' ? 'left' : align === 'end' ? 'right' : 'center' }}
         transformOrigin={{ vertical: 'top', horizontal: align === 'start' ? 'left' : align === 'end' ? 'right' : 'center' }}
-        slotProps={{ paper: { ref: ref as React.Ref<HTMLDivElement>, className, style: { marginTop: sideOffset, ...style }, sx: { borderRadius: 1.25, minWidth: 288, p: 2 } } }}
+        slotProps={{ paper: { ref: ref as React.Ref<HTMLDivElement>, className, style: { marginTop: sideOffset, ...style }, sx: { borderRadius: 0, minWidth: 288, p: 2 } } }}
       >
         {children}
       </MuiPopover>

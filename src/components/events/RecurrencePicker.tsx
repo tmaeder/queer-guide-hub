@@ -66,7 +66,7 @@ export const RecurrencePicker: React.FC<RecurrencePickerProps> = ({ value, onCha
   };
 
   return (
-    <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2 }}>
+    <Box sx={{ p: 2 }}>
       <FormControlLabel
         control={
           <Switch

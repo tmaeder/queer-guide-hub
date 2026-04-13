@@ -28,7 +28,7 @@ export default function Travel() {
   });
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+    <Container sx={{ py: { xs: 6, md: 10 } }}>
       {/* Hero */}
       <Paper
         variant="outlined"

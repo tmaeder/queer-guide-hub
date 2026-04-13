@@ -53,7 +53,7 @@ export default function Page() {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
+      <Container sx={{ py: 8, textAlign: 'center' }}>
         <CircularProgress />
       </Container>
     );
@@ -61,7 +61,7 @@ export default function Page() {
 
   if (notFound || !page) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
+      <Container sx={{ py: 8, textAlign: 'center' }}>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
           Page Not Found
         </Typography>
@@ -75,7 +75,7 @@ export default function Page() {
   const sanitizedHtml = page.body_html ? DOMPurify.sanitize(page.body_html) : '';
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       {/* Cover image */}
       {page.cover_image_url && (
         <Box

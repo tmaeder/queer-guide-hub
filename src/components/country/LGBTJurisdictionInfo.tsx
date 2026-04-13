@@ -91,7 +91,6 @@ function ProtectionRow({ label, icon: Icon, data }: {
                 fontWeight: 600,
                 bgcolor: isYes ? '#dcfce7' : isNo ? '#fee2e2' : '#f3f4f6',
                 color: isYes ? '#166534' : isNo ? '#991b1b' : '#9ca3af',
-                border: '1px solid',
                 borderColor: isYes ? '#bbf7d0' : isNo ? '#fecaca' : '#e5e7eb',
               }}
             >

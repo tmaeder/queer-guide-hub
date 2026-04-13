@@ -538,7 +538,7 @@ export default function SearchResults() {
   const _availableTabs = ['all', ...Object.keys(resultsByType)];
 
   return (
-    <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
+    <Container sx={{ px: 2, py: 4 }}>
       {/* Header */}
       <PageHeader
         title="Search Results"
@@ -684,8 +684,6 @@ export default function SearchResults() {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                border: 1,
-                borderColor: 'divider',
                 borderRadius: 2,
               }}
             >

@@ -17,7 +17,7 @@ const SubmitHub = () => {
   const { user } = useAuth();
 
   return (
-    <Box sx={{ maxWidth: '56rem', mx: 'auto', py: 4, px: 2 }}>
+    <Box sx={{ mx: 'auto', py: 4, px: 2 }}>
       {/* Back */}
       <Button
         variant="ghost"
@@ -75,9 +75,7 @@ const SubmitHub = () => {
           sx={{
             cursor: 'pointer',
             transition: 'all 0.2s',
-            '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 },
-            border: '1px solid',
-            borderColor: 'divider',
+            '&:hover': { transform: 'translateY(-2px)' },
             gridColumn: { sm: '1 / -1', md: '1 / -1' },
             background: 'linear-gradient(135deg, #ec489910 0%, #DB277710 100%)',
           }}
@@ -121,9 +119,7 @@ const SubmitHub = () => {
               sx={{
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 },
-                border: '1px solid',
-                borderColor: 'divider',
+                '&:hover': { transform: 'translateY(-2px)' },
               }}
               onClick={() => navigate(`/submit/${type.id}`)}
             >

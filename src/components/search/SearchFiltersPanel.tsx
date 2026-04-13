@@ -100,7 +100,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   };
 
   return (
-    <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
       {/* Content Types */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -209,7 +209,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
           {/* Date Range */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>

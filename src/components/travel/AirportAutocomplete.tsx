@@ -155,13 +155,9 @@ export function AirportAutocomplete({
             right: 0,
             zIndex: 50,
             bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 1,
             maxHeight: 320,
             overflow: 'auto',
             mt: 0.5,
-            boxShadow: 3,
           }}
         >
           {results.map((airport) => (
@@ -192,7 +188,7 @@ export function AirportAutocomplete({
         </Box>
       )}
       {open && loading && (
-        <Box sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2, mt: 0.5 }}>
+        <Box sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, bgcolor: 'background.paper', p: 2, mt: 0.5 }}>
           <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', textAlign: 'center' }}>Searching...</Typography>
         </Box>
       )}

@@ -119,7 +119,7 @@ export const CreateGroupDialog = ({
           }))} placeholder="Add tags to help others discover your group..." maxTags={5} allowCustomTags={true} />
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5 }}>
             <Box>
               <Label htmlFor="private">
                 Private Group

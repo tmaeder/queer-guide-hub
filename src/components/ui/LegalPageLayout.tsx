@@ -55,7 +55,7 @@ export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       {/* Page Title */}
       <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
         {title}

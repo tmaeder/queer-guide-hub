@@ -20,14 +20,14 @@ export default function Blog() {
   const categories = ["All Posts", "Community", "Travel", "Business", "Events", "Resources"];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2 }}>
           <BookOpen style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" />
           <Typography variant="h3" sx={{ fontWeight: 700, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>The Queer Guide Blog</Typography>
         </Box>
-        <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '42rem', mx: 'auto' }}>
+        <Typography variant="h6" color="text.secondary" sx={{ mx: 'auto' }}>
           Stories, insights, and resources from the LGBTQ+ community.
           Learn, connect, and stay informed with our latest articles.
         </Typography>
@@ -41,7 +41,7 @@ export default function Blog() {
               <Card style={{ padding: 48, textAlign: 'center' }}>
                 <BookOpen style={{ width: 64, height: 64, margin: '0 auto 16px', color: 'var(--mui-palette-text-secondary)' }} />
                 <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Blog Coming Soon</Typography>
-                <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto', mb: 3 }}>
+                <Typography color="text.secondary" sx={{ mx: 'auto', mb: 3 }}>
                   We're working on bringing you stories, insights, and resources from the LGBTQ+ community. In the meantime, explore our latest content:
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>

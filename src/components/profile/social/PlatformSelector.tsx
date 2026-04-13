@@ -55,9 +55,6 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
         flexDirection: 'column',
         gap: 2,
         p: 2,
-        border: 1,
-        borderRadius: 2,
-        borderColor: 'divider',
         bgcolor: 'background.paper',
       }}
     >

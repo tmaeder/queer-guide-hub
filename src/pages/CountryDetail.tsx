@@ -240,7 +240,6 @@ export default function CountryDetail() {
           sx={{
             position: 'relative',
             mx: 'auto',
-            maxWidth: 1280,
             px: 3,
             pt: { xs: 3, lg: 5 },
             pb: 2,
@@ -322,8 +321,6 @@ export default function CountryDetail() {
                   borderRadius: '9999px',
                   px: 2,
                   py: 1,
-                  border: '1px solid',
-                  borderColor: 'divider',
                 }}
               >
                 {(() => {
@@ -404,8 +401,8 @@ export default function CountryDetail() {
       />
 
       {/* Main Content — Tabs immediately */}
-      <Box sx={{ mx: 'auto', maxWidth: 1280, px: 3, pb: 8 }}>
-        <Card sx={{ borderColor: 'divider', boxShadow: 1 }}>
+      <Box sx={{ mx: 'auto', px: 3, pb: 8 }}>
+        <Card>
           <CardContent sx={{ p: 3 }}>
             <Tabs
               defaultValue="overview"
@@ -490,7 +487,7 @@ export default function CountryDetail() {
                   }}
                 >
                   {/* About Card */}
-                  <Card sx={{ borderColor: 'divider' }}>
+                  <Card>
                     <CardHeader>
                       <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Globe style={{ height: 20, width: 20 }} />
@@ -506,7 +503,7 @@ export default function CountryDetail() {
                   </Card>
 
                   {/* Quick Facts Card */}
-                  <Card sx={{ borderColor: 'divider' }}>
+                  <Card>
                     <CardHeader>
                       <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Star style={{ height: 20, width: 20 }} />
@@ -635,7 +632,7 @@ export default function CountryDetail() {
 
                 {/* Weather Forecast */}
                 {country.latitude && country.longitude && (
-                  <Card sx={{ borderColor: 'divider' }}>
+                  <Card>
                     <CardContent sx={{ p: 0 }}>
                       <WeatherForecast
                         latitude={country.latitude}
@@ -739,7 +736,7 @@ export default function CountryDetail() {
                     ))}
                   </Box>
                 ) : (
-                  <Card sx={{ borderStyle: 'dashed', border: 2, borderColor: 'divider' }}>
+                  <Card>
                     <CardContent sx={{ textAlign: 'center', py: 8 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box
@@ -818,7 +815,7 @@ export default function CountryDetail() {
                     ))}
                   </Box>
                 ) : (
-                  <Card sx={{ borderStyle: 'dashed', border: 2, borderColor: 'divider' }}>
+                  <Card>
                     <CardContent sx={{ textAlign: 'center', py: 8 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box
@@ -897,7 +894,7 @@ export default function CountryDetail() {
                     ))}
                   </Box>
                 ) : (
-                  <Card sx={{ borderStyle: 'dashed', border: 2, borderColor: 'divider' }}>
+                  <Card>
                     <CardContent sx={{ textAlign: 'center', py: 8 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box
@@ -951,7 +948,7 @@ export default function CountryDetail() {
                   destinationCountryCode={country.code}
                 />
 
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Activity style={{ height: 20, width: 20 }} />
@@ -1017,7 +1014,7 @@ export default function CountryDetail() {
                     ))}
                   </Box>
                 ) : (
-                  <Card sx={{ borderStyle: 'dashed', border: 2, borderColor: 'divider' }}>
+                  <Card>
                     <CardContent sx={{ textAlign: 'center', py: 8 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box

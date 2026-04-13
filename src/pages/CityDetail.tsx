@@ -155,7 +155,7 @@ export default function CityDetail() {
   if (!city) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
+        <Box sx={{ mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
             City Not Found
           </Typography>
@@ -171,7 +171,7 @@ export default function CityDetail() {
   }
 
   return (
-    <Box sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 3 }}>
+    <Box sx={{ mx: 'auto', px: 2, py: 3 }}>
       {/* Breadcrumb */}
       <Box
         component="nav"
@@ -1094,8 +1094,6 @@ export default function CityDetail() {
                   p: 2,
                   borderRadius: 2,
                   bgcolor: 'action.hover',
-                  border: '1px solid',
-                  borderColor: 'divider',
                 }}
               >
                 <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>

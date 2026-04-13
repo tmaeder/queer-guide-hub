@@ -67,9 +67,6 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
                   elevation={0}
                   sx={{
                     p: 2,
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 1.5,
                     '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
                     transition: 'all 0.15s',
                   }}

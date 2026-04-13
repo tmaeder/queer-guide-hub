@@ -19,7 +19,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           py: 0.5,
           fontSize: { xs: '1rem', md: '0.875rem' },
           bgcolor: 'action.hover',
-          borderRadius: 1.25,
+          borderRadius: 0,
           '&:focus-within': {
             bgcolor: 'action.selected',
           },

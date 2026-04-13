@@ -204,7 +204,7 @@ export default function Directory() {
     <Box sx={{ width: '100%', transition: 'opacity 0.3s', opacity: isTransitioning ? 0.5 : 1 }}>
       {/* Hero Section */}
       <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-        <Container maxWidth="xl" sx={{ px: 3, py: { xs: 6, lg: 10 } }}>
+        <Container sx={{ px: 3, py: { xs: 6, lg: 10 } }}>
           {/* Navigation Header */}
           <Box sx={{ mb: 4 }}>
             {viewMode !== "overview" && (
@@ -255,7 +255,7 @@ export default function Directory() {
       </Box>
 
       {/* Main Content Area */}
-      <Container maxWidth="xl" sx={{ px: 3, pb: 6 }}>
+      <Container sx={{ px: 3, pb: 6 }}>
         {/* Breadcrumb Navigation */}
         {viewMode !== "overview" && viewMode !== "search" && (
           <Box sx={{ mb: 3 }}>
@@ -501,7 +501,7 @@ export default function Directory() {
                 </Box>
 
                 {/* Map Container */}
-                <Box sx={{ borderRadius: 3, overflow: 'hidden', border: 1, borderColor: 'divider', boxShadow: 3 }}>
+                <Box sx={{ borderRadius: 3, overflow: 'hidden' }}>
                   <Suspense
                     fallback={
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384, bgcolor: 'action.hover' }}>

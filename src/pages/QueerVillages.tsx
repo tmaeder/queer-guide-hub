@@ -17,7 +17,7 @@ export default function QueerVillages() {
   }, [search, fetchVillages]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
           Queer Villages

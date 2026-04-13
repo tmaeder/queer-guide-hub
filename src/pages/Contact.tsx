@@ -51,10 +51,10 @@ export default function Contact() {
     answer: "Yes, we take privacy seriously. Please review our Privacy Policy for detailed information about how we collect, use, and protect your data."
   }];
   return <Box>
-      <Container maxWidth="lg" sx={{ py: 6 }}>
+      <Container sx={{ py: 6 }}>
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>Contact Us</Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '42rem', mx: 'auto' }}>
+          <Typography variant="h6" color="text.secondary" sx={{ mx: 'auto' }}>
             We're here to help! Whether you have questions, feedback, or need support,
             don't hesitate to reach out to our community team.
           </Typography>

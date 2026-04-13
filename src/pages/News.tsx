@@ -324,7 +324,7 @@ export default function News() {
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+      <Container sx={{ py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
           title="News"
@@ -374,7 +374,7 @@ export default function News() {
               </Select>
 
               {/* View Mode */}
-              <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2, p: 0.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', borderRadius: 2, p: 0.5 }}>
                 <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Grid view">
                   <Grid3X3 style={{ width: 16, height: 16 }} />
                 </Button>

@@ -118,14 +118,14 @@ export default function FeedbackBoard() {
 
   if (isLoading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 6, textAlign: 'center' }}>
+      <Container sx={{ py: 6, textAlign: 'center' }}>
         <CircularProgress />
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 } }}>
+    <Container sx={{ py: { xs: 2, sm: 4 } }}>
       <PageHeader
         title="Community Feedback"
         subtitle="Ideas, bugs, and improvements from the community. Vote on what matters most."

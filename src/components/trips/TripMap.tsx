@@ -370,8 +370,6 @@ function FilterChip({
         px: 1.25,
         py: 0.5,
         borderRadius: 999,
-        border: '1px solid',
-        borderColor: active ? 'brand.main' : 'divider',
         bgcolor: active ? 'brand.main' : 'background.paper',
         color: active ? 'brand.contrastText' : 'text.primary',
         fontSize: '0.75rem',

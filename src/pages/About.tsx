@@ -61,13 +61,13 @@ export default function About() {
 
   return (
     <Box>
-      <Container maxWidth="lg" sx={{ py: 6 }}>
+      <Container sx={{ py: 6 }}>
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2 }}>
             <Heart style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" fill="currentColor" />
             <Typography variant="h3" sx={{ fontWeight: 700 }}>About The Queer Guide</Typography>
           </Box>
-          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '48rem', mx: 'auto' }}>
+          <Typography variant="h6" color="text.secondary" sx={{ mx: 'auto' }}>
             A comprehensive platform connecting the LGBTQ+ community with safe spaces, events, businesses, and each other.
           </Typography>
         </Box>

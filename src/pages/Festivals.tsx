@@ -28,7 +28,7 @@ export default function Festivals() {
   }, [fetchFestivals, typeFilter, search]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
         <Music style={{ width: 28, height: 28 }} />
         <Typography variant="h4" sx={{ fontWeight: 700 }}>Festivals & Pride Events</Typography>

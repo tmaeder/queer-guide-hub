@@ -89,7 +89,7 @@ export const UnifiedInbox: React.FC = () => {
 
   if (!user) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Typography>Please sign in to access your inbox.</Typography>
       </Container>
     );
@@ -98,7 +98,7 @@ export const UnifiedInbox: React.FC = () => {
   // Settings view
   if (showSettings) {
     return (
-      <Container maxWidth="sm" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Button variant="ghost" onClick={closeSettings} className="mb-4">
           <ChevronLeft className="h-4 w-4 mr-1" /> Back to Inbox
         </Button>
@@ -110,7 +110,7 @@ export const UnifiedInbox: React.FC = () => {
   // Compose view
   if (showCompose) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Button variant="ghost" onClick={closeCompose} className="mb-4">
           <ChevronLeft className="h-4 w-4 mr-1" /> Back to Inbox
         </Button>
@@ -123,7 +123,7 @@ export const UnifiedInbox: React.FC = () => {
   if (selectedEmailId) {
     const selectedItem = items.find((i) => i.id === selectedEmailId);
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Button variant="ghost" onClick={clearSelection} className="mb-4">
           <ChevronLeft className="h-4 w-4 mr-1" /> Back
         </Button>
@@ -154,7 +154,7 @@ export const UnifiedInbox: React.FC = () => {
 
   // Main inbox list view
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box>

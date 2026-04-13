@@ -303,15 +303,8 @@ export const UniversalSearchBar = () => {
                 display: 'flex',
                 alignItems: 'center',
                 transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-                borderRadius: '8px',
                 cursor: 'text',
                 bgcolor: 'background.paper',
-                border: 1,
-                borderColor: isFocused ? 'text.secondary' : 'divider',
-                ...(isFocused && {
-                  boxShadow: 3,
-                  transform: 'scale(1.01)',
-                }),
               }}
               onClick={() => {
                 setIsOpen(true);
@@ -325,7 +318,7 @@ export const UniversalSearchBar = () => {
                   height: isMobile ? 48 : 40,
                   paddingLeft: isMobile ? 16 : 12,
                   paddingRight: isMobile ? 16 : 12,
-                  borderRadius: '8px 0 0 8px',
+                  borderRadius: 0,
                   color: '#666666',
                   pointerEvents: 'none',
                   flexShrink: 0,
@@ -620,7 +613,7 @@ export const UniversalSearchBar = () => {
                               component="img"
                               src={result.imageUrl}
                               alt={result.title}
-                              sx={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 1 }}
+                              sx={{ width: 48, height: 48, objectFit: 'cover' }}
                             />
                           </Box>
                         )}

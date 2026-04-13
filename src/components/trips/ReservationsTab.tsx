@@ -211,9 +211,6 @@ export function ReservationsTab({ tripId }: Props) {
       {nextUp && (
         <Box
           sx={{
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'brand.main',
             bgcolor: (theme) =>
               `${theme.palette.brand?.main || '#DB2777'}14`,
             p: 2,

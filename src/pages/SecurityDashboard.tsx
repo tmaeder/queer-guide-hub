@@ -21,7 +21,7 @@ export default function SecurityDashboard() {
 
   if (!user || !isAdmin) {
     return (
-      <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Container sx={{ py: 3 }}>
         <Alert>
           <Shield style={{ height: 16, width: 16 }} />
           <AlertTitle>Access Denied</AlertTitle>
@@ -97,7 +97,7 @@ export default function SecurityDashboard() {
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Container sx={{ py: 3 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box>

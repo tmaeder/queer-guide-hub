@@ -103,7 +103,7 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {Array.from({ length: count }).map((_, i) => (
-          <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+          <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
             <Skeleton sx={{ height: 48, width: 48, borderRadius: '50%' }} />
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
               <Skeleton sx={{ height: 16, width: '100%' }} />

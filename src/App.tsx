@@ -302,9 +302,7 @@ const AppRoutes = () => {
         {routeAnnouncement}
       </Box>
 
-      {/* Rainbow aurora background — fixed behind all content.
-          bgcolor matches the theme so the transparent aurora edges
-          blend into white (light) or black (dark). */}
+      {/* Background — solid color, no decorative effects */}
       <Box
         aria-hidden="true"
         sx={(theme) => ({
@@ -312,20 +310,9 @@ const AppRoutes = () => {
           inset: 0,
           zIndex: 0,
           pointerEvents: 'none',
-          bgcolor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
+          bgcolor: theme.palette.mode === 'dark' ? '#0a0a0a' : '#ffffff',
         })}
-      >
-        <ErrorBoundary section="aurora" fallback={null}>
-          <Suspense fallback={null}>
-            <Aurora
-              colorStops={['#F4A0B0', '#F5C5A0', '#F5E6A0', '#A0D8B0', '#A0B8E8', '#C4A0D8']}
-              blend={0.15}
-              amplitude={0.4}
-              speed={0.08}
-            />
-          </Suspense>
-        </ErrorBoundary>
-      </Box>
+      />
       <AnalyticsTracker />
       <Box sx={{ position: 'relative', zIndex: 1 }}>
         <Header />
@@ -341,7 +328,7 @@ const AppRoutes = () => {
         <ErrorBoundary key={location.pathname}>
           <Suspense
             fallback={
-              <Box sx={{ py: 5, px: { xs: 2, sm: 3 }, maxWidth: 'lg', mx: 'auto' }}>
+              <Box sx={{ py: 5, px: { xs: 2, sm: 3 }, mx: 'auto' }}>
                 <Box
                   sx={{
                     display: 'grid',

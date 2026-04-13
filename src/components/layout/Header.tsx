@@ -36,7 +36,6 @@ import {
   Info,
   Scale,
   Mail,
-  ChevronRight,
   Building,
   Luggage,
   LifeBuoy,
@@ -47,7 +46,6 @@ import { AuthDialog } from '@/components/auth/AuthDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
@@ -58,17 +56,13 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
+
 import Typography from '@mui/material/Typography';
 import MuiDrawer from '@mui/material/Drawer';
 import { motion } from 'motion/react';
 import IconButton from '@mui/material/IconButton';
-import Divider from '@mui/material/Divider';
 import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/material/styles';
-import { categoryColor, resolveCategoryKey } from '@/lib/categoryColors';
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -248,8 +242,6 @@ export function Header() {
         </IconButton>
       </Box>
 
-      <Divider />
-
       {/* Scrollable content */}
       <Box sx={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
         {/* User section (logged in) */}
@@ -296,7 +288,7 @@ export function Header() {
                     sx={{
                       minWidth: 22,
                       height: 22,
-                      borderRadius: '11px',
+                      borderRadius: 0,
                       bgcolor: 'error.main',
                       color: 'error.contrastText',
                       display: 'flex',
@@ -330,7 +322,7 @@ export function Header() {
                 </SelectContent>
               </Select>
             </Box>
-            <Divider />
+            <Box sx={{ my: 1 }} />
           </>
         )}
 
@@ -351,7 +343,7 @@ export function Header() {
                 Sign In / Sign Up
               </Button>
             </Box>
-            <Divider />
+            <Box sx={{ my: 1 }} />
           </>
         )}
 
@@ -375,27 +367,11 @@ export function Header() {
           </Button>
         </Box>
 
-        <Divider />
-
         {/* Navigation sections */}
         {navigationSections.map((section) => (
           <Box key={section.title}>
-            <Typography
-              variant="overline"
-              sx={{
-                px: 2,
-                pt: 1.5,
-                pb: 0.5,
-                display: 'block',
-                color: 'text.secondary',
-                letterSpacing: 1,
-              }}
-            >
-              {section.title}
-            </Typography>
             {section.items.map((item, itemIdx) => {
               const active = isActiveRoute(item.to);
-              const catKey = resolveCategoryKey(item.cat);
               return (
                 <ListItemButton
                   key={item.to}
@@ -405,56 +381,36 @@ export function Header() {
                   sx={{
                     minHeight: 48,
                     px: 2,
+                    gap: 1,
                     animationDelay: `${itemIdx * 0.04}s`,
                     ...(active && {
                       bgcolor: 'action.selected',
-                      borderRight: 3,
-                      borderColor: categoryColor(catKey),
                     }),
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 36 }}>
-                    <item.icon style={{ width: 18, height: 18, color: active ? categoryColor(catKey) : undefined }} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{ variant: 'body2', fontWeight: active ? 600 : 400 }}
-                  />
-                  <ChevronRight style={{ width: 16, height: 16, opacity: 0.4 }} />
+                  <item.icon style={{ width: 18, height: 18, flexShrink: 0, color: active ? 'hsl(var(--brand))' : undefined }} />
+                  <Typography variant="body2" sx={{ fontWeight: active ? 600 : 400 }}>
+                    {item.label}
+                  </Typography>
                 </ListItemButton>
               );
             })}
           </Box>
         ))}
 
-        <Divider sx={{ my: 0.5 }} />
+        <Box sx={{ my: 1 }} />
 
         {/* User actions (logged in) */}
         {user && (
           <>
-            <Typography
-              variant="overline"
-              sx={{
-                px: 2,
-                pt: 1.5,
-                pb: 0.5,
-                display: 'block',
-                color: 'text.secondary',
-                letterSpacing: 1,
-              }}
-            >
-              Your Account
-            </Typography>
             {userMenuItems.map((item) => (
               <ListItemButton
                 key={item.to}
                 onClick={() => handleDrawerNav(item.to)}
-                sx={{ minHeight: 48, px: 2 }}
+                sx={{ minHeight: 48, px: 2, gap: 1 }}
               >
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  <item.icon style={{ width: 18, height: 18 }} />
-                </ListItemIcon>
-                <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2' }} />
+                <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                <Typography variant="body2">{item.label}</Typography>
               </ListItemButton>
             ))}
 
@@ -462,67 +418,42 @@ export function Header() {
             {(isAdmin || isModerator) && (
               <ListItemButton
                 onClick={() => handleDrawerNav('/admin')}
-                sx={{ minHeight: 48, px: 2 }}
+                sx={{ minHeight: 48, px: 2, gap: 1 }}
               >
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  <Shield style={{ width: 18, height: 18 }} />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Admin Console"
-                  primaryTypographyProps={{ variant: 'body2' }}
-                />
+                <Shield style={{ width: 18, height: 18, flexShrink: 0 }} />
+                <Typography variant="body2">Admin Console</Typography>
               </ListItemButton>
             )}
 
-            <Divider sx={{ my: 0.5 }} />
+            <Box sx={{ my: 1 }} />
           </>
         )}
 
         {/* Legal / Info */}
-        <Typography
-          variant="overline"
-          sx={{
-            px: 2,
-            pt: 1.5,
-            pb: 0.5,
-            display: 'block',
-            color: 'text.secondary',
-            letterSpacing: 1,
-          }}
-        >
-          Info
-        </Typography>
         {legalItems.map((item) => (
           <ListItemButton
             key={item.to}
             onClick={() => handleDrawerNav(item.to)}
-            sx={{ minHeight: 44, px: 2 }}
+            sx={{ minHeight: 44, px: 2, gap: 1 }}
           >
-            <ListItemIcon sx={{ minWidth: 36 }}>
-              <item.icon style={{ width: 16, height: 16 }} />
-            </ListItemIcon>
-            <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2' }} />
+            <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+            <Typography variant="body2">{item.label}</Typography>
           </ListItemButton>
         ))}
 
         {/* Sign out */}
         {user && (
           <>
-            <Divider sx={{ my: 0.5 }} />
+            <Box sx={{ my: 1 }} />
             <ListItemButton
               onClick={() => {
                 signOut();
                 setDrawerOpen(false);
               }}
-              sx={{ minHeight: 48, px: 2, color: 'error.main' }}
+              sx={{ minHeight: 48, px: 2, gap: 1, color: 'error.main' }}
             >
-              <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
-                <LogOut style={{ width: 18, height: 18 }} />
-              </ListItemIcon>
-              <ListItemText
-                primary="Sign Out"
-                primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
-              />
+              <LogOut style={{ width: 18, height: 18, flexShrink: 0 }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Sign Out</Typography>
             </ListItemButton>
           </>
         )}
@@ -543,14 +474,11 @@ export function Header() {
         position: 'sticky',
         top: 0,
         zIndex: 'appBar',
-        borderBottom: 1,
-        borderColor: 'divider',
-        boxShadow: 1,
         // Safe area: push content below the notch in PWA mode
         pt: 'env(safe-area-inset-top, 0px)',
       }}
     >
-      <Container maxWidth="lg">
+      <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
         <Box
           sx={{
             height: 56,
@@ -630,7 +558,7 @@ export function Header() {
                       right: 8,
                       width: 8,
                       height: 8,
-                      borderRadius: '50%',
+                      borderRadius: 0,
                       bgcolor: 'error.main',
                     }}
                   />
@@ -710,7 +638,7 @@ export function Header() {
                             height: 20,
                             alignItems: 'center',
                             justifyContent: 'center',
-                            borderRadius: '9999px',
+                            borderRadius: 0,
                             bgcolor: 'error.main',
                             color: 'error.contrastText',
                             fontSize: '10px',
@@ -750,34 +678,29 @@ export function Header() {
                       <NotificationList />
                     </Box>
 
-                    <DropdownMenuSeparator />
+                    <Box sx={{ my: 1 }} />
 
-                    {/* Quick actions grid */}
-                    <Box
-                      sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, p: 1 }}
-                    >
-                      {userMenuItems.map((item) => (
-                        <Button
-                          key={item.to}
-                          variant="ghost"
-                          size="sm"
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            padding: 12,
-                            height: 'auto',
-                            gap: 4,
-                          }}
-                          onClick={() => navigate(item.to)}
-                        >
-                          <item.icon style={{ width: 16, height: 16 }} />
-                          <Typography variant="caption">{item.label}</Typography>
-                        </Button>
-                      ))}
-                    </Box>
+                    {userMenuItems.map((item) => (
+                      <Button
+                        key={item.to}
+                        variant="ghost"
+                        size="sm"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-start',
+                          width: '100%',
+                          gap: 8,
+                          padding: '8px 12px',
+                        }}
+                        onClick={() => navigate(item.to)}
+                      >
+                        <item.icon style={{ width: 16, height: 16 }} />
+                        <Typography variant="body2">{item.label}</Typography>
+                      </Button>
+                    ))}
 
-                    <DropdownMenuSeparator />
+                    <Box sx={{ my: 1 }} />
 
                     <Button
                       variant="ghost"
@@ -806,69 +729,43 @@ export function Header() {
                 <DropdownMenuContent
                   align="end"
                   style={{
-                    width: 288,
+                    width: 240,
                     maxHeight: '80vh',
                     overflowY: 'auto',
-                    padding: 16,
+                    padding: 8,
                     zIndex: 50,
                   }}
                 >
-                  {navigationSections.map((section) => (
-                    <Box key={section.title} sx={{ mb: 3 }}>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontWeight: 500, color: 'text.secondary', mb: 1 }}
-                      >
-                        {section.title}
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(3, 1fr)',
-                          gap: 1,
-                          p: 1,
-                        }}
-                      >
-                        {section.items.map((item) => {
-                          const catKey = resolveCategoryKey(item.cat);
-                          const active = isActiveRoute(item.to);
-                          return (
-                          <Button
-                            key={item.to}
-                            variant={active ? 'default' : 'ghost'}
-                            size="sm"
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              padding: 12,
-                              height: 'auto',
-                              gap: 4,
-                              borderLeft: `3px solid ${active ? categoryColor(catKey) : 'transparent'}`,
-                              ...(active
-                                ? {
-                                    backgroundColor:
-                                      'var(--mui-palette-action-hover, rgba(124,58,237,0.08))',
-                                    color: categoryColor(catKey),
-                                  }
-                                : {}),
-                            }}
-                            onClick={() => handleMenuItemClick(item.to)}
-                          >
-                            <item.icon style={{ width: 16, height: 16, color: active ? categoryColor(catKey) : undefined }} />
-                            <Typography variant="caption">{item.label}</Typography>
-                          </Button>
-                          );
-                        })}
-                      </Box>
-                    </Box>
-                  ))}
+                  {navigationSections.map((section) =>
+                    section.items.map((item) => {
+                      const active = isActiveRoute(item.to);
+                      return (
+                        <Button
+                          key={item.to}
+                          variant={active ? 'default' : 'ghost'}
+                          size="sm"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                            width: '100%',
+                            gap: 8,
+                            padding: '8px 12px',
+                          }}
+                          onClick={() => handleMenuItemClick(item.to)}
+                        >
+                          <item.icon style={{ width: 16, height: 16 }} />
+                          <Typography variant="body2">{item.label}</Typography>
+                        </Button>
+                      );
+                    })
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </Box>
           )}
         </Box>
-      </Container>
+      </Box>
 
       {/* Mobile drawer */}
       {isMobile && mobileDrawer}

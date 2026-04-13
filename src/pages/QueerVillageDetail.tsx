@@ -117,7 +117,7 @@ export default function QueerVillageDetail() {
   if (!village) {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
+        <Box sx={{ mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
             Village Not Found
           </Typography>
@@ -133,7 +133,7 @@ export default function QueerVillageDetail() {
   }
 
   return (
-    <Box sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 3 }}>
+    <Box sx={{ mx: 'auto', px: 2, py: 3 }}>
       {/* Breadcrumb */}
       <Box
         component="nav"
@@ -315,7 +315,7 @@ export default function QueerVillageDetail() {
       )}
 
       {/* Main Content */}
-      <Card sx={{ borderColor: 'divider', boxShadow: 1 }}>
+      <Card>
         <CardContent sx={{ p: { xs: 2, md: 3 } }}>
           <Tabs
             defaultValue="overview"
@@ -365,7 +365,7 @@ export default function QueerVillageDetail() {
                 sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, gap: 3 }}
               >
                 {/* Description */}
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Landmark style={{ height: 20, width: 20 }} />
@@ -381,7 +381,7 @@ export default function QueerVillageDetail() {
                 </Card>
 
                 {/* Notable Landmarks */}
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <MapPin style={{ height: 20, width: 20 }} />
@@ -423,7 +423,7 @@ export default function QueerVillageDetail() {
 
               {/* History */}
               {village.history && (
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Globe style={{ height: 20, width: 20 }} />
@@ -442,7 +442,7 @@ export default function QueerVillageDetail() {
 
               {/* Location Info */}
               {village.latitude && village.longitude && (
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <MapPin style={{ height: 20, width: 20 }} />

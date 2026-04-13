@@ -100,7 +100,7 @@ export default function Sitemap() {
 
   if (isLoading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em', mb: 2 }}>
           Queer Guide Sitemap
         </Typography>
@@ -111,7 +111,7 @@ export default function Sitemap() {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em', mb: 2 }}>
           Queer Guide Sitemap
         </Typography>
@@ -130,7 +130,7 @@ export default function Sitemap() {
       />
 
       <Box component="header" sx={{ py: 4 }}>
-        <Container maxWidth="lg">
+        <Container>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Link to="/" style={{ marginLeft: -8, fontWeight: 700 }}>
               Queer Guide
@@ -145,7 +145,7 @@ export default function Sitemap() {
             </Typography>
           </Box>
         </Container>
-        <Container maxWidth="lg">
+        <Container>
           <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em' }}>
             Queer Guide Sitemap
           </Typography>
@@ -198,7 +198,7 @@ export default function Sitemap() {
         </Container>
       </Box>
 
-      <Container maxWidth="lg">
+      <Container>
         <Box
           component="main"
           sx={{ display: 'grid', gap: 3, gridTemplateColumns: { md: '240px 1fr' } }}

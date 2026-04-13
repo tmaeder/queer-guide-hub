@@ -43,7 +43,7 @@ const RegionalEventsCalendar: React.FC = () => {
 
   return (
     <Box component="section" sx={{ bgcolor: 'action.hover', py: isMobile ? 3 : 6, px: 2 }}>
-      <Container maxWidth="lg">
+      <Container>
         <Box
           sx={{
             display: 'flex',

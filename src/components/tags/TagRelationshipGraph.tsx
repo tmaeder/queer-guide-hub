@@ -283,11 +283,8 @@ export default function TagRelationshipGraph({
         sx={{
           flex: 1,
           minHeight: 400,
-          borderRadius: 2,
           overflow: 'hidden',
           bgcolor: 'background.default',
-          border: '1px solid',
-          borderColor: 'divider',
           position: 'relative',
         }}
       >
@@ -338,9 +335,6 @@ export default function TagRelationshipGraph({
               top: 12,
               right: 12,
               bgcolor: 'background.paper',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 1.5,
               p: 1.5,
               pointerEvents: 'none',
               maxWidth: 220,

@@ -230,7 +230,7 @@ export default function PersonalityDetail() {
 
   if (loading) {
     return (
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4 }}>
+      <Box sx={{ mx: 'auto', px: 2, py: 4 }}>
         <div style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
           <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '33%', mb: 3 }} />
           <Box
@@ -263,7 +263,7 @@ export default function PersonalityDetail() {
 
   if (!personality) {
     return (
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
+      <Box sx={{ mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
         <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>
           Personality Not Found
         </Typography>
@@ -279,7 +279,7 @@ export default function PersonalityDetail() {
   }
 
   return (
-    <Box sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 4 }}>
+    <Box sx={{ mx: 'auto', px: 2, py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Button
@@ -556,12 +556,10 @@ export default function PersonalityDetail() {
                         gap: 1.5,
                         p: 1.5,
                         borderRadius: 1,
-                        border: '1px solid',
-                        borderColor: 'divider',
                         textDecoration: 'none',
                         color: 'inherit',
                         transition: 'all 0.2s',
-                        '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
+                        '&:hover': { bgcolor: 'action.hover' },
                       }}
                     >
                       <Avatar style={{ height: 40, width: 40, flexShrink: 0 }}>

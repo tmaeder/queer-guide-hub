@@ -202,9 +202,6 @@ export function PackingTab({ tripId }: Props) {
       {/* Progress card */}
       <Box
         sx={{
-          borderRadius: 2,
-          border: '1px solid',
-          borderColor: 'divider',
           p: { xs: 2, md: 2.5 },
           mb: 3,
         }}

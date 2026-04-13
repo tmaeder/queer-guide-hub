@@ -24,21 +24,16 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       sx={{
         transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
         bgcolor: 'background.paper',
-        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
+        border: 'none',
+        boxShadow: 'none',
+        borderRadius: 0,
         '&:hover': {
-          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
+          boxShadow: 'none',
         },
         ...(hoverable && {
           cursor: 'pointer',
           '&:hover': {
-            transform: 'translateY(-3px)',
-            boxShadow: 3,
-          },
-          '&:hover img': {
-            transform: 'scale(1.03)',
-          },
-          '&:active': {
-            transform: 'translateY(-1px)',
+            opacity: 0.85,
           },
         }),
       }}
@@ -60,7 +55,7 @@ const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
     const hover = reduced
       ? {}
       : {
-          whileHover: { y: -4, boxShadow: '0 20px 40px -24px rgba(0,0,0,0.28)' },
+          whileHover: { opacity: 0.85 },
           transition: springs.soft,
         }
     return (
@@ -118,22 +113,10 @@ const CardImage: React.FC<CardImageProps> = ({
         }}
       >
         {FallbackIcon && (
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: '50%',
-              bgcolor: `${brandColor}12`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <FallbackIcon
-              style={{ width: 28, height: 28, color: brandColor, opacity: 0.5 }}
-              aria-hidden="true"
-            />
-          </Box>
+          <FallbackIcon
+            style={{ width: 28, height: 28, color: brandColor, opacity: 0.5 }}
+            aria-hidden="true"
+          />
         )}
         {children}
       </Box>

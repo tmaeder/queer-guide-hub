@@ -60,7 +60,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400, p: 3 }}>
-      <Card sx={{ maxWidth: 'md', width: '100%' }}>
+      <Card sx={{ width: '100%' }}>
         <CardHeader>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {isNetworkError ? (

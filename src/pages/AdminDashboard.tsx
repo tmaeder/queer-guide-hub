@@ -72,7 +72,6 @@ function QuadrantCard({
       sx={{
         p: 2.5,
         borderRadius: 2,
-        borderColor: 'divider',
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
@@ -424,7 +423,7 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
   const navigate = useNavigate();
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, borderColor: 'divider' }}>
+    <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
           Content Overview

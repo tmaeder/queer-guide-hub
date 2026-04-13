@@ -91,7 +91,7 @@ export default function Friends() {
 
   return (
     <AuthGate title="Friends" description="Please sign in to view your friends.">
-      <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Container sx={{ py: 3 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <PageHeader
             title="Friends"

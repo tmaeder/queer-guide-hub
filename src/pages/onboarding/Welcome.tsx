@@ -57,7 +57,7 @@ export default function Welcome() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Container maxWidth="sm" sx={{ py: 6 }}>
+      <Container sx={{ py: 6 }}>
         <Card>
           <CardHeader sx={{ textAlign: 'center' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>

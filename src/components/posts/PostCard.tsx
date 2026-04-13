@@ -209,7 +209,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
 
         {/* Link Preview */}
         {post.post_type === 'link' && post.link_url && (
-          <Card style={{ border: '1px solid var(--border)' }}>
+          <Card>
             <CardContent style={{ padding: 16 }}>
               <Box
                 component="a"
@@ -286,7 +286,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
 
         {/* Poll */}
         {post.post_type === 'poll' && post.poll_options && (
-          <Card style={{ border: '1px solid var(--border)' }}>
+          <Card>
             <CardContent style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
                 Poll

@@ -14,7 +14,7 @@ export default function Donate() {
   const status = searchParams.get('status');
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 4, sm: 6 } }}>
+    <Container sx={{ py: { xs: 4, sm: 6 } }}>
       {/* Hero */}
       <Box sx={{ textAlign: 'center', mb: 5 }}>
         <Box
@@ -38,7 +38,7 @@ export default function Donate() {
         <Typography
           variant="body1"
           color="text.secondary"
-          sx={{ maxWidth: 520, mx: 'auto', lineHeight: 1.7 }}
+          sx={{ mx: 'auto', lineHeight: 1.7 }}
         >
           {t(
             'donate.subtitle',
@@ -48,18 +48,18 @@ export default function Donate() {
       </Box>
 
       {status === 'success' ? (
-        <Box sx={{ maxWidth: 480, mx: 'auto' }}>
+        <Box sx={{ mx: 'auto' }}>
           <DonationSuccess />
         </Box>
       ) : (
         <>
           {/* Centered form */}
-          <Box sx={{ maxWidth: 480, mx: 'auto', mb: 6 }}>
+          <Box sx={{ mx: 'auto', mb: 6 }}>
             <DonationForm />
           </Box>
 
           {/* Donor wall below */}
-          <Box sx={{ maxWidth: 480, mx: 'auto' }}>
+          <Box sx={{ mx: 'auto' }}>
             <Typography
               variant="overline"
               color="text.secondary"

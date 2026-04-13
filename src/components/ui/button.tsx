@@ -60,8 +60,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const motionInteractions = reduced || props.disabled
       ? {}
       : {
-          whileHover: { scale: 1.02 },
-          whileTap: { scale: 0.97 },
+          whileTap: { opacity: 0.7 },
           transition: springs.snappy,
         };
 

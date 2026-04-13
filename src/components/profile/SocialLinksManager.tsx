@@ -185,9 +185,6 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
           <Box
             sx={{
               p: 2,
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 2,
               bgcolor: 'background.paper',
             }}
           >

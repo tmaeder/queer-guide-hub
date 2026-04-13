@@ -84,7 +84,7 @@ export default function TripPlannerPage() {
 
   if (isLoading) {
     return (
-      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container sx={{ py: { xs: 3, md: 5 } }}>
         <Skeleton variant="rounded" height={220} sx={{ borderRadius: 3, mb: 3 }} />
         <Skeleton variant="text" width={240} height={28} />
         <Skeleton variant="rounded" height={400} sx={{ mt: 3 }} />
@@ -94,7 +94,7 @@ export default function TripPlannerPage() {
 
   if (error || !trip) {
     return (
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
+      <Container sx={{ py: { xs: 4, md: 8 } }}>
         <ErrorState
           message={error ? t('trips.planner.loadFailed') : t('trips.planner.notFound')}
           onRetry={() => navigate('/trips')}
@@ -120,7 +120,7 @@ export default function TripPlannerPage() {
   const statusLabel = t(`trips.status.${trip.status}`);
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2.5, md: 4 } }}>
+    <Container sx={{ py: { xs: 2.5, md: 4 } }}>
       {/* Back to trips */}
       <Button
         variant="ghost"

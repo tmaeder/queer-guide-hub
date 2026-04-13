@@ -62,15 +62,12 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
       onClick={onClick}
       sx={{
         p: 1.5,
-        borderRadius: 1.5,
-        border: 1,
-        borderColor: 'divider',
         bgcolor: 'background.paper',
         cursor: 'pointer',
         display: 'flex',
         gap: 1.5,
         transition: 'all 0.15s',
-        '&:hover': { borderColor: 'primary.main', boxShadow: 1 },
+        '&:hover': {},
       }}
     >
       {/* Vote column */}

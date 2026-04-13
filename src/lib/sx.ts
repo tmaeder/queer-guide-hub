@@ -5,10 +5,9 @@ import type { SxProps, Theme } from '@mui/material/styles';
  * These provide common layout patterns as reusable sx objects.
  */
 
-/** Container pattern matching Tailwind's container mx-auto px-4 */
+/** Full-width fluid container with horizontal padding */
 export const container: SxProps<Theme> = {
-  maxWidth: 'lg',
-  mx: 'auto',
+  width: '100%',
   px: { xs: 2, sm: 3, md: 4 },
 };
 

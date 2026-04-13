@@ -211,7 +211,7 @@ export default function Places() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+      <Container sx={{ py: { xs: 6, md: 10 } }}>
         <PageLoadingState count={8} />
         {loadingTimedOut && (
           <Box sx={{ mt: 3 }}>
@@ -237,13 +237,11 @@ export default function Places() {
   return (
     <Box sx={{ width: '100%' }}>
       {/* Hero Section */}
-      <Container maxWidth="lg" sx={{ pt: { xs: 6, md: 10 }, pb: 2 }}>
+      <Container sx={{ pt: { xs: 6, md: 10 }, pb: 2 }}>
         <Box
           sx={{
             bgcolor: 'background.paper',
             borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
             p: { xs: 3, lg: 4 },
             mb: 3,
           }}
@@ -280,7 +278,7 @@ export default function Places() {
                 {viewMode === 'search' && 'Search Results'}
               </Typography>
 
-              <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary', maxWidth: 672 }}>
+              <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary' }}>
                 {viewMode === 'overview' &&
                   'Discover amazing places around the world. Find countries, cities, and locations that match your interests.'}
                 {viewMode === 'country' &&
@@ -306,7 +304,7 @@ export default function Places() {
       </Container>
 
       {/* Main Content Area */}
-      <Container maxWidth="lg" sx={{ pb: 6 }}>
+      <Container sx={{ pb: 6 }}>
         {/* Breadcrumb Navigation */}
         {viewMode !== 'overview' && viewMode !== 'search' && (
           <Box sx={{ mb: 3 }}>

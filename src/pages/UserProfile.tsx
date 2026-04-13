@@ -68,7 +68,7 @@ export default function UserProfile() {
 
   if (isLoading) {
     return (
-      <Container maxWidth="lg" sx={{ p: 3 }}>
+      <Container sx={{ p: 3 }}>
         <Box
           sx={{ display: 'flex', flexDirection: 'column', gap: 3, animation: 'pulse 2s infinite' }}
         >
@@ -82,7 +82,7 @@ export default function UserProfile() {
 
   if (error || !profile) {
     return (
-      <Container maxWidth="lg" sx={{ p: 3 }}>
+      <Container sx={{ p: 3 }}>
         <Box sx={{ textAlign: 'center', py: 6 }}>
           <User
             style={{
@@ -123,7 +123,7 @@ export default function UserProfile() {
   // Check if profile is private and user doesn't have access
   if (getProfileVisibility() === 'private' && !isOwnProfile) {
     return (
-      <Container maxWidth="lg" sx={{ p: 3 }}>
+      <Container sx={{ p: 3 }}>
         <Box sx={{ textAlign: 'center', py: 6 }}>
           <Shield
             style={{
@@ -149,7 +149,7 @@ export default function UserProfile() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ p: 3 }}>
+    <Container sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

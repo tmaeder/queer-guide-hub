@@ -213,9 +213,6 @@ function RiskSnapshot({ report }: { report: TripSafetyReport }) {
   return (
     <Box
       sx={{
-        borderRadius: 3,
-        border: '1px solid',
-        borderColor: visual.border,
         bgcolor: visual.bg,
         p: { xs: 2.5, md: 3 },
         mb: 3,
@@ -227,10 +224,7 @@ function RiskSnapshot({ report }: { report: TripSafetyReport }) {
             flexShrink: 0,
             width: 48,
             height: 48,
-            borderRadius: 2,
             bgcolor: 'rgba(255,255,255,0.08)',
-            border: '1px solid',
-            borderColor: visual.border,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -333,9 +327,6 @@ function CrossBorderCard({
   return (
     <Box
       sx={{
-        borderRadius: 2,
-        border: '1px solid',
-        borderColor: 'warning.main',
         bgcolor: (theme) =>
           theme.palette.mode === 'dark' ? '#2a1f06' : '#fffbeb',
         p: 2,

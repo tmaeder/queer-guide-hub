@@ -92,9 +92,6 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
         gap: 2,
         p: 2,
         bgcolor: 'background.paper',
-        borderRadius: 2,
-        border: 1,
-        borderColor: 'divider',
       }}
     >
       {/* Row 1: search + sort */}

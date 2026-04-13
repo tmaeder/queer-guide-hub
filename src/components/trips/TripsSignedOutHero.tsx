@@ -70,13 +70,10 @@ export function TripsSignedOutHero() {
   const accent = theme.palette.accent?.main || '#F59E0B';
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
+    <Container sx={{ py: { xs: 4, md: 8 } }}>
       <Box
         className="hero-gradient"
         sx={{
-          borderRadius: 3,
-          border: 1,
-          borderColor: 'divider',
           overflow: 'hidden',
           px: { xs: 3, md: 6 },
           py: { xs: 5, md: 8 },

@@ -589,8 +589,6 @@ export default function Favorites() {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              border: 1,
-              borderColor: 'divider',
               borderRadius: 2,
             }}
           >
@@ -617,7 +615,7 @@ export default function Favorites() {
 
   return (
     <AuthGate title="Favorites" description="Please sign in to view your favorites">
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <PageHeader title="Favorites" subtitle={headerSubtitle} actions={headerActions} />
 
         {/* Calendar Subscription Dialog */}

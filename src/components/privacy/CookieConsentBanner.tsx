@@ -28,8 +28,6 @@ export function CookieConsentBanner() {
           bgcolor: 'background.paper',
           borderRadius: { xs: 0, md: 2 },
           boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
-          border: 1,
-          borderColor: 'divider',
         }}
       >
         <Card style={{ padding: 24, maxWidth: 896, margin: '0 auto' }}>

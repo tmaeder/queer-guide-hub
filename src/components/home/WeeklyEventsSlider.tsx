@@ -71,7 +71,7 @@ const WeeklyEventsSlider = React.memo(() => {
         padding: isMobile ? '32px 16px' : '64px 16px',
       }}
     >
-      <Box sx={{ maxWidth: 'lg', mx: 'auto' }}>
+      <Box sx={{ mx: 'auto' }}>
         <div
           style={{
             display: 'flex',

@@ -165,7 +165,7 @@ export default function HelpHotlines() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Skeleton variant="text" width="40%" height={56} />
         <Skeleton variant="text" width="60%" height={24} sx={{ mb: 3 }} />
         <Skeleton variant="rounded" height={80} sx={{ mb: 3 }} />
@@ -177,7 +177,7 @@ export default function HelpHotlines() {
 
   if (error || !page) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
+      <Container sx={{ py: 8, textAlign: 'center' }}>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
           {t('help.error_title', 'Hilfe-Seite nicht verfügbar')}
         </Typography>
@@ -192,7 +192,7 @@ export default function HelpHotlines() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       <PageHeader
         title={page.title || t('help.title', 'Hilfe & Krisen-Hotlines')}
         subtitle={

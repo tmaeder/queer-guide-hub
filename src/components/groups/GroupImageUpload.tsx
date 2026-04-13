@@ -107,8 +107,6 @@ export const GroupImageUpload = ({
               alignItems: 'center',
               gap: 8,
               padding: '8px 16px',
-              border: '1px solid',
-              borderColor: 'inherit',
               borderRadius: 6,
               cursor: isUploading || currentImages.length >= maxImages ? 'not-allowed' : 'pointer',
               opacity: isUploading || currentImages.length >= maxImages ? 0.5 : 1,
@@ -139,7 +137,7 @@ export const GroupImageUpload = ({
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
           {currentImages.map((imageUrl, index) => (
             <Box key={index} sx={{ position: 'relative', '&:hover .remove-btn': { opacity: 1 } }}>
-              <Box sx={{ aspectRatio: '1', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }}>
+              <Box sx={{ aspectRatio: '1', overflow: 'hidden' }}>
                 <Box
                   component="img"
                   src={imageUrl}

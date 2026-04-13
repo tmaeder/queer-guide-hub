@@ -34,7 +34,7 @@ function Tooltip({ children, delayDuration }: { children: React.ReactNode; delay
               color: '#ffffff',
               fontSize: '0.75rem',
               fontWeight: 500,
-              borderRadius: '6px',
+              borderRadius: 0,
               px: 1.5,
               py: 0.75,
             },

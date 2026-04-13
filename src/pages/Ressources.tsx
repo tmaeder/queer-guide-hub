@@ -51,14 +51,12 @@ const hoverCardSx = {
   borderRadius: 2,
   cursor: 'pointer',
   bgcolor: 'background.paper',
-  border: '1px solid',
-  borderColor: 'divider',
   textAlign: 'left',
   font: 'inherit',
   color: 'inherit',
   width: '100%',
   transition: 'all 0.15s',
-  '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
+  '&:hover': { bgcolor: 'action.hover' },
   '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
 } as const;
 
@@ -297,14 +295,14 @@ export default function Ressources() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
+      <Container sx={{ py: { xs: 4, md: 8 } }}>
         <PageLoadingState count={12} />
       </Container>
     );
   }
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
+      <Container sx={{ py: { xs: 4, md: 8 } }}>
         <ErrorState
           message="Something went wrong while loading resources. Please try again later."
           onRetry={() => window.location.reload()}
@@ -320,7 +318,7 @@ export default function Ressources() {
     const parentName = primary?.parent_name ?? undefined;
     const childName = primary?.level === 1 ? primary.name : undefined;
     return (
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
+      <Container sx={{ py: { xs: 4, md: 8 } }}>
         {/* Breadcrumbs */}
         <Box
           sx={{
@@ -514,7 +512,7 @@ export default function Ressources() {
       (searchQuery || filterCategory !== 'all' || usageFilter !== 'all' || hasImageFilter));
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
+    <Container sx={{ py: { xs: 4, md: 8 } }}>
       <PageHeader
         title="Resources"
         subtitle="LGBTQ+ terms, concepts and topics — organised into a clean, browsable taxonomy"
@@ -964,11 +962,9 @@ export default function Ressources() {
                   borderRadius: 999,
                   cursor: 'pointer',
                   bgcolor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
                   font: 'inherit',
                   color: 'inherit',
-                  '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
+                  '&:hover': { bgcolor: 'action.hover' },
                   '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
                   transition: 'all 0.15s',
                 }}

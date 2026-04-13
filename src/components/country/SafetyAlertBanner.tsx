@@ -18,7 +18,6 @@ export default function SafetyAlertBanner({ criminalization, countryName }: Safe
   return (
     <Box sx={{
       mx: 'auto',
-      maxWidth: 1280,
       px: 3,
       mt: -2,
       mb: 3,
@@ -28,8 +27,6 @@ export default function SafetyAlertBanner({ criminalization, countryName }: Safe
         alignItems: 'flex-start',
         gap: 2,
         p: 2,
-        borderRadius: 2,
-        border: '1px solid',
         borderColor: deathPenalty ? '#fca5a5' : '#fde68a',
         bgcolor: deathPenalty ? '#fef2f2' : '#fffbeb',
       }}>

@@ -150,8 +150,6 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
                                 width: 16,
                                 height: 16,
                                 borderRadius: 1,
-                                border: 1,
-                                borderColor: 'divider',
                               }}
                               style={{ backgroundColor: option }}
                             />

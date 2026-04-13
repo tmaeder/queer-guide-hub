@@ -82,7 +82,7 @@ export default function Auth() {
   if (mode === 'signup') {
     return (
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 6 }}>
-        <Container maxWidth="sm">
+        <Container>
           <MultiStepSignup onBack={() => setMode('signin')} />
         </Container>
       </Box>
@@ -91,7 +91,7 @@ export default function Auth() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Container maxWidth="sm" sx={{ px: 3, py: 6 }}>
+      <Container sx={{ px: 3, py: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 6rem)' }}>
           <Card sx={{ width: '100%' }}>
             <CardHeader sx={{ textAlign: 'center' }}>
@@ -126,7 +126,7 @@ export default function Auth() {
                     <OAuthButtons onError={setError} />
                     <Box sx={{ position: 'relative', textAlign: 'center', my: 1 }}>
                       <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
-                        <Box sx={{ width: '100%', borderTop: 1, borderColor: 'divider' }} />
+                        <Box sx={{ width: '100%' }} />
                       </Box>
                       <Typography
                         component="span"
@@ -222,7 +222,7 @@ export default function Auth() {
 
                 {mode === 'signin' && <PasskeyButton mode="signin" style={{ width: '100%' }} />}
 
-                <Box sx={{ textAlign: 'center', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                <Box sx={{ textAlign: 'center', pt: 2 }}>
                   {mode === 'forgot' ? (
                     <Button
                       variant="ghost"

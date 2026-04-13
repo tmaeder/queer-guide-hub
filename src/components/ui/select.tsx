@@ -161,7 +161,7 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
             return match ? match.label : selected;
           }}
           sx={{
-            borderRadius: 1.25,
+            borderRadius: 0,
             bgcolor: "action.hover",
             "& .MuiSelect-select": { py: 1, px: 1.5 },
           }}
@@ -169,9 +169,9 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
             slotProps: {
               paper: {
                 sx: {
-                  borderRadius: 1.25,
+                  borderRadius: 0,
                   mt: 0.5,
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+                  boxShadow: "none",
                 },
               },
             },

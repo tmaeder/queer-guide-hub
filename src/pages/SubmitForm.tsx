@@ -30,7 +30,7 @@ const SubmitForm = () => {
   // Unknown type fallback
   if (!config) {
     return (
-      <Box sx={{ maxWidth: '40rem', mx: 'auto', py: 6, px: 2, textAlign: 'center' }}>
+      <Box sx={{ mx: 'auto', py: 6, px: 2, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
           Unknown submission type
         </Typography>
@@ -135,7 +135,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
   if (isSubmitted) {
     return (
-      <Box sx={{ maxWidth: '40rem', mx: 'auto', py: 6, px: 2 }}>
+      <Box sx={{ mx: 'auto', py: 6, px: 2 }}>
         <Card>
           <CardContent sx={{ p: 6, textAlign: 'center' }}>
             <CheckCircle
@@ -163,7 +163,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
   const Icon = config.icon;
 
   return (
-    <Box sx={{ maxWidth: '40rem', mx: 'auto', py: 4, px: 2 }}>
+    <Box sx={{ mx: 'auto', py: 4, px: 2 }}>
       {/* Back button */}
       <Button
         variant="ghost"

@@ -102,7 +102,7 @@ export default function GroupDetail() {
 
   if (!user) {
     return (
-      <Box sx={{ maxWidth: 896, mx: 'auto', py: 4 }}>
+      <Box sx={{ mx: 'auto', py: 4 }}>
         <Alert>
           <AlertDescription>Please sign in to view group details.</AlertDescription>
         </Alert>
@@ -112,7 +112,7 @@ export default function GroupDetail() {
 
   if (isLoading) {
     return (
-      <Box sx={{ maxWidth: 896, mx: 'auto', py: 4 }}>
+      <Box sx={{ mx: 'auto', py: 4 }}>
         <div
           style={{
             animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -131,7 +131,7 @@ export default function GroupDetail() {
 
   if (!group) {
     return (
-      <Box sx={{ maxWidth: 896, mx: 'auto', py: 4 }}>
+      <Box sx={{ mx: 'auto', py: 4 }}>
         <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
             Group not found
@@ -155,7 +155,7 @@ export default function GroupDetail() {
 
   return (
     <Box
-      sx={{ maxWidth: 896, mx: 'auto', py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}
+      sx={{ mx: 'auto', py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}
     >
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>

@@ -14,7 +14,7 @@ export default function Videos() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Container sx={{ py: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
           <Box sx={{ textAlign: 'center' }}>
             <CircularProgress size={32} sx={{ mb: 2 }} />
@@ -27,7 +27,7 @@ export default function Videos() {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Container sx={{ py: 3 }}>
         <Typography color="error" sx={{ textAlign: 'center' }}>
           Error: {error}
         </Typography>
@@ -43,7 +43,7 @@ export default function Videos() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Container sx={{ py: 3 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Video Gallery</Typography>
         <Typography color="text.secondary">

@@ -37,7 +37,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
 
   if (!user) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Paper
           variant="outlined"
           sx={{

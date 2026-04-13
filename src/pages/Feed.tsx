@@ -53,7 +53,7 @@ export default function Feed() {
       title="Feed"
       description="Sign in to share posts, connect with the community, and discover what's happening around you."
     >
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <PageHeader
           title="Feed"
           subtitle="Stay connected with the latest posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and discover what's happening around you."

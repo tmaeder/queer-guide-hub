@@ -69,7 +69,7 @@ export default function MyGroups() {
 
   return (
     <AuthGate title="My Groups" description="Please sign in to view your groups">
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         {/* Header */}
         <PageHeader
           title="My Groups"

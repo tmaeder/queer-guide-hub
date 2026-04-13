@@ -44,7 +44,7 @@ export function SocialLinksList({
           <Typography variant="h6" sx={{ fontWeight: 500 }}>Social Links</Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {customLinks.map((link, index) => (
-              <Box key={index} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
+              <Box key={index} sx={{ p: 2, bgcolor: 'background.paper' }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                   <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5 }}>

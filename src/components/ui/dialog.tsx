@@ -87,7 +87,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           enter: duration.normal * 1000,
           exit: 150,
         }}
-        PaperProps={{ ref: ref as React.Ref<HTMLDivElement>, sx: { borderRadius: 1.5 } }}
+        PaperProps={{ ref: ref as React.Ref<HTMLDivElement>, sx: { borderRadius: 0 } }}
       >
         <MuiDialogContent sx={{ p: 3 }}>
           {children}

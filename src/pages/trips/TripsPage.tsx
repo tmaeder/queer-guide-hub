@@ -47,7 +47,7 @@ export default function TripsPage() {
   const isFiltered = search.trim() !== '' || statusFilter !== 'all';
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+    <Container sx={{ py: { xs: 4, md: 6 } }}>
       {/* Header */}
       <Box
         sx={{

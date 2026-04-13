@@ -226,7 +226,7 @@ function SharedTripPage() {
   const hasCover = !!trip.cover_image_url;
 
   return (
-    <Box sx={{ maxWidth: 880, mx: 'auto', pb: 6 }}>
+    <Box sx={{ mx: 'auto', pb: 6 }}>
       {/* Branded cover band — matches the private planner visually */}
       <Box
         sx={{

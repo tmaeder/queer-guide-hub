@@ -267,7 +267,7 @@ export default function Personalities() {
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ px: 2, py: { xs: 4, md: 8 } }}>
+      <Container sx={{ px: 2, py: { xs: 4, md: 8 } }}>
         <PageHeader
           title="Personalities"
           subtitle="Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons."

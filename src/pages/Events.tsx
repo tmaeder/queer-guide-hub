@@ -281,7 +281,7 @@ const Events = () => {
   }, [showPast]);
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+      <Container sx={{ py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
           title="Events"
@@ -334,8 +334,6 @@ const Events = () => {
             p: 2,
             bgcolor: 'background.paper',
             borderRadius: 2,
-            border: 1,
-            borderColor: 'divider',
             mb: 4,
           }}
         >
@@ -348,8 +346,6 @@ const Events = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
-                border: 1,
-                borderColor: 'divider',
                 borderRadius: 1,
                 px: 1.5,
                 py: 1,
@@ -428,8 +424,6 @@ const Events = () => {
                 flexDirection: 'column',
                 gap: 2,
                 pt: 2,
-                borderTop: 1,
-                borderColor: 'divider',
               }}
             >
               <Box

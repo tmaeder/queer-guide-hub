@@ -126,7 +126,7 @@ export default function VenueDetail() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container sx={{ py: 4 }}>
         <Box
           sx={{
             '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
@@ -156,7 +156,7 @@ export default function VenueDetail() {
 
   if (fetchError && !venue) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+      <Container sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
           Failed to Load
         </Typography>
@@ -181,7 +181,7 @@ export default function VenueDetail() {
 
   if (!venue) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+      <Container sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
           Venue Not Found
         </Typography>
@@ -240,7 +240,7 @@ export default function VenueDetail() {
   const countryLink = venue.countries?.id ? `/country/${venue.countries.slug || venue.countries.id}` : null;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
         <Link
@@ -362,8 +362,6 @@ export default function VenueDetail() {
                   height: 40,
                   borderRadius: '10px',
                   objectFit: 'contain',
-                  border: '1px solid',
-                  borderColor: 'divider',
                   p: '3px',
                   flexShrink: 0,
                 }}

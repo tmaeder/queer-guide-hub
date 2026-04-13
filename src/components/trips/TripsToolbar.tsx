@@ -111,8 +111,6 @@ export function TripsToolbar({
               fontSize: '0.8125rem',
               px: 1.5,
               py: 0.75,
-              border: 1,
-              borderColor: 'divider',
               color: 'text.secondary',
               whiteSpace: 'nowrap',
               '&.Mui-selected': {
@@ -150,9 +148,6 @@ export function TripsToolbar({
           onClick={(e) => setSortAnchor(e.currentTarget)}
           aria-label={t('trips.toolbar.sortAria')}
           sx={{
-            border: 1,
-            borderColor: 'divider',
-            borderRadius: 1.25,
             height: 40,
             width: 40,
           }}

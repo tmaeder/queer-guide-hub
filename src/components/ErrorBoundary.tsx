@@ -70,7 +70,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <Box sx={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
-          <Box sx={{ maxWidth: 448, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
             <AlertTriangle style={{ height: 48, width: 48, color: 'var(--destructive)', margin: '0 auto' }} />
             <Typography variant="h6">Something went wrong</Typography>
             <Typography variant="body2" color="text.secondary">

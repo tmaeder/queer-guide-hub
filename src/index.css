@@ -100,84 +100,84 @@
     U+A720-A7FF;
 }
 
-/* ── CSS Variables ─────────────────────────────────────────────────── */
+/* ── CSS Variables — Strict Monochrome + Accent ───────────────────── */
 
 :root {
-  --background: 24 20% 97%;
-  --foreground: 0 1% 18%;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 4%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 0 1% 18%;
+  --card: 0 0% 96%;
+  --card-foreground: 0 0% 4%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 0 1% 18%;
+  --popover-foreground: 0 0% 4%;
 
-  --primary: 0 0% 5%;
+  --primary: 0 0% 4%;
   --primary-foreground: 0 0% 100%;
 
   --brand: 346 87% 38%;
-  --brand-foreground: 0 100% 94%;
+  --brand-foreground: 0 0% 100%;
 
-  --accent-warm: 43 100% 50%;
-  --accent-warm-foreground: 30 100% 12%;
+  --accent-warm: 346 87% 38%;
+  --accent-warm-foreground: 0 0% 100%;
 
-  --secondary: 203 100% 29%;
-  --secondary-foreground: 210 100% 95%;
+  --secondary: 0 0% 40%;
+  --secondary-foreground: 0 0% 100%;
 
-  --muted: 20 7% 91%;
-  --muted-foreground: 0 1% 36%;
+  --muted: 0 0% 94%;
+  --muted-foreground: 0 0% 40%;
 
-  --accent: 20 7% 91%;
-  --accent-foreground: 0 1% 18%;
+  --accent: 0 0% 94%;
+  --accent-foreground: 0 0% 4%;
 
-  --destructive: 356 76% 40%;
-  --destructive-foreground: 0 100% 94%;
+  --destructive: 346 87% 38%;
+  --destructive-foreground: 0 0% 100%;
 
-  --warning: 43 100% 50%;
-  --warning-foreground: 30 100% 12%;
+  --warning: 346 87% 38%;
+  --warning-foreground: 0 0% 100%;
 
-  --success: 142 71% 45%;
+  --success: 0 0% 4%;
   --success-foreground: 0 0% 100%;
 
-  --border: 0 2% 70%;
-  --input: 0 2% 70%;
+  --border: 0 0% 0% / 0;
+  --input: 0 0% 0% / 0;
+  --input-bg: 0 0% 96%;
   --ring: 346 87% 38%;
-  --radius: 1rem;
 
-  --sidebar-background: 20 14% 95%;
-  --sidebar-foreground: 0 1% 18%;
-  --sidebar-primary: 0 0% 5%;
+  --sidebar-background: 0 0% 97%;
+  --sidebar-foreground: 0 0% 4%;
+  --sidebar-primary: 0 0% 4%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 20 7% 91%;
-  --sidebar-accent-foreground: 0 1% 18%;
-  --sidebar-border: 0 2% 70%;
+  --sidebar-accent: 0 0% 94%;
+  --sidebar-accent-foreground: 0 0% 4%;
+  --sidebar-border: 0 0% 0% / 0;
   --sidebar-ring: 346 87% 38%;
 
   --transition-smooth: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ── Surface container hierarchy (tonal layering) ── */
-  --surface: 24 20% 97%;
+  /* ── Surface container hierarchy (flat tonal layering) ── */
+  --surface: 0 0% 100%;
   --surface-container-lowest: 0 0% 100%;
-  --surface-container-low: 20 14% 95%;
-  --surface-container: 20 7% 91%;
-  --surface-container-high: 20 5% 88%;
-  --surface-container-highest: 0 3% 86%;
-  --surface-dim: 20 3% 83%;
-  --inverse-surface: 0 0% 5%;
+  --surface-container-low: 0 0% 97%;
+  --surface-container: 0 0% 94%;
+  --surface-container-high: 0 0% 90%;
+  --surface-container-highest: 0 0% 86%;
+  --surface-dim: 0 0% 83%;
+  --inverse-surface: 0 0% 4%;
 
-  /* ── Category colors (stich editorial system) ── */
+  /* ── Category colors — all mapped to brand accent ── */
   --cat-venues:      346 87% 38%;
-  --cat-events:       43 100% 50%;
-  --cat-marketplace: 142 65% 42%;
-  --cat-places:      203 100% 29%;
-  --cat-hotels:      262 70% 55%;
-  --cat-travel:      203 100% 29%;
+  --cat-events:      346 87% 38%;
+  --cat-marketplace: 346 87% 38%;
+  --cat-places:      346 87% 38%;
+  --cat-hotels:      346 87% 38%;
+  --cat-travel:      346 87% 38%;
   --cat-news:        346 87% 38%;
-  --cat-community:   330 80% 55%;
+  --cat-community:   346 87% 38%;
 }
 
 .dark {
-  --background: 0 0% 5%;
+  --background: 0 0% 4%;
   --foreground: 0 0% 95%;
 
   --card: 0 0% 7%;
@@ -187,48 +187,49 @@
   --popover-foreground: 0 0% 95%;
 
   --primary: 0 0% 100%;
-  --primary-foreground: 0 0% 7%;
+  --primary-foreground: 0 0% 4%;
 
   --brand: 346 100% 65%;
-  --brand-foreground: 0 0% 7%;
+  --brand-foreground: 0 0% 4%;
 
-  --accent-warm: 43 96% 56%;
-  --accent-warm-foreground: 0 0% 7%;
+  --accent-warm: 346 100% 65%;
+  --accent-warm-foreground: 0 0% 4%;
 
-  --secondary: 203 80% 55%;
+  --secondary: 0 0% 60%;
   --secondary-foreground: 0 0% 95%;
 
   --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 65%;
+  --muted-foreground: 0 0% 60%;
 
   --accent: 0 0% 12%;
   --accent-foreground: 0 0% 95%;
 
-  --destructive: 0 63% 56%;
+  --destructive: 346 100% 65%;
   --destructive-foreground: 0 0% 100%;
 
-  --warning: 43 92% 50%;
+  --warning: 346 100% 65%;
   --warning-foreground: 0 0% 100%;
 
-  --success: 142 71% 45%;
-  --success-foreground: 0 0% 100%;
+  --success: 0 0% 100%;
+  --success-foreground: 0 0% 4%;
 
-  --border: 0 0% 16%;
-  --input: 0 0% 16%;
+  --border: 0 0% 0% / 0;
+  --input: 0 0% 0% / 0;
+  --input-bg: 0 0% 10%;
   --ring: 346 100% 65%;
 
   --sidebar-background: 0 0% 7%;
   --sidebar-foreground: 0 0% 95%;
   --sidebar-primary: 0 0% 100%;
-  --sidebar-primary-foreground: 0 0% 7%;
+  --sidebar-primary-foreground: 0 0% 4%;
   --sidebar-accent: 0 0% 12%;
   --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-border: 0 0% 16%;
+  --sidebar-border: 0 0% 0% / 0;
   --sidebar-ring: 346 100% 65%;
 
-  /* ── Surface container hierarchy (dark tonal layering) ── */
-  --surface: 0 0% 5%;
-  --surface-container-lowest: 0 0% 3%;
+  /* ── Surface container hierarchy (dark flat tonal layering) ── */
+  --surface: 0 0% 4%;
+  --surface-container-lowest: 0 0% 2%;
   --surface-container-low: 0 0% 7%;
   --surface-container: 0 0% 10%;
   --surface-container-high: 0 0% 13%;
@@ -236,22 +237,23 @@
   --surface-dim: 0 0% 8%;
   --inverse-surface: 0 0% 90%;
 
-  /* ── Category colors (dark mode — boosted lightness) ── */
-  --cat-venues:      346 90% 65%;
-  --cat-events:       43 95% 60%;
-  --cat-marketplace: 142 70% 58%;
-  --cat-places:      203 85% 60%;
-  --cat-hotels:      262 75% 70%;
-  --cat-travel:      203 85% 60%;
-  --cat-news:        346 90% 65%;
-  --cat-community:   330 85% 68%;
+  /* ── Category colors — all mapped to brand accent (dark) ── */
+  --cat-venues:      346 100% 65%;
+  --cat-events:      346 100% 65%;
+  --cat-marketplace: 346 100% 65%;
+  --cat-places:      346 100% 65%;
+  --cat-hotels:      346 100% 65%;
+  --cat-travel:      346 100% 65%;
+  --cat-news:        346 100% 65%;
+  --cat-community:   346 100% 65%;
 }
 
 /* ── MapLibre popup theme adaptation ───────────────────────────────── */
 .maplibregl-popup-content {
   background: hsl(var(--popover)) !important;
   color: hsl(var(--popover-foreground)) !important;
-  box-shadow: 0 4px 16px hsl(0 0% 0% / 0.25) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 .maplibregl-popup-anchor-top .maplibregl-popup-tip,
 .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
@@ -297,26 +299,26 @@ body {
   animation: fade-in 0.5s ease-out;
 }
 
-/* ── Link defaults ────────────────────────────────────────────────── */
+/* ── Link defaults — color only, never underlined ────────────────── */
 
 a,
 a:link,
 a:visited {
   color: hsl(var(--brand));
   text-decoration: none;
-  transition: color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 a:hover {
-  color: hsl(var(--brand) / 0.8);
+  opacity: 0.7;
 }
 
-/* ── Focus-visible (global accessibility) ─────────────────────────── */
+/* ── Focus-visible (global accessibility) — square ───────────────── */
 
 *:focus-visible {
   outline: 2px solid hsl(var(--brand));
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 /* ── Touch target minimum ─────────────────────────────────────────── */
@@ -363,13 +365,6 @@ h1, h2, h3, h4, h5, h6 {
   50% { opacity: 0.5; }
 }
 
-@keyframes gradient-drift {
-  0%, 100% { background-position: 0% 50%; }
-  25% { background-position: 50% 100%; }
-  50% { background-position: 100% 50%; }
-  75% { background-position: 50% 0%; }
-}
-
 @keyframes reveal-up {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -385,37 +380,27 @@ h1, h2, h3, h4, h5, h6 {
   to { opacity: 1; transform: scale(1); }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-@keyframes wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-2deg); }
-  75% { transform: rotate(2deg); }
-}
-
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
-@keyframes heart-pop {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.25); }
-  60% { transform: scale(0.95); }
-  100% { transform: scale(1); }
+@keyframes slide-up-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Animation Utilities ───────────────────────────────────────────── */
 
 .animate-fade-in { animation: fade-in 0.2s ease-out; }
 .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.float { animation: float 3s ease-in-out infinite; }
 .scale-in { animation: scale-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .content-enter { animation: content-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.heart-pop { animation: heart-pop 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
 
 .shimmer {
   background: linear-gradient(90deg, transparent 0%, hsl(var(--brand) / 0.06) 50%, transparent 100%);
@@ -432,23 +417,12 @@ h1, h2, h3, h4, h5, h6 {
   background-color: hsl(var(--accent));
 }
 
-.hover-scale {
-  transition: transform 0.2s ease;
-}
-.hover-scale:hover {
-  transform: scale(1.02);
-}
-.hover-scale:active {
-  transform: scale(0.98);
-}
-
-/* Link hover — color shift, no underline */
+/* Link hover — opacity shift only */
 .story-link {
-  transition: color 0.2s ease, opacity 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 .story-link:hover {
-  color: hsl(var(--brand));
-  opacity: 0.85;
+  opacity: 0.7;
 }
 
 /* ── Reveal & Enter Animations ─────────────────────────────────────── */
@@ -462,127 +436,16 @@ h1, h2, h3, h4, h5, h6 {
 .reveal-delay-4 { animation-delay: 0.48s; }
 .reveal-delay-5 { animation-delay: 0.6s; }
 
-/* ── Hero & Landing Page ───────────────────────────────────────────── */
+/* ── Content crossfade (skeleton → content) ───────────────────────── */
 
-.hero-gradient {
-  background: linear-gradient(
-    135deg,
-    #f9f6f5 0%,
-    #f5eeec 18%,
-    #f3f0ef 36%,
-    #eae7e7 54%,
-    #f3f0ef 72%,
-    #f9f6f5 90%,
-    #f9f6f5 100%
-  );
-  background-size: 400% 400%;
-  animation: gradient-drift 30s ease infinite;
+.content-crossfade-enter {
+  animation: fade-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-
-.dark .hero-gradient {
-  background: linear-gradient(
-    135deg,
-    #0d0d0d 0%,
-    #121010 18%,
-    #0f0d0d 36%,
-    #0d0f0f 54%,
-    #0d0e0c 72%,
-    #100f0d 90%,
-    #0d0d0d 100%
-  );
-  background-size: 400% 400%;
-}
-
-.hero-grain::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 512px 512px;
-  pointer-events: none;
-}
-
-/* Feature card lift on hover — playful with scale */
-.feature-card-lift {
-  transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.feature-card-lift:hover {
-  transform: translateY(-3px) scale(1.01);
-}
-.feature-card-lift:active {
-  transform: translateY(-1px) scale(0.99);
-}
-
-/* ── Category card hover inversion (LABASAD-style) ────────────────── */
-.card-category-hover {
-  --_cat: var(--cat-venues);
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.card-category-hover:hover {
-  background-color: hsl(var(--foreground)) !important;
-  border-color: hsl(var(--foreground)) !important;
-}
-.card-category-hover:hover .cat-hover-title,
-.card-category-hover:hover .cat-hover-desc {
-  color: hsl(var(--_cat)) !important;
-}
-.card-category-hover:hover .cat-hover-icon-box {
-  background-color: hsl(var(--_cat) / 0.15) !important;
-}
-.card-category-hover:hover .cat-hover-icon {
-  color: hsl(var(--_cat)) !important;
-}
-.card-category-hover:hover .cat-hover-arrow {
-  color: hsl(var(--_cat)) !important;
-  opacity: 1 !important;
-  transform: translateX(4px);
-}
-.card-category-hover .cat-hover-arrow {
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Scroll reveal + page transition CSS removed — handled by motion/react */
 
 /* ── Extra Micro-Interaction Keyframes ────────────────────────────── */
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 50%, 90% { transform: translateX(-4px); }
-  30%, 70% { transform: translateX(4px); }
-}
-
-@keyframes success-pop {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes slide-up-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slide-down-in {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes badge-bounce {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.3); }
-  60% { transform: scale(0.9); }
-  100% { transform: scale(1); }
-}
-
-.shake { animation: shake 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
-.success-pop { animation: success-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 .slide-up-in { animation: slide-up-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .slide-down-in { animation: slide-down-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.badge-bounce { animation: badge-bounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
 /* ── Image lazy-load fade ─────────────────────────────────────────── */
 
@@ -592,33 +455,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 .img-lazy-fade.loaded {
   opacity: 1;
-}
-
-/* ── Nav link animated underline ──────────────────────────────────── */
-
-.nav-link-animated {
-  position: relative;
-}
-.nav-link-animated::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: hsl(var(--brand));
-  border-radius: 1px;
-  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.nav-link-animated:hover::after,
-.nav-link-animated.active::after {
-  width: 100%;
-}
-
-/* ── Content crossfade (skeleton → content) ───────────────────────── */
-
-.content-crossfade-enter {
-  animation: fade-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ── Accessibility Classes ─────────────────────────────────────────── */

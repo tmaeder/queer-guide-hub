@@ -17,7 +17,7 @@ const Avatar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElem
           ref={ref}
           className={className}
           style={style}
-          sx={{ position: 'relative', borderRadius: 1.25 }}
+          sx={{ position: 'relative', borderRadius: 0 }}
           {...(props as Record<string, unknown>)}
         >
           {children}

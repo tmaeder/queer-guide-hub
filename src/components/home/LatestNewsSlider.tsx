@@ -55,7 +55,7 @@ const LatestNewsSlider = React.memo(() => {
   if (loading && featuredArticles.length === 0) {
     return (
       <Box component="section" sx={{ bgcolor: 'background.default', py: isMobile ? 4 : 8, px: 2 }}>
-        <Container maxWidth="lg">
+        <Container>
           <Box sx={{ mb: isMobile ? 3 : 4 }}>
             <Box
               sx={{
@@ -132,7 +132,7 @@ const LatestNewsSlider = React.memo(() => {
   if (error) {
     return (
       <Box component="section" sx={{ bgcolor: 'background.default', py: isMobile ? 4 : 8, px: 2 }}>
-        <Container maxWidth="lg">
+        <Container>
           <Box sx={{ textAlign: 'center', py: isMobile ? 4 : 6 }}>
             <Typography variant={isMobile ? 'h6' : 'h5'} sx={{ fontWeight: 700, mb: 2 }}>
               Latest News
@@ -153,7 +153,7 @@ const LatestNewsSlider = React.memo(() => {
   }
   return (
     <Box component="section" sx={{ bgcolor: 'background.default', py: isMobile ? 4 : 8, px: 2 }}>
-      <Container maxWidth="lg">
+      <Container>
         <Box
           sx={{
             display: 'flex',
