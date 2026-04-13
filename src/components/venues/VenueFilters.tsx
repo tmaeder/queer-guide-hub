@@ -1,14 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Command,
@@ -24,7 +17,6 @@ import { useUnifiedTags } from '@/hooks/useUnifiedTags';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface VenueFiltersProps {
   onFiltersChange: (filters: {
@@ -51,6 +43,7 @@ const categories = [
   'gym',
   'salon',
   'healthcare',
+  'sauna',
 ];
 
 const commonAmenities = [
@@ -105,74 +98,103 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const [servicesOpen, setServicesOpen] = useState(false);
   const [accessibilityOpen, setAccessibilityOpen] = useState(false);
   const [targetGroupsOpen, setTargetGroupsOpen] = useState(false);
-  const [showAllFilters, setShowAllFilters] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [nearMe, setNearMe] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
     null,
   );
 
-  // Use unified tags from the tag wiki
   const { tags: unifiedTags, loading: tagsLoading, fetchTags } = useUnifiedTags();
   const { accessibilityAttributes, loading: accessibilityLoading } = useAccessibilityAttributes();
   const { targetGroups, loading: targetGroupsLoading } = useTargetGroups();
 
   useEffect(() => {
-    // Fetch the main tags for venues/organizations
     fetchTags();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Build current filters object
+  const buildFilters = useCallback(
+    (overrides?: Partial<{
+      search: string;
+      city: string;
+      category: string;
+      tags: string[];
+      amenities: string[];
+      services: string[];
+      accessibilityAttributes: string[];
+      targetGroups: string[];
+      nearMe: boolean;
+      userLocation: { latitude: number; longitude: number } | null;
+    }>) => {
+      const s = overrides?.search ?? search;
+      const c = overrides?.city ?? city;
+      const cat = overrides?.category ?? category;
+      const t = overrides?.tags ?? selectedTags;
+      const a = overrides?.amenities ?? selectedAmenities;
+      const sv = overrides?.services ?? selectedServices;
+      const acc = overrides?.accessibilityAttributes ?? selectedAccessibilityAttributes;
+      const tg = overrides?.targetGroups ?? selectedTargetGroups;
+      const nm = overrides?.nearMe ?? nearMe;
+      const ul = overrides?.userLocation !== undefined ? overrides.userLocation : userLocation;
+
+      return {
+        search: s || undefined,
+        city: c || undefined,
+        category: cat === 'all' ? undefined : cat || undefined,
+        tags: t.length > 0 ? t : undefined,
+        amenities: a.length > 0 ? a : undefined,
+        services: sv.length > 0 ? sv : undefined,
+        accessibilityAttributes: acc.length > 0 ? acc : undefined,
+        targetGroups: tg.length > 0 ? tg : undefined,
+        userLocation: ul || undefined,
+        nearMe: nm || undefined,
+      };
+    },
+    [search, city, category, selectedTags, selectedAmenities, selectedServices, selectedAccessibilityAttributes, selectedTargetGroups, nearMe, userLocation],
+  );
+
+  // Auto-apply debounce for advanced filter changes
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const autoApply = useCallback(
+    (overrides?: Parameters<typeof buildFilters>[0]) => {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        onFiltersChange(buildFilters(overrides));
+      }, 300);
+    },
+    [buildFilters, onFiltersChange],
+  );
+
   const handleSearch = () => {
-    onFiltersChange({
-      search: search || undefined,
-      city: city || undefined,
-      category: category === 'all' ? undefined : category || undefined,
-      tags: selectedTags.length > 0 ? selectedTags : undefined,
-      amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
-      services: selectedServices.length > 0 ? selectedServices : undefined,
-      accessibilityAttributes:
-        selectedAccessibilityAttributes.length > 0 ? selectedAccessibilityAttributes : undefined,
-      targetGroups: selectedTargetGroups.length > 0 ? selectedTargetGroups : undefined,
-      userLocation: userLocation || undefined,
-      nearMe: nearMe || undefined,
-    });
+    clearTimeout(debounceRef.current);
+    onFiltersChange(buildFilters());
+  };
+
+  const handleCategoryClick = (cat: string) => {
+    const newCat = category === cat ? '' : cat;
+    setCategory(newCat);
+    clearTimeout(debounceRef.current);
+    onFiltersChange(buildFilters({ category: newCat }));
   };
 
   const detectLocation = async () => {
-    if (!navigator.geolocation) {
-      console.error('Geolocation is not supported by this browser');
-      return;
-    }
-
+    if (!navigator.geolocation) return;
     setIsDetectingLocation(true);
-
     try {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 300000, // 5 minutes
+          maximumAge: 300000,
         });
       });
-
       const { latitude, longitude } = position.coords;
       setUserLocation({ latitude, longitude });
       setNearMe(true);
-
-      // Automatically apply the near me filter
-      onFiltersChange({
-        search: search || undefined,
-        city: city || undefined,
-        category: category === 'all' ? undefined : category || undefined,
-        tags: selectedTags.length > 0 ? selectedTags : undefined,
-        amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
-        services: selectedServices.length > 0 ? selectedServices : undefined,
-        userLocation: { latitude, longitude },
-        nearMe: true,
-      });
-    } catch (error) {
-      console.error('Error detecting location:', error);
+      onFiltersChange(buildFilters({ userLocation: { latitude, longitude }, nearMe: true }));
+    } catch {
       setNearMe(false);
       setUserLocation(null);
     } finally {
@@ -182,21 +204,10 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
 
   const handleNearMeToggle = () => {
     if (nearMe) {
-      // Turn off near me filter
       setNearMe(false);
       setUserLocation(null);
-      onFiltersChange({
-        search: search || undefined,
-        city: city || undefined,
-        category: category === 'all' ? undefined : category || undefined,
-        tags: selectedTags.length > 0 ? selectedTags : undefined,
-        amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
-        services: selectedServices.length > 0 ? selectedServices : undefined,
-        nearMe: false,
-        userLocation: undefined,
-      });
+      onFiltersChange(buildFilters({ nearMe: false, userLocation: null }));
     } else {
-      // Detect location and turn on near me filter
       detectLocation();
     }
   };
@@ -206,34 +217,39 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
       ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
     setSelectedTags(newTags);
+    autoApply({ tags: newTags });
   };
 
   const handleAmenityToggle = (amenity: string) => {
-    const newAmenities = selectedAmenities.includes(amenity)
+    const next = selectedAmenities.includes(amenity)
       ? selectedAmenities.filter((a) => a !== amenity)
       : [...selectedAmenities, amenity];
-    setSelectedAmenities(newAmenities);
+    setSelectedAmenities(next);
+    autoApply({ amenities: next });
   };
 
   const handleServiceToggle = (service: string) => {
-    const newServices = selectedServices.includes(service)
+    const next = selectedServices.includes(service)
       ? selectedServices.filter((s) => s !== service)
       : [...selectedServices, service];
-    setSelectedServices(newServices);
+    setSelectedServices(next);
+    autoApply({ services: next });
   };
 
   const handleAccessibilityToggle = (attr: string) => {
-    const newAttributes = selectedAccessibilityAttributes.includes(attr)
+    const next = selectedAccessibilityAttributes.includes(attr)
       ? selectedAccessibilityAttributes.filter((a) => a !== attr)
       : [...selectedAccessibilityAttributes, attr];
-    setSelectedAccessibilityAttributes(newAttributes);
+    setSelectedAccessibilityAttributes(next);
+    autoApply({ accessibilityAttributes: next });
   };
 
   const handleTargetGroupToggle = (group: string) => {
-    const newGroups = selectedTargetGroups.includes(group)
+    const next = selectedTargetGroups.includes(group)
       ? selectedTargetGroups.filter((g) => g !== group)
       : [...selectedTargetGroups, group];
-    setSelectedTargetGroups(newGroups);
+    setSelectedTargetGroups(next);
+    autoApply({ targetGroups: next });
   };
 
   const clearFilters = () => {
@@ -247,6 +263,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     setSelectedTargetGroups([]);
     setNearMe(false);
     setUserLocation(null);
+    clearTimeout(debounceRef.current);
     onFiltersChange({});
   };
 
@@ -261,20 +278,24 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     selectedTargetGroups.length > 0 ||
     nearMe;
 
+  const activeFilterCount = [
+    search,
+    city,
+    category && category !== 'all' ? category : '',
+    ...selectedTags,
+    ...selectedAmenities,
+    ...selectedServices,
+    ...selectedAccessibilityAttributes,
+    ...selectedTargetGroups,
+    nearMe ? 'nearMe' : '',
+  ].filter(Boolean).length;
+
+  // Shared remove-badge X style
+  const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
+
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 3,
-        p: 3,
-        bgcolor: 'background.paper',
-        borderRadius: 3,
-        boxShadow: 1,
-        width: '100%',
-      }}
-    >
-      {/* Search Bar */}
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+      {/* Search Row */}
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
         <Box sx={{ position: 'relative', flex: 1 }}>
           <Search
@@ -320,614 +341,353 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             <Search style={{ width: 16, height: 16 }} />
           </Button>
           <Button
-            variant="outline"
-            onClick={() => setShowAllFilters(!showAllFilters)}
-            size="icon"
-            sx={{ height: 44, width: 44 }}
+            variant={showAdvanced ? 'default' : 'outline'}
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            sx={{ height: 44, gap: 1, px: 2 }}
             aria-label="Toggle filters"
           >
             <Filter style={{ width: 16, height: 16 }} />
+            {activeFilterCount > 0 && (
+              <Box
+                component="span"
+                sx={{
+                  bgcolor: showAdvanced ? 'primary.contrastText' : 'primary.main',
+                  color: showAdvanced ? 'primary.main' : 'primary.contrastText',
+                  borderRadius: '50%',
+                  width: 20,
+                  height: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                }}
+              >
+                {activeFilterCount}
+              </Box>
+            )}
           </Button>
         </Box>
       </Box>
 
-      {/* Extended Filters */}
-      {showAllFilters && (
+      {/* Category Chips */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          flexWrap: 'wrap',
+        }}
+      >
+        {categories.map((cat) => (
+          <Button
+            key={cat}
+            variant={category === cat ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleCategoryClick(cat)}
+            sx={{
+              height: 32,
+              px: 2,
+              fontSize: '0.8rem',
+              fontWeight: 500,
+              textTransform: 'capitalize',
+              borderRadius: 9999,
+            }}
+          >
+            {cat}
+          </Button>
+        ))}
+      </Box>
+
+      {/* Active Filter Chips (always visible when filters applied and advanced is closed) */}
+      {hasActiveFilters && !showAdvanced && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center' }}>
+          {search && (
+            <Badge variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+              &ldquo;{search}&rdquo;
+              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => { setSearch(''); autoApply({ search: '' }); }} />
+            </Badge>
+          )}
+          {city && (
+            <Badge variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+              {city}
+              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => { setCity(''); autoApply({ city: '' }); }} />
+            </Badge>
+          )}
+          {selectedTags.map((tag) => (
+            <Badge key={tag} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+              {tag}
+              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleTagToggle(tag)} />
+            </Badge>
+          ))}
+          {selectedAmenities.map((a) => (
+            <Badge key={a} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+              {a}
+              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleAmenityToggle(a)} />
+            </Badge>
+          ))}
+          {selectedServices.map((s) => (
+            <Badge key={s} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+              {s}
+              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleServiceToggle(s)} />
+            </Badge>
+          ))}
+          {selectedAccessibilityAttributes.map((a) => (
+            <Badge key={a} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+              {a}
+              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleAccessibilityToggle(a)} />
+            </Badge>
+          ))}
+          {selectedTargetGroups.map((g) => (
+            <Badge key={g} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+              {g}
+              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleTargetGroupToggle(g)} />
+            </Badge>
+          ))}
+          {nearMe && (
+            <Badge variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+              Near Me
+              <X style={xStyle} role="button" aria-label="Remove filter" onClick={handleNearMeToggle} />
+            </Badge>
+          )}
+          <Button variant="ghost" size="sm" onClick={clearFilters} sx={{ height: 24, px: 1.5, fontSize: '0.75rem', color: 'text.secondary' }}>
+            Clear all
+          </Button>
+        </Box>
+      )}
+
+      {/* Advanced Filters Panel */}
+      {showAdvanced && (
         <Box
           component="nav"
           aria-label="Venue filters"
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 3,
-            pt: 3,
+            gap: 2.5,
+            pt: 2,
             borderTop: 1,
             borderColor: 'divider',
           }}
         >
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Label htmlFor="city" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                City
-              </Label>
-              <Input
-                id="city"
-                placeholder="Enter city..."
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                sx={{ height: 40 }}
-              />
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Label htmlFor="category" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                Category
-              </Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger sx={{ height: 40 }}>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Box>
+          {/* City input */}
+          <Box sx={{ maxWidth: 400 }}>
+            <Label htmlFor="city" sx={{ fontSize: '0.8rem', fontWeight: 500, mb: 0.5, display: 'block' }}>
+              City
+            </Label>
+            <Input
+              id="city"
+              placeholder="Enter city..."
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              sx={{ height: 38 }}
+            />
           </Box>
 
-          {/* Filter Categories - Updated to 5 columns */}
+          {/* Filter dropdowns — 3 columns on desktop */}
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: 'repeat(5, 1fr)' },
-              gap: 3,
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
+              gap: 2.5,
             }}
           >
             {/* Tags */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 8, height: 8, bgcolor: 'primary.main', borderRadius: '50%' }} />
-                  Tags
-                </Box>
-              </Label>
-              <Popover open={tagsOpen} onOpenChange={setTagsOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={tagsOpen}
-                    sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
-                  >
-                    {selectedTags.length > 0
-                      ? `${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''} selected`
-                      : 'Select tags...'}
-                    <ChevronDown
-                      style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }}
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
-                  <Command>
-                    <CommandInput placeholder="Search tags..." />
-                    <CommandList>
-                      <CommandEmpty>No tags found.</CommandEmpty>
-                      <CommandGroup>
-                        {tagsLoading ? (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              p: 2,
-                            }}
-                          >
-                            <Loader2 style={{ width: 16, height: 16 }} />
-                          </Box>
-                        ) : (
-                          unifiedTags.map((tag) => (
-                            <CommandItem
-                              key={tag.id}
-                              value={tag.name}
-                              onSelect={() => handleTagToggle(tag.name)}
-                            >
-                              <Check
-                                style={{
-                                  marginRight: 8,
-                                  width: 16,
-                                  height: 16,
-                                  opacity: selectedTags.includes(tag.name) ? 1 : 0,
-                                }}
-                              />
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                {tag.name}
-                              </Box>
-                            </CommandItem>
-                          ))
-                        )}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {selectedTags.length > 0 && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
-                  {selectedTags.map((tag) => (
-                    <Badge key={tag} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
-                      {tag}
-                      <X
-                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                        onClick={() => handleTagToggle(tag)}
-                      />
-                    </Badge>
-                  ))}
-                </Box>
-              )}
-            </Box>
+            <FilterDropdown
+              label="Tags"
+              dotColor="primary.main"
+              open={tagsOpen}
+              onOpenChange={setTagsOpen}
+              selected={selectedTags}
+              loading={tagsLoading}
+              items={unifiedTags.map((t) => ({ key: t.id, label: t.name }))}
+              onToggle={handleTagToggle}
+              placeholder="Select tags..."
+              searchPlaceholder="Search tags..."
+              emptyMessage="No tags found."
+            />
 
             {/* Amenities */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 8, height: 8, bgcolor: '#3b82f6', borderRadius: '50%' }} />
-                  Amenities
-                </Box>
-              </Label>
-              <Popover open={amenitiesOpen} onOpenChange={setAmenitiesOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={amenitiesOpen}
-                    sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
-                  >
-                    {selectedAmenities.length > 0
-                      ? `${selectedAmenities.length} amenity${selectedAmenities.length !== 1 ? 'ies' : ''} selected`
-                      : 'Select amenities...'}
-                    <ChevronDown
-                      style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }}
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
-                  <Command>
-                    <CommandInput placeholder="Search amenities..." />
-                    <CommandList>
-                      <CommandEmpty>No amenities found.</CommandEmpty>
-                      <CommandGroup>
-                        {commonAmenities.map((amenity) => (
-                          <CommandItem
-                            key={amenity}
-                            value={amenity}
-                            onSelect={() => handleAmenityToggle(amenity)}
-                          >
-                            <Check
-                              style={{
-                                marginRight: 8,
-                                width: 16,
-                                height: 16,
-                                opacity: selectedAmenities.includes(amenity) ? 1 : 0,
-                              }}
-                            />
-                            {amenity}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {selectedAmenities.length > 0 && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
-                  {selectedAmenities.map((amenity) => (
-                    <Badge key={amenity} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
-                      {amenity}
-                      <X
-                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                        onClick={() => handleAmenityToggle(amenity)}
-                      />
-                    </Badge>
-                  ))}
-                </Box>
-              )}
-            </Box>
+            <FilterDropdown
+              label="Amenities"
+              dotColor="#3b82f6"
+              open={amenitiesOpen}
+              onOpenChange={setAmenitiesOpen}
+              selected={selectedAmenities}
+              items={commonAmenities.map((a) => ({ key: a, label: a }))}
+              onToggle={handleAmenityToggle}
+              placeholder="Select amenities..."
+              searchPlaceholder="Search amenities..."
+              emptyMessage="No amenities found."
+            />
 
             {/* Services */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 8, height: 8, bgcolor: '#22c55e', borderRadius: '50%' }} />
-                  Services
-                </Box>
-              </Label>
-              <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={servicesOpen}
-                    sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
-                  >
-                    {selectedServices.length > 0
-                      ? `${selectedServices.length} service${selectedServices.length !== 1 ? 's' : ''} selected`
-                      : 'Select services...'}
-                    <ChevronDown
-                      style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }}
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
-                  <Command>
-                    <CommandInput placeholder="Search services..." />
-                    <CommandList>
-                      <CommandEmpty>No services found.</CommandEmpty>
-                      <CommandGroup>
-                        {commonServices.map((service) => (
-                          <CommandItem
-                            key={service}
-                            value={service}
-                            onSelect={() => handleServiceToggle(service)}
-                          >
-                            <Check
-                              style={{
-                                marginRight: 8,
-                                width: 16,
-                                height: 16,
-                                opacity: selectedServices.includes(service) ? 1 : 0,
-                              }}
-                            />
-                            {service}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {selectedServices.length > 0 && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
-                  {selectedServices.map((service) => (
-                    <Badge key={service} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
-                      {service}
-                      <X
-                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                        onClick={() => handleServiceToggle(service)}
-                      />
-                    </Badge>
-                  ))}
-                </Box>
-              )}
-            </Box>
+            <FilterDropdown
+              label="Services"
+              dotColor="#22c55e"
+              open={servicesOpen}
+              onOpenChange={setServicesOpen}
+              selected={selectedServices}
+              items={commonServices.map((s) => ({ key: s, label: s }))}
+              onToggle={handleServiceToggle}
+              placeholder="Select services..."
+              searchPlaceholder="Search services..."
+              emptyMessage="No services found."
+            />
 
-            {/* Accessibility Attributes */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 8, height: 8, bgcolor: '#555555', borderRadius: '50%' }} />
-                  Accessibility
-                </Box>
-              </Label>
-              <Popover open={accessibilityOpen} onOpenChange={setAccessibilityOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={accessibilityOpen}
-                    sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
-                  >
-                    {selectedAccessibilityAttributes.length > 0
-                      ? `${selectedAccessibilityAttributes.length} feature${selectedAccessibilityAttributes.length !== 1 ? 's' : ''} selected`
-                      : 'Select accessibility...'}
-                    <ChevronDown
-                      style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }}
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
-                  <Command>
-                    <CommandInput placeholder="Search accessibility features..." />
-                    <CommandList>
-                      <CommandEmpty>No accessibility features found.</CommandEmpty>
-                      <CommandGroup>
-                        {accessibilityLoading ? (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              p: 2,
-                            }}
-                          >
-                            <Loader2 style={{ width: 16, height: 16 }} />
-                          </Box>
-                        ) : (
-                          accessibilityAttributes.map((attr) => (
-                            <CommandItem
-                              key={attr.id}
-                              value={attr.name}
-                              onSelect={() => handleAccessibilityToggle(attr.name)}
-                            >
-                              <Check
-                                style={{
-                                  marginRight: 8,
-                                  width: 16,
-                                  height: 16,
-                                  opacity: selectedAccessibilityAttributes.includes(attr.name)
-                                    ? 1
-                                    : 0,
-                                }}
-                              />
-                              {attr.name}
-                            </CommandItem>
-                          ))
-                        )}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {selectedAccessibilityAttributes.length > 0 && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
-                  {selectedAccessibilityAttributes.map((attr) => (
-                    <Badge key={attr} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
-                      {attr}
-                      <X
-                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                        onClick={() => handleAccessibilityToggle(attr)}
-                      />
-                    </Badge>
-                  ))}
-                </Box>
-              )}
-            </Box>
+            {/* Accessibility */}
+            <FilterDropdown
+              label="Accessibility"
+              dotColor="#555555"
+              open={accessibilityOpen}
+              onOpenChange={setAccessibilityOpen}
+              selected={selectedAccessibilityAttributes}
+              loading={accessibilityLoading}
+              items={accessibilityAttributes.map((a) => ({ key: a.id, label: a.name }))}
+              onToggle={handleAccessibilityToggle}
+              placeholder="Select accessibility..."
+              searchPlaceholder="Search accessibility..."
+              emptyMessage="No accessibility features found."
+            />
 
             {/* Target Groups */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ width: 8, height: 8, bgcolor: '#f97316', borderRadius: '50%' }} />
-                  Target Groups
-                </Box>
-              </Label>
-              <Popover open={targetGroupsOpen} onOpenChange={setTargetGroupsOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={targetGroupsOpen}
-                    sx={{ width: '100%', justifyContent: 'space-between', height: 40 }}
-                  >
-                    {selectedTargetGroups.length > 0
-                      ? `${selectedTargetGroups.length} group${selectedTargetGroups.length !== 1 ? 's' : ''} selected`
-                      : 'Select target groups...'}
-                    <ChevronDown
-                      style={{ marginLeft: 8, width: 16, height: 16, flexShrink: 0, opacity: 0.5 }}
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
-                  <Command>
-                    <CommandInput placeholder="Search target groups..." />
-                    <CommandList>
-                      <CommandEmpty>No target groups found.</CommandEmpty>
-                      <CommandGroup>
-                        {targetGroupsLoading ? (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              p: 2,
-                            }}
-                          >
-                            <Loader2 style={{ width: 16, height: 16 }} />
-                          </Box>
-                        ) : (
-                          targetGroups.map((group) => (
-                            <CommandItem
-                              key={group.id}
-                              value={group.name}
-                              onSelect={() => handleTargetGroupToggle(group.name)}
-                            >
-                              <Check
-                                style={{
-                                  marginRight: 8,
-                                  width: 16,
-                                  height: 16,
-                                  opacity: selectedTargetGroups.includes(group.name) ? 1 : 0,
-                                }}
-                              />
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Box
-                                  sx={{
-                                    width: 12,
-                                    height: 12,
-                                    borderRadius: '50%',
-                                    border: 1,
-                                    borderColor: 'divider',
-                                  }}
-                                  style={{ backgroundColor: group.color }}
-                                />
-                                {group.name}
-                              </Box>
-                            </CommandItem>
-                          ))
-                        )}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {selectedTargetGroups.length > 0 && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
-                  {selectedTargetGroups.map((group) => (
-                    <Badge key={group} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
-                      {group}
-                      <X
-                        style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                        onClick={() => handleTargetGroupToggle(group)}
-                      />
-                    </Badge>
-                  ))}
-                </Box>
-              )}
-            </Box>
+            <FilterDropdown
+              label="Target Groups"
+              dotColor="#f97316"
+              open={targetGroupsOpen}
+              onOpenChange={setTargetGroupsOpen}
+              selected={selectedTargetGroups}
+              loading={targetGroupsLoading}
+              items={targetGroups.map((g) => ({ key: g.id, label: g.name, color: g.color }))}
+              onToggle={handleTargetGroupToggle}
+              placeholder="Select target groups..."
+              searchPlaceholder="Search target groups..."
+              emptyMessage="No target groups found."
+            />
           </Box>
 
-          {/* Action Buttons */}
-          <Box
-            sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, pt: 2 }}
-          >
-            <Button
-              onClick={handleSearch}
-              sx={{
-                bgcolor: 'primary.main',
-                '&:hover': { bgcolor: 'primary.dark' },
-                flex: { xs: 1, sm: 'none' },
-                px: { sm: 8 },
-              }}
-            >
-              Apply Filters
-            </Button>
-            {hasActiveFilters && (
+          {/* Clear button */}
+          {hasActiveFilters && (
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button
                 variant="outline"
                 onClick={clearFilters}
-                sx={{ gap: 2, flex: { xs: 1, sm: 'none' } }}
+                size="sm"
+                sx={{ gap: 1 }}
               >
-                <X style={{ width: 16, height: 16 }} />
+                <X style={{ width: 14, height: 14 }} />
                 Clear All
               </Button>
-            )}
-          </Box>
+            </Box>
+          )}
         </Box>
       )}
+    </Box>
+  );
+}
 
-      {/* Active Filters Display */}
-      {hasActiveFilters && !showAllFilters && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 1,
-            alignItems: 'center',
-            p: 2,
-            bgcolor: 'action.hover',
-            borderRadius: 2,
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
-            Active filters:
-          </Typography>
-          {search && (
-            <Badge variant="secondary" sx={{ gap: 1 }}>
-              Search: {search}
-              <X
-                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                onClick={() => setSearch('')}
-              />
-            </Badge>
-          )}
-          {city && (
-            <Badge variant="secondary" sx={{ gap: 1 }}>
-              City: {city}
-              <X style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter" onClick={() => setCity('')} />
-            </Badge>
-          )}
-          {category && category !== 'all' && (
-            <Badge variant="secondary" sx={{ gap: 1 }}>
-              {category}
-              <X
-                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                onClick={() => setCategory('')}
-              />
-            </Badge>
-          )}
-          {selectedTags.map((tag) => (
-            <Badge key={tag} variant="secondary" sx={{ gap: 1 }}>
-              {tag}
-              <X
-                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                onClick={() => handleTagToggle(tag)}
-              />
+// Extracted filter dropdown component to reduce repetition
+function FilterDropdown({
+  label,
+  dotColor,
+  open,
+  onOpenChange,
+  selected,
+  loading,
+  items,
+  onToggle,
+  placeholder,
+  searchPlaceholder,
+  emptyMessage,
+}: {
+  label: string;
+  dotColor: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selected: string[];
+  loading?: boolean;
+  items: { key: string; label: string; color?: string }[];
+  onToggle: (value: string) => void;
+  placeholder: string;
+  searchPlaceholder: string;
+  emptyMessage: string;
+}) {
+  const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Label sx={{ fontSize: '0.8rem', fontWeight: 500 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ width: 7, height: 7, bgcolor: dotColor, borderRadius: '50%' }} />
+          {label}
+        </Box>
+      </Label>
+      <Popover open={open} onOpenChange={onOpenChange}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            sx={{ width: '100%', justifyContent: 'space-between', height: 38, fontSize: '0.8rem' }}
+          >
+            {selected.length > 0
+              ? `${selected.length} selected`
+              : placeholder}
+            <ChevronDown
+              style={{ marginLeft: 8, width: 14, height: 14, flexShrink: 0, opacity: 0.5 }}
+            />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
+          <Command>
+            <CommandInput placeholder={searchPlaceholder} />
+            <CommandList>
+              <CommandEmpty>{emptyMessage}</CommandEmpty>
+              <CommandGroup>
+                {loading ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+                    <Loader2 style={{ width: 16, height: 16 }} />
+                  </Box>
+                ) : (
+                  items.map((item) => (
+                    <CommandItem
+                      key={item.key}
+                      value={item.label}
+                      onSelect={() => onToggle(item.label)}
+                    >
+                      <Check
+                        style={{
+                          marginRight: 8,
+                          width: 16,
+                          height: 16,
+                          opacity: selected.includes(item.label) ? 1 : 0,
+                        }}
+                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {item.color && (
+                          <Box
+                            sx={{ width: 10, height: 10, borderRadius: '50%', border: 1, borderColor: 'divider' }}
+                            style={{ backgroundColor: item.color }}
+                          />
+                        )}
+                        {item.label}
+                      </Box>
+                    </CommandItem>
+                  ))
+                )}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {selected.length > 0 && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          {selected.map((val) => (
+            <Badge key={val} variant="secondary" sx={{ gap: 1, fontSize: '0.7rem' }}>
+              {val}
+              <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => onToggle(val)} />
             </Badge>
           ))}
-          {selectedAmenities.map((amenity) => (
-            <Badge key={amenity} variant="secondary" sx={{ gap: 1 }}>
-              {amenity}
-              <X
-                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                onClick={() => handleAmenityToggle(amenity)}
-              />
-            </Badge>
-          ))}
-          {selectedServices.map((service) => (
-            <Badge key={service} variant="secondary" sx={{ gap: 1 }}>
-              {service}
-              <X
-                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                onClick={() => handleServiceToggle(service)}
-              />
-            </Badge>
-          ))}
-          {selectedAccessibilityAttributes.map((attr) => (
-            <Badge key={attr} variant="secondary" sx={{ gap: 1 }}>
-              {attr}
-              <X
-                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                onClick={() => handleAccessibilityToggle(attr)}
-              />
-            </Badge>
-          ))}
-          {selectedTargetGroups.map((group) => (
-            <Badge key={group} variant="secondary" sx={{ gap: 1 }}>
-              {group}
-              <X
-                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                onClick={() => handleTargetGroupToggle(group)}
-              />
-            </Badge>
-          ))}
-          {nearMe && (
-            <Badge variant="secondary" sx={{ gap: 1 }}>
-              Near Me
-              <X
-                style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
-                        role="button"
-                        aria-label="Remove filter"
-                onClick={handleNearMeToggle}
-              />
-            </Badge>
-          )}
         </Box>
       )}
     </Box>
