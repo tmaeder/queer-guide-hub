@@ -233,8 +233,15 @@ export function useFlyerScan() {
         if (getVal('is_free') !== undefined) formData.is_free = getVal('is_free');
         if (getVal('price_text')) {
           const priceText = getVal('price_text') as string;
-          const match = priceText.match(/(\d+)/);
-          if (match) formData.price_min = parseInt(match[1], 10);
+          const prices = [...priceText.matchAll(/(\d+(?:[.,]\d{1,2})?)/g)]
+            .map(m => parseFloat(m[1].replace(',', '.')))
+            .filter(n => !isNaN(n) && n > 0 && n < 10000);
+          if (prices.length > 0) {
+            formData.price_min = Math.min(...prices);
+            if (prices.length > 1) {
+              formData.price_max = Math.max(...prices);
+            }
+          }
         }
         if (getVal('age_restriction')) formData.age_restriction = getVal('age_restriction');
       } else {
