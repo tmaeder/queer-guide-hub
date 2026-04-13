@@ -42,6 +42,7 @@ import Menu from '@mui/material/Menu';
 import MuiMenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
@@ -487,23 +488,25 @@ export default function VenueDetail() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             {/* Map */}
             {hasCoords && (
-              <Card>
-                <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
-                  <EntityMap
-                    center={[Number(venue.longitude), Number(venue.latitude)]}
-                    zoom={15}
-                    height={180}
-                    markers={[{
-                      id: venue.id,
-                      lat: Number(venue.latitude),
-                      lng: Number(venue.longitude),
-                      name: venue.name ?? 'Venue',
-                      type: 'venues',
-                      primary: true,
-                    }]}
-                  />
-                </CardContent>
-              </Card>
+              <ErrorBoundary section="venue-map" fallback={null}>
+                <Card>
+                  <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+                    <EntityMap
+                      center={[Number(venue.longitude), Number(venue.latitude)]}
+                      zoom={15}
+                      height={180}
+                      markers={[{
+                        id: venue.id,
+                        lat: Number(venue.latitude),
+                        lng: Number(venue.longitude),
+                        name: venue.name ?? 'Venue',
+                        type: 'venues',
+                        primary: true,
+                      }]}
+                    />
+                  </CardContent>
+                </Card>
+              </ErrorBoundary>
             )}
 
             {/* Check-ins (desktop) */}
