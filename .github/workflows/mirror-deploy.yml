@@ -9,6 +9,10 @@ on:
         description: 'Deploy to Infomaniak (Switzerland)'
         type: boolean
         default: true
+      deploy_vps:
+        description: 'Deploy to OrangeWebsite (Iceland)'
+        type: boolean
+        default: true
       deploy_ipfs:
         description: 'Deploy to IPFS'
         type: boolean
@@ -50,6 +54,8 @@ jobs:
 
       - name: Build SPA
         run: npm run build
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Pre-render static pages
         run: npm run prerender
