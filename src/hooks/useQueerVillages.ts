@@ -7,7 +7,7 @@ type QueerVillageInsert = Database['public']['Tables']['queer_villages']['Insert
 
 export type QueerVillageWithRelations = QueerVillage & {
   cities?: { id: string; name: string } | null;
-  countries?: { id: string; name: string } | null;
+  countries?: { id: string; name: string; continent_id?: string } | null;
 };
 
 export function useQueerVillages(autoFetch = true) {
@@ -22,7 +22,7 @@ export function useQueerVillages(autoFetch = true) {
 
       let query = supabase
         .from('queer_villages')
-        .select('*, cities:city_id(id, name), countries:country_id(id, name)')
+        .select('*, cities:city_id(id, name), countries:country_id(id, name, continent_id)')
         .order('featured', { ascending: false })
         .order('name', { ascending: true });
 

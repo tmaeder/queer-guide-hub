@@ -22,7 +22,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { ArrowLeft, Globe, MapPin, Building2, Map, Landmark } from 'lucide-react';
+import { ArrowLeft, Globe, MapPin, Building2, Map as MapIcon, Landmark, ChevronDown, ChevronUp } from 'lucide-react';
 
 // Lazy load the map component
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
@@ -41,6 +41,7 @@ const BADGE_STYLE: React.CSSProperties = { paddingLeft: 12, paddingRight: 12, pa
 const _LINK_STYLE: React.CSSProperties = { display: 'block' };
 const _CARD_HEADER_STYLE: React.CSSProperties = { paddingTop: 0 };
 const MAP_ICON_STYLE: React.CSSProperties = { height: 32, width: 32, margin: '0 auto', color: 'text.secondary' };
+const COLLAPSED_COUNT = 6;
 
 type ViewMode = 'overview' | 'country' | 'city' | 'search';
 
@@ -102,6 +103,20 @@ export default function Places() {
     sortBy: 'population',
     sortOrder: 'desc',
   });
+
+  const [expandedContinents, setExpandedContinents] = useState<Record<string, boolean>>({});
+  const toggleContinent = (id: string) => {
+    setExpandedContinents(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const [expandedCityContinents, setExpandedCityContinents] = useState<Record<string, boolean>>({});
+  const toggleCityContinent = (id: string) => {
+    setExpandedCityContinents(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+  const [expandedCityCountries, setExpandedCityCountries] = useState<Record<string, boolean>>({});
+  const toggleCityCountry = (id: string) => {
+    setExpandedCityCountries(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   // Animation states for better UX
   const [_isTransitioning, setIsTransitioning] = useState(false);
@@ -196,6 +211,23 @@ export default function Places() {
       return filters.sortOrder === 'asc' ? (aVal > bVal ? 1 : -1) : aVal < bVal ? 1 : -1;
     });
   }, [cities, filters]);
+
+  const citiesByContinent = useMemo(() => {
+    return continents.map((continent) => {
+      const cCountries = countries.filter(c => c.continent_id === continent.id);
+      const cCities = filteredCities.filter(city =>
+        cCountries.some(country => country.id === city.country_id)
+      );
+      const countriesWithCities = cCountries
+        .filter(country => cCities.some(city => city.country_id === country.id))
+        .map(country => ({
+          ...country,
+          cities: cCities.filter(city => city.country_id === country.id),
+        }))
+        .sort((a, b) => ((a.name as string) > (b.name as string) ? 1 : -1));
+      return { continent, totalCities: cCities.length, countries: countriesWithCities };
+    }).filter(g => g.totalCities > 0);
+  }, [continents, countries, filteredCities]);
 
   const handleBack = () => {
     setIsTransitioning(true);
@@ -395,7 +427,7 @@ export default function Places() {
                     <span>Neighborhoods</span>
                   </TabsTrigger>
                   <TabsTrigger value="map">
-                    <Map style={ICON_SM} />
+                    <MapIcon style={ICON_SM} />
                     <span>Map</span>
                   </TabsTrigger>
                 </TabsList>
@@ -480,23 +512,28 @@ export default function Places() {
 
                       if (continentCountries.length === 0) return null;
 
+                      const isExpanded = expandedContinents[continent.id as string];
+
                       return (
                         <Box
                           key={continent.id}
                           sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                         >
                           <Box
+                            onClick={() => toggleContinent(continent.id as string)}
                             sx={{
                               display: 'flex',
                               alignItems: 'center',
+                              justifyContent: 'space-between',
                               gap: 2,
                               p: 2,
-                              borderRadius: 2,
                               bgcolor: 'action.hover',
+                              cursor: 'pointer',
+                              '&:hover': { opacity: 0.85 },
                             }}
                           >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.selected' }}>
+                              <Box sx={{ p: 1, bgcolor: 'action.selected' }}>
                                 <Globe style={ICON_MD} />
                               </Box>
                               <Box>
@@ -508,32 +545,35 @@ export default function Places() {
                                 </Typography>
                               </Box>
                             </Box>
+                            {isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
                           </Box>
 
-                          <Box
-                            sx={{
-                              display: 'grid',
-                              gridTemplateColumns: {
-                                xs: '1fr',
-                                sm: '1fr 1fr',
-                                md: 'repeat(3, 1fr)',
-                                lg: 'repeat(4, 1fr)',
-                                xl: 'repeat(6, 1fr)',
-                              },
-                              gap: 2,
-                            }}
-                          >
-                            {continentCountries.map((country, index) => (
-                              <Box key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
-                                <PlacesCard
-                                  type="country"
-                                  name={country.name}
-                                  data={country}
-                                  onClick={() => handleCountryClick(country)}
-                                />
-                              </Box>
-                            ))}
-                          </Box>
+                          {isExpanded && (
+                            <Box
+                              sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                  xs: '1fr',
+                                  sm: '1fr 1fr',
+                                  md: 'repeat(3, 1fr)',
+                                  lg: 'repeat(4, 1fr)',
+                                  xl: 'repeat(6, 1fr)',
+                                },
+                                gap: 2,
+                              }}
+                            >
+                              {continentCountries.map((country, index) => (
+                                <Box key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
+                                  <PlacesCard
+                                    type="country"
+                                    name={country.name}
+                                    data={country}
+                                    onClick={() => handleCountryClick(country)}
+                                  />
+                                </Box>
+                              ))}
+                            </Box>
+                          )}
                         </Box>
                       );
                     })
@@ -586,17 +626,9 @@ export default function Places() {
                   </Box>
                 </Box>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  {continents.map((continent) => {
-                    const continentCountries = countries.filter(
-                      (country) => country.continent_id === continent.id,
-                    );
-
-                    const continentCities = filteredCities.filter((city) => {
-                      return continentCountries.some((country) => country.id === city.country_id);
-                    });
-
-                    if (continentCities.length === 0) return null;
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {citiesByContinent.map(({ continent, totalCities, countries: groupedCountries }) => {
+                    const isExpanded = expandedCityContinents[continent.id as string];
 
                     return (
                       <Box
@@ -604,54 +636,94 @@ export default function Places() {
                         sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
                       >
                         <Box
+                          onClick={() => toggleCityContinent(continent.id as string)}
                           sx={{
                             display: 'flex',
                             alignItems: 'center',
+                            justifyContent: 'space-between',
                             gap: 2,
                             p: 2,
-                            borderRadius: 2,
                             bgcolor: 'action.hover',
+                            cursor: 'pointer',
+                            '&:hover': { opacity: 0.85 },
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.selected' }}>
+                            <Box sx={{ p: 1, bgcolor: 'action.selected' }}>
                               <Building2 style={ICON_MD} />
                             </Box>
                             <Box>
                               <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
-                                {continent.name}
+                                {continent.name as string}
                               </Typography>
                               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                {continentCities.length} cities to discover
+                                {totalCities} cities in {groupedCountries.length} countries
                               </Typography>
                             </Box>
                           </Box>
+                          {isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
                         </Box>
 
-                        <Box
-                          sx={{
-                            display: 'grid',
-                            gridTemplateColumns: {
-                              xs: '1fr',
-                              sm: '1fr 1fr',
-                              md: 'repeat(3, 1fr)',
-                              lg: 'repeat(4, 1fr)',
-                              xl: 'repeat(6, 1fr)',
-                            },
-                            gap: 2,
-                          }}
-                        >
-                          {continentCities.map((city, index) => (
-                            <Box key={city.id} style={{ animationDelay: `${index * 50}ms` }}>
-                              <PlacesCard
-                                type="city"
-                                name={city.name}
-                                data={city}
-                                onClick={() => handleCityClick(city)}
-                              />
-                            </Box>
-                          ))}
-                        </Box>
+                        {isExpanded && (
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, pl: { xs: 0, sm: 2 } }}>
+                            {groupedCountries.map((country) => {
+                              const isCountryExpanded = expandedCityCountries[country.id as string];
+                              const visibleCities = isCountryExpanded
+                                ? country.cities
+                                : country.cities.slice(0, COLLAPSED_COUNT);
+                              const hasMore = country.cities.length > COLLAPSED_COUNT;
+
+                              return (
+                                <Box key={country.id} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <MapPin style={ICON_SM} />
+                                    <Typography sx={{ fontWeight: 600 }}>
+                                      {country.name as string}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                      {country.cities.length} cities
+                                    </Typography>
+                                  </Box>
+
+                                  <Box
+                                    sx={{
+                                      display: 'grid',
+                                      gridTemplateColumns: {
+                                        xs: '1fr',
+                                        sm: '1fr 1fr',
+                                        md: 'repeat(3, 1fr)',
+                                        lg: 'repeat(4, 1fr)',
+                                        xl: 'repeat(6, 1fr)',
+                                      },
+                                      gap: 2,
+                                    }}
+                                  >
+                                    {visibleCities.map((city, index) => (
+                                      <Box key={city.id} style={{ animationDelay: `${index * 50}ms` }}>
+                                        <PlacesCard
+                                          type="city"
+                                          name={city.name}
+                                          data={city}
+                                          onClick={() => handleCityClick(city)}
+                                        />
+                                      </Box>
+                                    ))}
+                                  </Box>
+
+                                  {hasMore && !isCountryExpanded && (
+                                    <Button
+                                      variant="ghost"
+                                      onClick={() => toggleCityCountry(country.id as string)}
+                                      style={{ alignSelf: 'center' }}
+                                    >
+                                      Show all {country.cities.length} cities
+                                    </Button>
+                                  )}
+                                </Box>
+                              );
+                            })}
+                          </Box>
+                        )}
                       </Box>
                     );
                   })}
@@ -696,21 +768,125 @@ export default function Places() {
                     ))}
                   </Box>
                 ) : villages.length > 0 ? (
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '1fr',
-                        sm: 'repeat(2, 1fr)',
-                        md: 'repeat(3, 1fr)',
-                        lg: 'repeat(4, 1fr)',
-                      },
-                      gap: 2,
-                    }}
-                  >
-                    {villages.map((village) => (
-                      <VillageCard key={village.id} village={village} />
-                    ))}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {continents.map((continent) => {
+                      const continentVillages = villages.filter(
+                        (v) => v.countries?.continent_id === continent.id,
+                      );
+                      if (continentVillages.length === 0) return null;
+
+                      const villageKey = `villages-${continent.id}`;
+                      const isExpanded = expandedContinents[villageKey];
+
+                      // Group by country within continent
+                      const byCountry: Record<string, { name: string; villages: typeof continentVillages }> = {};
+                      for (const v of continentVillages) {
+                        const cid = v.country_id || 'unknown';
+                        const cname = v.countries?.name || 'Unknown';
+                        if (!byCountry[cid]) byCountry[cid] = { name: cname, villages: [] };
+                        byCountry[cid].villages.push(v);
+                      }
+
+                      const hasMore = continentVillages.length > COLLAPSED_COUNT;
+
+                      return (
+                        <Box
+                          key={continent.id}
+                          sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+                        >
+                          <Box
+                            onClick={() => toggleContinent(villageKey)}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 2,
+                              p: 2,
+                              borderRadius: 2,
+                              bgcolor: 'action.hover',
+                              cursor: 'pointer',
+                              '&:hover': { opacity: 0.85 },
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.selected' }}>
+                                <Globe style={ICON_MD} />
+                              </Box>
+                              <Box>
+                                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
+                                  {continent.name as string}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                  {continentVillages.length} neighborhood{continentVillages.length !== 1 ? 's' : ''}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            {hasMore && (
+                              isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />
+                            )}
+                          </Box>
+
+                          {Object.entries(byCountry).map(([countryId, { name: countryName, villages: countryVillages }]) => (
+                              <Box key={countryId} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', pl: 0.5 }}>
+                                  {countryName}
+                                </Typography>
+                                <Box
+                                  sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: {
+                                      xs: '1fr',
+                                      sm: 'repeat(2, 1fr)',
+                                      md: 'repeat(3, 1fr)',
+                                      lg: 'repeat(4, 1fr)',
+                                    },
+                                    gap: 2,
+                                  }}
+                                >
+                                  {countryVillages.map((village) => (
+                                    <VillageCard key={village.id} village={village} />
+                                  ))}
+                                </Box>
+                              </Box>
+                          ))}
+
+                          {hasMore && !isExpanded && (
+                            <Button
+                              variant="ghost"
+                              onClick={() => toggleContinent(villageKey)}
+                              style={{ alignSelf: 'center' }}
+                            >
+                              Show all {continentVillages.length} neighborhoods
+                            </Button>
+                          )}
+                        </Box>
+                      );
+                    })}
+
+                    {/* Villages without a continent */}
+                    {villages.some((v) => !v.countries?.continent_id) && (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Other</Typography>
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                              xs: '1fr',
+                              sm: 'repeat(2, 1fr)',
+                              md: 'repeat(3, 1fr)',
+                              lg: 'repeat(4, 1fr)',
+                            },
+                            gap: 2,
+                          }}
+                        >
+                          {villages
+                            .filter((v) => !v.countries?.continent_id)
+                            .map((village) => (
+                              <VillageCard key={village.id} village={village} />
+                            ))}
+                        </Box>
+                      </Box>
+                    )}
                   </Box>
                 ) : (
                   <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -747,7 +923,7 @@ export default function Places() {
                           gap: 1,
                         }}
                       >
-                        <Map style={MAP_ICON_STYLE} />
+                        <MapIcon style={MAP_ICON_STYLE} />
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                           Loading map...
                         </Typography>
