@@ -65,15 +65,19 @@ export function useMapBoundaryLayers({
   const label = labelId(key);
 
   const removeLayers = useCallback((m: maplibregl.Map) => {
-    if (m.getLayer(label)) m.removeLayer(label);
-    if (m.getLayer(stroke)) m.removeLayer(stroke);
-    if (m.getLayer(fill)) m.removeLayer(fill);
-    if (m.getSource(src)) m.removeSource(src);
+    try {
+      if (m.getLayer(label)) m.removeLayer(label);
+      if (m.getLayer(stroke)) m.removeLayer(stroke);
+      if (m.getLayer(fill)) m.removeLayer(fill);
+      if (m.getSource(src)) m.removeSource(src);
+    } catch { /* map may be destroyed */ }
     addedRef.current = false;
   }, [src, fill, stroke, label]);
 
   useEffect(() => {
     if (!map || !mapReady) return;
+    // Guard against destroyed map (e.g. ErrorBoundary remount)
+    try { map.getContainer(); } catch { return; }
 
     // Remove if disabled or no data
     if (!boundaries || !enabled) {

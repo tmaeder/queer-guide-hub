@@ -332,13 +332,15 @@ export function useViewportPoints({
     [doFetch],
   );
 
-  // Refetch when layers or filters change
+  // Refetch when layers or filters change (stabilized to avoid infinite loops)
+  const layersKey = enabledLayers.slice().sort().join(',');
+  const filtersKey = computeFiltersHash(filters ?? {});
   useEffect(() => {
     if (lastRawBboxRef.current) {
       doFetch(lastRawBboxRef.current, lastZoomRef.current);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabledLayers, filters]);
+  }, [layersKey, filtersKey]);
 
   // Cleanup debounce timer
   useEffect(() => {
