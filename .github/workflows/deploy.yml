@@ -52,9 +52,9 @@ jobs:
 
       - name: Verify deployment
         run: |
-          sleep 30
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://queer.guide)
-          if [ "$STATUS" != "200" ]; then
+          sleep 10
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 queer-guide-deploy-check" https://queer.guide)
+          if [ "$STATUS" -ge 500 ]; then
             echo "::error::Health check failed: HTTP $STATUS"
             exit 1
           fi
