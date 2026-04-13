@@ -44,6 +44,8 @@ const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
 // CMS-managed pages (content from cms_pages table)
 const CMSRoutePage = lazyRetry(() => import('./pages/CMSRoutePage'));
+const About = lazyRetry(() => import('./pages/About'));
+const Contact = lazyRetry(() => import('./pages/Contact'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
 
@@ -382,8 +384,8 @@ const AppRoutes = () => {
 
               {/* CMS-managed pages (content from cms_pages table) */}
               <Route path="/about-hub" element={<CMSRoutePage slug="about-hub" />} />
-              <Route path="/about" element={<CMSRoutePage slug="about" />} />
-              <Route path="/contact" element={<CMSRoutePage slug="contact" />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/vision" element={<CMSRoutePage slug="vision" />} />
               <Route path="/values" element={<CMSRoutePage slug="values" />} />
               <Route path="/press" element={<CMSRoutePage slug="press" />} />

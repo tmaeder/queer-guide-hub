@@ -39,13 +39,13 @@ export const useGroups = () => {
       if (!user?.id) return [];
 
       // Get all public groups and private groups the user is a member of
+      // RLS handles visibility: public groups for everyone, private only for members
       const { data, error } = await supabase
         .from('community_groups')
         .select(`
           *,
           group_memberships!left(role, user_id)
         `)
-        .or(`is_private.eq.false,and(is_private.eq.true,group_memberships.user_id.eq.${user.id})`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
