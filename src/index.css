@@ -100,6 +100,24 @@
     U+A720-A7FF;
 }
 
+/* Therilo — Bold (700) */
+@font-face {
+  font-family: 'Therilo';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/therilo/therilo-bold.woff2') format('woff2');
+}
+
+/* Therilo — ExtraBold (800) */
+@font-face {
+  font-family: 'Therilo';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/therilo/therilo-extrabold.woff2') format('woff2');
+}
+
 /* ── CSS Variables — Strict Monochrome + Accent ───────────────────── */
 
 :root {
