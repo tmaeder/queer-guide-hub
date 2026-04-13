@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import { useSimilarTags } from '@/hooks/useTagRelationships';
-import { ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface RelatedTagsCardProps {
   tagId: string;
@@ -15,10 +15,12 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
   if (isLoading) {
     return (
       <Box>
-        <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', mb: 1.5 }}>Related</Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} variant="rounded" width={80 + i * 10} height={30} sx={{ borderRadius: 2 }} />
+        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 2 }}>
+          Related
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} variant="rounded" width={70 + i * 12} height={32} sx={{ borderRadius: 4 }} />
           ))}
         </Box>
       </Box>
@@ -29,48 +31,30 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
 
   return (
     <Box>
-      <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', mb: 1.5 }}>Related</Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 2 }}>
+        Related
+      </Typography>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         {similarTags.map((tag) => (
-          <Box
+          <Badge
             key={tag.tag_id}
-            component="button"
-            onClick={() => onTagClick({ name: tag.name, id: tag.tag_id })}
+            variant="outline"
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              px: 1.25,
-              py: 0.75,
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 2,
-              background: 'none',
               cursor: 'pointer',
-              textAlign: 'left',
-              width: '100%',
-              bgcolor: 'background.paper',
-              transition: 'all 0.15s cubic-bezier(0.22, 1, 0.36, 1)',
+              fontSize: '0.8rem',
+              px: 1.5,
+              py: 0.5,
+              transition: 'all 0.2s',
               '&:hover': {
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
                 borderColor: 'primary.main',
-                bgcolor: 'action.hover',
               },
             }}
+            onClick={() => onTagClick({ name: tag.name, id: tag.tag_id })}
           >
-            <Typography
-              sx={{
-                flex: 1,
-                fontWeight: 500,
-                fontSize: '0.8rem',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {tag.name}
-            </Typography>
-            <ArrowRight style={{ width: 14, height: 14, opacity: 0.25, flexShrink: 0 }} />
-          </Box>
+            {tag.name}
+          </Badge>
         ))}
       </Box>
     </Box>
