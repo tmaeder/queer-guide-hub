@@ -291,7 +291,7 @@ export const UniversalSearchBar = () => {
   }, [isOpen]);
 
   return (
-    <Box sx={isMobile ? { width: '100%' } : { flex: 1, maxWidth: '42rem', ml: 2, mr: 2 }}>
+    <Box sx={{ flex: 1, minWidth: 0 }}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Box sx={{ position: 'relative' }}>
