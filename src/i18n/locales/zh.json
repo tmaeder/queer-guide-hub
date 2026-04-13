@@ -399,6 +399,15 @@
       "ctaPrimary": "开始规划",
       "ctaSecondary": "登录",
       "footer": "通过 queer.guide 分享"
+    },
+    "tabs": {
+      "itinerary": "行程",
+      "map": "地图",
+      "safety": "安全",
+      "budget": "预算",
+      "reservations": "预订",
+      "packing": "行李",
+      "collaborate": "协作"
     }
   },
   "auth": {

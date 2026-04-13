@@ -413,6 +413,15 @@
       "ctaPrimary": "Começar a planear",
       "ctaSecondary": "Iniciar sessão",
       "footer": "Partilhado via queer.guide"
+    },
+    "tabs": {
+      "itinerary": "Itinerário",
+      "map": "Mapa",
+      "safety": "Segurança",
+      "budget": "Orçamento",
+      "reservations": "Reservas",
+      "packing": "Mala",
+      "collaborate": "Colaborar"
     }
   },
   "auth": {

@@ -692,6 +692,15 @@
       "ctaPrimary": "Start planning",
       "ctaSecondary": "Sign in",
       "footer": "Shared via queer.guide"
+    },
+    "tabs": {
+      "itinerary": "Itinerary",
+      "map": "Map",
+      "safety": "Safety",
+      "budget": "Budget",
+      "reservations": "Reservations",
+      "packing": "Packing",
+      "collaborate": "Collaborate"
     }
   },
   "help": {

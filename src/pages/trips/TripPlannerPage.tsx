@@ -149,7 +149,7 @@ export default function TripPlannerPage() {
             }}
           >
             <Share2 style={{ width: 16, height: 16, marginRight: 6 }} />
-            {t('trips.share')}
+            {t('trips.share.title')}
           </Button>
         }
       >

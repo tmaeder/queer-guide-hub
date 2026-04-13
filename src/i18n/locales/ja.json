@@ -399,6 +399,15 @@
       "ctaPrimary": "プランニングを始める",
       "ctaSecondary": "サインイン",
       "footer": "queer.guide で共有"
+    },
+    "tabs": {
+      "itinerary": "旅程",
+      "map": "地図",
+      "safety": "安全",
+      "budget": "予算",
+      "reservations": "予約",
+      "packing": "荷造り",
+      "collaborate": "コラボ"
     }
   },
   "auth": {

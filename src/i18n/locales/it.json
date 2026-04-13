@@ -413,6 +413,15 @@
       "ctaPrimary": "Inizia a pianificare",
       "ctaSecondary": "Accedi",
       "footer": "Condiviso via queer.guide"
+    },
+    "tabs": {
+      "itinerary": "Itinerario",
+      "map": "Mappa",
+      "safety": "Sicurezza",
+      "budget": "Budget",
+      "reservations": "Prenotazioni",
+      "packing": "Valigia",
+      "collaborate": "Collabora"
     }
   },
   "auth": {

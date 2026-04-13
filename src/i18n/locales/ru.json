@@ -441,6 +441,15 @@
       "ctaPrimary": "Начать планирование",
       "ctaSecondary": "Войти",
       "footer": "Поделились через queer.guide"
+    },
+    "tabs": {
+      "itinerary": "Маршрут",
+      "map": "Карта",
+      "safety": "Безопасность",
+      "budget": "Бюджет",
+      "reservations": "Бронирования",
+      "packing": "Сборы",
+      "collaborate": "Совместная работа"
     }
   },
   "auth": {
