@@ -54,7 +54,18 @@ export function useSimilarTags(tagId: string | null, limit: number = 10) {
         return [];
       }
 
-      return (data as unknown as SimilarTag[]) || [];
+      // DB returns tag_name/tag_slug — normalize to name/slug
+      const raw = (data as unknown as Record<string, unknown>[]) || [];
+      return raw.map((r) => ({
+        tag_id: r.tag_id as string,
+        name: (r.tag_name ?? r.name ?? '') as string,
+        slug: (r.tag_slug ?? r.slug ?? '') as string,
+        category: (r.category_name ?? r.category ?? null) as string | null,
+        image_url: (r.image_url ?? null) as string | null,
+        usage_count: (r.usage_count ?? 0) as number,
+        similarity_score: (r.similarity_score ?? 0) as number,
+        relationship_type: (r.relationship_type ?? '') as string,
+      }));
     },
     enabled: !!tagId,
     staleTime: 15 * 60 * 1000,
