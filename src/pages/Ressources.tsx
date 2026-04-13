@@ -103,13 +103,13 @@ export default function Ressources() {
   }, []);
 
   // Profession filter from URL
+  const professionParam = searchParams.get('profession');
   useEffect(() => {
-    const profession = searchParams.get('profession');
-    if (profession) {
+    if (professionParam) {
       setViewMode('search');
-      setSearchQuery(profession);
+      setSearchQuery(professionParam);
     }
-  }, [searchParams]);
+  }, [professionParam]);
 
   // Load individual tag from route param
   useEffect(() => {
