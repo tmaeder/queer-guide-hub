@@ -419,14 +419,14 @@ export default function VenueDetail() {
               <ListItemIcon><Share2 style={{ width: 16, height: 16 }} /></ListItemIcon>
               <ListItemText>Share</ListItemText>
             </MuiMenuItem>
-            <AdminEditButton
-              contentType="venues"
-              contentId={venue.id}
-              contentName={venue.name}
-              currentData={venue as Record<string, unknown>}
-              onSaved={() => window.location.reload()}
-            />
           </Menu>
+          <AdminEditButton
+            contentType="venues"
+            contentId={venue.id}
+            contentName={venue.name}
+            currentData={venue as Record<string, unknown>}
+            onSaved={() => window.location.reload()}
+          />
         </Box>
       </Box>
 
