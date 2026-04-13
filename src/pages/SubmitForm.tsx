@@ -4,7 +4,7 @@
  */
 
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { useSubmission } from '@/hooks/useSubmission';
 import { useAuth } from '@/hooks/useAuth';
 import { useFlyerScan } from '@/hooks/useFlyerScan';
+import { supabase } from '@/integrations/supabase/client';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { FlyerScanUpload } from '@/components/submission/FlyerScanUpload';
 import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
@@ -113,6 +114,45 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       window.history.replaceState({}, '');
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-detect city from title — when title contains a known city name, pre-fill city field
+  const titleField = config.titleField; // 'title' for events, 'name' for venues
+  const titleValue = String(data[titleField] ?? '');
+  const cityDetectRef = useRef('');
+  useEffect(() => {
+    if (!titleValue || titleValue.length < 3) return;
+    if (data.city) return; // don't override existing city
+    if (cityDetectRef.current === titleValue) return; // already checked this value
+
+    const timer = setTimeout(async () => {
+      cityDetectRef.current = titleValue;
+      const { data: rows } = await supabase.rpc('extract_city_from_text', {
+        input_text: titleValue,
+      });
+      const match = Array.isArray(rows) ? rows[0] : rows;
+      if (!match?.id || data.city) return; // re-check city in case user filled it during delay
+
+      // Resolve country name for the country field
+      let countryName = '';
+      if (match.country_id) {
+        const { data: country } = await supabase
+          .from('countries')
+          .select('name')
+          .eq('id', match.country_id)
+          .single();
+        if (country) countryName = country.name;
+      }
+
+      setFields({
+        city: match.name,
+        city_id: match.id,
+        ...(match.country_id ? { country_id: match.country_id } : {}),
+        ...(countryName ? { country: countryName } : {}),
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [titleValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentStepConfig = config.steps[currentStep];
   const isLastStep = currentStep === totalSteps - 1;
@@ -300,6 +340,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       <Card>
         <CardContent sx={{ p: 3 }}>
           <form
+            noValidate
             onSubmit={(e) => {
               e.preventDefault();
               if (isLastStep) submit();

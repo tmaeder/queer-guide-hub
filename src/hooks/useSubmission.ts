@@ -52,11 +52,17 @@ export function useSubmission(config: SubmissionTypeConfig) {
 
       for (const fieldName of step.fields) {
         const fieldConfig = contentConfig?.fields.find((f) => f.name === fieldName);
-        if (!fieldConfig?.required) continue;
+        if (!fieldConfig) continue;
 
         const value = data[fieldName];
-        if (value === undefined || value === null || (typeof value === 'string' && !value.trim())) {
+        if (fieldConfig.required && (value === undefined || value === null || (typeof value === 'string' && !value.trim()))) {
           newErrors[fieldName] = `${fieldConfig.label} is required`;
+        }
+
+        if (fieldConfig.type === 'url' && typeof value === 'string' && value.trim()) {
+          try { new URL(value); } catch {
+            newErrors[fieldName] = `${fieldConfig.label} must be a valid URL`;
+          }
         }
       }
 

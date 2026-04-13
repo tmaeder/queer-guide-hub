@@ -21,6 +21,12 @@ export function TextField({ field, value, onChange, error, disabled }: FieldProp
 
   const inputType = inputTypeMap[field.type] || 'text';
 
+  const handleBlur = () => {
+    if (field.type === 'url' && stringValue && !/^https?:\/\//i.test(stringValue)) {
+      onChange(`https://${stringValue}`);
+    }
+  };
+
   return (
     <FieldWrapper field={field} error={error}>
       <div className="relative">
@@ -29,6 +35,7 @@ export function TextField({ field, value, onChange, error, disabled }: FieldProp
           type={inputType}
           value={stringValue}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+          onBlur={handleBlur}
           placeholder={field.placeholder}
           disabled={disabled}
           maxLength={field.maxLength}
