@@ -47,9 +47,9 @@ const baseThemeOptions: ThemeOptions = {
   },
   typography: {
     fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-    h1: { fontFamily: "'Therilo', 'Inter', sans-serif", fontWeight: 800, letterSpacing: '0.02em', lineHeight: 0.95 },
-    h2: { fontFamily: "'Therilo', 'Inter', sans-serif", fontWeight: 800, letterSpacing: '0.01em', lineHeight: 1.05 },
-    h3: { fontFamily: "'Therilo', 'Inter', sans-serif", fontWeight: 700, letterSpacing: '0.01em', lineHeight: 1.1 },
+    h1: { fontFamily: "'Inter', sans-serif", fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 0.85 },
+    h2: { fontFamily: "'Inter', sans-serif", fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.0 },
+    h3: { fontFamily: "'Inter', sans-serif", fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1 },
     h4: { fontFamily: "'Inter', sans-serif", fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.15 },
     h5: { fontFamily: "'Inter', sans-serif", fontWeight: 700, letterSpacing: '-0.015em' },
     h6: { fontFamily: "'Inter', sans-serif", fontWeight: 600, letterSpacing: '-0.01em' },

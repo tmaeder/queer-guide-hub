@@ -123,7 +123,7 @@ const Index = React.memo(() => {
             sx={{
               fontSize: { xs: '3rem', sm: '4.5rem', md: '6rem' },
               fontWeight: 800,
-              letterSpacing: '0.02em',
+              letterSpacing: '-0.04em',
               lineHeight: 1.05,
               mb: { xs: 3, md: 4 },
               color: 'text.primary',
