@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { buildAviasalesUrl, getAffiliateUrl } from '@/utils/aviasalesUrl';
 import { trackTravelEvent } from '@/utils/travelAnalytics';
 import type { TravelDeal } from '@/hooks/useTravelDeals';
-import { useAirlineData } from '@/hooks/useAirlineData';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
