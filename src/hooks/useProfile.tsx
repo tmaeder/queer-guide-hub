@@ -40,11 +40,18 @@ export const useProfile = () => {
       return { error: "No user found" };
     }
 
+    // Coerce empty strings to null so CHECK-constrained enum columns
+    // (disability_status, bdsm_role, etc.) don't reject the whole update.
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(updates)) {
+      sanitized[key] = value === "" ? null : value;
+    }
+
     try {
       const { data, error } = await supabase
         .from("profiles")
         .update({
-          ...updates,
+          ...sanitized,
           updated_at: new Date().toISOString()
         })
         .eq("user_id", user.id)
