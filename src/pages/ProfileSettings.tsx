@@ -30,6 +30,7 @@ import {
   Users,
   Lock,
   CalendarIcon,
+  Plane,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -41,6 +42,7 @@ import OptimizedErrorBoundary, {
 } from '@/components/error/OptimizedErrorBoundary';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
 import { SocialLinksManager } from '@/components/profile/SocialLinksManager';
+import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -402,7 +404,7 @@ function ProfileSettingsContent({
       <Paper elevation={0} sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 3 }}>
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
           <TabsList
-            style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}
+            style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(5, 1fr)' }}
           >
             <TabsTrigger value="basic">
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -414,6 +416,12 @@ function ProfileSettingsContent({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Heart style={{ width: 16, height: 16 }} />
                 Identity
+              </Box>
+            </TabsTrigger>
+            <TabsTrigger value="travel">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Plane style={{ width: 16, height: 16 }} />
+                Travel
               </Box>
             </TabsTrigger>
             <TabsTrigger value="relationships">
@@ -761,6 +769,11 @@ function ProfileSettingsContent({
                 </CardContent>
               </Card>
             </Box>
+          </TabsContent>
+
+          {/* Travel Preferences Tab */}
+          <TabsContent value="travel">
+            <TravelPreferencesEditor />
           </TabsContent>
 
           {/* Relationships Tab */}

@@ -39,7 +39,9 @@ import {
   Building,
   Luggage,
   LifeBuoy,
+  Receipt,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { AuthDialog } from '@/components/auth/AuthDialog';
@@ -55,6 +57,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import Box from '@mui/material/Box';
 
 import Typography from '@mui/material/Typography';
@@ -68,61 +72,62 @@ import { useTheme } from '@mui/material/styles';
 
 const navigationSections = [
   {
-    title: 'Discover',
+    titleKey: 'header.nav.discover',
     items: [
-      { to: '/venues', icon: MapPin, label: 'Venues', cat: 'venues' },
-      { to: '/events', icon: Calendar, label: 'Events', cat: 'events' },
-      { to: '/places', icon: Globe, label: 'Places', cat: 'places' },
-      { to: '/map', icon: Map, label: 'Map', cat: 'places' },
+      { to: '/venues', icon: MapPin, labelKey: 'header.nav.venues', cat: 'venues' },
+      { to: '/events', icon: Calendar, labelKey: 'header.nav.events', cat: 'events' },
+      { to: '/places', icon: Globe, labelKey: 'header.nav.places', cat: 'places' },
+      { to: '/map', icon: Map, labelKey: 'header.nav.map', cat: 'places' },
     ],
   },
   {
-    title: 'Connect',
+    titleKey: 'header.nav.connect',
     items: [
-      { to: '/feed', icon: Rss, label: 'Feed', cat: 'community' },
-      { to: '/groups', icon: UsersRound, label: 'Groups', cat: 'community' },
-      { to: '/users', icon: UserCheck, label: 'Members', cat: 'community' },
+      { to: '/feed', icon: Rss, labelKey: 'header.nav.feed', cat: 'community' },
+      { to: '/groups', icon: UsersRound, labelKey: 'header.nav.groups', cat: 'community' },
+      { to: '/users', icon: UserCheck, labelKey: 'header.nav.members', cat: 'community' },
     ],
   },
   {
-    title: 'More',
+    titleKey: 'header.nav.more',
     items: [
-      { to: '/marketplace', icon: Store, label: 'Marketplace', cat: 'marketplace' },
-      { to: '/resources', icon: Tags, label: 'Resources', cat: 'news' },
-      { to: '/news', icon: Newspaper, label: 'News', cat: 'news' },
-      { to: '/travel', icon: Plane, label: 'Travel', cat: 'travel' },
-      { to: '/personalities', icon: Users, label: 'Personalities', cat: 'community' },
-      { to: '/hotels', icon: Building, label: 'Hotels', cat: 'hotels' },
-      { to: '/help', icon: LifeBuoy, label: 'Help', cat: 'community' },
+      { to: '/marketplace', icon: Store, labelKey: 'header.nav.marketplace', cat: 'marketplace' },
+      { to: '/resources', icon: Tags, labelKey: 'header.nav.resources', cat: 'news' },
+      { to: '/news', icon: Newspaper, labelKey: 'header.nav.news', cat: 'news' },
+      { to: '/travel', icon: Plane, labelKey: 'header.nav.travel', cat: 'travel' },
+      { to: '/personalities', icon: Users, labelKey: 'header.nav.personalities', cat: 'community' },
+      { to: '/hotels', icon: Building, labelKey: 'header.nav.hotels', cat: 'hotels' },
+      { to: '/help', icon: LifeBuoy, labelKey: 'header.nav.help', cat: 'community' },
     ],
   },
 ];
 
 const userMenuItems = [
-  { to: '/trips', icon: Luggage, label: 'My Trips' },
-  { to: '/favorites', icon: Heart, label: 'Favorites' },
-  { to: '/profile/settings', icon: Settings, label: 'Settings' },
-  { to: '/inbox', icon: Mail, label: 'Inbox' },
-  { to: '/friends', icon: Users, label: 'Friends' },
-  { to: '/my-groups', icon: UsersRound, label: 'My Groups' },
-  { to: '/accessibility', icon: Accessibility, label: 'Accessibility' },
+  { to: '/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
+  { to: '/bookings', icon: Receipt, labelKey: 'header.userMenu.bookings' },
+  { to: '/favorites', icon: Heart, labelKey: 'header.userMenu.favorites' },
+  { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
+  { to: '/inbox', icon: Mail, labelKey: 'header.userMenu.inbox' },
+  { to: '/friends', icon: Users, labelKey: 'header.userMenu.friends' },
+  { to: '/my-groups', icon: UsersRound, labelKey: 'header.userMenu.myGroups' },
+  { to: '/accessibility', icon: Accessibility, labelKey: 'header.userMenu.accessibility' },
 ];
 
 const userModes = [
-  { value: 'dating', icon: Heart, label: 'Looking for Love' },
-  { value: 'friends', icon: Users, label: 'Making Friends' },
-  { value: 'exploration', icon: Map, label: 'Exploring the Scene' },
-  { value: 'fun', icon: Smile, label: 'Just Here for Fun' },
-  { value: 'networking', icon: Handshake, label: 'Professional Networking' },
-  { value: 'community', icon: Home, label: 'Building Community' },
+  { value: 'dating', icon: Heart, labelKey: 'header.modes.dating' },
+  { value: 'friends', icon: Users, labelKey: 'header.modes.friends' },
+  { value: 'exploration', icon: Map, labelKey: 'header.modes.exploration' },
+  { value: 'fun', icon: Smile, labelKey: 'header.modes.fun' },
+  { value: 'networking', icon: Handshake, labelKey: 'header.modes.networking' },
+  { value: 'community', icon: Home, labelKey: 'header.modes.community' },
 ];
 
 const legalItems = [
-  { to: '/about', icon: Info, label: 'About' },
-  { to: '/help', icon: LifeBuoy, label: 'Help' },
-  { to: '/accessibility', icon: Accessibility, label: 'Accessibility' },
-  { to: '/legal', icon: Scale, label: 'Legal' },
-  { to: '/contact', icon: Mail, label: 'Contact' },
+  { to: '/about', icon: Info, labelKey: 'header.legal.about' },
+  { to: '/help', icon: LifeBuoy, labelKey: 'header.legal.help' },
+  { to: '/accessibility', icon: Accessibility, labelKey: 'header.legal.accessibility' },
+  { to: '/legal', icon: Scale, labelKey: 'header.legal.legal' },
+  { to: '/contact', icon: Mail, labelKey: 'header.legal.contact' },
 ];
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -134,6 +139,7 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
 
   const theme = useTheme();
   const { user, signOut } = useAuth();
@@ -147,15 +153,15 @@ export function Header() {
 
   const getSubmitCta = useCallback(() => {
     if (location.pathname.startsWith('/events'))
-      return { label: 'Submit Event', route: '/submit/event' };
+      return { label: t('header.submitEvent', 'Submit Event'), route: '/submit/event' };
     if (location.pathname.startsWith('/venues'))
-      return { label: 'Submit Venue', route: '/submit/venue' };
+      return { label: t('header.submitVenue', 'Submit Venue'), route: '/submit/venue' };
     if (location.pathname.startsWith('/marketplace'))
-      return { label: 'Submit Product', route: '/submit/product' };
+      return { label: t('header.submitProduct', 'Submit Product'), route: '/submit/product' };
     if (location.pathname.startsWith('/hotels'))
-      return { label: 'Submit Hotel', route: '/submit/hotel' };
-    return { label: 'Contribute', route: '/submit' };
-  }, [location.pathname]);
+      return { label: t('header.submitHotel', 'Submit Hotel'), route: '/submit/hotel' };
+    return { label: t('header.contribute', 'Contribute'), route: '/submit' };
+  }, [location.pathname, t]);
   const submitCta = getSubmitCta();
 
   const isActiveRoute = useCallback(
@@ -315,7 +321,7 @@ export function Header() {
                     <SelectItem key={mode.value} value={mode.value}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <mode.icon style={{ width: 16, height: 16 }} />
-                        <span>{mode.label}</span>
+                        <span>{t(mode.labelKey)}</span>
                       </Box>
                     </SelectItem>
                   ))}
@@ -340,7 +346,7 @@ export function Header() {
                 }}
               >
                 <User style={{ width: 16, height: 16, marginRight: 8 }} />
-                Sign In / Sign Up
+                {t('header.signInSignUp', 'Sign In / Sign Up')}
               </Button>
             </Box>
             <Box sx={{ my: 1 }} />
@@ -390,7 +396,7 @@ export function Header() {
                 >
                   <item.icon style={{ width: 18, height: 18, flexShrink: 0, color: active ? 'hsl(var(--brand))' : undefined }} />
                   <Typography variant="body2" sx={{ fontWeight: active ? 600 : 400 }}>
-                    {item.label}
+                    {t(item.labelKey)}
                   </Typography>
                 </ListItemButton>
               );
@@ -410,7 +416,7 @@ export function Header() {
                 sx={{ minHeight: 48, px: 2, gap: 1 }}
               >
                 <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
-                <Typography variant="body2">{item.label}</Typography>
+                <Typography variant="body2">{t(item.labelKey)}</Typography>
               </ListItemButton>
             ))}
 
@@ -421,7 +427,7 @@ export function Header() {
                 sx={{ minHeight: 48, px: 2, gap: 1 }}
               >
                 <Shield style={{ width: 18, height: 18, flexShrink: 0 }} />
-                <Typography variant="body2">Admin Console</Typography>
+                <Typography variant="body2">{t('header.adminConsole', 'Admin Console')}</Typography>
               </ListItemButton>
             )}
 
@@ -437,9 +443,15 @@ export function Header() {
             sx={{ minHeight: 44, px: 2, gap: 1 }}
           >
             <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
-            <Typography variant="body2">{item.label}</Typography>
+            <Typography variant="body2">{t(item.labelKey)}</Typography>
           </ListItemButton>
         ))}
+
+        {/* Language & currency switcher */}
+        <Box sx={{ px: 2, py: 1, display: 'flex', gap: 0.5 }}>
+          <LanguageSwitcher />
+          <CurrencySelector />
+        </Box>
 
         {/* Sign out */}
         {user && (
@@ -453,7 +465,7 @@ export function Header() {
               sx={{ minHeight: 48, px: 2, gap: 1, color: 'error.main' }}
             >
               <LogOut style={{ width: 18, height: 18, flexShrink: 0 }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Sign Out</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>{t('header.signOut', 'Sign Out')}</Typography>
             </ListItemButton>
           </>
         )}
@@ -665,7 +677,7 @@ export function Header() {
                             <SelectItem key={mode.value} value={mode.value}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <mode.icon style={{ width: 16, height: 16 }} />
-                                <span>{mode.label}</span>
+                                <span>{t(mode.labelKey)}</span>
                               </Box>
                             </SelectItem>
                           ))}
@@ -696,7 +708,7 @@ export function Header() {
                         onClick={() => navigate(item.to)}
                       >
                         <item.icon style={{ width: 16, height: 16 }} />
-                        <Typography variant="body2">{item.label}</Typography>
+                        <Typography variant="body2">{t(item.labelKey)}</Typography>
                       </Button>
                     ))}
 
@@ -709,7 +721,7 @@ export function Header() {
                       onClick={signOut}
                     >
                       <LogOut style={{ width: 16, height: 16, marginRight: 8 }} />
-                      Sign Out
+                      {t('header.signOut', 'Sign Out')}
                     </Button>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -718,6 +730,10 @@ export function Header() {
                   <User style={{ width: 16, height: 16 }} />
                 </Button>
               )}
+
+              {/* Language & currency switcher */}
+              <LanguageSwitcher />
+              <CurrencySelector />
 
               {/* Navigation dropdown (desktop) */}
               <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
@@ -755,7 +771,7 @@ export function Header() {
                           onClick={() => handleMenuItemClick(item.to)}
                         >
                           <item.icon style={{ width: 16, height: 16 }} />
-                          <Typography variant="body2">{item.label}</Typography>
+                          <Typography variant="body2">{t(item.labelKey)}</Typography>
                         </Button>
                       );
                     })

@@ -28,7 +28,7 @@ import { TripMap } from '@/components/trips/TripMap';
 import { TripSafetyBriefing } from '@/components/trips/TripSafetyBriefing';
 import { AddPlaceDialog } from '@/components/trips/AddPlaceDialog';
 import { ShareTripDialog } from '@/components/trips/ShareTripDialog';
-import { TripSuggestions } from '@/components/trips/TripSuggestions';
+import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
 import { TripCoverBand } from '@/components/trips/TripCoverBand';
 import { TripProgressRing } from '@/components/trips/TripProgressRing';
 import { Button } from '@/components/ui/button';
@@ -298,7 +298,7 @@ export default function TripPlannerPage() {
             />
           </Box>
           <Box sx={{ display: { xs: 'none', lg: 'block' }, width: 288, flexShrink: 0 }}>
-            <TripSuggestions
+            <TripBookingAssistant
               tripId={trip.id}
               places={trip.trip_places}
               days={trip.trip_days}

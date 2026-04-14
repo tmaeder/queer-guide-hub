@@ -46,7 +46,7 @@ import { PageLoading, InlineLoading } from '@/components/ui/loading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { DetailHero } from '@/components/layout/DetailHero';
 import { DetailTabs } from '@/components/layout/DetailTabs';
-import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
+import { CityTravelHub } from '@/components/travel/CityTravelHub';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { LocationInfo } from '@/components/location/LocationInfo';
@@ -59,6 +59,7 @@ import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '@/hooks/useAuth';
+import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { Luggage } from 'lucide-react';
 import Chip from '@mui/material/Chip';
@@ -76,6 +77,13 @@ export default function CityDetail() {
   const [imageUrl, setImageUrl] = useState<string>('');
   const [createTripOpen, setCreateTripOpen] = useState(false);
   const { user } = useAuth();
+  const { track } = useTrackEvent();
+
+  useEffect(() => {
+    if (city?.id) {
+      track({ eventType: 'page_view', entityType: 'city', entityId: city.id, metadata: { name: city.name } });
+    }
+  }, [city?.id]);
 
   const hasAirport = !!(city?.major_airport_code || (city?.airport_codes && city.airport_codes.length > 0));
   const { nearestAirport, loading: _nearestAirportLoading } = useNearestAirport({
@@ -1198,7 +1206,7 @@ export default function CityDetail() {
               value="travel"
               style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}
             >
-              <TravelDealsSection
+              <CityTravelHub
                 destinationIata={effectiveIata}
                 destinationCity={city.name}
                 destinationCountryCode={city.countries?.code}

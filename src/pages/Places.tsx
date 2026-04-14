@@ -23,6 +23,7 @@ import Container from '@mui/material/Container';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { ArrowLeft, Globe, MapPin, Building2, Map as MapIcon, Landmark, ChevronDown, ChevronUp } from 'lucide-react';
+import { PersonalizedFeed } from '@/components/personalization/PersonalizedFeed';
 
 // Lazy load the map component
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
@@ -334,6 +335,13 @@ export default function Places() {
           />
         </Box>
       </Container>
+
+      {/* Personalized Recommendations (overview only) */}
+      {viewMode === 'overview' && (
+        <Container sx={{ pb: 0 }}>
+          <PersonalizedFeed />
+        </Container>
+      )}
 
       {/* Main Content Area */}
       <Container sx={{ pb: 6 }}>

@@ -333,7 +333,7 @@
     "title": "Support queer.guide",
     "subtitle": "queer.guide is a free platform connecting the LGBTQ+ community with safe spaces, events, and resources worldwide. Your donation helps us keep it running and accessible to everyone.",
     "tipJar": "Quick amounts",
-    "customAmount": "Custom amount (USD)",
+    "customAmount": "Custom amount",
     "frequency": "Frequency",
     "one_time": "One-time",
     "month": "Monthly",
@@ -839,6 +839,7 @@
     },
     "userMenu": {
       "myTrips": "My Trips",
+      "bookings": "Bookings",
       "favorites": "Favorites",
       "settings": "Settings",
       "inbox": "Inbox",

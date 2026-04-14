@@ -19,6 +19,7 @@ installNetworkBuffer();
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
+import { LocaleRouter } from '@/components/routing/LocaleRouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
@@ -26,6 +27,7 @@ import { MotionPage } from '@/components/motion';
 import { PWAProvider } from '@/components/pwa/PWAProvider';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
+import { CurrencyProvider } from '@/hooks/useCurrency';
 import Box from '@mui/material/Box';
 const Aurora = lazy(() => import('@/components/ui/Aurora'));
 
@@ -183,6 +185,7 @@ const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const Favorites = lazyRetry(() => import('./pages/Favorites'));
 
 const TripsPage = lazyRetry(() => import('./pages/trips/TripsPage'));
+const BookingsPage = lazyRetry(() => import('./pages/BookingsPage'));
 const TripPlannerPage = lazyRetry(() => import('./pages/trips/TripPlannerPage'));
 const SharedTripPage = lazyRetry(() => import('./pages/trips/SharedTripPage'));
 const Donate = lazyRetry(() => import('./pages/Donate'));
@@ -346,56 +349,7 @@ const AppRoutes = () => {
           >
             <MotionPage>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/venues" element={<Venues />} />
-              <Route path="/venues/:slug" element={<VenueDetail />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/:slug" element={<EventDetail />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/marketplace/:slug" element={<MarketplaceItemDetail />} />
-
-              <Route path="/hotels" element={<Hotels />} />
-              <Route path="/hotels/:slug" element={<HotelDetail />} />
-              <Route path="/villages" element={<Navigate to="/places" replace />} />
-              <Route path="/villages/:slug" element={<QueerVillageDetail />} />
-              <Route path="/festivals" element={<Navigate to="/events" replace />} />
-              <Route path="/festivals/:id" element={<Navigate to="/events" replace />} />
-              <Route path="/places" element={<Places />} />
-              <Route path="/travel" element={<Travel />} />
-              <Route path="/trips" element={<TripsPage />} />
-              <Route path="/trips/:tripId" element={<TripPlannerPage />} />
-              <Route path="/trips/shared/:token" element={<SharedTripPage />} />
-              <Route path="/map" element={<MapPage />} />
-              <Route path="/flights" element={<Navigate to="/travel" replace />} />
-              <Route path="/city/:slug" element={<CityDetail />} />
-              <Route path="/country/:slug" element={<CountryDetail />} />
-              <Route path="/users" element={<UserDirectory />} />
-              <Route path="/personalities" element={<Personalities />} />
-              <Route path="/personalities/:slug" element={<PersonalityDetail />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/resources/:tagName" element={<Resources />} />
-              <Route path="/professions/:professionName" element={<ProfessionDetail />} />
-              <Route path="/ressources" element={<Navigate to="/resources" replace />} />
-              <Route path="/ressources/:tagName" element={<Navigate to="/resources" replace />} />
-              <Route path="/tags" element={<Navigate to="/resources" replace />} />
-              <Route path="/tags/:tagName" element={<Navigate to="/resources" replace />} />
-
-              <Route path="/donate" element={<Donate />} />
-
-              {/* CMS-managed pages (content from cms_pages table) */}
-              <Route path="/about-hub" element={<CMSRoutePage slug="about-hub" />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/vision" element={<CMSRoutePage slug="vision" />} />
-              <Route path="/values" element={<CMSRoutePage slug="values" />} />
-              <Route path="/press" element={<CMSRoutePage slug="press" />} />
-              <Route path="/blog" element={<CMSRoutePage slug="blog" />} />
-              <Route path="/sustainability" element={<CMSRoutePage slug="sustainability" />} />
-              <Route path="/legal" element={<CMSRoutePage slug="legal" />} />
-              <Route path="/terms" element={<CMSRoutePage slug="terms" />} />
-              <Route path="/privacy" element={<CMSRoutePage slug="privacy" />} />
-              <Route path="/cookies" element={<CMSRoutePage slug="cookies" />} />
-              <Route path="/dmca" element={<CMSRoutePage slug="dmca" />} />
+              {/* Auth routes — no locale prefix */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
               {/* ── Unified Admin Console ── */}
@@ -520,32 +474,81 @@ const AppRoutes = () => {
                   element={<Navigate to="/admin/settings/target-groups" replace />}
                 />
               </Route>
-              <Route path="/news" element={<News />} />
-              <Route path="/news/:slug" element={<NewsDetail />} />
-              <Route path="/search" element={<SearchResults />} />
 
-              <Route path="/groups" element={<Groups />} />
-              <Route path="/groups/:groupId" element={<GroupDetail />} />
-              <Route path="/my-groups" element={<MyGroups />} />
-              <Route path="/accessibility" element={<CMSRoutePage slug="accessibility" />} />
-              <Route path="/inbox" element={<Inbox />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/friends" element={<Friends />} />
+              {/* ── Locale-aware public routes ── */}
+              {/* /:locale? makes the locale segment optional — /venues and /de/venues both work */}
+              <Route path="/:locale?" element={<LocaleRouter />}>
+                <Route index element={<Index />} />
+                <Route path="venues" element={<Venues />} />
+                <Route path="venues/:slug" element={<VenueDetail />} />
+                <Route path="events" element={<Events />} />
+                <Route path="events/:slug" element={<EventDetail />} />
+                <Route path="marketplace" element={<Marketplace />} />
+                <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
+                <Route path="hotels" element={<Hotels />} />
+                <Route path="hotels/:slug" element={<HotelDetail />} />
+                <Route path="villages" element={<Navigate to="/places" replace />} />
+                <Route path="villages/:slug" element={<QueerVillageDetail />} />
+                <Route path="festivals" element={<Navigate to="/events" replace />} />
+                <Route path="festivals/:id" element={<Navigate to="/events" replace />} />
+                <Route path="places" element={<Places />} />
+                <Route path="travel" element={<Travel />} />
+                <Route path="trips" element={<TripsPage />} />
+                <Route path="trips/:tripId" element={<TripPlannerPage />} />
+                <Route path="trips/shared/:token" element={<SharedTripPage />} />
+                <Route path="bookings" element={<BookingsPage />} />
+                <Route path="map" element={<MapPage />} />
+                <Route path="flights" element={<Navigate to="/travel" replace />} />
+                <Route path="city/:slug" element={<CityDetail />} />
+                <Route path="country/:slug" element={<CountryDetail />} />
+                <Route path="users" element={<UserDirectory />} />
+                <Route path="personalities" element={<Personalities />} />
+                <Route path="personalities/:slug" element={<PersonalityDetail />} />
+                <Route path="resources" element={<Resources />} />
+                <Route path="resources/:tagName" element={<Resources />} />
+                <Route path="professions/:professionName" element={<ProfessionDetail />} />
+                <Route path="ressources" element={<Navigate to="/resources" replace />} />
+                <Route path="ressources/:tagName" element={<Navigate to="/resources" replace />} />
+                <Route path="tags" element={<Navigate to="/resources" replace />} />
+                <Route path="tags/:tagName" element={<Navigate to="/resources" replace />} />
+                <Route path="donate" element={<Donate />} />
+                <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
+                <Route path="about" element={<About />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="vision" element={<CMSRoutePage slug="vision" />} />
+                <Route path="values" element={<CMSRoutePage slug="values" />} />
+                <Route path="press" element={<CMSRoutePage slug="press" />} />
+                <Route path="blog" element={<CMSRoutePage slug="blog" />} />
+                <Route path="sustainability" element={<CMSRoutePage slug="sustainability" />} />
+                <Route path="legal" element={<CMSRoutePage slug="legal" />} />
+                <Route path="terms" element={<CMSRoutePage slug="terms" />} />
+                <Route path="privacy" element={<CMSRoutePage slug="privacy" />} />
+                <Route path="cookies" element={<CMSRoutePage slug="cookies" />} />
+                <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
+                <Route path="news" element={<News />} />
+                <Route path="news/:slug" element={<NewsDetail />} />
+                <Route path="search" element={<SearchResults />} />
+                <Route path="groups" element={<Groups />} />
+                <Route path="groups/:groupId" element={<GroupDetail />} />
+                <Route path="my-groups" element={<MyGroups />} />
+                <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
+                <Route path="inbox" element={<Inbox />} />
+                <Route path="messages" element={<Messages />} />
+                <Route path="friends" element={<Friends />} />
+                <Route path="favorites" element={<Favorites />} />
+                <Route path="feed" element={<Feed />} />
+                <Route path="community" element={<Navigate to="/feed" replace />} />
+                <Route path="profile/settings" element={<ProfileSettings />} />
+                <Route path="user/:userId" element={<UserProfile />} />
+                <Route path="sitemap" element={<Sitemap />} />
+                <Route path="feedback" element={<FeedbackBoard />} />
+                <Route path="help" element={<HelpHotlines />} />
+                <Route path="submit" element={<SubmitHub />} />
+                <Route path="submit/:contentType" element={<SubmitForm />} />
+                <Route path="p/:slug" element={<CMSPage />} />
+                <Route path="share-target" element={<ShareTarget />} />
+              </Route>
 
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/feed" element={<Feed />} />
-              <Route path="/community" element={<Navigate to="/feed" replace />} />
-              <Route path="/profile/settings" element={<ProfileSettings />} />
-              <Route path="/user/:userId" element={<UserProfile />} />
-              <Route path="/sitemap" element={<Sitemap />} />
-              <Route path="/feedback" element={<FeedbackBoard />} />
-              <Route path="/help" element={<HelpHotlines />} />
-              <Route path="/submit" element={<SubmitHub />} />
-              <Route path="/submit/:contentType" element={<SubmitForm />} />
-              <Route path="/p/:slug" element={<CMSPage />} />
-              {/* PWA share target — receives shared URLs/text */}
-              <Route path="/share-target" element={<ShareTarget />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
             </MotionPage>
@@ -570,13 +573,15 @@ const App = () => {
           <AccessibilityProvider>
             <CookieConsentProvider>
               <AuthProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <BrowserRouter>
-                    <AppRoutes />
-                  </BrowserRouter>
-                </TooltipProvider>
+                <CurrencyProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <AppRoutes />
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </CurrencyProvider>
               </AuthProvider>
             </CookieConsentProvider>
           </AccessibilityProvider>
