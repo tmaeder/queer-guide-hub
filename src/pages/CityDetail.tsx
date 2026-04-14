@@ -1215,6 +1215,7 @@ export default function CityDetail() {
                 destinationIata={effectiveIata}
                 destinationCity={city.name}
                 destinationCountryCode={city.countries?.code}
+                equalityScore={city.countries?.equality_score}
               />
 
               <SimilarCities

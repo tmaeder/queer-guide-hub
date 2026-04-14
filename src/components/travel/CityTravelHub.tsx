@@ -10,11 +10,16 @@ import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
 import { useActivitySearch } from '@/hooks/useActivitySearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
+import { FlightCalendarWidget } from './FlightCalendarWidget';
+import { CarRentalSection } from './CarRentalSection';
+import { TransferSection } from './TransferSection';
+import { InsuranceSection } from './InsuranceSection';
 
 interface CityTravelHubProps {
   destinationIata?: string | null;
   destinationCity: string;
   destinationCountryCode?: string;
+  equalityScore?: number | null;
 }
 
 function SectionHeader({
@@ -43,13 +48,7 @@ function SectionHeader({
 
 function ResultsRow({ children }: { children: React.ReactNode }) {
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-        gap: 2,
-      }}
-    >
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
       {children}
     </Box>
   );
@@ -58,14 +57,12 @@ function ResultsRow({ children }: { children: React.ReactNode }) {
 function LoadingRow() {
   return (
     <ResultsRow>
-      {[1, 2, 3].map((i) => (
-        <Skeleton key={i} variant="rounded" height={140} />
-      ))}
+      {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={140} />)}
     </ResultsRow>
   );
 }
 
-export function CityTravelHub({ destinationIata, destinationCity }: CityTravelHubProps) {
+export function CityTravelHub({ destinationIata, destinationCity, equalityScore }: CityTravelHubProps) {
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 
   const { data: flightDeals, isLoading: flightsLoading } = useTravelDeals({
@@ -90,7 +87,7 @@ export function CityTravelHub({ destinationIata, destinationCity }: CityTravelHu
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {/* Flights Section */}
+      {/* Flights */}
       <Box>
         <SectionHeader
           icon={Plane}
@@ -102,12 +99,7 @@ export function CityTravelHub({ destinationIata, destinationCity }: CityTravelHu
         ) : flightDeals && flightDeals.length > 0 ? (
           <ResultsRow>
             {flightDeals.slice(0, 3).map((deal, i) => (
-              <TravelDealCard
-                key={`${deal.origin}-${deal.destination}-${i}`}
-                deal={deal}
-                originCity={originCity || undefined}
-                destinationCity={destinationCity}
-              />
+              <TravelDealCard key={`${deal.origin}-${deal.destination}-${i}`} deal={deal} originCity={originCity || undefined} destinationCity={destinationCity} />
             ))}
           </ResultsRow>
         ) : (
@@ -119,59 +111,53 @@ export function CityTravelHub({ destinationIata, destinationCity }: CityTravelHu
         )}
       </Box>
 
-      {/* Hotels Section */}
+      {/* Best Time to Fly */}
+      {destinationIata && (
+        <FlightCalendarWidget destinationIata={destinationIata} destinationCity={destinationCity} type="monthly" />
+      )}
+
+      {/* Hotels */}
       <Box>
-        <SectionHeader
-          icon={Hotel}
-          title={`Hotels in ${destinationCity}`}
-          moreLink={`/travel?tab=hotels&city=${encodeURIComponent(destinationCity)}`}
-        />
-        {hotelsLoading ? (
-          <LoadingRow />
-        ) : hotelResults && hotelResults.length > 0 ? (
+        <SectionHeader icon={Hotel} title={`Hotels in ${destinationCity}`} moreLink={`/travel?tab=hotels&city=${encodeURIComponent(destinationCity)}`} />
+        {hotelsLoading ? <LoadingRow /> : hotelResults && hotelResults.length > 0 ? (
           <ResultsRow>
-            {hotelResults.slice(0, 3).map((hotel) => (
-              <UnifiedBookingCard key={hotel.id} result={hotel} />
-            ))}
+            {hotelResults.slice(0, 3).map((hotel) => <UnifiedBookingCard key={hotel.id} result={hotel} />)}
+          </ResultsRow>
+        ) : (
+          <Box sx={{ textAlign: 'center', py: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>No hotels found in {destinationCity}</Typography>
+          </Box>
+        )}
+      </Box>
+
+      {/* Activities */}
+      <Box>
+        <SectionHeader icon={Ticket} title={`Things to do in ${destinationCity}`} moreLink={`/travel?tab=activities&city=${encodeURIComponent(destinationCity)}`} />
+        {activitiesLoading ? <LoadingRow /> : activityResults && activityResults.length > 0 ? (
+          <ResultsRow>
+            {activityResults.slice(0, 3).map((a) => <UnifiedBookingCard key={a.id} result={a} />)}
           </ResultsRow>
         ) : (
           <Box sx={{ textAlign: 'center', py: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
             <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
-              No hotels found in {destinationCity}
+              No activities found. Check <LocalizedLink to="/events" style={{ textDecoration: 'underline' }}>events</LocalizedLink> for things happening in {destinationCity}.
             </Typography>
           </Box>
         )}
       </Box>
 
-      {/* Activities Section */}
-      <Box>
-        <SectionHeader
-          icon={Ticket}
-          title={`Things to do in ${destinationCity}`}
-          moreLink={`/travel?tab=activities&city=${encodeURIComponent(destinationCity)}`}
-        />
-        {activitiesLoading ? (
-          <LoadingRow />
-        ) : activityResults && activityResults.length > 0 ? (
-          <ResultsRow>
-            {activityResults.slice(0, 3).map((activity) => (
-              <UnifiedBookingCard key={activity.id} result={activity} />
-            ))}
-          </ResultsRow>
-        ) : (
-          <Box sx={{ textAlign: 'center', py: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
-              No activities found. Check{' '}
-              <LocalizedLink to="/events" style={{ textDecoration: 'underline' }}>events</LocalizedLink>{' '}
-              for things happening in {destinationCity}.
-            </Typography>
-          </Box>
-        )}
-      </Box>
+      {/* Car Rental */}
+      <CarRentalSection city={destinationCity} compact />
+
+      {/* Airport Transfer (safety-aware) */}
+      <TransferSection city={destinationCity} equalityScore={equalityScore} airportCode={destinationIata} compact />
+
+      {/* Travel Insurance */}
+      <InsuranceSection compact />
 
       {/* CTA */}
       <Box sx={{ textAlign: 'center' }}>
-        <LocalizedLink to={`/trips`}>
+        <LocalizedLink to="/trips">
           <Button>Plan a trip to {destinationCity}</Button>
         </LocalizedLink>
       </Box>

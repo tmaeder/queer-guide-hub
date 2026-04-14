@@ -1,8 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, corsResponse, errorResponse } from "../_shared/supabase-client.ts";
+import { getCorsHeaders, corsResponse, errorResponse, getServiceClient } from "../_shared/supabase-client.ts";
+
+/**
+ * Hotel Search Edge Function
+ *
+ * Searches hotels via Travelpayouts Hotel Data API (replaced defunct Hotellook).
+ * Generates Booking.com affiliate links via Travelpayouts marker.
+ *
+ * Data sources (in order):
+ * 1. Travelpayouts Hotel Selections API (curated lists by city)
+ * 2. Travelpayouts Hotel Cache API (price data)
+ * 3. Fallback: Booking.com search link with affiliate marker
+ */
 
 const MARKER = '452012';
-const HOTELLOOK_BASE = 'https://engine.hotellook.com/api/v2';
+const TP_BASE = 'https://engine.hotellook.com/api/v2'; // Still serves cached data via TP
+const BOOKING_AFFILIATE_BASE = 'https://www.booking.com/searchresults.html';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
@@ -38,17 +51,38 @@ serve(async (req) => {
       return errorResponse('Internal server error', 500, req);
     }
 
-    // Step 1: Resolve city to Hotellook location ID
-    const locationId = await resolveCity(city, apiToken);
-    if (!locationId) {
-      return new Response(JSON.stringify({ success: true, hotels: [], city }), {
-        status: 200,
-        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-      });
+    // Try multiple data sources
+    let hotels = await searchViaTPCache(city, checkIn, checkOut, currency, limit, apiToken);
+
+    if (hotels.length === 0) {
+      hotels = await searchViaTPLookup(city, currency, limit, apiToken);
     }
 
-    // Step 2: Search hotels
-    const hotels = await searchHotels(locationId, city, checkIn, checkOut, guests, currency, limit, apiToken);
+    // If still no results, return Booking.com search link as single result
+    if (hotels.length === 0) {
+      hotels = [buildBookingFallback(city, checkIn, checkOut, guests, currency)];
+    }
+
+    // Cross-reference with our own hotels table for LGBTQ+ friendly flags
+    try {
+      const supabase = getServiceClient();
+      const { data: ourHotels } = await supabase
+        .from('hotels')
+        .select('name, lgbtq_friendly, queer_safety_notes')
+        .ilike('city', `%${city}%`)
+        .limit(50);
+
+      if (ourHotels && ourHotels.length > 0) {
+        const lgbtqMap = new Map(ourHotels.map(h => [h.name?.toLowerCase(), h]));
+        for (const hotel of hotels) {
+          const match = lgbtqMap.get((hotel.hotelName as string)?.toLowerCase());
+          if (match) {
+            hotel.lgbtqFriendly = match.lgbtq_friendly || false;
+            hotel.safetyNotes = match.queer_safety_notes;
+          }
+        }
+      }
+    } catch { /* non-critical */ }
 
     return new Response(JSON.stringify({ success: true, hotels, city }), {
       status: 200,
@@ -64,115 +98,134 @@ serve(async (req) => {
   }
 });
 
-async function resolveCity(city: string, token: string): Promise<string | null> {
-  const url = new URL(`${HOTELLOOK_BASE}/lookup.json`);
-  url.searchParams.set('query', city);
-  url.searchParams.set('lang', 'en');
-  url.searchParams.set('lookFor', 'city');
-  url.searchParams.set('limit', '1');
-  url.searchParams.set('token', token);
-
-  const res = await fetch(url.toString());
-  if (!res.ok) {
-    console.error('Hotellook lookup error:', res.status);
-    return null;
-  }
-
-  const data = await res.json();
-  const results = data.results?.locations || [];
-  if (results.length === 0) return null;
-
-  return results[0].id || results[0].cityId || null;
-}
-
-async function searchHotels(
-  locationId: string,
-  cityName: string,
-  checkIn: string | undefined,
-  checkOut: string | undefined,
-  guests: number,
-  currency: string,
-  limit: number,
-  token: string,
-): Promise<unknown[]> {
-  // Use cache/prices endpoint for quick results (no dates required)
-  const url = new URL('https://yasen.hotellook.com/tp/public/widget_location_dump.json');
-  url.searchParams.set('currency', currency.toLowerCase());
-  url.searchParams.set('language', 'en');
-  url.searchParams.set('limit', String(limit));
-  url.searchParams.set('id', locationId);
-  url.searchParams.set('type', 'popularity');
-  url.searchParams.set('marker', MARKER);
-
-  const res = await fetch(url.toString());
-  if (!res.ok) {
-    console.error('Hotellook widget dump error:', res.status);
-    return fallbackHotelSearch(cityName, currency, limit, token);
-  }
-
-  const hotels = await res.json();
-  if (!Array.isArray(hotels) || hotels.length === 0) {
-    return fallbackHotelSearch(cityName, currency, limit, token);
-  }
-
-  return hotels.slice(0, limit).map((h: Record<string, unknown>) => ({
-    hotelId: h.id,
-    hotelName: h.name,
-    location: `${cityName}`,
-    stars: h.stars,
-    rating: h.rating,
-    reviews: h.reviews_amount,
-    priceFrom: h.priceFrom,
-    priceOld: h.priceOld,
-    currency: currency.toUpperCase(),
-    photoUrl: h.photoId ? `https://photo.hotellook.com/image_v2/crop/h${h.id}_${h.photoId}/640/480.auto` : undefined,
-    bookingUrl: buildHotelBookingUrl(h.id as string, cityName, checkIn, checkOut),
-    lgbtqFriendly: false,
-  }));
-}
-
-async function fallbackHotelSearch(
-  city: string,
-  currency: string,
-  limit: number,
-  token: string,
-): Promise<unknown[]> {
-  const url = new URL(`${HOTELLOOK_BASE}/cache.json`);
+/**
+ * Search via Travelpayouts cache endpoint (still operational post-Hotellook closure)
+ */
+async function searchViaTPCache(
+  city: string, checkIn: string | undefined, checkOut: string | undefined,
+  currency: string, limit: number, token: string,
+): Promise<Record<string, unknown>[]> {
+  const url = new URL(`${TP_BASE}/cache.json`);
   url.searchParams.set('location', city);
   url.searchParams.set('currency', currency);
   url.searchParams.set('limit', String(limit));
   url.searchParams.set('token', token);
+  if (checkIn) url.searchParams.set('checkIn', checkIn);
+  if (checkOut) url.searchParams.set('checkOut', checkOut);
 
-  const res = await fetch(url.toString());
-  if (!res.ok) return [];
+  try {
+    const res = await fetch(url.toString());
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) return [];
 
-  const data = await res.json();
-  if (!Array.isArray(data)) return [];
-
-  return data.slice(0, limit).map((h: Record<string, unknown>) => ({
-    hotelId: h.hotelId,
-    hotelName: h.hotelName,
-    location: h.location?.name || city,
-    stars: h.stars,
-    rating: h.rating,
-    priceFrom: h.priceFrom,
-    currency: currency.toUpperCase(),
-    bookingUrl: buildHotelBookingUrl(String(h.hotelId), city, undefined, undefined),
-    lgbtqFriendly: false,
-  }));
+    return data.slice(0, limit).map((h: Record<string, unknown>) => ({
+      hotelId: h.hotelId || h.hotel_id,
+      hotelName: h.hotelName || h.hotel_name || 'Hotel',
+      location: city,
+      stars: h.stars,
+      rating: h.rating || h.hotel_rating,
+      reviews: h.reviews_amount,
+      priceFrom: h.priceFrom || h.price_from || h.price,
+      priceOld: h.priceOld,
+      currency: currency.toUpperCase(),
+      photoUrl: h.hotel_id ? `https://photo.hotellook.com/image_v2/crop/h${h.hotel_id}_0/640/480.auto` : undefined,
+      bookingUrl: buildBookingUrl(h.hotelName as string || city, city, checkIn, checkOut),
+      lgbtqFriendly: false,
+    }));
+  } catch {
+    return [];
+  }
 }
 
-function buildHotelBookingUrl(
-  hotelId: string,
-  city: string,
-  checkIn?: string,
-  checkOut?: string,
+/**
+ * Search via TP lookup + selections (for city-based browsing)
+ */
+async function searchViaTPLookup(
+  city: string, currency: string, limit: number, token: string,
+): Promise<Record<string, unknown>[]> {
+  // Resolve city to location ID
+  const lookupUrl = new URL(`${TP_BASE}/lookup.json`);
+  lookupUrl.searchParams.set('query', city);
+  lookupUrl.searchParams.set('lang', 'en');
+  lookupUrl.searchParams.set('lookFor', 'city');
+  lookupUrl.searchParams.set('limit', '1');
+  lookupUrl.searchParams.set('token', token);
+
+  try {
+    const lookupRes = await fetch(lookupUrl.toString());
+    if (!lookupRes.ok) return [];
+    const lookupData = await lookupRes.json();
+    const locations = lookupData.results?.locations || [];
+    if (locations.length === 0) return [];
+
+    const locationId = locations[0].id || locations[0].cityId;
+    if (!locationId) return [];
+
+    // Get hotel selections for this location
+    const selectUrl = new URL('https://yasen.hotellook.com/tp/public/widget_location_dump.json');
+    selectUrl.searchParams.set('currency', currency.toLowerCase());
+    selectUrl.searchParams.set('language', 'en');
+    selectUrl.searchParams.set('limit', String(limit));
+    selectUrl.searchParams.set('id', String(locationId));
+    selectUrl.searchParams.set('type', 'popularity');
+    selectUrl.searchParams.set('marker', MARKER);
+
+    const selectRes = await fetch(selectUrl.toString());
+    if (!selectRes.ok) return [];
+    const hotels = await selectRes.json();
+    if (!Array.isArray(hotels) || hotels.length === 0) return [];
+
+    return hotels.slice(0, limit).map((h: Record<string, unknown>) => ({
+      hotelId: h.id,
+      hotelName: h.name,
+      location: city,
+      stars: h.stars,
+      rating: h.rating,
+      reviews: h.reviews_amount,
+      priceFrom: h.priceFrom,
+      priceOld: h.priceOld,
+      currency: currency.toUpperCase(),
+      photoUrl: h.photoId ? `https://photo.hotellook.com/image_v2/crop/h${h.id}_${h.photoId}/640/480.auto` : undefined,
+      bookingUrl: buildBookingUrl(h.name as string || '', city, undefined, undefined),
+      lgbtqFriendly: false,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Build Booking.com affiliate search URL
+ */
+function buildBookingUrl(
+  hotelName: string, city: string,
+  checkIn?: string, checkOut?: string,
 ): string {
-  const base = `https://www.hotellook.com/hotels/${encodeURIComponent(city.toLowerCase().replace(/\s+/g, '-'))}`;
   const params = new URLSearchParams();
-  params.set('marker', MARKER);
-  if (hotelId) params.set('hotelId', hotelId);
-  if (checkIn) params.set('checkIn', checkIn);
-  if (checkOut) params.set('checkOut', checkOut);
-  return `${base}?${params.toString()}`;
+  params.set('ss', hotelName || city);
+  params.set('aid', '2381426'); // Travelpayouts Booking.com sub-affiliate
+  params.set('label', `queerguide-${MARKER}`);
+  if (checkIn) params.set('checkin', checkIn);
+  if (checkOut) params.set('checkout', checkOut);
+  return `${BOOKING_AFFILIATE_BASE}?${params.toString()}`;
+}
+
+function buildBookingFallback(
+  city: string, checkIn: string | undefined, checkOut: string | undefined,
+  guests: number, currency: string,
+): Record<string, unknown> {
+  return {
+    hotelId: `search-${city}`,
+    hotelName: `Search hotels in ${city}`,
+    location: city,
+    stars: null,
+    rating: null,
+    reviews: null,
+    priceFrom: null,
+    currency: currency.toUpperCase(),
+    bookingUrl: buildBookingUrl(city, city, checkIn, checkOut),
+    lgbtqFriendly: false,
+    isFallback: true,
+  };
 }
