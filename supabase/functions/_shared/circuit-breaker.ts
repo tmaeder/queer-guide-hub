@@ -66,40 +66,50 @@ export async function checkCircuit(
 
 /**
  * Record a successful API call. Resets failure count, closes circuit.
+ *
+ * Note: supabase-js v2 rpc() returns a PostgrestBuilder which is thenable but
+ * does NOT have a .catch() method. The previous `supabase.rpc(...).catch(...)`
+ * threw `TypeError: .catch is not a function` synchronously, which bubbled up
+ * through withCircuitBreaker's try/catch and turned every successful call into
+ * a recorded failure. This silently broke every source-* edge function using
+ * the circuit breaker. The try/catch below is the correct pattern.
  */
 export async function recordSuccess(
   supabase: SupabaseClient,
   apiName: string
 ): Promise<void> {
-  await supabase
-    .from('api_circuit_breakers')
-    .update({
-      state: 'closed',
-      failure_count: 0,
-      success_count: supabase.rpc ? undefined : 0, // increment ideally
-      last_success_at: new Date().toISOString(),
-      open_until: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('api_name', apiName)
-
-  // Increment success_count
-  await supabase.rpc('increment_circuit_breaker_success', { p_api_name: apiName }).catch(() => {
-    // RPC may not exist yet — fallback to direct update
-    supabase
+  try {
+    await supabase
       .from('api_circuit_breakers')
-      .select('success_count')
+      .update({
+        state: 'closed',
+        failure_count: 0,
+        last_success_at: new Date().toISOString(),
+        open_until: null,
+        updated_at: new Date().toISOString(),
+      })
       .eq('api_name', apiName)
-      .single()
-      .then(({ data }) => {
+
+    // Increment success_count via RPC; fall back to read-modify-write if the RPC is missing.
+    try {
+      const res = await supabase.rpc('increment_circuit_breaker_success', { p_api_name: apiName })
+      if (res && (res as { error?: unknown }).error) throw (res as { error: unknown }).error
+    } catch {
+      try {
+        const { data } = await supabase
+          .from('api_circuit_breakers')
+          .select('success_count')
+          .eq('api_name', apiName)
+          .single()
         if (data) {
-          supabase
+          await supabase
             .from('api_circuit_breakers')
             .update({ success_count: (data.success_count || 0) + 1 })
             .eq('api_name', apiName)
         }
-      })
-  })
+      } catch { /* swallow — breaker state already updated above */ }
+    }
+  } catch { /* don't let bookkeeping failures propagate */ }
 }
 
 /**

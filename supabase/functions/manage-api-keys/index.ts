@@ -72,10 +72,14 @@ serve(async (req) => {
     if (method === 'GET' && action === 'status') {
       // Return status of all required API keys (from ingestion_sources + env vars)
       // Never exposes actual secret values
+      // Only surface keys for sources that are currently enabled. Disabled sources
+      // (Foursquare expired, Google Places missing, etc.) don't belong in the "Missing"
+      // noise on the admin dashboard.
       const { data: sources } = await supabase
         .from('ingestion_sources')
         .select('name, slug, requires_api_key, is_enabled, source_type')
-        .not('requires_api_key', 'is', null);
+        .not('requires_api_key', 'is', null)
+        .eq('is_enabled', true);
 
       const requiredKeys: unknown[] = [];
       const seen = new Set<string>();
@@ -92,11 +96,6 @@ serve(async (req) => {
         if (envValue) {
           status = 'configured';
           hint = 'configured';
-          // Known broken keys
-          if (keyName === 'FOURSQUARE_API_KEY') {
-            status = 'error';
-            hint = 'Key returns 401 — may be expired';
-          }
         }
 
         requiredKeys.push({
@@ -112,8 +111,10 @@ serve(async (req) => {
         });
       }
 
-      // Also check common keys not in ingestion_sources
-      const extraKeys = ['ANTHROPIC_API_KEY', 'FIRECRAWL_API_KEY', 'GIPHY_API_KEY', 'MASTER_ENCRYPTION_KEY'];
+      // Also check common keys not in ingestion_sources.
+      // Only keys that are actually consumed somewhere in the codebase belong here;
+      // ANTHROPIC/GIPHY/MASTER_ENCRYPTION were historical noise and have been removed.
+      const extraKeys = ['FIRECRAWL_API_KEY'];
       for (const keyName of extraKeys) {
         if (seen.has(keyName)) continue;
         const envValue = Deno.env.get(keyName);

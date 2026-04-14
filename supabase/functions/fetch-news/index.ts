@@ -497,10 +497,26 @@ Deno.serve(async (req) => {
     // Initialize Supabase client
     const supabase = getServiceClient();
 
-    const authResult = await requireAdmin(req, supabase);
-    if (authResult instanceof Response) return authResult;
+    // Allow internal dispatcher calls that present the service role key; require admin otherwise.
+    const authToken = req.headers.get('Authorization')?.replace('Bearer ', '') ?? '';
+    const isServiceCall = authToken === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!isServiceCall) {
+      const authResult = await requireAdmin(req, supabase);
+      if (authResult instanceof Response) return authResult;
+    }
 
-    console.log('Starting news fetch process...');
+    // Parse optional body. AI enrichment is slow (OpenAI per article × many sources) and
+    // pushes runtime past Supabase's ~150s platform timeout, so skip it by default on
+    // internal/cron calls. Articles are still enriched later by the enrich-entity workflow.
+    let skipAi = isServiceCall;
+    let articlesPerSource = 5;
+    try {
+      const body = await req.json();
+      if (typeof body?.skip_ai === 'boolean') skipAi = body.skip_ai;
+      if (typeof body?.articles_per_source === 'number') articlesPerSource = body.articles_per_source;
+    } catch { /* empty body is fine */ }
+
+    console.log(`Starting news fetch process (skipAi=${skipAi}, articlesPerSource=${articlesPerSource})...`);
 
     // Get active news sources
     const { data: sources, error: sourcesError } = await supabase
@@ -558,15 +574,19 @@ Deno.serve(async (req) => {
         }
 
         if (articles.length > 0) {
-          // AI enrichment — enhance articles with tags and summaries
-          for (const article of articles) {
-            try {
-              const aiEnrichment = await enrichNewsWithAI(supabase, article)
-              if (aiEnrichment) {
-                if (aiEnrichment.summary && !article.excerpt) article.excerpt = aiEnrichment.summary as string
-                if (aiEnrichment.tags) article.tags = [...(article.tags || []), ...(aiEnrichment.tags as string[])]
-              }
-            } catch (e) { console.warn('AI enrichment skipped for article:', article.title, e) }
+          // AI enrichment — enhance articles with tags and summaries.
+          // Skipped when skipAi is true (default for internal/cron calls) to stay under the
+          // platform timeout. Articles are enriched asynchronously by enrich-entity.
+          if (!skipAi) {
+            for (const article of articles) {
+              try {
+                const aiEnrichment = await enrichNewsWithAI(supabase, article)
+                if (aiEnrichment) {
+                  if (aiEnrichment.summary && !article.excerpt) article.excerpt = aiEnrichment.summary as string
+                  if (aiEnrichment.tags) article.tags = [...(article.tags || []), ...(aiEnrichment.tags as string[])]
+                }
+              } catch (e) { console.warn('AI enrichment skipped for article:', article.title, e) }
+            }
           }
 
           // Insert articles into database

@@ -10,6 +10,9 @@ import { writeToStaging } from '../_shared/source-adapter.ts'
 
 const TT_BASE = 'https://api.tomtom.com/search/2/search'
 const SEARCH_TERMS = ['gay bar', 'lgbtq club', 'queer cafe', 'pride venue']
+// TomTom API keys are typically Referer-restricted. Supabase Edge Functions do not
+// send a Referer by default, so an unrestricted key + explicit Referer header is required.
+const TT_REFERER = 'https://queer.guide'
 
 const tomtomAdapter: SourceAdapter = {
   name: 'tomtom',
@@ -30,8 +33,13 @@ const tomtomAdapter: SourceAdapter = {
           const items = await withCircuitBreaker(supabase, 'tomtom', async () => {
             const searchTerm = encodeURIComponent(`${term} ${city}`)
             const params = new URLSearchParams({ key: apiKey, limit: String(limit), language: 'en-US' })
-            const res = await fetch(`${TT_BASE}/${searchTerm}.json?${params}`)
-            if (!res.ok) throw new Error(`TomTom API ${res.status}`)
+            const res = await fetch(`${TT_BASE}/${searchTerm}.json?${params}`, {
+              headers: { 'Referer': TT_REFERER, 'Origin': TT_REFERER },
+            })
+            if (!res.ok) {
+              const body = await res.text().catch(() => '')
+              throw new Error(`TomTom API ${res.status}: ${body.slice(0, 200)}`)
+            }
             const json = await res.json()
             return json.results || []
           })

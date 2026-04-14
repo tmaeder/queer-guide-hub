@@ -42,7 +42,11 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+  // Use the service role key when the dispatcher invokes target edge functions.
+  // The previous anon-key behaviour caused every target that ran supabase.auth.getUser()
+  // in requireAdmin() / internal checks to return "Invalid authorization", which in turn
+  // routed every scheduled workflow into the dead_letter queue.
+  const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   const supabase = getServiceClient()
 
   try {
@@ -72,7 +76,7 @@ Deno.serve(async (req) => {
     // Route actions
     switch (action) {
       case 'dispatch':
-        return await handleDispatch(supabase, supabaseUrl, supabaseAnonKey)
+        return await handleDispatch(supabase, supabaseUrl, supabaseServiceRoleKey)
 
       case 'enqueue':
         return await handleEnqueue(supabase, payload)
@@ -103,7 +107,7 @@ Deno.serve(async (req) => {
 async function handleDispatch(
   supabase: SupabaseClient,
   supabaseUrl: string,
-  anonKey: string
+  serviceRoleKey: string
 ): Promise<Response> {
   const startTime = Date.now()
   const results: Record<string, unknown>[] = []
@@ -254,7 +258,7 @@ async function handleDispatch(
       dispatchEdgeFunction(
         supabase,
         supabaseUrl,
-        anonKey,
+        serviceRoleKey,
         def,
         run.id,
         msg,
@@ -285,7 +289,7 @@ async function handleDispatch(
 async function dispatchEdgeFunction(
   supabase: SupabaseClient,
   supabaseUrl: string,
-  anonKey: string,
+  serviceRoleKey: string,
   def: WorkflowDefinition,
   runId: string,
   msg: QueueMessage,
@@ -297,11 +301,15 @@ async function dispatchEdgeFunction(
     const timeoutId = setTimeout(() => controller.abort(), def.timeout_seconds * 1000)
 
     const functionUrl = `${supabaseUrl}/functions/v1/${def.edge_function}`
+    // Authenticate internal invocations with the service role key so target functions
+    // can recognise this as a system/internal call (e.g. fetch-news bypasses requireAdmin
+    // when it sees the service role key in the Authorization header).
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${anonKey}`,
+        'Authorization': `Bearer ${serviceRoleKey}`,
+        'apikey': serviceRoleKey,
       },
       body: JSON.stringify(payload),
       signal: controller.signal,
