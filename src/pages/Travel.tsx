@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Skeleton from '@mui/material/Skeleton';
+import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import { Plane, Hotel, Ticket, TrendingUp } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -17,6 +18,7 @@ import { TravelDealCard } from '@/components/travel/TravelDealCard';
 import { UnifiedBookingCard } from '@/components/booking/UnifiedBookingCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
+import { useActivitySearch } from '@/hooks/useActivitySearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 import { useTranslation } from 'react-i18next';
 import { TravelPrefsPrompt } from '@/components/personalization/TravelPrefsPrompt';
@@ -60,6 +62,13 @@ export default function Travel() {
     checkOut: hotelSearch?.checkOut,
     guests: hotelSearch?.guests,
     enabled: activeTab === 'hotels' && !!hotelSearch?.city,
+  });
+
+  const [activityCity, setActivityCity] = useState(initialCity || '');
+  const { data: activityResults, isLoading: activitiesLoading } = useActivitySearch({
+    city: activityCity || undefined,
+    limit: 9,
+    enabled: activeTab === 'activities' && !!activityCity,
   });
 
   const handleTabChange = (_: unknown, value: BookingTab) => {
@@ -126,11 +135,25 @@ export default function Travel() {
 
           {/* Activities Tab */}
           {activeTab === 'activities' && (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Ticket style={{ height: 40, width: 40, color: theme.palette.text.secondary, marginBottom: 8 }} />
-              <Typography sx={{ color: 'text.secondary' }}>
-                Activities coming soon. Browse <LocalizedLink to="/places" style={{ color: theme.palette.primary.main }}>destinations</LocalizedLink> to find events and experiences.
-              </Typography>
+            <Box
+              component="form"
+              onSubmit={(e: React.FormEvent) => { e.preventDefault(); }}
+              sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end' }}
+            >
+              <Box sx={{ flex: 1 }}>
+                <TextField
+                  label="City"
+                  value={activityCity}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setActivityCity(e.target.value)}
+                  size="small"
+                  fullWidth
+                  placeholder="Barcelona, Berlin, Bangkok..."
+                />
+              </Box>
+              <Button type="submit" size="sm" onClick={() => setActivityCity(activityCity.trim())}>
+                <Ticket style={{ height: 16, width: 16, marginRight: 6 }} />
+                Search Activities
+              </Button>
             </Box>
           )}
         </Box>
@@ -197,6 +220,35 @@ export default function Travel() {
             <EmptyState>No hotels found in {hotelSearch.city}. Try a different city.</EmptyState>
           ) : (
             <EmptyState>Search for a city above to find hotels.</EmptyState>
+          )}
+        </Paper>
+      )}
+
+      {activeTab === 'activities' && (
+        <Paper variant="outlined" sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <Ticket style={{ height: 20, width: 20, color: theme.palette.brand.main }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
+              {activityCity ? `Activities in ${activityCity}` : 'Search for Activities'}
+            </Typography>
+          </Box>
+
+          {activitiesLoading ? (
+            <ResultsGrid>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} variant="rounded" height={200} />
+              ))}
+            </ResultsGrid>
+          ) : activityResults && activityResults.length > 0 ? (
+            <ResultsGrid>
+              {activityResults.map((activity) => (
+                <UnifiedBookingCard key={activity.id} result={activity} />
+              ))}
+            </ResultsGrid>
+          ) : activityCity ? (
+            <EmptyState>No activities found in {activityCity}. Try a different city.</EmptyState>
+          ) : (
+            <EmptyState>Search for a city above to find activities and tours.</EmptyState>
           )}
         </Paper>
       )}

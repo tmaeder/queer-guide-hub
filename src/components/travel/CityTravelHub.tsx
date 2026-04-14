@@ -8,6 +8,7 @@ import { TravelDealCard } from './TravelDealCard';
 import { UnifiedBookingCard } from '@/components/booking/UnifiedBookingCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
+import { useActivitySearch } from '@/hooks/useActivitySearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 
 interface CityTravelHubProps {
@@ -81,6 +82,12 @@ export function CityTravelHub({ destinationIata, destinationCity }: CityTravelHu
     enabled: !!destinationCity,
   });
 
+  const { data: activityResults, isLoading: activitiesLoading } = useActivitySearch({
+    city: destinationCity,
+    limit: 3,
+    enabled: !!destinationCity,
+  });
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       {/* Flights Section */}
@@ -136,20 +143,30 @@ export function CityTravelHub({ destinationIata, destinationCity }: CityTravelHu
         )}
       </Box>
 
-      {/* Activities Section (placeholder) */}
+      {/* Activities Section */}
       <Box>
         <SectionHeader
           icon={Ticket}
           title={`Things to do in ${destinationCity}`}
-          moreLink={`/travel?tab=activities`}
+          moreLink={`/travel?tab=activities&city=${encodeURIComponent(destinationCity)}`}
         />
-        <Box sx={{ textAlign: 'center', py: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-          <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
-            Activities coming soon. Check{' '}
-            <LocalizedLink to="/events" style={{ textDecoration: 'underline' }}>events</LocalizedLink>{' '}
-            for things happening in {destinationCity}.
-          </Typography>
-        </Box>
+        {activitiesLoading ? (
+          <LoadingRow />
+        ) : activityResults && activityResults.length > 0 ? (
+          <ResultsRow>
+            {activityResults.slice(0, 3).map((activity) => (
+              <UnifiedBookingCard key={activity.id} result={activity} />
+            ))}
+          </ResultsRow>
+        ) : (
+          <Box sx={{ textAlign: 'center', py: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+              No activities found. Check{' '}
+              <LocalizedLink to="/events" style={{ textDecoration: 'underline' }}>events</LocalizedLink>{' '}
+              for things happening in {destinationCity}.
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* CTA */}
