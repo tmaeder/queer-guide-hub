@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { MapPin, Calendar, Store, Tag, Users, User } from 'lucide-react';
+
+const SEARCH_PROXY_URL = import.meta.env.VITE_SEARCH_PROXY_URL || 'https://queer-guide-search-proxy.maeder-tobiassimon.workers.dev';
 
 export interface SearchSuggestion {
   id: string;
@@ -15,6 +16,20 @@ export interface SearchSuggestion {
   description?: string;
 }
 
+const TYPE_ICONS: Record<string, React.ComponentType> = {
+  venue: MapPin,
+  event: Calendar,
+  marketplace: Store,
+  tag: Tag,
+  personality: User,
+  city: MapPin,
+  country: MapPin,
+  queer_village: MapPin,
+  news: Tag,
+  user: Users,
+  group: Users,
+};
+
 export function useSearchSuggestions(query: string) {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,135 +42,37 @@ export function useSearchSuggestions(query: string) {
 
     setLoading(true);
     try {
-      const promises = [];
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
 
-      // Search venues
-      promises.push(
-        supabase
-          .from('venues')
-          .select('id, name, city')
-          .neq('data_source', 'refuge_restrooms')
-          .ilike('name', `%${searchTerm}%`)
-          .limit(3)
-          .then(({ data }) =>
-            (data || []).map((item: Record<string, unknown>) => ({
-              ...item,
-              type: 'venue' as const,
-              icon: MapPin,
-              subtitle: item.city,
-            })),
-          ),
-      );
+      const res = await fetch(SEARCH_PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: searchTerm,
+          hitsPerPage: 8,
+        }),
+        signal: controller.signal,
+      });
 
-      // Search events
-      promises.push(
-        supabase
-          .from('events')
-          .select('id, title, city')
-          .ilike('title', `%${searchTerm}%`)
-          .limit(3)
-          .then(({ data }) =>
-            (data || []).map((item: Record<string, unknown>) => ({
-              ...item,
-              type: 'event' as const,
-              icon: Calendar,
-              name: item.title,
-              subtitle: item.city,
-            })),
-          ),
-      );
+      clearTimeout(timeout);
 
-      // Search marketplace
-      promises.push(
-        supabase
-          .from('marketplace_listings')
-          .select('id, title, business_name')
-          .ilike('title', `%${searchTerm}%`)
-          .eq('status', 'active')
-          .limit(3)
-          .then(({ data }) =>
-            (data || []).map((item: Record<string, unknown>) => ({
-              ...item,
-              type: 'marketplace' as const,
-              icon: Store,
-              name: item.title,
-              subtitle: item.business_name,
-            })),
-          ),
-      );
+      if (!res.ok) throw new Error(`Search failed: ${res.status}`);
+      const data = await res.json();
 
-      // Search tags
-      promises.push(
-        supabase
-          .from('unified_tags')
-          .select('id, name, description')
-          .ilike('name', `%${searchTerm}%`)
-          .limit(3)
-          .then(({ data }) =>
-            (data || []).map((item: Record<string, unknown>) => ({
-              ...item,
-              type: 'tag' as const,
-              icon: Tag,
-              subtitle: item.description,
-            })),
-          ),
-      );
+      const mapped: SearchSuggestion[] = (data.suggestions || []).map((hit: any) => ({
+        id: hit.id || hit.objectID,
+        name: hit.title || hit.name,
+        type: hit.type as SearchSuggestion['type'],
+        icon: TYPE_ICONS[hit.type] || Tag,
+        subtitle: hit.category || hit.location || hit.city || hit.description?.substring(0, 60),
+        title: hit.title,
+        location: hit.location,
+        city: hit.city,
+        description: hit.description,
+      }));
 
-      // Search users
-      promises.push(
-        supabase
-          .from('profiles')
-          .select('user_id, display_name, location')
-          .ilike('display_name', `%${searchTerm}%`)
-          .limit(2)
-          .then(({ data }) =>
-            (data || []).map((item: Record<string, unknown>) => ({
-              id: item.user_id,
-              name: item.display_name || 'Anonymous User',
-              type: 'user' as const,
-              icon: Users,
-              subtitle: item.location,
-            })),
-          ),
-      );
-
-      // Search personalities
-      promises.push(
-        supabase
-          .from('personalities')
-          .select('id, name, profession')
-          .ilike('name', `%${searchTerm}%`)
-          .limit(2)
-          .then(({ data }) =>
-            (data || []).map((item: Record<string, unknown>) => ({
-              ...item,
-              type: 'personality' as const,
-              icon: User,
-              subtitle: item.profession,
-            })),
-          ),
-      );
-
-      // Search groups
-      promises.push(
-        supabase
-          .from('community_groups')
-          .select('id, name, description')
-          .ilike('name', `%${searchTerm}%`)
-          .limit(2)
-          .then(({ data }) =>
-            (data || []).map((item: Record<string, unknown>) => ({
-              ...item,
-              type: 'group' as const,
-              icon: Users,
-              subtitle: item.description,
-            })),
-          ),
-      );
-
-      const results = await Promise.all(promises);
-      const allSuggestions = results.flat().slice(0, 8);
-      setSuggestions(allSuggestions);
+      setSuggestions(mapped);
     } catch (error) {
       console.error('Error fetching suggestions:', error);
       setSuggestions([]);

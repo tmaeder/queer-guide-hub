@@ -1,3 +1,7 @@
+// DEPRECATED: Search has migrated to Meilisearch via the search-proxy CF Worker.
+// This endpoint is kept temporarily for backward compatibility.
+// Remove after confirming all clients have switched to the new search-proxy worker.
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
