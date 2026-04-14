@@ -13,6 +13,19 @@
 import { personalizedRank } from "./rank";
 import { embed, rerank, DEFAULT_EMBED_MODEL } from "./ai";
 import { rewriteQuery } from "./rewrite";
+import { Toucan } from "toucan-js";
+
+function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | null {
+	if (!env.SENTRY_DSN) return null;
+	return new Toucan({
+		dsn: env.SENTRY_DSN,
+		context: ctx,
+		request,
+		release: env.SENTRY_RELEASE,
+		environment: env.SENTRY_ENV || "production",
+		tracesSampleRate: 0.1,
+	});
+}
 import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities } from "./supabase";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
 import { getCorsHeaders, json } from "./util";
@@ -31,6 +44,9 @@ export interface Env {
 	ENABLE_RERANKER?: string; // "1" to enable
 	SESSION_CACHE: KVNamespace; // per-session recent views for decay
 	ADMIN_TOKEN?: string;
+	SENTRY_DSN?: string;
+	SENTRY_ENV?: string;
+	SENTRY_RELEASE?: string;
 }
 
 export default {
@@ -72,6 +88,11 @@ export default {
 			}
 		} catch (e: any) {
 			console.error("handler error", e);
+			try {
+				sentry(env, request, ctx)?.captureException(e);
+			} catch {
+				/* sentry best-effort */
+			}
 			return json({ error: "internal", details: e?.message ?? String(e) }, 500, cors);
 		}
 	},
@@ -283,7 +304,11 @@ async function appendRecentSeen(env: Env, key: string, entityId: string): Promis
 	const k = `recent:${key}`;
 	const cur = ((await env.SESSION_CACHE.get(k, { type: "json" })) as string[] | null) || [];
 	const next = [entityId, ...cur.filter((x) => x !== entityId)].slice(0, 50);
-	await env.SESSION_CACHE.put(k, JSON.stringify(next), { expirationTtl: 60 * 60 * 24 });
+	try {
+		await env.SESSION_CACHE.put(k, JSON.stringify(next), { expirationTtl: 60 * 60 * 24 });
+	} catch {
+		/* KV quota */
+	}
 }
 
 // ─────────────────────────────────────────────
@@ -596,6 +621,6 @@ async function rateLimit(env: Env, request: Request): Promise<{ ok: boolean; ret
 	const cur = Number((await env.SESSION_CACHE.get(key)) ?? 0);
 	if (cur >= 60) return { ok: false, retryAfter: 60 - (Math.floor(Date.now() / 1000) % 60) };
 	// Fire and forget increment. Lossy under contention but fine for rate limit.
-	env.SESSION_CACHE.put(key, String(cur + 1), { expirationTtl: 120 });
+	env.SESSION_CACHE.put(key, String(cur + 1), { expirationTtl: 120 }).catch(() => void 0);
 	return { ok: true, retryAfter: 0 };
 }

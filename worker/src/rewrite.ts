@@ -66,6 +66,10 @@ export async function rewriteQuery(
 		city: parsed.city ? String(parsed.city).toLowerCase() : null,
 		type_hint: parsed.type_hint ?? null,
 	};
-	await env.EMBED_CACHE.put(cacheKey, JSON.stringify(out), { expirationTtl: 86400 * 30 });
+	try {
+		await env.EMBED_CACHE.put(cacheKey, JSON.stringify(out), { expirationTtl: 86400 * 30 });
+	} catch {
+		/* KV quota — skip cache */
+	}
 	return out;
 }

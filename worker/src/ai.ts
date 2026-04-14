@@ -27,8 +27,12 @@ export async function embed(
 	const res: any = await env.AI.run(model as any, { text: [text] } as any, gateway ? { gateway } : undefined);
 	const vec: number[] = res?.data?.[0] ?? res?.data ?? res?.[0];
 	if (!Array.isArray(vec)) throw new Error("embed: no vector");
-	// Cache 30 days.
-	await env.EMBED_CACHE.put(cacheKey, JSON.stringify(vec), { expirationTtl: 60 * 60 * 24 * 30 });
+	// Cache 30 days — best-effort, KV quota may be exhausted.
+	try {
+		await env.EMBED_CACHE.put(cacheKey, JSON.stringify(vec), { expirationTtl: 60 * 60 * 24 * 30 });
+	} catch (e) {
+		console.warn("EMBED_CACHE put failed", (e as Error)?.message);
+	}
 	return vec;
 }
 

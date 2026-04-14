@@ -12,6 +12,8 @@
  * driven by a cursor in kv.
  */
 
+import { Toucan } from "toucan-js";
+
 export interface Env {
 	AI: Ai;
 	EMBED_CACHE: KVNamespace;
@@ -23,6 +25,9 @@ export interface Env {
 	INGEST_TOKEN: string;
 	AI_GATEWAY_NAME?: string;
 	EMBED_MODEL?: string;
+	SENTRY_DSN?: string;
+	SENTRY_ENV?: string;
+	SENTRY_RELEASE?: string;
 }
 
 const DEFAULT_EMBED_MODEL = "@cf/baai/bge-m3"; // 1024-dim, multilingual
@@ -66,6 +71,19 @@ export default {
 			return jres({ error: "not found" }, 404);
 		} catch (e: any) {
 			console.error("ingest error", e);
+			try {
+				if (env.SENTRY_DSN) {
+					new Toucan({
+						dsn: env.SENTRY_DSN,
+						context: ctx,
+						request,
+						release: env.SENTRY_RELEASE,
+						environment: env.SENTRY_ENV || "production",
+					}).captureException(e);
+				}
+			} catch {
+				/* best-effort */
+			}
 			return jres({ error: "internal", details: String(e?.message ?? e) }, 500);
 		}
 	},
@@ -312,7 +330,11 @@ async function embedText(env: Env, text: string): Promise<number[]> {
 	const res: any = await env.AI.run(model as any, { text: [text] } as any, gateway ? { gateway } : undefined);
 	const vec: number[] = res?.data?.[0] ?? res?.data ?? res?.[0];
 	if (!Array.isArray(vec)) throw new Error("embed: no vector");
-	await env.EMBED_CACHE.put(key, JSON.stringify(vec), { expirationTtl: 86400 * 30 });
+	try {
+		await env.EMBED_CACHE.put(key, JSON.stringify(vec), { expirationTtl: 86400 * 30 });
+	} catch (e) {
+		console.warn("EMBED_CACHE put skipped", (e as Error)?.message);
+	}
 	return vec;
 }
 
