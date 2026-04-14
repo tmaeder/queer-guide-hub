@@ -43,6 +43,31 @@ export const INDEX_FACETS: Record<string, string[]> = {
 	queer_villages: ["type", "city", "country", "featured"],
 };
 
+/** Drops AND-joined filter clauses that reference attributes not filterable on the given index. */
+function scopeFilterToIndex(filter: string | undefined, indexUid: string): string | undefined {
+	if (!filter) return undefined;
+	const allowed = new Set([
+		...(INDEX_FACETS[indexUid] || []),
+		"_geo",
+		"_geoRadius",
+		"id",
+		"type",
+		"is_featured",
+		"start_date",
+		"end_date",
+	]);
+	// Conservative split on " AND " — we only emit AND-joined clauses from buildFilters().
+	const parts = filter.split(/\s+AND\s+/i);
+	const kept = parts.filter((p) => {
+		const m = p.match(/[(]?([_a-zA-Z][\w]*)/);
+		const attr = m?.[1];
+		// _geoRadius() — keep if index has _geo.
+		if (/_geoRadius/i.test(p)) return allowed.has("_geo");
+		return !attr || allowed.has(attr);
+	});
+	return kept.length ? kept.join(" AND ") : undefined;
+}
+
 export function buildFilters(filters: any): string | undefined {
 	if (!filters) return undefined;
 	const parts: string[] = [];
@@ -88,7 +113,8 @@ export async function meiliMultiSearch(
 		indexUid,
 		q: args.query,
 		limit: Math.max(5, Math.ceil(args.hitsPerPage * 1.5)),
-		filter: args.filter,
+		// Strip filter clauses that reference attributes the index doesn't have as filterable.
+		filter: scopeFilterToIndex(args.filter, indexUid),
 		facets: args.facets[indexUid] || ["type"],
 		attributesToHighlight: ["title", "description", "name"],
 		showRankingScore: true,
