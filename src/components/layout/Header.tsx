@@ -57,8 +57,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
-import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import Box from '@mui/material/Box';
 
 import Typography from '@mui/material/Typography';
@@ -447,12 +445,6 @@ export function Header() {
           </ListItemButton>
         ))}
 
-        {/* Language & currency switcher */}
-        <Box sx={{ px: 2, py: 1, display: 'flex', gap: 0.5 }}>
-          <LanguageSwitcher />
-          <CurrencySelector />
-        </Box>
-
         {/* Sign out */}
         {user && (
           <>
@@ -730,10 +722,6 @@ export function Header() {
                   <User style={{ width: 16, height: 16 }} />
                 </Button>
               )}
-
-              {/* Language & currency switcher */}
-              <LanguageSwitcher />
-              <CurrencySelector />
 
               {/* Navigation dropdown (desktop) */}
               <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
