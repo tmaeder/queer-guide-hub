@@ -91,13 +91,6 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
     });
   };
 
-  const _handleSocialLinkChange = (platform: string, value: string) => {
-    setSocialLinks((prev) => ({
-      ...prev,
-      [platform]: value,
-    }));
-  };
-
   const handleCustomLinkChange = (index: number, field: 'platform' | 'url', value: string) => {
     setCustomLinks((prev) => {
       const newLinks = [...prev];
