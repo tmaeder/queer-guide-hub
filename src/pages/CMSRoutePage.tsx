@@ -11,6 +11,7 @@
  *   - Fetches published page by slug from cms_pages
  *   - DOMPurify-sanitized HTML rendering with styled typography
  *   - Hub hierarchy support (parent breadcrumb + child page listing)
+ *   - Legal section: sidebar TOC via LegalPageLayout, custom hub layout
  *   - Loading skeleton + 404 fallback
  *   - SEO meta via useMeta hook
  */
@@ -24,18 +25,45 @@ import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
-import Paper from '@mui/material/Paper';
-import { ChevronRight, FileText } from 'lucide-react';
+import { ChevronRight, FileText, Shield, Cookie, Scale } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import DOMPurify from 'dompurify';
 import { useMeta } from '@/hooks/useMeta';
+import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
+import { transition } from '@/lib/animation';
 import type { CMSPage } from '@/types/cms';
+import type { LucideIcon } from 'lucide-react';
 
 interface CMSRoutePageProps {
   slug: string;
 }
 
-/** Skeleton shown while loading */
+// ── Legal hub icon mapping ──────────────────────────────────────────────────
+const legalPageIcons: Record<string, LucideIcon> = {
+  terms: FileText,
+  privacy: Shield,
+  cookies: Cookie,
+  dmca: Scale,
+};
+
+// ── Heading extraction for TOC ──────────────────────────────────────────────
+function extractSections(html: string): { sections: { id: string; title: string }[]; htmlWithIds: string } {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  const sections: { id: string; title: string }[] = [];
+
+  div.querySelectorAll('h2').forEach((h2) => {
+    const text = h2.textContent?.trim() || '';
+    if (!text) return;
+    const id = h2.id || text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    h2.setAttribute('id', id);
+    sections.push({ id, title: text });
+  });
+
+  return { sections, htmlWithIds: div.innerHTML };
+}
+
+// ── Skeleton ────────────────────────────────────────────────────────────────
 function PageSkeleton() {
   return (
     <Container sx={{ py: 4 }}>
@@ -51,38 +79,69 @@ function PageSkeleton() {
   );
 }
 
-/** Child page card shown on hub pages */
-function ChildPageCard({ page }: { page: CMSPage }) {
-  const slugToPath = (s: string) => `/${s}`;
+// ── Shared HTML body styles ─────────────────────────────────────────────────
+const htmlBodySx = {
+  '& h1': { fontSize: '2rem', fontWeight: 700, mt: 0, mb: 2, lineHeight: 1.2 },
+  '& h2': { fontSize: '1.5rem', fontWeight: 700, mt: 4, mb: 1.5, lineHeight: 1.25 },
+  '& h3': { fontSize: '1.25rem', fontWeight: 600, mt: 3, mb: 1, lineHeight: 1.3 },
+  '& p': { fontSize: '1rem', lineHeight: 1.8, mb: 2 },
+  '& ul, & ol': { pl: 3, mb: 2 },
+  '& li': { mb: 0.75, lineHeight: 1.7 },
+  '& blockquote': {
+    borderLeft: 3,
+    borderColor: 'divider',
+    pl: 2,
+    ml: 0,
+    fontStyle: 'italic',
+    color: 'text.secondary',
+    my: 2,
+  },
+  '& a': { color: 'brand.main', '&:hover': { opacity: 0.85 } },
+  '& img': { maxWidth: '100%', height: 'auto', my: 2 },
+  '& pre': {
+    bgcolor: 'grey.900',
+    color: 'grey.100',
+    p: 2,
+    overflow: 'auto',
+    my: 2,
+    fontSize: '0.875rem',
+  },
+  '& code': {
+    bgcolor: 'action.hover',
+    px: 0.75,
+    py: 0.25,
+    fontSize: '0.875em',
+  },
+  '& table': { borderCollapse: 'collapse', width: '100%', my: 2 },
+  '& th, & td': { border: 1, borderColor: 'divider', px: 1.5, py: 1, textAlign: 'left' },
+  '& th': { bgcolor: 'action.hover', fontWeight: 600 },
+  '& hr': { borderColor: 'divider', my: 3 },
+  '& strong': { fontWeight: 600 },
+  '& .legal-intro': { fontSize: '1.0625rem', color: 'text.secondary', mb: 3 },
+} as const;
 
+// ── Generic child page card (non-legal) ─────────────────────────────────────
+function ChildPageCard({ page }: { page: CMSPage }) {
   return (
-    <Paper
+    <Box
       component={RouterLink}
-      to={slugToPath(page.slug)}
-      elevation={0}
-      variant="outlined"
+      to={`/${page.slug}`}
       sx={{
         p: 2.5,
-        borderRadius: 3,
         textDecoration: 'none',
         color: 'inherit',
         display: 'flex',
         alignItems: 'flex-start',
         gap: 2,
-        transition: 'all 0.2s ease',
-        '&:hover': {
-          borderColor: 'primary.main',
-          bgcolor: 'action.hover',
-          transform: 'translateY(-1px)',
-          boxShadow: '0 2px 8px rgb(0 0 0 / 0.08)',
-        },
+        transition: transition.fast,
+        bgcolor: 'background.paper',
+        '&:hover': { opacity: 0.85 },
       }}
     >
       <Box
         sx={{
           width: 40,
           height: 40,
-          borderRadius: 2.5,
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
           display: 'flex',
@@ -104,10 +163,52 @@ function ChildPageCard({ page }: { page: CMSPage }) {
         )}
       </Box>
       <ChevronRight size={18} style={{ flexShrink: 0, marginTop: 2, color: '#94a3b8' }} />
-    </Paper>
+    </Box>
   );
 }
 
+// ── Legal hub card ──────────────────────────────────────────────────────────
+function LegalHubCard({ page }: { page: CMSPage }) {
+  const Icon = legalPageIcons[page.slug] || FileText;
+
+  return (
+    <Box
+      component={RouterLink}
+      to={`/${page.slug}`}
+      sx={{
+        p: 3,
+        textDecoration: 'none',
+        color: 'inherit',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 2,
+        bgcolor: 'background.paper',
+        transition: transition.fast,
+        '&:hover': {
+          opacity: 0.85,
+          '& .legal-icon': { color: 'brand.main' },
+        },
+      }}
+    >
+      <Box className="legal-icon" sx={{ color: 'text.secondary', transition: transition.fast, mt: 0.25 }}>
+        <Icon size={22} />
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.25 }}>
+          {page.title}
+        </Typography>
+        {page.subtitle && (
+          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+            {page.subtitle}
+          </Typography>
+        )}
+      </Box>
+      <ChevronRight size={16} style={{ flexShrink: 0, marginTop: 4, color: '#94a3b8' }} />
+    </Box>
+  );
+}
+
+// ── Main component ──────────────────────────────────────────────────────────
 export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   const [page, setPage] = useState<CMSPage | null>(null);
   const [parentPage, setParentPage] = useState<CMSPage | null>(null);
@@ -115,7 +216,10 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  // SEO meta
+  const isLegalHub = slug === 'legal';
+  const isLegalChild = page?.parent_slug === 'legal';
+  const isLegalSection = isLegalHub || isLegalChild;
+
   useMeta({
     title: page?.meta_title || page?.title || '',
     description: page?.meta_description || page?.excerpt || '',
@@ -133,7 +237,6 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     setChildPages([]);
 
     try {
-      // Fetch the page
       const { data, error } = await supabase
         .from('cms_pages' as const)
         .select('*')
@@ -149,7 +252,6 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
       const pageData = data as CMSPage;
       setPage(pageData);
 
-      // If page has a parent, fetch it for breadcrumb
       if (pageData.parent_slug) {
         const { data: parent } = await supabase
           .from('cms_pages' as const)
@@ -158,12 +260,9 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           .eq('workflow_state', 'published')
           .single();
 
-        if (parent) {
-          setParentPage(parent as CMSPage);
-        }
+        if (parent) setParentPage(parent as CMSPage);
       }
 
-      // Check if this page is a hub (has children)
       const { data: children } = await supabase
         .from('cms_pages' as const)
         .select('slug, title, subtitle, excerpt, category')
@@ -171,9 +270,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         .eq('workflow_state', 'published')
         .order('title');
 
-      if (children && children.length > 0) {
-        setChildPages(children as CMSPage[]);
-      }
+      if (children && children.length > 0) setChildPages(children as CMSPage[]);
     } catch {
       setNotFound(true);
     } finally {
@@ -181,9 +278,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     }
   }
 
-  if (loading) {
-    return <PageSkeleton />;
-  }
+  if (loading) return <PageSkeleton />;
 
   if (notFound || !page) {
     return (
@@ -198,11 +293,98 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     );
   }
 
-  const sanitizedHtml = page.body_html ? DOMPurify.sanitize(page.body_html) : '';
+  // All CMS HTML is sanitized through DOMPurify before rendering
+  const sanitizedHtml = page.body_html
+    ? DOMPurify.sanitize(page.body_html, { ADD_ATTR: ['id'] })
+    : '';
 
+  // ── Legal hub layout ────────────────────────────────────────────────────
+  if (isLegalHub) {
+    return (
+      <Container sx={{ py: { xs: 4, md: 6 }, maxWidth: 900 }}>
+        <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5 }}>
+          The Legal Stuff
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 600 }}>
+          Transparency matters. Here's everything about how we operate, protect your data, and keep this space safe.
+        </Typography>
+
+        <Box sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+          gap: 1.5,
+        }}>
+          {childPages.map((child) => (
+            <LegalHubCard key={child.slug} page={child} />
+          ))}
+        </Box>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 5 }}>
+          Questions? Reach out at{' '}
+          <Box
+            component="a"
+            href="mailto:legal@queer.guide"
+            sx={{ color: 'brand.main', '&:hover': { opacity: 0.85 } }}
+          >
+            legal@queer.guide
+          </Box>
+        </Typography>
+      </Container>
+    );
+  }
+
+  // ── Legal child pages (terms, privacy, cookies) ─────────────────────────
+  if (isLegalChild && sanitizedHtml) {
+    const { sections, htmlWithIds } = extractSections(sanitizedHtml);
+
+    const formatDate = (d: string) => {
+      try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); }
+      catch { return d; }
+    };
+
+    return (
+      <>
+        {parentPage && (
+          <Container sx={{ pt: 2, maxWidth: 1100 }}>
+            <Breadcrumbs
+              separator={<ChevronRight size={14} style={{ color: '#94a3b8' }} />}
+            >
+              <Link
+                component={RouterLink}
+                to={`/${parentPage.slug}`}
+                underline="hover"
+                color="text.secondary"
+                sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+              >
+                {parentPage.title}
+              </Link>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                {page.title}
+              </Typography>
+            </Breadcrumbs>
+          </Container>
+        )}
+        <LegalPageLayout
+          title={page.title}
+          subtitle={page.subtitle || undefined}
+          lastUpdated={page.updated_at ? formatDate(page.updated_at) : undefined}
+          sections={sections}
+        >
+          <Box
+            dangerouslySetInnerHTML={{ __html: htmlWithIds }}
+            sx={{
+              ...htmlBodySx,
+              '& h1': { display: 'none' },
+            }}
+          />
+        </LegalPageLayout>
+      </>
+    );
+  }
+
+  // ── Default CMS page layout ─────────────────────────────────────────────
   return (
     <Container sx={{ py: 4 }}>
-      {/* Breadcrumb with parent link */}
       {parentPage && (
         <Breadcrumbs
           separator={<ChevronRight size={14} style={{ color: '#94a3b8' }} />}
@@ -223,70 +405,19 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         </Breadcrumbs>
       )}
 
-      {/* Cover image */}
       {page.cover_image_url && (
         <Box
           component="img"
           src={page.cover_image_url}
           alt={page.cover_image_alt || page.title}
-          sx={{
-            width: '100%',
-            maxHeight: 400,
-            objectFit: 'cover',
-            borderRadius: 2,
-            mb: 3,
-          }}
+          sx={{ width: '100%', maxHeight: 400, objectFit: 'cover', mb: 3 }}
         />
       )}
 
-      {/* Body */}
       {sanitizedHtml && (
-        <Box
-          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-          sx={{
-            '& h1': { fontSize: '2rem', fontWeight: 700, mt: 0, mb: 2, lineHeight: 1.2 },
-            '& h2': { fontSize: '1.5rem', fontWeight: 700, mt: 4, mb: 1.5, lineHeight: 1.25 },
-            '& h3': { fontSize: '1.25rem', fontWeight: 600, mt: 3, mb: 1, lineHeight: 1.3 },
-            '& p': { fontSize: '1rem', lineHeight: 1.8, mb: 2 },
-            '& ul, & ol': { pl: 3, mb: 2 },
-            '& li': { mb: 0.75, lineHeight: 1.7 },
-            '& blockquote': {
-              borderLeft: 3,
-              borderColor: 'divider',
-              pl: 2,
-              ml: 0,
-              fontStyle: 'italic',
-              color: 'text.secondary',
-              my: 2,
-            },
-            '& a': { color: 'primary.main', textDecoration: 'underline' },
-            '& img': { maxWidth: '100%', height: 'auto', borderRadius: 1, my: 2 },
-            '& pre': {
-              bgcolor: 'grey.900',
-              color: 'grey.100',
-              borderRadius: 1,
-              p: 2,
-              overflow: 'auto',
-              my: 2,
-              fontSize: '0.875rem',
-            },
-            '& code': {
-              bgcolor: 'action.hover',
-              borderRadius: 0.5,
-              px: 0.75,
-              py: 0.25,
-              fontSize: '0.875em',
-            },
-            '& table': { borderCollapse: 'collapse', width: '100%', my: 2 },
-            '& th, & td': { border: 1, borderColor: 'divider', px: 1.5, py: 1, textAlign: 'left' },
-            '& th': { bgcolor: 'action.hover', fontWeight: 600 },
-            '& hr': { borderColor: 'divider', my: 3 },
-            '& strong': { fontWeight: 600 },
-          }}
-        />
+        <Box dangerouslySetInnerHTML={{ __html: sanitizedHtml }} sx={htmlBodySx} />
       )}
 
-      {/* Child pages section for hub pages */}
       {childPages.length > 0 && (
         <Box sx={{ mt: 4 }}>
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
@@ -300,8 +431,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         </Box>
       )}
 
-      {/* Tags */}
-      {page.tags && page.tags.length > 0 && (
+      {!isLegalSection && page.tags && page.tags.length > 0 && (
         <Box sx={{ mt: 4, pt: 2, borderTop: 1, borderColor: 'divider' }}>
           {page.tags.map((tag) => (
             <Chip key={tag} label={tag} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
