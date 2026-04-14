@@ -83,7 +83,8 @@ export default {
       const filterParts = buildFilters(filters)
 
       // Use multi-search (federated) to search all indexes at once
-      const queries = requestedIndexes.map(indexUid => ({
+      const useHybrid = query.trim().split(/\s+/).length >= 3
+      const buildQueries = (hybrid: boolean) => requestedIndexes.map(indexUid => ({
         indexUid,
         q: query.trim(),
         limit: Math.max(3, Math.ceil(hitsPerPage / requestedIndexes.length)),
@@ -91,18 +92,29 @@ export default {
         facets: INDEX_FACETS[indexUid] || ['type'],
         attributesToHighlight: ['title', 'description'],
         showRankingScore: true,
-        // Hybrid search: 3+ word queries get semantic boost via CF Workers AI embeddings
-        ...(query.trim().split(/\s+/).length >= 3 ? { hybrid: { semanticRatio: 0.5, embedder: 'default' } } : {}),
+        ...(hybrid ? { hybrid: { semanticRatio: 0.5, embedder: 'default' } } : {}),
       }))
 
-      const meiliResponse = await fetch(`${env.MEILISEARCH_URL}/multi-search`, {
+      let meiliResponse = await fetch(`${env.MEILISEARCH_URL}/multi-search`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${env.MEILISEARCH_SEARCH_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ queries }),
+        body: JSON.stringify({ queries: buildQueries(useHybrid) }),
       })
+
+      // If hybrid search fails (embeddings not ready), retry without it
+      if (!meiliResponse.ok && useHybrid) {
+        meiliResponse = await fetch(`${env.MEILISEARCH_URL}/multi-search`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.MEILISEARCH_SEARCH_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ queries: buildQueries(false) }),
+        })
+      }
 
       if (!meiliResponse.ok) {
         const errText = await meiliResponse.text()
