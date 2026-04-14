@@ -1,5 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -919,6 +920,8 @@ export default function VenueDetail() {
           )}
         </TabsContent>
       </Tabs>
+
+      <SimilarItems entity={{ type: 'venue', id: venue.id }} className="mt-8" />
 
       <AddToTripDialog
         open={addToTripOpen}

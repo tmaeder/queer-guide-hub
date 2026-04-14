@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { TrendingByType } from '@/components/discovery/TrendingByType';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
@@ -326,6 +327,8 @@ const Events = () => {
             </>
           }
         />
+
+        <TrendingByType type="event" className="mt-4 mb-6" />
 
         {/* Filters */}
         <Box

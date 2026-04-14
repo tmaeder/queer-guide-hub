@@ -1,5 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useEffect, useState } from 'react';
 import {
@@ -751,6 +752,7 @@ export default function PersonalityDetail() {
           )}
         </Box>
       </Box>
+      <SimilarItems entity={{ type: 'personality', id: personality.id }} className="mt-8" />
     </Box>
   );
 }

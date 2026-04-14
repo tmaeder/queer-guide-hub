@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -294,6 +295,17 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
             <PrivacyTab formData={formData} hasPasskey={hasPasskey} onPrivacyChange={handlePrivacyChange} />
           </TabsContent>
         </Tabs>
+
+        {/* Search personalization entry point */}
+        <Box sx={{ mt: 4, p: 3, borderRadius: 2, bgcolor: 'action.hover' }}>
+          <Box sx={{ fontWeight: 600, mb: 1 }}>Personalize your search</Box>
+          <Box sx={{ fontSize: '0.875rem', mb: 2, color: 'text.secondary' }}>
+            Pick vibes, home city, and languages so search results learn what you like.
+          </Box>
+          <LocalizedLink to="/onboarding/search" style={{ color: 'inherit', fontWeight: 500 }}>
+            Personalize →
+          </LocalizedLink>
+        </Box>
       </Box>
 
       {/* Auto-save status bar */}

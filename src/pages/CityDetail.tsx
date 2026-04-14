@@ -1,6 +1,8 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -1384,6 +1386,9 @@ export default function CityDetail() {
               )}
             </TabsContent>
       </DetailTabs>
+
+      <TrendingStrip city={city.name} className="mt-8" />
+      <SimilarItems entity={{ type: 'city', id: city.id }} className="mt-6" title="Similar cities" />
 
       <CreateTripDialog open={createTripOpen} onClose={() => setCreateTripOpen(false)} />
     </Box>

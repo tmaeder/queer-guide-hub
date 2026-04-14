@@ -6,6 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router';
 import './i18n';
 import { AuthProvider } from '@/hooks/useAuth';
+import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
 import { AccessibilityProvider } from '@/hooks/useAccessibility';
 import { CookieConsentProvider } from '@/hooks/useCookieConsent';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
@@ -50,6 +51,7 @@ const About = lazyRetry(() => import('./pages/About'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
+const SearchPersonalization = lazyRetry(() => import('./pages/onboarding/SearchPersonalization'));
 
 // Unified Admin Shell (wraps all /admin/* routes)
 const AdminShell = lazy(() =>
@@ -225,6 +227,9 @@ function lazyRetry<T extends React.ComponentType<unknown>>(
 const AppRoutes = () => {
   const location = useLocation();
 
+  // Auto-fire `view` events into the search-proxy bias vector on route change.
+  useSearchTelemetry();
+
   // Move focus to main content on route change (a11y: WCAG 2.4.3)
   const mainRef = React.useRef<HTMLElement>(null);
   const isFirstRender = React.useRef(true);
@@ -352,6 +357,7 @@ const AppRoutes = () => {
               {/* Auth routes — no locale prefix */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
+              <Route path="/onboarding/search" element={<SearchPersonalization />} />
               {/* ── Unified Admin Console ── */}
               {/* All /admin/* routes wrapped in AdminShell layout with sidebar */}
               <Route
