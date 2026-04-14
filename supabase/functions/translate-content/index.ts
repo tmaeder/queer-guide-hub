@@ -1,50 +1,51 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const DEEPL_API_KEY = Deno.env.get("DEEPL_API_KEY");
+const CF_ACCOUNT_ID = Deno.env.get("CF_ACCOUNT_ID") || "7aa3765cc5f50f2b681b782eb4a8d296";
+const CF_API_TOKEN = Deno.env.get("CF_API_TOKEN");
 
 const LANG_MAP: Record<string, string> = {
-  en: "EN",
-  de: "DE",
-  es: "ES",
-  fr: "FR",
-  pt: "PT-BR",
-  it: "IT",
-  ru: "RU",
-  zh: "ZH-HANS",
-  ja: "JA",
-  ko: "KO",
-  ar: "AR",
+  en: "english",
+  de: "german",
+  es: "spanish",
+  fr: "french",
+  pt: "portuguese",
+  it: "italian",
+  ru: "russian",
+  zh: "chinese",
+  ja: "japanese",
+  ko: "korean",
+  ar: "arabic",
 };
 
-async function translateWithDeepL(
-  texts: string[],
+async function translateWithWorkersAI(
+  text: string,
   targetLang: string,
-): Promise<string[]> {
-  const target = LANG_MAP[targetLang] || targetLang.toUpperCase();
+): Promise<string> {
+  const target = LANG_MAP[targetLang] || targetLang;
 
-  const res = await fetch("https://api-free.deepl.com/v2/translate", {
-    method: "POST",
-    headers: {
-      Authorization: `DeepL-Auth-Key ${DEEPL_API_KEY}`,
-      "Content-Type": "application/json",
+  const res = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/m2m100-1.2b`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${CF_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text,
+        source_lang: "english",
+        target_lang: target,
+      }),
     },
-    body: JSON.stringify({
-      text: texts,
-      source_lang: "EN",
-      target_lang: target,
-      tag_handling: "html",
-    }),
-  });
+  );
 
   if (!res.ok) {
-    throw new Error(`DeepL API error: ${res.status} ${await res.text()}`);
+    throw new Error(`Workers AI error: ${res.status} ${await res.text()}`);
   }
 
   const data = await res.json();
-  return data.translations.map(
-    (t: { text: string }) => t.text,
-  );
+  return data.result?.translated_text || text;
 }
 
 Deno.serve(async (req: Request) => {
@@ -92,21 +93,19 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!DEEPL_API_KEY) {
+    if (!CF_API_TOKEN) {
       return new Response(
-        JSON.stringify({ error: "DeepL API key not configured" }),
+        JSON.stringify({ error: "Cloudflare API token not configured. Set CF_API_TOKEN in edge function secrets." }),
         { status: 500 },
       );
     }
 
-    const textsToTranslate: string[] = [];
-    const fieldOrder: string[] = [];
+    const textsToTranslate: { field: string; text: string }[] = [];
 
     for (const field of fields) {
       const value = source_data[field];
       if (value && typeof value === "string" && value.trim().length > 0) {
-        textsToTranslate.push(value);
-        fieldOrder.push(field);
+        textsToTranslate.push({ field, text: value });
       }
     }
 
@@ -114,11 +113,10 @@ Deno.serve(async (req: Request) => {
       return new Response(JSON.stringify({ translations: {} }));
     }
 
-    const translated = await translateWithDeepL(textsToTranslate, target_language);
-
+    // Translate each field (m2m100 handles one text at a time)
     const translations: Record<string, string> = {};
-    for (let i = 0; i < fieldOrder.length; i++) {
-      translations[fieldOrder[i]] = translated[i];
+    for (const { field, text } of textsToTranslate) {
+      translations[field] = await translateWithWorkersAI(text, target_language);
     }
 
     // Upsert translations into DB
@@ -138,7 +136,7 @@ Deno.serve(async (req: Request) => {
             language: target_language,
             value,
             status: "machine",
-            machine_source: "deepl",
+            machine_source: "cloudflare-workers-ai",
             translated_by: user.id,
           },
           { onConflict: "table_name,record_id,field_name,language" },
