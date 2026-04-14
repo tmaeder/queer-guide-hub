@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { TrendingStrip } from '@/components/discovery/TrendingStrip';
+import { RecommendedForYou } from '@/components/discovery/RecommendedForYou';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -223,6 +225,12 @@ const Index = React.memo(() => {
             </Box>
           ))}
         </StaggerGrid>
+      </Box>
+
+      {/* ── Discovery widgets (search v2) ────────────────────────────── */}
+      <Box component="section" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 4, md: 6 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <RecommendedForYou />
+        <TrendingStrip />
       </Box>
 
       {/* ── Features Grid ────────────────────────────────────────────── */}

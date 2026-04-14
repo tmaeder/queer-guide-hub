@@ -3,6 +3,7 @@ import { Heart } from "lucide-react";
 import { Button } from "./button";
 import { useFavorites, FavoriteType } from "@/hooks/useFavorites";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useSaveAction } from "@/hooks/useSearchActions";
 
 interface FavoriteButtonProps {
   itemId: string;
@@ -32,6 +33,7 @@ export const FavoriteButton = ({
   const { isFavorited, toggleFavorite } = useFavorites(type);
   const favorited = isFavorited(itemId);
   const { trigger } = useHaptics();
+  const trackSave = useSaveAction();
 
   const [animating, setAnimating] = React.useState(false);
   const timerRef = useRef<number>();
@@ -48,6 +50,8 @@ export const FavoriteButton = ({
       timerRef.current = window.setTimeout(() => setAnimating(false), 400);
     }
     toggleFavorite(itemId);
+    // Feed search-proxy bias vector. `favorited` is the previous state — invert.
+    trackSave({ type, id: itemId }, !favorited);
   };
 
   const iconSize = iconPixels[size];

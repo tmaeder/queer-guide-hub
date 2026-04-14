@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { formatCurrency } from '@/lib/currency';
+import { useTrackClick } from '@/hooks/useSearchActions';
 import { useLocation } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
@@ -80,6 +81,7 @@ const contentTypeLabels: Record<string, string> = {
 };
 
 export const UniversalSearchBar = () => {
+  const trackClickFromSearch = useTrackClick();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -213,6 +215,10 @@ export const UniversalSearchBar = () => {
   const handleSelectSuggestion = (suggestion: SearchSuggestion) => {
     const displayName = suggestion.name || suggestion.title;
     setQuery(displayName);
+    // Feed bias vector with the click signal.
+    if (suggestion.id && suggestion.type) {
+      trackClickFromSearch({ type: suggestion.type, id: suggestion.id }, 'autocomplete', { query: displayName });
+    }
     switch (suggestion.type) {
       case 'venue':
         navigate(`/venues/${suggestion.slug || suggestion.id}`);

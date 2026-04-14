@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { SimilarItems } from '@/components/discovery/SimilarItems';
 import {
   MapPin,
   Globe,
@@ -610,6 +611,7 @@ export default function QueerVillageDetail() {
           </Tabs>
         </CardContent>
       </Card>
+      <SimilarItems entity={{ type: 'queer_village', id: village.id }} className="mt-8" />
     </Box>
   );
 }

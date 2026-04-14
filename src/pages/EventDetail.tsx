@@ -1,5 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { formatCurrency } from '@/lib/currency';
 import { useEffect, useRef, useState } from 'react';
@@ -1022,6 +1023,8 @@ export default function EventDetail() {
         eventVenue={event.venues?.name}
         eventPath={`/events/${event.slug || event.id}`}
       />
+
+      <SimilarItems entity={{ type: 'event', id: event.id }} className="mt-8" />
     </Container>
   );
 }
