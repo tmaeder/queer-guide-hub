@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { buildAviasalesUrl, getAffiliateUrl } from '@/utils/aviasalesUrl';
 import { trackTravelEvent } from '@/utils/travelAnalytics';
 import type { TravelDeal } from '@/hooks/useTravelDeals';
+import { useAirlineData } from '@/hooks/useAirlineData';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
@@ -94,7 +95,17 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
       <CardContent style={{ padding: 16 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
-            <Plane style={{ height: 16, width: 16, flexShrink: 0, color: 'var(--primary)' }} />
+            {deal.airline ? (
+              <Box
+                component="img"
+                src={`https://pics.avs.io/32/32/${deal.airline}.png`}
+                alt={deal.airline}
+                sx={{ width: 20, height: 20, flexShrink: 0, borderRadius: '50%' }}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }}
+              />
+            ) : (
+              <Plane style={{ height: 16, width: 16, flexShrink: 0, color: 'var(--primary)' }} />
+            )}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', minWidth: 0 }}>
               <Typography component="span" sx={{ fontWeight: 700, fontSize: '0.875rem' }}>
                 {deal.origin}

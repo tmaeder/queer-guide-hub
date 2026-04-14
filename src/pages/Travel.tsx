@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { TravelPrefsPrompt } from '@/components/personalization/TravelPrefsPrompt';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
+import { SpecialOffersSection } from '@/components/travel/SpecialOffersSection';
 import type { BookingResult } from '@/lib/booking/types';
 
 type BookingTab = 'flights' | 'hotels' | 'activities';
@@ -110,6 +111,7 @@ export default function Travel() {
   return (
     <Container sx={{ py: { xs: 6, md: 10 } }}>
       <TravelPrefsPrompt />
+      <SpecialOffersSection />
 
       {/* Hero */}
       <Paper
