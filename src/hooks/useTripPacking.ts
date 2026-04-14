@@ -49,6 +49,54 @@ const TEMPLATES: Record<string, { name: string; category: string }[]> = {
     { name: 'Sandals', category: 'clothing' },
     { name: 'Sunglasses', category: 'clothing' },
   ],
+  // Climate-based templates
+  'cold-weather': [
+    { name: 'Winter jacket', category: 'clothing' },
+    { name: 'Thermal layers', category: 'clothing' },
+    { name: 'Gloves', category: 'clothing' },
+    { name: 'Warm hat / beanie', category: 'clothing' },
+    { name: 'Warm socks', category: 'clothing' },
+    { name: 'Lip balm', category: 'toiletries' },
+  ],
+  'hot-weather': [
+    { name: 'Light clothing', category: 'clothing' },
+    { name: 'Sunscreen SPF 50+', category: 'toiletries' },
+    { name: 'Hat / cap', category: 'clothing' },
+    { name: 'Reusable water bottle', category: 'other' },
+    { name: 'Insect repellent', category: 'toiletries' },
+  ],
+  'rainy-season': [
+    { name: 'Rain jacket / poncho', category: 'clothing' },
+    { name: 'Waterproof bag', category: 'other' },
+    { name: 'Umbrella', category: 'other' },
+    { name: 'Quick-dry clothes', category: 'clothing' },
+  ],
+  // Activity-based templates
+  nightlife: [
+    { name: 'Going-out outfit', category: 'clothing' },
+    { name: 'Comfortable shoes for dancing', category: 'clothing' },
+    { name: 'Earplugs', category: 'other' },
+    { name: 'Portable phone charger', category: 'electronics' },
+  ],
+  hiking: [
+    { name: 'Hiking boots', category: 'clothing' },
+    { name: 'Daypack / backpack', category: 'other' },
+    { name: 'First aid kit', category: 'safety' },
+    { name: 'Trail snacks', category: 'other' },
+    { name: 'Headlamp', category: 'electronics' },
+  ],
+  culture: [
+    { name: 'Modest clothing for religious sites', category: 'clothing' },
+    { name: 'Guidebook / phrasebook', category: 'documents' },
+    { name: 'Camera', category: 'electronics' },
+    { name: 'Notebook', category: 'other' },
+  ],
+  wellness: [
+    { name: 'Yoga mat / travel mat', category: 'other' },
+    { name: 'Workout clothes', category: 'clothing' },
+    { name: 'Resistance band', category: 'other' },
+    { name: 'Supplements / vitamins', category: 'toiletries' },
+  ],
 };
 
 export function useTripPacking(tripId: string | undefined) {
@@ -161,3 +209,46 @@ export function usePackingMutations(tripId: string) {
 
   return { addPackingItem, updatePackingItem, toggleChecked, deletePackingItem, addPackingTemplate };
 }
+
+/**
+ * Auto-suggest packing templates based on destination latitude (climate)
+ * and trip interests/activities.
+ */
+export function getSuggestedTemplates(options: {
+  latitude?: number | null;
+  month?: number; // 1-12
+  interests?: string[];
+  equalityScore?: number | null;
+}): string[] {
+  const suggestions: string[] = ['essentials'];
+  const { latitude, month = new Date().getMonth() + 1, interests = [], equalityScore } = options;
+
+  // Climate-based suggestions
+  if (latitude != null) {
+    const absLat = Math.abs(latitude);
+    const isNorthernHemisphere = latitude >= 0;
+    const isWinter = isNorthernHemisphere ? (month >= 11 || month <= 3) : (month >= 5 && month <= 9);
+    const isSummer = !isWinter;
+
+    if (absLat > 50 && isWinter) suggestions.push('cold-weather');
+    if (absLat < 35 || isSummer) suggestions.push('hot-weather');
+    if (absLat < 25 && (month >= 6 && month <= 10)) suggestions.push('rainy-season');
+    if (absLat < 35 && isSummer) suggestions.push('beach');
+  }
+
+  // Interest-based suggestions
+  for (const interest of interests) {
+    const key = interest.toLowerCase();
+    if (TEMPLATES[key]) suggestions.push(key);
+  }
+
+  // Safety-based
+  if (equalityScore != null && equalityScore < 60) {
+    suggestions.push('lgbtq-safety');
+  }
+
+  // Dedupe
+  return [...new Set(suggestions)];
+}
+
+export { TEMPLATES };

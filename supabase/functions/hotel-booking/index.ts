@@ -72,6 +72,11 @@ serve(async (req) => {
       });
     }
 
+    // Send confirmation email (fire-and-forget)
+    supabase.functions.invoke('booking-confirmation', {
+      body: { bookingId: booking.id },
+    }).catch((e: unknown) => console.warn('Confirmation email failed:', e));
+
     return jsonResponse({
       success: true,
       bookingId: booking.id,

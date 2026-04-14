@@ -22,6 +22,9 @@ import { useActivitySearch } from '@/hooks/useActivitySearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 import { useTranslation } from 'react-i18next';
 import { TravelPrefsPrompt } from '@/components/personalization/TravelPrefsPrompt';
+import { useRecommendations } from '@/hooks/useRecommendations';
+import { useTrackEvent } from '@/hooks/useTrackEvent';
+import type { BookingResult } from '@/lib/booking/types';
 
 type BookingTab = 'flights' | 'hotels' | 'activities';
 
@@ -70,6 +73,27 @@ export default function Travel() {
     limit: 9,
     enabled: activeTab === 'activities' && !!activityCity,
   });
+
+  // Personalized ranking: boost deals matching recommended destinations
+  const { data: recs } = useRecommendations({ recType: 'destination', limit: 20 });
+  const { track } = useTrackEvent();
+
+  const recCityIds = new Set((recs || []).map((r) => r.entity_id));
+  const usePersonalized = recCityIds.size > 0;
+
+  // A/B: 50% of sessions see personalized ranking (when recs available)
+  const abGroup = typeof window !== 'undefined'
+    ? (parseInt(sessionStorage.getItem('qg_session_id')?.slice(-2) || '0', 16) % 2 === 0 ? 'personalized' : 'control')
+    : 'control';
+
+  const rankResults = <T extends BookingResult>(results: T[]): T[] => {
+    if (!usePersonalized || abGroup !== 'personalized') return results;
+    return [...results].sort((a, b) => {
+      const aBoost = a.providerData?.cityId && recCityIds.has(a.providerData.cityId as string) ? 10 : 0;
+      const bBoost = b.providerData?.cityId && recCityIds.has(b.providerData.cityId as string) ? 10 : 0;
+      return (bBoost - aBoost) || (a.price - b.price);
+    });
+  };
 
   const handleTabChange = (_: unknown, value: BookingTab) => {
     setActiveTab(value);
@@ -212,7 +236,7 @@ export default function Travel() {
             </ResultsGrid>
           ) : hotelResults && hotelResults.length > 0 ? (
             <ResultsGrid>
-              {hotelResults.map((hotel) => (
+              {rankResults(hotelResults).map((hotel) => (
                 <UnifiedBookingCard key={hotel.id} result={hotel} />
               ))}
             </ResultsGrid>
@@ -241,7 +265,7 @@ export default function Travel() {
             </ResultsGrid>
           ) : activityResults && activityResults.length > 0 ? (
             <ResultsGrid>
-              {activityResults.map((activity) => (
+              {rankResults(activityResults).map((activity) => (
                 <UnifiedBookingCard key={activity.id} result={activity} />
               ))}
             </ResultsGrid>
