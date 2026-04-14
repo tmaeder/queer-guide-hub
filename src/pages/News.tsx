@@ -16,7 +16,8 @@ import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Paper from "@mui/material/Paper";
+import Paper from "@mui/material/Paper";import { useTranslation } from 'react-i18next';
+
 
 const ARTICLES_PER_PAGE = 24;
 
@@ -57,6 +58,7 @@ export default function News() {
     },
   });
 
+  const { t } = useTranslation();
   const {
     articles,
     sources,
@@ -318,8 +320,8 @@ export default function News() {
     <Box sx={{ minHeight: '100vh' }}>
       <Container sx={{ py: { xs: 6, md: 10 } }}>
         <PageHeader
-          title="News"
-          subtitle="Stay informed with the latest news and stories from the LGBTQ+ community worldwide"
+          title={t('pages.news.title', 'News')}
+          subtitle={t('pages.news.subtitle', 'Stay informed with the latest news and stories from the LGBTQ+ community worldwide')}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -403,7 +405,7 @@ export default function News() {
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2 }}>
             <Box sx={{ position: 'relative', flex: 1, maxWidth: '28rem' }}>
               <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-              <Input placeholder="Quick search articles..." value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} aria-label="Search articles" />
+              <Input placeholder={t('pages.news.searchPlaceholder', 'Quick search articles...')} value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} aria-label="Search articles" />
               {quickSearch && (
                 <Button variant="ghost" size="sm" onClick={() => handleQuickSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', height: 24, width: 24, padding: 0 }}>
                   <X style={{ width: 16, height: 16 }} />
@@ -456,7 +458,7 @@ export default function News() {
           <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'background.paper' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Filter style={{ width: 16, height: 16 }} />
-              <Typography variant="body2" color="text.secondary">Active filters</Typography>
+              <Typography variant="body2" color="text.secondary">{t('pages.news.activeFilters', 'Active filters')}</Typography>
               {quickSearch && <Badge variant="outline">Search: {quickSearch}</Badge>}
               {activeCategory && <Badge variant="outline">Category: {categoriesMap[activeCategory]?.name || activeCategory}</Badge>}
               {currentFilters.sourceId && (
@@ -467,7 +469,7 @@ export default function News() {
               )}
               {currentFilters.featured !== undefined && <Badge variant="outline">Featured only</Badge>}
             </Box>
-            <Button variant="ghost" size="sm" onClick={clearAllFilters} aria-label="Clear all filters">Clear All</Button>
+            <Button variant="ghost" size="sm" onClick={clearAllFilters} aria-label="Clear all filters">{t('pages.news.clearAll', 'Clear All')}</Button>
           </Paper>
         )}
 
@@ -489,7 +491,7 @@ export default function News() {
             {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
 
             {!loading && !error && sortedArticles.length === 0 && (
-              <EmptyState icon={Newspaper} title="The newsroom is quiet" description="No stories right now — check back soon." mood="encouraging" />
+              <EmptyState icon={Newspaper} title={t('pages.news.emptyTitle', 'The newsroom is quiet')} description={t('pages.news.emptyDescription', 'No stories right now — check back soon.')} mood="encouraging" />
             )}
 
             {!loading && paginatedArticles.length > 0 && (
@@ -617,7 +619,7 @@ export default function News() {
                 {totalPages > 1 && (
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, pt: 2 }}>
                     <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <ChevronLeft style={{ width: 16, height: 16 }} /> Previous
+                      <ChevronLeft style={{ width: 16, height: 16 }} /> {t('pages.news.previous', 'Previous')}
                     </Button>
                     <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
                       {getPageNumbers().map((page, i) =>

@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Calendar, MapPin, Music } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardImage } from '@/components/ui/card';
@@ -37,7 +37,7 @@ export function FestivalCard({ festival }: FestivalCardProps) {
   const heroImage = festival.images && festival.images.length > 0 ? festival.images[0] : null;
 
   return (
-    <Link to={`/festivals/${festival.id}`} style={{ textDecoration: 'none' }}>
+    <LocalizedLink to={`/festivals/${festival.id}`} style={{ textDecoration: 'none' }}>
       <Card hoverable>
         <CardImage
           src={heroImage}
@@ -95,6 +95,6 @@ export function FestivalCard({ festival }: FestivalCardProps) {
           )}
         </Box>
       </Card>
-    </Link>
+    </LocalizedLink>
   );
 }

@@ -3,7 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Eye, Clock, MapPin, Tag, Newspaper } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Tables } from '@/integrations/supabase/types';
-import { Link, useNavigate } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
@@ -71,7 +72,7 @@ export const NewsCard = ({
   categoriesMap = {},
   variant = 'default',
 }: NewsCardProps) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [imgFailed, setImgFailed] = useState(false);
 
   if (loading || !article) {
@@ -422,17 +423,17 @@ export const NewsCard = ({
             <MapPin style={{ height: 14, width: 14, flexShrink: 0 }} />
             {linkedCities.map((city: { id: string; name: string | undefined; slug?: string }, i: number) => (
               <span key={city.id}>
-                <Link to={`/city/${city.slug || city.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                <LocalizedLink to={`/city/${city.slug || city.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
                   {city.name}
-                </Link>
+                </LocalizedLink>
                 {(i < linkedCities.length - 1 || linkedCountries.length > 0) && ', '}
               </span>
             ))}
             {linkedCountries.map((country: { id: string; name: string | undefined; slug?: string }, i: number) => (
               <span key={country.id}>
-                <Link to={`/country/${country.slug || country.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                <LocalizedLink to={`/country/${country.slug || country.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
                   {country.name}
-                </Link>
+                </LocalizedLink>
                 {i < linkedCountries.length - 1 && ', '}
               </span>
             ))}

@@ -1,5 +1,5 @@
 import { useTranslation, Trans } from 'react-i18next';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -44,7 +44,7 @@ export function ConsentBlock({ value, onChange, errors }: Props) {
         label={
           <Typography variant="body2" sx={{ color: errorColor('terms') }}>
             <Trans i18nKey="auth.consent.terms">
-              I agree to the <Link to="/terms">Terms of Service</Link>
+              I agree to the <LocalizedLink to="/terms">Terms of Service</LocalizedLink>
             </Trans>
           </Typography>
         }
@@ -60,7 +60,7 @@ export function ConsentBlock({ value, onChange, errors }: Props) {
         label={
           <Typography variant="body2" sx={{ color: errorColor('privacy') }}>
             <Trans i18nKey="auth.consent.privacy">
-              I agree to the <Link to="/privacy">Privacy Policy</Link>
+              I agree to the <LocalizedLink to="/privacy">Privacy Policy</LocalizedLink>
             </Trans>
           </Typography>
         }

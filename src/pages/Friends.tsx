@@ -1,4 +1,5 @@
-import { Link, useNavigate } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function Friends() {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
   const {
@@ -197,12 +198,12 @@ export default function Friends() {
                                   </AvatarFallback>
                                 </Avatar>
                                 <Box>
-                                  <Link
+                                  <LocalizedLink
                                     to={`/users/${friendId}`}
                                     style={{ fontWeight: 500, transition: 'color 0.2s' }}
                                   >
                                     {profile?.display_name || 'Unknown User'}
-                                  </Link>
+                                  </LocalizedLink>
                                   {profile?.location && (
                                     <Typography variant="body2" color="text.secondary">
                                       {profile.location}
@@ -268,12 +269,12 @@ export default function Friends() {
                                   </AvatarFallback>
                                 </Avatar>
                                 <Box>
-                                  <Link
+                                  <LocalizedLink
                                     to={`/users/${request.user_id}`}
                                     style={{ fontWeight: 500, transition: 'color 0.2s' }}
                                   >
                                     {profile?.display_name || 'Unknown User'}
-                                  </Link>
+                                  </LocalizedLink>
                                   <Typography variant="body2" color="text.secondary">
                                     Sent you a friend request
                                   </Typography>

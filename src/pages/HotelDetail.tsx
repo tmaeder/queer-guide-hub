@@ -1,4 +1,5 @@
-import { useParams, Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -28,6 +29,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
+import { useTranslation } from 'react-i18next';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 
@@ -48,6 +50,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default function HotelDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [hotel, setHotel] = useState<HotelWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,7 +79,7 @@ export default function HotelDetail() {
         if (error) throw error;
         setHotel(data);
       } catch (_error) {
-        toast({ title: 'Error', description: 'Failed to load hotel details.', variant: 'destructive' });
+        toast({ title: t('common.error', 'Error'), description: t('pages.hotelDetail.loadFailed', 'Failed to load hotel details.'), variant: 'destructive' });
       } finally {
         setLoading(false);
       }
@@ -110,7 +113,7 @@ export default function HotelDetail() {
           Hotel not found
         </Typography>
         <Button asChild variant="outline">
-          <Link to="/hotels">Back to Hotels</Link>
+          <LocalizedLink to="/hotels">Back to Hotels</LocalizedLink>
         </Button>
       </Container>
     );
@@ -123,7 +126,7 @@ export default function HotelDetail() {
   return (
     <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
-      <Link
+      <LocalizedLink
         to="/hotels"
         style={{
           display: 'inline-flex',
@@ -135,8 +138,8 @@ export default function HotelDetail() {
         }}
       >
         <ArrowLeft style={{ width: 16, height: 16 }} />
-        <Typography variant="body2">Back to Hotels</Typography>
-      </Link>
+        <Typography variant="body2">{t('pages.hotelDetail.backToHotels', 'Back to Hotels')}</Typography>
+      </LocalizedLink>
 
       {/* Hero Image */}
       {heroImage && (
@@ -247,7 +250,7 @@ export default function HotelDetail() {
       {/* Content Tabs */}
       <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="overview">{t('pages.hotelDetail.overview', 'Overview')}</TabsTrigger>
           {hotel.images && hotel.images.length > 1 && (
             <TabsTrigger value="photos">Photos ({hotel.images.length})</TabsTrigger>
           )}
@@ -267,7 +270,7 @@ export default function HotelDetail() {
               {hotel.description && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>About</CardTitle>
+                    <CardTitle>{t('pages.hotelDetail.about', 'About')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -280,7 +283,7 @@ export default function HotelDetail() {
               {hotel.queer_safety_notes && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Safety Notes</CardTitle>
+                    <CardTitle>{t('pages.hotelDetail.safetyNotes', 'Safety Notes')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Typography variant="body2">{hotel.queer_safety_notes}</Typography>
@@ -291,7 +294,7 @@ export default function HotelDetail() {
               {hotel.amenities && hotel.amenities.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Amenities</CardTitle>
+                    <CardTitle>{t('pages.hotelDetail.amenities', 'Amenities')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -314,7 +317,7 @@ export default function HotelDetail() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Card>
                 <CardHeader>
-                  <CardTitle>Contact</CardTitle>
+                  <CardTitle>{t('pages.hotelDetail.contact', 'Contact')}</CardTitle>
                 </CardHeader>
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   {hotel.address && (
@@ -345,7 +348,7 @@ export default function HotelDetail() {
               {hotel.tags && hotel.tags.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Tags</CardTitle>
+                    <CardTitle>{t('pages.hotelDetail.tags', 'Tags')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>

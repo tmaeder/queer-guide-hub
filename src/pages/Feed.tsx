@@ -21,9 +21,11 @@ import { AuthGate } from '@/components/layout/AuthGate';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useTranslation } from 'react-i18next';
 
 export default function Feed() {
   const [searchTerm, setSearchTerm] = useState('');
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('recent');
 
   const {
@@ -70,7 +72,7 @@ export default function Feed() {
                 <CardContent style={{ padding: 16, textAlign: 'center' }}>
                   <Users style={{ height: 24, width: 24, margin: '0 auto 8px' }} />
                   <Typography variant="h5" sx={{ fontWeight: 700 }}>{posts.length}</Typography>
-                  <Typography variant="body2" color="text.secondary">Active Posts</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('pages.feed.activePosts', 'Active Posts')}</Typography>
                 </CardContent>
               </Card>
               <Card>
@@ -79,7 +81,7 @@ export default function Feed() {
                   <Typography variant="h5" sx={{ fontWeight: 700 }}>
                     {posts.reduce((sum, post) => sum + (post.likes_count || 0), 0)}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">Total Likes</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('pages.feed.totalLikes', 'Total Likes')}</Typography>
                 </CardContent>
               </Card>
               <Card>
@@ -88,7 +90,7 @@ export default function Feed() {
                   <Typography variant="h5" sx={{ fontWeight: 700 }}>
                     {posts.reduce((sum, post) => sum + (post.comments_count || 0), 0)}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">Comments</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('pages.feed.comments', 'Comments')}</Typography>
                 </CardContent>
               </Card>
             </Box>
@@ -113,7 +115,7 @@ export default function Feed() {
                 <Box sx={{ position: 'relative', flex: 1 }}>
                   <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                   <Input
-                    placeholder="Search posts or users..."
+                    placeholder={t('pages.feed.searchPlaceholder', 'Search posts or users...')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{ paddingLeft: 40 }}
@@ -139,8 +141,8 @@ export default function Feed() {
                 searchTerm ? (
                   <EmptyState
                     icon={Search}
-                    title="Your feed is fresh"
-                    description="Follow people and groups to see their posts here."
+                    title={t('pages.feed.emptyTitle', 'Your feed is fresh')}
+                    description={t('pages.feed.emptyDescription', 'Follow people and groups to see their posts here.')}
                     mood="encouraging"
                   />
                 ) : (

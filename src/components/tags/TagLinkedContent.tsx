@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
@@ -383,7 +383,7 @@ function SectionSkeleton() {
 const MAX_NEWS = 6;
 
 export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { data, isLoading } = useTagContent(tagId, tagName);
 
   if (isLoading) {

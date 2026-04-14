@@ -1,4 +1,5 @@
-import { useParams, Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
 import { formatCurrency } from '@/lib/currency';
 import { useEffect, useState } from 'react';
 import {
@@ -30,7 +31,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+import Box from '@mui/material/Box';import { useTranslation } from 'react-i18next';
+
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {
@@ -39,6 +41,7 @@ type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Ro
 
 export default function MarketplaceItemDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { incrementViews } = useMarketplace();
   const [listing, setListing] = useState<MarketplaceListing | null>(null);
@@ -98,7 +101,7 @@ export default function MarketplaceItemDetail() {
           setIsFavorited(!!favoriteData);
         }
       } catch (_error) {
-        toast({ title: 'Error', description: 'Failed to load listing details.', variant: 'destructive' });
+        toast({ title: t('common.error', 'Error'), description: t('pages.marketplaceDetail.loadFailed', 'Failed to load listing details.'), variant: 'destructive' });
       } finally {
         setLoading(false);
       }
@@ -111,7 +114,7 @@ export default function MarketplaceItemDetail() {
   const handleToggleFavorite = async () => {
     if (!user) {
       toast({
-        title: 'Authentication required',
+        title: t('pages.marketplaceDetail.authRequired', 'Authentication required'),
         description: 'Please sign in to favorite items',
         variant: 'destructive',
       });
@@ -184,12 +187,12 @@ export default function MarketplaceItemDetail() {
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           The marketplace item you're looking for doesn't exist.
         </Typography>
-        <Link to="/marketplace">
+        <LocalizedLink to="/marketplace">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Marketplace
           </Button>
-        </Link>
+        </LocalizedLink>
       </Container>
     );
   }
@@ -260,7 +263,7 @@ export default function MarketplaceItemDetail() {
       }
     } else {
       await navigator.clipboard.writeText(shareUrl);
-      toast({ title: 'Link copied', description: 'Listing link copied to clipboard' });
+      toast({ title: t('pages.marketplaceDetail.linkCopied', 'Link copied'), description: t('pages.marketplaceDetail.linkCopiedDesc', 'Listing link copied to clipboard') });
     }
   };
 
@@ -268,7 +271,7 @@ export default function MarketplaceItemDetail() {
     <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
-        <Link
+        <LocalizedLink
           to="/marketplace"
           style={{
             display: 'inline-flex',
@@ -285,7 +288,7 @@ export default function MarketplaceItemDetail() {
           >
             Marketplace
           </Typography>
-        </Link>
+        </LocalizedLink>
         {listing.category && (
           <>
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
@@ -424,7 +427,7 @@ export default function MarketplaceItemDetail() {
           {remainingImages.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Photos</CardTitle>
+                <CardTitle>{t('pages.marketplaceDetail.photos', 'Photos')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Box
@@ -472,7 +475,7 @@ export default function MarketplaceItemDetail() {
           {listing.description && (
             <Card>
               <CardHeader>
-                <CardTitle>Description</CardTitle>
+                <CardTitle>{t('pages.marketplaceDetail.description', 'Description')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -586,7 +589,7 @@ export default function MarketplaceItemDetail() {
           {/* Price & Contact */}
           <Card>
             <CardHeader>
-              <CardTitle>Price & Contact</CardTitle>
+              <CardTitle>{t('pages.marketplaceDetail.priceContact', 'Price & Contact')}</CardTitle>
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box sx={{ textAlign: 'center' }}>
@@ -653,7 +656,7 @@ export default function MarketplaceItemDetail() {
           {/* Business Details */}
           <Card>
             <CardHeader>
-              <CardTitle>Business Details</CardTitle>
+              <CardTitle>{t('pages.marketplaceDetail.businessDetails', 'Business Details')}</CardTitle>
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box>
@@ -694,7 +697,7 @@ export default function MarketplaceItemDetail() {
           {listing.social_media && (
             <Card>
               <CardHeader>
-                <CardTitle>Social Media</CardTitle>
+                <CardTitle>{t('pages.marketplaceDetail.socialMedia', 'Social Media')}</CardTitle>
               </CardHeader>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {Object.entries(listing.social_media as Record<string, string>).map(

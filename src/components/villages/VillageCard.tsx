@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, Landmark } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardImage } from '@/components/ui/card';
@@ -17,7 +17,7 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
   const countryName = village.countries?.name;
 
   return (
-    <Link to={`/villages/${village.slug}`} style={{ textDecoration: 'none' }}>
+    <LocalizedLink to={`/villages/${village.slug}`} style={{ textDecoration: 'none' }}>
       <Card hoverable sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <CardImage src={imageUrl} alt={village.name} fallbackIcon={Landmark} height={180}>
           {village.featured && (
@@ -67,6 +67,6 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
           )}
         </Box>
       </Card>
-    </Link>
+    </LocalizedLink>
   );
 });

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { CookiePreferencesDialog } from './CookiePreferencesDialog';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -50,7 +50,7 @@ export function CookieConsentBanner() {
                   We use cookies to enhance your experience, analyze site traffic, and personalize
                   content. You can manage your preferences or learn more in our{' '}
                   <Box
-                    component={Link}
+                    component={LocalizedLink}
                     to="/legal"
                     sx={{ textDecoration: 'underline', '&:hover': { color: 'text.primary' } }}
                   >
@@ -58,7 +58,7 @@ export function CookieConsentBanner() {
                   </Box>
                   , including our{' '}
                   <Box
-                    component={Link}
+                    component={LocalizedLink}
                     to="/privacy"
                     sx={{ textDecoration: 'underline', '&:hover': { color: 'text.primary' } }}
                   >
@@ -66,7 +66,7 @@ export function CookieConsentBanner() {
                   </Box>{' '}
                   and{' '}
                   <Box
-                    component={Link}
+                    component={LocalizedLink}
                     to="/cookies"
                     sx={{ textDecoration: 'underline', '&:hover': { color: 'text.primary' } }}
                   >

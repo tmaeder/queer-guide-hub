@@ -1,4 +1,5 @@
-import { useParams, useNavigate } from 'react-router';
+import { useParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,10 +18,13 @@ import { useToast } from '@/hooks/use-toast';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
+
 
 export default function UserProfile() {
+  const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user: _currentUser } = useAuth();
   const { toast } = useToast();
 

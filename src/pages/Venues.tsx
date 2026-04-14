@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
@@ -23,11 +23,13 @@ import Typography from '@mui/material/Typography';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
+import { useTranslation } from 'react-i18next';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
 const Venues = () => {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const { _user } = useAuth();
   const { venues, loading, error, hasMore, fetchVenues, loadingTimedOut } = useVenues(false);
 
@@ -174,11 +176,11 @@ const Venues = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="featured">Featured</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="category">Category</SelectItem>
-                <SelectItem value="city">City</SelectItem>
-                <SelectItem value="created_at">Newest</SelectItem>
+                <SelectItem value="featured">{t('pages.venues.sortFeatured', 'Featured')}</SelectItem>
+                <SelectItem value="name">{t('pages.venues.sortName', 'Name')}</SelectItem>
+                <SelectItem value="category">{t('pages.venues.sortCategory', 'Category')}</SelectItem>
+                <SelectItem value="city">{t('pages.venues.sortCity', 'City')}</SelectItem>
+                <SelectItem value="created_at">{t('pages.venues.sortNewest', 'Newest')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -191,7 +193,7 @@ const Venues = () => {
                   bgcolor: viewMode === 'grid' ? 'action.selected' : 'transparent',
                   px: 1,
                 }}
-                aria-label="Grid view"
+                aria-label={t('pages.venues.gridView', 'Grid view')}
               >
                 <Grid style={{ width: 16, height: 16 }} />
               </IconButton>
@@ -203,7 +205,7 @@ const Venues = () => {
                   bgcolor: viewMode === 'map' ? 'action.selected' : 'transparent',
                   px: 1,
                 }}
-                aria-label="Map view"
+                aria-label={t('pages.venues.mapView', 'Map view')}
               >
                 <Map style={{ width: 16, height: 16 }} />
               </IconButton>
@@ -236,15 +238,15 @@ const Venues = () => {
             {!loading && !error && venues.length === 0 && (
               <EmptyState
                 icon={MapPin}
-                title="No spots match your vibe yet"
-                description="Try widening your search or explore a different city."
+                title={t('pages.venues.emptyTitle', 'No spots match your vibe yet')}
+                description={t('pages.venues.emptyDescription', 'Try widening your search or explore a different city.')}
                 mood="encouraging"
                 primaryAction={{
-                  label: 'Submit a Venue',
+                  label: t('pages.venues.submitVenue', 'Submit a Venue'),
                   onClick: () => navigate('/submit/venue'),
                 }}
                 secondaryAction={{
-                  label: 'Clear Filters',
+                  label: t('pages.venues.clearFilters', 'Clear Filters'),
                   onClick: () => handleFiltersChange({}),
                 }}
               />

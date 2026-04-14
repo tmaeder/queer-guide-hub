@@ -22,6 +22,7 @@ import { CountryAutocomplete } from '@/components/ui/country-autocomplete';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AutoTagPanel } from '@/components/cms/AutoTagPanel';
 import { GeoLinkPanel } from '@/components/cms/GeoLinkPanel';
+import { TranslationPanel } from '@/components/cms/TranslationPanel';
 
 interface UniversalContentEditorProps {
   content: Record<string, unknown>;
@@ -1071,6 +1072,15 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               countryName={content.country || content.nationality}
               hasCityId={!!content.city_id}
               hasCountryId={!!content.country_id}
+            />
+          )}
+
+          {/* Translations */}
+          {content?.id && content?.content_type && (
+            <TranslationPanel
+              tableName={String(content.content_type)}
+              recordId={String(content.id)}
+              originalData={content as Record<string, unknown>}
             />
           )}
 

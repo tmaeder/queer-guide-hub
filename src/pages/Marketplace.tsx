@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Store, Plus, Grid, List } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
 import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,11 +24,13 @@ import Box from '@mui/material/Box';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
+import Paper from '@mui/material/Paper';import { useTranslation } from 'react-i18next';
+
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 const Marketplace = () => {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const {
     listings,
     loading,
@@ -94,8 +96,8 @@ const Marketplace = () => {
   const handleToggleFavorite = async (listingId: string) => {
     if (!user) {
       toast({
-        title: 'Sign in required',
-        description: 'Please sign in to save favorites.',
+        title: t('pages.marketplace.signInRequired', 'Sign in required'),
+        description: t('pages.marketplace.signInFavorites', 'Please sign in to save favorites.'),
         variant: 'destructive',
       });
       return;
@@ -149,7 +151,7 @@ const Marketplace = () => {
       <Box sx={{ minHeight: '100vh' }}>
         <Container sx={{ py: { xs: 6, md: 10 } }}>
           <ErrorState
-            message="Something went wrong while loading the marketplace. Please try again."
+            message={t('pages.marketplace.loadError', 'Something went wrong while loading the marketplace. Please try again.')}
             onRetry={() => fetchListings()}
           />
         </Container>
@@ -161,8 +163,8 @@ const Marketplace = () => {
       <Container sx={{ py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
-          title="Marketplace"
-          subtitle="Discover and support local businesses offering products and services"
+          title={t('pages.marketplace.title', 'Marketplace')}
+          subtitle={t('pages.marketplace.subtitle', 'Discover and support local businesses offering products and services')}
           actions={
             <Button
               style={{ display: 'flex', gap: 8 }}
@@ -170,7 +172,7 @@ const Marketplace = () => {
                 if (!user) {
                   toast({
                     title: 'Sign in required',
-                    description: 'Create a free account to list your business.',
+                    description: t('pages.marketplace.signInList', 'Create a free account to list your business.'),
                     variant: 'default',
                   });
                   navigate('/auth');
@@ -262,8 +264,8 @@ const Marketplace = () => {
           {!loading && sortedListings.length === 0 && (
             <EmptyState
               icon={Store}
-              title="Nothing on the shelves yet"
-              description="Queer-owned businesses are joining every day."
+              title={t('pages.marketplace.emptyTitle', 'Nothing on the shelves yet')}
+              description={t('pages.marketplace.emptyDescription', 'Queer-owned businesses are joining every day.')}
               mood="encouraging"
               primaryAction={{
                 label: 'List Your Business',

@@ -1,12 +1,15 @@
-import { Link, useLocation } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useLocation } from 'react-router';
 import { useEffect } from 'react';
 import { Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
 const NotFound = () => {
   const location = useLocation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     console.error('404 Error: User attempted to access non-existent route:', location.pathname);
@@ -27,10 +30,10 @@ const NotFound = () => {
           404
         </Typography>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-          Page not found
+          {t('pages.notFound.title', 'Page not found')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 4 }}>
-          The page you're looking for doesn't exist or has been moved.
+          {t('pages.notFound.description', "The page you're looking for doesn't exist or has been moved.")}
         </Typography>
         <Box
           sx={{
@@ -46,13 +49,13 @@ const NotFound = () => {
             style={{ display: 'inline-flex', gap: 8 }}
           >
             <ArrowLeft style={{ width: 16, height: 16 }} aria-hidden="true" />
-            Go Back
+            {t('pages.notFound.goBack', 'Go Back')}
           </Button>
           <Button asChild style={{ display: 'inline-flex', gap: 8 }}>
-            <Link to="/">
+            <LocalizedLink to="/">
               <Home style={{ width: 16, height: 16 }} aria-hidden="true" />
-              Return Home
-            </Link>
+              {t('pages.notFound.returnHome', 'Return Home')}
+            </LocalizedLink>
           </Button>
         </Box>
       </Box>

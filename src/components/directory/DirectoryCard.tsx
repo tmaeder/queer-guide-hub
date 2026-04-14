@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from 'lucide-react';
 import { Country, City } from '@/hooks/useDirectory';
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useCityImages } from '@/hooks/useCityImages';
 interface DirectoryCardProps {
@@ -373,16 +373,16 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
   // Wrap with Link for cities and countries, otherwise use onClick
   if (type === 'city' && data?.id) {
     return (
-      <Link to={`/city/${data.slug || data.id}`} style={{ display: 'block' }}>
+      <LocalizedLink to={`/city/${data.slug || data.id}`} style={{ display: 'block' }}>
         {cardContent}
-      </Link>
+      </LocalizedLink>
     );
   }
   if (type === 'country' && data?.id) {
     return (
-      <Link to={`/country/${data.slug || data.id}`} style={{ display: 'block' }}>
+      <LocalizedLink to={`/country/${data.slug || data.id}`} style={{ display: 'block' }}>
         {cardContent}
-      </Link>
+      </LocalizedLink>
     );
   }
 

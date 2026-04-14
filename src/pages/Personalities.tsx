@@ -22,7 +22,8 @@ import { PersonalityCard, PersonalityCardSkeleton } from '@/components/personali
 import { PersonalitiesFiltersBar } from '@/components/personalities/PersonalitiesFiltersBar';
 import { StickyLetterBar } from '@/components/personalities/StickyLetterBar';
 import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
-import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';
+import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';import { useTranslation } from 'react-i18next';
+
 
 const PAGE_SIZE = 24;
 const AUTO_LOAD_CAP = 48;
@@ -83,6 +84,7 @@ function activeFilterCount(f: PersonalityFilters): number {
 
 export default function Personalities() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   useMeta({
@@ -269,8 +271,8 @@ export default function Personalities() {
     <Box sx={{ minHeight: '100vh' }}>
       <Container sx={{ px: 2, py: { xs: 4, md: 8 } }}>
         <PageHeader
-          title="Personalities"
-          subtitle="Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons."
+          title={t('pages.personalities.title', 'Personalities')}
+          subtitle={t('pages.personalities.subtitle', 'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.')}
           center
           actions={
             user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : undefined
@@ -377,8 +379,8 @@ export default function Personalities() {
         {!loading && !error && personalities.length === 0 && (
           <EmptyState
             icon={Users}
-            title="No personalities match your filters"
-            description="Try clearing a filter or searching for a different name."
+            title={t('pages.personalities.emptyTitle', 'No personalities match your filters')}
+            description={t('pages.personalities.emptyDescription', 'Try clearing a filter or searching for a different name.')}
             mood="encouraging"
           />
         )}

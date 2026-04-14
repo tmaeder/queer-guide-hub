@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { formatCurrency } from '@/lib/currency';
-import { useNavigate, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -88,7 +89,7 @@ export const UniversalSearchBar = () => {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
 

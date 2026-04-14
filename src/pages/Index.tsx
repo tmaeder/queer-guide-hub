@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -40,7 +41,7 @@ const featureDefs = [
 const Index = React.memo(() => {
   const { stats: realStats, loading } = useConsolidatedStats();
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
 
   const stats = useMemo(
@@ -253,7 +254,7 @@ const Index = React.memo(() => {
           {featureDefs.map((feature) => {
             const Icon = feature.icon;
             return (
-              <Link
+              <LocalizedLink
                 to={feature.link}
                 key={feature.titleKey}
                 style={{ textDecoration: 'none', display: 'block' }}
@@ -301,7 +302,7 @@ const Index = React.memo(() => {
                     </Typography>
                   </CardContent>
                 </Card>
-              </Link>
+              </LocalizedLink>
             );
           })}
         </StaggerGrid>

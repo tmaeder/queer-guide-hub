@@ -1,4 +1,6 @@
-import { useParams, useNavigate, Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
@@ -23,7 +25,8 @@ import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/u
 import { formatDistanceToNow, format } from 'date-fns';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import Typography from '@mui/material/Typography';import { useTranslation } from 'react-i18next';
+
 
 interface NewsArticle {
   id: string;
@@ -61,8 +64,9 @@ interface RelatedArticle {
 }
 
 export default function NewsDetail() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
   const [sourceName, setSourceName] = useState<string>('');
@@ -277,12 +281,12 @@ export default function NewsDetail() {
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           The article you're looking for doesn't exist.
         </Typography>
-        <Link to="/news">
+        <LocalizedLink to="/news">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to News
           </Button>
-        </Link>
+        </LocalizedLink>
       </Container>
     );
   }
@@ -302,7 +306,7 @@ export default function NewsDetail() {
     <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
-        <Link
+        <LocalizedLink
           to="/news"
           style={{
             display: 'inline-flex',
@@ -319,7 +323,7 @@ export default function NewsDetail() {
           >
             News
           </Typography>
-        </Link>
+        </LocalizedLink>
         {article.category && article.category !== 'general' && (
           <>
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
@@ -478,7 +482,7 @@ export default function NewsDetail() {
           {/* Article Content Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Article</CardTitle>
+              <CardTitle>{t('pages.newsDetail.article', 'Article')}</CardTitle>
             </CardHeader>
             <CardContent>
               {contentText ? (
@@ -532,7 +536,7 @@ export default function NewsDetail() {
           {relatedArticles.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Related Articles</CardTitle>
+                <CardTitle>{t('pages.newsDetail.relatedArticles', 'Related Articles')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Box
@@ -545,7 +549,7 @@ export default function NewsDetail() {
                   {relatedArticles.map((related) => (
                     <Box
                       key={related.id}
-                      component={Link}
+                      component={LocalizedLink}
                       to={`/news/${related.slug || related.id}`}
                       sx={{
                         display: 'flex',
@@ -606,7 +610,7 @@ export default function NewsDetail() {
           {/* Article Info Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Article Info</CardTitle>
+              <CardTitle>{t('pages.newsDetail.articleInfo', 'Article Info')}</CardTitle>
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {article.published_at && (
@@ -698,7 +702,7 @@ export default function NewsDetail() {
                   {linkedCities.map((c) => (
                     <Typography
                       key={c.id}
-                      component={Link}
+                      component={LocalizedLink}
                       to={`/city/${c.slug || c.id}`}
                       sx={{
                         fontWeight: 500,
@@ -713,7 +717,7 @@ export default function NewsDetail() {
                   {linkedCountries.map((c) => (
                     <Typography
                       key={c.id}
-                      component={Link}
+                      component={LocalizedLink}
                       to={`/country/${c.slug || c.id}`}
                       sx={{
                         fontWeight: 500,
@@ -733,7 +737,7 @@ export default function NewsDetail() {
           {/* Source Link Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Links</CardTitle>
+              <CardTitle>{t('pages.newsDetail.links', 'Links')}</CardTitle>
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Button

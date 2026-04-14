@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { mapStyle } from '@/config/mapStyle';
 import {
   useExploreMapData,
@@ -120,7 +120,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   initialZoom,
   skipAutoFly = false,
 }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   // ── Map refs ─────────────────────────────────────────────────────────────
   const containerRef = useRef<HTMLDivElement | null>(null);

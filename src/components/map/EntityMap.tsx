@@ -11,7 +11,7 @@ import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { mapStyle } from '@/config/mapStyle';
 import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
@@ -69,7 +69,7 @@ export const EntityMap: React.FC<EntityMapProps> = ({
   className,
   scrollZoom = false,
 }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);

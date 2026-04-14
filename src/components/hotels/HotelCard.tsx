@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, Star, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Box from '@mui/material/Box';
@@ -70,7 +70,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
 
   return (
     <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
-    <Link to={`/hotels/${hotel.slug}`} style={{ textDecoration: 'none' }}>
+    <LocalizedLink to={`/hotels/${hotel.slug}`} style={{ textDecoration: 'none' }}>
       <Paper
         elevation={1}
         sx={{
@@ -167,7 +167,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
           </Box>
         </Box>
       </Paper>
-    </Link>
+    </LocalizedLink>
     </Skeleton>
   );
 }

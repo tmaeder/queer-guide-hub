@@ -86,4 +86,5 @@ for (const file of localeFiles) {
 console.log(`\nTotal missing: ${totalMissing} keys across ${localeFiles.length} locales`);
 if (totalMissing > 0 && !fillMode) {
   console.log('Run with --fill to add placeholder values for missing keys');
+  process.exit(1);
 }

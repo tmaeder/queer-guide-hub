@@ -4,7 +4,7 @@ import { EventsCalendarView } from '@/components/events/EventsCalendarView';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Navigation } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -14,7 +14,7 @@ const RegionalEventsCalendar: React.FC = () => {
   const { events, loading, fetchEvents, updateAttendance } = useEvents();
   const isMobile = useIsMobile();
   const { location: userLocation, loading: locationLoading } = useVisitorLocation();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   // Fetch upcoming events for the user's city when location is available
   useEffect(() => {

@@ -49,9 +49,12 @@ import {
 } from 'lucide-react';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
-import { Link, useNavigate } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { useTranslation } from 'react-i18next';
+
 
 type Profile = {
   user_id: string;
@@ -94,8 +97,9 @@ interface UserFilters {
 }
 
 const UserDirectory = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [filters, setFilters] = useState<UserFilters>({
     searchQuery: '',
     location: '',
@@ -1116,7 +1120,7 @@ const UserDirectory = () => {
             }}
           >
             {profiles?.map((profile) => (
-              <Link
+              <LocalizedLink
                 key={profile.user_id}
                 to={`/user/${profile.user_id}`}
                 style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
@@ -1429,7 +1433,7 @@ const UserDirectory = () => {
                     </Box>
                   </Box>
                 </Card>
-              </Link>
+              </LocalizedLink>
             ))}
           </Box>
         </Box>

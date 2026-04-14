@@ -35,7 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatDistanceToNow } from 'date-fns';
 import { CommunityPost } from '@/hooks/useCommunityPosts';
 import { CommentsSection } from './CommentsSection';
@@ -345,12 +345,12 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               </AvatarFallback>
             </Avatar>
             <div>
-              <Link
+              <LocalizedLink
                 to={`/user/${post.user_id}`}
                 style={{ fontWeight: 500, textDecoration: 'none', color: 'inherit' }}
               >
                 {post.profiles?.display_name || 'Unknown User'}
-              </Link>
+              </LocalizedLink>
               <Box
                 sx={{
                   display: 'flex',

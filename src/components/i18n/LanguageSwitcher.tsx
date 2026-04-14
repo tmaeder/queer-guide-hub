@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation, useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Globe } from 'lucide-react';
 import {
   Select,
@@ -19,7 +20,7 @@ import Box from '@mui/material/Box';
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const location = useLocation();
   const { locale } = useParams<{ locale?: string }>();
 

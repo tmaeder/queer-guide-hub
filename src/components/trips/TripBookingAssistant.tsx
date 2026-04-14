@@ -18,7 +18,7 @@ import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 import { UnifiedBookingCard } from '@/components/booking/UnifiedBookingCard';
 import { HotelBookingFlow } from '@/components/booking/HotelBookingFlow';
 import type { BookingResult } from '@/lib/booking/types';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 interface Props {
   tripId: string;
@@ -262,9 +262,9 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
               <Plane size={16} style={{ color: theme.palette.text.secondary }} />
               <Typography variant="body2" sx={{ flex: 1 }}>Flights</Typography>
-              <Link to="/travel?tab=flights">
+              <LocalizedLink to="/travel?tab=flights">
                 <Button variant="outline" size="sm">Search</Button>
-              </Link>
+              </LocalizedLink>
             </Box>
           )}
           {hasFlightBooked && (
@@ -278,9 +278,9 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
               <Hotel size={16} style={{ color: theme.palette.text.secondary }} />
               <Typography variant="body2" sx={{ flex: 1 }}>Hotel{firstCity ? ` in ${firstCity.name}` : ''}</Typography>
-              <Link to={`/travel?tab=hotels${firstCity ? `&city=${encodeURIComponent(firstCity.name)}` : ''}`}>
+              <LocalizedLink to={`/travel?tab=hotels${firstCity ? `&city=${encodeURIComponent(firstCity.name)}` : ''}`}>
                 <Button variant="outline" size="sm">Search</Button>
-              </Link>
+              </LocalizedLink>
             </Box>
           )}
           {hasHotelBooked && (

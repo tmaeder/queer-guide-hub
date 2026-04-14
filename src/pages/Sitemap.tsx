@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Search, Link2, Hash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,8 @@ import { useDynamicSitemap } from '@/hooks/useDynamicSitemap';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Container from '@mui/material/Container';
+import Container from '@mui/material/Container';import { useTranslation } from 'react-i18next';
+
 
 function setMetaTag(name: string, content: string) {
   let tag = document.querySelector(`meta[name="${name}"]`);
@@ -39,6 +40,7 @@ function slugify(input: string) {
 
 export default function Sitemap() {
   const [query, setQuery] = useState('');
+  const { t } = useTranslation();
   const [copied, setCopied] = useState<string | null>(null);
   const { data: routes = [], isLoading, error } = useDynamicSitemap();
 
@@ -132,9 +134,9 @@ export default function Sitemap() {
       <Box component="header" sx={{ py: 4 }}>
         <Container>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Link to="/" style={{ marginLeft: -8, fontWeight: 700 }}>
+            <LocalizedLink to="/" style={{ marginLeft: -8, fontWeight: 700 }}>
               Queer Guide
-            </Link>
+            </LocalizedLink>
             <Typography
               component="a"
               href="https://github.com/tmaeder/queer-guide-hub"
@@ -344,7 +346,7 @@ export default function Sitemap() {
                           if (children.length === 0) {
                             return (
                               <li key={link.to}>
-                                <Link
+                                <LocalizedLink
                                   to={link.to}
                                   style={{ display: 'block', borderRadius: 4 }}
                                   aria-label={`${link.label} page in ${section.title}`}
@@ -374,13 +376,13 @@ export default function Sitemap() {
                                   >
                                     In section {section.title}
                                   </Typography>
-                                </Link>
+                                </LocalizedLink>
                               </li>
                             );
                           }
                           return (
                             <li key={link.to}>
-                              <Link
+                              <LocalizedLink
                                 to={link.to}
                                 style={{ display: 'block', borderRadius: 4 }}
                                 aria-label={`${link.label} hub in ${section.title}`}
@@ -410,7 +412,7 @@ export default function Sitemap() {
                                 >
                                   In section {section.title}
                                 </Typography>
-                              </Link>
+                              </LocalizedLink>
                               <Box
                                 component="ul"
                                 sx={{
@@ -424,7 +426,7 @@ export default function Sitemap() {
                               >
                                 {children.map((cl) => (
                                   <li key={cl.to}>
-                                    <Link
+                                    <LocalizedLink
                                       to={cl.to}
                                       style={{ display: 'block', borderRadius: 4 }}
                                       aria-label={`${cl.label} page under ${link.label} in ${section.title}`}
@@ -454,7 +456,7 @@ export default function Sitemap() {
                                       >
                                         In section {section.title}
                                       </Typography>
-                                    </Link>
+                                    </LocalizedLink>
                                   </li>
                                 ))}
                               </Box>

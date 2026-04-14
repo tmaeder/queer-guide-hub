@@ -11,9 +11,11 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { AuthGate } from "@/components/layout/AuthGate";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/ui/EmptyState";import { useTranslation } from 'react-i18next';
+
 
 export default function Groups() {
+  const { t } = useTranslation();
   const {
     groups, userGroups, isLoading,
     createGroup, isCreating, joinGroup, isJoining, leaveGroup, isLeaving,
@@ -59,11 +61,11 @@ export default function Groups() {
   );
 
   return (
-    <AuthGate title="Community Groups" description="Please sign in to view and join community groups.">
+    <AuthGate title={t('pages.groups.title', 'Community Groups')} description="Please sign in to view and join community groups.">
       <Container sx={{ py: { xs: 6, md: 10 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
         <PageHeader
           title="Community Groups"
-          subtitle="Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces."
+          subtitle={t('pages.groups.subtitle', 'Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces.')}
           center
           actions={<CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />}
         />
@@ -71,13 +73,13 @@ export default function Groups() {
         <Tabs defaultValue="discover" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <TabsTrigger value="discover" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
-              <Search style={{ height: 16, width: 16 }} /> Discover
+              <Search style={{ height: 16, width: 16 }} /> {t('pages.groups.discover', 'Discover')}
             </TabsTrigger>
             <TabsTrigger value="my-groups" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Users style={{ height: 16, width: 16 }} /> My Groups ({userGroups.length})
+              <Users style={{ height: 16, width: 16 }} /> {t('pages.groups.myGroups', 'My Groups')} ({userGroups.length})
             </TabsTrigger>
             <TabsTrigger value="popular" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TrendingUp style={{ height: 16, width: 16 }} /> Popular
+              <TrendingUp style={{ height: 16, width: 16 }} /> {t('pages.groups.popular', 'Popular')}
             </TabsTrigger>
           </TabsList>
 
@@ -96,10 +98,10 @@ export default function Groups() {
             ) : filteredGroups.length === 0 ? (
               <EmptyState
                 icon={Users}
-                title="No groups here yet"
-                description="Be the spark — create the first group and bring people together."
+                title={t('pages.groups.emptyTitle', 'No groups here yet')}
+                description={t('pages.groups.emptyDescription', 'Be the spark — create the first group and bring people together.')}
                 mood="encouraging"
-                primaryAction={{ label: 'Create a Group', onClick: () => {} }}
+                primaryAction={{ label: t('pages.groups.createGroup', 'Create a Group'), onClick: () => {} }}
               />
             ) : (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>

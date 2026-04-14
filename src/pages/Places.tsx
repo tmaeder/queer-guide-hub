@@ -47,7 +47,7 @@ const COLLAPSED_COUNT = 6;
 type ViewMode = 'overview' | 'country' | 'city' | 'search';
 
 export default function Places() {
-  const { _t } = useTranslation();
+  const { t } = useTranslation();
   const { countries, loading: countriesLoading, error: countriesError } = useOptimizedCountries();
   const { cities, loading: citiesLoading, error: citiesError } = useOptimizedCities();
   // fetchCitiesByCountry, searchLocations, findNearbyCities imported as standalone functions

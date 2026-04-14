@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/carousel';
 import { Calendar, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatEventTime } from '@/lib/event-time';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 
@@ -103,12 +103,12 @@ const WeeklyEventsSlider = React.memo(() => {
             </p>
           </div>
           <Button variant="outline" size={isMobile ? 'sm' : 'default'} asChild>
-            <Link to="/events">
+            <LocalizedLink to="/events">
               View All
               <ArrowRight
                 style={{ marginLeft: 8, height: isMobile ? 12 : 16, width: isMobile ? 12 : 16 }}
               />
-            </Link>
+            </LocalizedLink>
           </Button>
         </div>
 
@@ -254,10 +254,10 @@ const WeeklyEventsSlider = React.memo(() => {
                       style={{ marginTop: 'auto', alignSelf: 'flex-start' }}
                       asChild
                     >
-                      <Link to={`/events/${event.slug}`}>
+                      <LocalizedLink to={`/events/${event.slug}`}>
                         Learn More
                         <ArrowRight style={{ marginLeft: 8, height: 12, width: 12 }} />
-                      </Link>
+                      </LocalizedLink>
                     </Button>
                   </CardContent>
                 </Card>

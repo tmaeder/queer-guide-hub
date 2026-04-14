@@ -4,7 +4,7 @@ import { MessageCircle } from 'lucide-react';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 
 interface StartConversationButtonProps {
@@ -25,7 +25,7 @@ export const StartConversationButton = ({
   const { user } = useAuth();
   const { startConversation } = useMessaging();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleStartConversation = async () => {

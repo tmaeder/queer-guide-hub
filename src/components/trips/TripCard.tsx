@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
@@ -48,7 +48,7 @@ function safetyLevelFromScore(score: number | null | undefined): SafetyLevel | n
 
 export function TripCard({ trip }: Props) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { deleteTrip } = useTripMutations();
   const { toast } = useToast();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

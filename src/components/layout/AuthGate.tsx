@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -61,7 +61,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
             {description}
           </Typography>
           <Button asChild>
-            <Link to="/auth">Sign In</Link>
+            <LocalizedLink to="/auth">Sign In</LocalizedLink>
           </Button>
         </Paper>
       </Container>

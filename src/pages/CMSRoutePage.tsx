@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Link as RouterLink } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';

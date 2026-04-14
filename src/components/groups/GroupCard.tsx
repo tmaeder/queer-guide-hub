@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -88,7 +88,7 @@ export const GroupCard = ({
 
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                <Link to={`/groups/${group.id}`} style={{ flex: 1 }}>
+                <LocalizedLink to={`/groups/${group.id}`} style={{ flex: 1 }}>
                   <Typography
                     variant="subtitle1"
                     sx={{
@@ -102,7 +102,7 @@ export const GroupCard = ({
                   >
                     {group.name}
                   </Typography>
-                </Link>
+                </LocalizedLink>
                 {group.is_private ? (
                   <Lock style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
                 ) : (
@@ -193,12 +193,12 @@ export const GroupCard = ({
 
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button asChild variant="ghost" size="sm" sx={{ flex: 1 }}>
-            <Link to={`/groups/${group.id}`}>
+            <LocalizedLink to={`/groups/${group.id}`}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
                 View Group
               </Box>
-            </Link>
+            </LocalizedLink>
           </Button>
 
           {!group.is_member ? (

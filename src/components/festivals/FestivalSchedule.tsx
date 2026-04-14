@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Clock, MapPin } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -62,7 +62,7 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
             }}
           >
             {grouped[day].map((event) => (
-              <Link key={event.id} to={`/events/${event.slug}`} style={{ textDecoration: 'none' }}>
+              <LocalizedLink key={event.id} to={`/events/${event.slug}`} style={{ textDecoration: 'none' }}>
                 <Paper
                   elevation={0}
                   sx={{
@@ -114,7 +114,7 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
                     {event.is_free && <Chip size="small" label="Free" color="success" />}
                   </Box>
                 </Paper>
-              </Link>
+              </LocalizedLink>
             ))}
           </Box>
           {dayIdx < sortedDays.length - 1 && <Divider sx={{ mt: 2 }} />}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
   useCentralizedTags,
   useTagUsageCounts,
@@ -22,7 +23,7 @@ import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Alert from '@mui/material/Alert';
 import { ArrowLeft, Tag, ChevronRight, Network, Briefcase, Zap, AlertTriangle, Phone } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -64,7 +65,7 @@ const hoverCardSx = {
 
 export default function Ressources() {
   const { tagName } = useParams<{ tagName: string }>();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [searchParams] = useSearchParams();
   const { allTags, categoriesTree, loading, error, searchTags } = useCentralizedTags();
   const { data: tagUsageCounts = {} } = useTagUsageCounts();
@@ -734,7 +735,7 @@ export default function Ressources() {
               </Box>
               {/* Crisis help card */}
               <Box
-                component={Link}
+                component={LocalizedLink}
                 to="/help"
                 sx={{
                   ...hoverCardSx,
@@ -813,10 +814,10 @@ export default function Ressources() {
               sx={{ mb: 3 }}
               action={
                 <Button asChild variant="outline" size="sm">
-                  <Link to="/help">
+                  <LocalizedLink to="/help">
                     <Phone size={14} className="mr-1" />
                     Crisis Hotlines
-                  </Link>
+                  </LocalizedLink>
                 </Button>
               }
             >

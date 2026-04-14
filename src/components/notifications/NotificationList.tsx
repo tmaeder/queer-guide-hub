@@ -18,7 +18,7 @@ import { useMessaging } from '@/hooks/useMessaging';
 import { useGroupNotifications } from '@/hooks/useGroupNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -57,7 +57,7 @@ export const NotificationList = () => {
   const { conversations, loading: messagingLoading } = useMessaging();
   const { notifications: groupNotifs, isLoading: groupsLoading } = useGroupNotifications();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   const [likes, setLikes] = useState<LikeItem[]>([]);
   const [comments, setComments] = useState<CommentItem[]>([]);

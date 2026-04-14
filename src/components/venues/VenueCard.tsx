@@ -1,7 +1,7 @@
 import { Card, CardImage } from '@/components/ui/card';
 import { MapPin } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -77,7 +77,7 @@ export function VenueCard({
       fallback={<PageLoadingState count={1} />}
     >
       {venue && (
-        <Link
+        <LocalizedLink
           to={`/venues/${venue.slug}`}
           style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
         >
@@ -224,7 +224,7 @@ export function VenueCard({
               </Box>
             </Box>
           </Card>
-        </Link>
+        </LocalizedLink>
       )}
     </Skeleton>
   );

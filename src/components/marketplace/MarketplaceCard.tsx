@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Globe, Phone, Mail, ExternalLink, Eye } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -281,11 +281,11 @@ export function MarketplaceCard({
             )}
           </Box>
 
-          <Link to={`/marketplace/${listing.slug}`}>
+          <LocalizedLink to={`/marketplace/${listing.slug}`}>
             <Button size="sm" sx={{ height: 28, fontSize: '0.75rem' }}>
               View
             </Button>
-          </Link>
+          </LocalizedLink>
         </Box>
       </Box>
     </Card>

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import {
   Heart,
   Users,
@@ -341,7 +341,7 @@ export default function About() {
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <Link
+              <LocalizedLink
                 to={feature.link}
                 key={feature.title}
                 style={{ textDecoration: 'none', display: 'block' }}
@@ -375,7 +375,7 @@ export default function About() {
                     </Typography>
                   </CardContent>
                 </Card>
-              </Link>
+              </LocalizedLink>
             );
           })}
         </StaggerGrid>
@@ -584,17 +584,17 @@ export default function About() {
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Link to="/venues" style={{ textDecoration: 'none' }}>
+            <LocalizedLink to="/venues" style={{ textDecoration: 'none' }}>
               <Button size="lg">
                 Explore Venues
                 <ArrowRight style={{ width: 18, height: 18, marginLeft: 8 }} aria-hidden="true" />
               </Button>
-            </Link>
-            <Link to="/donate" style={{ textDecoration: 'none' }}>
+            </LocalizedLink>
+            <LocalizedLink to="/donate" style={{ textDecoration: 'none' }}>
               <Button variant="outline" size="lg">
                 Support Us
               </Button>
-            </Link>
+            </LocalizedLink>
           </Box>
         </ScrollReveal>
       </Box>

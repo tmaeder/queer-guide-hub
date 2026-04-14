@@ -14,18 +14,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { EmptyState } from '@/components/ui/EmptyState';import { useTranslation } from 'react-i18next';
+
 
 export default function MyGroups() {
   const { userGroups, isLoading, createGroup, isCreating, leaveGroup, isLeaving } = useGroups();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('recent');
@@ -68,20 +70,20 @@ export default function MyGroups() {
   }, [userGroups, user?.id]);
 
   return (
-    <AuthGate title="My Groups" description="Please sign in to view your groups">
+    <AuthGate title={t('pages.myGroups.title', 'My Groups')} description="Please sign in to view your groups">
       <Container sx={{ py: 4 }}>
         {/* Header */}
         <PageHeader
           title="My Groups"
-          subtitle="Manage and explore your community groups"
+          subtitle={t('pages.myGroups.subtitle', 'Manage and explore your community groups')}
           actions={
             <>
               <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
               <Button variant="outline" asChild>
-                <Link to="/groups">
+                <LocalizedLink to="/groups">
                   <Users style={{ height: 16, width: 16, marginRight: 8 }} />
                   Discover Groups
-                </Link>
+                </LocalizedLink>
               </Button>
             </>
           }
@@ -165,7 +167,7 @@ export default function MyGroups() {
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 3 }}>
           <Box sx={{ flex: 1 }}>
             <Input
-              placeholder="Search your groups..."
+              placeholder={t('pages.myGroups.searchPlaceholder', 'Search your groups...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ width: '100%' }}
@@ -176,9 +178,9 @@ export default function MyGroups() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="recent">Most Recent</SelectItem>
-              <SelectItem value="name">Name A-Z</SelectItem>
-              <SelectItem value="members">Most Members</SelectItem>
+              <SelectItem value="recent">{t('pages.myGroups.mostRecent', 'Most Recent')}</SelectItem>
+              <SelectItem value="name">{t('pages.myGroups.nameAZ', 'Name A-Z')}</SelectItem>
+              <SelectItem value="members">{t('pages.myGroups.mostMembers', 'Most Members')}</SelectItem>
             </SelectContent>
           </Select>
         </Box>
@@ -190,7 +192,7 @@ export default function MyGroups() {
           searchQuery ? (
             <EmptyState
               icon={Search}
-              title="You haven't joined any groups yet"
+              title={t('pages.myGroups.emptyTitle', "You haven't joined any groups yet")}
               description="Explore groups and find your people."
               mood="encouraging"
             />
@@ -218,7 +220,7 @@ export default function MyGroups() {
                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5 }}>
                   <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
                   <Button variant="outline" asChild>
-                    <Link to="/groups">Browse Groups</Link>
+                    <LocalizedLink to="/groups">{t('pages.myGroups.browseGroups', 'Browse Groups')}</LocalizedLink>
                   </Button>
                 </Box>
               </CardContent>

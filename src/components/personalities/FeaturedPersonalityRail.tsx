@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Star } from 'lucide-react';
@@ -18,7 +18,7 @@ function FeaturedItem({ p }: { p: Personality }) {
   const href = `/personalities/${p.slug ?? p.id}`;
   return (
     <Box
-      component={Link}
+      component={LocalizedLink}
       to={href}
       aria-label={`${p.name}${p.profession ? ', ' + p.profession : ''}`}
       sx={{

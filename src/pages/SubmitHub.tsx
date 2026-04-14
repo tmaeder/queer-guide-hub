@@ -3,7 +3,7 @@
  * Shows 6 content type cards for community submissions.
  */
 
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useAuth } from '@/hooks/useAuth';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -11,10 +11,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { submissionTypes } from '@/config/submissionRegistry';
 import { ArrowRight, Heart, ArrowLeft, Camera } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const SubmitHub = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <Box sx={{ mx: 'auto', py: 4, px: 2 }}>

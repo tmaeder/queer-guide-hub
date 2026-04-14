@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
@@ -52,7 +52,8 @@ import Box from '@mui/material/Box';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';import { useTranslation } from 'react-i18next';
+
 
 type Event = Database['public']['Tables']['events']['Row'];
 const eventTypes = [
@@ -68,7 +69,8 @@ const eventTypes = [
   'performance',
 ];
 const Events = () => {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const theme = useTheme();
   const { events, loading, error, hasMore, fetchEvents, updateAttendance, loadingTimedOut } =
     useEvents(false);
@@ -172,13 +174,13 @@ const Events = () => {
           includePast: showPast || undefined,
         });
         toast({
-          title: 'Location found',
-          description: 'Showing events near your location',
+          title: t('pages.events.locationFound', 'Location found'),
+          description: t('pages.events.nearLocationDesc', 'Showing events near your location'),
         });
       } catch (_error) {
         toast({
-          title: 'Location Error',
-          description: 'Unable to get your location. Please allow location access.',
+          title: t('pages.events.locationError', 'Location Error'),
+          description: t('pages.events.locationErrorDesc', 'Unable to get your location. Please allow location access.'),
           variant: 'destructive',
         });
       } finally {
@@ -218,8 +220,8 @@ const Events = () => {
   ) => {
     if (!user) {
       toast({
-        title: 'Sign in required',
-        description: 'Please sign in to RSVP to events.',
+        title: t('pages.events.signInRequired', 'Sign in required'),
+        description: t('pages.events.signInRsvp', 'Please sign in to RSVP to events.'),
         variant: 'destructive',
       });
       return;
@@ -233,7 +235,7 @@ const Events = () => {
       });
     } else {
       toast({
-        title: 'RSVP Updated',
+        title: t('pages.events.rsvpUpdated', 'RSVP Updated'),
         description: `You're now marked as ${status} for this event.`,
       });
       fetchEvents(
@@ -284,8 +286,8 @@ const Events = () => {
       <Container sx={{ py: { xs: 6, md: 10 } }}>
         {/* Header */}
         <PageHeader
-          title="Events"
-          subtitle="Discover and join community events in your area"
+          title={t('pages.events.title', 'Events')}
+          subtitle={t('pages.events.subtitle', 'Discover and join community events in your area')}
           actions={
             <>
               <Box
@@ -303,7 +305,7 @@ const Events = () => {
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="icon"
-                  aria-label="Grid view"
+                  aria-label={t('pages.events.gridView', 'Grid view')}
                   onClick={() => setViewMode('grid')}
                 >
                   <Grid style={{ width: 16, height: 16 }} />
@@ -311,7 +313,7 @@ const Events = () => {
                 <Button
                   variant={viewMode === 'calendar' ? 'default' : 'ghost'}
                   size="icon"
-                  aria-label="Calendar view"
+                  aria-label={t('pages.events.calendarView', 'Calendar view')}
                   onClick={() => setViewMode('calendar')}
                 >
                   <CalendarIcon style={{ width: 16, height: 16 }} />
@@ -434,7 +436,7 @@ const Events = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Label htmlFor="city">City</Label>
+                  <Label htmlFor="city">{t('pages.events.city', 'City')}</Label>
                   <Popover open={cityOpen} onOpenChange={setCityOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -494,7 +496,7 @@ const Events = () => {
                   </Popover>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Label htmlFor="eventType">Event Type</Label>
+                  <Label htmlFor="eventType">{t('pages.events.eventType', 'Event Type')}</Label>
                   <Select value={eventType} onValueChange={setEventType}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select event type" />
@@ -510,7 +512,7 @@ const Events = () => {
                   </Select>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Label>Start Date</Label>
+                  <Label>{t('pages.events.startDate', 'Start Date')}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -539,7 +541,7 @@ const Events = () => {
                   </Popover>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Label>End Date</Label>
+                  <Label>{t('pages.events.endDate', 'End Date')}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -603,7 +605,7 @@ const Events = () => {
 
               {/* Action Buttons */}
               <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
-                <Button onClick={handleFiltersChange}>Apply Filters</Button>
+                <Button onClick={handleFiltersChange}>{t('pages.events.applyFilters', 'Apply Filters')}</Button>
                 {hasActiveFilters && (
                   <Button
                     variant="outline"
@@ -742,15 +744,15 @@ const Events = () => {
         {!loading && !error && events.length === 0 && (
           <EmptyState
             icon={Calendar}
-            title={showPast ? 'Keine vergangenen Termine gefunden' : 'The dance floor is empty... for now'}
+            title={showPast ? t('pages.events.noPastEvents', 'No past events found') : t('pages.events.emptyTitle', 'The dance floor is empty... for now')}
             description={
               showPast
-                ? 'Für diese Filter gibt es keine vergangenen Termine. Deaktiviere den Schalter, um kommende Events zu sehen.'
-                : 'Check back soon or widen your filters to find something fun.'
+                ? t('pages.events.noPastEventsDesc', 'No past events match these filters. Turn off the toggle to see upcoming events.')
+                : t('pages.events.emptyDescription', 'Check back soon or widen your filters to find something fun.')
             }
             mood="encouraging"
-            primaryAction={{ label: 'Submit an Event', onClick: () => navigate('/submit/event') }}
-            secondaryAction={{ label: 'Clear Filters', onClick: clearFilters }}
+            primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
+            secondaryAction={{ label: t('pages.events.clearFiltersLabel', 'Clear Filters'), onClick: clearFilters }}
           />
         )}
 

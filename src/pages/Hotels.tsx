@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Hotel as HotelIcon, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HotelCard } from '@/components/hotels/HotelCard';
@@ -9,9 +9,11 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTranslation } from 'react-i18next';
 
 export default function Hotels() {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const { hotels, loading, hasMore, fetchHotels } = useHotels(false);
   const [search, setSearch] = useState('');
   const [hotelType, setHotelType] = useState('all');
@@ -42,15 +44,15 @@ export default function Hotels() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Hotels & BnBs
+            {t('pages.hotels.title', 'Hotels & BnBs')}
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-            LGBTQ+ friendly accommodations worldwide
+            {t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
           </Typography>
         </Box>
         <Button onClick={() => navigate('/submit/hotel')} variant="outline" size="sm">
           <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
-          Submit Hotel
+          {t('pages.hotels.submitHotel', 'Submit Hotel')}
         </Button>
       </Box>
 
@@ -71,10 +73,10 @@ export default function Hotels() {
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <HotelIcon style={{ width: 48, height: 48, opacity: 0.3, margin: '0 auto 16px' }} />
           <Typography variant="h6" color="text.secondary">
-            No hotels found
+            {t('pages.hotels.noResults', 'No hotels found')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Try adjusting your filters or check back later.
+            {t('pages.hotels.noResultsHint', 'Try adjusting your filters or check back later.')}
           </Typography>
         </Box>
       ) : (
@@ -100,7 +102,7 @@ export default function Hotels() {
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
               <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
                 {loading ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
-                Load More
+                {t('common.loadMore', 'Load More')}
               </Button>
             </Box>
           )}

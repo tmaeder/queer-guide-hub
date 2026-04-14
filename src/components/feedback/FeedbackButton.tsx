@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { MessageSquarePlus, Check, Camera } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
@@ -26,7 +26,7 @@ import { feedbackCategories } from '@/config/feedbackCategories';
 export function FeedbackButton() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ category: '', title: '', description: '', email: '', honeypot: '' });

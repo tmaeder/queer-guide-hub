@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useToast } from '@/hooks/use-toast';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -55,7 +56,8 @@ interface FavoriteItem {
 
 export default function Favorites() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const { toast } = useToast();
   const {
     loading: calendarLoading,
@@ -413,10 +415,10 @@ export default function Favorites() {
                   transition: 'color 150ms, background-color 150ms',
                 }}
               >
-                <Link to={getItemUrl()}>
+                <LocalizedLink to={getItemUrl()}>
                   <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
                   View
-                </Link>
+                </LocalizedLink>
               </Button>
             </Box>
           </CardContent>
@@ -551,10 +553,10 @@ export default function Favorites() {
                       transition: 'color 150ms, background-color 150ms',
                     }}
                   >
-                    <Link to={getItemUrl()}>
+                    <LocalizedLink to={getItemUrl()}>
                       <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
                       View Details
-                    </Link>
+                    </LocalizedLink>
                   </Button>
                 </Box>
               </Box>

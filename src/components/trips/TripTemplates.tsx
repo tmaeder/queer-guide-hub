@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
@@ -58,7 +58,7 @@ const templates: TripTemplate[] = [
 ];
 
 export function TripTemplates() {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { createTrip } = useTripMutations();
   const { toast } = useToast();
   const _theme = useTheme();

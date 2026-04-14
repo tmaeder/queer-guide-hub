@@ -1,4 +1,4 @@
-import { createTheme, type ThemeOptions } from '@mui/material/styles';
+import { createTheme, type ThemeOptions, type Direction } from '@mui/material/styles';
 import { duration, ease, transition } from '@/lib/animation';
 import './theme.d.ts';
 
@@ -326,11 +326,12 @@ const baseThemeOptions: ThemeOptions = {
 // ─── Shadows — all none (strict flat) ─────────────────────────────────────────
 const customShadows = Array(25).fill('none') as unknown as ThemeOptions['shadows'];
 
-export function createAppTheme(mode: 'light' | 'dark') {
+export function createAppTheme(mode: 'light' | 'dark', direction: Direction = 'ltr') {
   const palette = mode === 'light' ? lightPalette : darkPalette;
 
   return createTheme({
     ...baseThemeOptions,
+    direction,
     palette: {
       mode,
       ...palette,

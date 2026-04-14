@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
@@ -26,10 +26,10 @@ export function DonationSuccess() {
         </Typography>
         <Box sx={{ pt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
           <Button variant="outline" asChild>
-            <Link to="/">
+            <LocalizedLink to="/">
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t('donate.backHome', 'Back to home')}
-            </Link>
+            </LocalizedLink>
           </Button>
         </Box>
       </CardContent>

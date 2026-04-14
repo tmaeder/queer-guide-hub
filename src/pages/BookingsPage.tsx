@@ -6,11 +6,12 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import { Receipt, Plane, Hotel, Ticket, ExternalLink, Calendar } from 'lucide-react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from 'react-i18next';
 
 const STATUS_COLORS: Record<string, 'default' | 'success' | 'warning' | 'error'> = {
   pending: 'warning',
@@ -28,6 +29,7 @@ const TYPE_ICONS = {
 
 export default function BookingsPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const { data: bookings, isLoading } = useQuery({
     queryKey: ['bookings', user?.id],
@@ -49,8 +51,8 @@ export default function BookingsPage() {
     return (
       <Container sx={{ py: { xs: 6, md: 10 }, textAlign: 'center' }}>
         <Receipt style={{ height: 48, width: 48, margin: '0 auto 16px', opacity: 0.3 }} />
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>Sign in to view bookings</Typography>
-        <Typography sx={{ color: 'text.secondary' }}>Your flight, hotel, and activity bookings will appear here.</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{t('pages.bookings.signIn', 'Sign in to view bookings')}</Typography>
+        <Typography sx={{ color: 'text.secondary' }}>{t('pages.bookings.signInDescription', 'Your flight, hotel, and activity bookings will appear here.')}</Typography>
       </Container>
     );
   }
@@ -60,7 +62,7 @@ export default function BookingsPage() {
       <Paper variant="outlined" sx={{ p: { xs: 3, sm: 4 }, mb: 4, bgcolor: 'background.paper' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
           <Receipt style={{ height: 28, width: 28, color: 'var(--primary)' }} />
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>My Bookings</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800 }}>{t('pages.bookings.title', 'My Bookings')}</Typography>
         </Box>
         <Typography sx={{ color: 'text.secondary' }}>
           Track your flights, hotels, and activities in one place.
@@ -107,11 +109,11 @@ export default function BookingsPage() {
                         </Box>
                       )}
                       {booking.trips?.title && (
-                        <Link to={`/trips/${booking.trip_id}`}>
+                        <LocalizedLink to={`/trips/${booking.trip_id}`}>
                           <Typography sx={{ fontSize: '0.75rem', color: 'primary.main' }}>
                             Trip: {booking.trips.title}
                           </Typography>
-                        </Link>
+                        </LocalizedLink>
                       )}
                     </Box>
                     {booking.total_amount && (
@@ -128,13 +130,13 @@ export default function BookingsPage() {
       ) : (
         <Paper variant="outlined" sx={{ textAlign: 'center', py: 6, bgcolor: 'background.paper' }}>
           <Receipt style={{ height: 40, width: 40, margin: '0 auto 12px', opacity: 0.3 }} />
-          <Typography sx={{ fontWeight: 600, mb: 1 }}>No bookings yet</Typography>
+          <Typography sx={{ fontWeight: 600, mb: 1 }}>{t('pages.bookings.noBookings', 'No bookings yet')}</Typography>
           <Typography sx={{ color: 'text.secondary', mb: 2 }}>
             Search for flights and hotels to start booking.
           </Typography>
-          <Link to="/travel">
-            <Button>Browse Travel</Button>
-          </Link>
+          <LocalizedLink to="/travel">
+            <Button>{t('pages.bookings.browseTravel', 'Browse Travel')}</Button>
+          </LocalizedLink>
         </Paper>
       )}
     </Container>

@@ -14,7 +14,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -311,7 +311,7 @@ export default function HelpHotlines() {
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
         <Typography
-          component={Link}
+          component={LocalizedLink}
           to="/resources"
           variant="body2"
           sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { opacity: 0.7 } }}
@@ -320,7 +320,7 @@ export default function HelpHotlines() {
         </Typography>
         <ChevronRight size={14} style={{ opacity: 0.5 }} />
         <Typography
-          component={Link}
+          component={LocalizedLink}
           to="/resources?category=Support+%26+News"
           variant="body2"
           sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { opacity: 0.7 } }}
@@ -539,18 +539,18 @@ export default function HelpHotlines() {
             { label: t('help.topic.legal', 'Legal'), cat: 'Legal Rights' },
             { label: t('help.topic.relationships', 'Relationships'), cat: 'Relationships & Connection' },
           ].map(({ label, cat }) => (
-            <Link key={cat} to={`/resources?category=${encodeURIComponent(cat)}`} style={{ textDecoration: 'none' }}>
+            <LocalizedLink key={cat} to={`/resources?category=${encodeURIComponent(cat)}`} style={{ textDecoration: 'none' }}>
               <Badge variant="secondary" className="cursor-pointer">
                 {label}
               </Badge>
-            </Link>
+            </LocalizedLink>
           ))}
         </Box>
         <Button asChild variant="ghost" size="sm">
-          <Link to="/resources">
+          <LocalizedLink to="/resources">
             {t('help.browse_resources', 'Browse all resources')}
             <ChevronRight size={16} className="ml-1" />
-          </Link>
+          </LocalizedLink>
         </Button>
       </Box>
 
@@ -608,11 +608,11 @@ function HotlineCard({
             const resourceCat = TOPIC_TO_RESOURCE[tp];
             if (resourceCat) {
               return (
-                <Link key={tp} to={`/resources?category=${encodeURIComponent(resourceCat)}`} style={{ textDecoration: 'none' }}>
+                <LocalizedLink key={tp} to={`/resources?category=${encodeURIComponent(resourceCat)}`} style={{ textDecoration: 'none' }}>
                   <Badge variant="secondary" className="text-xs cursor-pointer">
                     {t(`help.topic.${tp}`, tp)}
                   </Badge>
-                </Link>
+                </LocalizedLink>
               );
             }
             return (

@@ -33,7 +33,7 @@ import {
 import { useComments, PostComment, CreateCommentData } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -106,9 +106,9 @@ const CommentItem = ({
 
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-            <Link to={`/user/${comment.user_id}`} style={{ fontWeight: 500, fontSize: '0.875rem' }}>
+            <LocalizedLink to={`/user/${comment.user_id}`} style={{ fontWeight: 500, fontSize: '0.875rem' }}>
               {comment.profiles?.display_name || 'Unknown User'}
-            </Link>
+            </LocalizedLink>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
             </Typography>

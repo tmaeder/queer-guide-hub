@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Star } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -72,7 +72,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
 
   return (
     <Box
-      component={Link}
+      component={LocalizedLink}
       to={href}
       onClick={onClick}
       aria-label={ariaLabel}

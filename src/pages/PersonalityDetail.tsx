@@ -1,4 +1,6 @@
-import { useParams, useNavigate, Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
@@ -24,6 +26,8 @@ import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
+
 
 interface SimilarPersonality {
   id: string;
@@ -39,8 +43,9 @@ interface SimilarPersonality {
 }
 
 export default function PersonalityDetail() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [personality, setPersonality] = useState<Personality | null>(null);
   const [loading, setLoading] = useState(true);
   const [similarPersonalities, setSimilarPersonalities] = useState<SimilarPersonality[]>([]);
@@ -376,7 +381,7 @@ export default function PersonalityDetail() {
                 {personality.nationality &&
                   (countryId ? (
                     <Box
-                      component={Link}
+                      component={LocalizedLink}
                       to={`/country/${countryId}`}
                       sx={{
                         display: 'flex',
@@ -548,7 +553,7 @@ export default function PersonalityDetail() {
                   {similarPersonalities.map((similar) => (
                     <Box
                       key={similar.id}
-                      component={Link}
+                      component={LocalizedLink}
                       to={`/personalities/${similar.slug || similar.id}`}
                       sx={{
                         display: 'flex',
@@ -654,7 +659,7 @@ export default function PersonalityDetail() {
                     </Typography>
                     {countryId ? (
                       <Typography
-                        component={Link}
+                        component={LocalizedLink}
                         to={`/country/${countryId}`}
                         sx={{
                           fontWeight: 500,
@@ -679,7 +684,7 @@ export default function PersonalityDetail() {
                       Profession
                     </Typography>
                     <Typography
-                      component={Link}
+                      component={LocalizedLink}
                       to={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
                       sx={{
                         fontWeight: 500,

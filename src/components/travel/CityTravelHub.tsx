@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import { Plane, Hotel, Ticket, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { TravelDealCard } from './TravelDealCard';
 import { UnifiedBookingCard } from '@/components/booking/UnifiedBookingCard';
@@ -31,11 +31,11 @@ function SectionHeader({
         <Icon style={{ height: 18, width: 18, color: 'var(--primary)' }} />
         <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>{title}</Typography>
       </Box>
-      <Link to={moreLink}>
+      <LocalizedLink to={moreLink}>
         <Button variant="ghost" size="sm">
           See all <ArrowRight style={{ height: 14, width: 14, marginLeft: 4 }} />
         </Button>
-      </Link>
+      </LocalizedLink>
     </Box>
   );
 }
@@ -146,7 +146,7 @@ export function CityTravelHub({ destinationIata, destinationCity }: CityTravelHu
         <Box sx={{ textAlign: 'center', py: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
           <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
             Activities coming soon. Check{' '}
-            <Link to="/events" style={{ textDecoration: 'underline' }}>events</Link>{' '}
+            <LocalizedLink to="/events" style={{ textDecoration: 'underline' }}>events</LocalizedLink>{' '}
             for things happening in {destinationCity}.
           </Typography>
         </Box>
@@ -154,9 +154,9 @@ export function CityTravelHub({ destinationIata, destinationCity }: CityTravelHu
 
       {/* CTA */}
       <Box sx={{ textAlign: 'center' }}>
-        <Link to={`/trips`}>
+        <LocalizedLink to={`/trips`}>
           <Button>Plan a trip to {destinationCity}</Button>
-        </Link>
+        </LocalizedLink>
       </Box>
     </Box>
   );

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router';
+import { useSearchParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 /**
  * Handles incoming shares from the Web Share Target API.
@@ -7,7 +8,7 @@ import { useSearchParams, useNavigate } from 'react-router';
  */
 export default function ShareTarget() {
   const [params] = useSearchParams();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   useEffect(() => {
     const url = params.get('url') || '';

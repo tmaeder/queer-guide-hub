@@ -5,13 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Calendar, User, Search, Heart, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 
 export default function Blog() {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Real blog posts - currently empty until blog content is added

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -104,10 +104,10 @@ const LatestNewsSlider = React.memo(() => {
           Latest News
         </Typography>
         <Button variant="outline" size={isMobile ? 'sm' : 'default'} asChild>
-          <Link to="/news">
+          <LocalizedLink to="/news">
             View All
             <ArrowRight style={{ marginLeft: 8, width: isMobile ? 12 : 16, height: isMobile ? 12 : 16 }} />
-          </Link>
+          </LocalizedLink>
         </Button>
       </Box>
 
@@ -121,7 +121,7 @@ const LatestNewsSlider = React.memo(() => {
               key={article.id}
               style={{ paddingLeft: isMobile ? 8 : 16, flexBasis: isMobile ? '85%' : '33.333%' }}
             >
-              <Link
+              <LocalizedLink
                 to={`/news/${article.slug}`}
                 style={{ textDecoration: 'none', display: 'block', height: '100%' }}
               >
@@ -212,7 +212,7 @@ const LatestNewsSlider = React.memo(() => {
                     )}
                   </CardContent>
                 </Card>
-              </Link>
+              </LocalizedLink>
             </CarouselItem>
           ))}
         </CarouselContent>

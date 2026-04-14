@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,12 +35,14 @@ import { GroupMembersList } from '@/components/groups/GroupMembersList';
 import { CreateGroupEventDialog } from '@/components/groups/CreateGroupEventDialog';
 import { GroupEventCard } from '@/components/groups/GroupEventCard';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import Typography from '@mui/material/Typography';import { useTranslation } from 'react-i18next';
+
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const { groups, userGroups, isLoading, joinGroup, isJoining, leaveGroup, isLeaving } =
@@ -104,7 +108,7 @@ export default function GroupDetail() {
     return (
       <Box sx={{ mx: 'auto', py: 4 }}>
         <Alert>
-          <AlertDescription>Please sign in to view group details.</AlertDescription>
+          <AlertDescription>{t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}</AlertDescription>
         </Alert>
       </Box>
     );
@@ -140,10 +144,10 @@ export default function GroupDetail() {
             The group you're looking for doesn't exist or you don't have access to it.
           </p>
           <Button asChild>
-            <Link to="/groups">
+            <LocalizedLink to="/groups">
               <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
               Back to Groups
-            </Link>
+            </LocalizedLink>
           </Button>
         </Box>
       </Box>

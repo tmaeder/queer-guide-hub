@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
 import {
   MapPin,
   Globe,
@@ -124,9 +125,9 @@ export default function QueerVillageDetail() {
           <Typography sx={{ color: 'text.secondary', mb: 3 }}>
             The queer village you're looking for doesn't exist.
           </Typography>
-          <Link to="/villages" style={{ color: 'inherit', fontWeight: 500 }}>
+          <LocalizedLink to="/villages" style={{ color: 'inherit', fontWeight: 500 }}>
             ← Back to Villages
-          </Link>
+          </LocalizedLink>
         </Box>
       </Box>
     );
@@ -147,29 +148,29 @@ export default function QueerVillageDetail() {
           flexWrap: 'wrap',
         }}
       >
-        <Link to="/villages" style={{ color: 'inherit', textDecoration: 'none' }}>
+        <LocalizedLink to="/villages" style={{ color: 'inherit', textDecoration: 'none' }}>
           ← Villages
-        </Link>
+        </LocalizedLink>
         <span>/</span>
         {village.countries && (
           <>
-            <Link
+            <LocalizedLink
               to={`/country/${village.countries.slug || village.countries.id}`}
               style={{ color: 'inherit', textDecoration: 'none' }}
             >
               {village.countries.name}
-            </Link>
+            </LocalizedLink>
             <span>/</span>
           </>
         )}
         {village.cities && (
           <>
-            <Link
+            <LocalizedLink
               to={`/city/${village.cities.slug || village.cities.id}`}
               style={{ color: 'inherit', textDecoration: 'none' }}
             >
               {village.cities.name}
-            </Link>
+            </LocalizedLink>
             <span>/</span>
           </>
         )}
@@ -242,7 +243,7 @@ export default function QueerVillageDetail() {
             <MapPin style={{ width: 16, height: 16 }} />
             <Typography sx={{ fontSize: '1.125rem' }}>
               {village.cities && (
-                <Link
+                <LocalizedLink
                   to={`/city/${village.cities.slug || village.cities.id}`}
                   style={{
                     color: 'inherit',
@@ -251,11 +252,11 @@ export default function QueerVillageDetail() {
                   }}
                 >
                   {village.cities.name}
-                </Link>
+                </LocalizedLink>
               )}
               {village.cities && village.countries && ', '}
               {village.countries && (
-                <Link
+                <LocalizedLink
                   to={`/country/${village.countries.slug || village.countries.id}`}
                   style={{
                     color: 'inherit',
@@ -264,7 +265,7 @@ export default function QueerVillageDetail() {
                   }}
                 >
                   {village.countries.name}
-                </Link>
+                </LocalizedLink>
               )}
             </Typography>
           </Box>

@@ -2,7 +2,10 @@ import * as React from "react";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import GlobalStyles from "@mui/material/GlobalStyles";
+import { useTranslation } from "react-i18next";
 import { createAppTheme, brandColors } from "@/theme/muiTheme";
+import { RTL_LOCALES, isSupportedLocale } from "@/i18n/languages";
+import type { Direction } from "@mui/material/styles";
 
 type Theme = "dark" | "light" | "system";
 
@@ -69,7 +72,9 @@ export function ThemeProvider({
       });
   }, [resolvedMode]);
 
-  const muiTheme = React.useMemo(() => createAppTheme(resolvedMode), [resolvedMode]);
+  const { i18n } = useTranslation();
+  const direction: Direction = isSupportedLocale(i18n.language) && RTL_LOCALES.includes(i18n.language as any) ? 'rtl' : 'ltr';
+  const muiTheme = React.useMemo(() => createAppTheme(resolvedMode, direction), [resolvedMode, direction]);
 
   const value = React.useMemo(() => ({
     theme,

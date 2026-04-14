@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import { Sparkles, TrendingUp, Shield, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -146,7 +146,7 @@ export function PersonalizedFeed() {
         }}
       >
         {displayCities.map((city) => (
-          <Link key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
+          <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
             <Card className="hover:shadow-md transition-shadow h-full">
               <CardContent style={{ padding: 16 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
@@ -173,7 +173,7 @@ export function PersonalizedFeed() {
                 )}
               </CardContent>
             </Card>
-          </Link>
+          </LocalizedLink>
         ))}
       </Box>
     </Box>

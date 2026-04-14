@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router';
+import { useSearchParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,8 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
+
 
 const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
   venue: MapPin,
@@ -71,9 +74,10 @@ const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSPr
 };
 
 export default function SearchResults() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTab, setSelectedTab] = useState('all');
   const initialSort = searchParams.get('sort') || 'relevance';

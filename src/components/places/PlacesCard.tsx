@@ -5,7 +5,7 @@ import type {
   CityWithCountry as City,
 } from '@/hooks/useOptimizedPlaces';
 import { useState, useEffect, memo } from 'react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useCityImages } from '@/hooks/useCityImages';
 import Box from '@mui/material/Box';
@@ -301,17 +301,17 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   // Wrap with Link for cities and countries, otherwise use onClick
   if (type === 'city' && data?.id) {
     return (
-      <Link to={`/city/${data.slug || data.id}`} style={{ display: 'block' }}>
+      <LocalizedLink to={`/city/${data.slug || data.id}`} style={{ display: 'block' }}>
         {cardContent}
-      </Link>
+      </LocalizedLink>
     );
   }
 
   if (type === 'country' && data?.id) {
     return (
-      <Link to={`/country/${data.slug || data.id}`} style={{ display: 'block' }}>
+      <LocalizedLink to={`/country/${data.slug || data.id}`} style={{ display: 'block' }}>
         {cardContent}
-      </Link>
+      </LocalizedLink>
     );
   }
 

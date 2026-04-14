@@ -21,6 +21,8 @@
     "test:watch": "vitest",
     "bones": "boneyard build",
     "bones:force": "boneyard build --force",
+    "i18n:check": "tsx scripts/sync-translations.ts",
+    "i18n:fill": "tsx scripts/sync-translations.ts --fill",
     "prepare": "husky"
   },
   "lint-staged": {

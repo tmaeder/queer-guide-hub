@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ import Typography from '@mui/material/Typography';
 type Mode = 'signin' | 'signup' | 'forgot';
 
 export default function Auth() {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { signIn, resetPassword, user } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();

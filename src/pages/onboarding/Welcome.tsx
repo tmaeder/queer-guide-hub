@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
 export default function Welcome() {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user, loading, hasPasskey, enrollPasskey } = useAuth();
   const { emit } = useSignupFunnel();
   const { toast } = useToast();

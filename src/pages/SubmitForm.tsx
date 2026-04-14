@@ -3,7 +3,8 @@
  * Generic multi-step submission form that reuses CMS FieldRenderer.
  */
 
-import { useParams, useNavigate, useLocation } from 'react-router';
+import { useParams, useLocation } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -20,10 +21,13 @@ import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { FlyerScanUpload } from '@/components/submission/FlyerScanUpload';
 import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
 import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 
 const SubmitForm = () => {
+  const { t } = useTranslation();
   const { contentType } = useParams<{ contentType: string }>();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   const config = contentType ? submissionRegistry[contentType] : undefined;
 
@@ -52,7 +56,7 @@ interface SubmitFormInnerProps {
 }
 
 function SubmitFormInner({ config }: SubmitFormInnerProps) {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const contentConfig = contentTypeRegistry[config.contentType];

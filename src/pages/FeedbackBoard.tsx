@@ -19,7 +19,8 @@ import { useFeedbackVoteCounts } from '@/hooks/useFeedbackVote';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';
+import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';import { useTranslation } from 'react-i18next';
+
 
 const columns = [
   { id: 'new', label: 'New', color: '#f59e0b' },
@@ -38,6 +39,7 @@ const categoryConfig: Record<string, { label: string; icon: typeof Bug; color: s
 
 export default function FeedbackBoard() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

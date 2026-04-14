@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
@@ -35,7 +35,7 @@ interface Props {
 
 export function CreateTripDialog({ open, onClose }: Props) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { createTrip } = useTripMutations();
   const { toast } = useToast();
   const [title, setTitle] = useState('');

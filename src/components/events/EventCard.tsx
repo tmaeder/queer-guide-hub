@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatEventTime } from '@/lib/event-time';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import Box from '@mui/material/Box';
@@ -147,7 +147,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
   return (
     <Skeleton name="event-card" loading={loading || !event} fixture={<EventCardFixture />} fallback={<PageLoadingState count={1} />}>
       {event && (
-    <Link to={`/events/${event.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    <LocalizedLink to={`/events/${event.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
     <Card hoverable>
       {/* Image — collapses to compact layout on load error */}
       {hasImage && (
@@ -572,7 +572,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
       </CardContent>
 
     </Card>
-    </Link>
+    </LocalizedLink>
       )}
     </Skeleton>
   );

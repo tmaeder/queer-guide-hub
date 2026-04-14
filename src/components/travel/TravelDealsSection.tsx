@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { TravelDealCard } from './TravelDealCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 interface TravelDealsSectionProps {
   destinationIata?: string | null;
@@ -56,12 +56,12 @@ export function TravelDealsSection({
         <Typography sx={{ color: 'text.secondary', mb: 1 }}>
           Enable location to see personalized flight deals to {destinationCity}
         </Typography>
-        <Link to="/travel">
+        <LocalizedLink to="/travel">
           <Button variant="outline" size="sm">
             <Plane style={{ height: 14, width: 14, marginRight: 6 }} />
             Search Flights Manually
           </Button>
-        </Link>
+        </LocalizedLink>
       </Box>
     );
   }
@@ -78,11 +78,11 @@ export function TravelDealsSection({
             Best deals based on your location
           </Typography>
         </Box>
-        <Link to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
+        <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
           <Button variant="ghost" size="sm">
             More <ArrowRight style={{ height: 14, width: 14, marginLeft: 4 }} />
           </Button>
-        </Link>
+        </LocalizedLink>
       </Box>
 
       {loading ? (
@@ -127,11 +127,11 @@ export function TravelDealsSection({
           <Typography sx={{ color: 'text.secondary', mb: 1 }}>
             No deals available right now
           </Typography>
-          <Link to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
+          <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
             <Button variant="outline" size="sm">
               Search Flights to {destinationCity}
             </Button>
-          </Link>
+          </LocalizedLink>
         </Box>
       )}
     </Box>
