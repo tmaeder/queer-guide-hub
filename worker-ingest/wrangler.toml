@@ -26,7 +26,7 @@ EMBED_MODEL = "@cf/baai/bge-m3"
 #   INGEST_TOKEN   (random 32+ bytes; used by Supabase webhook and backfill caller)
 
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["* * * * *"]
 
 [observability]
 enabled = true
