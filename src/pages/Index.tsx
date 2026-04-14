@@ -10,16 +10,12 @@ import {
   Plane,
   Users,
   BookOpen,
-  ArrowRight,
-  Map,
   Building,
 } from 'lucide-react';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 
@@ -83,8 +79,6 @@ const features: {
 const Index = React.memo(() => {
   const { stats: realStats, loading } = useConsolidatedStats();
   const isMobile = useIsMobile();
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
   const navigate = useNavigate();
 
   const stats = useMemo(
@@ -107,25 +101,38 @@ const Index = React.memo(() => {
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
+      {/* ── Hero + Map ───────────────────────────────────────────────── */}
       <Box
         sx={{
           position: 'relative',
-          py: { xs: 14, sm: 18, md: 24 },
-          px: { xs: 2, sm: 3, md: 4 },
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          minHeight: { xs: 'auto', md: 'calc(100vh - 64px)' },
           bgcolor: 'background.default',
         }}
       >
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
+        {/* Text panel */}
+        <Box
+          sx={{
+            flex: { xs: 'none', md: '0 0 35%' },
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            px: { xs: 2, sm: 3, md: 4 },
+            py: { xs: 6, sm: 8, md: 0 },
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
           <Typography
             variant="h1"
             className="reveal-up"
             sx={{
-              fontSize: { xs: '3rem', sm: '4.5rem', md: '6rem' },
+              fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem', lg: '4rem' },
               fontWeight: 800,
               letterSpacing: '-0.04em',
               lineHeight: 1.05,
-              mb: { xs: 3, md: 4 },
+              mb: 2,
               color: 'text.primary',
             }}
           >
@@ -133,10 +140,7 @@ const Index = React.memo(() => {
             <br />
             Connect.
             <br />
-            <Box
-              component="span"
-              sx={{ color: 'brand.main' }}
-            >
+            <Box component="span" sx={{ color: 'brand.main' }}>
               Belong.
             </Box>
           </Typography>
@@ -144,10 +148,10 @@ const Index = React.memo(() => {
           <Typography
             className="reveal-up reveal-delay-1"
             sx={{
-              fontSize: { xs: '1.0625rem', sm: '1.1875rem', md: '1.375rem' },
+              fontSize: { xs: '0.9375rem', md: '1.0625rem' },
               color: 'text.secondary',
-              mb: { xs: 5, md: 6 },
-              lineHeight: 1.7,
+              mb: 3,
+              lineHeight: 1.6,
             }}
           >
             Safe venues, vibrant events, and communities that get you —
@@ -158,25 +162,50 @@ const Index = React.memo(() => {
             className="reveal-up reveal-delay-2"
             sx={{
               display: 'flex',
-              gap: { xs: 1.5, md: 2 },
+              gap: 1.5,
               flexWrap: 'wrap',
             }}
           >
-            <Button size="lg" onClick={() => navigate('/map')}>
-              <Map
-                style={{ width: 18, height: 18, marginRight: 8 }}
-                aria-hidden="true"
-              />
-              Explore the Map
-            </Button>
-            <Button variant="outline" size="lg" onClick={() => navigate('/venues')}>
+            <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/venues')}>
+              <MapPin style={{ width: 16, height: 16, marginRight: 6 }} aria-hidden="true" />
               Browse Venues
-              <ArrowRight
-                style={{ width: 18, height: 18, marginLeft: 8 }}
-                aria-hidden="true"
-              />
+            </Button>
+            <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/events')}>
+              <Calendar style={{ width: 16, height: 16, marginRight: 6 }} aria-hidden="true" />
+              View Events
             </Button>
           </Box>
+        </Box>
+
+        {/* Map panel */}
+        <Box
+          sx={{
+            flex: { xs: 'none', md: 1 },
+            minHeight: { xs: '55vh', md: 0 },
+            position: 'relative',
+          }}
+        >
+          <ErrorBoundary section="map" fallback={null}>
+            <React.Suspense
+              fallback={
+                <Box
+                  sx={{
+                    height: '100%',
+                    minHeight: { xs: '55vh', md: 'calc(100vh - 64px)' },
+                    bgcolor: 'action.hover',
+                  }}
+                />
+              }
+            >
+              <ExploreMap
+                height={isMobile ? '55vh' : 'calc(100vh - 64px)'}
+                defaultLayers={['venues', 'events']}
+                showFilters
+                showLayerToggles
+                linkToFullMap="/map"
+              />
+            </React.Suspense>
+          </ErrorBoundary>
         </Box>
       </Box>
 
@@ -316,74 +345,6 @@ const Index = React.memo(() => {
           })}
         </StaggerGrid>
       </Box>
-
-      {/* ── Explore Map ──────────────────────────────────────────────── */}
-      <ScrollReveal direction="up">
-      <Box
-        component="section"
-        sx={{
-          bgcolor: isDark ? 'background.paper' : '#f5f5f5',
-          py: { xs: 8, md: 14 },
-          px: { xs: 2, sm: 3, md: 4 },
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: { xs: 3, md: 4 },
-          }}
-        >
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 800,
-              fontSize: { xs: '1.75rem', md: '2.25rem' },
-            }}
-          >
-            Explore Near You
-          </Typography>
-          <Button
-            variant="outline"
-            size={isMobile ? 'sm' : 'default'}
-            onClick={() => navigate('/map')}
-          >
-            Full Map
-            <ArrowRight
-              style={{
-                marginLeft: 8,
-                width: isMobile ? 14 : 16,
-                height: isMobile ? 14 : 16,
-              }}
-              aria-hidden="true"
-            />
-          </Button>
-        </Box>
-        <Box sx={{ overflow: 'hidden' }}>
-          <ErrorBoundary section="map" fallback={null}>
-            <React.Suspense
-              fallback={
-                <Box
-                  sx={{
-                    height: { xs: 360, md: 480 },
-                    bgcolor: 'action.hover',
-                  }}
-                />
-              }
-            >
-              <ExploreMap
-                height={isMobile ? 360 : 480}
-                defaultLayers={['venues', 'events']}
-                showFilters
-                showLayerToggles
-                linkToFullMap="/map"
-              />
-            </React.Suspense>
-          </ErrorBoundary>
-        </Box>
-      </Box>
-      </ScrollReveal>
 
       {/* ── Weekly Events Near You ────────────────────────────────────── */}
       <ErrorBoundary section="weekly-events" fallback={null}>
