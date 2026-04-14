@@ -41,7 +41,10 @@ const tomtomAdapter: SourceAdapter = {
               throw new Error(`TomTom API ${res.status}: ${body.slice(0, 200)}`)
             }
             const json = await res.json()
-            return json.results || []
+            // TomTom search returns Streets/Geography/POI mixed in. Only POI entries
+            // have an actual venue name (poi.name); the rest produce nameless rows.
+            const all = (json.results || []) as Array<Record<string, unknown>>
+            return all.filter(r => r.type === 'POI' && (r.poi as Record<string, unknown> | undefined)?.name)
           })
           for (const poi of items) {
             const id = poi.id || `tt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
