@@ -1,0 +1,12 @@
+node_modules/
+*.log
+.wrangler/
+.dev.vars
+dist/
+.DS_Store
+tmp/
+/tmp/*
+!tmp/.gitkeep
+*.xlsx
+*.csv
+*.numbers
