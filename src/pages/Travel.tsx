@@ -84,10 +84,10 @@ export default function Travel() {
         sx={{ p: { xs: 3, sm: 4 }, mb: 4, bgcolor: 'background.paper', textAlign: 'center' }}
       >
         <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-0.02em', mb: 1 }}>
-          Book Travel
+          {t('pages.travel.title', 'Book Travel')}
         </Typography>
         <Typography sx={{ color: 'text.secondary', maxWidth: 480, mx: 'auto' }}>
-          Find flights, hotels, and activities for LGBTQ+ friendly destinations
+          {t('pages.travel.subtitle', 'Find flights, hotels, and activities for LGBTQ+ friendly destinations')}
         </Typography>
       </Paper>
 
@@ -204,10 +204,10 @@ export default function Travel() {
       {/* CTA */}
       <Paper variant="outlined" sx={{ textAlign: 'center', py: 3, px: 3, bgcolor: 'background.paper' }}>
         <Typography sx={{ fontWeight: 600, mb: 1 }}>
-          Explore LGBTQ+ Friendly Destinations
+          {t('pages.travel.exploreCta', 'Explore LGBTQ+ Friendly Destinations')}
         </Typography>
         <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
-          Discover cities and countries with detailed safety information and travel guides
+          {t('pages.travel.exploreDescription', 'Discover cities and countries with detailed safety information and travel guides')}
         </Typography>
         <LocalizedLink to="/places">
           <Button variant="outline">{t('pages.travel.browseDestinations', 'Browse Destinations')}</Button>

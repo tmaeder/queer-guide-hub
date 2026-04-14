@@ -37,11 +37,10 @@ const SubmitHub = () => {
           <Heart style={{ width: 32, height: 32, color: '#ec4899' }} />
         </Box>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-          Contribute to Queer Guide
+          {t('pages.submit.title', 'Contribute to Queer Guide')}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ maxWidth: '32rem', mx: 'auto' }}>
-          Help build the world's most comprehensive LGBTQ+ directory. All submissions are reviewed
-          before publishing.
+          {t('pages.submit.subtitle', "Help build the world's most comprehensive LGBTQ+ directory. All submissions are reviewed before publishing.")}
         </Typography>
       </Box>
 
