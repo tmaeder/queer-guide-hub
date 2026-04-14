@@ -8,6 +8,12 @@ on:
       - "supabase/functions/**"
       - "supabase/migrations/**"
       - ".github/workflows/deploy-supabase-functions.yml"
+  workflow_dispatch:
+    inputs:
+      redeploy_all:
+        description: "Redeploy every edge function (regardless of git diff)"
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-supabase
@@ -44,10 +50,14 @@ jobs:
 
       - name: Deploy changed edge functions
         if: env.SUPABASE_ACCESS_TOKEN != ''
+        env:
+          REDEPLOY_ALL: ${{ inputs.redeploy_all }}
         run: |
-          # If a shared file changed, redeploy every function (each bundles shared code at deploy time).
-          if git diff --name-only HEAD~1 HEAD | grep -q "^supabase/functions/_shared/"; then
-            echo "Shared code changed. Redeploying every function."
+          # Manual trigger with redeploy_all=true forces a full redeploy.
+          # If a shared file changed in this push, also redeploy every function
+          # (each bundles shared code at deploy time).
+          if [ "$REDEPLOY_ALL" = "true" ] || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/functions/_shared/"; then
+            echo "Redeploying every function (manual trigger or shared code changed)."
             CHANGED=$(ls -1 supabase/functions | grep -v '^_shared$')
           else
             CHANGED=$(git diff --name-only HEAD~1 HEAD | awk -F/ '/^supabase\/functions\// && $3 != "_shared" {print $3}' | sort -u)
