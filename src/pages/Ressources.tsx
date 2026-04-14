@@ -22,7 +22,9 @@ import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Tag, ChevronRight, Network, Briefcase, Zap } from 'lucide-react';
+import { Link } from 'react-router';
+import Alert from '@mui/material/Alert';
+import { ArrowLeft, Tag, ChevronRight, Network, Briefcase, Zap, AlertTriangle, Phone } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
@@ -108,6 +110,32 @@ export default function Ressources() {
       setSearchQuery(professionParam);
     }
   }, [professionParam]);
+
+  // Category deep-link from URL (e.g. /resources?category=Health+%26+Wellness)
+  const categoryParam = searchParams.get('category');
+  useEffect(() => {
+    if (!categoryParam || categoriesTree.length === 0) return;
+    const decoded = decodeURIComponent(categoryParam);
+    // Check parent categories first
+    const parent = categoriesTree.find((c) => c.name === decoded);
+    if (parent) {
+      setSelectedCategory(parent.name);
+      setSelectedSubcategory('');
+      setFilterCategory('all');
+      setViewMode('category');
+      return;
+    }
+    // Check child categories
+    for (const p of categoriesTree) {
+      const child = p.children?.find((c) => c.name === decoded);
+      if (child) {
+        setSelectedCategory(p.name);
+        setSelectedSubcategory(child.name);
+        setViewMode('subcategory');
+        return;
+      }
+    }
+  }, [categoryParam, categoriesTree]);
 
   // Load individual tag from route param
   useEffect(() => {
@@ -704,6 +732,46 @@ export default function Ressources() {
                   Browse LGBTQ+ personalities by profession
                 </Typography>
               </Box>
+              {/* Crisis help card */}
+              <Box
+                component={Link}
+                to="/help"
+                sx={{
+                  ...hoverCardSx,
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  gap: 0.75,
+                  minHeight: 96,
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  borderLeft: '3px solid',
+                  borderColor: 'error.main',
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 1,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Phone style={{ width: 18, height: 18, opacity: 0.75 }} />
+                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                      Crisis Hotlines
+                    </Typography>
+                  </Box>
+                  <ChevronRight style={{ width: 16, height: 16, opacity: 0.4 }} />
+                </Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.7rem', lineHeight: 1.4 }}
+                >
+                  Free, anonymous LGBTQIA+ crisis support worldwide
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Box>
@@ -736,6 +804,25 @@ export default function Ressources() {
               {categoriesTree.find((c) => c.name === selectedCategory)?.total_tag_count ?? 0}
             </Badge>
           </Box>
+
+          {/* Crisis help banner in Support & News */}
+          {selectedCategory === 'Support & News' && (
+            <Alert
+              severity="info"
+              icon={<AlertTriangle size={20} />}
+              sx={{ mb: 3 }}
+              action={
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/help">
+                    <Phone size={14} className="mr-1" />
+                    Crisis Hotlines
+                  </Link>
+                </Button>
+              }
+            >
+              Need immediate help? Browse our curated crisis hotlines directory.
+            </Alert>
+          )}
 
           {(() => {
             const node = categoriesTree.find((c) => c.name === selectedCategory);

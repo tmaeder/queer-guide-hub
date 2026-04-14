@@ -14,21 +14,38 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { Phone, ExternalLink, Clock, Languages, AlertTriangle } from 'lucide-react';
+import {
+  Phone,
+  ExternalLink,
+  Clock,
+  Languages,
+  AlertTriangle,
+  Search,
+  Heart,
+  ChevronRight,
+  Shield,
+  EyeOff,
+  Zap,
+} from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useMeta } from '@/hooks/useMeta';
+import { useAuth } from '@/hooks/useAuth';
+import { useHotlineBookmarks } from '@/hooks/useHotlineBookmarks';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { EmptyState } from '@/components/ui/EmptyState';
 import {
   Select,
   SelectContent,
@@ -72,6 +89,23 @@ const COUNTRY_NAMES: Record<string, string> = {
   INT: 'International',
 };
 
+/** Map hotline topic slugs to resource category URL params */
+const TOPIC_TO_RESOURCE: Record<string, string> = {
+  crisis: 'Mental Health',
+  suicide: 'Mental Health',
+  lgbtq: 'Identity & Expression',
+  trans: 'Gender Identity',
+  youth: 'Support Services & NGOs',
+  health: 'Health & Wellness',
+  hiv: 'Sexual Health',
+  violence: 'Safety & Practices',
+  discrimination: 'Rights & Activism',
+  legal: 'Legal Rights',
+  relationships: 'Relationships & Connection',
+  'coming-out': 'Questioning & Labels',
+  women: 'Identity & Expression',
+};
+
 function countryLabel(code: string): string {
   return COUNTRY_NAMES[code] ?? code;
 }
@@ -84,13 +118,45 @@ function detectBrowserCountry(): string {
   return 'ALL';
 }
 
+function matchProfileLocation(location: string | null | undefined): string | null {
+  if (!location) return null;
+  const lower = location.toLowerCase();
+  for (const [code, name] of Object.entries(COUNTRY_NAMES)) {
+    if (lower.includes(name.toLowerCase()) || lower.includes(code.toLowerCase())) return code;
+  }
+  return null;
+}
+
+function getInitialCountry(profileLocation?: string | null): string {
+  const stored = localStorage.getItem('qg_help_country');
+  if (stored) return stored;
+  const fromProfile = matchProfileLocation(profileLocation);
+  if (fromProfile) return fromProfile;
+  return detectBrowserCountry();
+}
+
+function getInitialTopic(): string {
+  return localStorage.getItem('qg_help_topic') || 'ALL';
+}
+
+function is247(hours: string): boolean {
+  const h = hours.toLowerCase();
+  return h.includes('24/7') || h.includes('24 h') || h.includes('rund um die uhr');
+}
+
 export default function HelpHotlines() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { bookmarkedIds, isBookmarked, toggle: toggleBookmark } = useHotlineBookmarks();
+
   const [page, setPage] = useState<CMSPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [countryFilter, setCountryFilter] = useState<string>(() => detectBrowserCountry());
-  const [topicFilter, setTopicFilter] = useState<string>('ALL');
+  const [countryFilter, setCountryFilter] = useState<string>('ALL');
+  const [topicFilter, setTopicFilter] = useState<string>(() => getInitialTopic());
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [countryInitialized, setCountryInitialized] = useState(false);
 
   useMeta({
     title: t('help.title', 'Hilfe & Krisen-Hotlines'),
@@ -100,6 +166,24 @@ export default function HelpHotlines() {
     ),
     canonicalPath: '/help',
   });
+
+  // Initialize country filter with profile awareness
+  useEffect(() => {
+    if (countryInitialized) return;
+    const country = getInitialCountry(user?.user_metadata?.location as string | undefined);
+    setCountryFilter(country);
+    setCountryInitialized(true);
+  }, [user, countryInitialized]);
+
+  // Persist filters
+  useEffect(() => {
+    if (!countryInitialized) return;
+    localStorage.setItem('qg_help_country', countryFilter);
+  }, [countryFilter, countryInitialized]);
+
+  useEffect(() => {
+    localStorage.setItem('qg_help_topic', topicFilter);
+  }, [topicFilter]);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,19 +233,50 @@ export default function HelpHotlines() {
   }, [hotlines]);
 
   const visibleHotlines = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return hotlines.filter((h) => {
       if (countryFilter !== 'ALL' && h.country !== countryFilter) return false;
       if (topicFilter !== 'ALL' && !h.topics.includes(topicFilter)) return false;
+      if (q) {
+        const haystack = `${h.name} ${h.description} ${h.languages.join(' ')}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
       return true;
     });
-  }, [hotlines, countryFilter, topicFilter]);
+  }, [hotlines, countryFilter, topicFilter, searchQuery]);
 
-  // Body HTML is trusted CMS content, sanitized with DOMPurify before
-  // rendering (same hardening as src/pages/CMSRoutePage.tsx line 201).
+  const bookmarkedHotlines = useMemo(() => {
+    if (bookmarkedIds.size === 0) return [];
+    return hotlines.filter((h) => bookmarkedIds.has(h.id));
+  }, [hotlines, bookmarkedIds]);
+
+  // Quick-action: top 3 hotlines for selected country
+  const quickActionHotlines = useMemo(() => {
+    if (countryFilter === 'ALL') return [];
+    return [...visibleHotlines]
+      .sort((a, b) => {
+        const a247 = is247(a.hours) ? 1 : 0;
+        const b247 = is247(b.hours) ? 1 : 0;
+        if (b247 !== a247) return b247 - a247;
+        const aFree = a.free ? 1 : 0;
+        const bFree = b.free ? 1 : 0;
+        if (bFree !== aFree) return bFree - aFree;
+        return b.topics.length - a.topics.length;
+      })
+      .slice(0, 3);
+  }, [visibleHotlines, countryFilter]);
+
+  // Body HTML: trusted CMS content, sanitized with DOMPurify (same as CMSRoutePage.tsx).
   const sanitizedIntroHtml = useMemo(
     () => (page?.body_html ? DOMPurify.sanitize(page.body_html) : ''),
     [page],
   );
+
+  const resetFilters = () => {
+    setCountryFilter('ALL');
+    setTopicFilter('ALL');
+    setSearchQuery('');
+  };
 
   if (loading) {
     return (
@@ -193,6 +308,31 @@ export default function HelpHotlines() {
 
   return (
     <Container sx={{ py: 4 }}>
+      {/* Breadcrumb */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
+        <Typography
+          component={Link}
+          to="/resources"
+          variant="body2"
+          sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { opacity: 0.7 } }}
+        >
+          {t('help.breadcrumb_resources', 'Resources')}
+        </Typography>
+        <ChevronRight size={14} style={{ opacity: 0.5 }} />
+        <Typography
+          component={Link}
+          to="/resources?category=Support+%26+News"
+          variant="body2"
+          sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { opacity: 0.7 } }}
+        >
+          {t('help.breadcrumb_support', 'Support & News')}
+        </Typography>
+        <ChevronRight size={14} style={{ opacity: 0.5 }} />
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {t('help.breadcrumb_hotlines', 'Crisis Hotlines')}
+        </Typography>
+      </Box>
+
       <PageHeader
         title={page.title || t('help.title', 'Hilfe & Krisen-Hotlines')}
         subtitle={
@@ -201,6 +341,7 @@ export default function HelpHotlines() {
         }
       />
 
+      {/* Sticky emergency banner */}
       <Alert
         severity="error"
         icon={<AlertTriangle size={24} />}
@@ -208,6 +349,9 @@ export default function HelpHotlines() {
           mt: 3,
           mb: 3,
           borderRadius: 2,
+          position: 'sticky',
+          top: 64,
+          zIndex: 10,
           '& .MuiAlert-message': { fontSize: '1rem', fontWeight: 500 },
         }}
       >
@@ -220,9 +364,38 @@ export default function HelpHotlines() {
         )}
       </Alert>
 
+      {/* Quick-action crisis bar */}
+      {quickActionHotlines.length > 0 && (
+        <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+            {t('help.quick_call', 'Quick call')}
+          </Typography>
+          {quickActionHotlines.map((h) => {
+            if (!h.phone) return null;
+            const telHref = `tel:${h.phone.replace(/\s+/g, '')}`;
+            return (
+              <Button
+                key={h.id}
+                asChild
+                size="lg"
+                className="w-full justify-between text-base"
+              >
+                <a href={telHref}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Phone size={18} />
+                    <span>{h.name}</span>
+                  </Box>
+                  <span>{h.phone}</span>
+                </a>
+              </Button>
+            );
+          })}
+        </Box>
+      )}
+
+      {/* CMS intro text — sanitized with DOMPurify (trusted admin content) */}
       {sanitizedIntroHtml && (
         <Box
-          // Sanitized above via DOMPurify.sanitize — safe to inject.
           dangerouslySetInnerHTML={{ __html: sanitizedIntroHtml }}
           sx={{
             mb: 4,
@@ -235,61 +408,104 @@ export default function HelpHotlines() {
         />
       )}
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: 2,
-          mb: 3,
-          flexWrap: 'wrap',
-        }}
-      >
-        <Box sx={{ minWidth: 220, flex: '1 1 220px' }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5, display: 'block' }}>
-            {t('help.filter_country', 'Land')}
-          </Typography>
-          <Select value={countryFilter} onValueChange={setCountryFilter}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">{t('help.filter_country_all', 'Alle Länder')}</SelectItem>
-              {availableCountries.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {countryLabel(c)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Search + Filters */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
+        <Box sx={{ position: 'relative' }}>
+          <Input
+            placeholder={t('help.search_placeholder', 'Search hotlines...')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label={t('help.search_placeholder', 'Search hotlines...')}
+          />
+          <Search
+            size={16}
+            style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.4, pointerEvents: 'none' }}
+          />
         </Box>
 
-        <Box sx={{ minWidth: 220, flex: '1 1 220px' }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5, display: 'block' }}>
-            {t('help.filter_topic', 'Thema')}
-          </Typography>
-          <Select value={topicFilter} onValueChange={setTopicFilter}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">{t('help.filter_topic_all', 'Alle Themen')}</SelectItem>
-              {availableTopics.map((tp) => (
-                <SelectItem key={tp} value={tp}>
-                  {t(`help.topic.${tp}`, tp)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Box sx={{ minWidth: 220, flex: '1 1 220px' }}>
+            <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5, display: 'block' }}>
+              {t('help.filter_country', 'Land')}
+            </Typography>
+            <Select value={countryFilter} onValueChange={setCountryFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">{t('help.filter_country_all', 'Alle Länder')}</SelectItem>
+                {availableCountries.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {countryLabel(c)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Box>
+
+          <Box sx={{ minWidth: 220, flex: '1 1 220px' }}>
+            <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5, display: 'block' }}>
+              {t('help.filter_topic', 'Thema')}
+            </Typography>
+            <Select value={topicFilter} onValueChange={setTopicFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">{t('help.filter_topic_all', 'Alle Themen')}</SelectItem>
+                {availableTopics.map((tp) => (
+                  <SelectItem key={tp} value={tp}>
+                    {t(`help.topic.${tp}`, tp)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Box>
         </Box>
       </Box>
 
+      {/* Saved hotlines */}
+      {bookmarkedHotlines.length > 0 && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Heart size={16} />
+            {t('help.saved_hotlines', 'Your saved hotlines')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+              gap: 2,
+            }}
+          >
+            {bookmarkedHotlines.map((h) => (
+              <HotlineCard key={`saved-${h.id}`} hotline={h} isBookmarked toggleBookmark={toggleBookmark} />
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      {/* Main hotline grid */}
       {visibleHotlines.length === 0 ? (
-        <Typography variant="body1" color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>
-          {t(
+        <EmptyState
+          icon={Search}
+          title={t('help.no_results_title', 'No hotlines found')}
+          description={t(
             'help.no_results',
             'Keine Hotlines mit diesen Filtern gefunden. Versuche "Alle Länder" oder prüfe die internationalen Verzeichnisse.',
           )}
-        </Typography>
+          primaryAction={{
+            label: t('help.reset_filters', 'Reset filters'),
+            onClick: resetFilters,
+          }}
+        />
       ) : (
         <Box
           sx={{
@@ -299,10 +515,44 @@ export default function HelpHotlines() {
           }}
         >
           {visibleHotlines.map((h) => (
-            <HotlineCard key={h.id} hotline={h} />
+            <HotlineCard
+              key={h.id}
+              hotline={h}
+              isBookmarked={isBookmarked(h.id)}
+              toggleBookmark={toggleBookmark}
+            />
           ))}
         </Box>
       )}
+
+      {/* Related resources */}
+      <Box sx={{ mt: 5, pt: 3, borderTop: 1, borderColor: 'divider' }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
+          {t('help.related_resources', 'Related resources')}
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+          {[
+            { label: t('help.topic.health', 'Health'), cat: 'Health & Wellness' },
+            { label: t('help.topic.trans', 'Trans'), cat: 'Gender Identity' },
+            { label: t('help.topic.lgbtq', 'LGBTQIA+'), cat: 'Identity & Expression' },
+            { label: t('help.topic.violence', 'Violence'), cat: 'Safety & Practices' },
+            { label: t('help.topic.legal', 'Legal'), cat: 'Legal Rights' },
+            { label: t('help.topic.relationships', 'Relationships'), cat: 'Relationships & Connection' },
+          ].map(({ label, cat }) => (
+            <Link key={cat} to={`/resources?category=${encodeURIComponent(cat)}`} style={{ textDecoration: 'none' }}>
+              <Badge variant="secondary" className="cursor-pointer">
+                {label}
+              </Badge>
+            </Link>
+          ))}
+        </Box>
+        <Button asChild variant="ghost" size="sm">
+          <Link to="/resources">
+            {t('help.browse_resources', 'Browse all resources')}
+            <ChevronRight size={16} className="ml-1" />
+          </Link>
+        </Button>
+      </Box>
 
       <Typography
         variant="body2"
@@ -315,18 +565,36 @@ export default function HelpHotlines() {
   );
 }
 
-function HotlineCard({ hotline }: { hotline: Hotline }) {
+function HotlineCard({
+  hotline,
+  isBookmarked,
+  toggleBookmark,
+}: {
+  hotline: Hotline;
+  isBookmarked: boolean;
+  toggleBookmark: (id: string) => void;
+}) {
   const { t } = useTranslation();
   const telHref = hotline.phone ? `tel:${hotline.phone.replace(/\s+/g, '')}` : null;
+  const h247 = is247(hotline.hours);
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
           <CardTitle className="text-lg leading-snug">{hotline.name}</CardTitle>
-          <Badge variant="outline" className="shrink-0">
-            {countryLabel(hotline.country)}
-          </Badge>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+            <button
+              onClick={() => toggleBookmark(hotline.id)}
+              aria-label={isBookmarked ? t('help.unsave', 'Remove from saved') : t('help.save', 'Save hotline')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+            >
+              <Heart size={16} fill={isBookmarked ? 'currentColor' : 'none'} style={{ opacity: isBookmarked ? 1 : 0.4 }} />
+            </button>
+            <Badge variant="outline" className="shrink-0">
+              {countryLabel(hotline.country)}
+            </Badge>
+          </Box>
         </Box>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 flex-1">
@@ -334,12 +602,47 @@ function HotlineCard({ hotline }: { hotline: Hotline }) {
           {hotline.description}
         </Typography>
 
+        {/* Topic badges — clickable, link to resources */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-          {hotline.topics.map((tp) => (
-            <Badge key={tp} variant="secondary" className="text-xs">
-              {t(`help.topic.${tp}`, tp)}
+          {hotline.topics.map((tp) => {
+            const resourceCat = TOPIC_TO_RESOURCE[tp];
+            if (resourceCat) {
+              return (
+                <Link key={tp} to={`/resources?category=${encodeURIComponent(resourceCat)}`} style={{ textDecoration: 'none' }}>
+                  <Badge variant="secondary" className="text-xs cursor-pointer">
+                    {t(`help.topic.${tp}`, tp)}
+                  </Badge>
+                </Link>
+              );
+            }
+            return (
+              <Badge key={tp} variant="secondary" className="text-xs">
+                {t(`help.topic.${tp}`, tp)}
+              </Badge>
+            );
+          })}
+        </Box>
+
+        {/* Feature badges */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          {h247 && (
+            <Badge variant="default" className="text-xs" style={{ backgroundColor: 'var(--brand, #b60d3d)', color: '#fff' }}>
+              <Zap size={10} className="mr-0.5" />
+              {t('help.badge_24_7', '24/7')}
             </Badge>
-          ))}
+          )}
+          {hotline.free && (
+            <Badge variant="outline" className="text-xs">
+              <Shield size={10} className="mr-0.5" />
+              {t('help.badge_free', 'Free')}
+            </Badge>
+          )}
+          {hotline.anonymous && (
+            <Badge variant="outline" className="text-xs">
+              <EyeOff size={10} className="mr-0.5" />
+              {t('help.badge_anonymous', 'Anonymous')}
+            </Badge>
+          )}
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, fontSize: '0.875rem', color: 'text.secondary' }}>

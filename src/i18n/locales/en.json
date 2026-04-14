@@ -69,7 +69,13 @@
     "community": "Community",
     "resources": "Resources",
     "legal": "Legal",
-    "copyright": "© {{year}} Made with love and pride."
+    "copyright": "© {{year}} Made with love and pride.",
+    "about": "About",
+    "legalLink": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact",
+    "supportUs": "Support Us"
   },
   "auth": {
     "welcome": "Welcome!",
@@ -719,6 +725,21 @@
     "languages": "Languages",
     "disclaimer": "Queer Guide does not replace professional help.",
     "no_results": "No hotlines match these filters. Try \"All countries\" or check the international directories.",
+    "no_results_title": "No hotlines found",
+    "search_placeholder": "Search hotlines...",
+    "saved_hotlines": "Your saved hotlines",
+    "quick_call": "Quick call",
+    "badge_24_7": "24/7",
+    "badge_free": "Free",
+    "badge_anonymous": "Anonymous",
+    "save": "Save hotline",
+    "unsave": "Remove from saved",
+    "reset_filters": "Reset filters",
+    "related_resources": "Related resources",
+    "browse_resources": "Browse all resources",
+    "breadcrumb_resources": "Resources",
+    "breadcrumb_support": "Support & News",
+    "breadcrumb_hotlines": "Crisis Hotlines",
     "error_title": "Help page unavailable",
     "error_body": "In acute danger, call your local emergency number: 112 (EU) or 911 (US/CA).",
     "topic": {
@@ -751,5 +772,94 @@
     "notificationBody": "{{name}} needs help! Please check on them.",
     "notificationBodyWithLocation": "{{name}} needs help! Location shared.",
     "error": "Failed to send alert. Please try again."
+  },
+  "home": {
+    "heroLine1": "Discover.",
+    "heroLine2": "Connect.",
+    "heroLine3": "Belong.",
+    "subtitle": "Safe venues, vibrant events, and communities that get you — wherever you are.",
+    "browseVenues": "Browse Venues",
+    "viewEvents": "View Events",
+    "explore": "Explore",
+    "stats": {
+      "venues": "Venues",
+      "members": "Members",
+      "cities": "Cities",
+      "events": "Events"
+    },
+    "features": {
+      "venues": "Venues",
+      "venuesDesc": "Verified queer-friendly spaces where you can be yourself",
+      "events": "Events",
+      "eventsDesc": "Local and virtual gatherings in your area",
+      "marketplace": "Marketplace",
+      "marketplaceDesc": "Support queer-owned businesses and creators",
+      "places": "Places",
+      "placesDesc": "Explore queer-friendly cities and countries",
+      "hotels": "Hotels",
+      "hotelsDesc": "Welcoming accommodations worldwide",
+      "community": "Community",
+      "communityDesc": "Connect with people and join groups",
+      "resources": "Resources",
+      "resourcesDesc": "Rights, culture, and community support"
+    }
+  },
+  "header": {
+    "signInSignUp": "Sign In / Sign Up",
+    "signOut": "Sign Out",
+    "adminConsole": "Admin Console",
+    "closeMenu": "Close menu",
+    "openMenu": "Open menu",
+    "openNavigation": "Open navigation menu",
+    "openUserMenu": "Open user menu",
+    "selectMode": "Select mode",
+    "contribute": "Contribute",
+    "submitEvent": "Submit Event",
+    "submitVenue": "Submit Venue",
+    "submitProduct": "Submit Product",
+    "submitHotel": "Submit Hotel",
+    "nav": {
+      "discover": "Discover",
+      "connect": "Connect",
+      "more": "More",
+      "venues": "Venues",
+      "events": "Events",
+      "places": "Places",
+      "map": "Map",
+      "feed": "Feed",
+      "groups": "Groups",
+      "members": "Members",
+      "marketplace": "Marketplace",
+      "resources": "Resources",
+      "news": "News",
+      "travel": "Travel",
+      "personalities": "Personalities",
+      "hotels": "Hotels",
+      "help": "Help"
+    },
+    "userMenu": {
+      "myTrips": "My Trips",
+      "favorites": "Favorites",
+      "settings": "Settings",
+      "inbox": "Inbox",
+      "friends": "Friends",
+      "myGroups": "My Groups",
+      "accessibility": "Accessibility"
+    },
+    "modes": {
+      "dating": "Looking for Love",
+      "friends": "Making Friends",
+      "exploration": "Exploring the Scene",
+      "fun": "Just Here for Fun",
+      "networking": "Professional Networking",
+      "community": "Building Community"
+    },
+    "legal": {
+      "about": "About",
+      "help": "Help",
+      "accessibility": "Accessibility",
+      "legal": "Legal",
+      "contact": "Contact"
+    }
   }
 }
