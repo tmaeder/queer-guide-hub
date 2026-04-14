@@ -17,7 +17,7 @@ id = "a54963b21b5a497aa0ef76e08fc8923c"
 [vars]
 MEILISEARCH_URL = "https://s.queer.guide"
 AI_GATEWAY_NAME = "qg-search"
-EMBED_MODEL = "@cf/baai/bge-base-en-v1.5"
+EMBED_MODEL = "@cf/baai/bge-m3"
 
 # Secrets (set via wrangler secret put NAME):
 #   MEILISEARCH_ADMIN_KEY

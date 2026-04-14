@@ -7,7 +7,7 @@
 import type { Env } from "./index";
 import { sha256 } from "./util";
 
-export const DEFAULT_EMBED_MODEL = "@cf/baai/bge-base-en-v1.5"; // 768-dim, matches existing content_embeddings
+export const DEFAULT_EMBED_MODEL = "@cf/baai/bge-m3"; // 1024-dim, multilingual (EN/DE/ES/FR/...)
 
 export async function embed(
 	env: Env,

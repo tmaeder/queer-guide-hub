@@ -25,7 +25,7 @@ export interface Env {
 	EMBED_MODEL?: string;
 }
 
-const DEFAULT_EMBED_MODEL = "@cf/baai/bge-base-en-v1.5"; // 768-dim
+const DEFAULT_EMBED_MODEL = "@cf/baai/bge-m3"; // 1024-dim, multilingual
 
 // table → {pg content_type, meili index}
 const TABLE_MAP: Record<string, { contentType: string; index: string }> = {
