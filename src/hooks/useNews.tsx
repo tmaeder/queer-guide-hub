@@ -1,10 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-// Simplified type definitions to avoid TypeScript recursion issues
 type NewsArticle = Record<string, unknown>;
-type _NewsCategory = Record<string, unknown>;
 type NewsSource = Record<string, unknown>;
+
+export interface NewsCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  color: string;
+  icon: string | null;
+  sort_order: number;
+  is_active: boolean;
+}
 
 interface NewsFilters {
   tags?: string[];
@@ -30,9 +39,11 @@ interface NewsFilters {
 export const useNews = () => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [sources, setSources] = useState<NewsSource[]>([]);
+  const [categories, setCategories] = useState<NewsCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  const [articleTags, setArticleTags] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     if (!loading) {
@@ -49,7 +60,6 @@ export const useNews = () => {
     setError(null);
 
     try {
-      // Build the query step by step to avoid TypeScript issues
       const sortField = filters?.sortField || 'published_at';
       const sortOrder = filters?.sortOrder === 'asc';
 
@@ -59,68 +69,48 @@ export const useNews = () => {
           `
           id, slug, title, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured,
-          country_ids, city_ids, tags, category
+          country_ids, city_ids, tags, category, publisher_name
         `,
         )
         .not('published_at', 'is', null)
         .order(sortField, { ascending: sortOrder });
 
-      // Apply city filtering if provided
       if (filters?.cityIds && filters.cityIds.length > 0) {
         queryBuilder = (queryBuilder as typeof queryBuilder).in('city_id', filters.cityIds);
       }
-
-      // Apply country filtering if provided
       if (filters?.countryIds && filters.countryIds.length > 0) {
         queryBuilder = (queryBuilder as typeof queryBuilder).in('country_id', filters.countryIds);
       }
-
-      // Apply location filtering if provided
       if (filters?.location?.city_id) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('city_id', filters.location.city_id);
       }
-
       if (filters?.location?.country_id) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('country_id', filters.location.country_id);
       }
-
-      // Apply search filtering if provided
       if (filters?.search) {
         queryBuilder = (queryBuilder as typeof queryBuilder).or(
           `title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`,
         );
       }
-
-      // Apply source filtering if provided
       if (filters?.sourceId) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('source_id', filters.sourceId);
       }
-
-      // Apply category filtering if provided
       if (filters?.category) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('category', filters.category);
       }
-
-      // Apply featured filtering if provided
       if (filters?.featured !== undefined) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('is_featured', filters.featured);
       }
-
-      // Apply date range filtering if provided
       if (filters?.dateRange?.from) {
         queryBuilder = (queryBuilder as typeof queryBuilder).gte('published_at', filters.dateRange.from);
       }
-
       if (filters?.dateRange?.to) {
         queryBuilder = (queryBuilder as typeof queryBuilder).lte('published_at', filters.dateRange.to);
       }
-
-      // Apply tags filtering if provided
       if (filters?.tags && filters.tags.length > 0) {
         queryBuilder = (queryBuilder as typeof queryBuilder).overlaps('tags', filters.tags);
       }
 
-      // Execute the query directly (no retry wrapper — simpler and more reliable)
       const { data, error: fetchError } = await (queryBuilder as typeof queryBuilder).limit(200);
 
       if (fetchError) {
@@ -130,12 +120,11 @@ export const useNews = () => {
       }
 
       if (data) {
-        // Deduplicate by URL (same article from different sources)
         const seen = new Set<string>();
         const deduped = data.filter((article: Record<string, unknown>) => {
           const key = article.url || article.id;
-          if (seen.has(key)) return false;
-          seen.add(key);
+          if (seen.has(key as string)) return false;
+          seen.add(key as string);
           return true;
         });
         setArticles(deduped);
@@ -145,6 +134,38 @@ export const useNews = () => {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  // Batch-fetch tags for all visible articles (replaces per-card queries)
+  const fetchTagsForArticles = useCallback(async (articleIds: string[]) => {
+    if (articleIds.length === 0) {
+      setArticleTags({});
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('unified_tag_assignments')
+        .select('entity_id, unified_tags!inner(name)')
+        .eq('entity_type', 'news')
+        .in('entity_id', articleIds);
+
+      if (error) {
+        console.warn('Failed to batch-fetch tags:', error);
+        return;
+      }
+
+      if (data) {
+        const tagMap: Record<string, string[]> = {};
+        data.forEach((row: { entity_id: string; unified_tags: { name: string } }) => {
+          if (!tagMap[row.entity_id]) tagMap[row.entity_id] = [];
+          tagMap[row.entity_id].push(row.unified_tags.name);
+        });
+        setArticleTags(tagMap);
+      }
+    } catch (err) {
+      console.warn('Error batch-fetching tags:', err);
     }
   }, []);
 
@@ -169,15 +190,33 @@ export const useNews = () => {
     }
   }, []);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('news_categories')
+        .select('id, name, slug, description, color, icon, sort_order, is_active')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (fetchError) {
+        console.warn('Error fetching categories:', fetchError);
+        return;
+      }
+
+      if (data) {
+        setCategories(data as NewsCategory[]);
+      }
+    } catch (err) {
+      console.warn('Unexpected error fetching categories:', err);
+    }
+  }, []);
+
   const incrementViews = useCallback(async (articleId: string) => {
     try {
       const { error } = await supabase.rpc('increment_article_views', {
         article_id: articleId,
       });
-
-      if (error) {
-        console.warn('Error incrementing views:', error);
-      }
+      if (error) console.warn('Error incrementing views:', error);
     } catch (err) {
       console.warn('Error incrementing views:', err);
     }
@@ -191,7 +230,7 @@ export const useNews = () => {
           `
           id, slug, title, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured,
-          country_ids, city_ids, tags, category
+          country_ids, city_ids, tags, category, publisher_name
         `,
         )
         .eq('is_featured', true)
@@ -214,7 +253,7 @@ export const useNews = () => {
     try {
       const { data, error: fetchError } = await supabase
         .from('unified_tags')
-        .select('name, color, usage_count')
+        .select('name, usage_count')
         .gt('usage_count', 0)
         .order('usage_count', { ascending: false })
         .limit(12);
@@ -237,23 +276,24 @@ export const useNews = () => {
   }, []);
 
   const refreshData = useCallback(async () => {
-    await Promise.allSettled([fetchArticles(), fetchSources()]);
-  }, [fetchArticles, fetchSources]);
-
-  // Initialize on mount — fetchArticles/fetchSources have [] deps so are stable
+    await Promise.allSettled([fetchArticles(), fetchSources(), fetchCategories()]);
+  }, [fetchArticles, fetchSources, fetchCategories]);
 
   useEffect(() => {
-    Promise.all([fetchArticles(), fetchSources()]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchArticles/fetchSources are useCallbacks with [] deps, stable
+    Promise.all([fetchArticles(), fetchSources(), fetchCategories()]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
     articles,
     sources,
+    categories,
+    articleTags,
     loading,
     loadingTimedOut,
     error,
     fetchArticles,
+    fetchTagsForArticles,
     incrementViews,
     getFeaturedArticles,
     getTrendingTags,

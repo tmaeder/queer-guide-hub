@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNews } from "@/hooks/useNews";
+import type { NewsCategory } from "@/hooks/useNews";
 import { useMeta } from "@/hooks/useMeta";
 import { NewsCard } from "@/components/news/NewsCard";
 import { NewsFilters } from "@/components/news/NewsFilters";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { Newspaper, Search, Grid3X3, List, SortAsc, Filter, X, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Newspaper, Search, Grid3X3, List, SortAsc, Filter, X, TrendingUp, ChevronLeft, ChevronRight, LayoutList, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -26,36 +27,20 @@ interface SortOption {
   order: 'asc' | 'desc';
 }
 const sortOptions: SortOption[] = [{
-  value: 'date-desc',
-  label: 'Newest First',
-  field: 'published_at',
-  order: 'desc'
+  value: 'date-desc', label: 'Newest First', field: 'published_at', order: 'desc'
 }, {
-  value: 'date-asc',
-  label: 'Oldest First',
-  field: 'published_at',
-  order: 'asc'
+  value: 'date-asc', label: 'Oldest First', field: 'published_at', order: 'asc'
 }, {
-  value: 'views-desc',
-  label: 'Most Viewed',
-  field: 'views_count',
-  order: 'desc'
+  value: 'views-desc', label: 'Most Viewed', field: 'views_count', order: 'desc'
 }, {
-  value: 'views-asc',
-  label: 'Least Viewed',
-  field: 'views_count',
-  order: 'asc'
+  value: 'views-asc', label: 'Least Viewed', field: 'views_count', order: 'asc'
 }, {
-  value: 'title-asc',
-  label: 'Title A-Z',
-  field: 'title',
-  order: 'asc'
+  value: 'title-asc', label: 'Title A-Z', field: 'title', order: 'asc'
 }, {
-  value: 'title-desc',
-  label: 'Title Z-A',
-  field: 'title',
-  order: 'desc'
+  value: 'title-desc', label: 'Title Z-A', field: 'title', order: 'desc'
 }];
+
+type ViewMode = 'grid' | 'list' | 'headlines' | 'magazine';
 
 export default function News() {
   useMeta({
@@ -75,38 +60,43 @@ export default function News() {
   const {
     articles,
     sources,
+    categories,
+    articleTags,
     loading,
     error,
     fetchArticles,
+    fetchTagsForArticles,
     incrementViews,
     getFeaturedArticles,
     getTrendingTags,
     loadingTimedOut
   } = useNews();
-  const [_featuredArticles, setFeaturedArticles] = useState<Record<string, unknown>[]>([]);
-  const [trendingTags, setTrendingTags] = useState<{
-    tag: string;
-    count: number;
-  }[]>([]);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [featuredArticles, setFeaturedArticles] = useState<Record<string, unknown>[]>([]);
+  const [trendingTags, setTrendingTags] = useState<{ tag: string; count: number; }[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState('date-desc');
   const [quickSearch, setQuickSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  // City/country name lookup maps for location display
   const [cityNames, setCityNames] = useState<Record<string, string>>({});
   const [countryNames, setCountryNames] = useState<Record<string, string>>({});
 
-  // Build a sources lookup map (source_id → {id, name, url})
   const sourcesMap = useMemo(() => {
     const map: Record<string, { id: string; name: string; url?: string }> = {};
     sources.forEach((s: { id: string; name: string; url?: string }) => { map[s.id] = s; });
     return map;
   }, [sources]);
 
-  // Load city/country names once for all articles
+  const categoriesMap = useMemo(() => {
+    const map: Record<string, NewsCategory> = {};
+    categories.forEach((c) => { map[c.slug] = c; });
+    return map;
+  }, [categories]);
+
+  // Load city/country names
   useEffect(() => {
     if (articles.length === 0) return;
     const allCityIds = new Set<string>();
@@ -115,13 +105,9 @@ export default function News() {
       (a.city_ids || []).forEach((id: string) => allCityIds.add(id));
       (a.country_ids || []).forEach((id: string) => allCountryIds.add(id));
     });
-
     const fetchNames = async () => {
       if (allCityIds.size > 0) {
-        const { data } = await supabase
-          .from('cities')
-          .select('id, name')
-          .in('id', Array.from(allCityIds));
+        const { data } = await supabase.from('cities').select('id, name').in('id', Array.from(allCityIds));
         if (data) {
           const map: Record<string, string> = {};
           data.forEach((c: { id: string; name: string }) => { map[c.id] = c.name; });
@@ -129,10 +115,7 @@ export default function News() {
         }
       }
       if (allCountryIds.size > 0) {
-        const { data } = await supabase
-          .from('countries')
-          .select('id, name')
-          .in('id', Array.from(allCountryIds));
+        const { data } = await supabase.from('countries').select('id, name').in('id', Array.from(allCountryIds));
         if (data) {
           const map: Record<string, string> = {};
           data.forEach((c: { id: string; name: string }) => { map[c.id] = c.name; });
@@ -143,19 +126,23 @@ export default function News() {
     fetchNames();
   }, [articles]);
 
+  // Batch-fetch tags when articles change
+  useEffect(() => {
+    if (articles.length === 0) return;
+    const ids = articles.map((a: { id: string }) => a.id);
+    fetchTagsForArticles(ids);
+  }, [articles, fetchTagsForArticles]);
+
   useEffect(() => {
     const loadAdditionalData = async () => {
       const [featured, trending] = await Promise.all([getFeaturedArticles(), getTrendingTags()]);
       setFeaturedArticles(featured);
       setTrendingTags(trending);
     };
-    if (!loading) {
-      loadAdditionalData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- getFeaturedArticles/getTrendingTags are stable, re-run when loading completes
+    if (!loading) loadAdditionalData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
-  // Reset page when filters change
   const applyFiltersAndFetch = (filters: Record<string, unknown>) => {
     setCurrentFilters(filters);
     setCurrentPage(1);
@@ -168,6 +155,7 @@ export default function News() {
       ...filters,
       sortField: option?.field || 'published_at',
       sortOrder: option?.order || 'desc',
+      ...(activeCategory ? { category: activeCategory } : {}),
     };
     applyFiltersAndFetch(filtersWithSort);
   };
@@ -175,83 +163,78 @@ export default function News() {
   const handleQuickSearch = (value: string) => {
     setQuickSearch(value);
     const option = sortOptions.find(opt => opt.value === sortBy);
-    const filters = {
+    applyFiltersAndFetch({
       ...currentFilters,
       search: value || undefined,
       sortField: option?.field || 'published_at',
       sortOrder: option?.order || 'desc',
-    };
-    applyFiltersAndFetch(filters);
+    });
   };
 
   const handleSortChange = (value: string) => {
     setSortBy(value);
     const option = sortOptions.find(opt => opt.value === value);
     if (option) {
-      const newFilters = {
+      applyFiltersAndFetch({
         ...currentFilters,
         sortField: option.field,
         sortOrder: option.order,
-      };
-      applyFiltersAndFetch(newFilters);
+      });
     }
+  };
+
+  const handleCategoryClick = (slug: string | null) => {
+    setActiveCategory(slug);
+    setCurrentPage(1);
+    const option = sortOptions.find(opt => opt.value === sortBy);
+    const filters = {
+      ...currentFilters,
+      category: slug || undefined,
+      sortField: option?.field || 'published_at',
+      sortOrder: option?.order || 'desc',
+    };
+    applyFiltersAndFetch(filters);
   };
 
   const handleViewArticle = (articleId: string) => {
     incrementViews(articleId);
   };
 
-  // --- Clickable handlers for NewsCard ---
   const handleFilterByTag = (tag: string) => {
     setQuickSearch(tag);
     const option = sortOptions.find(opt => opt.value === sortBy);
-    const filters = {
-      ...currentFilters,
-      search: tag,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    };
-    applyFiltersAndFetch(filters);
+    applyFiltersAndFetch({
+      ...currentFilters, search: tag,
+      sortField: option?.field || 'published_at', sortOrder: option?.order || 'desc',
+    });
   };
 
   const handleFilterBySource = (sourceId: string, sourceName: string) => {
     setQuickSearch(sourceName);
     const option = sortOptions.find(opt => opt.value === sortBy);
-    const filters = {
-      ...currentFilters,
-      sourceId,
-      search: undefined,
-      category: undefined,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    };
-    applyFiltersAndFetch(filters);
+    applyFiltersAndFetch({
+      ...currentFilters, sourceId, search: undefined, category: undefined,
+      sortField: option?.field || 'published_at', sortOrder: option?.order || 'desc',
+    });
   };
 
   const handleFilterByCategory = (category: string) => {
-    setQuickSearch(category);
+    setActiveCategory(category);
+    setCurrentPage(1);
     const option = sortOptions.find(opt => opt.value === sortBy);
-    const filters = {
-      ...currentFilters,
-      category,
-      search: undefined,
-      sourceId: undefined,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    };
-    applyFiltersAndFetch(filters);
+    applyFiltersAndFetch({
+      ...currentFilters, category, search: undefined, sourceId: undefined,
+      sortField: option?.field || 'published_at', sortOrder: option?.order || 'desc',
+    });
   };
 
   const handleFilterByAuthor = (author: string) => {
     setQuickSearch(author);
     const option = sortOptions.find(opt => opt.value === sortBy);
-    const filters = {
-      ...currentFilters,
-      search: author,
-      sortField: option?.field || 'published_at',
-      sortOrder: option?.order || 'desc',
-    };
-    applyFiltersAndFetch(filters);
+    applyFiltersAndFetch({
+      ...currentFilters, search: author,
+      sortField: option?.field || 'published_at', sortOrder: option?.order || 'desc',
+    });
   };
 
   const getSortedArticles = () => {
@@ -275,11 +258,7 @@ export default function News() {
         default:
           return 0;
       }
-      if (option.order === 'asc') {
-        return aVal > bVal ? 1 : -1;
-      } else {
-        return aVal < bVal ? 1 : -1;
-      }
+      return option.order === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
     });
   };
 
@@ -287,12 +266,12 @@ export default function News() {
     setQuickSearch('');
     setCurrentFilters({});
     setCurrentPage(1);
+    setActiveCategory(null);
     fetchArticles({});
   };
 
-  const hasActiveFilters = quickSearch || Object.keys(currentFilters).some(k => currentFilters[k] !== undefined);
+  const hasActiveFilters = quickSearch || activeCategory || Object.keys(currentFilters).some(k => currentFilters[k] !== undefined);
 
-  // Pagination
   const sortedArticles = getSortedArticles();
   const totalPages = Math.ceil(sortedArticles.length / ARTICLES_PER_PAGE);
   const paginatedArticles = sortedArticles.slice(
@@ -305,7 +284,6 @@ export default function News() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Generate page numbers to display
   const getPageNumbers = () => {
     const pages: (number | 'ellipsis')[] = [];
     if (totalPages <= 7) {
@@ -322,10 +300,23 @@ export default function News() {
     return pages;
   };
 
+  // Count articles per category for chips
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    articles.forEach((a: { category?: string }) => {
+      if (a.category && a.category !== 'general') {
+        counts[a.category] = (counts[a.category] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [articles]);
+
+  // Show featured section on first page with no active category filter
+  const showFeatured = currentPage === 1 && !activeCategory && !quickSearch && featuredArticles.length > 0;
+
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Container sx={{ py: { xs: 6, md: 10 } }}>
-        {/* Header */}
         <PageHeader
           title="News"
           subtitle="Stay informed with the latest news and stories from the LGBTQ+ community worldwide"
@@ -342,10 +333,74 @@ export default function News() {
           </Box>
         </PageHeader>
 
+        {/* Category Chips */}
+        {categories.length > 0 && (
+          <Box sx={{ display: 'flex', gap: 1, mb: 3, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
+            <Badge
+              variant={activeCategory === null ? 'default' : 'outline'}
+              style={{ cursor: 'pointer', whiteSpace: 'nowrap', padding: '6px 14px', fontSize: '0.8rem' }}
+              onClick={() => handleCategoryClick(null)}
+            >
+              All
+            </Badge>
+            {categories.map((cat) => {
+              const count = categoryCounts[cat.slug] || 0;
+              return (
+                <Badge
+                  key={cat.id}
+                  variant={activeCategory === cat.slug ? 'default' : 'outline'}
+                  style={{
+                    cursor: 'pointer', whiteSpace: 'nowrap', padding: '6px 14px', fontSize: '0.8rem',
+                    ...(activeCategory === cat.slug ? { backgroundColor: cat.color, color: '#fff' } : {}),
+                  }}
+                  onClick={() => handleCategoryClick(cat.slug)}
+                >
+                  {cat.name}{count > 0 ? ` (${count})` : ''}
+                </Badge>
+              );
+            })}
+          </Box>
+        )}
+
+        {/* Featured Section */}
+        {showFeatured && (
+          <Paper variant="outlined" sx={{ p: 3, mb: 3, bgcolor: 'background.paper' }}>
+            <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 1, mb: 2, display: 'block', color: 'text.secondary' }}>
+              Featured Stories
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
+              {/* Hero featured article */}
+              {featuredArticles[0] && (
+                <NewsCard
+                  article={featuredArticles[0] as any}
+                  variant="featured"
+                  onViewArticle={handleViewArticle}
+                  sourcesMap={sourcesMap}
+                  categoriesMap={categoriesMap}
+                  tags={articleTags[(featuredArticles[0] as any).id] || []}
+                />
+              )}
+              {/* Secondary featured articles */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {featuredArticles.slice(1, 4).map((fa: any) => (
+                  <NewsCard
+                    key={fa.id}
+                    article={fa}
+                    variant="headline"
+                    onViewArticle={handleViewArticle}
+                    sourcesMap={sourcesMap}
+                    categoriesMap={categoriesMap}
+                    tags={articleTags[fa.id] || []}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Paper>
+        )}
+
         {/* Quick Search & Controls */}
         <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2 }}>
-            {/* Quick Search */}
             <Box sx={{ position: 'relative', flex: 1, maxWidth: '28rem' }}>
               <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
               <Input placeholder="Quick search articles..." value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} aria-label="Search articles" />
@@ -356,9 +411,7 @@ export default function News() {
               )}
             </Box>
 
-            {/* Controls */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              {/* Sort */}
               <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger style={{ width: 180 }} aria-label="Sort articles">
                   <SortAsc style={{ width: 16, height: 16, marginRight: 8 }} />
@@ -366,31 +419,32 @@ export default function News() {
                 </SelectTrigger>
                 <SelectContent>
                   {sortOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {/* View Mode */}
+              {/* View Mode Buttons */}
               <Box sx={{ display: 'flex', alignItems: 'center', borderRadius: 2, p: 0.5 }}>
-                <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Grid view">
+                <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Grid view" title="Grid">
                   <Grid3X3 style={{ width: 16, height: 16 }} />
                 </Button>
-                <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} style={{ height: 32, width: 32, padding: 0 }} aria-label="List view">
+                <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} style={{ height: 32, width: 32, padding: 0 }} aria-label="List view" title="List">
                   <List style={{ width: 16, height: 16 }} />
+                </Button>
+                <Button variant={viewMode === 'headlines' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('headlines')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Headlines view" title="Headlines">
+                  <LayoutList style={{ width: 16, height: 16 }} />
+                </Button>
+                <Button variant={viewMode === 'magazine' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('magazine')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Magazine view" title="Magazine">
+                  <BookOpen style={{ width: 16, height: 16 }} />
                 </Button>
               </Box>
 
-              {/* Advanced Filters Toggle */}
               <Button variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', gap: 8 }} aria-label="Toggle filters">
                 <Filter style={{ width: 16, height: 16 }} />
                 Filters
                 {hasActiveFilters && (
-                  <Badge variant="secondary" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>
-                    !
-                  </Badge>
+                  <Badge variant="secondary" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>!</Badge>
                 )}
               </Button>
             </Box>
@@ -402,43 +456,31 @@ export default function News() {
           <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'background.paper' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Filter style={{ width: 16, height: 16 }} />
-              <Typography variant="body2" color="text.secondary">Active filters applied</Typography>
-              {quickSearch && <Badge variant="outline">Filter: {quickSearch}</Badge>}
+              <Typography variant="body2" color="text.secondary">Active filters</Typography>
+              {quickSearch && <Badge variant="outline">Search: {quickSearch}</Badge>}
+              {activeCategory && <Badge variant="outline">Category: {categoriesMap[activeCategory]?.name || activeCategory}</Badge>}
               {currentFilters.sourceId && (
-                <Badge variant="outline">Source: {sourcesMap[currentFilters.sourceId]?.name || 'Unknown'}</Badge>
-              )}
-              {currentFilters.category && (
-                <Badge variant="outline">Category: {currentFilters.category}</Badge>
+                <Badge variant="outline">Source: {sourcesMap[currentFilters.sourceId as string]?.name || 'Unknown'}</Badge>
               )}
               {sortBy !== 'date-desc' && (
-                <Badge variant="outline">
-                  Sort: {sortOptions.find(o => o.value === sortBy)?.label}
-                </Badge>
+                <Badge variant="outline">Sort: {sortOptions.find(o => o.value === sortBy)?.label}</Badge>
               )}
-              {currentFilters.featured !== undefined && (
-                <Badge variant="outline">Featured only</Badge>
-              )}
+              {currentFilters.featured !== undefined && <Badge variant="outline">Featured only</Badge>}
             </Box>
-            <Button variant="ghost" size="sm" onClick={clearAllFilters} aria-label="Clear all filters">
-              Clear All
-            </Button>
+            <Button variant="ghost" size="sm" onClick={clearAllFilters} aria-label="Clear all filters">Clear All</Button>
           </Paper>
         )}
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
-          {/* Sidebar Filters */}
           {showFilters && (
             <Box sx={{ gridColumn: { lg: 'span 1' } }}>
               <NewsFilters sources={sources} onFiltersChange={handleFiltersChange} trendingTags={trendingTags} />
             </Box>
           )}
 
-          {/* Main Content */}
           <Box sx={{ gridColumn: showFilters ? { lg: 'span 3' } : { lg: 'span 4' } }}>
-            {/* Error State */}
             {error && !loading && <ErrorState message={error} onRetry={() => fetchArticles()} />}
 
-            {/* Loading State */}
             {loading && (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
                 {Array.from({ length: 6 }).map((_, i) => (<NewsCard key={i} loading />))}
@@ -446,95 +488,153 @@ export default function News() {
             )}
             {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
 
-            {/* Empty State */}
             {!loading && !error && sortedArticles.length === 0 && (
-              <EmptyState
-                icon={Newspaper}
-                title="The newsroom is quiet"
-                description="No stories right now — check back soon."
-                mood="encouraging"
-              />
+              <EmptyState icon={Newspaper} title="The newsroom is quiet" description="No stories right now — check back soon." mood="encouraging" />
             )}
 
-            {/* Articles */}
             {!loading && paginatedArticles.length > 0 && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {/* Results Summary */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Typography variant="body2" color="text.secondary">
                     Showing {(currentPage - 1) * ARTICLES_PER_PAGE + 1}–{Math.min(currentPage * ARTICLES_PER_PAGE, sortedArticles.length)} of {sortedArticles.length} article{sortedArticles.length !== 1 ? 's' : ''}
                   </Typography>
                 </Box>
 
-                {/* Articles Grid/List */}
-                <StaggerGrid sx={viewMode === 'grid'
-                  ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: 'repeat(3, 1fr)' }, gap: 3 }
-                  : { display: 'flex', flexDirection: 'column', gap: 2 }
-                }>
-                  {paginatedArticles.map((article) => (
-                    <NewsCard
-                      key={article.id}
-                      article={article}
-                      onViewArticle={handleViewArticle}
-                      onFilterByTag={handleFilterByTag}
-                      onFilterBySource={handleFilterBySource}
-                      onFilterByCategory={handleFilterByCategory}
-                      onFilterByAuthor={handleFilterByAuthor}
-                      cityNames={cityNames}
-                      countryNames={countryNames}
-                      sourcesMap={sourcesMap}
-                    />
-                  ))}
-                </StaggerGrid>
+                {/* Headlines View */}
+                {viewMode === 'headlines' && (
+                  <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
+                    {paginatedArticles.map((article) => (
+                      <NewsCard
+                        key={article.id}
+                        article={article}
+                        variant="headline"
+                        onViewArticle={handleViewArticle}
+                        onFilterByTag={handleFilterByTag}
+                        onFilterBySource={handleFilterBySource}
+                        onFilterByCategory={handleFilterByCategory}
+                        onFilterByAuthor={handleFilterByAuthor}
+                        cityNames={cityNames}
+                        countryNames={countryNames}
+                        sourcesMap={sourcesMap}
+                        categoriesMap={categoriesMap}
+                        tags={articleTags[article.id] || []}
+                      />
+                    ))}
+                  </Paper>
+                )}
+
+                {/* Magazine View */}
+                {viewMode === 'magazine' && (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {/* First article as hero */}
+                    {paginatedArticles[0] && (
+                      <NewsCard
+                        article={paginatedArticles[0]}
+                        variant="featured"
+                        onViewArticle={handleViewArticle}
+                        onFilterByTag={handleFilterByTag}
+                        onFilterBySource={handleFilterBySource}
+                        onFilterByCategory={handleFilterByCategory}
+                        onFilterByAuthor={handleFilterByAuthor}
+                        cityNames={cityNames}
+                        countryNames={countryNames}
+                        sourcesMap={sourcesMap}
+                        categoriesMap={categoriesMap}
+                        tags={articleTags[paginatedArticles[0].id] || []}
+                      />
+                    )}
+                    {/* Next 2 as medium cards */}
+                    {paginatedArticles.length > 1 && (
+                      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                        {paginatedArticles.slice(1, 3).map((article) => (
+                          <NewsCard
+                            key={article.id}
+                            article={article}
+                            onViewArticle={handleViewArticle}
+                            onFilterByTag={handleFilterByTag}
+                            onFilterBySource={handleFilterBySource}
+                            onFilterByCategory={handleFilterByCategory}
+                            onFilterByAuthor={handleFilterByAuthor}
+                            cityNames={cityNames}
+                            countryNames={countryNames}
+                            sourcesMap={sourcesMap}
+                            categoriesMap={categoriesMap}
+                            tags={articleTags[article.id] || []}
+                          />
+                        ))}
+                      </Box>
+                    )}
+                    {/* Rest in compact grid */}
+                    {paginatedArticles.length > 3 && (
+                      <StaggerGrid sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: 'repeat(3, 1fr)' }, gap: 3 }}>
+                        {paginatedArticles.slice(3).map((article) => (
+                          <NewsCard
+                            key={article.id}
+                            article={article}
+                            onViewArticle={handleViewArticle}
+                            onFilterByTag={handleFilterByTag}
+                            onFilterBySource={handleFilterBySource}
+                            onFilterByCategory={handleFilterByCategory}
+                            onFilterByAuthor={handleFilterByAuthor}
+                            cityNames={cityNames}
+                            countryNames={countryNames}
+                            sourcesMap={sourcesMap}
+                            categoriesMap={categoriesMap}
+                            tags={articleTags[article.id] || []}
+                          />
+                        ))}
+                      </StaggerGrid>
+                    )}
+                  </Box>
+                )}
+
+                {/* Grid / List View */}
+                {(viewMode === 'grid' || viewMode === 'list') && (
+                  <StaggerGrid sx={viewMode === 'grid'
+                    ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: 'repeat(3, 1fr)' }, gap: 3 }
+                    : { display: 'flex', flexDirection: 'column', gap: 2 }
+                  }>
+                    {paginatedArticles.map((article) => (
+                      <NewsCard
+                        key={article.id}
+                        article={article}
+                        onViewArticle={handleViewArticle}
+                        onFilterByTag={handleFilterByTag}
+                        onFilterBySource={handleFilterBySource}
+                        onFilterByCategory={handleFilterByCategory}
+                        onFilterByAuthor={handleFilterByAuthor}
+                        cityNames={cityNames}
+                        countryNames={countryNames}
+                        sourcesMap={sourcesMap}
+                        categoriesMap={categoriesMap}
+                        tags={articleTags[article.id] || []}
+                      />
+                    ))}
+                  </StaggerGrid>
+                )}
 
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, pt: 2 }}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-                    >
-                      <ChevronLeft style={{ width: 16, height: 16 }} />
-                      Previous
+                    <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <ChevronLeft style={{ width: 16, height: 16 }} /> Previous
                     </Button>
-
                     <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
                       {getPageNumbers().map((page, i) =>
                         page === 'ellipsis' ? (
-                          <Typography key={`e${i}`} variant="body2" sx={{ px: 1, color: 'text.secondary' }}>
-                            ...
-                          </Typography>
+                          <Typography key={`e${i}`} variant="body2" sx={{ px: 1, color: 'text.secondary' }}>...</Typography>
                         ) : (
-                          <Button
-                            key={page}
-                            variant={currentPage === page ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => handlePageChange(page as number)}
-                            style={{ minWidth: 36, height: 36, padding: 0 }}
-                          >
+                          <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(page as number)} style={{ minWidth: 36, height: 36, padding: 0 }}>
                             {page}
                           </Button>
                         )
                       )}
                     </Box>
-
-                    {/* Mobile page indicator */}
                     <Typography variant="body2" sx={{ display: { xs: 'block', sm: 'none' }, color: 'text.secondary' }}>
                       {currentPage} / {totalPages}
                     </Typography>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-                    >
-                      Next
-                      <ChevronRight style={{ width: 16, height: 16 }} />
+                    <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      Next <ChevronRight style={{ width: 16, height: 16 }} />
                     </Button>
                   </Box>
                 )}

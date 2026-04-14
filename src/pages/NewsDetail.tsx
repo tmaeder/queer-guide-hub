@@ -41,7 +41,14 @@ interface NewsArticle {
   country_ids: string[] | null;
   city_ids: string[] | null;
   tags: string[] | null;
+  publisher_name: string | null;
   created_at: string;
+}
+
+interface DbCategory {
+  slug: string;
+  name: string;
+  color: string;
 }
 
 interface RelatedArticle {
@@ -64,6 +71,7 @@ export default function NewsDetail() {
   const [cityNames, setCityNames] = useState<Record<string, string>>({});
   const [countryNames, setCountryNames] = useState<Record<string, string>>({});
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
+  const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
 
   useEffect(() => {
     if (!slug) {
@@ -73,6 +81,16 @@ export default function NewsDetail() {
 
     const fetchArticle = async () => {
       setLoading(true);
+
+      // Fetch categories once
+      supabase
+        .from('news_categories')
+        .select('slug, name, color')
+        .eq('is_active', true)
+        .then(({ data: cats }) => {
+          if (cats) setDbCategories(cats as DbCategory[]);
+        });
+
       try {
         let { data, error } = await supabase
           .from('news_articles')
@@ -97,7 +115,7 @@ export default function NewsDetail() {
         // Increment views
         supabase.rpc('increment_article_views', { article_id: data.id }).then(() => {});
 
-        // Fetch source name
+        // Fetch source name — use publisher_name if available (for API-sourced articles)
         if (data.source_id) {
           supabase
             .from('news_sources')
@@ -106,7 +124,7 @@ export default function NewsDetail() {
             .maybeSingle()
             .then(({ data: src }) => {
               if (src) {
-                setSourceName(src.name || '');
+                setSourceName(data.publisher_name || src.name || '');
                 setSourceUrl(src.url || '');
               }
             });
@@ -197,45 +215,22 @@ export default function NewsDetail() {
   };
 
   const getCategoryColor = (category: string) => {
-    const map: Record<string, string> = {
-      politics: '#1a73e8',
-      'human-rights': '#e53935',
-      entertainment: '#8e24aa',
-      culture: '#6d4c41',
-      health: '#43a047',
-      sports: '#fb8c00',
-      business: '#546e7a',
-      technology: '#00897b',
-      lifestyle: '#d81b60',
-      education: '#5c6bc0',
-      legislation: '#5c6bc0',
-      transgender: '#7b1fa2',
-      rights: '#c62828',
-      advocacy: '#ff6f00',
-      news: '#37474f',
+    const dbCat = dbCategories.find(c => c.slug === category || c.name.toLowerCase() === category.toLowerCase());
+    if (dbCat) return dbCat.color;
+    const fallback: Record<string, string> = {
+      politics: '#3b82f6', 'human-rights': '#ef4444', entertainment: '#8b5cf6',
+      culture: '#8b5cf6', health: '#10b981', sports: '#f97316', business: '#f59e0b',
+      technology: '#6366f1', lifestyle: '#ec4899', education: '#06b6d4',
+      legislation: '#3b82f6', transgender: '#8b5cf6', rights: '#ef4444',
+      advocacy: '#f97316', news: '#64748b', community: '#ec4899',
     };
-    return map[category?.toLowerCase()] || '#555555';
+    return fallback[category?.toLowerCase()] || '#64748b';
   };
 
   const getCategoryLabel = (category: string) => {
-    const labels: Record<string, string> = {
-      'human-rights': 'Human Rights',
-      politics: 'Politics',
-      legislation: 'Legislation',
-      transgender: 'Transgender',
-      culture: 'Culture',
-      health: 'Health',
-      sports: 'Sports',
-      education: 'Education',
-      lifestyle: 'Lifestyle',
-      rights: 'Rights',
-      advocacy: 'Advocacy',
-      entertainment: 'Entertainment',
-      business: 'Business',
-      technology: 'Technology',
-      news: 'News',
-    };
-    return labels[category?.toLowerCase()] || category?.replace(/-/g, ' ');
+    const dbCat = dbCategories.find(c => c.slug === category || c.name.toLowerCase() === category.toLowerCase());
+    if (dbCat) return dbCat.name;
+    return category?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   };
 
   // Loading skeleton matching 2-column grid pattern
@@ -372,6 +367,7 @@ export default function NewsDetail() {
             component="img"
             src={article.image_url}
             alt={decodeHtmlEntities(article.title)}
+            referrerPolicy="no-referrer"
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
