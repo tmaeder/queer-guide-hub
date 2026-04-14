@@ -1,4 +1,6 @@
-import { useParams, Link, useNavigate } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { formatCurrency } from '@/lib/currency';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -28,6 +30,7 @@ import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { useAuth } from '@/hooks/useAuth';
+import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,7 +46,8 @@ import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
-import { SendEventDialog } from '@/components/messaging/SendEventDialog';
+import { SendEventDialog } from '@/components/messaging/SendEventDialog';import { useTranslation } from 'react-i18next';
+
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -81,7 +85,8 @@ type Event = Database['public']['Tables']['events']['Row'] & {
 
 export default function EventDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [userAttendance, setUserAttendance] = useState<string | null>(null);
@@ -91,7 +96,14 @@ export default function EventDetail() {
   const [addToTripOpen, setAddToTripOpen] = useState(false);
   const [sendEventOpen, setSendEventOpen] = useState(false);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
+  const { track } = useTrackEvent();
   const venueRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (event?.id) {
+      track({ eventType: 'page_view', entityType: 'event', entityId: event.id, metadata: { title: event.title } });
+    }
+  }, [event?.id]);
 
   const fetchEventData = async () => {
     if (!slug) return;
@@ -134,7 +146,7 @@ export default function EventDetail() {
       }
     } catch (_error) {
       setFetchError(true);
-      toast({ title: 'Error', description: 'Failed to load event details.', variant: 'destructive' });
+      toast({ title: t('common.error', 'Error'), description: t('pages.eventDetail.loadFailed', 'Failed to load event details.'), variant: 'destructive' });
     }
   };
 
@@ -152,8 +164,8 @@ export default function EventDetail() {
   const handleAttendanceUpdate = async (status: 'going' | 'interested' | 'not_going') => {
     if (!user || !event) {
       toast({
-        title: 'Authentication required',
-        description: 'Please sign in to update your attendance',
+        title: t('pages.eventDetail.authRequired', 'Authentication required'),
+        description: t('pages.eventDetail.signInAttendance', 'Please sign in to update your attendance'),
         variant: 'destructive',
       });
       return;
@@ -165,13 +177,13 @@ export default function EventDetail() {
       if (error) throw error;
       setUserAttendance(status);
       toast({
-        title: 'Attendance updated',
+        title: t('pages.eventDetail.attendanceUpdated', 'Attendance updated'),
         description: `You're now marked as ${status.replace('_', ' ')} for this event`,
       });
       await fetchEventData();
     } catch (error) {
       console.error('Error updating attendance:', error);
-      toast({ title: 'Error', description: 'Failed to update attendance', variant: 'destructive' });
+      toast({ title: t('common.error', 'Error'), description: t('pages.eventDetail.attendanceFailed', 'Failed to update attendance'), variant: 'destructive' });
     }
   };
 
@@ -192,14 +204,14 @@ export default function EventDetail() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast({
-        title: 'Calendar export successful',
-        description: 'Event has been exported to your calendar',
+        title: t('pages.eventDetail.exportSuccess', 'Calendar export successful'),
+        description: t('pages.eventDetail.exportSuccessDesc', 'Event has been exported to your calendar'),
       });
     } catch (error) {
       console.error('Error exporting calendar:', error);
       toast({
-        title: 'Export failed',
-        description: 'Failed to export event to calendar',
+        title: t('pages.eventDetail.exportFailed', 'Export failed'),
+        description: t('pages.eventDetail.exportFailedDesc', 'Failed to export event to calendar'),
         variant: 'destructive',
       });
     }
@@ -216,7 +228,7 @@ export default function EventDetail() {
       }
     } else {
       await navigator.clipboard.writeText(shareUrl);
-      toast({ title: 'Link copied', description: 'Event link copied to clipboard' });
+      toast({ title: t('pages.eventDetail.linkCopied', 'Link copied'), description: t('pages.eventDetail.linkCopiedDesc', 'Event link copied to clipboard') });
     }
   };
 
@@ -263,12 +275,12 @@ export default function EventDetail() {
             <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
             Try Again
           </Button>
-          <Link to="/events">
+          <LocalizedLink to="/events">
             <Button variant="outline">
               <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
               Back to Events
             </Button>
-          </Link>
+          </LocalizedLink>
         </Box>
       </Container>
     );
@@ -283,12 +295,12 @@ export default function EventDetail() {
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           The event you're looking for doesn't exist.
         </Typography>
-        <Link to="/events">
+        <LocalizedLink to="/events">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Events
           </Button>
-        </Link>
+        </LocalizedLink>
       </Container>
     );
   }
@@ -328,7 +340,7 @@ export default function EventDetail() {
     <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
-        <Link
+        <LocalizedLink
           to="/events"
           style={{
             display: 'inline-flex',
@@ -345,12 +357,12 @@ export default function EventDetail() {
           >
             Events
           </Typography>
-        </Link>
+        </LocalizedLink>
         {countryName && (
           <>
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
             {countryLink ? (
-              <Link to={countryLink} style={{ textDecoration: 'none' }}>
+              <LocalizedLink to={countryLink} style={{ textDecoration: 'none' }}>
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -358,7 +370,7 @@ export default function EventDetail() {
                 >
                   {countryName}
                 </Typography>
-              </Link>
+              </LocalizedLink>
             ) : (
               <Typography variant="body2" color="text.secondary">
                 {countryName}
@@ -370,7 +382,7 @@ export default function EventDetail() {
           <>
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
             {cityLink ? (
-              <Link to={cityLink} style={{ textDecoration: 'none' }}>
+              <LocalizedLink to={cityLink} style={{ textDecoration: 'none' }}>
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -378,7 +390,7 @@ export default function EventDetail() {
                 >
                   {cityName}
                 </Typography>
-              </Link>
+              </LocalizedLink>
             ) : (
               <Typography variant="body2" color="text.secondary">
                 {cityName}
@@ -486,7 +498,7 @@ export default function EventDetail() {
             <MapPin style={{ width: 14, height: 14, color: '#9ca3af', flexShrink: 0 }} />
             <Typography variant="body2" color="text.secondary">
               {event.venues?.id ? (
-                <Link
+                <LocalizedLink
                   to={`/venues/${event.venues.slug || event.venues.id}`}
                   style={{ color: 'inherit', textDecoration: 'none' }}
                 >
@@ -497,7 +509,7 @@ export default function EventDetail() {
                   >
                     {event.venues.name}
                   </Typography>
-                </Link>
+                </LocalizedLink>
               ) : (
                 event.venue_name || ''
               )}
@@ -505,7 +517,7 @@ export default function EventDetail() {
                 <>
                   {event.venues?.name || event.venue_name ? ', ' : ''}
                   {cityLink ? (
-                    <Link to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <LocalizedLink to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
                       <Typography
                         component="span"
                         variant="body2"
@@ -513,7 +525,7 @@ export default function EventDetail() {
                       >
                         {cityName}
                       </Typography>
-                    </Link>
+                    </LocalizedLink>
                   ) : (
                     cityName
                   )}
@@ -523,7 +535,7 @@ export default function EventDetail() {
                 <>
                   {', '}
                   {countryLink ? (
-                    <Link to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <LocalizedLink to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
                       <Typography
                         component="span"
                         variant="body2"
@@ -531,7 +543,7 @@ export default function EventDetail() {
                       >
                         {countryName}
                       </Typography>
-                    </Link>
+                    </LocalizedLink>
                   ) : (
                     countryName
                   )}
@@ -975,11 +987,11 @@ export default function EventDetail() {
                       </a>
                     </Button>
                   )}
-                  <Link to={`/venues/${event.venues.slug || event.venues.id}`}>
+                  <LocalizedLink to={`/venues/${event.venues.slug || event.venues.id}`}>
                     <Button variant="outline" size="sm">
                       View Venue
                     </Button>
-                  </Link>
+                  </LocalizedLink>
                 </Box>
               </CardContent>
             </Card>

@@ -9,7 +9,7 @@ import Tabs from '@mui/material/Tabs';
 import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
 import { Plane, Hotel, Ticket, TrendingUp } from 'lucide-react';
-import { Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { FlightSearchForm } from '@/components/travel/FlightSearchForm';
 import { HotelSearchForm } from '@/components/booking/HotelSearchForm';
@@ -18,6 +18,8 @@ import { UnifiedBookingCard } from '@/components/booking/UnifiedBookingCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
+import { useTranslation } from 'react-i18next';
+import { TravelPrefsPrompt } from '@/components/personalization/TravelPrefsPrompt';
 
 type BookingTab = 'flights' | 'hotels' | 'activities';
 
@@ -29,6 +31,7 @@ const TAB_CONFIG: { value: BookingTab; label: string; icon: typeof Plane }[] = [
 
 export default function Travel() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = (searchParams.get('tab') as BookingTab) || 'flights';
   const initialTo = searchParams.get('to') || undefined;
@@ -73,6 +76,8 @@ export default function Travel() {
 
   return (
     <Container sx={{ py: { xs: 6, md: 10 } }}>
+      <TravelPrefsPrompt />
+
       {/* Hero */}
       <Paper
         variant="outlined"
@@ -124,7 +129,7 @@ export default function Travel() {
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Ticket style={{ height: 40, width: 40, color: theme.palette.text.secondary, marginBottom: 8 }} />
               <Typography sx={{ color: 'text.secondary' }}>
-                Activities coming soon. Browse <Link to="/places" style={{ color: theme.palette.primary.main }}>destinations</Link> to find events and experiences.
+                Activities coming soon. Browse <LocalizedLink to="/places" style={{ color: theme.palette.primary.main }}>destinations</LocalizedLink> to find events and experiences.
               </Typography>
             </Box>
           )}
@@ -204,9 +209,9 @@ export default function Travel() {
         <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
           Discover cities and countries with detailed safety information and travel guides
         </Typography>
-        <Link to="/places">
-          <Button variant="outline">Browse Destinations</Button>
-        </Link>
+        <LocalizedLink to="/places">
+          <Button variant="outline">{t('pages.travel.browseDestinations', 'Browse Destinations')}</Button>
+        </LocalizedLink>
       </Paper>
     </Container>
   );

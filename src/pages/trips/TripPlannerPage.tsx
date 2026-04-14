@@ -1,5 +1,6 @@
 import { useMemo, useState, lazy, Suspense } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -19,7 +20,9 @@ import {
   Share2,
   ArrowLeft,
   Plus,
+  Hotel,
 } from 'lucide-react';
+import MuiDrawer from '@mui/material/Drawer';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, type TripWithDetails } from '@/hooks/useTrips';
@@ -69,13 +72,14 @@ function hasSafetyWarnings(trip: TripWithDetails): boolean {
 
 export default function TripPlannerPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { tripId } = useParams<{ tripId: string }>();
   const { data: trip, isLoading, error } = useTrip(tripId);
   const [tab, setTab] = useState(0);
   const [addPlaceDay, setAddPlaceDay] = useState<string | undefined>();
   const [addPlaceOpen, setAddPlaceOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [mobileBookingOpen, setMobileBookingOpen] = useState(false);
 
   const safetyAlert = useMemo(
     () => (trip ? hasSafetyWarnings(trip) : false),
@@ -287,6 +291,7 @@ export default function TripPlannerPage() {
       </Box>
 
       {tab === 0 && (
+        <>
         <Box sx={{ display: 'flex', gap: 3 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <DraggableItinerary
@@ -307,6 +312,41 @@ export default function TripPlannerPage() {
             />
           </Box>
         </Box>
+
+        {/* Mobile booking FAB + drawer */}
+        <Box
+          sx={{
+            display: { xs: 'block', lg: 'none' },
+            position: 'fixed',
+            bottom: 80,
+            right: 16,
+            zIndex: 1200,
+          }}
+        >
+          <Button
+            size="sm"
+            onClick={() => setMobileBookingOpen(true)}
+            style={{ borderRadius: '50%', width: 48, height: 48, padding: 0 }}
+          >
+            <Hotel style={{ width: 20, height: 20 }} />
+          </Button>
+        </Box>
+        <MuiDrawer
+          anchor="bottom"
+          open={mobileBookingOpen}
+          onClose={() => setMobileBookingOpen(false)}
+          PaperProps={{ sx: { maxHeight: '70vh', borderTopLeftRadius: 16, borderTopRightRadius: 16, p: 2 } }}
+        >
+          <Box sx={{ width: 40, height: 4, bgcolor: 'divider', borderRadius: 2, mx: 'auto', mb: 2 }} />
+          <TripBookingAssistant
+            tripId={trip.id}
+            places={trip.trip_places}
+            days={trip.trip_days}
+            startDate={trip.start_date ?? undefined}
+            endDate={trip.end_date ?? undefined}
+          />
+        </MuiDrawer>
+        </>
       )}
 
       {tab === 1 && (

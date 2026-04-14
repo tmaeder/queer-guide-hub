@@ -1,4 +1,5 @@
-import { useParams, Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -28,6 +29,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
+import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useEvents } from '@/hooks/useEvents';
 import { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,6 +44,7 @@ import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Chip from '@mui/material/Chip';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
+import { useTranslation } from 'react-i18next';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -60,6 +63,7 @@ type VenueWithRelations = Venue & {
 
 export default function VenueDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [venue, setVenue] = useState<VenueWithRelations | null>(null);
   const [reviews, setReviews] = useState<VenueReview[]>([]);
@@ -69,6 +73,13 @@ export default function VenueDetail() {
   const [addToTripOpen, setAddToTripOpen] = useState(false);
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
   const { events } = useEvents();
+  const { track } = useTrackEvent();
+
+  useEffect(() => {
+    if (venue?.id) {
+      track({ eventType: 'page_view', entityType: 'venue', entityId: venue.id, metadata: { name: venue.name } });
+    }
+  }, [venue?.id]);
 
   const venueEvents = events.filter((event) => event.venue_id === venue?.id);
 
@@ -113,7 +124,7 @@ export default function VenueDetail() {
       setReviews(reviewsData || []);
     } catch (_error) {
       setFetchError(true);
-      toast({ title: 'Error', description: 'Failed to load venue details.', variant: 'destructive' });
+      toast({ title: t('common.error', 'Error'), description: t('pages.venueDetail.loadFailed', 'Failed to load venue details.'), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -168,12 +179,12 @@ export default function VenueDetail() {
             <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
             Try Again
           </Button>
-          <Link to="/venues">
+          <LocalizedLink to="/venues">
             <Button variant="outline">
               <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
               Back to Venues
             </Button>
-          </Link>
+          </LocalizedLink>
         </Box>
       </Container>
     );
@@ -188,12 +199,12 @@ export default function VenueDetail() {
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           The venue you're looking for doesn't exist.
         </Typography>
-        <Link to="/venues">
+        <LocalizedLink to="/venues">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Venues
           </Button>
-        </Link>
+        </LocalizedLink>
       </Container>
     );
   }
@@ -243,7 +254,7 @@ export default function VenueDetail() {
     <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
-        <Link
+        <LocalizedLink
           to="/venues"
           style={{
             display: 'inline-flex',
@@ -260,12 +271,12 @@ export default function VenueDetail() {
           >
             Venues
           </Typography>
-        </Link>
+        </LocalizedLink>
         {countryName && (
           <>
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
             {countryLink ? (
-              <Link to={countryLink} style={{ textDecoration: 'none' }}>
+              <LocalizedLink to={countryLink} style={{ textDecoration: 'none' }}>
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -273,7 +284,7 @@ export default function VenueDetail() {
                 >
                   {countryName}
                 </Typography>
-              </Link>
+              </LocalizedLink>
             ) : (
               <Typography variant="body2" color="text.secondary">
                 {countryName}
@@ -285,7 +296,7 @@ export default function VenueDetail() {
           <>
             <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
             {cityLink ? (
-              <Link to={cityLink} style={{ textDecoration: 'none' }}>
+              <LocalizedLink to={cityLink} style={{ textDecoration: 'none' }}>
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -293,7 +304,7 @@ export default function VenueDetail() {
                 >
                   {cityName}
                 </Typography>
-              </Link>
+              </LocalizedLink>
             ) : (
               <Typography variant="body2" color="text.secondary">
                 {cityName}
@@ -373,7 +384,7 @@ export default function VenueDetail() {
             <Typography variant="h4" sx={{ fontWeight: 700 }}>
               {venue.name}
             </Typography>
-            {venue.verified && <Badge variant="secondary">Verified</Badge>}
+            {venue.verified && <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>}
             {venue.featured && <Badge>Featured</Badge>}
             {venue.countries?.equality_score != null && (
               <EqualityScoreBadge score={venue.countries.equality_score} size="sm" />
@@ -383,7 +394,7 @@ export default function VenueDetail() {
             <MapPin style={{ width: 14, height: 14, color: '#9ca3af', flexShrink: 0 }} />
             <Typography variant="body2" color="text.secondary">
               {cityLink ? (
-                <Link to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
+                <LocalizedLink to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
                   <Typography
                     component="span"
                     variant="body2"
@@ -391,7 +402,7 @@ export default function VenueDetail() {
                   >
                     {cityName}
                   </Typography>
-                </Link>
+                </LocalizedLink>
               ) : (
                 cityName
               )}
@@ -399,7 +410,7 @@ export default function VenueDetail() {
                 <>
                   {', '}
                   {countryLink ? (
-                    <Link to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <LocalizedLink to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
                       <Typography
                         component="span"
                         variant="body2"
@@ -407,7 +418,7 @@ export default function VenueDetail() {
                       >
                         {countryName}
                       </Typography>
-                    </Link>
+                    </LocalizedLink>
                   ) : (
                     countryName
                   )}
@@ -498,7 +509,7 @@ export default function VenueDetail() {
       {/* Tabs */}
       <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="overview">{t('pages.venueDetail.overview', 'Overview')}</TabsTrigger>
           {(remainingImages.length > 0 || heroImage) && (
             <TabsTrigger value="photos">
               Photos {venue.images && venue.images.length > 0 ? `(${venue.images.length})` : ''}
@@ -527,7 +538,7 @@ export default function VenueDetail() {
               {venue.description && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>About</CardTitle>
+                    <CardTitle>{t('pages.venueDetail.about', 'About')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
@@ -541,7 +552,7 @@ export default function VenueDetail() {
               {venue.amenities && venue.amenities.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Amenities</CardTitle>
+                    <CardTitle>{t('pages.venueDetail.amenities', 'Amenities')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Box
@@ -627,7 +638,7 @@ export default function VenueDetail() {
               {/* Contact Info */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Contact</CardTitle>
+                  <CardTitle>{t('pages.venueDetail.contact', 'Contact')}</CardTitle>
                 </CardHeader>
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   {venue.address && (
@@ -750,7 +761,7 @@ export default function VenueDetail() {
               {venue.tags && venue.tags.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Tags</CardTitle>
+                    <CardTitle>{t('pages.venueDetail.tags', 'Tags')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -808,7 +819,7 @@ export default function VenueDetail() {
             </StaggerGrid>
           ) : (
             <Box sx={{ textAlign: 'center', py: 6 }}>
-              <Typography color="text.secondary">No photos available</Typography>
+              <Typography color="text.secondary">{t('pages.venueDetail.noPhotos', 'No photos available')}</Typography>
             </Box>
           )}
         </TabsContent>
@@ -826,7 +837,7 @@ export default function VenueDetail() {
             </Box>
           ) : (
             <Box sx={{ textAlign: 'center', py: 6 }}>
-              <Typography color="text.secondary">No upcoming events at this venue</Typography>
+              <Typography color="text.secondary">{t('pages.venueDetail.noEvents', 'No upcoming events at this venue')}</Typography>
             </Box>
           )}
         </TabsContent>

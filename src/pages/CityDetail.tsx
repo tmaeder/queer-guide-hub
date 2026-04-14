@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { useParams, Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -47,6 +48,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { DetailHero } from '@/components/layout/DetailHero';
 import { DetailTabs } from '@/components/layout/DetailTabs';
 import { CityTravelHub } from '@/components/travel/CityTravelHub';
+import { SimilarCities } from '@/components/personalization/SimilarCities';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { LocationInfo } from '@/components/location/LocationInfo';
@@ -64,10 +66,13 @@ import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { Luggage } from 'lucide-react';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTranslation } from 'react-i18next';
+
 
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CityDetail() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
@@ -170,9 +175,9 @@ export default function CityDetail() {
           <Typography sx={{ color: 'text.secondary', mb: 3 }}>
             The city you're looking for doesn't exist.
           </Typography>
-          <Link to="/places" style={{ color: 'inherit', fontWeight: 500 }}>
+          <LocalizedLink to="/places" style={{ color: 'inherit', fontWeight: 500 }}>
             ← Back to Places
-          </Link>
+          </LocalizedLink>
         </Box>
       </Box>
     );
@@ -192,18 +197,18 @@ export default function CityDetail() {
           mb: 2,
         }}
       >
-        <Link to="/places" style={{ color: 'inherit', textDecoration: 'none' }}>
+        <LocalizedLink to="/places" style={{ color: 'inherit', textDecoration: 'none' }}>
           ← Back to Places
-        </Link>
+        </LocalizedLink>
         <span>/</span>
         {city.countries && (
           <>
-            <Link
+            <LocalizedLink
               to={`/country/${city.countries.slug || city.countries.id}`}
               style={{ color: 'inherit', textDecoration: 'none' }}
             >
               {city.countries.name}
-            </Link>
+            </LocalizedLink>
             <span>/</span>
           </>
         )}
@@ -253,7 +258,7 @@ export default function CityDetail() {
           <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary', mb: 1 }}>
             {city.region_name && `${city.region_name}, `}
             {city.countries ? (
-              <Link
+              <LocalizedLink
                 to={`/country/${city.countries.slug || city.countries.id}`}
                 style={{
                   color: 'inherit',
@@ -263,7 +268,7 @@ export default function CityDetail() {
                 }}
               >
                 {city.countries.name}
-              </Link>
+              </LocalizedLink>
             ) : null}
           </Typography>
         </Box>
@@ -1081,12 +1086,12 @@ export default function CityDetail() {
                   <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
                     Legal protections and rights status in{' '}
                     {city.countries ? (
-                      <Link
+                      <LocalizedLink
                         to={`/country/${city.countries.slug || city.countries.id}`}
                         style={{ color: 'inherit', textDecoration: 'underline' }}
                       >
                         {city.countries.name}
-                      </Link>
+                      </LocalizedLink>
                     ) : (
                       'this country'
                     )}
@@ -1210,6 +1215,14 @@ export default function CityDetail() {
                 destinationIata={effectiveIata}
                 destinationCity={city.name}
                 destinationCountryCode={city.countries?.code}
+              />
+
+              <SimilarCities
+                cityId={city.id}
+                cityName={city.name}
+                countryId={city.country_id}
+                equalityScore={city.countries?.equality_score}
+                latitude={city.latitude}
               />
 
               <Box

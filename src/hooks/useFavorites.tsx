@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTrackEvent } from '@/hooks/useTrackEvent';
 
 export type FavoriteType =
   | 'venue'
@@ -27,6 +28,7 @@ const tableMap: Record<FavoriteType, { table: string; idColumn: string }> = {
 export function useFavorites(type: FavoriteType) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { track } = useTrackEvent();
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
 
@@ -77,6 +79,12 @@ export function useFavorites(type: FavoriteType) {
         if (currentlyFavorited) next.delete(itemId);
         else next.add(itemId);
         return next;
+      });
+
+      track({
+        eventType: currentlyFavorited ? 'favorite_remove' : 'favorite_add',
+        entityType: type as 'venue' | 'event' | 'city' | 'country',
+        entityId: itemId,
       });
 
       if (currentlyFavorited) {

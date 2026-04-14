@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import { useParams, Link } from 'react-router';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
@@ -21,6 +22,7 @@ import {
   Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Badge } from '@/components/ui/badge';
@@ -56,9 +58,10 @@ const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
-  const { _t } = useTranslation();
+  const { t } = useTranslation();
   const [weatherData, setWeatherData] = useState<Record<string, unknown> | null>(null);
 
+  const { track } = useTrackEvent();
   const { country, loading: countryLoading } = useOptimizedCountry(countrySlug ?? '');
   const { cities, loading: citiesLoading } = useOptimizedCities({
     countryId: country?.id ?? '',
@@ -71,6 +74,12 @@ export default function CountryDetail() {
     loading: cityVenuesLoading,
     fetchVenues: fetchCityVenues,
   } = useVenues(false);
+
+  useEffect(() => {
+    if (country?.id) {
+      track({ eventType: 'page_view', entityType: 'country', entityId: country.id, metadata: { name: country.name } });
+    }
+  }, [country?.id]);
 
   useEffect(() => {
     fetchCountryVenues({ city: country?.name, limit: 12 });
@@ -217,10 +226,10 @@ export default function CountryDetail() {
             The country you're looking for doesn't exist.
           </Typography>
           <Button asChild>
-            <Link to="/users">
+            <LocalizedLink to="/users">
               <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
               Back to Directory
-            </Link>
+            </LocalizedLink>
           </Button>
         </Box>
       </Box>
@@ -248,10 +257,10 @@ export default function CountryDetail() {
           {/* Navigation */}
           <Box sx={{ mb: 2 }}>
             <Button variant="ghost" asChild sx={{ mb: 1 }}>
-              <Link to="/users">
+              <LocalizedLink to="/users">
                 <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
                 Back to Directory
-              </Link>
+              </LocalizedLink>
             </Button>
             <Box
               component="nav"
@@ -264,9 +273,9 @@ export default function CountryDetail() {
                 mb: 2,
               }}
             >
-              <Link to="/users" style={{ transition: 'color 0.2s' }}>
+              <LocalizedLink to="/users" style={{ transition: 'color 0.2s' }}>
                 Directory
-              </Link>
+              </LocalizedLink>
               <span>/</span>
               <Box component="span" sx={{ color: 'text.primary', fontWeight: 500 }}>
                 {country.name}
