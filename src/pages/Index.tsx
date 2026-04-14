@@ -264,7 +264,7 @@ const Index = React.memo(() => {
       </Box>
 
       {/* ── Features Grid ────────────────────────────────────────────── */}
-      <Box component="section" className="content-enter" sx={{ py: { xs: 8, md: 14 }, px: { xs: 2, sm: 3, md: 4 } }}>
+      <Box component="section" className="content-enter" sx={{ py: { xs: 6, md: 8 }, px: { xs: 2, sm: 3, md: 4 } }}>
         <Typography
           variant="h2"
           className="reveal-up"
