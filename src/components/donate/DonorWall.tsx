@@ -5,26 +5,8 @@ import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDonorWall } from '@/hooks/useDonations';
-
-function formatCurrency(cents: number, currency = 'usd') {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-    minimumFractionDigits: 0,
-  }).format(cents / 100);
-}
-
-function timeAgo(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString();
-}
+import { formatCents } from '@/lib/currency';
+import { timeAgo } from '@/utils/timezone';
 
 export function DonorWall() {
   const { t } = useTranslation();
@@ -77,7 +59,7 @@ export function DonorWall() {
             </div>
             <div className="text-right shrink-0">
               <Typography variant="subtitle2">
-                {formatCurrency(donor.amount, donor.currency)}
+                {formatCents(donor.amount, donor.currency)}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {timeAgo(donor.created_at)}

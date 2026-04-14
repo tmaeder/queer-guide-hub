@@ -9,50 +9,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
 import {
   loadModuleConfig, checkRateLimit, writeChanges, logRun,
-  getContentName, CONTENT_TYPE_CONFIG,
+  getContentName, CONTENT_TYPE_CONFIG, COUNTRY_ALIASES,
   type ProposedChange, type AutomationRule,
 } from '../_shared/automation-utils.ts'
 
 const MODULE_SLUG = 'geo-enricher'
-
-// ── Country alias map (subset — full map is in geo-link-content) ─────────────
-
-const COUNTRY_ALIASES: Record<string, string> = {
-  'us': 'United States', 'usa': 'United States', 'united states of america': 'United States',
-  'gb': 'United Kingdom', 'uk': 'United Kingdom', 'great britain': 'United Kingdom',
-  'england': 'United Kingdom', 'scotland': 'United Kingdom', 'wales': 'United Kingdom',
-  'de': 'Germany', 'deutschland': 'Germany',
-  'fr': 'France', 'es': 'Spain', 'españa': 'Spain',
-  'it': 'Italy', 'italia': 'Italy',
-  'nl': 'Netherlands', 'holland': 'Netherlands', 'the netherlands': 'Netherlands',
-  'ch': 'Switzerland', 'schweiz': 'Switzerland', 'suisse': 'Switzerland',
-  'at': 'Austria', 'österreich': 'Austria',
-  'au': 'Australia', 'ca': 'Canada', 'br': 'Brazil', 'brasil': 'Brazil',
-  'mx': 'Mexico', 'méxico': 'Mexico', 'jp': 'Japan',
-  'za': 'South Africa', 'nz': 'New Zealand', 'il': 'Israel',
-  'th': 'Thailand', 'pt': 'Portugal', 'be': 'Belgium',
-  'se': 'Sweden', 'dk': 'Denmark', 'no': 'Norway', 'fi': 'Finland',
-  'ie': 'Ireland', 'cz': 'Czech Republic', 'czechia': 'Czech Republic',
-  'tw': 'Taiwan', 'ar': 'Argentina', 'co': 'Colombia',
-  'in': 'India', 'cn': 'China', 'kr': 'South Korea', 'ru': 'Russia',
-  'tr': 'Turkey', 'türkiye': 'Turkey', 'gr': 'Greece', 'pl': 'Poland',
-  // Demonyms
-  'american': 'United States', 'british': 'United Kingdom', 'english': 'United Kingdom',
-  'german': 'Germany', 'french': 'France', 'spanish': 'Spain',
-  'italian': 'Italy', 'dutch': 'Netherlands', 'swiss': 'Switzerland',
-  'austrian': 'Austria', 'australian': 'Australia', 'canadian': 'Canada',
-  'brazilian': 'Brazil', 'mexican': 'Mexico', 'japanese': 'Japan',
-  'south african': 'South Africa', 'israeli': 'Israel', 'thai': 'Thailand',
-  'portuguese': 'Portugal', 'belgian': 'Belgium', 'swedish': 'Sweden',
-  'danish': 'Denmark', 'norwegian': 'Norway', 'finnish': 'Finland',
-  'irish': 'Ireland', 'czech': 'Czech Republic', 'taiwanese': 'Taiwan',
-  'argentinian': 'Argentina', 'colombian': 'Colombia', 'indian': 'India',
-  'chinese': 'China', 'korean': 'South Korea', 'russian': 'Russia',
-  'turkish': 'Turkey', 'greek': 'Greece', 'polish': 'Poland',
-  'filipino': 'Philippines', 'nigerian': 'Nigeria', 'kenyan': 'Kenya',
-  'egyptian': 'Egypt', 'moroccan': 'Morocco', 'lebanese': 'Lebanon',
-  'jamaican': 'Jamaica', 'cuban': 'Cuba',
-}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

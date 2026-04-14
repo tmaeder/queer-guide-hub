@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router';
+import { formatCurrency } from '@/lib/currency';
 import { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
@@ -309,10 +310,10 @@ export default function EventDetail() {
     if (event.is_free) return 'Free';
     if (event.price_min && event.price_max) {
       return event.price_min === event.price_max
-        ? `$${event.price_min}`
-        : `$${event.price_min} - $${event.price_max}`;
+        ? formatCurrency(event.price_min, event.currency)
+        : `${formatCurrency(event.price_min, event.currency)} - ${formatCurrency(event.price_max, event.currency)}`;
     }
-    if (event.price_min) return `From $${event.price_min}`;
+    if (event.price_min) return `From ${formatCurrency(event.price_min, event.currency)}`;
     return 'Price TBA';
   };
 

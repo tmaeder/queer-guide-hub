@@ -69,7 +69,13 @@
     "community": "社区",
     "resources": "资源",
     "legal": "法律",
-    "copyright": "© {{year}} 版权所有。"
+    "copyright": "© {{year}} 版权所有。",
+    "about": "关于",
+    "legalLink": "法律",
+    "privacy": "隐私",
+    "terms": "条款",
+    "contact": "联系",
+    "supportUs": "支持我们"
   },
   "trips": {
     "title": "我的行程",
@@ -136,7 +142,8 @@
         "berlin": "柏林骄傲周",
         "barcelona": "巴塞罗那：海滩与夜生活",
         "bangkok": "曼谷与普吉岛探索"
-      }
+      },
+      "daysLabel_one": "{{count}} 天"
     },
     "card": {
       "fromDate": "从 {{date}} 开始",
@@ -156,7 +163,10 @@
         "safe": "安全目的地",
         "caution": "请了解当地情况",
         "danger": "此行程包含高风险目的地"
-      }
+      },
+      "placeCount_one": "{{count}} 个地点",
+      "dayCount_one": "{{count}} 天",
+      "memberCount_one": "{{count}} 位成员"
     },
     "toast": {
       "created": "行程已创建",
@@ -189,7 +199,10 @@
       "progressTooltip": "行程规划进度",
       "days_other": "{{count}} 天",
       "placesCount_other": "{{count}} 个地点",
-      "daysPlanned_other": "已规划 {{count}} 天"
+      "daysPlanned_other": "已规划 {{count}} 天",
+      "days_one": "{{count}} 天",
+      "placesCount_one": "{{count}} 个地点",
+      "daysPlanned_one": "{{count}} 天已规划"
     },
     "share": {
       "title": "分享此行程",
@@ -211,7 +224,8 @@
       "deleteTitle": "删除分享链接",
       "deleteConfirm": "持有该链接的人将失去访问权限。此操作不可撤销。",
       "expired": "已过期",
-      "expiresOn": "于 {{date}} 过期"
+      "expiresOn": "于 {{date}} 过期",
+      "activeLinks_one": "{{count}} 个活跃链接"
     },
     "itinerary": {
       "add": "添加",
@@ -293,7 +307,10 @@
         "safe": "LGBTQ+ 接受度较高。与在其他地方一样，对公开示爱保持基本判断力。",
         "caution": "注意公开示爱。请详细研究该城市并阅读近期游记。",
         "danger": "请认真对待风险。避免公开示爱和使用约会应用，保持低调。"
-      }
+      },
+      "basedOn_one": "基于行程中 {{count}} 个国家的 LGBTQ+ 平等数据。",
+      "stops_one": "{{count}} 个停留点",
+      "warningCount_one": "{{count}} 条警告"
     },
     "budget": {
       "emptyTitle": "暂无支出",
@@ -319,7 +336,10 @@
         "activities": "活动",
         "shopping": "购物",
         "other": "其他"
-      }
+      },
+      "splitWays_one": "按 {{count}} 人分摊",
+      "itemsCount_one": "已记录 {{count}} 笔",
+      "membersCount_one": "{{count}} 位成员"
     },
     "reservations": {
       "emptyTitle": "暂无预订",
@@ -546,5 +566,300 @@
     "passkeyEnrolled": "Passkey enabled",
     "continue": "Continue to The Queer Guide",
     "skip": "Skip for now"
+  },
+  "events": {
+    "title": "活动",
+    "upcoming": "即将举办的活动",
+    "past": "往期活动",
+    "create": "创建活动",
+    "rsvp": "回复出席",
+    "attending": "将参加",
+    "interested": "感兴趣",
+    "share": "分享",
+    "details": "活动详情",
+    "location": "地点",
+    "organizer": "主办方",
+    "free": "免费",
+    "ticketsRequired": "需要购票",
+    "soldOut": "已售罄",
+    "cancelled": "已取消"
+  },
+  "venues": {
+    "title": "场所",
+    "safeSpace": "安全空间",
+    "queerOwned": "Queer 经营",
+    "queerFriendly": "Queer 友好",
+    "accessibility": "无障碍",
+    "verified": "已认证",
+    "hours": "营业时间",
+    "contact": "联系",
+    "directions": "导航",
+    "checkin": "签到",
+    "review": "撰写评价",
+    "photos": "照片",
+    "amenities": "设施",
+    "services": "服务"
+  },
+  "marketplace": {
+    "title": "市场",
+    "queerOwned": "Queer 经营",
+    "supportLocal": "支持本地",
+    "handmade": "手工制作",
+    "sustainable": "可持续",
+    "addToCart": "加入购物车",
+    "soldOut": "已售罄",
+    "onSale": "促销中",
+    "newArrival": "新品",
+    "featured": "精选",
+    "reviews": "评价"
+  },
+  "profile": {
+    "editProfile": "编辑资料",
+    "pronouns": "代词",
+    "location": "地点",
+    "bio": "关于我",
+    "interests": "兴趣",
+    "lookingFor": "在寻找",
+    "photos": "照片",
+    "settings": "设置",
+    "privacy": "隐私",
+    "notifications": "通知",
+    "blockedUsers": "已屏蔽用户",
+    "reportUser": "举报用户",
+    "sendMessage": "发送消息"
+  },
+  "groups": {
+    "title": "群组",
+    "join": "加入群组",
+    "leave": "退出群组",
+    "create": "创建群组",
+    "members": "成员",
+    "admins": "管理员",
+    "posts": "帖子",
+    "events": "活动",
+    "rules": "群组规则",
+    "private": "私密",
+    "public": "公开",
+    "invite": "邀请"
+  },
+  "messaging": {
+    "messages": "消息",
+    "newMessage": "新消息",
+    "sendMessage": "发送",
+    "typing": "正在输入…",
+    "online": "在线",
+    "lastSeen": "最后在线",
+    "delivered": "已送达",
+    "read": "已读",
+    "block": "屏蔽用户",
+    "report": "举报对话"
+  },
+  "notifications": {
+    "title": "通知",
+    "markRead": "标记为已读",
+    "markAllRead": "全部标记为已读",
+    "newMessage": "新消息",
+    "newFollow": "新关注者",
+    "eventInvite": "活动邀请",
+    "groupInvite": "群组邀请",
+    "mentionedYou": "提到了你",
+    "likedPost": "赞了你的帖子",
+    "commentedOn": "评论了你的帖子"
+  },
+  "general": {
+    "yes": "是",
+    "no": "否",
+    "maybe": "也许",
+    "thanks": "谢谢！",
+    "sorry": "抱歉！",
+    "congrats": "恭喜！",
+    "welcome": "欢迎！",
+    "goodbye": "再见！",
+    "loading": "加载中…",
+    "error": "出现了问题",
+    "success": "成功！",
+    "tryAgain": "重试",
+    "comingSoon": "即将推出",
+    "underConstruction": "开发中"
+  },
+  "donate": {
+    "title": "支持 queer.guide",
+    "subtitle": "queer.guide 是一个免费平台，为全球 LGBTQ+ 社群提供安全空间、活动和资源。你的捐赠帮助我们持续运营，让每个人都能使用。",
+    "tipJar": "快速选择金额",
+    "customAmount": "自定义金额",
+    "frequency": "频率",
+    "one_time": "一次性",
+    "month": "每月",
+    "year": "每年",
+    "email": "电子邮箱",
+    "name": "姓名（可选）",
+    "namePlaceholder": "你希望在捐赠墙上显示的名字",
+    "message": "留言（可选）",
+    "messagePlaceholder": "留下一句支持的话",
+    "anonymous": "匿名捐赠",
+    "cta": "捐赠 {{amount}}",
+    "ctaDisabled": "请输入金额",
+    "error": "出现了问题，请重试。",
+    "donorWall": "近期支持者",
+    "loadingDonors": "正在加载捐赠者…",
+    "noDonorsYet": "成为第一位支持 queer.guide 的人！",
+    "anonymousDonor": "一位支持者",
+    "recurring": "定期",
+    "thankYou": "谢谢！",
+    "successMessage": "你的捐赠帮助 queer.guide 保持免费，为全球 LGBTQ+ 社群提供服务。",
+    "backHome": "返回首页"
+  },
+  "help": {
+    "title": "帮助与危机热线",
+    "subtitle": "你不是一个人。在这里找到即时支持。",
+    "meta_description": "全球免费、匿名的 LGBTQIA+ 危机热线和咨询服务。你不是一个人。",
+    "emergency_title": "处于紧急危险中？",
+    "emergency_body": "请立即拨打急救电话：112（欧盟）或 911（美国/加拿大）。分秒必争。",
+    "filter_country": "国家",
+    "filter_country_all": "所有国家",
+    "filter_topic": "主题",
+    "filter_topic_all": "所有主题",
+    "call_now": "立即拨打",
+    "call_aria": "拨打 {{name}} {{phone}}",
+    "hours": "服务时间",
+    "languages": "语言",
+    "disclaimer": "Queer Guide 不能替代专业帮助。",
+    "no_results": "没有匹配的热线。试试所有国家或查看国际目录。",
+    "no_results_title": "未找到热线",
+    "search_placeholder": "搜索热线…",
+    "saved_hotlines": "你保存的热线",
+    "quick_call": "快速拨打",
+    "badge_24_7": "24小时",
+    "badge_free": "免费",
+    "badge_anonymous": "匿名",
+    "save": "保存热线",
+    "unsave": "从已保存中移除",
+    "reset_filters": "重置筛选",
+    "related_resources": "相关资源",
+    "browse_resources": "浏览所有资源",
+    "breadcrumb_resources": "资源",
+    "breadcrumb_support": "支持与新闻",
+    "breadcrumb_hotlines": "危机热线",
+    "error_title": "帮助页面不可用",
+    "error_body": "如遇紧急危险，请拨打当地急救电话：112（欧盟）或 911（美国/加拿大）。",
+    "topic": {
+      "general": "综合",
+      "crisis": "危机",
+      "suicide": "预防自杀",
+      "lgbtq": "LGBTQIA+",
+      "youth": "青少年",
+      "trans": "跨性别",
+      "coming-out": "出柜",
+      "violence": "暴力",
+      "discrimination": "歧视",
+      "health": "健康",
+      "hiv": "HIV",
+      "legal": "法律",
+      "relationships": "关系",
+      "women": "女性"
+    }
+  },
+  "sos": {
+    "button": "SOS",
+    "confirmTitle": "发送紧急求助？",
+    "confirmBody": "这将立即通知你的 {{count}} 位朋友。如果可用，你的当前位置将被共享。",
+    "send": "发送 SOS",
+    "sending": "正在发送…",
+    "sent": "紧急求助已发送给 {{count}} 位朋友",
+    "cooldown": "请稍等再发送下一条求助",
+    "noFriends": "添加朋友以使用 SOS",
+    "notificationTitle": "来自 {{name}} 的 SOS",
+    "notificationBody": "{{name}} 需要帮助！请联系确认。",
+    "notificationBodyWithLocation": "{{name}} 需要帮助！位置已共享。",
+    "error": "发送求助失败，请重试。"
+  },
+  "home": {
+    "heroLine1": "发现。",
+    "heroLine2": "连接。",
+    "heroLine3": "归属。",
+    "subtitle": "安全的场所、丰富的活动和懂你的社群——无论你在哪里。",
+    "browseVenues": "浏览场所",
+    "viewEvents": "查看活动",
+    "explore": "探索",
+    "stats": {
+      "venues": "场所",
+      "members": "成员",
+      "cities": "城市",
+      "events": "活动"
+    },
+    "features": {
+      "venues": "场所",
+      "venuesDesc": "经认证的 queer 友好空间，让你做自己",
+      "events": "活动",
+      "eventsDesc": "你所在地区的线下和线上聚会",
+      "marketplace": "市场",
+      "marketplaceDesc": "支持 queer 经营的商家和创作者",
+      "places": "目的地",
+      "placesDesc": "探索 queer 友好的城市和国家",
+      "hotels": "酒店",
+      "hotelsDesc": "全球友好住宿",
+      "community": "社群",
+      "communityDesc": "认识朋友，加入群组",
+      "resources": "资源",
+      "resourcesDesc": "权利、文化与社群支持"
+    }
+  },
+  "header": {
+    "signInSignUp": "登录 / 注册",
+    "signOut": "登出",
+    "adminConsole": "管理后台",
+    "closeMenu": "关闭菜单",
+    "openMenu": "打开菜单",
+    "openNavigation": "打开导航菜单",
+    "openUserMenu": "打开用户菜单",
+    "selectMode": "选择模式",
+    "contribute": "贡献",
+    "submitEvent": "提交活动",
+    "submitVenue": "提交场所",
+    "submitProduct": "提交商品",
+    "submitHotel": "提交酒店",
+    "nav": {
+      "discover": "发现",
+      "connect": "连接",
+      "more": "更多",
+      "venues": "场所",
+      "events": "活动",
+      "places": "目的地",
+      "map": "地图",
+      "feed": "动态",
+      "groups": "群组",
+      "members": "成员",
+      "marketplace": "市场",
+      "resources": "资源",
+      "news": "新闻",
+      "travel": "旅行",
+      "personalities": "名人",
+      "hotels": "酒店",
+      "help": "帮助"
+    },
+    "userMenu": {
+      "myTrips": "我的行程",
+      "favorites": "收藏",
+      "settings": "设置",
+      "inbox": "收件箱",
+      "friends": "朋友",
+      "myGroups": "我的群组",
+      "accessibility": "无障碍"
+    },
+    "modes": {
+      "dating": "寻找爱情",
+      "friends": "结交朋友",
+      "exploration": "探索场景",
+      "fun": "纯粹玩乐",
+      "networking": "职业社交",
+      "community": "建设社群"
+    },
+    "legal": {
+      "about": "关于",
+      "help": "帮助",
+      "accessibility": "无障碍",
+      "legal": "法律",
+      "contact": "联系"
+    }
   }
 }

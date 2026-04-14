@@ -7,69 +7,9 @@
  */
 
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
+import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts';
 
 const supabase = getServiceClient();
-
-// ── Country alias map ────────────────────────────────────────────────
-// Maps common abbreviations, ISO codes, demonyms → canonical country name
-
-const COUNTRY_ALIASES: Record<string, string> = {
-  // ISO 2-letter codes
-  'us': 'United States', 'gb': 'United Kingdom', 'de': 'Germany',
-  'fr': 'France', 'es': 'Spain', 'it': 'Italy', 'nl': 'Netherlands',
-  'ch': 'Switzerland', 'at': 'Austria', 'au': 'Australia',
-  'ca': 'Canada', 'br': 'Brazil', 'mx': 'Mexico', 'jp': 'Japan',
-  'za': 'South Africa', 'nz': 'New Zealand', 'il': 'Israel',
-  'th': 'Thailand', 'pt': 'Portugal', 'be': 'Belgium',
-  'se': 'Sweden', 'dk': 'Denmark', 'no': 'Norway', 'fi': 'Finland',
-  'ie': 'Ireland', 'cz': 'Czech Republic', 'tw': 'Taiwan',
-  'ar': 'Argentina', 'co': 'Colombia', 'cl': 'Chile', 'pe': 'Peru',
-  'in': 'India', 'cn': 'China', 'kr': 'South Korea', 'ru': 'Russia',
-  'tr': 'Turkey', 'gr': 'Greece', 'pl': 'Poland', 'ro': 'Romania',
-  'hu': 'Hungary', 'ph': 'Philippines', 'id': 'Indonesia',
-  'ng': 'Nigeria', 'ke': 'Kenya', 'eg': 'Egypt', 'ma': 'Morocco',
-  'lb': 'Lebanon', 'jm': 'Jamaica', 'cu': 'Cuba', 'sr': 'Suriname',
-  // Common abbreviations
-  'usa': 'United States', 'uk': 'United Kingdom',
-  'united states of america': 'United States',
-  'great britain': 'United Kingdom', 'england': 'United Kingdom',
-  'scotland': 'United Kingdom', 'wales': 'United Kingdom',
-  'holland': 'Netherlands', 'the netherlands': 'Netherlands',
-  'kingdom of the netherlands': 'Netherlands',
-  'czechia': 'Czech Republic',
-  'republic of korea': 'South Korea', 'korea': 'South Korea',
-  // Demonyms (nationality → country)
-  'american': 'United States', 'british': 'United Kingdom',
-  'english': 'United Kingdom', 'scottish': 'United Kingdom',
-  'welsh': 'United Kingdom',
-  'german': 'Germany', 'french': 'France', 'spanish': 'Spain',
-  'italian': 'Italy', 'dutch': 'Netherlands', 'swiss': 'Switzerland',
-  'austrian': 'Austria', 'australian': 'Australia',
-  'canadian': 'Canada', 'brazilian': 'Brazil', 'mexican': 'Mexico',
-  'japanese': 'Japan', 'south african': 'South Africa',
-  'new zealander': 'New Zealand', 'kiwi': 'New Zealand',
-  'israeli': 'Israel', 'thai': 'Thailand',
-  'portuguese': 'Portugal', 'belgian': 'Belgium',
-  'swedish': 'Sweden', 'danish': 'Denmark', 'norwegian': 'Norway',
-  'finnish': 'Finland', 'irish': 'Ireland', 'czech': 'Czech Republic',
-  'taiwanese': 'Taiwan', 'argentinian': 'Argentina', 'argentine': 'Argentina',
-  'cameroonian': 'Cameroon', 'colombian': 'Colombia',
-  'cuban': 'Cuba', 'indian': 'India', 'chinese': 'China',
-  'korean': 'South Korea', 'russian': 'Russia', 'turkish': 'Turkey',
-  'greek': 'Greece', 'polish': 'Poland', 'romanian': 'Romania',
-  'hungarian': 'Hungary', 'peruvian': 'Peru', 'chilean': 'Chile',
-  'filipino': 'Philippines', 'indonesian': 'Indonesia',
-  'nigerian': 'Nigeria', 'kenyan': 'Kenya', 'egyptian': 'Egypt',
-  'moroccan': 'Morocco', 'lebanese': 'Lebanon',
-  'jamaican': 'Jamaica', 'trinidadian': 'Trinidad and Tobago',
-  'puerto rican': 'Puerto Rico', 'surinamese': 'Suriname',
-  'salvadoran': 'El Salvador', 'honduran': 'Honduras',
-  'guatemalan': 'Guatemala', 'nicaraguan': 'Nicaragua',
-  'costa rican': 'Costa Rica', 'panamanian': 'Panama',
-  'venezuelan': 'Venezuela', 'ecuadorian': 'Ecuador',
-  'bolivian': 'Bolivia', 'paraguayan': 'Paraguay',
-  'uruguayan': 'Uruguay',
-};
 
 // ── Types ────────────────────────────────────────────────────────────
 

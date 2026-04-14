@@ -1,28 +1,12 @@
 import { useCallback } from 'react';
-import { ChevronUp, Bug, Lightbulb, Sparkles, BookOpen, Clock } from 'lucide-react';
+import { ChevronUp, Clock } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-
-const categoryConfig: Record<string, { label: string; icon: typeof Bug; color: string }> = {
-  bug: { label: 'Bug', icon: Bug, color: '#ef4444' },
-  idea: { label: 'Idea', icon: Lightbulb, color: '#f59e0b' },
-  improvement: { label: 'Improvement', icon: Sparkles, color: '#8b5cf6' },
-  'content-idea': { label: 'Content', icon: BookOpen, color: '#0ea5e9' },
-};
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
-}
+import { feedbackCategoryMap } from '@/config/feedbackCategories';
+import { timeAgo } from '@/utils/timezone';
 
 export interface FeedbackItem {
   id: string;
@@ -46,7 +30,7 @@ interface FeedbackCardProps {
 
 export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: FeedbackCardProps) {
   const { user } = useAuth();
-  const cat = categoryConfig[item.data.category] || categoryConfig.idea;
+  const cat = feedbackCategoryMap[item.data.category] || feedbackCategoryMap.idea;
   const Icon = cat.icon;
 
   const handleVoteClick = useCallback(
@@ -67,7 +51,6 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
         display: 'flex',
         gap: 1.5,
         transition: 'all 0.15s',
-        '&:hover': {},
       }}
     >
       {/* Vote column */}

@@ -14,10 +14,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useFeedbackVoteCounts } from '@/hooks/useFeedbackVote';
 import {
-  Bug,
-  Lightbulb,
-  Sparkles,
-  BookOpen,
   ChevronUp,
   Clock,
   X,
@@ -32,6 +28,8 @@ import {
   MessageSquarePlus,
   Copy,
 } from 'lucide-react';
+import { feedbackCategoryMap } from '@/config/feedbackCategories';
+import { timeAgo } from '@/utils/timezone';
 
 const kanbanColumns = [
   { id: 'new', label: 'New', color: '#f59e0b' },
@@ -42,13 +40,6 @@ const kanbanColumns = [
 ] as const;
 
 type KanbanStatus = (typeof kanbanColumns)[number]['id'];
-
-const categoryConfig: Record<string, { label: string; icon: typeof Bug; color: string }> = {
-  bug: { label: 'Bug', icon: Bug, color: '#ef4444' },
-  idea: { label: 'Idea', icon: Lightbulb, color: '#f59e0b' },
-  improvement: { label: 'Improvement', icon: Sparkles, color: '#8b5cf6' },
-  'content-idea': { label: 'Content', icon: BookOpen, color: '#0ea5e9' },
-};
 
 interface FeedbackContext {
   url?: string;
@@ -76,17 +67,6 @@ interface FeedbackSubmission {
   github_issue_url?: string | null;
   github_issue_number?: number | null;
   forwarded_at?: string | null;
-}
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
 }
 
 function formatClaudePrompt(item: FeedbackSubmission): string {
@@ -381,7 +361,7 @@ interface AdminFeedbackCardProps {
 }
 
 function AdminFeedbackCard({ item, voteCount, onClick }: AdminFeedbackCardProps) {
-  const cat = categoryConfig[item.data.category] || categoryConfig.idea;
+  const cat = feedbackCategoryMap[item.data.category] || feedbackCategoryMap.idea;
   const Icon = cat.icon;
   const isForwarded = !!item.github_issue_url;
 
@@ -539,7 +519,7 @@ function FeedbackDetailDrawer({
 
   if (!item) return null;
 
-  const cat = categoryConfig[item.data.category] || categoryConfig.idea;
+  const cat = feedbackCategoryMap[item.data.category] || feedbackCategoryMap.idea;
   const CatIcon = cat.icon;
   const ctx = item.data.context || {};
   const isForwarded = !!item.github_issue_url;

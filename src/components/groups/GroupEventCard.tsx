@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -124,8 +125,8 @@ export function GroupEventCard({
                 <DollarSign style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
                 <Typography variant="body2">
                   {event.price_min && event.price_max && event.price_min !== event.price_max
-                    ? `$${event.price_min} - $${event.price_max}`
-                    : `$${event.price_min || event.price_max}`}
+                    ? `${formatCurrency(event.price_min)} - ${formatCurrency(event.price_max)}`
+                    : formatCurrency(event.price_min || event.price_max || 0)}
                 </Typography>
               </Box>
             )}

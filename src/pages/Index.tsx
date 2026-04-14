@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -26,77 +27,38 @@ const RegionalEventsCalendar = React.lazy(
   () => import('@/components/home/RegionalEventsCalendar'),
 );
 
-const features: {
-  icon: typeof MapPin;
-  title: string;
-  description: string;
-  link: string;
-}[] = [
-  {
-    icon: MapPin,
-    title: 'Venues',
-    description: 'Verified queer-friendly spaces where you can be yourself',
-    link: '/venues',
-  },
-  {
-    icon: Calendar,
-    title: 'Events',
-    description: 'Local and virtual gatherings in your area',
-    link: '/events',
-  },
-  {
-    icon: Store,
-    title: 'Marketplace',
-    description: 'Support queer-owned businesses and creators',
-    link: '/marketplace',
-  },
-  {
-    icon: Plane,
-    title: 'Places',
-    description: 'Explore queer-friendly cities and countries',
-    link: '/places',
-  },
-  {
-    icon: Building,
-    title: 'Hotels',
-    description: 'Welcoming accommodations worldwide',
-    link: '/hotels',
-  },
-  {
-    icon: Users,
-    title: 'Community',
-    description: 'Connect with people and join groups',
-    link: '/groups',
-  },
-  {
-    icon: BookOpen,
-    title: 'Resources',
-    description: 'Rights, culture, and community support',
-    link: '/resources',
-  },
+const featureDefs = [
+  { icon: MapPin, titleKey: 'home.features.venues', descKey: 'home.features.venuesDesc', link: '/venues' },
+  { icon: Calendar, titleKey: 'home.features.events', descKey: 'home.features.eventsDesc', link: '/events' },
+  { icon: Store, titleKey: 'home.features.marketplace', descKey: 'home.features.marketplaceDesc', link: '/marketplace' },
+  { icon: Plane, titleKey: 'home.features.places', descKey: 'home.features.placesDesc', link: '/places' },
+  { icon: Building, titleKey: 'home.features.hotels', descKey: 'home.features.hotelsDesc', link: '/hotels' },
+  { icon: Users, titleKey: 'home.features.community', descKey: 'home.features.communityDesc', link: '/groups' },
+  { icon: BookOpen, titleKey: 'home.features.resources', descKey: 'home.features.resourcesDesc', link: '/resources' },
 ];
 
 const Index = React.memo(() => {
   const { stats: realStats, loading } = useConsolidatedStats();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const stats = useMemo(
     () =>
       loading
         ? [
-            { value: 0, label: 'Venues' },
-            { value: 0, label: 'Members' },
-            { value: 0, label: 'Cities' },
-            { value: 0, label: 'Events' },
+            { value: 0, label: t('home.stats.venues', 'Venues') },
+            { value: 0, label: t('home.stats.members', 'Members') },
+            { value: 0, label: t('home.stats.cities', 'Cities') },
+            { value: 0, label: t('home.stats.events', 'Events') },
           ]
         : [
-            { value: realStats.venues, label: 'Venues' },
-            { value: realStats.profiles, label: 'Members' },
-            { value: realStats.cities, label: 'Cities' },
-            { value: realStats.events, label: 'Events' },
+            { value: realStats.venues, label: t('home.stats.venues', 'Venues') },
+            { value: realStats.profiles, label: t('home.stats.members', 'Members') },
+            { value: realStats.cities, label: t('home.stats.cities', 'Cities') },
+            { value: realStats.events, label: t('home.stats.events', 'Events') },
           ],
-    [loading, realStats],
+    [loading, realStats, t],
   );
 
   return (
@@ -136,12 +98,12 @@ const Index = React.memo(() => {
               color: 'text.primary',
             }}
           >
-            Discover.
+            {t('home.heroLine1', 'Discover.')}
             <br />
-            Connect.
+            {t('home.heroLine2', 'Connect.')}
             <br />
             <Box component="span" sx={{ color: 'brand.main' }}>
-              Belong.
+              {t('home.heroLine3', 'Belong.')}
             </Box>
           </Typography>
 
@@ -154,8 +116,7 @@ const Index = React.memo(() => {
               lineHeight: 1.6,
             }}
           >
-            Safe venues, vibrant events, and communities that get you —
-            wherever you are.
+            {t('home.subtitle', 'Safe venues, vibrant events, and communities that get you — wherever you are.')}
           </Typography>
 
           <Box
@@ -168,11 +129,11 @@ const Index = React.memo(() => {
           >
             <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/venues')}>
               <MapPin style={{ width: 16, height: 16, marginRight: 6 }} aria-hidden="true" />
-              Browse Venues
+              {t('home.browseVenues', 'Browse Venues')}
             </Button>
             <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/events')}>
               <Calendar style={{ width: 16, height: 16, marginRight: 6 }} aria-hidden="true" />
-              View Events
+              {t('home.viewEvents', 'View Events')}
             </Button>
           </Box>
         </Box>
@@ -274,7 +235,7 @@ const Index = React.memo(() => {
             fontSize: { xs: '1.75rem', md: '2.25rem' },
           }}
         >
-          Explore
+          {t('home.explore', 'Explore')}
         </Typography>
 
         <StaggerGrid
@@ -289,12 +250,12 @@ const Index = React.memo(() => {
             gap: 2.5,
           }}
         >
-          {features.map((feature) => {
+          {featureDefs.map((feature) => {
             const Icon = feature.icon;
             return (
               <Link
                 to={feature.link}
-                key={feature.title}
+                key={feature.titleKey}
                 style={{ textDecoration: 'none', display: 'block' }}
               >
                 <Card
@@ -327,7 +288,7 @@ const Index = React.memo(() => {
                         style={{ width: 18, height: 18, flexShrink: 0 }}
                         aria-hidden="true"
                       />
-                      {feature.title}
+                      {t(feature.titleKey)}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -336,7 +297,7 @@ const Index = React.memo(() => {
                         lineHeight: 1.5,
                       }}
                     >
-                      {feature.description}
+                      {t(feature.descKey)}
                     </Typography>
                   </CardContent>
                 </Card>

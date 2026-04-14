@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router';
+import { formatCurrency } from '@/lib/currency';
 import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
@@ -213,7 +214,7 @@ export default function MarketplaceItemDetail() {
       return 'Price varies';
     }
 
-    const price = `$${listing.price}`;
+    const price = formatCurrency(listing.price, listing.currency || 'USD');
 
     switch (listing.price_type) {
       case 'starting_at':

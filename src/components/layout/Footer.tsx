@@ -1,20 +1,24 @@
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 const footerLinks = [
-  { href: '/about', label: 'About' },
-  { href: '/legal', label: 'Legal' },
-  { href: '/privacy', label: 'Privacy' },
-  { href: '/terms', label: 'Terms' },
-  { href: '/contact', label: 'Contact' },
-  { href: '/donate', label: 'Support Us' },
+  { href: '/about', labelKey: 'footer.about' },
+  { href: '/legal', labelKey: 'footer.legalLink' },
+  { href: '/privacy', labelKey: 'footer.privacy' },
+  { href: '/terms', labelKey: 'footer.terms' },
+  { href: '/contact', labelKey: 'footer.contact' },
+  { href: '/donate', labelKey: 'footer.supportUs' },
 ];
 
 export function Footer() {
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -50,7 +54,7 @@ export function Footer() {
                       transition: 'color 0.2s',
                     }}
                   >
-                    {link.label}
+                    {t(link.labelKey)}
                   </Typography>
                 </Link>
               </Box>
@@ -73,6 +77,8 @@ export function Footer() {
             gap: 0.5,
           }}
         >
+          <LanguageSwitcher />
+          <CurrencySelector />
           <ThemeToggle />
           <Button
             variant="ghost"

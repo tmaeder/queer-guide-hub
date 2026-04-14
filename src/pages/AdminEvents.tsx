@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { formatCurrency } from '@/lib/currency';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
@@ -378,7 +379,7 @@ export default function AdminEvents() {
             <Badge style={{ backgroundColor: '#dcfce7', color: '#166534' }}>Free</Badge>
           ) : (
             <span style={{ color: 'var(--muted-foreground)' }}>
-              {info.row.original.price_min ? `$${info.row.original.price_min}` : '-'}
+              {info.row.original.price_min ? formatCurrency(info.row.original.price_min) : '-'}
             </span>
           ),
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,

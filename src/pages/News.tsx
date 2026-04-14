@@ -474,7 +474,7 @@ export default function News() {
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
           {showFilters && (
             <Box sx={{ gridColumn: { lg: 'span 1' } }}>
-              <NewsFilters sources={sources} onFiltersChange={handleFiltersChange} trendingTags={trendingTags} />
+              <NewsFilters sources={sources} categories={categories} onFiltersChange={handleFiltersChange} trendingTags={trendingTags} />
             </Box>
           )}
 

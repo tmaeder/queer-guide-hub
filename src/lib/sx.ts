@@ -44,7 +44,7 @@ export function stack(gap: number = 2): SxProps<Theme> {
 }
 
 /** Row pattern — flex row with gap and center alignment */
-export function row(gap: number = 1, align: string = 'center'): SxProps<Theme> {
+export function row(gap: number = 1, align: 'flex-start' | 'center' | 'flex-end' | 'baseline' | 'stretch' = 'center'): SxProps<Theme> {
   return {
     display: 'flex',
     flexDirection: 'row',
@@ -52,10 +52,3 @@ export function row(gap: number = 1, align: string = 'center'): SxProps<Theme> {
     gap,
   };
 }
-
-/**
- * Backward-compatible cn() wrapper.
- * During migration, files that still use cn() can import from here.
- * After migration, this will be removed.
- */
-export { cn } from './utils';

@@ -3,7 +3,7 @@
  * Generic multi-step submission form that reuses CMS FieldRenderer.
  */
 
-import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -24,7 +24,6 @@ import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 const SubmitForm = () => {
   const { contentType } = useParams<{ contentType: string }>();
   const navigate = useNavigate();
-  const { _user } = useAuth();
 
   const config = contentType ? submissionRegistry[contentType] : undefined;
 
@@ -55,7 +54,6 @@ interface SubmitFormInnerProps {
 function SubmitFormInner({ config }: SubmitFormInnerProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [_searchParams] = useSearchParams();
   const { user } = useAuth();
   const contentConfig = contentTypeRegistry[config.contentType];
 

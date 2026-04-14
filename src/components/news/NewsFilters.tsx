@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp } from "lucide-react";
+import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { NewsCategory } from "@/hooks/useNews";
 
 type NewsSource = Tables<'news_sources'>;
 
@@ -35,18 +36,22 @@ interface NewsFiltersProps {
     userLocation?: { lat: number; lng: number; };
     dateRange?: { from?: string; to?: string; };
     featured?: boolean;
+    category?: string;
   }) => void;
   trendingTags?: { tag: string; count: number; }[];
   sources?: NewsSource[];
+  categories?: NewsCategory[];
 }
 
 export const NewsFilters = ({
   onFiltersChange,
   trendingTags = [],
-  sources = []
+  sources = [],
+  categories = []
 }: NewsFiltersProps) => {
   const { toast } = useToast();
   const [source, setSource] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
@@ -84,6 +89,7 @@ export const NewsFilters = ({
       userLocation: overrides.userLocation !== undefined ? overrides.userLocation : userLocation,
       dateRange: overrides.dateRange !== undefined ? overrides.dateRange : dateRange,
       featuredOnly: overrides.featuredOnly !== undefined ? overrides.featuredOnly : featuredOnly,
+      category: overrides.selectedCategory !== undefined ? overrides.selectedCategory : selectedCategory,
     };
 
     // Build the filter object
@@ -97,6 +103,7 @@ export const NewsFilters = ({
       filters.userLocation = current.userLocation;
     }
     if (current.featuredOnly) filters.featured = true;
+    if (current.category) filters.category = current.category;
 
     // Convert date range string to from/to
     if (current.dateRange) {
@@ -142,7 +149,13 @@ export const NewsFilters = ({
     }
 
     onFiltersChange(filters);
-  }, [source, selectedTags, selectedCountries, selectedCities, nearMe, userLocation, dateRange, featuredOnly, sources, onFiltersChange]);
+  }, [source, selectedCategory, selectedTags, selectedCountries, selectedCities, nearMe, userLocation, dateRange, featuredOnly, sources, onFiltersChange]);
+
+  const handleCategoryChange = (value: string) => {
+    const newCategory = value === "all" ? "" : value;
+    setSelectedCategory(newCategory);
+    emitFilters({ selectedCategory: newCategory });
+  };
 
   const handleSourceChange = (value: string) => {
     const newSource = value === "all" ? "" : value;
@@ -222,6 +235,7 @@ export const NewsFilters = ({
 
   const clearFilters = () => {
     setSource("");
+    setSelectedCategory("");
     setSelectedTags([]);
     setSelectedCountries([]);
     setSelectedCities([]);
@@ -232,7 +246,7 @@ export const NewsFilters = ({
     onFiltersChange({});
   };
 
-  const hasActiveFilters = source || selectedTags.length > 0 || selectedCountries.length > 0 || selectedCities.length > 0 || nearMe || dateRange || featuredOnly;
+  const hasActiveFilters = source || selectedCategory || selectedTags.length > 0 || selectedCountries.length > 0 || selectedCities.length > 0 || nearMe || dateRange || featuredOnly;
 
   return (
     <Card style={{ position: 'sticky', top: 16 }}>
@@ -250,6 +264,32 @@ export const NewsFilters = ({
         </Box>
 
         <Separator />
+
+        {/* Category Filter */}
+        {categories.length > 0 && (
+          <>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Tag style={{ height: 16, width: 16 }} />
+                <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Category</Box>
+              </Box>
+              <Select value={selectedCategory || "all"} onValueChange={handleCategoryChange}>
+                <SelectTrigger style={{ width: '100%' }}>
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.slug}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Box>
+            <Separator />
+          </>
+        )}
 
         {/* Near Me */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

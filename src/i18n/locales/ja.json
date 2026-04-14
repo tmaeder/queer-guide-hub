@@ -69,7 +69,13 @@
     "community": "コミュニティ",
     "resources": "リソース",
     "legal": "法的事項",
-    "copyright": "© {{year}} 全著作権所有。"
+    "copyright": "© {{year}} 全著作権所有。",
+    "about": "について",
+    "legalLink": "法律",
+    "privacy": "プライバシー",
+    "terms": "利用規約",
+    "contact": "お問い合わせ",
+    "supportUs": "サポートする"
   },
   "trips": {
     "title": "マイトリップ",
@@ -136,7 +142,8 @@
         "berlin": "ベルリン・プライドウィーク",
         "barcelona": "バルセロナ：ビーチ＆ナイトライフ",
         "bangkok": "バンコク＆プーケット エクスプローラー"
-      }
+      },
+      "daysLabel_one": "{{count}} 日"
     },
     "card": {
       "fromDate": "{{date}} から",
@@ -156,7 +163,10 @@
         "safe": "安全な目的地",
         "caution": "現地状況を確認",
         "danger": "この旅程に高リスクの目的地があります"
-      }
+      },
+      "placeCount_one": "{{count}} 件の場所",
+      "dayCount_one": "{{count}} 日",
+      "memberCount_one": "{{count}} 人のメンバー"
     },
     "toast": {
       "created": "旅を作成しました",
@@ -189,7 +199,10 @@
       "progressTooltip": "旅の計画の進捗",
       "days_other": "{{count}}日",
       "placesCount_other": "{{count}}スポット",
-      "daysPlanned_other": "{{count}}日分計画済み"
+      "daysPlanned_other": "{{count}}日分計画済み",
+      "days_one": "{{count}} 日",
+      "placesCount_one": "{{count}} 件の場所",
+      "daysPlanned_one": "{{count}} 日プラン済み"
     },
     "share": {
       "title": "この旅を共有",
@@ -211,7 +224,8 @@
       "deleteTitle": "共有リンクを削除",
       "deleteConfirm": "このリンクを持つ人はアクセスできなくなります。この操作は取り消せません。",
       "expired": "期限切れ",
-      "expiresOn": "{{date}} に期限切れ"
+      "expiresOn": "{{date}} に期限切れ",
+      "activeLinks_one": "{{count}} 件のアクティブリンク"
     },
     "itinerary": {
       "add": "追加",
@@ -293,7 +307,10 @@
         "safe": "LGBTQ+ の受容度は高めです。他の地域と同様、公の場での愛情表現には常識的な配慮を。",
         "caution": "公の場での愛情表現には注意を。現地の都市情報と最新の旅行記を確認してください。",
         "danger": "リスクを真剣に受け止めてください。公の場での愛情表現やマッチングアプリを避け、目立たないようにしましょう。"
-      }
+      },
+      "basedOn_one": "旅行先の {{count}} か国の LGBTQ+ 平等データに基づいています。",
+      "stops_one": "{{count}} 件の滞在先",
+      "warningCount_one": "{{count}} 件の警告"
     },
     "budget": {
       "emptyTitle": "まだ支出がありません",
@@ -319,7 +336,10 @@
         "activities": "アクティビティ",
         "shopping": "ショッピング",
         "other": "その他"
-      }
+      },
+      "splitWays_one": "{{count}} 人で割り勘",
+      "itemsCount_one": "{{count}} 件の支出を記録",
+      "membersCount_one": "{{count}} 人のメンバー"
     },
     "reservations": {
       "emptyTitle": "予約はまだありません",
@@ -546,5 +566,300 @@
     "passkeyEnrolled": "Passkey enabled",
     "continue": "Continue to The Queer Guide",
     "skip": "Skip for now"
+  },
+  "events": {
+    "title": "イベント",
+    "upcoming": "今後のイベント",
+    "past": "過去のイベント",
+    "create": "イベントを作成",
+    "rsvp": "出欠回答",
+    "attending": "参加予定",
+    "interested": "興味あり",
+    "share": "共有",
+    "details": "イベント詳細",
+    "location": "場所",
+    "organizer": "主催者",
+    "free": "無料",
+    "ticketsRequired": "チケットが必要",
+    "soldOut": "完売",
+    "cancelled": "中止"
+  },
+  "venues": {
+    "title": "スポット",
+    "safeSpace": "セーフスペース",
+    "queerOwned": "クィア経営",
+    "queerFriendly": "クィアフレンドリー",
+    "accessibility": "バリアフリー",
+    "verified": "認証済み",
+    "hours": "営業時間",
+    "contact": "お問い合わせ",
+    "directions": "道順",
+    "checkin": "チェックイン",
+    "review": "レビューを書く",
+    "photos": "写真",
+    "amenities": "設備",
+    "services": "サービス"
+  },
+  "marketplace": {
+    "title": "マーケットプレイス",
+    "queerOwned": "クィア経営",
+    "supportLocal": "地元を応援",
+    "handmade": "ハンドメイド",
+    "sustainable": "サステナブル",
+    "addToCart": "カートに追加",
+    "soldOut": "完売",
+    "onSale": "セール中",
+    "newArrival": "新着",
+    "featured": "注目",
+    "reviews": "レビュー"
+  },
+  "profile": {
+    "editProfile": "プロフィールを編集",
+    "pronouns": "代名詞",
+    "location": "場所",
+    "bio": "自己紹介",
+    "interests": "興味・関心",
+    "lookingFor": "探しているもの",
+    "photos": "写真",
+    "settings": "設定",
+    "privacy": "プライバシー",
+    "notifications": "通知",
+    "blockedUsers": "ブロック中のユーザー",
+    "reportUser": "ユーザーを報告",
+    "sendMessage": "メッセージを送る"
+  },
+  "groups": {
+    "title": "グループ",
+    "join": "グループに参加",
+    "leave": "グループを退出",
+    "create": "グループを作成",
+    "members": "メンバー",
+    "admins": "管理者",
+    "posts": "投稿",
+    "events": "イベント",
+    "rules": "グループルール",
+    "private": "非公開",
+    "public": "公開",
+    "invite": "招待"
+  },
+  "messaging": {
+    "messages": "メッセージ",
+    "newMessage": "新しいメッセージ",
+    "sendMessage": "送信",
+    "typing": "入力中…",
+    "online": "オンライン",
+    "lastSeen": "最終ログイン",
+    "delivered": "配信済み",
+    "read": "既読",
+    "block": "ユーザーをブロック",
+    "report": "会話を報告"
+  },
+  "notifications": {
+    "title": "通知",
+    "markRead": "既読にする",
+    "markAllRead": "すべて既読にする",
+    "newMessage": "新しいメッセージ",
+    "newFollow": "新しいフォロワー",
+    "eventInvite": "イベント招待",
+    "groupInvite": "グループ招待",
+    "mentionedYou": "あなたをメンションしました",
+    "likedPost": "あなたの投稿にいいねしました",
+    "commentedOn": "あなたの投稿にコメントしました"
+  },
+  "general": {
+    "yes": "はい",
+    "no": "いいえ",
+    "maybe": "たぶん",
+    "thanks": "ありがとうございます！",
+    "sorry": "ごめんなさい！",
+    "congrats": "おめでとうございます！",
+    "welcome": "ようこそ！",
+    "goodbye": "さようなら！",
+    "loading": "読み込み中…",
+    "error": "エラーが発生しました",
+    "success": "成功しました！",
+    "tryAgain": "もう一度試す",
+    "comingSoon": "近日公開",
+    "underConstruction": "開発中"
+  },
+  "donate": {
+    "title": "queer.guide を支援する",
+    "subtitle": "queer.guide は、世界中の LGBTQ+ コミュニティに安全な場所、イベント、リソースを提供する無料プラットフォームです。あなたのご寄付が運営と誰もが利用できる環境の維持に役立ちます。",
+    "tipJar": "かんたん金額",
+    "customAmount": "カスタム金額",
+    "frequency": "頻度",
+    "one_time": "1回",
+    "month": "毎月",
+    "year": "毎年",
+    "email": "メールアドレス",
+    "name": "名前（任意）",
+    "namePlaceholder": "寄付者一覧に表示する名前",
+    "message": "メッセージ（任意）",
+    "messagePlaceholder": "応援メッセージを残す",
+    "anonymous": "匿名で寄付する",
+    "cta": "{{amount}} を寄付する",
+    "ctaDisabled": "金額を入力してください",
+    "error": "エラーが発生しました。もう一度お試しください。",
+    "donorWall": "最近の支援者",
+    "loadingDonors": "寄付者を読み込み中…",
+    "noDonorsYet": "queer.guide を最初に支援しましょう！",
+    "anonymousDonor": "支援者",
+    "recurring": "定期",
+    "thankYou": "ありがとうございます！",
+    "successMessage": "あなたのご寄付は、世界中の LGBTQ+ コミュニティのために queer.guide を無料で利用可能に保ちます。",
+    "backHome": "ホームに戻る"
+  },
+  "help": {
+    "title": "ヘルプ＆危機ホットライン",
+    "subtitle": "あなたはひとりではありません。ここですぐにサポートを見つけられます。",
+    "meta_description": "世界中の無料・匿名 LGBTQIA+ 危機ホットラインと相談サービス。あなたはひとりではありません。",
+    "emergency_title": "緊急の危険がありますか？",
+    "emergency_body": "すぐに緊急通報してください：112（EU）または 911（米国/カナダ）。一刻を争います。",
+    "filter_country": "国",
+    "filter_country_all": "すべての国",
+    "filter_topic": "トピック",
+    "filter_topic_all": "すべてのトピック",
+    "call_now": "今すぐ電話",
+    "call_aria": "{{name}} に電話 {{phone}}",
+    "hours": "対応時間",
+    "languages": "対応言語",
+    "disclaimer": "Queer Guide は専門的な支援に代わるものではありません。",
+    "no_results": "条件に一致するホットラインがありません。「すべての国」を試すか、国際ディレクトリを確認してください。",
+    "no_results_title": "ホットラインが見つかりません",
+    "search_placeholder": "ホットラインを検索…",
+    "saved_hotlines": "保存したホットライン",
+    "quick_call": "クイック通話",
+    "badge_24_7": "24時間",
+    "badge_free": "無料",
+    "badge_anonymous": "匿名",
+    "save": "ホットラインを保存",
+    "unsave": "保存から削除",
+    "reset_filters": "フィルターをリセット",
+    "related_resources": "関連リソース",
+    "browse_resources": "すべてのリソースを見る",
+    "breadcrumb_resources": "リソース",
+    "breadcrumb_support": "サポート＆ニュース",
+    "breadcrumb_hotlines": "危機ホットライン",
+    "error_title": "ヘルプページを利用できません",
+    "error_body": "緊急の危険がある場合は、最寄りの緊急番号に電話してください：112（EU）または 911（米国/カナダ）。",
+    "topic": {
+      "general": "総合",
+      "crisis": "危機",
+      "suicide": "自殺予防",
+      "lgbtq": "LGBTQIA+",
+      "youth": "青少年",
+      "trans": "トランスジェンダー",
+      "coming-out": "カミングアウト",
+      "violence": "暴力",
+      "discrimination": "差別",
+      "health": "健康",
+      "hiv": "HIV",
+      "legal": "法律",
+      "relationships": "人間関係",
+      "women": "女性"
+    }
+  },
+  "sos": {
+    "button": "SOS",
+    "confirmTitle": "緊急アラートを送信しますか？",
+    "confirmBody": "{{count}} 人の友だち全員にすぐ通知されます。利用可能な場合、現在地が共有されます。",
+    "send": "SOS を送信",
+    "sending": "送信中…",
+    "sent": "{{count}} 人の友だちに緊急アラートを送信しました",
+    "cooldown": "次のアラートを送る前にお待ちください",
+    "noFriends": "SOS を使うには友だちを追加してください",
+    "notificationTitle": "{{name}} からの SOS",
+    "notificationBody": "{{name}} が助けを求めています！確認してください。",
+    "notificationBodyWithLocation": "{{name}} が助けを求めています！位置情報が共有されました。",
+    "error": "アラートの送信に失敗しました。もう一度お試しください。"
+  },
+  "home": {
+    "heroLine1": "発見。",
+    "heroLine2": "つながる。",
+    "heroLine3": "居場所。",
+    "subtitle": "安全なスポット、活気あるイベント、あなたを理解してくれるコミュニティ——どこにいても。",
+    "browseVenues": "スポットを探す",
+    "viewEvents": "イベントを見る",
+    "explore": "探索する",
+    "stats": {
+      "venues": "スポット",
+      "members": "メンバー",
+      "cities": "都市",
+      "events": "イベント"
+    },
+    "features": {
+      "venues": "スポット",
+      "venuesDesc": "ありのままでいられる認証済みクィアフレンドリースペース",
+      "events": "イベント",
+      "eventsDesc": "あなたの地域のオフライン＆オンラインの集まり",
+      "marketplace": "マーケットプレイス",
+      "marketplaceDesc": "クィアが経営するビジネスやクリエイターを応援",
+      "places": "プレイス",
+      "placesDesc": "クィアフレンドリーな都市と国を探索",
+      "hotels": "ホテル",
+      "hotelsDesc": "世界中のウェルカムな宿泊施設",
+      "community": "コミュニティ",
+      "communityDesc": "人々とつながり、グループに参加",
+      "resources": "リソース",
+      "resourcesDesc": "権利・文化・コミュニティサポート"
+    }
+  },
+  "header": {
+    "signInSignUp": "ログイン / 新規登録",
+    "signOut": "ログアウト",
+    "adminConsole": "管理コンソール",
+    "closeMenu": "メニューを閉じる",
+    "openMenu": "メニューを開く",
+    "openNavigation": "ナビゲーションメニューを開く",
+    "openUserMenu": "ユーザーメニューを開く",
+    "selectMode": "モードを選択",
+    "contribute": "貢献する",
+    "submitEvent": "イベントを投稿",
+    "submitVenue": "スポットを投稿",
+    "submitProduct": "商品を投稿",
+    "submitHotel": "ホテルを投稿",
+    "nav": {
+      "discover": "発見",
+      "connect": "つながる",
+      "more": "もっと見る",
+      "venues": "スポット",
+      "events": "イベント",
+      "places": "プレイス",
+      "map": "マップ",
+      "feed": "フィード",
+      "groups": "グループ",
+      "members": "メンバー",
+      "marketplace": "マーケットプレイス",
+      "resources": "リソース",
+      "news": "ニュース",
+      "travel": "旅行",
+      "personalities": "著名人",
+      "hotels": "ホテル",
+      "help": "ヘルプ"
+    },
+    "userMenu": {
+      "myTrips": "マイトリップ",
+      "favorites": "お気に入り",
+      "settings": "設定",
+      "inbox": "受信トレイ",
+      "friends": "友だち",
+      "myGroups": "マイグループ",
+      "accessibility": "アクセシビリティ"
+    },
+    "modes": {
+      "dating": "恋人を探す",
+      "friends": "友だちを作る",
+      "exploration": "シーンを探索",
+      "fun": "楽しみたい",
+      "networking": "ビジネスネットワーキング",
+      "community": "コミュニティづくり"
+    },
+    "legal": {
+      "about": "について",
+      "help": "ヘルプ",
+      "accessibility": "アクセシビリティ",
+      "legal": "法律",
+      "contact": "お問い合わせ"
+    }
   }
 }

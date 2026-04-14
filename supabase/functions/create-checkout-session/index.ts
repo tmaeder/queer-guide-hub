@@ -20,12 +20,25 @@ serve(async (req) => {
       is_anonymous = false,
     } = await req.json();
 
+    // Stripe zero-decimal currencies (amount IS the charge, no minor units)
+    const ZERO_DECIMAL = new Set([
+      "bif","clp","djf","gnf","jpy","kmf","krw","mga",
+      "pyg","rwf","ugx","vnd","vuv","xaf","xof","xpf",
+    ]);
+    const isZeroDecimal = ZERO_DECIMAL.has((currency || "usd").toLowerCase());
+    const minAmount = isZeroDecimal ? 1 : 100; // 1 JPY or 100 cents ($1.00)
+
     // Validate required fields
     if (!email || typeof email !== "string") {
       return errorResponse("Email is required", 400, req);
     }
-    if (!amount || typeof amount !== "number" || amount < 100) {
-      return errorResponse("Amount must be at least 100 cents ($1.00)", 400, req);
+    if (!amount || typeof amount !== "number" || amount < minAmount) {
+      return errorResponse(
+        isZeroDecimal
+          ? `Amount must be at least 1 ${(currency || "usd").toUpperCase()}`
+          : "Amount must be at least 100 cents ($1.00)",
+        400, req,
+      );
     }
     if (amount > 99999900) {
       return errorResponse("Amount exceeds maximum", 400, req);

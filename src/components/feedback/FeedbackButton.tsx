@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { MessageSquarePlus, Bug, Lightbulb, Sparkles, BookOpen, Check, Camera } from 'lucide-react';
+import { MessageSquarePlus, Check, Camera } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import Fab from '@mui/material/Fab';
@@ -21,13 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { captureContext, captureScreenshot } from '@/utils/feedbackContext';
-
-const categories = [
-  { value: 'bug', label: 'Bug', icon: Bug, color: '#ef4444' },
-  { value: 'idea', label: 'Idea', icon: Lightbulb, color: '#f59e0b' },
-  { value: 'improvement', label: 'Improvement', icon: Sparkles, color: '#8b5cf6' },
-  { value: 'content-idea', label: 'Content Idea', icon: BookOpen, color: '#0ea5e9' },
-] as const;
+import { feedbackCategories } from '@/config/feedbackCategories';
 
 export function FeedbackButton() {
   const { user } = useAuth();
@@ -35,13 +29,8 @@ export function FeedbackButton() {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [email, setEmail] = useState('');
-  const [honeypot, setHoneypot] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [form, setForm] = useState({ category: '', title: '', description: '', email: '', honeypot: '' });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
   const [includeScreenshot, setIncludeScreenshot] = useState(false);
   const [pageUrl, setPageUrl] = useState('');
 
@@ -52,16 +41,12 @@ export function FeedbackButton() {
 
   // Default screenshot toggle to ON when category is 'bug'
   useEffect(() => {
-    if (category === 'bug') setIncludeScreenshot(true);
-  }, [category]);
+    if (form.category === 'bug') setIncludeScreenshot(true);
+  }, [form.category]);
 
   const reset = useCallback(() => {
-    setCategory('');
-    setTitle('');
-    setDescription('');
-    setEmail('');
-    setHoneypot('');
-    setIsSubmitted(false);
+    setForm({ category: '', title: '', description: '', email: '', honeypot: '' });
+    setStatus('idle');
     setIncludeScreenshot(false);
   }, []);
 
@@ -72,51 +57,59 @@ export function FeedbackButton() {
   }, [reset]);
 
   const handleSubmit = useCallback(async () => {
-    if (honeypot) return;
-    if (!category || !title.trim() || !description.trim()) {
+    if (form.honeypot) return;
+    if (!form.category || !form.title.trim() || !form.description.trim()) {
       toast({ title: 'Please fill in all required fields', variant: 'destructive' });
       return;
     }
 
-    setIsSubmitting(true);
+    setStatus('submitting');
     try {
-      // Capture browser context synchronously BEFORE the dialog modifies the DOM
       const context = captureContext();
 
-      // Optionally capture and upload screenshot
-      let screenshotUrl: string | null = null;
-      if (includeScreenshot) {
-        // Close dialog visually before screenshot so it's not in the image
-        const blob = await captureScreenshot();
-        if (blob) {
-          const fileName = `${crypto.randomUUID()}.jpg`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('feedback-screenshots')
-            .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
-          if (!uploadError && uploadData) {
+      // Upload screenshot in parallel with DB insert
+      const screenshotPromise = includeScreenshot
+        ? captureScreenshot().then(async (blob) => {
+            if (!blob) return null;
+            const fileName = `${crypto.randomUUID()}.jpg`;
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('feedback-screenshots')
+              .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
+            if (uploadError || !uploadData) return null;
             const { data: publicUrl } = supabase.storage
               .from('feedback-screenshots')
               .getPublicUrl(uploadData.path);
-            screenshotUrl = publicUrl.publicUrl;
-          }
-        }
-      }
+            return publicUrl.publicUrl;
+          })
+        : Promise.resolve(null);
 
-      const { error } = await supabase.from('community_submissions' as const).insert({
+      const insertPromise = supabase.from('community_submissions' as const).insert({
         content_type: 'feedback',
         data: {
-          title: title.trim(),
-          description: description.trim(),
-          category,
-          contact_email: email.trim() || null,
+          title: form.title.trim(),
+          description: form.description.trim(),
+          category: form.category,
+          contact_email: form.email.trim() || null,
           context,
-          screenshot_url: screenshotUrl,
+          screenshot_url: null, // updated below if screenshot succeeds
         },
         submitted_by: user?.id || null,
       });
+
+      const [screenshotUrl, { error }] = await Promise.all([screenshotPromise, insertPromise]);
       if (error) throw error;
 
-      setIsSubmitted(true);
+      // If screenshot uploaded, update the submission with the URL
+      if (screenshotUrl) {
+        await supabase
+          .from('community_submissions' as const)
+          .update({ data: { title: form.title.trim(), description: form.description.trim(), category: form.category, contact_email: form.email.trim() || null, context, screenshot_url: screenshotUrl } })
+          .eq('submitted_by', user?.id ?? '')
+          .order('created_at', { ascending: false })
+          .limit(1);
+      }
+
+      setStatus('submitted');
       toast({ title: 'Feedback submitted! Thank you.' });
     } catch (err: unknown) {
       toast({
@@ -124,10 +117,9 @@ export function FeedbackButton() {
         description: err instanceof Error ? err.message : 'Please try again.',
         variant: 'destructive',
       });
-    } finally {
-      setIsSubmitting(false);
+      setStatus('idle');
     }
-  }, [category, title, description, email, honeypot, includeScreenshot, user, toast]);
+  }, [form, includeScreenshot, user, toast]);
 
   return (
     <>
@@ -152,7 +144,7 @@ export function FeedbackButton() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent style={{ maxWidth: 480 }}>
-          {isSubmitted ? (
+          {status === 'submitted' ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Box
                 sx={{
@@ -199,13 +191,13 @@ export function FeedbackButton() {
               <Box sx={{ mb: 2 }}>
                 <Label>What type of feedback?</Label>
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mt: 1 }}>
-                  {categories.map((cat) => {
+                  {feedbackCategories.map((cat) => {
                     const Icon = cat.icon;
-                    const selected = category === cat.value;
+                    const selected = form.category === cat.value;
                     return (
                       <Box
                         key={cat.value}
-                        onClick={() => setCategory(cat.value)}
+                        onClick={() => setForm((f) => ({ ...f, category: cat.value }))}
                         sx={{
                           p: 1.5,
                           borderRadius: 1.5,
@@ -236,8 +228,8 @@ export function FeedbackButton() {
                 <Input
                   id="feedback-title"
                   placeholder="Brief summary of your feedback"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={form.title}
+                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   maxLength={200}
                   style={{ marginTop: 4 }}
                 />
@@ -249,9 +241,9 @@ export function FeedbackButton() {
                 <Textarea
                   id="feedback-desc"
                   placeholder="Tell us more..."
-                  value={description}
+                  value={form.description}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                    setDescription(e.target.value)
+                    setForm((f) => ({ ...f, description: e.target.value }))
                   }
                   style={{ marginTop: 4, minHeight: 100 }}
                 />
@@ -265,8 +257,8 @@ export function FeedbackButton() {
                     id="feedback-email"
                     type="email"
                     placeholder="So we can follow up"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                     style={{ marginTop: 4 }}
                   />
                 </Box>
@@ -322,8 +314,8 @@ export function FeedbackButton() {
               <input
                 type="text"
                 name="website"
-                value={honeypot}
-                onChange={(e) => setHoneypot(e.target.value)}
+                value={form.honeypot}
+                onChange={(e) => setForm((f) => ({ ...f, honeypot: e.target.value }))}
                 style={{ position: 'absolute', left: -9999, opacity: 0, height: 0 }}
                 tabIndex={-1}
                 autoComplete="off"
@@ -337,9 +329,9 @@ export function FeedbackButton() {
                   </Button>
                   <Button
                     onClick={handleSubmit}
-                    disabled={isSubmitting || !category || !title.trim() || !description.trim()}
+                    disabled={status === 'submitting' || !form.category || !form.title.trim() || !form.description.trim()}
                   >
-                    {isSubmitting ? 'Submitting...' : 'Submit'}
+                    {status === 'submitting' ? 'Submitting...' : 'Submit'}
                   </Button>
                 </Box>
               </DialogFooter>

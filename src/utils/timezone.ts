@@ -109,3 +109,20 @@ export function isValidTimezone(tz: string): boolean {
     return false;
   }
 }
+
+/**
+ * Compact relative time string: "just now", "5m ago", "3h ago", "2d ago", "1mo ago".
+ * For dates older than 30 days, falls back to localized date string.
+ */
+export function timeAgo(dateStr: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+  return new Date(dateStr).toLocaleDateString();
+}

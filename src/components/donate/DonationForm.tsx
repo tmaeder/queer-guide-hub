@@ -11,6 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCreateCheckoutSession } from '@/hooks/useDonations';
 import { useAuth } from '@/hooks/useAuth';
+import { useCurrency } from '@/hooks/useCurrency';
+import { getCurrencySymbol } from '@/lib/currency';
 import { toast } from 'sonner';
 import { hapticTrigger } from '@/hooks/useHaptics';
 
@@ -20,6 +22,7 @@ const FREQUENCY_OPTIONS = ['one_time', 'month', 'year'] as const;
 export function DonationForm() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { currency, formatPriceCents } = useCurrency();
   const checkout = useCreateCheckoutSession();
 
   const [selectedTip, setSelectedTip] = useState<number | null>(null);
@@ -51,7 +54,7 @@ export function DonationForm() {
     try {
       const url = await checkout.mutateAsync({
         amount: amountCents,
-        currency: 'usd',
+        currency: currency.toLowerCase(),
         donation_type: frequency === 'one_time' ? 'one_time' : 'recurring',
         interval: frequency !== 'one_time' ? frequency : undefined,
         donor_name: donorName || undefined,
@@ -65,7 +68,7 @@ export function DonationForm() {
     }
   };
 
-  const fmt = (cents: number) => `$${(cents / 100).toFixed(0)}`;
+  const fmt = (cents: number) => formatPriceCents(cents);
 
   return (
     <Card>
@@ -92,7 +95,7 @@ export function DonationForm() {
         {/* Custom amount */}
         <Box>
           <Label htmlFor="custom-amount">
-            {t('donate.customAmount', 'Custom amount (USD)')}
+            {t('donate.customAmount', 'Custom amount')} ({currency})
           </Label>
           <Box sx={{ position: 'relative', mt: 0.5 }}>
             <Box
@@ -107,7 +110,7 @@ export function DonationForm() {
                 zIndex: 1,
               }}
             >
-              $
+              {getCurrencySymbol(currency)}
             </Box>
             <Input
               id="custom-amount"

@@ -9,30 +9,13 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
 import {
   loadModuleConfig, checkRateLimit, writeChanges, logRun,
-  getContentName, CONTENT_TYPE_CONFIG,
+  getContentName, CONTENT_TYPE_CONFIG, COUNTRY_ALIASES,
   type ProposedChange, type AutomationRule,
 } from '../_shared/automation-utils.ts'
 
 const MODULE_SLUG = 'data-normalizer'
 
 // ── Normalization functions ─────────────────────────────────────────────────────
-
-// Common country name corrections
-const COUNTRY_ALIASES: Record<string, string> = {
-  'usa': 'United States', 'us': 'United States', 'u.s.': 'United States', 'u.s.a.': 'United States',
-  'america': 'United States', 'the united states of america': 'United States',
-  'uk': 'United Kingdom', 'u.k.': 'United Kingdom', 'great britain': 'United Kingdom',
-  'england': 'United Kingdom', 'britain': 'United Kingdom',
-  'deutschland': 'Germany', 'alemania': 'Germany', 'allemagne': 'Germany',
-  'brasil': 'Brazil', 'españa': 'Spain', 'espana': 'Spain',
-  'france': 'France', 'italia': 'Italy', 'italy': 'Italy',
-  'nederland': 'Netherlands', 'holland': 'Netherlands', 'the netherlands': 'Netherlands',
-  'schweiz': 'Switzerland', 'suisse': 'Switzerland', 'svizzera': 'Switzerland',
-  'österreich': 'Austria', 'osterreich': 'Austria',
-  'méxico': 'Mexico', 'mexico': 'Mexico',
-  'türkei': 'Turkey', 'turkei': 'Turkey', 'türkiye': 'Turkey', 'turkiye': 'Turkey',
-  'česko': 'Czech Republic', 'cesko': 'Czech Republic', 'czechia': 'Czech Republic',
-}
 
 function normalizeEmail(email: string): { value: string; changed: boolean; reason: string } {
   const trimmed = email.trim()

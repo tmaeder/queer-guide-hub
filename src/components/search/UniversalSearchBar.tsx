@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { formatCurrency } from '@/lib/currency';
 import { useNavigate, useLocation } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -271,7 +272,7 @@ export const UniversalSearchBar = () => {
     const parts = [];
     if (result.category) parts.push(result.category);
     if (result.location) parts.push(result.location);
-    if (result.price) parts.push(`$${result.price}`);
+    if (result.price) parts.push(formatCurrency(result.price));
     if (result.date) parts.push(new Date(result.date).toLocaleDateString());
     return parts.join(' • ');
   };

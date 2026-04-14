@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCurrency } from '@/lib/currency';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { MotionCard as Card } from '@/components/ui/card';
@@ -61,7 +62,7 @@ export function MarketplaceCard({
       return 'Price varies';
     }
 
-    const price = `$${listing.price}`;
+    const price = formatCurrency(listing.price, listing.currency || 'USD');
 
     switch (listing.price_type) {
       case 'starting_at':

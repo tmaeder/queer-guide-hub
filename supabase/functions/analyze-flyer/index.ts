@@ -11,39 +11,13 @@
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
 
 const CF_ACCOUNT_ID = '7aa3765cc5f50f2b681b782eb4a8d296'
 const CF_VISION_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.2-11b-vision-instruct`
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
-
-// ── Country alias map (reused from geo-link-content) ──────────────────────
-
-const COUNTRY_ALIASES: Record<string, string> = {
-  'us': 'United States', 'gb': 'United Kingdom', 'de': 'Germany',
-  'fr': 'France', 'es': 'Spain', 'it': 'Italy', 'nl': 'Netherlands',
-  'ch': 'Switzerland', 'at': 'Austria', 'au': 'Australia',
-  'ca': 'Canada', 'br': 'Brazil', 'mx': 'Mexico', 'jp': 'Japan',
-  'za': 'South Africa', 'nz': 'New Zealand', 'il': 'Israel',
-  'th': 'Thailand', 'pt': 'Portugal', 'be': 'Belgium',
-  'se': 'Sweden', 'dk': 'Denmark', 'no': 'Norway', 'fi': 'Finland',
-  'ie': 'Ireland', 'cz': 'Czech Republic', 'tw': 'Taiwan',
-  'ar': 'Argentina', 'co': 'Colombia', 'cl': 'Chile', 'pe': 'Peru',
-  'in': 'India', 'cn': 'China', 'kr': 'South Korea', 'ru': 'Russia',
-  'tr': 'Turkey', 'gr': 'Greece', 'pl': 'Poland', 'ro': 'Romania',
-  'hu': 'Hungary', 'ph': 'Philippines', 'id': 'Indonesia',
-  'usa': 'United States', 'uk': 'United Kingdom',
-  'united states of america': 'United States',
-  'great britain': 'United Kingdom', 'england': 'United Kingdom',
-  'scotland': 'United Kingdom', 'wales': 'United Kingdom',
-  'holland': 'Netherlands', 'the netherlands': 'Netherlands',
-  'czechia': 'Czech Republic',
-  'republic of korea': 'South Korea', 'korea': 'South Korea',
-  'deutschland': 'Germany', 'schweiz': 'Switzerland', 'suisse': 'Switzerland',
-  'österreich': 'Austria', 'españa': 'Spain', 'italia': 'Italy',
-  'brasil': 'Brazil', 'méxico': 'Mexico', 'france': 'France',
-}
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -310,7 +284,7 @@ function pickVenueFieldsForEvent(venueFields: Record<string, unknown> | undefine
 
 async function resolveCountry(
   name: string | null | undefined,
-  supabase: unknown,
+  supabase: SupabaseClient,
 ): Promise<{ id: string; name: string } | null> {
   if (!name) return null
   const normalized = name.trim().toLowerCase()
@@ -342,7 +316,7 @@ async function resolveCountry(
 async function resolveCity(
   name: string | null | undefined,
   countryId: string | null,
-  supabase: unknown,
+  supabase: SupabaseClient,
 ): Promise<{ id: string; name: string } | null> {
   if (!name) return null
   const trimmed = name.trim()
@@ -373,7 +347,7 @@ async function resolveCity(
 async function matchVenues(
   venueName: string | null | undefined,
   cityId: string | null,
-  supabase: unknown,
+  supabase: SupabaseClient,
 ): Promise<VenueCandidate[]> {
   if (!venueName || venueName.trim().length < 2) return []
 
@@ -412,7 +386,8 @@ async function matchVenues(
     if (cityId) query = query.eq('city_id', cityId)
 
     const { data: fallbackData } = await query
-    return (fallbackData || []).map((v: unknown) => ({
+    // deno-lint-ignore no-explicit-any
+    return (fallbackData || []).map((v: any) => ({
       ...v,
       score: v.name.toLowerCase() === name.toLowerCase() ? 1.0 : 0.5,
     }))
@@ -425,7 +400,7 @@ async function checkEventDuplicates(
   title: string | null | undefined,
   startDate: string | null | undefined,
   cityId: string | null,
-  supabase: unknown,
+  supabase: SupabaseClient,
 ): Promise<Array<{ id: string; title: string; start_date: string; score: number }>> {
   if (!title || !startDate) return []
 
@@ -438,7 +413,8 @@ async function checkEventDuplicates(
     .lte('start_date', new Date(new Date(startDate).getTime() + 86400000).toISOString())
     .limit(5)
 
-  return (data || []).map((e: unknown) => ({
+  // deno-lint-ignore no-explicit-any
+  return (data || []).map((e: any) => ({
     ...e,
     score: e.title.toLowerCase() === title.toLowerCase() ? 1.0 : 0.6,
   }))
@@ -447,7 +423,7 @@ async function checkEventDuplicates(
 async function checkVenueDuplicates(
   name: string | null | undefined,
   cityId: string | null,
-  supabase: unknown,
+  supabase: SupabaseClient,
 ): Promise<Array<{ id: string; name: string; score: number }>> {
   if (!name) return []
 
@@ -460,12 +436,13 @@ async function checkVenueDuplicates(
   if (cityId) query = query.eq('city_id', cityId)
 
   const { data } = await query
-  return (data || []).map((v: unknown) => ({ ...v, score: 0.9 }))
+  // deno-lint-ignore no-explicit-any
+  return (data || []).map((v: any) => ({ ...v, score: 0.9 }))
 }
 
 // ── Rate Limiting ─────────────────────────────────────────────────────────
 
-async function checkRateLimit(userId: string, supabase: unknown): Promise<boolean> {
+async function checkRateLimit(userId: string, supabase: SupabaseClient): Promise<boolean> {
   const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
   const { count } = await supabase
     .from('flyer_scans')
@@ -492,11 +469,12 @@ async function fetchImageAsBase64(imageUrl: string): Promise<string> {
     throw new Error('Image too large (max 20MB)')
   }
   const uint8 = new Uint8Array(buffer)
-  let binary = ''
-  for (let i = 0; i < uint8.length; i++) {
-    binary += String.fromCharCode(uint8[i])
+  // Encode in 32KB chunks to avoid call stack limits and O(n²) string concat
+  const chunks: string[] = []
+  for (let i = 0; i < uint8.length; i += 32768) {
+    chunks.push(String.fromCharCode(...uint8.subarray(i, i + 32768)))
   }
-  const base64 = btoa(binary)
+  const base64 = btoa(chunks.join(''))
 
   // Detect MIME type from URL or default to jpeg
   const ext = imageUrl.split('.').pop()?.split('?')[0]?.toLowerCase()
@@ -582,27 +560,30 @@ serve(async (req) => {
         const cityName = item.fields.city?.value as string || hint_city
         const matchedCity = await resolveCity(cityName, matchedCountry?.id || null, supabase)
 
+        const cityId = matchedCity?.id || null
         const venueName = item.detected_type === 'event'
           ? item.fields.venue_name?.value as string
           : item.fields.name?.value as string
-        const venueCandidates = await matchVenues(venueName, matchedCity?.id || null, supabase)
 
-        const duplicateEvents = item.detected_type === 'event'
-          ? await checkEventDuplicates(
-              item.fields.title?.value as string,
-              item.fields.start_date?.value as string,
-              matchedCity?.id || null,
-              supabase,
-            )
-          : []
-
-        const duplicateVenues = item.detected_type === 'venue'
-          ? await checkVenueDuplicates(
-              item.fields.name?.value as string,
-              matchedCity?.id || null,
-              supabase,
-            )
-          : []
+        // These three checks only depend on cityId — run in parallel
+        const [venueCandidates, duplicateEvents, duplicateVenues] = await Promise.all([
+          matchVenues(venueName, cityId, supabase),
+          item.detected_type === 'event'
+            ? checkEventDuplicates(
+                item.fields.title?.value as string,
+                item.fields.start_date?.value as string,
+                cityId,
+                supabase,
+              )
+            : [],
+          item.detected_type === 'venue'
+            ? checkVenueDuplicates(
+                item.fields.name?.value as string,
+                cityId,
+                supabase,
+              )
+            : [],
+        ])
 
         return {
           detected_type: item.detected_type,

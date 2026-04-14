@@ -1,4 +1,5 @@
 import React, { memo, useState } from 'react';
+import { formatCurrency } from '@/lib/currency';
 import { Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -132,11 +133,11 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
     if (event.is_free) return 'Free';
     if (event.price_min && event.price_max) {
       if (event.price_min === event.price_max) {
-        return `$${event.price_min}`;
+        return formatCurrency(event.price_min, event.currency);
       }
-      return `$${event.price_min} - $${event.price_max}`;
+      return `${formatCurrency(event.price_min, event.currency)} - ${formatCurrency(event.price_max, event.currency)}`;
     }
-    if (event.price_min) return `From $${event.price_min}`;
+    if (event.price_min) return `From ${formatCurrency(event.price_min, event.currency)}`;
     return null;
   };
 
