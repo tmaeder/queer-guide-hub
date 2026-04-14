@@ -182,7 +182,13 @@ async function handleBackfill(request: Request, env: Env, ctx: ExecutionContext)
 
 	// Advance cursor synchronously so caller can immediately page next.
 	const lastIdSync = rows.length ? rows[rows.length - 1].id : cursor;
-	if (lastIdSync) await env.INGEST_STATE.put(cursorKey, lastIdSync);
+	if (lastIdSync) {
+		try {
+			await env.INGEST_STATE.put(cursorKey, lastIdSync);
+		} catch (e) {
+			console.warn("INGEST_STATE put skipped", (e as Error)?.message);
+		}
+	}
 
 	// Run actual indexing in background.
 	ctx.waitUntil(
