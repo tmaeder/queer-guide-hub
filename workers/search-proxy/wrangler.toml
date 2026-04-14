@@ -1,0 +1,11 @@
+name = "queer-guide-search-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat_v2"]
+
+[vars]
+ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:5173,http://localhost:8080"
+
+# Set these via `wrangler secret put`:
+# wrangler secret put MEILISEARCH_URL
+# wrangler secret put MEILISEARCH_SEARCH_KEY
