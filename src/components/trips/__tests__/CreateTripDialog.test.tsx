@@ -197,7 +197,7 @@ describe('CreateTripDialog', () => {
         }),
       );
       await waitFor(() => {
-        expect(navigateSpy).toHaveBeenCalledWith('/trips/trip-99');
+        expect(navigateSpy.mock.calls[0][0]).toBe('/trips/trip-99');
       });
       expect(onClose).toHaveBeenCalled();
       expect(toastSpy).toHaveBeenCalledWith(

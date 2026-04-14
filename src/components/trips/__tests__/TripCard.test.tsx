@@ -206,21 +206,21 @@ describe('TripCard', () => {
       fireEvent.click(
         screen.getByRole('link', { name: /trips\.card\.ariaLabel/ }),
       );
-      expect(navigateSpy).toHaveBeenCalledWith('/trips/trip-42');
+      expect(navigateSpy.mock.calls[0][0]).toBe('/trips/trip-42');
     });
 
     it('navigates on Enter key press', () => {
       renderWithProviders(<TripCard trip={makeTrip({ id: 'trip-42' })} />);
       const card = screen.getByRole('link', { name: /trips\.card\.ariaLabel/ });
       fireEvent.keyDown(card, { key: 'Enter' });
-      expect(navigateSpy).toHaveBeenCalledWith('/trips/trip-42');
+      expect(navigateSpy.mock.calls[0][0]).toBe('/trips/trip-42');
     });
 
     it('navigates on Space key press', () => {
       renderWithProviders(<TripCard trip={makeTrip({ id: 'trip-42' })} />);
       const card = screen.getByRole('link', { name: /trips\.card\.ariaLabel/ });
       fireEvent.keyDown(card, { key: ' ' });
-      expect(navigateSpy).toHaveBeenCalledWith('/trips/trip-42');
+      expect(navigateSpy.mock.calls[0][0]).toBe('/trips/trip-42');
     });
 
     it('does not navigate on other keys', () => {

@@ -21,7 +21,7 @@ export function SimilarCities({ cityId, cityName, countryId, equalityScore, lati
     queryKey: ['similar-cities', cityId, countryId, limit],
     queryFn: async () => {
       // Find cities with similar characteristics
-      let query = supabase
+      const query = supabase
         .from('cities')
         .select('id, name, population, countries:country_id(name, equality_score)')
         .neq('id', cityId)

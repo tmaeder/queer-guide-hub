@@ -42,7 +42,7 @@ describe('StartConversationButton', () => {
     render(<StartConversationButton userId="other" userName="Alex" />);
     fireEvent.click(screen.getByText('Send DM'));
     await waitFor(() => expect(mockStartConversation).toHaveBeenCalledWith('other'));
-    expect(mockNavigate).toHaveBeenCalledWith('/messages?conversation=conv-123');
+    expect(mockNavigate.mock.calls[0][0]).toBe('/messages?conversation=conv-123');
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Success' }));
   });
 
