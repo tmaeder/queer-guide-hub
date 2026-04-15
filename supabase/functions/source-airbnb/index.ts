@@ -23,12 +23,17 @@ const airbnbAdapter: SourceAdapter = {
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
     const supabase = getServiceClient()
     const limit    = config.batchSize || 200
-    // Caller MUST supply specific stays_sitemap URLs (sub-sitemaps from the index)
-    // since the master index is gzipped and we don't gunzip in the edge runtime.
-    const sitemaps = (config.filters?.sitemaps as string[]) ?? []
+    // Either caller supplies sub-sitemaps explicitly, or we discover them
+    // by gunzipping the master index (Deno supports DecompressionStream).
+    let sitemaps = (config.filters?.sitemaps as string[]) ?? []
     if (sitemaps.length === 0) {
-      throw new Error('source-airbnb: provide filters.sitemaps[] (uncompressed sub-sitemap URLs from ' + SITEMAP_INDEX + ')')
+      sitemaps = await discoverSubSitemaps(supabase)
+      if (sitemaps.length === 0) {
+        throw new Error('source-airbnb: master sitemap returned no stays sub-sitemaps')
+      }
     }
+    const maxSubSitemaps = Math.max(1, Number(config.filters?.max_sitemaps ?? 5))
+    sitemaps = sitemaps.slice(0, maxSubSitemaps)
 
     const items: RawItem[] = []
     for (const sm of sitemaps) {
@@ -77,6 +82,21 @@ const airbnbAdapter: SourceAdapter = {
   },
 
   getSourceId(raw: RawItem): string { return raw.sourceId },
+}
+
+/** Fetch + gunzip the master sitemap index, return sub-sitemap URLs that look
+ * like stays/listings (filter out generic categories). */
+async function discoverSubSitemaps(supabase: ReturnType<typeof getServiceClient>): Promise<string[]> {
+  return await withCircuitBreaker(supabase, 'airbnb', async () => {
+    const res = await fetch(SITEMAP_INDEX, { headers: { 'user-agent': UA } })
+    if (res.status === 403 || res.status === 429) throw new Error(`airbnb_blocked_${res.status}`)
+    if (!res.ok || !res.body) throw new Error(`airbnb_index_${res.status}`)
+    const ds = new DecompressionStream('gzip')
+    const xml = await new Response(res.body.pipeThrough(ds)).text()
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim())
+    // Prefer sitemaps for stays / homes (skip experiences, neighborhoods).
+    return locs.filter(u => /stays?|homes?|listings?|rooms?/i.test(u))
+  })
 }
 
 Deno.serve(async (req) => {

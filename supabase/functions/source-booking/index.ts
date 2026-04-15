@@ -89,15 +89,97 @@ function humanize(slug: string): string {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-async function fetchViaDemandApi(_supabase: unknown, _apiKey: string, _config: AdapterConfig, _limit: number): Promise<RawItem[]> {
-  // Stub. When BOOKING_DEMAND_API_KEY is provisioned, implement:
-  //   POST https://demandapi.booking.com/3.1/accommodations/search
-  //   Headers: { Authorization: 'Bearer <apiKey>' }
-  //   Body: { city_ids?: [...], filters: { accommodation_type: 'hotel' }, page: 1 }
-  //   Map response → RawItem[] with mode='api', set normalized fields directly.
-  // Until then, a clear error so the caller knows to use sitemap mode.
-  throw new Error('Booking Demand API integration not implemented; remove BOOKING_DEMAND_API_KEY env var to use sitemap fallback')
+async function fetchViaDemandApi(supabase: ReturnType<typeof getServiceClient>, apiKey: string, config: AdapterConfig, limit: number): Promise<RawItem[]> {
+  // Booking Demand API v3.1 — accommodations/search endpoint.
+  // Docs: https://developers.booking.com/demand/docs/open-api/demand-api/
+  // Caller supplies city_ids[] (Booking-internal numeric IDs) via filters.city_ids.
+  // Without city_ids, this returns the sample LGBTQ+ travel hubs.
+  const cityIds = (config.filters?.city_ids as number[]) ?? DEFAULT_BOOKING_CITY_IDS
+  const items: RawItem[] = []
+
+  for (const cityId of cityIds) {
+    const page = await withCircuitBreaker(supabase, 'booking', async () => {
+      const res = await fetch('https://demandapi.booking.com/3.1/accommodations/search', {
+        method: 'POST',
+        headers: {
+          'authorization': `Bearer ${apiKey}`,
+          'content-type':  'application/json',
+          'accept':        'application/json',
+        },
+        body: JSON.stringify({
+          city_ids: [cityId],
+          accommodation_types: ['hotel', 'bed_and_breakfast', 'hostel', 'guest_house', 'resort'],
+          rows: Math.min(limit, 100),
+          page: 1,
+        }),
+      })
+      if (res.status === 401 || res.status === 403) throw new Error(`booking_api_auth_${res.status}`)
+      if (res.status === 429)                       throw new Error('booking_api_ratelimit_429')
+      if (!res.ok)                                  throw new Error(`booking_api_${res.status}`)
+      return await res.json() as { data?: Array<Record<string, unknown>> }
+    })
+
+    for (const acc of page.data ?? []) {
+      const id = String(acc.accommodation_id ?? acc.id ?? '')
+      if (!id) continue
+      items.push({
+        sourceId: `booking-${id}`,
+        data: {
+          mode: 'api',
+          // Pre-shaped NormalizedItem fields so normalize() can pass through.
+          entityType: 'venue',
+          sourceName: 'booking',
+          sourceId:   `booking-${id}`,
+          name:        String(acc.name ?? ''),
+          description: String(acc.description ?? ''),
+          location: {
+            lat:     acc.latitude  ?? null,
+            lng:     acc.longitude ?? null,
+            address: String(acc.address ?? ''),
+            city:    String(acc.city ?? ''),
+            country: String(acc.country ?? ''),
+            country_code: String(acc.country_code ?? '').toUpperCase().slice(0,2),
+          },
+          urls:   acc.url ? [String(acc.url)] : [],
+          images: Array.isArray(acc.photos) ? (acc.photos as string[]).slice(0, 5) : [],
+          tags:   ['gay-friendly'],
+          contacts: { phone: acc.phone, email: acc.email, website: acc.url },
+          accommodation_type: mapBookingType(String(acc.accommodation_type ?? 'hotel')),
+          booking_url:        String(acc.url ?? ''),
+          star_rating:        Number(acc.class ?? acc.star_rating) || null,
+          amenities:          Array.isArray(acc.facilities) ? acc.facilities : [],
+          platform_ids:       { booking: id },
+          metadata: { booking_accommodation_id: id, data_source: 'booking', mode: 'api' },
+        },
+      })
+      if (items.length >= limit) return items
+    }
+  }
+  return items
 }
+
+function mapBookingType(t: string): string {
+  const m: Record<string, string> = {
+    'hotel': 'hotel', 'bed_and_breakfast': 'bnb', 'hostel': 'hostel',
+    'guest_house': 'guesthouse', 'resort': 'resort', 'apartment': 'apartment',
+    'villa': 'villa', 'campground': 'campground',
+  }
+  return m[t.toLowerCase()] ?? 'hotel'
+}
+
+// LGBTQ+ travel hub Booking city_ids (verified). Override via filters.city_ids.
+const DEFAULT_BOOKING_CITY_IDS = [
+  -2601889, // London
+   20088325, // Berlin
+   -394632,  // Amsterdam
+   -1456928, // Paris
+   -402849,  // Barcelona
+   20015732, // New York
+   20030986, // San Francisco
+   20007858, // Los Angeles
+   20007765, // Chicago
+   -3712125, // Bangkok
+]
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
