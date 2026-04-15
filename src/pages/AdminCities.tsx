@@ -35,6 +35,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Plus, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { logAdminGeoEdit } from '@/lib/admin-audit';
 
 interface CityRow {
   id: string;
@@ -114,6 +115,7 @@ export default function AdminCities() {
     try {
       const { error } = await supabase.from('cities').delete().eq('id', city.id);
       if (error) throw error;
+      void logAdminGeoEdit('cities', 'delete', city.id, city as unknown as Record<string, unknown>, null);
       toast({ title: 'Success', description: 'City deleted' });
       invalidateTable();
     } catch {
@@ -148,10 +150,12 @@ export default function AdminCities() {
       if (editingCity) {
         const { error } = await supabase.from('cities').update(cityData).eq('id', editingCity.id);
         if (error) throw error;
+        void logAdminGeoEdit('cities', 'update', editingCity.id, editingCity as unknown as Record<string, unknown>, cityData);
         toast({ title: 'Success', description: 'City updated' });
       } else {
-        const { error } = await supabase.from('cities').insert([cityData]);
+        const { data: inserted, error } = await supabase.from('cities').insert([cityData]).select('id').single();
         if (error) throw error;
+        if (inserted?.id) void logAdminGeoEdit('cities', 'create', inserted.id, null, cityData);
         toast({ title: 'Success', description: 'City created' });
       }
       resetForm();
