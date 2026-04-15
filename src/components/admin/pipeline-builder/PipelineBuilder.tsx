@@ -23,9 +23,6 @@ import { usePipelineBuilder, usePipelineNodeTypes, usePipelineDefinitions, type 
 import { usePipelineExecution } from './hooks/usePipelineExecution';
 import { useLatestPipelineRun } from './hooks/usePipelineHistory';
 import { useSearchParams } from 'react-router';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Clock } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 
 const nodeTypes = { baseNode: BaseNode };
 
@@ -92,7 +89,14 @@ function PipelineBuilderInner() {
     const states = latestRun.node_states || {};
     setNodes((current) => current.map((node) => {
       const s = states[node.id];
-      return s ? { ...node, data: { ...node.data, status: s.status, itemsOut: s.items_out } } : node;
+      return s ? { ...node, data: {
+        ...node.data,
+        status: s.status,
+        itemsOut: s.items_out,
+        itemsIn: s.items_in,
+        durationMs: s.duration_ms,
+        errorMessage: s.error,
+      } } : node;
     }));
   }, [latestRun, activeRunId, setNodes]);
 
@@ -296,6 +300,21 @@ function PipelineBuilderInner() {
             </Button>
           )}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#6b7280' }}>
+            {latestRun && !activeRunId && (
+              <Badge
+                variant="outline"
+                className={`text-xs gap-1 ${
+                  latestRun.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' :
+                  latestRun.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200' :
+                  latestRun.status === 'running' ? 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse' :
+                  'bg-gray-50 text-gray-700'
+                }`}
+                title={`Run ${latestRun.id.slice(0, 8)} • ${latestRun.items_succeeded ?? 0}/${latestRun.items_total ?? 0} succeeded${latestRun.error_message ? ` • ${latestRun.error_message}` : ''}`}
+              >
+                <Clock className="h-3 w-3" />
+                Last: {formatDistanceToNow(new Date(latestRun.started_at || latestRun.created_at), { addSuffix: true })} • {latestRun.status}
+              </Badge>
+            )}
             <Badge variant="outline" className="text-xs">{nodes.length} nodes</Badge>
             <Badge variant="outline" className="text-xs">{edges.length} edges</Badge>
             <Separator orientation="vertical" className="h-4 mx-1" />
