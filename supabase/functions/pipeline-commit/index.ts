@@ -1,5 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { logoUrlFromWebsite } from '../_shared/logo-enrichment.ts'
+import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { rpcWithBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 
 // ============================================================
 // Pipeline Commit
@@ -25,7 +27,10 @@ Deno.serve(async (req) => {
     const resolvedTarget = targetTable ?? await detectTarget(supabase, pipelineRunId)
 
     if (resolvedTarget === 'venues' && !dryRun) {
-      const { data, error } = await supabase.rpc('commit_venue_staging_batch', { p_limit: batchSize })
+      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, venue_id: string, action: string }>>(
+        supabase, 'rpc.commit_venue_staging_batch', 'commit_venue_staging_batch', { p_limit: batchSize },
+      )
+      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
       if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
       const rows = (data ?? []) as Array<{ staging_id: string, venue_id: string, action: string }>
       const inserted = rows.filter((r) => r.action === 'inserted').length
@@ -40,7 +45,10 @@ Deno.serve(async (req) => {
     }
 
     if (resolvedTarget === 'countries' && !dryRun) {
-      const { data, error } = await supabase.rpc('commit_country_staging_batch', { p_limit: batchSize })
+      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, country_id: string, action: string }>>(
+        supabase, 'rpc.commit_country_staging_batch', 'commit_country_staging_batch', { p_limit: batchSize },
+      )
+      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
       if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
       const rows = (data ?? []) as Array<{ staging_id: string, country_id: string, action: string }>
       const inserted = rows.filter((r) => r.action === 'inserted').length
@@ -53,7 +61,10 @@ Deno.serve(async (req) => {
     }
 
     if (resolvedTarget === 'cities' && !dryRun) {
-      const { data, error } = await supabase.rpc('commit_city_staging_batch', { p_limit: batchSize })
+      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, city_id: string, action: string }>>(
+        supabase, 'rpc.commit_city_staging_batch', 'commit_city_staging_batch', { p_limit: batchSize },
+      )
+      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
       if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
       const rows = (data ?? []) as Array<{ staging_id: string, city_id: string, action: string }>
       const inserted = rows.filter((r) => r.action === 'inserted').length
@@ -66,7 +77,10 @@ Deno.serve(async (req) => {
     }
 
     if (resolvedTarget === 'personalities' && !dryRun) {
-      const { data, error } = await supabase.rpc('commit_personality_staging_batch', { p_limit: batchSize })
+      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, personality_id: string, action: string }>>(
+        supabase, 'rpc.commit_personality_staging_batch', 'commit_personality_staging_batch', { p_limit: batchSize },
+      )
+      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
       if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
       const rows = (data ?? []) as Array<{ staging_id: string, personality_id: string, action: string }>
       const inserted = rows.filter((r) => r.action === 'inserted').length
@@ -79,10 +93,11 @@ Deno.serve(async (req) => {
     }
 
     if (resolvedTarget === 'marketplace_listings' && !dryRun) {
-      const { data, error } = await supabase.rpc('commit_marketplace_staging_batch', {
-        p_limit: batchSize,
-        p_pipeline_run_id: pipelineRunId ?? null,
-      })
+      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, listing_id: string, action: string }>>(
+        supabase, 'rpc.commit_marketplace_staging_batch', 'commit_marketplace_staging_batch',
+        { p_limit: batchSize, p_pipeline_run_id: pipelineRunId ?? null },
+      )
+      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
       if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
       const rows = (data ?? []) as Array<{ staging_id: string, listing_id: string, action: string }>
       const inserted = rows.filter((r) => r.action === 'inserted').length
@@ -99,7 +114,10 @@ Deno.serve(async (req) => {
     }
 
     if (resolvedTarget === 'events' && !dryRun) {
-      const { data, error } = await supabase.rpc('commit_event_staging_batch', { p_limit: batchSize })
+      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, event_id: string, action: string }>>(
+        supabase, 'rpc.commit_event_staging_batch', 'commit_event_staging_batch', { p_limit: batchSize },
+      )
+      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
       if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
       const rows = (data ?? []) as Array<{ staging_id: string, event_id: string, action: string }>
       const inserted = rows.filter((r) => r.action === 'inserted').length
@@ -129,12 +147,13 @@ Deno.serve(async (req) => {
         return jsonResponse({ success: true, items: 0, message: 'no pending news to commit' }, 200, req)
       }
       let totalInserted = 0, totalUpdated = 0, totalSkipped = 0, totalErrors = 0
+      let circuitTripped = 0
       for (const jid of jobIds) {
-        const { data, error } = await supabase.rpc('news_commit_staging_batch', {
-          p_job_id: jid,
-          p_pipeline_run_id: pipelineRunId ?? null,
-          p_limit: batchSize,
-        })
+        const { data, error, circuitOpen } = await rpcWithBreaker<unknown>(
+          supabase, 'rpc.news_commit_staging_batch', 'news_commit_staging_batch',
+          { p_job_id: jid, p_pipeline_run_id: pipelineRunId ?? null, p_limit: batchSize },
+        )
+        if (circuitOpen) { circuitTripped++; continue }
         if (error) { console.error(`news_commit ${jid}:`, error.message); totalErrors++; continue }
         const row = Array.isArray(data) ? data[0] : data
         totalInserted += row?.inserted ?? 0
@@ -154,9 +173,12 @@ Deno.serve(async (req) => {
     }
 
     // ---- Legacy non-venue path ----
+    // Idempotency: select target_record_id + idempotency_key so we can SKIP
+    // items that were already committed in a prior partial run. Without this,
+    // a retry after a mid-batch failure can re-insert the same record.
     let query = supabase
       .from('ingestion_staging')
-      .select('id, normalized_data, enriched_data, target_table, entity_type, source_type, raw_data')
+      .select('id, normalized_data, enriched_data, target_table, entity_type, source_type, raw_data, target_record_id, idempotency_key, source_name')
       .in('disposition', ['pending'])
       .in('dedup_status', ['unique', 'pending'])
       .order('created_at', { ascending: true })
@@ -177,6 +199,18 @@ Deno.serve(async (req) => {
       try {
         const table = item.target_table || targetTable
         if (!table) { skipped++; continue }
+
+        // Idempotency checkpoint: a partial-failure retry must not re-insert
+        // an item that already has a target_record_id from an earlier run.
+        if (item.target_record_id) {
+          await supabase.from('ingestion_staging').update({
+            disposition: 'committed',
+            processed_at: new Date().toISOString(),
+            updated_at:   new Date().toISOString(),
+          }).eq('id', item.id)
+          skipped++
+          continue
+        }
 
         const normalized = (item.normalized_data ?? {}) as Record<string, unknown>
         const enriched   = (item.enriched_data ?? {}) as Record<string, unknown>
@@ -233,6 +267,7 @@ Deno.serve(async (req) => {
     }, 200, req)
   } catch (error) {
     console.error('pipeline-commit:', error)
+    await logPipelineError(supabase, 'pipeline-commit', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
 })

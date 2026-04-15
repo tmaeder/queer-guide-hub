@@ -8,6 +8,7 @@ import {
   validateHotelNormalized, scoreHotelQuality, hotelReviewDisposition,
 } from '../_shared/hotel-pipeline-utils.ts'
 import { validateMarketplaceNormalized } from '../_shared/marketplace-pipeline-utils.ts'
+import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 
 // ============================================================
 // Pipeline Validate
@@ -44,9 +45,10 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, items: 0, message: 'nothing to validate' }, 200, req)
     }
 
-    let approved = 0, rejected = 0, needsReview = 0
+    let approved = 0, rejected = 0, needsReview = 0, hardFailures = 0
 
     for (const item of items) {
+     try {
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
       const type = item.entity_type || entityType
 
@@ -299,6 +301,29 @@ Deno.serve(async (req) => {
       if (status === 'approved') approved++
       else if (status === 'rejected') rejected++
       else needsReview++
+     } catch (e) {
+      // Per-item isolation: a single bad row (e.g. malformed nested object that
+      // crashes a validator with TypeError) must NOT abort the batch.
+      hardFailures++
+      const msg = (e as Error).message
+      console.error(`validate ${item.id}: ${msg}`)
+      if (!dryRun) {
+        await supabase.from('ingestion_staging').update({
+          ai_validation_status: 'rejected',
+          ai_confidence_score: 0,
+          ai_validation_result: { errors: ['E_VALIDATOR_CRASH'], warnings: [], quality: 0, crash: msg },
+          ai_validated_at: new Date().toISOString(),
+          disposition: 'rejected',
+          error_message: `validate crash: ${msg}`,
+          updated_at: new Date().toISOString(),
+        }).eq('id', item.id)
+        await supabase.from('ingestion_events').insert({
+          staging_id: item.id, stage: 'validate', new_status: 'rejected',
+          actor: 'pipeline-validate', payload: { crash: msg },
+        })
+      }
+      rejected++
+     }
     }
 
     return jsonResponse({
@@ -306,6 +331,7 @@ Deno.serve(async (req) => {
       items: approved + needsReview,
       items_total: items.length,
       items_processed: approved + rejected + needsReview,
+      items_failed: hardFailures,
       items_succeeded: approved,
       items_failed: rejected,
       approved, rejected, needs_review: needsReview,
@@ -313,6 +339,7 @@ Deno.serve(async (req) => {
     }, 200, req)
   } catch (error) {
     console.error('pipeline-validate:', error)
+    await logPipelineError(supabase, 'pipeline-validate', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
 })

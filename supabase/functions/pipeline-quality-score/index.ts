@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { scoreMarketplaceQuality } from '../_shared/marketplace-pipeline-utils.ts'
 
 // ============================================================
 // Pipeline Quality Score Node
@@ -40,7 +41,11 @@ Deno.serve(async (req) => {
       const normalized = (item.normalized_data || {}) as Record<string, unknown>
       const type = item.entity_type || entityType
 
-      const score = computeScore(normalized, type)
+      const score = type === 'personality' || item.target_table === 'personalities'
+        ? computePersonalityScore(normalized)
+        : (type === 'marketplace' || item.target_table === 'marketplace_listings')
+          ? scoreMarketplaceQuality(normalized)
+          : computeScore(normalized, type)
 
       if (!dryRun) {
         await supabase
@@ -109,4 +114,23 @@ function computeScore(data: Record<string, unknown>, _entityType: string): numbe
   }
 
   return Math.min(score, max)
+}
+
+/** Personality rubric: image 15, description 20, lgbti_connection 20, birth_date 10, profession 10, nationality 10, wikidata_qid 15. */
+function computePersonalityScore(data: Record<string, unknown>): number {
+  let score = 0
+  const name = String(data.name || '')
+  if (name.length >= 2) score += 5
+  if (String(data.image_url || '')) score += 15
+  const desc = String(data.description || data.bio || '')
+  if (desc.length > 0) score += 10
+  if (desc.length > 80) score += 10
+  if (String(data.lgbti_connection || '')) score += 20
+  if (data.birth_date) score += 10
+  if (String(data.profession || '')) score += 10
+  if (String(data.nationality || '')) score += 10
+  if (String(data.wikidata_qid || '')) score += 15
+  const fields = data.fields as unknown[] | undefined
+  if (fields && fields.length > 0) score += 5
+  return Math.min(score, 100)
 }
