@@ -1,0 +1,115 @@
+name: Scrape LGBTQ+ Listings
+
+on:
+  schedule:
+    # Daily full refresh at 03:15 UTC
+    - cron: '15 3 * * *'
+    # Hourly events refresh at :30
+    - cron: '30 * * * *'
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source to scrape (leave empty for all)'
+        required: false
+        type: choice
+        options:
+          - all
+          - wikipedia
+          - iglta
+          - outsavvy
+          - travelgay
+          - patroc
+          - misterbnb
+      entity_type:
+        description: 'Entity type (leave empty for all supported types)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - venue
+          - event
+          - place
+          - stay
+      dry_run:
+        description: 'Dry run (no DB writes)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  NODE_ENV: production
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  # SUPABASE_DB_URL is the read/write Postgres URI for the Supabase project;
+  # required when PUBLISH_TO_STAGING=1 so raw entities flow into ingestion_staging
+  # and the unified pipeline (normalize -> validate -> dedup -> review -> commit)
+  # processes them. Set as a GitHub Actions repo secret.
+  SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+  PUBLISH_TO_STAGING: '1'
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  SCRAPER_POLITE_MODE: 'true'
+  SCRAPER_MAX_CONCURRENT_BROWSERS: '2'
+  LOG_LEVEL: info
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: scraper-${{ github.event.schedule || 'manual' }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run migrations
+        run: npm run scrape -- migrate
+
+      # ─── Scheduled: Daily full refresh ─────────────────────
+      - name: 'Scheduled: Full refresh'
+        if: github.event.schedule == '15 3 * * *'
+        run: npm run scrape -- scrape --source all
+
+      # ─── Scheduled: Hourly events ─────────────────────────
+      - name: 'Scheduled: Events refresh'
+        if: github.event.schedule == '30 * * * *'
+        run: |
+          npm run scrape -- scrape --source iglta --type event
+          npm run scrape -- scrape --source outsavvy --type event
+          npm run scrape -- scrape --source patroc --type event
+
+      # ─── Manual dispatch ───────────────────────────────────
+      - name: 'Manual: Run scraper'
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          ARGS="scrape"
+          if [ "${{ inputs.source }}" != "" ] && [ "${{ inputs.source }}" != "all" ]; then
+            ARGS="$ARGS --source ${{ inputs.source }}"
+          fi
+          if [ "${{ inputs.entity_type }}" != "" ]; then
+            ARGS="$ARGS --type ${{ inputs.entity_type }}"
+          fi
+          if [ "${{ inputs.dry_run }}" == "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          npm run scrape -- $ARGS
+
+      - name: Upload logs as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraper-logs-${{ github.run_id }}
+          path: '*.log'
+          retention-days: 7
