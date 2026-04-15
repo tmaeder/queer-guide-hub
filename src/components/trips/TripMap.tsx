@@ -7,6 +7,9 @@ import { useTheme } from '@mui/material/styles';
 import { Maximize2 } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { mapStyle } from '@/config/mapStyle';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
@@ -19,16 +22,16 @@ function dayColor(index: number): string {
 
 interface PopupContentProps {
   name: string;
-  dayLabel: string;
+  subtitle: string;
   category: string | null;
 }
 
-function PopupContent({ name, dayLabel, category }: PopupContentProps) {
+function PopupContent({ name, subtitle, category }: PopupContentProps) {
   return (
     <div style={{ fontSize: 13, lineHeight: 1.4 }}>
       <strong>{name}</strong>
       <br />
-      <span style={{ color: '#666' }}>{dayLabel}</span>
+      <span style={{ color: '#666' }}>{subtitle}</span>
       {category && (
         <>
           <br />
@@ -39,12 +42,31 @@ function PopupContent({ name, dayLabel, category }: PopupContentProps) {
   );
 }
 
+interface SuggestedVenue {
+  id: string;
+  name: string;
+  category: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+interface SuggestedEvent {
+  id: string;
+  title: string;
+  event_type: string | null;
+  start_date: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
 interface Props {
   places: TripPlace[];
   days: TripDay[];
+  startDate?: string;
+  endDate?: string;
 }
 
-export function TripMap({ places, days }: Props) {
+export function TripMap({ places, days, startDate, endDate }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,6 +74,8 @@ export function TripMap({ places, days }: Props) {
   const markersRef = useRef<maplibregl.Marker[]>([]);
   // Day filter: null = all, dayId = only that day, 'unassigned' = only unassigned
   const [dayFilter, setDayFilter] = useState<string | null>(null);
+  const [showAttractions, setShowAttractions] = useState(true);
+  const [showEvents, setShowEvents] = useState(true);
 
   const sortedDays = useMemo(
     () => [...days].sort((a, b) => a.date.localeCompare(b.date)),
@@ -84,11 +108,112 @@ export function TripMap({ places, days }: Props) {
     [places],
   );
 
+  // Derive destination city_ids from the user's places — this is how we know
+  // "where the trip goes" without a dedicated destination column on `trips`.
+  const cityIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          places.map((p) => p.city_id).filter((id): id is string => !!id),
+        ),
+      ),
+    [places],
+  );
+
+  // Exclude venues/events already added to the trip so we don't stack markers.
+  const existingVenueIds = useMemo(
+    () => new Set(places.map((p) => p.venue_id).filter(Boolean)),
+    [places],
+  );
+  const existingEventIds = useMemo(
+    () => new Set(places.map((p) => p.event_id).filter(Boolean)),
+    [places],
+  );
+
+  const { data: suggestedVenues = [] } = useQuery({
+    queryKey: ['trip-map-venues', cityIds],
+    queryFn: async () => {
+      if (cityIds.length === 0) return [] as SuggestedVenue[];
+      const { data, error } = await supabase
+        .from('venues')
+        .select('id, name, category, latitude, longitude')
+        .in('city_id', cityIds)
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null)
+        .order('foursquare_rating', { ascending: false, nullsFirst: false })
+        .limit(50);
+      if (error) throw error;
+      return (data || []) as SuggestedVenue[];
+    },
+    enabled: cityIds.length > 0,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: suggestedEvents = [] } = useQuery({
+    queryKey: ['trip-map-events', cityIds, startDate, endDate],
+    queryFn: async () => {
+      if (cityIds.length === 0) return [] as SuggestedEvent[];
+      let query = supabase
+        .from('events')
+        .select('id, title, event_type, start_date, latitude, longitude')
+        .in('city_id', cityIds)
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null);
+      if (startDate) query = query.gte('start_date', startDate);
+      if (endDate) query = query.lte('start_date', endDate);
+      const { data, error } = await query
+        .order('start_date', { ascending: true })
+        .limit(50);
+      if (error) throw error;
+      return (data || []) as SuggestedEvent[];
+    },
+    enabled: cityIds.length > 0,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const visibleVenues = useMemo(
+    () =>
+      showAttractions
+        ? suggestedVenues.filter(
+            (v) =>
+              !existingVenueIds.has(v.id) &&
+              v.latitude != null &&
+              v.longitude != null,
+          )
+        : [],
+    [showAttractions, suggestedVenues, existingVenueIds],
+  );
+
+  const visibleEvents = useMemo(
+    () =>
+      showEvents
+        ? suggestedEvents.filter(
+            (e) =>
+              !existingEventIds.has(e.id) &&
+              e.latitude != null &&
+              e.longitude != null,
+          )
+        : [],
+    [showEvents, suggestedEvents, existingEventIds],
+  );
+
   const fitBounds = () => {
-    if (!mapRef.current || geoPlaces.length === 0) return;
+    if (!mapRef.current) return;
     const bounds = new maplibregl.LngLatBounds();
-    geoPlaces.forEach((p) => bounds.extend([p.longitude!, p.latitude!]));
-    mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+    let any = false;
+    geoPlaces.forEach((p) => {
+      bounds.extend([p.longitude!, p.latitude!]);
+      any = true;
+    });
+    visibleVenues.forEach((v) => {
+      bounds.extend([v.longitude!, v.latitude!]);
+      any = true;
+    });
+    visibleEvents.forEach((e) => {
+      bounds.extend([e.longitude!, e.latitude!]);
+      any = true;
+    });
+    if (any) mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 14 });
   };
 
   useEffect(() => {
@@ -153,7 +278,7 @@ export function TripMap({ places, days }: Props) {
       const popupEl = document.createElement('div');
       const root = createRoot(popupEl);
       root.render(
-        <PopupContent name={placeName} dayLabel={dayLabel} category={place.category} />,
+        <PopupContent name={placeName} subtitle={dayLabel} category={place.category} />,
       );
 
       const popup = new maplibregl.Popup({ offset: 10, closeButton: false }).setDOMContent(popupEl);
@@ -170,6 +295,72 @@ export function TripMap({ places, days }: Props) {
         if (!placesByDay.has(place.day_id)) placesByDay.set(place.day_id, []);
         placesByDay.get(place.day_id)!.push(place);
       }
+    });
+
+    // Suggested attraction markers: small, neutral, recessive — don't compete
+    // with the user's chosen places.
+    const attractionColor = theme.palette.mode === 'dark' ? '#a0a0a0' : '#707070';
+    visibleVenues.forEach((venue) => {
+      const el = document.createElement('div');
+      el.style.width = '10px';
+      el.style.height = '10px';
+      el.style.borderRadius = '50%';
+      el.style.backgroundColor = attractionColor;
+      el.style.opacity = '0.85';
+      el.style.border = `1px solid ${theme.palette.background.paper}`;
+      el.style.cursor = 'pointer';
+
+      const popupEl = document.createElement('div');
+      createRoot(popupEl).render(
+        <PopupContent
+          name={venue.name}
+          subtitle={t('trips.map.suggestedVenue')}
+          category={venue.category}
+        />,
+      );
+      const popup = new maplibregl.Popup({ offset: 8, closeButton: false }).setDOMContent(popupEl);
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([venue.longitude!, venue.latitude!])
+        .setPopup(popup)
+        .addTo(map);
+      markersRef.current.push(marker);
+    });
+
+    // Suggested event markers: square shape + brand accent to distinguish from
+    // circular venue markers.
+    const eventColor = theme.palette.mode === 'dark' ? '#ff7386' : '#b60d3d';
+    visibleEvents.forEach((event) => {
+      const el = document.createElement('div');
+      el.style.width = '10px';
+      el.style.height = '10px';
+      el.style.backgroundColor = eventColor;
+      el.style.opacity = '0.9';
+      el.style.border = `1px solid ${theme.palette.background.paper}`;
+      el.style.cursor = 'pointer';
+      // Square shape — borderRadius stays 0
+
+      const dateLabel = event.start_date
+        ? t('trips.map.eventOn', {
+            date: format(new Date(event.start_date), 'MMM d'),
+          })
+        : t('trips.map.showEvents');
+
+      const popupEl = document.createElement('div');
+      createRoot(popupEl).render(
+        <PopupContent
+          name={event.title}
+          subtitle={dateLabel}
+          category={event.event_type}
+        />,
+      );
+      const popup = new maplibregl.Popup({ offset: 8, closeButton: false }).setDOMContent(popupEl);
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([event.longitude!, event.latitude!])
+        .setPopup(popup)
+        .addTo(map);
+      markersRef.current.push(marker);
     });
 
     // Add route lines between same-day places
@@ -208,15 +399,17 @@ export function TripMap({ places, days }: Props) {
       map.once('style.load', addRoutes);
     }
 
-    if (geoPlaces.length > 0) {
+    if (geoPlaces.length > 0 || visibleVenues.length > 0 || visibleEvents.length > 0) {
       setTimeout(fitBounds, 200);
     }
     // fitBounds is a stable closure over refs; intentionally excluded from deps
     // to avoid re-running the effect on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geoPlaces, dayIndexMap, days, theme, t]);
+  }, [geoPlaces, dayIndexMap, days, theme, t, visibleVenues, visibleEvents]);
 
-  if (places.length === 0) {
+  // If the user hasn't added any places AND we have no destination cities to
+  // query, we can't show anything meaningful yet.
+  if (places.length === 0 && cityIds.length === 0) {
     return (
       <Box
         sx={{
@@ -238,32 +431,6 @@ export function TripMap({ places, days }: Props) {
     );
   }
 
-  const totalWithCoords = places.filter(
-    (p) => p.latitude != null && p.longitude != null,
-  ).length;
-
-  if (totalWithCoords === 0) {
-    return (
-      <Box
-        sx={{
-          height: '100%',
-          width: '100%',
-          minHeight: 300,
-          borderRadius: 2,
-          overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'action.hover',
-        }}
-      >
-        <Typography color="text.secondary">
-          {t('trips.map.emptyNoCoords')}
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box
       sx={{
@@ -275,48 +442,66 @@ export function TripMap({ places, days }: Props) {
         minHeight: { xs: 360, md: 520 },
       }}
     >
-      {/* Day filter chips */}
-      {sortedDays.length > 0 && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 12,
-            left: 12,
-            right: 96,
-            zIndex: 2,
-            display: 'flex',
-            gap: 0.75,
-            overflowX: 'auto',
-            pb: 0.5,
-            '&::-webkit-scrollbar': { display: 'none' },
-            scrollbarWidth: 'none',
-          }}
-        >
-          <FilterChip
-            active={dayFilter === null}
-            onClick={() => setDayFilter(null)}
-            color={theme.palette.text.primary}
-            label={t('trips.map.filterAll')}
-          />
-          {sortedDays.map((day, idx) => (
+      {/* Day filter + layer toggle chips */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 12,
+          left: 12,
+          right: 96,
+          zIndex: 2,
+          display: 'flex',
+          gap: 0.75,
+          overflowX: 'auto',
+          pb: 0.5,
+          '&::-webkit-scrollbar': { display: 'none' },
+          scrollbarWidth: 'none',
+        }}
+      >
+        {sortedDays.length > 0 && (
+          <>
             <FilterChip
-              key={day.id}
-              active={dayFilter === day.id}
-              onClick={() => setDayFilter(day.id)}
-              color={dayColor(idx)}
-              label={t('trips.map.dayLabel', { number: idx + 1 })}
+              active={dayFilter === null}
+              onClick={() => setDayFilter(null)}
+              color={theme.palette.text.primary}
+              label={t('trips.map.filterAll')}
             />
-          ))}
-          {hasUnassignedGeo && (
+            {sortedDays.map((day, idx) => (
+              <FilterChip
+                key={day.id}
+                active={dayFilter === day.id}
+                onClick={() => setDayFilter(day.id)}
+                color={dayColor(idx)}
+                label={t('trips.map.dayLabel', { number: idx + 1 })}
+              />
+            ))}
+            {hasUnassignedGeo && (
+              <FilterChip
+                active={dayFilter === 'unassigned'}
+                onClick={() => setDayFilter('unassigned')}
+                color={theme.palette.text.disabled as string}
+                label={t('trips.itinerary.unassigned')}
+              />
+            )}
+          </>
+        )}
+        {cityIds.length > 0 && (
+          <>
             <FilterChip
-              active={dayFilter === 'unassigned'}
-              onClick={() => setDayFilter('unassigned')}
-              color={theme.palette.text.disabled as string}
-              label={t('trips.itinerary.unassigned')}
+              active={showAttractions}
+              onClick={() => setShowAttractions((v) => !v)}
+              color={theme.palette.mode === 'dark' ? '#a0a0a0' : '#707070'}
+              label={t('trips.map.showAttractions')}
             />
-          )}
-        </Box>
-      )}
+            <FilterChip
+              active={showEvents}
+              onClick={() => setShowEvents((v) => !v)}
+              color={theme.palette.mode === 'dark' ? '#ff7386' : '#b60d3d'}
+              label={t('trips.map.showEvents')}
+            />
+          </>
+        )}
+      </Box>
 
       <div
         ref={containerRef}

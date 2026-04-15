@@ -351,7 +351,12 @@ export default function TripPlannerPage() {
 
       {tab === 1 && (
         <Box sx={{ height: { xs: 400, md: 560 } }}>
-          <TripMap places={trip.trip_places} days={trip.trip_days} />
+          <TripMap
+            places={trip.trip_places}
+            days={trip.trip_days}
+            startDate={trip.start_date ?? undefined}
+            endDate={trip.end_date ?? undefined}
+          />
         </Box>
       )}
 
