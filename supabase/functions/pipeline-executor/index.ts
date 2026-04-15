@@ -87,6 +87,13 @@ async function handleStart(
     ...(body.context || {}),
   }
 
+  // Snapshot pipeline definition so future edits don't mutate this run's
+  // configuration (reproducible auditability — see migration
+  // 20260415170300_pipeline_run_snapshot.sql).
+  const { data: snapshot } = await supabase.rpc('snapshot_pipeline_definition', {
+    p_pipeline_id: pipeline.id,
+  })
+
   const { data: run, error: runError } = await supabase
     .from('pipeline_runs')
     .insert({
@@ -97,6 +104,8 @@ async function handleStart(
       context,
       started_at: new Date().toISOString(),
       triggered_by: context.triggered_by,
+      pipeline_snapshot: snapshot ?? null,
+      pipeline_version: pipeline.version ?? 1,
     })
     .select('id')
     .single()

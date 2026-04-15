@@ -166,7 +166,7 @@ export async function withCircuitBreaker<T>(
 ): Promise<T> {
   const check = await checkCircuit(supabase, apiName)
   if (!check.allowed) {
-    throw new Error(`[circuit-breaker] ${check.reason}`)
+    throw new CircuitOpenError(apiName, check.reason ?? 'circuit_open')
   }
 
   try {
@@ -177,5 +177,42 @@ export async function withCircuitBreaker<T>(
     const msg = error instanceof Error ? error.message : String(error)
     await recordFailure(supabase, apiName, msg)
     throw error
+  }
+}
+
+/**
+ * Typed circuit-open error so callers can distinguish breaker trips from
+ * underlying call failures and degrade gracefully (e.g. skip dedup, re-queue).
+ */
+export class CircuitOpenError extends Error {
+  constructor(public readonly apiName: string, message: string) {
+    super(message)
+    this.name = 'CircuitOpenError'
+  }
+}
+
+/**
+ * Convenience wrapper around supabase.rpc() with circuit breaker.
+ * Returns { data, error, circuitOpen } so callers can check for breaker trips
+ * without try/catch boilerplate. Mirrors the supabase-js rpc() shape.
+ */
+export async function rpcWithBreaker<T = unknown>(
+  supabase: SupabaseClient,
+  breakerName: string,
+  rpcName: string,
+  args: Record<string, unknown>,
+): Promise<{ data: T | null; error: { message: string } | null; circuitOpen: boolean }> {
+  try {
+    const data = await withCircuitBreaker(supabase, breakerName, async () => {
+      const res = await supabase.rpc(rpcName, args)
+      if (res.error) throw new Error(res.error.message)
+      return res.data as T
+    })
+    return { data, error: null, circuitOpen: false }
+  } catch (err) {
+    if (err instanceof CircuitOpenError) {
+      return { data: null, error: { message: err.message }, circuitOpen: true }
+    }
+    return { data: null, error: { message: (err as Error).message }, circuitOpen: false }
   }
 }
