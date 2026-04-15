@@ -1,6 +1,7 @@
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 import { fetchOpenSanctionsData, fetchWikidataEntityLabel, formatWikidataDate, fetchTopBook, fetchUpcomingConcerts, WIKIDATA_USER_AGENT } from '../_shared/personality-fetcher.ts'
+import { stagePersonality, triggerPersonalityPipeline } from '../_shared/personality-staging.ts'
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
 interface WikidataSearchResult {
@@ -75,70 +76,33 @@ Deno.serve(async (req) => {
         console.log(`Data fetched for ${name}:`, personalityData ? 'success' : 'failed');
         
         if (personalityData) {
-          // Check if personality already exists
-          const { data: existing } = await supabase
-            .from('personalities')
-            .select('id')
-            .ilike('name', personalityData.name)
-            .maybeSingle();
-
-          if (!existing) {
-            // Create personality entry
-            const { data: personality, error: insertError } = await supabase
-              .from('personalities')
-              .insert({
-                name: personalityData.name,
-                description: personalityData.description,
-                birth_date: personalityData.birth_date,
-                death_date: personalityData.death_date,
-                is_living: personalityData.is_living,
-                profession: personalityData.profession,
-                nationality: personalityData.nationality,
-                birth_place: personalityData.birth_place,
-                image_url: personalityData.image_url,
-                bio: personalityData.bio,
-                top_book: personalityData.top_book,
-                next_concerts: personalityData.next_concerts || [],
-                is_featured: false,
-                visibility: 'public'
-              })
-              .select()
-              .single();
-
-            if (insertError) {
-              console.error(`Error inserting personality ${name}:`, insertError);
-              errors.push({ name, error: insertError.message });
-            } else {
-              // Try to fetch additional images if no image was found from Wikidata and Pexels is enabled
-              if (!personalityData.image_url && sourceConfig.pexelsImages) {
-                try {
-                  const imageResponse = await supabase.functions.invoke('get-pexels-images', {
-                    body: { 
-                      query: `${personalityData.name} portrait`,
-                      type: 'person'
-                    }
-                  });
-                  
-                  if (imageResponse.data?.images?.[0]?.url) {
-                    // Update personality with fetched image
-                    await supabase
-                      .from('personalities')
-                      .update({ image_url: imageResponse.data.images[0].url })
-                      .eq('id', personality.id);
-                    
-                    personality.image_url = imageResponse.data.images[0].url;
-                  }
-                } catch (imageError) {
-                  console.log(`Could not fetch image for ${name}:`, imageError);
-                }
+          // Optionally enrich image via Pexels before staging
+          if (!personalityData.image_url && sourceConfig.pexelsImages) {
+            try {
+              const imageResponse = await supabase.functions.invoke('get-pexels-images', {
+                body: { query: `${personalityData.name} portrait`, type: 'person' }
+              });
+              if (imageResponse.data?.images?.[0]?.url) {
+                personalityData.image_url = imageResponse.data.images[0].url;
               }
-              
-              console.log(`Successfully created personality: ${personalityData.name}`);
-              results.push(personality);
+            } catch (imageError) {
+              console.log(`Pexels enrich fail for ${name}:`, imageError);
             }
-          } else {
-            console.log(`Personality already exists: ${name}`);
-            errors.push({ name, error: 'Personality already exists' });
+          }
+
+          try {
+            const qid = (personalityData as { wikidata_qid?: string }).wikidata_qid ?? null
+            const res = await stagePersonality(supabase, personalityData as unknown as Record<string, unknown> as never, {
+              source_name: 'bulk-wikidata',
+              source_type: 'wikidata',
+              source_entity_id: qid,
+              actor: auth.userId,
+            })
+            results.push({ staging_id: res.staging_id, name: personalityData.name, inserted: res.inserted })
+            console.log(`Staged personality: ${personalityData.name} (${res.inserted ? 'new' : 'reingest'})`)
+          } catch (stageErr) {
+            console.error(`Stage error for ${name}:`, stageErr)
+            errors.push({ name, error: (stageErr as Error).message })
           }
         } else {
           console.log(`No data found for: ${name}`);
@@ -157,12 +121,22 @@ Deno.serve(async (req) => {
     }
   }
 
-    return new Response(JSON.stringify({ 
+    let pipelineRunId: string | null = null;
+    let pipelineError: string | undefined;
+    if (results.length > 0) {
+      const trig = await triggerPersonalityPipeline(supabase, { triggered_by: `bulk-create:${auth.userId}`, batch_size: Math.min(100, results.length) });
+      pipelineRunId = trig.pipeline_run_id;
+      pipelineError = trig.error;
+    }
+
+    return new Response(JSON.stringify({
       success: true,
-      created: results.length,
+      staged: results.length,
       errors: errors.length,
       results,
-      errorDetails: errors 
+      errorDetails: errors,
+      pipeline_run_id: pipelineRunId,
+      pipeline_error: pipelineError,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

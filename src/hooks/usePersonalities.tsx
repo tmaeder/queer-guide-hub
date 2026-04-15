@@ -231,37 +231,32 @@ export function usePersonalities(autoFetch: boolean = true) {
     }
 
     try {
-      const insertData: PersonalityInsert = {
-        name: personality.name,
-        pronouns: personality.pronouns || null,
-        description: personality.description || null,
-        bio: personality.bio || null,
-        birth_date: personality.birth_date || null,
-        death_date: personality.death_date || null,
-        is_living: personality.is_living,
-        profession: personality.profession || null,
-        fields: personality.fields as string[],
-        achievements: personality.achievements as string[],
-        image_url: personality.image_url || null,
-        social_links: personality.social_links,
-        website_url: personality.website_url || null,
-        nationality: personality.nationality || null,
-        birth_place: personality.birth_place || null,
-        tags: personality.tags,
-        verification_status: personality.verification_status,
-        visibility: personality.visibility,
-        is_featured: personality.is_featured,
-        created_by: user.id,
-      };
-
-      const { error } = await supabase.from('personalities').insert(insertData);
+      // Route through bulletproof pipeline (staging → normalize → validate → dedup → quality → review → commit).
+      const { data, error } = await supabase.functions.invoke('stage-personality', {
+        body: {
+          personality: {
+            ...personality,
+            fields: personality.fields as string[],
+            achievements: personality.achievements as string[],
+            tags: personality.tags,
+          },
+          source_name: 'admin-manual',
+          auto_run: true,
+        },
+      });
 
       if (error) {
         toast({ title: 'Error', description: error.message, variant: 'destructive' });
         return;
       }
 
-      toast({ title: 'Success', description: 'Personality added successfully' });
+      const result = data as { staging_id?: string; pipeline_run_id?: string | null; inserted?: boolean };
+      toast({
+        title: 'Queued for review',
+        description: result.pipeline_run_id
+          ? `Personality staged and pipeline started (run ${result.pipeline_run_id.slice(0, 8)}…).`
+          : 'Personality staged; pipeline will pick it up on next run.',
+      });
       await fetchPersonalities();
     } catch (err) {
       console.error('Unexpected error creating personality:', err);

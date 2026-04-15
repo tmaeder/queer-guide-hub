@@ -6,6 +6,8 @@ import {
   inferAccommodationType, normalizeAmenities, normalizeStarRating,
   normalizePlatformIds, detectLgbtqMarkers,
 } from '../_shared/hotel-pipeline-utils.ts'
+import { computeIdempotencyKey } from '../_shared/idempotency.ts'
+import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 
 // ============================================================
 // Pipeline Normalize
@@ -49,6 +51,26 @@ Deno.serve(async (req) => {
         const type = item.entity_type || entityType || guessEntityType(item.target_table)
         const normalized = normalizeItem(raw, type)
 
+        // Geocode enrichment: events + venues without coords but with address/city
+        if ((type === 'event' || type === 'venue') && !dryRun) {
+          const loc = (normalized.location as Record<string, unknown>) ?? {}
+          const hasGeo = Number.isFinite(loc.lat as number) && Number.isFinite(loc.lng as number)
+          const addrParts = [loc.address, loc.city, loc.country].filter(Boolean).map(String).join(', ')
+          if (!hasGeo && addrParts.length > 3) {
+            try {
+              const geo = await geocodeAddress(addrParts)
+              if (geo) {
+                (normalized.location as Record<string, unknown>).lat = geo.lat
+                ;(normalized.location as Record<string, unknown>).lng = geo.lng
+                normalized.geocoded_by = 'photon'
+                normalized.geocoded_at = new Date().toISOString()
+              }
+            } catch (e) {
+              console.warn(`geocode ${item.id} skipped:`, (e as Error).message)
+            }
+          }
+        }
+
         // Idempotency: compute source_entity_id + payload_hash
         const sourceEntityId = item.source_entity_id
           ?? (String(raw.id ?? raw.external_id ?? raw.source_id ?? raw.fsq_id ?? raw.place_id ?? '')
@@ -57,12 +79,23 @@ Deno.serve(async (req) => {
         const payloadHash = item.payload_hash
           ?? await sha256Hex(JSON.stringify(raw))
 
+        // Deterministic idempotency_key shared with SQL trigger
+        // (compute_staging_idempotency_key) — required to participate in the
+        // ux_ingestion_staging_source_idem unique index.
+        const idempotencyKey = await computeIdempotencyKey(
+          item.source_name,
+          sourceEntityId,
+          payloadHash,
+          item.id,
+        )
+
         if (!dryRun) {
           const { error: upErr } = await supabase.from('ingestion_staging').update({
             normalized_data:   normalized,
             entity_type:       type,
             source_entity_id:  sourceEntityId,
             payload_hash:      payloadHash,
+            idempotency_key:   idempotencyKey,
             updated_at:        new Date().toISOString(),
           }).eq('id', item.id)
 
@@ -105,6 +138,7 @@ Deno.serve(async (req) => {
     }, 200, req)
   } catch (error) {
     console.error('pipeline-normalize:', error)
+    await logPipelineError(supabase, 'pipeline-normalize', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
 })
@@ -367,4 +401,22 @@ function normalizeBirthDate(v: unknown): string | null {
   const d = new Date(stripped)
   if (isNaN(d.getTime())) return null
   return d.toISOString().slice(0, 10)
+}
+
+/** Forward-geocode a free-form address via Photon (komoot). Returns null on any failure. */
+async function geocodeAddress(query: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const url = `https://photon.komoot.io/api?q=${encodeURIComponent(query)}&limit=1&lang=en`
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 4000)
+    const res = await fetch(url, { signal: controller.signal })
+    clearTimeout(timer)
+    if (!res.ok) return null
+    const j = await res.json() as { features?: Array<{ geometry?: { coordinates?: number[] } }> }
+    const coords = j.features?.[0]?.geometry?.coordinates
+    if (!coords || coords.length < 2) return null
+    const [lng, lat] = coords
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+    return { lat, lng }
+  } catch { return null }
 }
