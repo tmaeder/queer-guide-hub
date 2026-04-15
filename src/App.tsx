@@ -122,12 +122,6 @@ const AuditLog = lazy(() =>
 const _ImportJobCreator = lazy(() =>
   import('./components/admin/ImportJobCreator').then((m) => ({ default: m.ImportJobCreator })),
 );
-const NewsSourcesManager = lazy(() =>
-  import('./components/admin/NewsSourcesManager').then((m) => ({ default: m.NewsSourcesManager })),
-);
-const PipelineMonitor = lazy(() =>
-  import('./components/admin/PipelineMonitor').then((m) => ({ default: m.PipelineMonitor })),
-);
 const _EnrichmentDashboard = lazy(() =>
   import('./components/admin/EnrichmentDashboard').then((m) => ({
     default: m.EnrichmentDashboard,

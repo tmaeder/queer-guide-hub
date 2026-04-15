@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Shield, Zap } from 'lucide-react';
 import { useCircuitBreakers, useStagingStats, usePipelineDefinitionsList } from '../hooks/usePipelineHistory';
@@ -5,6 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router';
 import { brandColors } from '@/theme/muiTheme';
+
+const DuplicatesPanel = lazy(() => import('@/components/admin/import-hub/DuplicatesPanel').then(m => ({ default: m.DuplicatesPanel })));
 
 const cbColors: Record<string, React.CSSProperties> = {
   closed: { background: '#dcfce7', color: '#15803d' },
@@ -275,6 +278,11 @@ export default function HealthTab() {
           )}
         </div>
       </div>
+
+      {/* Duplicates */}
+      <Suspense fallback={<div style={{ padding: 16, color: '#9ca3af', fontSize: 13 }}>Loading duplicates…</div>}>
+        <DuplicatesPanel />
+      </Suspense>
 
       {/* Definitions */}
       <div style={cardBorder}>

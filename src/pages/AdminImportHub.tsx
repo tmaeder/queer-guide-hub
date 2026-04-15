@@ -1,5 +1,5 @@
-import { ImportHubDashboard } from "@/components/admin/ImportHubDashboard";
+import { Navigate } from 'react-router';
 
 export default function AdminImportHub() {
-  return <ImportHubDashboard />;
+  return <Navigate to="/admin/pipelines" replace />;
 }

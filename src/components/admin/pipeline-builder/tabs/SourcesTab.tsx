@@ -1,7 +1,15 @@
+import { lazy, Suspense } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Power, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { brandColors } from '@/theme/muiTheme';
+
+const WebScrapersPanel = lazy(() => import('@/components/admin/WebScrapersPanel').then(m => ({ default: m.WebScrapersPanel })));
+const IngestionSourcesManager = lazy(() => import('@/components/admin/IngestionSourcesManager').then(m => ({ default: m.IngestionSourcesManager })));
+const NewsSourcesManager = lazy(() => import('@/components/admin/NewsSourcesManager').then(m => ({ default: m.NewsSourcesManager })));
+const ApiKeysManager = lazy(() => import('@/components/admin/ApiKeysManager').then(m => ({ default: m.ApiKeysManager })));
+
+const panelFallback = <div style={{ padding: 24, color: '#9ca3af', fontSize: 13 }}>Loading…</div>;
 
 interface ScrapeSource {
   id: string;
@@ -143,6 +151,11 @@ export default function SourcesTab() {
           </table>
         </div>
       </div>
+
+      <Suspense fallback={panelFallback}><WebScrapersPanel /></Suspense>
+      <Suspense fallback={panelFallback}><IngestionSourcesManager /></Suspense>
+      <Suspense fallback={panelFallback}><NewsSourcesManager /></Suspense>
+      <Suspense fallback={panelFallback}><ApiKeysManager /></Suspense>
     </div>
   );
 }
