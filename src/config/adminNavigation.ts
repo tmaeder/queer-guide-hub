@@ -271,6 +271,13 @@ export const adminNavSections: AdminNavSection[] = [
         color: brandColors.main,
       },
       {
+        id: 'venue-stats',
+        label: 'Venue Stats',
+        icon: Activity,
+        route: '/admin/import-hub?tab=venue-stats',
+        color: '#8b5cf6',
+      },
+      {
         id: 'import-history',
         label: 'History',
         icon: History,

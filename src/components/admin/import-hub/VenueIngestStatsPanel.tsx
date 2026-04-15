@@ -1,6 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -120,6 +125,32 @@ export function VenueIngestStatsPanel() {
   const events = useRecentEvents();
   const dupes = useDuplicateSummary();
   const health = useHealthSnapshot();
+  const [replayPattern, setReplayPattern] = useState('');
+  const [replayBusy, setReplayBusy] = useState(false);
+  const { toast } = useToast();
+  const qc = useQueryClient();
+
+  const runReplay = async () => {
+    if (!replayPattern.trim()) return;
+    setReplayBusy(true);
+    try {
+      const { data, error } = await supabase.rpc('replay_rejected_staging', {
+        p_error_substring: replayPattern.trim(),
+        p_target_table: 'venues',
+        p_limit: 200,
+      });
+      if (error) throw error;
+      const n = Array.isArray(data) ? data.length : 0;
+      toast({ title: `Replayed ${n} rejected item${n === 1 ? '' : 's'}` });
+      setReplayPattern('');
+      qc.invalidateQueries({ queryKey: ['pipeline-health-snapshot'] });
+      qc.invalidateQueries({ queryKey: ['venue-ingest-stats'] });
+    } catch (e) {
+      toast({ title: 'Replay failed', description: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setReplayBusy(false);
+    }
+  };
 
   // Aggregate totals across the full window
   const totals = (stats.data ?? []).reduce(
@@ -183,6 +214,29 @@ export function VenueIngestStatsPanel() {
               })}
             </Box>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Dead-letter replay */}
+      <Card>
+        <CardContent style={{ padding: 24 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+            Replay Rejected Items
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', mb: 2 }}>
+            Enter an error-message substring to reset matching venue rejects back to <code>pending</code>. Up to 200 per click.
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Input
+              placeholder='e.g. "category_check" or "venue_subtype"'
+              value={replayPattern}
+              onChange={(e) => setReplayPattern(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <Button onClick={runReplay} disabled={replayBusy || !replayPattern.trim()}>
+              {replayBusy ? 'Replaying…' : 'Replay'}
+            </Button>
+          </Box>
         </CardContent>
       </Card>
 
