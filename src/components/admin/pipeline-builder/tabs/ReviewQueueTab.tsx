@@ -201,6 +201,12 @@ export default function ReviewQueueTab() {
                   <div style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>match_id: {selected.dedup_match_id}</div>
                 </div>
               )}
+              {selected.dedup_status === 'merge_candidate' && selected.target_table === 'events' && selected.dedup_match_id && (
+                <EventMergePreview
+                  staging={selected.normalized_data ?? {}}
+                  existingId={selected.dedup_match_id}
+                />
+              )}
               <details>
                 <summary style={{ cursor: 'pointer', fontSize: 12, color: '#6b7280' }}>Normalized payload</summary>
                 <pre style={{ fontSize: 11, background: '#f9fafb', padding: 8, borderRadius: 4, overflow: 'auto', maxHeight: 240 }}>
@@ -251,4 +257,82 @@ function btnStyle(bg: string, fg: string): React.CSSProperties {
     background: bg, color: fg, border: bg === '#fff' ? '1px solid #d1d5db' : 'none',
     borderRadius: 6, cursor: 'pointer',
   };
+}
+
+function EventMergePreview({ staging, existingId }: { staging: Record<string, unknown>; existingId: string }) {
+  const { data: existing } = useQuery({
+    queryKey: ['event-merge-candidate', existingId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
+        .from('events')
+        .select('id, title, description, event_type, start_date, end_date, venue_name, city, latitude, longitude, website, ticket_url, edition, data_source, external_id')
+        .eq('id', existingId)
+        .single();
+      if (error) throw error;
+      return data as Record<string, unknown>;
+    },
+  });
+
+  if (!existing) return <div style={{ fontSize: 12, color: '#9ca3af' }}>Loading candidate…</div>;
+
+  const loc = (staging.location as Record<string, unknown>) ?? {};
+  const dates = (staging.dates as Record<string, unknown>) ?? {};
+  const sg = {
+    title: staging.title ?? staging.name,
+    start_date: staging.start_date ?? dates.start,
+    end_date: staging.end_date ?? dates.end,
+    city: loc.city ?? staging.city,
+    latitude: loc.lat ?? staging.latitude,
+    longitude: loc.lng ?? staging.longitude,
+    event_type: staging.event_type,
+    website: staging.website,
+    venue_name: staging.venue_name,
+    edition: staging.edition,
+  } as Record<string, unknown>;
+
+  const rows: Array<{ field: string; staged: unknown; existing: unknown }> = [
+    { field: 'title',       staged: sg.title,       existing: existing.title },
+    { field: 'event_type',  staged: sg.event_type,  existing: existing.event_type },
+    { field: 'start_date',  staged: sg.start_date,  existing: existing.start_date },
+    { field: 'end_date',    staged: sg.end_date,    existing: existing.end_date },
+    { field: 'venue_name',  staged: sg.venue_name,  existing: existing.venue_name },
+    { field: 'city',        staged: sg.city,        existing: existing.city },
+    { field: 'latitude',    staged: sg.latitude,    existing: existing.latitude },
+    { field: 'longitude',   staged: sg.longitude,   existing: existing.longitude },
+    { field: 'edition',     staged: sg.edition,     existing: existing.edition },
+    { field: 'website',     staged: sg.website,     existing: existing.website },
+  ];
+
+  const cellBase: React.CSSProperties = { padding: '4px 8px', fontSize: 11, verticalAlign: 'top', wordBreak: 'break-word' };
+  const fmt = (v: unknown) => v == null || v === '' ? <span style={{ color: '#d1d5db' }}>—</span> : String(v);
+
+  return (
+    <div style={{ border: '1px solid #e5e7eb', borderRadius: 6, padding: 0, overflow: 'hidden' }}>
+      <div style={{ padding: '8px 10px', background: '#f9fafb', fontSize: 11, color: '#6b7280', fontWeight: 500 }}>
+        Field-by-field — staged vs existing
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
+            <th style={{ ...cellBase, width: 110, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Field</th>
+            <th style={{ ...cellBase, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Staged</th>
+            <th style={{ ...cellBase, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Existing</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => {
+            const changed = String(r.staged ?? '') !== String(r.existing ?? '');
+            const bg = changed ? '#fffbeb' : 'transparent';
+            return (
+              <tr key={r.field} style={{ background: bg, borderBottom: '1px solid #f9fafb' }}>
+                <td style={{ ...cellBase, fontFamily: 'monospace', color: '#374151' }}>{r.field}</td>
+                <td style={cellBase}>{fmt(r.staged)}</td>
+                <td style={cellBase}>{fmt(r.existing)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
