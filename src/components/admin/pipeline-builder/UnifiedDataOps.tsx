@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, useNavigate } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { Workflow, BarChart3, Zap, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug, Bug, Bell } from 'lucide-react';
+import { Workflow, BarChart3, Zap, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug, Bug, Bell, Upload } from 'lucide-react';
 
 const PipelineBuilder = lazy(() => import('./PipelineBuilder'));
 const MonitorTab = lazy(() => import('./tabs/MonitorTab'));
@@ -37,6 +37,7 @@ const fallback = <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af
 
 export default function UnifiedDataOps() {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const activeTab = (params.get('tab') as Tab) || 'builder';
 
   const switchTab = useCallback((tab: Tab) => {
@@ -67,6 +68,20 @@ export default function UnifiedDataOps() {
             </button>
           );
         })}
+        {/* Cross-nav: jump to Import Hub */}
+        <button
+          onClick={() => navigate('/admin/imports')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            marginLeft: 'auto', padding: '10px 16px', fontSize: 12, fontWeight: 500,
+            color: '#10b981', borderBottom: '2px solid transparent', marginBottom: -2,
+            background: 'transparent', border: 'none', cursor: 'pointer',
+          }}
+          title="Go to Import Hub"
+        >
+          <Upload style={{ width: 13, height: 13 }} />
+          Import Hub
+        </button>
       </div>
 
       {/* Tab content */}

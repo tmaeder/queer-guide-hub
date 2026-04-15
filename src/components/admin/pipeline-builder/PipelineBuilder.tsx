@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Save, Play, PlayCircle, BarChart3 } from 'lucide-react';
+import { Save, Play, PlayCircle, BarChart3, Upload } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { useNavigate } from 'react-router';
 
@@ -332,8 +332,11 @@ function PipelineBuilderInner() {
               );
             })()}
             <Separator orientation="vertical" className="h-4 mx-1" />
-            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/pipelines/dashboard')}>
-              <BarChart3 className="h-3 w-3 mr-1" /> Dashboard
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/pipelines?tab=monitor')}>
+              <BarChart3 className="h-3 w-3 mr-1" /> Monitor
+            </Button>
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/imports')}>
+              <Upload className="h-3 w-3 mr-1" /> Imports
             </Button>
           </div>
         </div>

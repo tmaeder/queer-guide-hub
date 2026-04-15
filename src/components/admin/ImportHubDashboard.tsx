@@ -22,6 +22,9 @@ import {
   Package,
   Inbox,
   ArrowRight,
+  Workflow,
+  BarChart3,
+  ExternalLink,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ImportJobCreator } from './ImportJobCreator';
@@ -32,7 +35,6 @@ import { ApiKeysManager } from './ApiKeysManager';
 import { DuplicatesPanel } from './import-hub/DuplicatesPanel';
 import { VenueIngestStatsPanel } from './import-hub/VenueIngestStatsPanel';
 import { IngestionSourcesManager } from './IngestionSourcesManager';
-import { PipelineMonitor } from './PipelineMonitor';
 import { WebScrapersPanel } from './WebScrapersPanel';
 import { ScrapeSourcesDashboard } from './ScrapeSourcesDashboard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -265,6 +267,7 @@ export const ImportHubDashboard = () => {
           <TabsTrigger value="create">New Import</TabsTrigger>
           <TabsTrigger value="scraping">Scraping</TabsTrigger>
           <TabsTrigger value="sources">Sources</TabsTrigger>
+          <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
           <TabsTrigger value="venue-stats">Venue Stats</TabsTrigger>
         </TabsList>
@@ -525,9 +528,66 @@ export const ImportHubDashboard = () => {
           <ApiKeysManager />
         </TabsContent>
 
-        {/* ── Tools: pipeline + duplicates ── */}
+        {/* ── Pipeline: bridge to /admin/pipelines ── */}
+        <TabsContent value="pipeline" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+            {([
+              {
+                tab: 'builder', Icon: Workflow, color: '#6366f1',
+                title: 'Pipeline Builder',
+                desc: 'Visual DAG editor — design, run and observe ingestion pipelines node by node.',
+                cta: 'Open Builder',
+              },
+              {
+                tab: 'monitor', Icon: BarChart3, color: '#10b981',
+                title: 'Pipeline Monitor',
+                desc: 'Live run history, staging funnel stats, per-entity ingest breakdown and DLQ.',
+                cta: 'Open Monitor',
+              },
+              {
+                tab: 'review', Icon: Inbox, color: '#ea580c',
+                title: 'Review Queue',
+                desc: 'Staging items flagged for human review — approve, reject or merge.',
+                cta: 'Open Review',
+                badge: reviewCounts?.staging,
+              },
+              {
+                tab: 'health', Icon: CheckCircle, color: '#6366f1',
+                title: 'Health & Coverage',
+                desc: 'Pipeline health snapshot, stuck items, geo coverage and DLQ drain.',
+                cta: 'Open Health',
+              },
+            ] as const).map(({ tab, Icon, color, title, desc, cta, badge }) => (
+              <Card key={tab} onClick={() => navigate(`/admin/pipelines?tab=${tab}`)} style={{ cursor: 'pointer' }}>
+                <CardContent sx={{ p: 3, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box sx={{ p: 1.25, bgcolor: `${color}20`, borderRadius: 1, flexShrink: 0 }}>
+                    <Icon style={{ height: 20, width: 20, color }} />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>{title}</Typography>
+                      {'badge' in { tab, Icon, color, title, desc, cta, badge } && badge != null && badge > 0 && (
+                        <Badge style={{ background: '#ea580c', color: '#fff', fontSize: '0.7rem' }}>{badge}</Badge>
+                      )}
+                      <ExternalLink style={{ height: 12, width: 12, color: 'var(--muted-foreground)' }} />
+                    </Box>
+                    <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', mb: 1.5 }}>{desc}</Typography>
+                    <Button
+                      size="sm" variant="outline"
+                      style={{ display: 'flex', gap: 6 }}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/admin/pipelines?tab=${tab}`); }}
+                    >
+                      {cta} <ArrowRight style={{ height: 12, width: 12 }} />
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </TabsContent>
+
+        {/* ── Tools: duplicates ── */}
         <TabsContent value="tools" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <PipelineMonitor />
           <DuplicatesPanel />
         </TabsContent>
 

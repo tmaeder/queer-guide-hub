@@ -384,7 +384,7 @@ const AppRoutes = () => {
                 <Route path="imports" element={<AdminImportHub />} />
                 <Route path="imports/create" element={<Navigate to="/admin/imports" replace />} />
                 <Route path="imports/news-sources" element={<NewsSourcesManager />} />
-                <Route path="imports/pipeline" element={<PipelineMonitor />} />
+                <Route path="imports/pipeline" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
                 <Route path="imports/enrichment" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
                 <Route path="imports/venues" element={<VenueImportQuickActions />} />
                 <Route path="imports/email-ingestions" element={<AdminEmailIngestions />} />
