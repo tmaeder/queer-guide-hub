@@ -1,11 +1,11 @@
 import { lazy, Suspense, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { Workflow, BarChart3, Zap, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug, Bug, Bell, Upload } from 'lucide-react';
+import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug, Bug, Bell } from 'lucide-react';
 
+const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
 const PipelineBuilder = lazy(() => import('./PipelineBuilder'));
 const MonitorTab = lazy(() => import('./tabs/MonitorTab'));
-const AutomationDashboard = lazy(() => import('../automation/AutomationDashboard').then(m => ({ default: m.AutomationDashboard })));
 const HealthTab = lazy(() => import('./tabs/HealthTab'));
 const NewsTab = lazy(() => import('./tabs/NewsTab'));
 const ReviewQueueTab = lazy(() => import('./tabs/ReviewQueueTab'));
@@ -16,10 +16,10 @@ const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 const ErrorsTab = lazy(() => import('./tabs/ErrorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
 
-type Tab = 'overview' | 'builder' | 'monitor' | 'sources' | 'review' | 'dlq' | 'errors' | 'alerts' | 'coverage' | 'news' | 'modules' | 'health' | 'geo-review';
+type Tab = 'overview' | 'builder' | 'monitor' | 'sources' | 'review' | 'dlq' | 'errors' | 'alerts' | 'coverage' | 'news' | 'health' | 'geo-review';
 
 const TABS: { key: Tab; label: string; icon: React.ComponentType<{ style?: React.CSSProperties }> }[] = [
-  { key: 'overview',   label: 'Overview',   icon: LayoutGrid },
+  { key: 'overview',   label: 'Overview',   icon: LayoutDashboard },
   { key: 'builder',    label: 'Builder',    icon: Workflow },
   { key: 'monitor',    label: 'Monitor',    icon: BarChart3 },
   { key: 'sources',    label: 'Sources',    icon: Plug },
@@ -30,7 +30,6 @@ const TABS: { key: Tab; label: string; icon: React.ComponentType<{ style?: React
   { key: 'alerts',     label: 'Alerts',     icon: Bell },
   { key: 'coverage',   label: 'Coverage',   icon: Map },
   { key: 'news',       label: 'News',       icon: Newspaper },
-  { key: 'modules',    label: 'Modules',    icon: Zap },
   { key: 'health',     label: 'Health',     icon: Shield },
 ];
 
@@ -38,7 +37,6 @@ const fallback = <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af
 
 export default function UnifiedDataOps() {
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
   const activeTab = (params.get('tab') as Tab) || 'overview';
 
   const switchTab = useCallback((tab: Tab) => {
@@ -69,20 +67,6 @@ export default function UnifiedDataOps() {
             </button>
           );
         })}
-        {/* Cross-nav: jump to Import Hub */}
-        <button
-          onClick={() => navigate('/admin/imports')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            marginLeft: 'auto', padding: '10px 16px', fontSize: 12, fontWeight: 500,
-            color: '#10b981', borderBottom: '2px solid transparent', marginBottom: -2,
-            background: 'transparent', border: 'none', cursor: 'pointer',
-          }}
-          title="Go to Import Hub"
-        >
-          <Upload style={{ width: 13, height: 13 }} />
-          Import Hub
-        </button>
       </div>
 
       {/* Tab content */}
@@ -141,11 +125,6 @@ export default function UnifiedDataOps() {
       {activeTab === 'news' && (
         <Suspense fallback={fallback}>
           <NewsTab />
-        </Suspense>
-      )}
-      {activeTab === 'modules' && (
-        <Suspense fallback={fallback}>
-          <AutomationDashboard />
         </Suspense>
       )}
       {activeTab === 'health' && (
