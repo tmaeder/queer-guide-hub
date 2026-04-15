@@ -30,6 +30,7 @@ import { VenueImportQuickActions } from './VenueImportQuickActions';
 import { NewsSourcesManager } from './NewsSourcesManager';
 import { ApiKeysManager } from './ApiKeysManager';
 import { DuplicatesPanel } from './import-hub/DuplicatesPanel';
+import { VenueIngestStatsPanel } from './import-hub/VenueIngestStatsPanel';
 import { IngestionSourcesManager } from './IngestionSourcesManager';
 import { PipelineMonitor } from './PipelineMonitor';
 import { WebScrapersPanel } from './WebScrapersPanel';
@@ -265,6 +266,7 @@ export const ImportHubDashboard = () => {
           <TabsTrigger value="scraping">Scraping</TabsTrigger>
           <TabsTrigger value="sources">Sources</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
+          <TabsTrigger value="venue-stats">Venue Stats</TabsTrigger>
         </TabsList>
 
         {/* ── Jobs: active + history ── */}
@@ -527,6 +529,11 @@ export const ImportHubDashboard = () => {
         <TabsContent value="tools" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           <PipelineMonitor />
           <DuplicatesPanel />
+        </TabsContent>
+
+        {/* ── Venue Stats: ingest funnel + recent events ── */}
+        <TabsContent value="venue-stats" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <VenueIngestStatsPanel />
         </TabsContent>
       </Tabs>
 

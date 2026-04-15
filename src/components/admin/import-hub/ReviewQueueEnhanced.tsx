@@ -133,6 +133,18 @@ export function ReviewQueueEnhanced() {
     setCompareItemId(null);
   };
 
+  const handleMerge = (id: string, targetVenueId: string) => {
+    stagingAction.mutate({
+      action: 'merge',
+      stagingId: id,
+      targetVenueId,
+      notes: reviewNotes || undefined,
+    });
+    setReviewNotes('');
+    setExpandedId(null);
+    setCompareItemId(null);
+  };
+
   const handleReject = (id: string) => {
     stagingAction.mutate({ action: 'reject', stagingId: id, notes: reviewNotes || undefined });
     setReviewNotes('');
@@ -478,18 +490,38 @@ export function ReviewQueueEnhanced() {
                             <Eye style={{ height: 14, width: 14 }} />
                           </Button>
                           {item.dedup_match_id && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setCompareItemId(isComparing ? null : item.id);
-                                setExpandedId(item.id);
-                              }}
-                              style={{ display: 'flex', gap: 4 }}
-                            >
-                              <Merge style={{ height: 14, width: 14 }} />
-                              Compare
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setCompareItemId(isComparing ? null : item.id);
+                                  setExpandedId(item.id);
+                                }}
+                                style={{ display: 'flex', gap: 4 }}
+                              >
+                                <Merge style={{ height: 14, width: 14 }} />
+                                Compare
+                              </Button>
+                              {item.target_table === 'venues' && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleMerge(item.id, item.dedup_match_id as string)}
+                                  disabled={stagingAction.isPending}
+                                  style={{
+                                    backgroundColor: '#ca8a04',
+                                    color: 'white',
+                                    padding: '4px 8px',
+                                    display: 'flex',
+                                    gap: 4,
+                                  }}
+                                  title="Merge this staging item into the matched venue"
+                                >
+                                  <Merge style={{ height: 14, width: 14 }} />
+                                  Merge
+                                </Button>
+                              )}
+                            </>
                           )}
                           <Button
                             size="sm"

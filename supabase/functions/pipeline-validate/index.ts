@@ -208,6 +208,18 @@ Deno.serve(async (req) => {
           warnings.push('W_EVENT_TOO_FAR_FUTURE')
         }
 
+        // Type-specific rules (pride/protest must start 10–15:00, Saturday)
+        // Mirrors automation_rules 'pride_demo_*' rules — centralized here
+        // so pipeline-validate is the single enforcement point.
+        const et = String(n.event_type ?? '').toLowerCase()
+        if ((et === 'pride' || et === 'protest') && Number.isFinite(startTs)) {
+          const d = new Date(startTs)
+          const hour = d.getUTCHours()
+          const dow = d.getUTCDay() // 0=Sun, 6=Sat
+          if (hour < 10 || hour > 15) warnings.push('W_PRIDE_TIME_WINDOW')
+          if (dow !== 6) warnings.push('W_PRIDE_NOT_SATURDAY')
+        }
+
         // Location: need either venue_id, city, or geo
         const hasVenue = !!n.venue_id
         const city = String(loc.city ?? n.city ?? '').trim()

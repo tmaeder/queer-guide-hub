@@ -1,4 +1,4 @@
-{"types":"export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: \"14.4\"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
@@ -479,11 +479,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"audio_processing_jobs_audio_id_fkey\"
-            columns: [\"audio_id\"]
+            foreignKeyName: "audio_processing_jobs_audio_id_fkey"
+            columns: ["audio_id"]
             isOneToOne: false
-            referencedRelation: \"audio_files\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "audio_files"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -523,11 +523,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"audio_renditions_audio_id_fkey\"
-            columns: [\"audio_id\"]
+            foreignKeyName: "audio_renditions_audio_id_fkey"
+            columns: ["audio_id"]
             isOneToOne: false
-            referencedRelation: \"audio_files\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "audio_files"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -681,11 +681,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"automation_modules_workflow_definition_id_fkey\"
-            columns: [\"workflow_definition_id\"]
+            foreignKeyName: "automation_modules_workflow_definition_id_fkey"
+            columns: ["workflow_definition_id"]
             isOneToOne: false
-            referencedRelation: \"workflow_definitions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -740,11 +740,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"automation_rules_module_id_fkey\"
-            columns: [\"module_id\"]
+            foreignKeyName: "automation_rules_module_id_fkey"
+            columns: ["module_id"]
             isOneToOne: false
-            referencedRelation: \"automation_modules\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "automation_modules"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -793,18 +793,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"automation_run_log_module_id_fkey\"
-            columns: [\"module_id\"]
+            foreignKeyName: "automation_run_log_module_id_fkey"
+            columns: ["module_id"]
             isOneToOne: false
-            referencedRelation: \"automation_modules\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "automation_modules"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"automation_run_log_workflow_run_id_fkey\"
-            columns: [\"workflow_run_id\"]
+            foreignKeyName: "automation_run_log_workflow_run_id_fkey"
+            columns: ["workflow_run_id"]
             isOneToOne: false
-            referencedRelation: \"workflow_runs\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "workflow_runs"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -844,11 +844,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"booking_webhooks_booking_id_fkey\"
-            columns: [\"booking_id\"]
+            foreignKeyName: "booking_webhooks_booking_id_fkey"
+            columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: \"bookings\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -918,25 +918,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"bookings_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "bookings_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"bookings_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "bookings_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"bookings_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "bookings_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1159,11 +1159,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cities_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "cities_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1188,11 +1188,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"city_aliases_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "city_aliases_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1259,11 +1259,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_audit_log_content_id_fkey\"
-            columns: [\"content_id\"]
+            foreignKeyName: "cms_audit_log_content_id_fkey"
+            columns: ["content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1305,7 +1305,7 @@ export type Database = {
           body_html: string | null
           body_json: Json | null
           content_data: Json
-          content_type: Database[\"public\"][\"Enums\"][\"cms_content_type\"]
+          content_type: Database["public"]["Enums"]["cms_content_type"]
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -1324,14 +1324,14 @@ export type Database = {
           title: Json
           updated_at: string
           updated_by: string | null
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Insert: {
           body_html?: string | null
           body_json?: Json | null
           content_data?: Json
-          content_type: Database[\"public\"][\"Enums\"][\"cms_content_type\"]
+          content_type: Database["public"]["Enums"]["cms_content_type"]
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1350,14 +1350,14 @@ export type Database = {
           title?: Json
           updated_at?: string
           updated_by?: string | null
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Update: {
           body_html?: string | null
           body_json?: Json | null
           content_data?: Json
-          content_type?: Database[\"public\"][\"Enums\"][\"cms_content_type\"]
+          content_type?: Database["public"]["Enums"]["cms_content_type"]
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1376,8 +1376,8 @@ export type Database = {
           title?: Json
           updated_at?: string
           updated_by?: string | null
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Relationships: []
       }
@@ -1387,7 +1387,7 @@ export type Database = {
           created_at: string
           id: string
           media_id: string
-          media_role: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role: Database["public"]["Enums"]["cms_media_role"]
           metadata: Json | null
           sort_order: number | null
         }
@@ -1396,7 +1396,7 @@ export type Database = {
           created_at?: string
           id?: string
           media_id: string
-          media_role?: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
           metadata?: Json | null
           sort_order?: number | null
         }
@@ -1405,24 +1405,24 @@ export type Database = {
           created_at?: string
           id?: string
           media_id?: string
-          media_role?: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
           metadata?: Json | null
           sort_order?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_content_media_content_id_fkey\"
-            columns: [\"content_id\"]
+            foreignKeyName: "cms_content_media_content_id_fkey"
+            columns: ["content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"cms_content_media_media_id_fkey\"
-            columns: [\"media_id\"]
+            foreignKeyName: "cms_content_media_media_id_fkey"
+            columns: ["media_id"]
             isOneToOne: false
-            referencedRelation: \"cms_media\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_media"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1445,8 +1445,8 @@ export type Database = {
           source_id: string
           source_table: string
           updated_at: string
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Insert: {
           canonical_url?: string | null
@@ -1466,8 +1466,8 @@ export type Database = {
           source_id: string
           source_table: string
           updated_at?: string
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Update: {
           canonical_url?: string | null
@@ -1487,8 +1487,8 @@ export type Database = {
           source_id?: string
           source_table?: string
           updated_at?: string
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Relationships: []
       }
@@ -1525,18 +1525,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_content_relationships_from_content_id_fkey\"
-            columns: [\"from_content_id\"]
+            foreignKeyName: "cms_content_relationships_from_content_id_fkey"
+            columns: ["from_content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"cms_content_relationships_to_content_id_fkey\"
-            columns: [\"to_content_id\"]
+            foreignKeyName: "cms_content_relationships_to_content_id_fkey"
+            columns: ["to_content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1554,8 +1554,8 @@ export type Database = {
           revision_number: number
           tags: string[] | null
           title: Json
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Insert: {
           change_summary?: string | null
@@ -1570,8 +1570,8 @@ export type Database = {
           revision_number: number
           tags?: string[] | null
           title: Json
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Update: {
           change_summary?: string | null
@@ -1586,16 +1586,16 @@ export type Database = {
           revision_number?: number
           tags?: string[] | null
           title?: Json
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_content_revisions_content_id_fkey\"
-            columns: [\"content_id\"]
+            foreignKeyName: "cms_content_revisions_content_id_fkey"
+            columns: ["content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1638,18 +1638,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_duplicate_candidates_content_id_1_fkey\"
-            columns: [\"content_id_1\"]
+            foreignKeyName: "cms_duplicate_candidates_content_id_1_fkey"
+            columns: ["content_id_1"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"cms_duplicate_candidates_content_id_2_fkey\"
-            columns: [\"content_id_2\"]
+            foreignKeyName: "cms_duplicate_candidates_content_id_2_fkey"
+            columns: ["content_id_2"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1722,7 +1722,7 @@ export type Database = {
           created_by: string | null
           id: string
           media_id: string
-          media_role: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role: Database["public"]["Enums"]["cms_media_role"]
           metadata: Json | null
           sort_order: number | null
           source_id: string
@@ -1733,7 +1733,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           media_id: string
-          media_role?: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
           metadata?: Json | null
           sort_order?: number | null
           source_id: string
@@ -1744,7 +1744,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           media_id?: string
-          media_role?: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
           metadata?: Json | null
           sort_order?: number | null
           source_id?: string
@@ -1752,11 +1752,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_media_attachments_media_id_fkey\"
-            columns: [\"media_id\"]
+            foreignKeyName: "cms_media_attachments_media_id_fkey"
+            columns: ["media_id"]
             isOneToOne: false
-            referencedRelation: \"cms_media\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_media"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1787,8 +1787,8 @@ export type Database = {
           title: string
           updated_at: string
           updated_by: string | null
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Insert: {
           author_id?: string | null
@@ -1816,8 +1816,8 @@ export type Database = {
           title: string
           updated_at?: string
           updated_by?: string | null
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Update: {
           author_id?: string | null
@@ -1845,16 +1845,16 @@ export type Database = {
           title?: string
           updated_at?: string
           updated_by?: string | null
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_pages_parent_slug_fk\"
-            columns: [\"parent_slug\"]
+            foreignKeyName: "cms_pages_parent_slug_fk"
+            columns: ["parent_slug"]
             isOneToOne: false
-            referencedRelation: \"cms_pages\"
-            referencedColumns: [\"slug\"]
+            referencedRelation: "cms_pages"
+            referencedColumns: ["slug"]
           },
         ]
       }
@@ -1906,18 +1906,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_review_comments_parent_comment_id_fkey\"
-            columns: [\"parent_comment_id\"]
+            foreignKeyName: "cms_review_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
             isOneToOne: false
-            referencedRelation: \"cms_review_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_review_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"cms_review_comments_revision_id_fkey\"
-            columns: [\"revision_id\"]
+            foreignKeyName: "cms_review_comments_revision_id_fkey"
+            columns: ["revision_id"]
             isOneToOne: false
-            referencedRelation: \"cms_revisions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_revisions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1963,11 +1963,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_review_queue_content_id_fkey\"
-            columns: [\"content_id\"]
+            foreignKeyName: "cms_review_queue_content_id_fkey"
+            columns: ["content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1983,7 +1983,7 @@ export type Database = {
           source_id: string
           source_table: string
           workflow_state:
-            | Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+            | Database["public"]["Enums"]["cms_workflow_state"]
             | null
         }
         Insert: {
@@ -1997,7 +1997,7 @@ export type Database = {
           source_id: string
           source_table: string
           workflow_state?:
-            | Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+            | Database["public"]["Enums"]["cms_workflow_state"]
             | null
         }
         Update: {
@@ -2011,7 +2011,7 @@ export type Database = {
           source_id?: string
           source_table?: string
           workflow_state?:
-            | Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+            | Database["public"]["Enums"]["cms_workflow_state"]
             | null
         }
         Relationships: []
@@ -2052,11 +2052,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_sync_jobs_connector_id_fkey\"
-            columns: [\"connector_id\"]
+            foreignKeyName: "cms_sync_jobs_connector_id_fkey"
+            columns: ["connector_id"]
             isOneToOne: false
-            referencedRelation: \"cms_connectors\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_connectors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2081,32 +2081,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"comment_likes_comment_id_fkey\"
-            columns: [\"comment_id\"]
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
             isOneToOne: false
-            referencedRelation: \"post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"comment_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"comment_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"comment_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2221,25 +2221,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"community_posts_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"community_posts_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"community_posts_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2306,11 +2306,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"community_submissions_flyer_scan_id_fkey\"
-            columns: [\"flyer_scan_id\"]
+            foreignKeyName: "community_submissions_flyer_scan_id_fkey"
+            columns: ["flyer_scan_id"]
             isOneToOne: false
-            referencedRelation: \"flyer_scans\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "flyer_scans"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2416,25 +2416,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"content_changes_module_id_fkey\"
-            columns: [\"module_id\"]
+            foreignKeyName: "content_changes_module_id_fkey"
+            columns: ["module_id"]
             isOneToOne: false
-            referencedRelation: \"automation_modules\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "automation_modules"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"content_changes_rule_id_fkey\"
-            columns: [\"rule_id\"]
+            foreignKeyName: "content_changes_rule_id_fkey"
+            columns: ["rule_id"]
             isOneToOne: false
-            referencedRelation: \"automation_rules\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"content_changes_workflow_run_id_fkey\"
-            columns: [\"workflow_run_id\"]
+            foreignKeyName: "content_changes_workflow_run_id_fkey"
+            columns: ["workflow_run_id"]
             isOneToOne: false
-            referencedRelation: \"workflow_runs\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "workflow_runs"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2711,53 +2711,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"conversation_participants_conversation_id_fkey\"
-            columns: [\"conversation_id\"]
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: \"conversations\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"conversation_participants_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "conversation_participants_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"conversation_participants_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "conversation_participants_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"conversation_participants_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "conversation_participants_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"fk_conversation_participants_user_id\"
-            columns: [\"user_id\"]
+            foreignKeyName: "fk_conversation_participants_user_id"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"fk_conversation_participants_user_id\"
-            columns: [\"user_id\"]
+            foreignKeyName: "fk_conversation_participants_user_id"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"fk_conversation_participants_user_id\"
-            columns: [\"user_id\"]
+            foreignKeyName: "fk_conversation_participants_user_id"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2797,11 +2797,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"conversations_last_message_id_fkey\"
-            columns: [\"last_message_id\"]
+            foreignKeyName: "conversations_last_message_id_fkey"
+            columns: ["last_message_id"]
             isOneToOne: false
-            referencedRelation: \"messages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3009,18 +3009,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"countries_continent_id_fkey\"
-            columns: [\"continent_id\"]
+            foreignKeyName: "countries_continent_id_fkey"
+            columns: ["continent_id"]
             isOneToOne: false
-            referencedRelation: \"continents\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "continents"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"countries_region_id_fkey\"
-            columns: [\"region_id\"]
+            foreignKeyName: "countries_region_id_fkey"
+            columns: ["region_id"]
             isOneToOne: false
-            referencedRelation: \"regions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3131,6 +3131,64 @@ export type Database = {
           symbol?: string | null
         }
         Relationships: []
+      }
+      dedup_decisions_feedback: {
+        Row: {
+          candidate_venue_id: string | null
+          created_at: string
+          decided_by: string | null
+          human_decision: string
+          id: number
+          reason: string | null
+          rpc_match_type: string | null
+          rpc_score: number | null
+          staging_id: string | null
+        }
+        Insert: {
+          candidate_venue_id?: string | null
+          created_at?: string
+          decided_by?: string | null
+          human_decision: string
+          id?: number
+          reason?: string | null
+          rpc_match_type?: string | null
+          rpc_score?: number | null
+          staging_id?: string | null
+        }
+        Update: {
+          candidate_venue_id?: string | null
+          created_at?: string
+          decided_by?: string | null
+          human_decision?: string
+          id?: number
+          reason?: string | null
+          rpc_match_type?: string | null
+          rpc_score?: number | null
+          staging_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dedup_decisions_feedback_candidate_venue_id_fkey"
+            columns: ["candidate_venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dedup_decisions_feedback_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dedup_decisions_feedback_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       donations: {
         Row: {
@@ -3363,11 +3421,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"entity_attribute_assignments_attribute_id_fkey\"
-            columns: [\"attribute_id\"]
+            foreignKeyName: "entity_attribute_assignments_attribute_id_fkey"
+            columns: ["attribute_id"]
             isOneToOne: false
-            referencedRelation: \"attributes\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "attributes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3431,39 +3489,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"event_attendees_event_id_fkey\"
-            columns: [\"event_id\"]
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: \"events\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"event_attendees_event_id_fkey\"
-            columns: [\"event_id\"]
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: \"events_public\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"event_attendees_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"event_attendees_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"event_attendees_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3539,6 +3597,63 @@ export type Database = {
         }
         Relationships: []
       }
+      event_sources: {
+        Row: {
+          confidence: number | null
+          event_id: string
+          first_seen_at: string
+          id: string
+          is_primary: boolean
+          last_seen_at: string
+          payload: Json | null
+          payload_hash: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          event_id: string
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          event_id?: string
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id?: string
+          source_slug?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_sources_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_sources_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_types: {
         Row: {
           color: string | null
@@ -3595,6 +3710,7 @@ export type Database = {
           end_date: string | null
           enrichment_status: Json | null
           event_type: string
+          external_id: string | null
           featured: boolean | null
           festival_id: string | null
           geo_linked_at: string | null
@@ -3604,6 +3720,8 @@ export type Database = {
           is_free: boolean | null
           is_public: boolean
           is_recurring: boolean | null
+          last_refreshed_at: string | null
+          last_synced_at: string | null
           latitude: number | null
           lgbti_relevance_score: number | null
           logo_fetched_at: string | null
@@ -3627,9 +3745,11 @@ export type Database = {
           ticket_url: string | null
           timezone: string | null
           title: string
+          title_normalized: string | null
           updated_at: string
           venue_id: string | null
           venue_name: string | null
+          verification_status: string
           website: string | null
         }
         Insert: {
@@ -3651,6 +3771,7 @@ export type Database = {
           end_date?: string | null
           enrichment_status?: Json | null
           event_type: string
+          external_id?: string | null
           featured?: boolean | null
           festival_id?: string | null
           geo_linked_at?: string | null
@@ -3660,6 +3781,8 @@ export type Database = {
           is_free?: boolean | null
           is_public?: boolean
           is_recurring?: boolean | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
           logo_fetched_at?: string | null
@@ -3683,9 +3806,11 @@ export type Database = {
           ticket_url?: string | null
           timezone?: string | null
           title: string
+          title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           venue_name?: string | null
+          verification_status?: string
           website?: string | null
         }
         Update: {
@@ -3707,6 +3832,7 @@ export type Database = {
           end_date?: string | null
           enrichment_status?: Json | null
           event_type?: string
+          external_id?: string | null
           featured?: boolean | null
           festival_id?: string | null
           geo_linked_at?: string | null
@@ -3716,6 +3842,8 @@ export type Database = {
           is_free?: boolean | null
           is_public?: boolean
           is_recurring?: boolean | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
           logo_fetched_at?: string | null
@@ -3739,88 +3867,90 @@ export type Database = {
           ticket_url?: string | null
           timezone?: string | null
           title?: string
+          title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           venue_name?: string | null
+          verification_status?: string
           website?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: \"events_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "events_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "events_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"events_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"events_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"events_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "events_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"events\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "events_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"events_public\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_festival_id_fkey\"
-            columns: [\"festival_id\"]
+            foreignKeyName: "events_festival_id_fkey"
+            columns: ["festival_id"]
             isOneToOne: false
-            referencedRelation: \"festivals\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_group_id_fkey\"
-            columns: [\"group_id\"]
+            foreignKeyName: "events_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: \"community_groups\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_queer_village_id_fkey\"
-            columns: [\"queer_village_id\"]
+            foreignKeyName: "events_queer_village_id_fkey"
+            columns: ["queer_village_id"]
             isOneToOne: false
-            referencedRelation: \"queer_villages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "events_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3929,11 +4059,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"feedback_votes_submission_id_fkey\"
-            columns: [\"submission_id\"]
+            foreignKeyName: "feedback_votes_submission_id_fkey"
+            columns: ["submission_id"]
             isOneToOne: false
-            referencedRelation: \"community_submissions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4024,25 +4154,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"festivals_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "festivals_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"festivals_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "festivals_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"festivals_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "festivals_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4097,39 +4227,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"flyer_scans_duplicate_event_id_fkey\"
-            columns: [\"duplicate_event_id\"]
+            foreignKeyName: "flyer_scans_duplicate_event_id_fkey"
+            columns: ["duplicate_event_id"]
             isOneToOne: false
-            referencedRelation: \"events\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"flyer_scans_duplicate_event_id_fkey\"
-            columns: [\"duplicate_event_id\"]
+            foreignKeyName: "flyer_scans_duplicate_event_id_fkey"
+            columns: ["duplicate_event_id"]
             isOneToOne: false
-            referencedRelation: \"events_public\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"flyer_scans_matched_city_id_fkey\"
-            columns: [\"matched_city_id\"]
+            foreignKeyName: "flyer_scans_matched_city_id_fkey"
+            columns: ["matched_city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"flyer_scans_matched_country_id_fkey\"
-            columns: [\"matched_country_id\"]
+            foreignKeyName: "flyer_scans_matched_country_id_fkey"
+            columns: ["matched_country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"flyer_scans_matched_venue_id_fkey\"
-            columns: [\"matched_venue_id\"]
+            foreignKeyName: "flyer_scans_matched_venue_id_fkey"
+            columns: ["matched_venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4184,11 +4314,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_comment_likes_comment_id_fkey\"
-            columns: [\"comment_id\"]
+            foreignKeyName: "group_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
             isOneToOne: false
-            referencedRelation: \"group_post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_post_comments"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4216,11 +4346,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_memberships_group_id_fkey\"
-            columns: [\"group_id\"]
+            foreignKeyName: "group_memberships_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: \"community_groups\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4263,25 +4393,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_notifications_group_id_fkey\"
-            columns: [\"group_id\"]
+            foreignKeyName: "group_notifications_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: \"community_groups\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"group_notifications_related_comment_id_fkey\"
-            columns: [\"related_comment_id\"]
+            foreignKeyName: "group_notifications_related_comment_id_fkey"
+            columns: ["related_comment_id"]
             isOneToOne: false
-            referencedRelation: \"group_post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_post_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"group_notifications_related_post_id_fkey\"
-            columns: [\"related_post_id\"]
+            foreignKeyName: "group_notifications_related_post_id_fkey"
+            columns: ["related_post_id"]
             isOneToOne: false
-            referencedRelation: \"group_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4312,11 +4442,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_poll_votes_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "group_poll_votes_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"group_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4356,18 +4486,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_post_comments_parent_comment_id_fkey\"
-            columns: [\"parent_comment_id\"]
+            foreignKeyName: "group_post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
             isOneToOne: false
-            referencedRelation: \"group_post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_post_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"group_post_comments_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "group_post_comments_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"group_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4392,11 +4522,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_post_likes_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "group_post_likes_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"group_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4448,11 +4578,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_posts_group_id_fkey\"
-            columns: [\"group_id\"]
+            foreignKeyName: "group_posts_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: \"community_groups\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4564,25 +4694,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"hotels_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "hotels_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"hotels_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "hotels_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"hotels_queer_village_id_fkey\"
-            columns: [\"queer_village_id\"]
+            foreignKeyName: "hotels_queer_village_id_fkey"
+            columns: ["queer_village_id"]
             isOneToOne: false
-            referencedRelation: \"queer_villages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4658,11 +4788,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"import_audit_log_import_job_id_fkey\"
-            columns: [\"import_job_id\"]
+            foreignKeyName: "import_audit_log_import_job_id_fkey"
+            columns: ["import_job_id"]
             isOneToOne: false
-            referencedRelation: \"import_jobs_enhanced\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "import_jobs_enhanced"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4870,11 +5000,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"import_jobs_enhanced_source_id_fkey\"
-            columns: [\"source_id\"]
+            foreignKeyName: "import_jobs_enhanced_source_id_fkey"
+            columns: ["source_id"]
             isOneToOne: false
-            referencedRelation: \"ingestion_sources\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "ingestion_sources"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4911,11 +5041,147 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"import_validation_results_import_job_id_fkey\"
-            columns: [\"import_job_id\"]
+            foreignKeyName: "import_validation_results_import_job_id_fkey"
+            columns: ["import_job_id"]
             isOneToOne: false
-            referencedRelation: \"import_jobs_enhanced\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "import_jobs_enhanced"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ingestion_dlq: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          id: number
+          last_attempt_at: string | null
+          locked_by: string | null
+          locked_until: string | null
+          max_attempts: number
+          next_retry_at: string
+          payload: Json | null
+          pipeline_run_id: string | null
+          resolved_at: string | null
+          source_slug: string | null
+          stage: string
+          staging_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: number
+          last_attempt_at?: string | null
+          locked_by?: string | null
+          locked_until?: string | null
+          max_attempts?: number
+          next_retry_at?: string
+          payload?: Json | null
+          pipeline_run_id?: string | null
+          resolved_at?: string | null
+          source_slug?: string | null
+          stage: string
+          staging_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: number
+          last_attempt_at?: string | null
+          locked_by?: string | null
+          locked_until?: string | null
+          max_attempts?: number
+          next_retry_at?: string
+          payload?: Json | null
+          pipeline_run_id?: string | null
+          resolved_at?: string | null
+          source_slug?: string | null
+          stage?: string
+          staging_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingestion_dlq_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_dlq_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ingestion_events: {
+        Row: {
+          actor: string
+          created_at: string
+          id: number
+          new_status: string | null
+          old_status: string | null
+          payload: Json | null
+          stage: string
+          staging_id: string | null
+          venue_id: string | null
+        }
+        Insert: {
+          actor?: string
+          created_at?: string
+          id?: number
+          new_status?: string | null
+          old_status?: string | null
+          payload?: Json | null
+          stage: string
+          staging_id?: string | null
+          venue_id?: string | null
+        }
+        Update: {
+          actor?: string
+          created_at?: string
+          id?: number
+          new_status?: string | null
+          old_status?: string | null
+          payload?: Json | null
+          stage?: string
+          staging_id?: string | null
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingestion_events_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5010,9 +5276,11 @@ export type Database = {
           entity_type: string | null
           error_message: string | null
           id: string
+          idempotency_key: string | null
           job_id: string
           node_id: string | null
           normalized_data: Json | null
+          payload_hash: string | null
           pipeline_run_id: string | null
           processed_at: string | null
           raw_data: Json
@@ -5020,6 +5288,7 @@ export type Database = {
           review_status: string
           reviewed_at: string | null
           reviewed_by: string | null
+          source_entity_id: string | null
           source_name: string | null
           source_type: string
           target_record_id: string | null
@@ -5044,9 +5313,11 @@ export type Database = {
           entity_type?: string | null
           error_message?: string | null
           id?: string
+          idempotency_key?: string | null
           job_id: string
           node_id?: string | null
           normalized_data?: Json | null
+          payload_hash?: string | null
           pipeline_run_id?: string | null
           processed_at?: string | null
           raw_data: Json
@@ -5054,6 +5325,7 @@ export type Database = {
           review_status?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source_entity_id?: string | null
           source_name?: string | null
           source_type: string
           target_record_id?: string | null
@@ -5078,9 +5350,11 @@ export type Database = {
           entity_type?: string | null
           error_message?: string | null
           id?: string
+          idempotency_key?: string | null
           job_id?: string
           node_id?: string | null
           normalized_data?: Json | null
+          payload_hash?: string | null
           pipeline_run_id?: string | null
           processed_at?: string | null
           raw_data?: Json
@@ -5088,6 +5362,7 @@ export type Database = {
           review_status?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source_entity_id?: string | null
           source_name?: string | null
           source_type?: string
           target_record_id?: string | null
@@ -5096,11 +5371,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"ingestion_staging_job_id_fkey\"
-            columns: [\"job_id\"]
+            foreignKeyName: "ingestion_staging_job_id_fkey"
+            columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: \"import_jobs_enhanced\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "import_jobs_enhanced"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5275,11 +5550,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"mailbox_emails_in_reply_to_email_id_fkey\"
-            columns: [\"in_reply_to_email_id\"]
+            foreignKeyName: "mailbox_emails_in_reply_to_email_id_fkey"
+            columns: ["in_reply_to_email_id"]
             isOneToOne: false
-            referencedRelation: \"mailbox_emails\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "mailbox_emails"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5340,11 +5615,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"marketplace_categories_parent_id_fkey\"
-            columns: [\"parent_id\"]
+            foreignKeyName: "marketplace_categories_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: \"marketplace_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5369,32 +5644,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"marketplace_favorites_listing_id_fkey\"
-            columns: [\"listing_id\"]
+            foreignKeyName: "marketplace_favorites_listing_id_fkey"
+            columns: ["listing_id"]
             isOneToOne: false
-            referencedRelation: \"marketplace_listings\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"marketplace_favorites_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_favorites_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_favorites_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5488,39 +5763,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"marketplace_listings_category_id_fkey\"
-            columns: [\"category_id\"]
+            foreignKeyName: "marketplace_listings_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: \"marketplace_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"marketplace_listings_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_listings_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_listings_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_listings_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "marketplace_listings_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5563,32 +5838,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"marketplace_reviews_listing_id_fkey\"
-            columns: [\"listing_id\"]
+            foreignKeyName: "marketplace_reviews_listing_id_fkey"
+            columns: ["listing_id"]
             isOneToOne: false
-            referencedRelation: \"marketplace_listings\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"marketplace_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5658,32 +5933,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"message_reactions_message_id_fkey\"
-            columns: [\"message_id\"]
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
             isOneToOne: false
-            referencedRelation: \"messages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"message_reactions_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "message_reactions_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"message_reactions_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "message_reactions_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"message_reactions_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "message_reactions_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5729,39 +6004,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"messages_conversation_id_fkey\"
-            columns: [\"conversation_id\"]
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: \"conversations\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"messages_reply_to_id_fkey\"
-            columns: [\"reply_to_id\"]
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
             isOneToOne: false
-            referencedRelation: \"messages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"messages_sender_id_profiles_user_id_fkey\"
-            columns: [\"sender_id\"]
+            foreignKeyName: "messages_sender_id_profiles_user_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"messages_sender_id_profiles_user_id_fkey\"
-            columns: [\"sender_id\"]
+            foreignKeyName: "messages_sender_id_profiles_user_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"messages_sender_id_profiles_user_id_fkey\"
-            columns: [\"sender_id\"]
+            foreignKeyName: "messages_sender_id_profiles_user_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5840,18 +6115,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"news_article_cities_article_id_fkey\"
-            columns: [\"article_id\"]
+            foreignKeyName: "news_article_cities_article_id_fkey"
+            columns: ["article_id"]
             isOneToOne: false
-            referencedRelation: \"news_articles\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"news_article_cities_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "news_article_cities_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5876,18 +6151,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"news_article_countries_article_id_fkey\"
-            columns: [\"article_id\"]
+            foreignKeyName: "news_article_countries_article_id_fkey"
+            columns: ["article_id"]
             isOneToOne: false
-            referencedRelation: \"news_articles\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"news_article_countries_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "news_article_countries_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5898,19 +6173,26 @@ export type Database = {
           city_ids: string[] | null
           classified_at: string | null
           content: string | null
+          content_hash: string | null
           country_ids: string[] | null
           created_at: string
           duplicate_of_id: string | null
           enrichment_status: Json | null
           excerpt: string | null
+          fingerprint: string | null
+          first_seen_at: string | null
           id: string
           image_url: string | null
+          ingestion_run_id: string | null
+          ingestion_staging_id: string | null
           is_featured: boolean | null
+          last_seen_at: string | null
           lgbti_relevance_score: number | null
           needs_attention: boolean | null
           published_at: string
           publisher_name: string | null
           quality_score: number | null
+          seen_count: number | null
           sensitivity_flags: Json | null
           sentiment: string | null
           slug: string
@@ -5927,19 +6209,26 @@ export type Database = {
           city_ids?: string[] | null
           classified_at?: string | null
           content?: string | null
+          content_hash?: string | null
           country_ids?: string[] | null
           created_at?: string
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
           excerpt?: string | null
+          fingerprint?: string | null
+          first_seen_at?: string | null
           id?: string
           image_url?: string | null
+          ingestion_run_id?: string | null
+          ingestion_staging_id?: string | null
           is_featured?: boolean | null
+          last_seen_at?: string | null
           lgbti_relevance_score?: number | null
           needs_attention?: boolean | null
           published_at: string
           publisher_name?: string | null
           quality_score?: number | null
+          seen_count?: number | null
           sensitivity_flags?: Json | null
           sentiment?: string | null
           slug: string
@@ -5956,19 +6245,26 @@ export type Database = {
           city_ids?: string[] | null
           classified_at?: string | null
           content?: string | null
+          content_hash?: string | null
           country_ids?: string[] | null
           created_at?: string
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
           excerpt?: string | null
+          fingerprint?: string | null
+          first_seen_at?: string | null
           id?: string
           image_url?: string | null
+          ingestion_run_id?: string | null
+          ingestion_staging_id?: string | null
           is_featured?: boolean | null
+          last_seen_at?: string | null
           lgbti_relevance_score?: number | null
           needs_attention?: boolean | null
           published_at?: string
           publisher_name?: string | null
           quality_score?: number | null
+          seen_count?: number | null
           sensitivity_flags?: Json | null
           sentiment?: string | null
           slug?: string
@@ -5981,18 +6277,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"news_articles_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "news_articles_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"news_articles\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"news_articles_source_id_fkey\"
-            columns: [\"source_id\"]
+            foreignKeyName: "news_articles_ingestion_run_id_fkey"
+            columns: ["ingestion_run_id"]
             isOneToOne: false
-            referencedRelation: \"news_sources\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "pipeline_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_articles_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "news_sources"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6038,11 +6341,84 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"news_categories_parent_category_id_fkey\"
-            columns: [\"parent_category_id\"]
+            foreignKeyName: "news_categories_parent_category_id_fkey"
+            columns: ["parent_category_id"]
             isOneToOne: false
-            referencedRelation: \"news_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "news_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_dedup_audit: {
+        Row: {
+          candidate_fingerprint: string | null
+          candidate_published_at: string | null
+          candidate_title: string | null
+          candidate_url: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          match_decision: string
+          match_score: number | null
+          match_strategy: string
+          matched_article_id: string | null
+          pipeline_run_id: string | null
+          source_id: string | null
+          staging_id: string | null
+        }
+        Insert: {
+          candidate_fingerprint?: string | null
+          candidate_published_at?: string | null
+          candidate_title?: string | null
+          candidate_url?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          match_decision: string
+          match_score?: number | null
+          match_strategy: string
+          matched_article_id?: string | null
+          pipeline_run_id?: string | null
+          source_id?: string | null
+          staging_id?: string | null
+        }
+        Update: {
+          candidate_fingerprint?: string | null
+          candidate_published_at?: string | null
+          candidate_title?: string | null
+          candidate_url?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          match_decision?: string
+          match_score?: number | null
+          match_strategy?: string
+          matched_article_id?: string | null
+          pipeline_run_id?: string | null
+          source_id?: string | null
+          staging_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_dedup_audit_matched_article_id_fkey"
+            columns: ["matched_article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_dedup_audit_pipeline_run_id_fkey"
+            columns: ["pipeline_run_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_dedup_audit_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "news_sources"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6070,7 +6446,12 @@ export type Database = {
       news_sources: {
         Row: {
           articles_fetched: number | null
+          auto_paused: boolean
+          auto_paused_reason: string | null
+          avg_articles_per_fetch: number | null
+          backoff_until: string | null
           category: string
+          consecutive_failures: number
           created_at: string
           fetch_frequency: number
           id: string
@@ -6078,7 +6459,9 @@ export type Database = {
           keywords: string[] | null
           last_error: string | null
           last_fetched_at: string | null
+          last_successful_fetch: string | null
           name: string
+          reliability_score: number | null
           source_type: string
           status: string | null
           updated_at: string
@@ -6086,7 +6469,12 @@ export type Database = {
         }
         Insert: {
           articles_fetched?: number | null
+          auto_paused?: boolean
+          auto_paused_reason?: string | null
+          avg_articles_per_fetch?: number | null
+          backoff_until?: string | null
           category?: string
+          consecutive_failures?: number
           created_at?: string
           fetch_frequency?: number
           id?: string
@@ -6094,7 +6482,9 @@ export type Database = {
           keywords?: string[] | null
           last_error?: string | null
           last_fetched_at?: string | null
+          last_successful_fetch?: string | null
           name: string
+          reliability_score?: number | null
           source_type?: string
           status?: string | null
           updated_at?: string
@@ -6102,7 +6492,12 @@ export type Database = {
         }
         Update: {
           articles_fetched?: number | null
+          auto_paused?: boolean
+          auto_paused_reason?: string | null
+          avg_articles_per_fetch?: number | null
+          backoff_until?: string | null
           category?: string
+          consecutive_failures?: number
           created_at?: string
           fetch_frequency?: number
           id?: string
@@ -6110,7 +6505,9 @@ export type Database = {
           keywords?: string[] | null
           last_error?: string | null
           last_fetched_at?: string | null
+          last_successful_fetch?: string | null
           name?: string
+          reliability_score?: number | null
           source_type?: string
           status?: string | null
           updated_at?: string
@@ -6325,25 +6722,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"personalities_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "personalities_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"personalities_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "personalities_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"personalities_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "personalities_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"personalities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "personalities"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6515,11 +6912,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"pipeline_runs_pipeline_id_fkey\"
-            columns: [\"pipeline_id\"]
+            foreignKeyName: "pipeline_runs_pipeline_id_fkey"
+            columns: ["pipeline_id"]
             isOneToOne: false
-            referencedRelation: \"pipeline_definitions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "pipeline_definitions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6607,39 +7004,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"post_comments_parent_comment_id_fkey\"
-            columns: [\"parent_comment_id\"]
+            foreignKeyName: "post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
             isOneToOne: false
-            referencedRelation: \"post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"post_comments_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"community_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"post_comments_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"post_comments_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"post_comments_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6664,32 +7061,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"post_likes_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"community_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"post_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"post_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"post_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6849,7 +7246,7 @@ export type Database = {
           travel_preferences: Json | null
           updated_at: string
           user_id: string
-          user_mode: Database[\"public\"][\"Enums\"][\"user_mode\"] | null
+          user_mode: Database["public"]["Enums"]["user_mode"] | null
           verified_email: boolean | null
           verified_identity: boolean | null
           verified_phone: boolean | null
@@ -6995,7 +7392,7 @@ export type Database = {
           travel_preferences?: Json | null
           updated_at?: string
           user_id: string
-          user_mode?: Database[\"public\"][\"Enums\"][\"user_mode\"] | null
+          user_mode?: Database["public"]["Enums"]["user_mode"] | null
           verified_email?: boolean | null
           verified_identity?: boolean | null
           verified_phone?: boolean | null
@@ -7141,7 +7538,7 @@ export type Database = {
           travel_preferences?: Json | null
           updated_at?: string
           user_id?: string
-          user_mode?: Database[\"public\"][\"Enums\"][\"user_mode\"] | null
+          user_mode?: Database["public"]["Enums"]["user_mode"] | null
           verified_email?: boolean | null
           verified_identity?: boolean | null
           verified_phone?: boolean | null
@@ -7296,18 +7693,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"queer_villages_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "queer_villages_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"queer_villages_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "queer_villages_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7383,11 +7780,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"redirect_events_redirect_id_fkey\"
-            columns: [\"redirect_id\"]
+            foreignKeyName: "redirect_events_redirect_id_fkey"
+            columns: ["redirect_id"]
             isOneToOne: false
-            referencedRelation: \"redirects\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "redirects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7400,17 +7797,17 @@ export type Database = {
           end_at: string | null
           id: string
           is_enabled: boolean
-          match_kind: Database[\"public\"][\"Enums\"][\"redirect_match_kind\"]
+          match_kind: Database["public"]["Enums"]["redirect_match_kind"]
           notes: string | null
           preserve_query: boolean
-          query_mode: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode: Database["public"]["Enums"]["redirect_query_mode"]
           query_override: Json | null
           slug: string | null
           source_path: string | null
           start_at: string | null
           status_code: number
           target: string
-          type: Database[\"public\"][\"Enums\"][\"redirect_type\"]
+          type: Database["public"]["Enums"]["redirect_type"]
           updated_at: string
           utm_defaults: Json | null
         }
@@ -7422,17 +7819,17 @@ export type Database = {
           end_at?: string | null
           id?: string
           is_enabled?: boolean
-          match_kind?: Database[\"public\"][\"Enums\"][\"redirect_match_kind\"]
+          match_kind?: Database["public"]["Enums"]["redirect_match_kind"]
           notes?: string | null
           preserve_query?: boolean
-          query_mode?: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode?: Database["public"]["Enums"]["redirect_query_mode"]
           query_override?: Json | null
           slug?: string | null
           source_path?: string | null
           start_at?: string | null
           status_code?: number
           target: string
-          type?: Database[\"public\"][\"Enums\"][\"redirect_type\"]
+          type?: Database["public"]["Enums"]["redirect_type"]
           updated_at?: string
           utm_defaults?: Json | null
         }
@@ -7444,17 +7841,17 @@ export type Database = {
           end_at?: string | null
           id?: string
           is_enabled?: boolean
-          match_kind?: Database[\"public\"][\"Enums\"][\"redirect_match_kind\"]
+          match_kind?: Database["public"]["Enums"]["redirect_match_kind"]
           notes?: string | null
           preserve_query?: boolean
-          query_mode?: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode?: Database["public"]["Enums"]["redirect_query_mode"]
           query_override?: Json | null
           slug?: string | null
           source_path?: string | null
           start_at?: string | null
           status_code?: number
           target?: string
-          type?: Database[\"public\"][\"Enums\"][\"redirect_type\"]
+          type?: Database["public"]["Enums"]["redirect_type"]
           updated_at?: string
           utm_defaults?: Json | null
         }
@@ -7484,11 +7881,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"regions_continent_id_fkey\"
-            columns: [\"continent_id\"]
+            foreignKeyName: "regions_continent_id_fkey"
+            columns: ["continent_id"]
             isOneToOne: false
-            referencedRelation: \"continents\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "continents"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7528,11 +7925,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"review_queue_resolved_by_fkey\"
-            columns: [\"resolved_by\"]
+            foreignKeyName: "review_queue_resolved_by_fkey"
+            columns: ["resolved_by"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7542,7 +7939,7 @@ export type Database = {
           created_at: string
           id: string
           performed_by: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           target_user_id: string
           user_id: string
         }
@@ -7551,7 +7948,7 @@ export type Database = {
           created_at?: string
           id?: string
           performed_by: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           target_user_id: string
           user_id: string
         }
@@ -7560,7 +7957,7 @@ export type Database = {
           created_at?: string
           id?: string
           performed_by?: string
-          role?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role?: Database["public"]["Enums"]["app_role"]
           target_user_id?: string
           user_id?: string
         }
@@ -7626,18 +8023,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"scrape_runs_job_id_fkey\"
-            columns: [\"job_id\"]
+            foreignKeyName: "scrape_runs_job_id_fkey"
+            columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: \"import_jobs_enhanced\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "import_jobs_enhanced"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"scrape_runs_source_id_fkey\"
-            columns: [\"source_id\"]
+            foreignKeyName: "scrape_runs_source_id_fkey"
+            columns: ["source_id"]
             isOneToOne: false
-            referencedRelation: \"scrape_sources\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "scrape_sources"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7724,34 +8121,43 @@ export type Database = {
       }
       scraper_dedupe_decisions: {
         Row: {
+          action: string | null
           confidence: number
           created_at: string | null
+          decided_by: string
           decision: string
           entity_a_id: string
           entity_b_id: string
           entity_type: string
           id: string
           match_method: string
+          rules_fired: Json | null
         }
         Insert: {
+          action?: string | null
           confidence: number
           created_at?: string | null
+          decided_by?: string
           decision: string
           entity_a_id: string
           entity_b_id: string
           entity_type: string
           id?: string
           match_method: string
+          rules_fired?: Json | null
         }
         Update: {
+          action?: string | null
           confidence?: number
           created_at?: string | null
+          decided_by?: string
           decision?: string
           entity_a_id?: string
           entity_b_id?: string
           entity_type?: string
           id?: string
           match_method?: string
+          rules_fired?: Json | null
         }
         Relationships: []
       }
@@ -8148,6 +8554,54 @@ export type Database = {
         }
         Relationships: []
       }
+      search_queries: {
+        Row: {
+          clicked_entity_id: string | null
+          clicked_entity_type: string | null
+          created_at: string
+          filters: Json | null
+          had_rewrite: boolean | null
+          id: string
+          lang: string | null
+          n_results: number | null
+          query: string
+          query_normalized: string | null
+          session_id: string | null
+          took_ms: number | null
+          user_id: string | null
+        }
+        Insert: {
+          clicked_entity_id?: string | null
+          clicked_entity_type?: string | null
+          created_at?: string
+          filters?: Json | null
+          had_rewrite?: boolean | null
+          id?: string
+          lang?: string | null
+          n_results?: number | null
+          query: string
+          query_normalized?: string | null
+          session_id?: string | null
+          took_ms?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          clicked_entity_id?: string | null
+          clicked_entity_type?: string | null
+          created_at?: string
+          filters?: Json | null
+          had_rewrite?: boolean | null
+          id?: string
+          lang?: string | null
+          n_results?: number | null
+          query?: string
+          query_normalized?: string | null
+          session_id?: string | null
+          took_ms?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string
@@ -8244,6 +8698,62 @@ export type Database = {
         }
         Relationships: []
       }
+      source_coverage_targets: {
+        Row: {
+          accommodation_type: string | null
+          actual_count: number
+          city_id: string | null
+          created_at: string
+          entity_type: string
+          expected_count: number | null
+          id: number
+          is_enabled: boolean
+          last_run_at: string | null
+          last_success_at: string | null
+          source_slug: string
+          success_ratio: number | null
+          updated_at: string
+        }
+        Insert: {
+          accommodation_type?: string | null
+          actual_count?: number
+          city_id?: string | null
+          created_at?: string
+          entity_type?: string
+          expected_count?: number | null
+          id?: number
+          is_enabled?: boolean
+          last_run_at?: string | null
+          last_success_at?: string | null
+          source_slug: string
+          success_ratio?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accommodation_type?: string | null
+          actual_count?: number
+          city_id?: string | null
+          created_at?: string
+          entity_type?: string
+          expected_count?: number | null
+          id?: number
+          is_enabled?: boolean
+          last_run_at?: string | null
+          last_success_at?: string | null
+          source_slug?: string
+          success_ratio?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_coverage_targets_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suspicious_activities: {
         Row: {
           activity_type: string
@@ -8307,25 +8817,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"tag_aliases_canonical_tag_id_fkey\"
-            columns: [\"canonical_tag_id\"]
+            foreignKeyName: "tag_aliases_canonical_tag_id_fkey"
+            columns: ["canonical_tag_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_aliases_canonical_tag_id_fkey\"
-            columns: [\"canonical_tag_id\"]
+            foreignKeyName: "tag_aliases_canonical_tag_id_fkey"
+            columns: ["canonical_tag_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_aliases_canonical_tag_id_fkey\"
-            columns: [\"canonical_tag_id\"]
+            foreignKeyName: "tag_aliases_canonical_tag_id_fkey"
+            columns: ["canonical_tag_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8368,11 +8878,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"tag_categories_parent_id_fkey\"
-            columns: [\"parent_id\"]
+            foreignKeyName: "tag_categories_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: \"tag_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_categories"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8400,32 +8910,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"tag_category_assignments_category_id_fkey\"
-            columns: [\"category_id\"]
+            foreignKeyName: "tag_category_assignments_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: \"tag_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_category_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_category_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_category_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_category_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_category_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_category_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8525,25 +9035,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"tag_suggestions_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_suggestions_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_suggestions_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_suggestions_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_suggestions_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_suggestions_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8628,18 +9138,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_budget_items_place_id_fkey\"
-            columns: [\"place_id\"]
+            foreignKeyName: "trip_budget_items_place_id_fkey"
+            columns: ["place_id"]
             isOneToOne: false
-            referencedRelation: \"trip_places\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trip_places"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_budget_items_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_budget_items_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8670,11 +9180,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_days_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_days_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8705,32 +9215,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_members_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_members_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_members_user_id_profiles_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "trip_members_user_id_profiles_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"trip_members_user_id_profiles_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "trip_members_user_id_profiles_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"trip_members_user_id_profiles_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "trip_members_user_id_profiles_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -8764,18 +9274,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_messages_reply_to_fkey\"
-            columns: [\"reply_to\"]
+            foreignKeyName: "trip_messages_reply_to_fkey"
+            columns: ["reply_to"]
             isOneToOne: false
-            referencedRelation: \"trip_messages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trip_messages"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_messages_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_messages_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8815,11 +9325,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_notes_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_notes_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8859,11 +9369,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_packing_items_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_packing_items_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8936,60 +9446,60 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_places_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "trip_places_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "trip_places_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_day_id_fkey\"
-            columns: [\"day_id\"]
+            foreignKeyName: "trip_places_day_id_fkey"
+            columns: ["day_id"]
             isOneToOne: false
-            referencedRelation: \"trip_days\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trip_days"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_event_id_fkey\"
-            columns: [\"event_id\"]
+            foreignKeyName: "trip_places_event_id_fkey"
+            columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: \"events\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_event_id_fkey\"
-            columns: [\"event_id\"]
+            foreignKeyName: "trip_places_event_id_fkey"
+            columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: \"events_public\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_hotel_id_fkey\"
-            columns: [\"hotel_id\"]
+            foreignKeyName: "trip_places_hotel_id_fkey"
+            columns: ["hotel_id"]
             isOneToOne: false
-            referencedRelation: \"hotels\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_places_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "trip_places_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9029,11 +9539,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_polls_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_polls_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9106,25 +9616,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_reservations_booking_id_fkey\"
-            columns: [\"booking_id\"]
+            foreignKeyName: "trip_reservations_booking_id_fkey"
+            columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: \"bookings\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_reservations_place_id_fkey\"
-            columns: [\"place_id\"]
+            foreignKeyName: "trip_reservations_place_id_fkey"
+            columns: ["place_id"]
             isOneToOne: false
-            referencedRelation: \"trip_places\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trip_places"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_reservations_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_reservations_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9158,11 +9668,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_shares_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_shares_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9253,25 +9763,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"unified_tag_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tag_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tag_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9335,25 +9845,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9411,46 +9921,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"user_follows_follower_id_fkey\"
-            columns: [\"follower_id\"]
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_follower_id_fkey\"
-            columns: [\"follower_id\"]
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_follower_id_fkey\"
-            columns: [\"follower_id\"]
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_following_id_fkey\"
-            columns: [\"following_id\"]
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_following_id_fkey\"
-            columns: [\"following_id\"]
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_following_id_fkey\"
-            columns: [\"following_id\"]
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -9675,7 +10185,7 @@ export type Database = {
           action_type: string
           admin_user_id: string
           id: string
-          role_changed: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role_changed: Database["public"]["Enums"]["app_role"]
           target_user_id: string
           timestamp: string
         }
@@ -9683,7 +10193,7 @@ export type Database = {
           action_type: string
           admin_user_id: string
           id?: string
-          role_changed: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role_changed: Database["public"]["Enums"]["app_role"]
           target_user_id: string
           timestamp?: string
         }
@@ -9691,7 +10201,7 @@ export type Database = {
           action_type?: string
           admin_user_id?: string
           id?: string
-          role_changed?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role_changed?: Database["public"]["Enums"]["app_role"]
           target_user_id?: string
           timestamp?: string
         }
@@ -9701,21 +10211,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          role?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id?: string
         }
@@ -9904,11 +10414,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"venue_checkins_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "venue_checkins_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10038,32 +10548,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"venue_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venue_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venue_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venue_reviews_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "venue_reviews_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10106,6 +10616,56 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_sources: {
+        Row: {
+          confidence: number | null
+          first_seen_at: string
+          id: string
+          is_primary: boolean
+          last_seen_at: string
+          payload: Json | null
+          payload_hash: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url: string | null
+          venue_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url?: string | null
+          venue_id: string
+        }
+        Update: {
+          confidence?: number | null
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id?: string
+          source_slug?: string
+          source_url?: string | null
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_sources_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       venue_tag_assignments: {
         Row: {
           created_at: string
@@ -10127,11 +10687,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"venue_tag_assignments_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "venue_tag_assignments_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10139,8 +10699,11 @@ export type Database = {
         Row: {
           accessibility_attributes: string[] | null
           accessibility_notes: string | null
+          accommodation_type: string | null
           address: string
           amenities: string[] | null
+          amenities_verified: boolean
+          booking_url: string | null
           category: string
           city: string
           city_id: string | null
@@ -10153,6 +10716,7 @@ export type Database = {
           description: string | null
           duplicate_of_id: string | null
           email: string | null
+          email_lower: string | null
           enrichment_status: Json | null
           external_id: string | null
           featured: boolean | null
@@ -10164,6 +10728,7 @@ export type Database = {
           id: string
           images: string[] | null
           instagram: string | null
+          last_refreshed_at: string | null
           last_synced_at: string | null
           latitude: number | null
           lgbti_relevance_score: number | null
@@ -10171,8 +10736,11 @@ export type Database = {
           logo_url: string | null
           longitude: number | null
           name: string
+          name_normalized: string | null
           needs_attention: boolean | null
           phone: string | null
+          phone_e164: string | null
+          platform_ids: Json
           postal_code: string | null
           price_range: number | null
           quality_score: number | null
@@ -10180,6 +10748,7 @@ export type Database = {
           sensitivity_flags: Json | null
           services: string[] | null
           slug: string
+          star_rating: number | null
           state: string | null
           sync_status: string | null
           tags: string[] | null
@@ -10191,14 +10760,19 @@ export type Database = {
           tripadvisor_rating: number | null
           tripadvisor_review_count: number | null
           updated_at: string
+          verification_status: string
           verified: boolean | null
           website: string | null
+          website_domain: string | null
         }
         Insert: {
           accessibility_attributes?: string[] | null
           accessibility_notes?: string | null
+          accommodation_type?: string | null
           address: string
           amenities?: string[] | null
+          amenities_verified?: boolean
+          booking_url?: string | null
           category: string
           city: string
           city_id?: string | null
@@ -10211,6 +10785,7 @@ export type Database = {
           description?: string | null
           duplicate_of_id?: string | null
           email?: string | null
+          email_lower?: string | null
           enrichment_status?: Json | null
           external_id?: string | null
           featured?: boolean | null
@@ -10222,6 +10797,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           instagram?: string | null
+          last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
@@ -10229,8 +10805,11 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name: string
+          name_normalized?: string | null
           needs_attention?: boolean | null
           phone?: string | null
+          phone_e164?: string | null
+          platform_ids?: Json
           postal_code?: string | null
           price_range?: number | null
           quality_score?: number | null
@@ -10238,6 +10817,7 @@ export type Database = {
           sensitivity_flags?: Json | null
           services?: string[] | null
           slug: string
+          star_rating?: number | null
           state?: string | null
           sync_status?: string | null
           tags?: string[] | null
@@ -10249,14 +10829,19 @@ export type Database = {
           tripadvisor_rating?: number | null
           tripadvisor_review_count?: number | null
           updated_at?: string
+          verification_status?: string
           verified?: boolean | null
           website?: string | null
+          website_domain?: string | null
         }
         Update: {
           accessibility_attributes?: string[] | null
           accessibility_notes?: string | null
+          accommodation_type?: string | null
           address?: string
           amenities?: string[] | null
+          amenities_verified?: boolean
+          booking_url?: string | null
           category?: string
           city?: string
           city_id?: string | null
@@ -10269,6 +10854,7 @@ export type Database = {
           description?: string | null
           duplicate_of_id?: string | null
           email?: string | null
+          email_lower?: string | null
           enrichment_status?: Json | null
           external_id?: string | null
           featured?: boolean | null
@@ -10280,6 +10866,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           instagram?: string | null
+          last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
@@ -10287,8 +10874,11 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name?: string
+          name_normalized?: string | null
           needs_attention?: boolean | null
           phone?: string | null
+          phone_e164?: string | null
+          platform_ids?: Json
           postal_code?: string | null
           price_range?: number | null
           quality_score?: number | null
@@ -10296,6 +10886,7 @@ export type Database = {
           sensitivity_flags?: Json | null
           services?: string[] | null
           slug?: string
+          star_rating?: number | null
           state?: string | null
           sync_status?: string | null
           tags?: string[] | null
@@ -10307,58 +10898,60 @@ export type Database = {
           tripadvisor_rating?: number | null
           tripadvisor_review_count?: number | null
           updated_at?: string
+          verification_status?: string
           verified?: boolean | null
           website?: string | null
+          website_domain?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: \"venues_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "venues_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"venues_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "venues_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"venues_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venues_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venues_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venues_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "venues_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"venues_queer_village_id_fkey\"
-            columns: [\"queer_village_id\"]
+            foreignKeyName: "venues_queer_village_id_fkey"
+            columns: ["queer_village_id"]
             isOneToOne: false
-            referencedRelation: \"queer_villages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10416,11 +11009,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"video_processing_jobs_video_id_fkey\"
-            columns: [\"video_id\"]
+            foreignKeyName: "video_processing_jobs_video_id_fkey"
+            columns: ["video_id"]
             isOneToOne: false
-            referencedRelation: \"videos\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10472,11 +11065,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"video_renditions_video_id_fkey\"
-            columns: [\"video_id\"]
+            foreignKeyName: "video_renditions_video_id_fkey"
+            columns: ["video_id"]
             isOneToOne: false
-            referencedRelation: \"videos\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10687,16 +11280,43 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"workflow_runs_definition_id_fkey\"
-            columns: [\"definition_id\"]
+            foreignKeyName: "workflow_runs_definition_id_fkey"
+            columns: ["definition_id"]
             isOneToOne: false
-            referencedRelation: \"workflow_definitions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
           },
         ]
       }
     }
     Views: {
+      dlq_summary: {
+        Row: {
+          items: number | null
+          last_attempt: string | null
+          next_retry: string | null
+          source_slug: string | null
+          stage: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
+      event_ingest_stats: {
+        Row: {
+          day: string | null
+          duplicates: number | null
+          inserted: number | null
+          merge_candidates: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          updated: number | null
+          validated: number | null
+        }
+        Relationships: []
+      }
       events_public: {
         Row: {
           address: string | null
@@ -10772,13 +11392,76 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"events_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "events_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
+      }
+      hotel_ingest_stats: {
+        Row: {
+          accommodation_type: string | null
+          committed: number | null
+          day: string | null
+          duplicates: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          validated: number | null
+        }
+        Relationships: []
+      }
+      pipeline_stuck_items: {
+        Row: {
+          ai_validation_status: string | null
+          created_at: string | null
+          dedup_status: string | null
+          disposition: string | null
+          error_message: string | null
+          id: string | null
+          review_status: string | null
+          source_name: string | null
+          source_type: string | null
+          stale_seconds: number | null
+          stuck_reason: string | null
+          target_table: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_validation_status?: string | null
+          created_at?: string | null
+          dedup_status?: string | null
+          disposition?: string | null
+          error_message?: string | null
+          id?: string | null
+          review_status?: string | null
+          source_name?: string | null
+          source_type?: string | null
+          stale_seconds?: never
+          stuck_reason?: never
+          target_table?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_validation_status?: string | null
+          created_at?: string | null
+          dedup_status?: string | null
+          disposition?: string | null
+          error_message?: string | null
+          id?: string | null
+          review_status?: string | null
+          source_name?: string | null
+          source_type?: string | null
+          stale_seconds?: never
+          stuck_reason?: never
+          target_table?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       public_profiles: {
         Row: {
@@ -10914,27 +11597,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
           },
         ]
+      }
+      v_popular_entities: {
+        Row: {
+          content_id: string | null
+          content_type: string | null
+          score: number | null
+        }
+        Relationships: []
+      }
+      v_top_queries: {
+        Row: {
+          avg_ms: number | null
+          avg_results: number | null
+          last_seen: string | null
+          n: number | null
+          query_normalized: string | null
+        }
+        Relationships: []
+      }
+      v_zero_hit_queries: {
+        Row: {
+          last_seen: string | null
+          n: number | null
+          query_normalized: string | null
+        }
+        Relationships: []
       }
       venue_checkin_stats: {
         Row: {
@@ -10946,13 +11655,28 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"venue_checkins_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "venue_checkins_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
+      }
+      venue_ingest_stats: {
+        Row: {
+          day: string | null
+          duplicates: number | null
+          inserted: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          updated: number | null
+          validated: number | null
+        }
+        Relationships: []
       }
     }
     Functions: {
@@ -11054,13 +11778,13 @@ export type Database = {
             Args: { p_batch_id: string }
             Returns: {
               error: true
-            } & \"Could not choose the best candidate function between: public.bulk_apply_batch_changes(p_batch_id => text), public.bulk_apply_batch_changes(p_batch_id => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved\"
+            } & "Could not choose the best candidate function between: public.bulk_apply_batch_changes(p_batch_id => text), public.bulk_apply_batch_changes(p_batch_id => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
           }
         | {
             Args: { p_batch_id: string }
             Returns: {
               error: true
-            } & \"Could not choose the best candidate function between: public.bulk_apply_batch_changes(p_batch_id => text), public.bulk_apply_batch_changes(p_batch_id => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved\"
+            } & "Could not choose the best candidate function between: public.bulk_apply_batch_changes(p_batch_id => text), public.bulk_apply_batch_changes(p_batch_id => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
           }
       bulk_apply_content_changes: {
         Args: { p_change_ids: string[] }
@@ -11106,6 +11830,36 @@ export type Database = {
         Args: { p_dry_run?: boolean; p_skip_threshold?: number }
         Returns: Json
       }
+      commit_event_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          event_id: string
+          staging_id: string
+        }[]
+      }
+      commit_event_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          event_id: string
+        }[]
+      }
+      commit_venue_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          staging_id: string
+          venue_id: string
+        }[]
+      }
+      commit_venue_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          venue_id: string
+        }[]
+      }
       compute_quality_score: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: number
@@ -11135,6 +11889,48 @@ export type Database = {
           tag_b_name: string
         }[]
       }
+      dlq_claim_batch: {
+        Args: { p_limit?: number; p_worker?: string }
+        Returns: {
+          attempts: number
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          id: number
+          last_attempt_at: string | null
+          locked_by: string | null
+          locked_until: string | null
+          max_attempts: number
+          next_retry_at: string
+          payload: Json | null
+          pipeline_run_id: string | null
+          resolved_at: string | null
+          source_slug: string | null
+          stage: string
+          staging_id: string | null
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "ingestion_dlq"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      dlq_enqueue: {
+        Args: {
+          p_error: string
+          p_error_code: string
+          p_payload?: Json
+          p_source?: string
+          p_stage: string
+          p_staging_id: string
+        }
+        Returns: number
+      }
+      dlq_fail: { Args: { p_err: string; p_id: number }; Returns: undefined }
+      dlq_resolve: { Args: { p_id: number }; Returns: undefined }
       enqueue_workflow: {
         Args: {
           p_payload?: Json
@@ -11155,6 +11951,7 @@ export type Database = {
           name: string
         }[]
       }
+      extract_website_domain: { Args: { url: string }; Returns: string }
       find_city_duplicates: {
         Args: {
           p_country_id?: string
@@ -11185,6 +11982,25 @@ export type Database = {
           similarity_score: number
         }[]
       }
+      find_event_duplicate_candidates: {
+        Args: {
+          p_city?: string
+          p_edition?: string
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_start_date: string
+          p_title: string
+          p_venue_id?: string
+        }
+        Returns: {
+          distance_m: number
+          event_id: string
+          match_type: string
+          score: number
+          time_diff_hours: number
+        }[]
+      }
       find_event_duplicates: {
         Args: { p_city?: string; p_start_date: string; p_title: string }
         Returns: {
@@ -11194,6 +12010,26 @@ export type Database = {
           event_id: string
           event_title: string
           title_similarity: number
+        }[]
+      }
+      find_hotel_duplicate_candidates: {
+        Args: {
+          p_booking_url?: string
+          p_city_id?: string
+          p_email?: string
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_name: string
+          p_phone_e164?: string
+          p_platform_ids?: Json
+          p_website_domain?: string
+        }
+        Returns: {
+          distance_m: number
+          match_type: string
+          score: number
+          venue_id: string
         }[]
       }
       find_nearest_airport: {
@@ -11237,6 +12073,24 @@ export type Database = {
           village_name: string
         }[]
       }
+      find_venue_duplicate_candidates: {
+        Args: {
+          p_city_id?: string
+          p_email?: string
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_name: string
+          p_phone_e164?: string
+          p_website_domain?: string
+        }
+        Returns: {
+          distance_m: number
+          match_type: string
+          score: number
+          venue_id: string
+        }[]
+      }
       find_venue_duplicates: {
         Args: {
           p_category?: string
@@ -11266,6 +12120,16 @@ export type Database = {
       }
       get_admin_counts: { Args: never; Returns: Json }
       get_automation_stats: { Args: never; Returns: Json }
+      get_bias_signal: {
+        Args: { p_session_id?: string; p_user_id?: string; p_window?: number }
+        Returns: {
+          age_days: number
+          embedding: string
+          entity_id: string
+          entity_type: string
+          event_type: string
+        }[]
+      }
       get_broken_marketplace_ids: { Args: never; Returns: string[] }
       get_category_ancestors: {
         Args: { p_category_id: string }
@@ -11347,8 +12211,8 @@ export type Database = {
           updated_at: string
         }[]
         SetofOptions: {
-          from: \"*\"
-          to: \"content_links\"
+          from: "*"
+          to: "content_links"
           isOneToOne: false
           isSetofReturn: true
         }
@@ -11459,6 +12323,14 @@ export type Database = {
         }
         Returns: Json
       }
+      get_stale_embeddings: {
+        Args: { p_limit?: number }
+        Returns: {
+          id: string
+          table_name: string
+          updated_at: string
+        }[]
+      }
       get_subcategories: {
         Args: { p_parent_id: string }
         Returns: {
@@ -11534,11 +12406,28 @@ export type Database = {
           translations: Json
         }[]
       }
+      get_trending_entities: {
+        Args: { p_city?: string; p_limit?: number; p_types?: string[] }
+        Returns: {
+          city: string
+          country: string
+          entity_id: string
+          entity_type: string
+          image_url: string
+          score: number
+          slug: string
+          title: string
+        }[]
+      }
       get_user_conversation_ids: {
         Args: { user_id_param?: string }
         Returns: {
           conversation_id: string
         }[]
+      }
+      get_user_signal: {
+        Args: { p_session_id?: string; p_user_id?: string }
+        Returns: Json
       }
       get_vault_secret: { Args: { secret_name: string }; Returns: string }
       get_venues_by_tag: {
@@ -11546,8 +12435,11 @@ export type Database = {
         Returns: {
           accessibility_attributes: string[] | null
           accessibility_notes: string | null
+          accommodation_type: string | null
           address: string
           amenities: string[] | null
+          amenities_verified: boolean
+          booking_url: string | null
           category: string
           city: string
           city_id: string | null
@@ -11560,6 +12452,7 @@ export type Database = {
           description: string | null
           duplicate_of_id: string | null
           email: string | null
+          email_lower: string | null
           enrichment_status: Json | null
           external_id: string | null
           featured: boolean | null
@@ -11571,6 +12464,7 @@ export type Database = {
           id: string
           images: string[] | null
           instagram: string | null
+          last_refreshed_at: string | null
           last_synced_at: string | null
           latitude: number | null
           lgbti_relevance_score: number | null
@@ -11578,8 +12472,11 @@ export type Database = {
           logo_url: string | null
           longitude: number | null
           name: string
+          name_normalized: string | null
           needs_attention: boolean | null
           phone: string | null
+          phone_e164: string | null
+          platform_ids: Json
           postal_code: string | null
           price_range: number | null
           quality_score: number | null
@@ -11587,6 +12484,7 @@ export type Database = {
           sensitivity_flags: Json | null
           services: string[] | null
           slug: string
+          star_rating: number | null
           state: string | null
           sync_status: string | null
           tags: string[] | null
@@ -11598,32 +12496,38 @@ export type Database = {
           tripadvisor_rating: number | null
           tripadvisor_review_count: number | null
           updated_at: string
+          verification_status: string
           verified: boolean | null
           website: string | null
+          website_domain: string | null
         }[]
         SetofOptions: {
-          from: \"*\"
-          to: \"venues\"
+          from: "*"
+          to: "venues"
           isOneToOne: false
           isSetofReturn: true
         }
       }
       has_any_role_jwt: {
-        Args: { required_roles: Database[\"public\"][\"Enums\"][\"app_role\"][] }
+        Args: { required_roles: Database["public"]["Enums"]["app_role"][] }
         Returns: boolean
       }
       has_role: {
         Args: {
-          _role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
       }
       has_role_jwt: {
-        Args: { required_role: Database[\"public\"][\"Enums\"][\"app_role\"] }
+        Args: { required_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
-      immutable_unaccent: { Args: { \"\": string }; Returns: string }
+      haversine_m: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
+      immutable_unaccent: { Args: { "": string }; Returns: string }
       increment_article_views: {
         Args: { article_id: string }
         Returns: undefined
@@ -11635,6 +12539,10 @@ export type Database = {
           p_proposed?: number
           p_runs?: number
         }
+        Returns: undefined
+      }
+      increment_circuit_breaker_success: {
+        Args: { p_api_name: string }
         Returns: undefined
       }
       increment_comment_likes: {
@@ -11661,6 +12569,18 @@ export type Database = {
         Returns: boolean
       }
       jwt_claim: { Args: { claim: string }; Returns: string }
+      log_search: {
+        Args: {
+          p_filters: Json
+          p_had_rewrite: boolean
+          p_lang: string
+          p_n_results: number
+          p_query: string
+          p_session_id: string
+          p_took_ms: number
+        }
+        Returns: undefined
+      }
       log_security_event: {
         Args: {
           p_event_type: string
@@ -11707,6 +12627,50 @@ export type Database = {
         Args: { canonical_tag_id: string; source_tag_id: string }
         Returns: undefined
       }
+      news_commit_staging_batch: {
+        Args: { p_job_id: string; p_limit?: number; p_pipeline_run_id?: string }
+        Returns: {
+          details: Json
+          errors: number
+          inserted: number
+          skipped: number
+          updated: number
+        }[]
+      }
+      news_compute_fingerprint: {
+        Args: {
+          p_published_at: string
+          p_source_id: string
+          p_title: string
+          p_url?: string
+        }
+        Returns: string
+      }
+      news_source_record_outcome: {
+        Args: {
+          p_articles_count?: number
+          p_error?: string
+          p_source_id: string
+          p_success: boolean
+        }
+        Returns: undefined
+      }
+      news_sources_eligible: {
+        Args: { p_limit?: number }
+        Returns: {
+          category: string
+          fetch_frequency: number
+          id: string
+          keywords: string[]
+          last_fetched_at: string
+          name: string
+          source_type: string
+          url: string
+        }[]
+      }
+      normalize_name: { Args: { n: string }; Returns: string }
+      normalize_phone: { Args: { p: string }; Returns: string }
+      normalize_venue_category: { Args: { c: string }; Returns: string }
       optimize_auth_uid_in_policies: {
         Args: never
         Returns: {
@@ -11723,6 +12687,21 @@ export type Database = {
           p_table_name: string
         }
         Returns: string
+      }
+      personalized_semantic_search: {
+        Args: {
+          p_bias_vec?: string
+          p_bias_weight?: number
+          p_content_types?: string[]
+          p_limit?: number
+          p_query_vec: string
+        }
+        Returns: {
+          content_id: string
+          content_type: string
+          metadata: Json
+          score: number
+        }[]
       }
       pgmq_archive: {
         Args: { p_msg_id: number; p_queue: string }
@@ -11782,6 +12761,21 @@ export type Database = {
           vt: string
         }[]
       }
+      pipeline_health_snapshot: {
+        Args: never
+        Returns: {
+          pending: number
+          rejected: number
+          review_pending: number
+          review_stale: number
+          stuck_commit: number
+          stuck_dedup: number
+          stuck_normalize: number
+          stuck_validate: number
+          target_table: string
+          total: number
+        }[]
+      }
       record_redirect_click: {
         Args: {
           p_country?: string
@@ -11796,9 +12790,21 @@ export type Database = {
         Returns: undefined
       }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
+      refresh_source_coverage: { Args: never; Returns: undefined }
       remove_tag_from_category: {
         Args: { p_category_id: string; p_tag_id: string }
         Returns: undefined
+      }
+      replay_rejected_staging: {
+        Args: {
+          p_error_substring: string
+          p_limit?: number
+          p_target_table?: string
+        }
+        Returns: {
+          previous_error: string
+          staging_id: string
+        }[]
       }
       resolve_city_and_country: {
         Args: { p_city_name: string; p_country_name: string }
@@ -11811,15 +12817,22 @@ export type Database = {
           resolved_country_name: string
         }[]
       }
+      resolve_currency_for_country: {
+        Args: { p_country_code: string }
+        Returns: {
+          currency_code: string
+          currency_symbol: string
+        }[]
+      }
       resolve_path_redirect: {
         Args: { p_path: string }
         Returns: {
           click_count: number
           click_limit: number
           id: string
-          match_kind: Database[\"public\"][\"Enums\"][\"redirect_match_kind\"]
+          match_kind: Database["public"]["Enums"]["redirect_match_kind"]
           preserve_query: boolean
-          query_mode: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode: Database["public"]["Enums"]["redirect_query_mode"]
           query_override: Json
           source_path: string
           status_code: number
@@ -11834,7 +12847,7 @@ export type Database = {
           click_limit: number
           id: string
           preserve_query: boolean
-          query_mode: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode: Database["public"]["Enums"]["redirect_query_mode"]
           query_override: Json
           slug: string
           status_code: number
@@ -11887,7 +12900,28 @@ export type Database = {
           sample_items: string
         }[]
       }
+      track_event_secure: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_event_type: string
+          p_metadata?: Json
+          p_session_id: string
+        }
+        Returns: string
+      }
       track_umami_event: { Args: { payload: Json }; Returns: Json }
+      track_user_event: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_event_type: string
+          p_metadata?: Json
+          p_session_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       universal_search: {
         Args: {
           category_filter?: string
@@ -11936,37 +12970,44 @@ export type Database = {
         }
         Returns: boolean
       }
+      venue_duplicate_summary: {
+        Args: never
+        Returns: {
+          duplicates: number
+          slug: string
+        }[]
+      }
     }
     Enums: {
-      app_role: \"admin\" | \"moderator\" | \"user\" | \"editor\"
+      app_role: "admin" | "moderator" | "user" | "editor"
       cms_content_type:
-        | \"event\"
-        | \"space\"
-        | \"place\"
-        | \"market\"
-        | \"resource\"
-        | \"community\"
-        | \"news\"
-        | \"page\"
-        | \"personality\"
+        | "event"
+        | "space"
+        | "place"
+        | "market"
+        | "resource"
+        | "community"
+        | "news"
+        | "page"
+        | "personality"
       cms_media_role:
-        | \"cover\"
-        | \"gallery\"
-        | \"attachment\"
-        | \"avatar\"
-        | \"thumbnail\"
-      cms_visibility_level: \"public\" | \"private\" | \"restricted\"
-      cms_workflow_state: \"draft\" | \"review\" | \"published\" | \"archived\"
-      redirect_match_kind: \"EXACT\" | \"WILDCARD\" | \"REGEX\"
-      redirect_query_mode: \"PRESERVE\" | \"DROP\" | \"OVERRIDE\"
-      redirect_type: \"SHORT\" | \"PATH\"
+        | "cover"
+        | "gallery"
+        | "attachment"
+        | "avatar"
+        | "thumbnail"
+      cms_visibility_level: "public" | "private" | "restricted"
+      cms_workflow_state: "draft" | "review" | "published" | "archived"
+      redirect_match_kind: "EXACT" | "WILDCARD" | "REGEX"
+      redirect_query_mode: "PRESERVE" | "DROP" | "OVERRIDE"
+      redirect_type: "SHORT" | "PATH"
       user_mode:
-        | \"dating\"
-        | \"friends\"
-        | \"exploration\"
-        | \"fun\"
-        | \"networking\"
-        | \"community\"
+        | "dating"
+        | "friends"
+        | "exploration"
+        | "fun"
+        | "networking"
+        | "community"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -11974,33 +13015,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, \"__InternalSupabase\">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, \"public\">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema[\"Tables\"] & DefaultSchema[\"Views\"])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema[\"Tables\"] &
-        DefaultSchema[\"Views\"])
-    ? (DefaultSchema[\"Tables\"] &
-        DefaultSchema[\"Views\"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -12009,23 +13050,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema[\"Tables\"]
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]
-    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -12034,23 +13075,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema[\"Tables\"]
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]
-    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -12059,69 +13100,67 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema[\"Enums\"]
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema[\"Enums\"]
-    ? DefaultSchema[\"Enums\"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema[\"CompositeTypes\"]
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema[\"CompositeTypes\"]
-    ? DefaultSchema[\"CompositeTypes\"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
     Enums: {
-      app_role: [\"admin\", \"moderator\", \"user\", \"editor\"],
+      app_role: ["admin", "moderator", "user", "editor"],
       cms_content_type: [
-        \"event\",
-        \"space\",
-        \"place\",
-        \"market\",
-        \"resource\",
-        \"community\",
-        \"news\",
-        \"page\",
-        \"personality\",
+        "event",
+        "space",
+        "place",
+        "market",
+        "resource",
+        "community",
+        "news",
+        "page",
+        "personality",
       ],
-      cms_media_role: [\"cover\", \"gallery\", \"attachment\", \"avatar\", \"thumbnail\"],
-      cms_visibility_level: [\"public\", \"private\", \"restricted\"],
-      cms_workflow_state: [\"draft\", \"review\", \"published\", \"archived\"],
-      redirect_match_kind: [\"EXACT\", \"WILDCARD\", \"REGEX\"],
-      redirect_query_mode: [\"PRESERVE\", \"DROP\", \"OVERRIDE\"],
-      redirect_type: [\"SHORT\", \"PATH\"],
+      cms_media_role: ["cover", "gallery", "attachment", "avatar", "thumbnail"],
+      cms_visibility_level: ["public", "private", "restricted"],
+      cms_workflow_state: ["draft", "review", "published", "archived"],
+      redirect_match_kind: ["EXACT", "WILDCARD", "REGEX"],
+      redirect_query_mode: ["PRESERVE", "DROP", "OVERRIDE"],
+      redirect_type: ["SHORT", "PATH"],
       user_mode: [
-        \"dating\",
-        \"friends\",
-        \"exploration\",
-        \"fun\",
-        \"networking\",
-        \"community\",
+        "dating",
+        "friends",
+        "exploration",
+        "fun",
+        "networking",
+        "community",
       ],
     },
   },
 } as const
-"}
-
