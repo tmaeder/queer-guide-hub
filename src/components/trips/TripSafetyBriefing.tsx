@@ -374,13 +374,13 @@ function CountryAccordion({
   const [open, setOpen] = useState(false);
   const scoreInfo = getScoreLabel(country.equality_score);
   const protectionStatus = getProtectionStatus(
-    country.lgbti_protection_employment,
+    country.lgbti_employment_protection,
   );
   const ssuSummary = parseSsuSummary(
-    typeof country.lgbti_recognition_ssu === 'string'
-      ? country.lgbti_recognition_ssu
-      : country.lgbti_recognition_ssu != null
-        ? JSON.stringify(country.lgbti_recognition_ssu)
+    typeof country.lgbti_same_sex_unions === 'string'
+      ? country.lgbti_same_sex_unions
+      : country.lgbti_same_sex_unions != null
+        ? JSON.stringify(country.lgbti_same_sex_unions)
         : null,
   );
   const warningCount =

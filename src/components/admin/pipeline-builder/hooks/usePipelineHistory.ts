@@ -246,3 +246,106 @@ export function usePipelineDefinitionsList() {
     },
   });
 }
+
+export interface UnifiedPipelineRow {
+  kind: 'pipeline' | 'workflow';
+  id: string;
+  name: string;
+  display_name: string | null;
+  schedule: string | null;
+  is_enabled: boolean;
+  is_template: boolean;
+  last_run_at: string | null;
+  last_run_status: string | null;
+  last_run_duration_ms: number | null;
+  last_items_succeeded: number | null;
+  last_items_total: number | null;
+  recent_statuses: string[];
+  recent_success_count: number;
+  recent_total_count: number;
+}
+
+export function useUnifiedPipelineOverview() {
+  return useQuery({
+    queryKey: ['unified-pipeline-overview'],
+    queryFn: async (): Promise<UnifiedPipelineRow[]> => {
+      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
+      const [pipeDefs, wfDefs, pipeRuns, wfRuns] = await Promise.all([
+        sb.from('pipeline_definitions').select('id, name, display_name, is_template, is_enabled, schedule').order('name'),
+        sb.from('workflow_definitions').select('id, name, display_name, is_enabled, schedule').order('name'),
+        sb.from('pipeline_runs').select('pipeline_id, status, duration_ms, items_succeeded, items_total, created_at, completed_at').order('created_at', { ascending: false }).limit(500),
+        sb.from('workflow_runs').select('definition_id, status, duration_ms, items_succeeded, items_total, created_at, completed_at').order('created_at', { ascending: false }).limit(500),
+      ]);
+      if (pipeDefs.error) throw pipeDefs.error;
+      if (wfDefs.error) throw wfDefs.error;
+
+      type Run = { status: string; duration_ms: number | null; items_succeeded: number | null; items_total: number | null; created_at: string; completed_at: string | null };
+      const groupRuns = (rows: unknown[], key: string): Map<string, Run[]> => {
+        const m = new Map<string, Run[]>();
+        for (const r of (rows as Array<Record<string, unknown>>) || []) {
+          const id = r[key] as string;
+          if (!id) continue;
+          const arr = m.get(id) || [];
+          arr.push(r as unknown as Run);
+          m.set(id, arr);
+        }
+        return m;
+      };
+      const pipeRunsById = groupRuns(pipeRuns.data || [], 'pipeline_id');
+      const wfRunsById = groupRuns(wfRuns.data || [], 'definition_id');
+
+      const buildRow = (kind: 'pipeline' | 'workflow', def: Record<string, unknown>, runsById: Map<string, Run[]>): UnifiedPipelineRow => {
+        const id = def.id as string;
+        const all = runsById.get(id) || [];
+        const recent = all.slice(0, 10);
+        const last = all[0];
+        return {
+          kind,
+          id,
+          name: def.name as string,
+          display_name: (def.display_name as string) || null,
+          schedule: (def.schedule as string) || null,
+          is_enabled: !!def.is_enabled,
+          is_template: !!def.is_template,
+          last_run_at: last?.completed_at || last?.created_at || null,
+          last_run_status: last?.status || null,
+          last_run_duration_ms: last?.duration_ms || null,
+          last_items_succeeded: last?.items_succeeded ?? null,
+          last_items_total: last?.items_total ?? null,
+          recent_statuses: recent.map(r => r.status),
+          recent_success_count: recent.filter(r => r.status === 'completed').length,
+          recent_total_count: recent.length,
+        };
+      };
+
+      const rows: UnifiedPipelineRow[] = [
+        ...(pipeDefs.data || []).map((d: Record<string, unknown>) => buildRow('pipeline', d, pipeRunsById)),
+        ...(wfDefs.data || []).map((d: Record<string, unknown>) => buildRow('workflow', d, wfRunsById)),
+      ];
+      return rows;
+    },
+    refetchInterval: 15_000,
+  });
+}
+
+export function usePipelineRunCounts24h() {
+  return useQuery({
+    queryKey: ['pipeline-run-counts-24h'],
+    queryFn: async () => {
+      const cutoff = new Date(Date.now() - 86400_000).toISOString();
+      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
+      const [pipeRes, wfRes] = await Promise.all([
+        sb.from('pipeline_runs').select('status').gte('created_at', cutoff).limit(2000),
+        sb.from('workflow_runs').select('status').gte('created_at', cutoff).limit(2000),
+      ]);
+      const all = [...(pipeRes.data || []), ...(wfRes.data || [])] as Array<{ status: string }>;
+      return {
+        total: all.length,
+        completed: all.filter(r => r.status === 'completed').length,
+        failed: all.filter(r => r.status === 'failed').length,
+        running: all.filter(r => r.status === 'running').length,
+      };
+    },
+    refetchInterval: 30_000,
+  });
+}

@@ -530,7 +530,11 @@
       "fitAll": "Fit all",
       "fitAllAria": "Fit all places into view",
       "filterAll": "All days",
-      "dayLabel": "Day {{number}}"
+      "dayLabel": "Day {{number}}",
+      "showAttractions": "Attractions",
+      "showEvents": "Events",
+      "suggestedVenue": "Suggested venue",
+      "eventOn": "Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "No safety info yet",

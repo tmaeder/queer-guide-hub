@@ -31,7 +31,7 @@ const pillStyle = (bg: string, fg: string): React.CSSProperties => ({
 
 export default function ReviewQueueTab() {
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<'all' | 'venues' | 'hotels' | 'events' | 'personalities' | 'marketplace' | 'merge_candidate'>('all');
+  const [filter, setFilter] = useState<'all' | 'venues' | 'hotels' | 'events' | 'personalities' | 'marketplace' | 'cities' | 'countries' | 'merge_candidate'>('all');
   const [selected, setSelected] = useState<ReviewItem | null>(null);
 
   const { data: items = [], isLoading } = useQuery<ReviewItem[]>({
@@ -47,6 +47,8 @@ export default function ReviewQueueTab() {
       if (filter === 'events')                           q = q.eq('target_table', 'events');
       if (filter === 'personalities')                    q = q.eq('target_table', 'personalities');
       if (filter === 'marketplace')                      q = q.eq('target_table', 'marketplace_listings');
+      if (filter === 'cities')                           q = q.eq('target_table', 'cities');
+      if (filter === 'countries')                        q = q.eq('target_table', 'countries');
       if (filter === 'merge_candidate')                  q = q.eq('dedup_status', 'merge_candidate');
       const { data, error } = await q;
       if (error) throw error;
@@ -135,6 +137,8 @@ export default function ReviewQueueTab() {
         {filterBtn('events', 'Events')}
         {filterBtn('personalities', 'Personalities')}
         {filterBtn('marketplace', 'Marketplace')}
+        {filterBtn('cities', 'Cities')}
+        {filterBtn('countries', 'Countries')}
         {filterBtn('merge_candidate', 'Merge candidates', counts.merge)}
       </div>
 

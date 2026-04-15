@@ -253,7 +253,11 @@
       "fitAll": "Alles zeigen",
       "fitAllAria": "Alle Orte einpassen",
       "filterAll": "Alle Tage",
-      "dayLabel": "Tag {{number}}"
+      "dayLabel": "Tag {{number}}",
+      "showAttractions": "Attraktionen",
+      "showEvents": "Events",
+      "suggestedVenue": "Vorschlag",
+      "eventOn": "Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "Noch keine Sicherheitsinfos",

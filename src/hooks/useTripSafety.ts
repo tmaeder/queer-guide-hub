@@ -12,10 +12,10 @@ export interface CountrySafety {
   criminalized: boolean;
   deathPenalty: boolean;
   lgbti_criminalization: unknown;
-  lgbti_protection_employment: unknown;
-  lgbti_recognition_ssu: unknown;
-  lgbti_adoption: unknown;
-  lgbti_conversion_therapy: unknown;
+  lgbti_employment_protection: unknown;
+  lgbti_same_sex_unions: unknown;
+  lgbti_adoption_rights: unknown;
+  lgbti_conversion_therapy_regulation: unknown;
 }
 
 export interface CrossBorderWarning {
@@ -43,7 +43,7 @@ export function useTripSafety(countryIds: string[]) {
       const { data, error } = await supabase
         .from('countries')
         .select(
-          'id, name, code, equality_score, lgbti_criminalization, lgbti_protection_employment, lgbti_recognition_ssu, lgbti_adoption, lgbti_conversion_therapy',
+          'id, name, code, equality_score, lgbti_criminalization, lgbti_employment_protection, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_conversion_therapy_regulation',
         )
         .in('id', uniqueIds);
       if (error) throw error;
@@ -73,10 +73,10 @@ export function useTripSafety(countryIds: string[]) {
       criminalized: isCriminalized(c.lgbti_criminalization as string | null),
       deathPenalty: hasDeathPenalty(c.lgbti_criminalization as string | null),
       lgbti_criminalization: c.lgbti_criminalization,
-      lgbti_protection_employment: c.lgbti_protection_employment,
-      lgbti_recognition_ssu: c.lgbti_recognition_ssu,
-      lgbti_adoption: c.lgbti_adoption,
-      lgbti_conversion_therapy: c.lgbti_conversion_therapy,
+      lgbti_employment_protection: c.lgbti_employment_protection,
+      lgbti_same_sex_unions: c.lgbti_same_sex_unions,
+      lgbti_adoption_rights: c.lgbti_adoption_rights,
+      lgbti_conversion_therapy_regulation: c.lgbti_conversion_therapy_regulation,
     }));
 
     // Cross-border warnings: flag when traveling between countries with very different scores
