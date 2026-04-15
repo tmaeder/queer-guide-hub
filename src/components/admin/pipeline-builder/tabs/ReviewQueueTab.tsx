@@ -31,7 +31,7 @@ const pillStyle = (bg: string, fg: string): React.CSSProperties => ({
 
 export default function ReviewQueueTab() {
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<'all' | 'venues' | 'hotels' | 'events' | 'merge_candidate'>('all');
+  const [filter, setFilter] = useState<'all' | 'venues' | 'hotels' | 'events' | 'personalities' | 'marketplace' | 'merge_candidate'>('all');
   const [selected, setSelected] = useState<ReviewItem | null>(null);
 
   const { data: items = [], isLoading } = useQuery<ReviewItem[]>({
@@ -45,6 +45,8 @@ export default function ReviewQueueTab() {
         .limit(200);
       if (filter === 'venues' || filter === 'hotels')   q = q.eq('target_table', 'venues');
       if (filter === 'events')                           q = q.eq('target_table', 'events');
+      if (filter === 'personalities')                    q = q.eq('target_table', 'personalities');
+      if (filter === 'marketplace')                      q = q.eq('target_table', 'marketplace_listings');
       if (filter === 'merge_candidate')                  q = q.eq('dedup_status', 'merge_candidate');
       const { data, error } = await q;
       if (error) throw error;
@@ -131,6 +133,8 @@ export default function ReviewQueueTab() {
         {filterBtn('hotels', 'Hotels/B&Bs', counts.hotels)}
         {filterBtn('venues', 'Venues')}
         {filterBtn('events', 'Events')}
+        {filterBtn('personalities', 'Personalities')}
+        {filterBtn('marketplace', 'Marketplace')}
         {filterBtn('merge_candidate', 'Merge candidates', counts.merge)}
       </div>
 
@@ -207,6 +211,12 @@ export default function ReviewQueueTab() {
                   existingId={selected.dedup_match_id}
                 />
               )}
+              {selected.dedup_status === 'merge_candidate' && selected.target_table === 'personalities' && selected.dedup_match_id && (
+                <PersonalityMergePreview
+                  staging={selected.normalized_data ?? {}}
+                  existingId={selected.dedup_match_id}
+                />
+              )}
               <details>
                 <summary style={{ cursor: 'pointer', fontSize: 12, color: '#6b7280' }}>Normalized payload</summary>
                 <pre style={{ fontSize: 11, background: '#f9fafb', padding: 8, borderRadius: 4, overflow: 'auto', maxHeight: 240 }}>
@@ -257,6 +267,68 @@ function btnStyle(bg: string, fg: string): React.CSSProperties {
     background: bg, color: fg, border: bg === '#fff' ? '1px solid #d1d5db' : 'none',
     borderRadius: 6, cursor: 'pointer',
   };
+}
+
+function PersonalityMergePreview({ staging, existingId }: { staging: Record<string, unknown>; existingId: string }) {
+  const { data: existing } = useQuery({
+    queryKey: ['personality-merge-candidate', existingId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
+        .from('personalities')
+        .select('id, name, description, bio, birth_date, death_date, profession, nationality, birth_place, image_url, website_url, wikidata_qid, lgbti_connection')
+        .eq('id', existingId).single();
+      if (error) throw error;
+      return data as Record<string, unknown>;
+    },
+  });
+
+  if (!existing) return <div style={{ fontSize: 12, color: '#9ca3af' }}>Loading candidate…</div>;
+
+  const rows: Array<{ field: string; staged: unknown; existing: unknown }> = [
+    { field: 'name',            staged: staging.name,            existing: existing.name },
+    { field: 'wikidata_qid',    staged: staging.wikidata_qid,    existing: existing.wikidata_qid },
+    { field: 'birth_date',      staged: staging.birth_date,      existing: existing.birth_date },
+    { field: 'death_date',      staged: staging.death_date,      existing: existing.death_date },
+    { field: 'profession',      staged: staging.profession,      existing: existing.profession },
+    { field: 'nationality',     staged: staging.nationality,     existing: existing.nationality },
+    { field: 'birth_place',     staged: staging.birth_place,     existing: existing.birth_place },
+    { field: 'image_url',       staged: staging.image_url,       existing: existing.image_url },
+    { field: 'website_url',     staged: staging.website_url,     existing: existing.website_url },
+    { field: 'lgbti_connection',staged: staging.lgbti_connection,existing: existing.lgbti_connection },
+    { field: 'description',     staged: staging.description,     existing: existing.description },
+  ];
+
+  const cellBase: React.CSSProperties = { padding: '4px 8px', fontSize: 11, verticalAlign: 'top', wordBreak: 'break-word' };
+  const fmt = (v: unknown) => v == null || v === '' ? <span style={{ color: '#d1d5db' }}>—</span> : String(v);
+
+  return (
+    <div style={{ border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+      <div style={{ padding: '8px 10px', background: '#f9fafb', fontSize: 11, color: '#6b7280', fontWeight: 500 }}>
+        Personality field-by-field — staged vs existing
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
+            <th style={{ ...cellBase, width: 120, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Field</th>
+            <th style={{ ...cellBase, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Staged</th>
+            <th style={{ ...cellBase, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Existing</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => {
+            const changed = String(r.staged ?? '') !== String(r.existing ?? '');
+            return (
+              <tr key={r.field} style={{ background: changed ? '#fffbeb' : 'transparent', borderBottom: '1px solid #f9fafb' }}>
+                <td style={{ ...cellBase, fontFamily: 'monospace', color: '#374151' }}>{r.field}</td>
+                <td style={cellBase}>{fmt(r.staged)}</td>
+                <td style={cellBase}>{fmt(r.existing)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function EventMergePreview({ staging, existingId }: { staging: Record<string, unknown>; existingId: string }) {
