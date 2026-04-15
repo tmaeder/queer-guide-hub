@@ -110,6 +110,59 @@ export function useStagingStats() {
   });
 }
 
+interface EventIngestRow {
+  day: string;
+  source: string | null;
+  staged: number;
+  validated: number;
+  unique_items: number;
+  duplicates: number;
+  merge_candidates: number;
+  inserted: number;
+  updated: number;
+  rejected: number;
+  pending_review: number;
+}
+
+/** Fetch per-source event ingest stats (last 14 days) from event_ingest_stats view */
+export function useEventIngestStats(days = 14) {
+  return useQuery({
+    queryKey: ['event-ingest-stats', days],
+    queryFn: async () => {
+      const cutoff = new Date(Date.now() - days * 86400_000).toISOString();
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        .from('event_ingest_stats')
+        .select('*')
+        .gte('day', cutoff)
+        .order('day', { ascending: false });
+      if (error) throw error;
+      return (data || []) as EventIngestRow[];
+    },
+    refetchInterval: 30_000,
+  });
+}
+
+/** Generic helper — same shape as EventIngestRow, works for city_ingest_stats + country_ingest_stats */
+function useIngestStatsView(view: string, days: number) {
+  return useQuery({
+    queryKey: [view, days],
+    queryFn: async () => {
+      const cutoff = new Date(Date.now() - days * 86400_000).toISOString();
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        .from(view)
+        .select('*')
+        .gte('day', cutoff)
+        .order('day', { ascending: false });
+      if (error) throw error;
+      return (data || []) as EventIngestRow[];
+    },
+    refetchInterval: 30_000,
+  });
+}
+
+export const useCityIngestStats    = (days = 14) => useIngestStatsView('city_ingest_stats', days);
+export const useCountryIngestStats = (days = 14) => useIngestStatsView('country_ingest_stats', days);
+
 /** Fetch pipeline definitions for listing */
 export function usePipelineDefinitionsList() {
   return useQuery({

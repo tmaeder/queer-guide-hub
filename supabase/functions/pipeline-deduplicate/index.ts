@@ -197,6 +197,48 @@ Deno.serve(async (req) => {
           matchScore = Number(cast[0].score)
           matchType  = cast[0].match_type
         }
+      } else if (table === 'marketplace_listings' || item.entity_type === 'marketplace' || item.entity_type === 'product') {
+        // Marketplace dedup: source_entity_id > external_url > domain+title > brand+title > title trigram
+        const meta = (n.metadata ?? {}) as Record<string, unknown>
+        const urls = (n.urls ?? []) as string[]
+        const title = String(n.name ?? n.title ?? meta.product_name ?? meta.title ?? '').trim()
+        const externalUrl = String(
+          meta.merchant_deep_link ??
+          meta.product_url ??
+          meta.website ??
+          urls[0] ??
+          '',
+        ).trim() || null
+        let merchantDomain: string | null = null
+        if (externalUrl) {
+          try { merchantDomain = new URL(externalUrl).hostname.replace(/^www\./, '').toLowerCase() } catch { /* ignore */ }
+        }
+        const sourceSlug = String(item.entity_type === 'marketplace' ? (meta.source_slug ?? '') : '').trim() || null
+        const sourceEid = String(meta.aw_product_id ?? meta.product_id ?? meta.id ?? meta.external_id ?? '').trim() || null
+        const brand = String(n.brand ?? meta.brand ?? meta.brand_name ?? '').trim() || null
+
+        const { data: candidates, error: rpcErr } = await supabase.rpc(
+          'find_marketplace_duplicate_candidates',
+          {
+            p_title:            title,
+            p_source_slug:      sourceSlug,
+            p_source_entity_id: sourceEid,
+            p_merchant_domain:  merchantDomain,
+            p_external_url:     externalUrl,
+            p_brand:            brand,
+            p_limit:            5,
+          },
+        )
+        if (rpcErr) {
+          console.error(`dedup marketplace rpc ${item.id}:`, rpcErr.message)
+        } else if (candidates && candidates.length > 0) {
+          const cast = (candidates as Array<{listing_id: string, match_type: string, score: number}>)
+            .map(c => ({ venue_id: c.listing_id, match_type: c.match_type, score: c.score, distance_m: null as number | null }))
+          rulesFired = cast as unknown as DedupCandidate[]
+          matchId    = cast[0].venue_id
+          matchScore = Number(cast[0].score)
+          matchType  = cast[0].match_type
+        }
       } else if (table === 'news_articles' || item.entity_type === 'news_articles' || item.entity_type === 'news_article') {
         // News dedup: fingerprint > url. Tolerant of normalize/adapter shape (title|name, url|urls[0], dates.start|published_at).
         const meta = (n.metadata ?? {}) as Record<string, unknown>

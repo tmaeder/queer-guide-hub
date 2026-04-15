@@ -2,100 +2,221 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { logoUrlFromWebsite } from '../_shared/logo-enrichment.ts'
 
 // ============================================================
-// Pipeline Commit Node
-// Reads validated/enriched items from ingestion_staging
-// and INSERTs/UPSERTs them into the target table.
+// Pipeline Commit
+// Venues: delegate to commit_venue_staging_batch() SQL fn
+//   (atomic upsert venues + venue_sources + audit + advisory lock)
+// Non-venues: legacy per-table buildRecord + insert/upsert path.
 // ============================================================
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
-
   const supabase = getServiceClient()
 
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string
-    const _nodeId = body.node_id as string
-    const targetTable = body.targetTable as string
-    const strategy = (body.strategy as string) || 'upsert'
-    const conflictKey = body.conflictKey as string
-    const batchSize = body.batch_size || 50
-    const dryRun = body.dry_run || false
+    const targetTable   = body.targetTable as string | undefined
+    const strategy      = (body.strategy as string) || 'upsert'
+    const conflictKey   = body.conflictKey as string | undefined
+    const batchSize     = body.batch_size || 50
+    const dryRun        = body.dry_run || false
 
-    // Load staging items ready for commit
+    // Decide fast path: if all work is for venues, use the SQL batch fn.
+    const resolvedTarget = targetTable ?? await detectTarget(supabase, pipelineRunId)
+
+    if (resolvedTarget === 'venues' && !dryRun) {
+      const { data, error } = await supabase.rpc('commit_venue_staging_batch', { p_limit: batchSize })
+      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
+      const rows = (data ?? []) as Array<{ staging_id: string, venue_id: string, action: string }>
+      const inserted = rows.filter((r) => r.action === 'inserted').length
+      const updated  = rows.filter((r) => r.action === 'updated').length
+      return jsonResponse({
+        success: true,
+        items: rows.length,
+        items_processed: rows.length,
+        items_succeeded: rows.length,
+        inserted, updated,
+      }, 200, req)
+    }
+
+    if (resolvedTarget === 'countries' && !dryRun) {
+      const { data, error } = await supabase.rpc('commit_country_staging_batch', { p_limit: batchSize })
+      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
+      const rows = (data ?? []) as Array<{ staging_id: string, country_id: string, action: string }>
+      const inserted = rows.filter((r) => r.action === 'inserted').length
+      const updated  = rows.filter((r) => r.action === 'updated').length
+      return jsonResponse({
+        success: true, items: rows.length,
+        items_processed: rows.length, items_succeeded: rows.length,
+        inserted, updated,
+      }, 200, req)
+    }
+
+    if (resolvedTarget === 'cities' && !dryRun) {
+      const { data, error } = await supabase.rpc('commit_city_staging_batch', { p_limit: batchSize })
+      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
+      const rows = (data ?? []) as Array<{ staging_id: string, city_id: string, action: string }>
+      const inserted = rows.filter((r) => r.action === 'inserted').length
+      const updated  = rows.filter((r) => r.action === 'updated').length
+      return jsonResponse({
+        success: true, items: rows.length,
+        items_processed: rows.length, items_succeeded: rows.length,
+        inserted, updated,
+      }, 200, req)
+    }
+
+    if (resolvedTarget === 'personalities' && !dryRun) {
+      const { data, error } = await supabase.rpc('commit_personality_staging_batch', { p_limit: batchSize })
+      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
+      const rows = (data ?? []) as Array<{ staging_id: string, personality_id: string, action: string }>
+      const inserted = rows.filter((r) => r.action === 'inserted').length
+      const updated  = rows.filter((r) => r.action === 'updated').length
+      return jsonResponse({
+        success: true, items: rows.length,
+        items_processed: rows.length, items_succeeded: rows.length,
+        inserted, updated,
+      }, 200, req)
+    }
+
+    if (resolvedTarget === 'marketplace_listings' && !dryRun) {
+      const { data, error } = await supabase.rpc('commit_marketplace_staging_batch', {
+        p_limit: batchSize,
+        p_pipeline_run_id: pipelineRunId ?? null,
+      })
+      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
+      const rows = (data ?? []) as Array<{ staging_id: string, listing_id: string, action: string }>
+      const inserted = rows.filter((r) => r.action === 'inserted').length
+      const updated  = rows.filter((r) => r.action === 'updated').length
+      const errorsCt = rows.filter((r) => r.action === 'error' || r.action === 'rejected').length
+      return jsonResponse({
+        success: true,
+        items: rows.length,
+        items_processed: rows.length,
+        items_succeeded: inserted + updated,
+        items_failed: errorsCt,
+        inserted, updated,
+      }, 200, req)
+    }
+
+    if (resolvedTarget === 'events' && !dryRun) {
+      const { data, error } = await supabase.rpc('commit_event_staging_batch', { p_limit: batchSize })
+      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
+      const rows = (data ?? []) as Array<{ staging_id: string, event_id: string, action: string }>
+      const inserted = rows.filter((r) => r.action === 'inserted').length
+      const updated  = rows.filter((r) => r.action === 'updated').length
+      return jsonResponse({
+        success: true,
+        items: rows.length,
+        items_processed: rows.length,
+        items_succeeded: rows.length,
+        inserted, updated,
+      }, 200, req)
+    }
+
+    if (resolvedTarget === 'news_articles' && !dryRun) {
+      // Find unique job_ids in this batch and commit per-job via news RPC
+      const jobQuery = supabase
+        .from('ingestion_staging')
+        .select('job_id')
+        .eq('target_table', 'news_articles')
+        .eq('disposition', 'pending')
+        .limit(50)
+      if (pipelineRunId) jobQuery.eq('pipeline_run_id', pipelineRunId)
+      const { data: jobRows, error: jobErr } = await jobQuery
+      if (jobErr) return errorResponse(`load jobs: ${jobErr.message}`, 500, req)
+      const jobIds = Array.from(new Set((jobRows ?? []).map((r: { job_id: string }) => r.job_id)))
+      if (jobIds.length === 0) {
+        return jsonResponse({ success: true, items: 0, message: 'no pending news to commit' }, 200, req)
+      }
+      let totalInserted = 0, totalUpdated = 0, totalSkipped = 0, totalErrors = 0
+      for (const jid of jobIds) {
+        const { data, error } = await supabase.rpc('news_commit_staging_batch', {
+          p_job_id: jid,
+          p_pipeline_run_id: pipelineRunId ?? null,
+          p_limit: batchSize,
+        })
+        if (error) { console.error(`news_commit ${jid}:`, error.message); totalErrors++; continue }
+        const row = Array.isArray(data) ? data[0] : data
+        totalInserted += row?.inserted ?? 0
+        totalUpdated  += row?.updated ?? 0
+        totalSkipped  += row?.skipped ?? 0
+        totalErrors   += row?.errors ?? 0
+      }
+      return jsonResponse({
+        success: true,
+        items: totalInserted + totalUpdated,
+        items_processed: totalInserted + totalUpdated + totalSkipped + totalErrors,
+        items_succeeded: totalInserted + totalUpdated,
+        items_failed: totalErrors,
+        inserted: totalInserted, updated: totalUpdated,
+        skipped: totalSkipped, errors: totalErrors,
+      }, 200, req)
+    }
+
+    // ---- Legacy non-venue path ----
     let query = supabase
       .from('ingestion_staging')
       .select('id, normalized_data, enriched_data, target_table, entity_type, source_type, raw_data')
       .in('disposition', ['pending'])
-      .in('dedup_status', ['unique', 'pending']) // allow pending dedup for simple pipelines
+      .in('dedup_status', ['unique', 'pending'])
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
-    if (pipelineRunId) {
-      query = query.eq('pipeline_run_id', pipelineRunId)
-    }
+    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
+    if (targetTable)   query = query.eq('target_table', targetTable)
 
     const { data: items, error } = await query
-    if (error) return errorResponse(`Failed to load staging items: ${error.message}`, 500, req)
+    if (error) return errorResponse(`load: ${error.message}`, 500, req)
     if (!items || items.length === 0) {
-      return jsonResponse({ success: true, items: 0, message: 'No items to commit' }, 200, req)
+      return jsonResponse({ success: true, items: 0, message: 'nothing to commit' }, 200, req)
     }
 
-    let committed = 0
-    let skipped = 0
-    let errors = 0
+    let committed = 0, skipped = 0, errors = 0
 
     for (const item of items) {
       try {
         const table = item.target_table || targetTable
-        if (!table) {
-          console.warn(`No target_table for staging item ${item.id}, skipping`)
-          skipped++
-          continue
-        }
+        if (!table) { skipped++; continue }
 
-        // Build the record from normalized + enriched data
-        const normalized = (item.normalized_data || {}) as Record<string, unknown>
-        const enriched = (item.enriched_data || {}) as Record<string, unknown>
-        const record = buildRecord(table, normalized, enriched, item.entity_type)
+        const normalized = (item.normalized_data ?? {}) as Record<string, unknown>
+        const enriched   = (item.enriched_data ?? {}) as Record<string, unknown>
+        const record     = buildRecord(table, normalized, enriched, item.entity_type)
 
-        if (dryRun) {
-          committed++
-          continue
-        }
+        if (dryRun) { committed++; continue }
 
-        // Insert or upsert into target table
-        let result
-        if (strategy === 'upsert' && conflictKey) {
-          result = await supabase.from(table).upsert(record, { onConflict: conflictKey }).select('id').single()
-        } else {
-          result = await supabase.from(table).insert(record).select('id').single()
-        }
+        const q = supabase.from(table)
+        const result = (strategy === 'upsert' && conflictKey)
+          ? await q.upsert(record, { onConflict: conflictKey }).select('id').single()
+          : await q.insert(record).select('id').single()
+        if (result.error) throw new Error(`${table}: ${result.error.message}`)
 
-        if (result.error) {
-          throw new Error(`${table} insert: ${result.error.message}`)
-        }
+        await supabase.from('ingestion_staging').update({
+          disposition:      'committed',
+          target_record_id: result.data?.id ?? null,
+          processed_at:     new Date().toISOString(),
+          updated_at:       new Date().toISOString(),
+        }).eq('id', item.id)
 
-        // Update staging item
-        await supabase
-          .from('ingestion_staging')
-          .update({
-            disposition: 'committed',
-            target_record_id: result.data?.id || null,
-            processed_at: new Date().toISOString(),
-          })
-          .eq('id', item.id)
+        await supabase.from('ingestion_events').insert({
+          staging_id: item.id,
+          stage:      'commit',
+          new_status: 'committed',
+          actor:      'pipeline-commit',
+          payload:    { target_table: table, record_id: result.data?.id },
+        })
 
         committed++
       } catch (e) {
-        console.error(`Commit error for ${item.id}:`, (e as Error).message)
-        await supabase
-          .from('ingestion_staging')
-          .update({
-            error_message: `Commit: ${(e as Error).message}`,
-            disposition: 'rejected',
-          })
-          .eq('id', item.id)
+        console.error(`commit ${item.id}:`, (e as Error).message)
+        await supabase.from('ingestion_staging').update({
+          error_message: `commit: ${(e as Error).message}`,
+          disposition:   'rejected',
+          updated_at:    new Date().toISOString(),
+        }).eq('id', item.id)
+        await supabase.from('ingestion_events').insert({
+          staging_id: item.id, stage: 'commit', new_status: 'rejected',
+          actor: 'pipeline-commit', payload: { error: (e as Error).message },
+        })
         errors++
       }
     }
@@ -111,82 +232,64 @@ Deno.serve(async (req) => {
       dry_run: dryRun,
     }, 200, req)
   } catch (error) {
-    console.error('pipeline-commit error:', error)
+    console.error('pipeline-commit:', error)
     return errorResponse((error as Error).message, 500, req)
   }
 })
 
-/** Map normalized/enriched data to target table columns */
+async function detectTarget(supabase: ReturnType<typeof getServiceClient>, runId?: string): Promise<string | null> {
+  const q = supabase
+    .from('ingestion_staging')
+    .select('target_table', { count: 'exact' })
+    .eq('disposition', 'pending')
+    .eq('ai_validation_status', 'approved')
+    .limit(1)
+  if (runId) q.eq('pipeline_run_id', runId)
+  const { data } = await q
+  return data?.[0]?.target_table ?? null
+}
+
 function buildRecord(
   table: string,
   normalized: Record<string, unknown>,
   enriched: Record<string, unknown>,
-  _entityType: string | null
+  _entityType: string | null,
 ): Record<string, unknown> {
-  const meta = (normalized.metadata || {}) as Record<string, unknown>
-  const loc = (normalized.location || {}) as Record<string, unknown>
-
-  // Start with common fields, then add table-specific mappings
+  const meta = (normalized.metadata ?? {}) as Record<string, unknown>
+  const loc  = (normalized.location ?? {}) as Record<string, unknown>
   const record: Record<string, unknown> = {}
 
   switch (table) {
-    case 'venues':
-      record.name = normalized.name
-      record.description = normalized.description || enriched.description
-      record.address = loc.address
-      record.city = loc.city
-      record.country = loc.country
-      record.latitude = loc.lat
-      record.longitude = loc.lng
-      record.website = (normalized.contacts as Record<string, unknown>)?.website
-      record.phone = (normalized.contacts as Record<string, unknown>)?.phone
-      record.email = (normalized.contacts as Record<string, unknown>)?.email
-      if (meta.foursquare_id) record.foursquare_id = meta.foursquare_id
-      if (meta.google_place_id) record.google_place_id = meta.google_place_id
-      // Logo enrichment via logo.dev
-      if (record.website) {
-        const logo = logoUrlFromWebsite(record.website as string)
-        if (logo) {
-          record.logo_url = logo
-          record.logo_fetched_at = new Date().toISOString()
-        }
-      }
-      break
-
     case 'events':
-      record.title = normalized.name
+      record.title       = normalized.name
       record.description = normalized.description || enriched.description
-      record.start_date = (normalized.dates as Record<string, unknown>)?.start
-      record.end_date = (normalized.dates as Record<string, unknown>)?.end
+      record.start_date  = (normalized.dates as Record<string, unknown>)?.start
+      record.end_date    = (normalized.dates as Record<string, unknown>)?.end
       if (loc.city) record.location = loc.city
       if (meta.url) record.url = meta.url
-      // Logo enrichment via logo.dev
       {
-        const eventWebsite = meta.website || meta.url || ((normalized.urls as string[]) || [])[0]
-        if (eventWebsite) {
-          const logo = logoUrlFromWebsite(eventWebsite as string)
-          if (logo) {
-            record.logo_url = logo
-            record.logo_fetched_at = new Date().toISOString()
-          }
+        const site = meta.website || meta.url || ((normalized.urls as string[]) ?? [])[0]
+        if (site) {
+          const logo = logoUrlFromWebsite(site as string)
+          if (logo) { record.logo_url = logo; record.logo_fetched_at = new Date().toISOString() }
         }
       }
       break
 
     case 'personalities':
       record.name = normalized.name
-      record.bio = normalized.description || enriched.description
-      if (meta.birth_date) record.birth_date = meta.birth_date
+      record.bio  = normalized.description || enriched.description
+      if (meta.birth_date)  record.birth_date  = meta.birth_date
       if (meta.nationality) record.nationality = meta.nationality
-      if (meta.profession) record.profession = meta.profession
+      if (meta.profession)  record.profession  = meta.profession
       break
 
     case 'news_articles':
-      record.title = normalized.name
-      record.content = normalized.description
-      record.url = ((normalized.urls as string[]) || [])[0]
-      record.image_url = ((normalized.images as string[]) || [])[0]
-      if (meta.source_name) record.source_name = meta.source_name
+      record.title     = normalized.name
+      record.content   = normalized.description
+      record.url       = ((normalized.urls as string[]) ?? [])[0]
+      record.image_url = ((normalized.images as string[]) ?? [])[0]
+      if (meta.source_name)  record.source_name  = meta.source_name
       if (meta.published_at) record.published_at = meta.published_at
       break
 
@@ -196,11 +299,9 @@ function buildRecord(
       break
 
     default:
-      // Generic: pass through normalized fields
-      if (normalized.name) record.name = normalized.name
+      if (normalized.name)        record.name        = normalized.name
       if (normalized.description) record.description = normalized.description
       Object.assign(record, meta)
-      break
   }
 
   return record

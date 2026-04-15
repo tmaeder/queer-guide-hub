@@ -7,6 +7,7 @@ import {
 import {
   validateHotelNormalized, scoreHotelQuality, hotelReviewDisposition,
 } from '../_shared/hotel-pipeline-utils.ts'
+import { validateMarketplaceNormalized } from '../_shared/marketplace-pipeline-utils.ts'
 
 // ============================================================
 // Pipeline Validate
@@ -65,6 +66,9 @@ Deno.serve(async (req) => {
         }
       } else if (type === 'country' || item.target_table === 'countries') {
         const r = validateCountryNormalized(n)
+        errors = r.errors; warnings = r.warnings; quality = r.quality
+      } else if (type === 'marketplace' || item.target_table === 'marketplace_listings') {
+        const r = validateMarketplaceNormalized(n)
         errors = r.errors; warnings = r.warnings; quality = r.quality
       } else if (type === 'city' || item.target_table === 'cities') {
         const r = validateCityNormalized(n)
