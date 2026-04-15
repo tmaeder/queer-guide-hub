@@ -16,9 +16,10 @@ const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 const ErrorsTab = lazy(() => import('./tabs/ErrorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
 
-type Tab = 'builder' | 'monitor' | 'sources' | 'review' | 'dlq' | 'errors' | 'alerts' | 'coverage' | 'news' | 'modules' | 'health' | 'geo-review';
+type Tab = 'overview' | 'builder' | 'monitor' | 'sources' | 'review' | 'dlq' | 'errors' | 'alerts' | 'coverage' | 'news' | 'modules' | 'health' | 'geo-review';
 
 const TABS: { key: Tab; label: string; icon: React.ComponentType<{ style?: React.CSSProperties }> }[] = [
+  { key: 'overview',   label: 'Overview',   icon: LayoutGrid },
   { key: 'builder',    label: 'Builder',    icon: Workflow },
   { key: 'monitor',    label: 'Monitor',    icon: BarChart3 },
   { key: 'sources',    label: 'Sources',    icon: Plug },
@@ -38,10 +39,10 @@ const fallback = <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af
 export default function UnifiedDataOps() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const activeTab = (params.get('tab') as Tab) || 'builder';
+  const activeTab = (params.get('tab') as Tab) || 'overview';
 
   const switchTab = useCallback((tab: Tab) => {
-    setParams(tab === 'builder' ? {} : { tab });
+    setParams(tab === 'overview' ? {} : { tab });
   }, [setParams]);
 
   return (
@@ -85,6 +86,11 @@ export default function UnifiedDataOps() {
       </div>
 
       {/* Tab content */}
+      {activeTab === 'overview' && (
+        <Suspense fallback={fallback}>
+          <OverviewTab />
+        </Suspense>
+      )}
       {activeTab === 'builder' && (
         <ReactFlowProvider>
           <Suspense fallback={fallback}>
