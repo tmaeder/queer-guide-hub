@@ -708,6 +708,7 @@ const ROUTE_MAP: Record<string, string> = {
   'enrich-venue': 'enrichment/venue',
   'fetch-wikipedia-data': 'enrichment/fetch-wikipedia',
   'fetch-personality-data': 'enrichment/fetch-personality',
+  'stage-personality': 'ingestion/stage-personality',
   'fetch-and-store-city-images': 'enrichment/fetch-city-images',
   'fetch-news': 'enrichment/fetch-news',
   'geo-link-content': 'enrichment/geo-link',

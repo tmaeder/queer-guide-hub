@@ -49,11 +49,132 @@ export default function HealthTab() {
   const totalStaging = stagingStats?.reduce((sum, s) => sum + s.count, 0) || 0;
   const openCircuits = circuitBreakers?.filter(cb => cb.state === 'open').length || 0;
 
+  // Geo health: counts of anomalies/duplicates/orphans in cities + countries.
+  const { data: geoHealth } = useQuery({
+    queryKey: ['geo-health'],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
+      const [
+        citiesNoCoords, citiesNoCountry, citiesDupes,
+        countriesNoCode, countriesDupes,
+        geoMergeCandidates,
+      ] = await Promise.all([
+        sb.from('cities').select('id', { count: 'exact', head: true }).is('latitude', null).is('duplicate_of_id', null),
+        sb.from('cities').select('id', { count: 'exact', head: true }).is('country_id', null),
+        sb.from('cities').select('id', { count: 'exact', head: true }).not('duplicate_of_id', 'is', null),
+        sb.from('countries').select('id', { count: 'exact', head: true }).is('code', null).is('duplicate_of_id', null),
+        sb.from('countries').select('id', { count: 'exact', head: true }).not('duplicate_of_id', 'is', null),
+        sb.from('ingestion_staging').select('id', { count: 'exact', head: true })
+          .in('target_table', ['cities','countries'])
+          .eq('dedup_status', 'merge_candidate')
+          .eq('review_status', 'pending_review'),
+      ]);
+      return {
+        cities_no_coords:     citiesNoCoords.count ?? 0,
+        cities_no_country:    citiesNoCountry.count ?? 0,
+        cities_duplicates:    citiesDupes.count ?? 0,
+        countries_no_code:    countriesNoCode.count ?? 0,
+        countries_duplicates: countriesDupes.count ?? 0,
+        geo_merge_candidates: geoMergeCandidates.count ?? 0,
+      };
+    },
+  });
+
   const sectionTitle: React.CSSProperties = { fontWeight: 600, fontSize: 15, marginBottom: 12 };
   const cardBorder: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', padding: 16 };
 
+  // Dead-letter cluster: top failure groups by stage + error class.
+  // Surfaces commit/dedup/enrich failures from ingestion_events so admins can
+  // see the most common failure mode at a glance.
+  const { data: deadLetter } = useQuery({
+    queryKey: ['ingestion-dead-letter'],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await sb.from('ingestion_events')
+        .select('stage, new_status, payload')
+        .in('new_status', ['rejected', 'failed', 'error'])
+        .gte('created_at', since)
+        .limit(2000);
+      const groups: Record<string, { stage: string; errorClass: string; count: number; sample: string }> = {};
+      for (const r of (data ?? []) as Array<{ stage: string; new_status: string; payload: Record<string, unknown> | null }>) {
+        const errMsg = String((r.payload as Record<string, unknown>)?.error ?? (r.payload as Record<string, unknown>)?.crash ?? r.new_status);
+        const errorClass = errMsg.split(':')[0].slice(0, 60);
+        const k = `${r.stage}::${errorClass}`;
+        if (!groups[k]) groups[k] = { stage: r.stage, errorClass, count: 0, sample: errMsg.slice(0, 200) };
+        groups[k].count++;
+      }
+      return Object.values(groups).sort((a, b) => b.count - a.count).slice(0, 10);
+    },
+  });
+
+  // Enrichment audit summary — partial/failed counts in the last 24h
+  const { data: enrichSummary } = useQuery({
+    queryKey: ['enrichment-audit-summary'],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await sb.from('enrichment_audit')
+        .select('stage, status').gte('created_at', since).limit(5000);
+      const counts: Record<string, { success: number; partial: number; failed: number }> = {};
+      for (const r of (data ?? []) as Array<{ stage: string; status: string }>) {
+        if (!counts[r.stage]) counts[r.stage] = { success: 0, partial: 0, failed: 0 };
+        const k = r.status as 'success' | 'partial' | 'failed';
+        if (k in counts[r.stage]) counts[r.stage][k]++;
+      }
+      return Object.entries(counts).map(([stage, c]) => ({ stage, ...c }));
+    },
+  });
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Dead-letter cluster */}
+      <div style={cardBorder}>
+        <div style={{ ...sectionTitle, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Zap style={{ width: 16, height: 16 }} />
+          Dead-letter — top failure clusters (24h)
+          {(deadLetter?.length ?? 0) === 0 && <span style={{ fontSize: 12, color: '#6b7280' }}>(no failures)</span>}
+        </div>
+        {(deadLetter?.length ?? 0) > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', gap: 6, fontSize: 12, marginTop: 8 }}>
+            <div style={{ fontWeight: 600, color: '#6b7280' }}>Stage</div>
+            <div style={{ fontWeight: 600, color: '#6b7280' }}>Error class</div>
+            <div style={{ fontWeight: 600, color: '#6b7280', textAlign: 'right' }}>Count</div>
+            {deadLetter?.map((g, i) => (
+              <div key={i} style={{ display: 'contents' }}>
+                <div>{g.stage}</div>
+                <div title={g.sample} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.errorClass}</div>
+                <div style={{ textAlign: 'right', color: g.count > 10 ? brandColors.main : undefined, fontWeight: 600 }}>{g.count}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Enrichment audit summary */}
+      {(enrichSummary?.length ?? 0) > 0 && (
+        <div style={cardBorder}>
+          <div style={sectionTitle}>Enrichment outcomes (24h)</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', gap: 6, fontSize: 12, marginTop: 8 }}>
+            <div style={{ fontWeight: 600, color: '#6b7280' }}>Stage</div>
+            <div style={{ fontWeight: 600, color: '#16a34a', textAlign: 'right' }}>Success</div>
+            <div style={{ fontWeight: 600, color: '#a16207', textAlign: 'right' }}>Partial</div>
+            <div style={{ fontWeight: 600, color: '#b91c1c', textAlign: 'right' }}>Failed</div>
+            {enrichSummary?.map((s, i) => (
+              <div key={i} style={{ display: 'contents' }}>
+                <div>{s.stage}</div>
+                <div style={{ textAlign: 'right' }}>{s.success}</div>
+                <div style={{ textAlign: 'right', color: s.partial > 0 ? '#a16207' : undefined }}>{s.partial}</div>
+                <div style={{ textAlign: 'right', color: s.failed > 0 ? '#b91c1c' : undefined, fontWeight: s.failed > 0 ? 600 : undefined }}>{s.failed}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Circuit Breakers */}
       <div>
         <div style={{ ...sectionTitle, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -74,6 +195,35 @@ export default function HealthTab() {
                 <div>Fails: <span style={{ color: cb.failure_count > 0 ? '#ef4444' : undefined, fontWeight: cb.failure_count > 0 ? 600 : undefined }}>{cb.failure_count}/{cb.threshold}</span></div>
                 <div>OK: {cb.success_count}</div>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Geo Health — cities + countries anomalies */}
+      <div style={cardBorder}>
+        <div style={{ ...sectionTitle, display: 'flex', alignItems: 'center', gap: 8 }}>
+          Geo Health — Cities & Countries
+          {(geoHealth?.geo_merge_candidates ?? 0) > 0 && (
+            <span style={{ fontSize: 12, color: brandColors.main }}>
+              ({geoHealth?.geo_merge_candidates} merge candidates pending)
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10 }}>
+          {[
+            { label: 'Cities · no coords',     value: geoHealth?.cities_no_coords,     warn: 0 },
+            { label: 'Cities · no country',    value: geoHealth?.cities_no_country,    warn: 0 },
+            { label: 'Cities · duplicates',    value: geoHealth?.cities_duplicates,    warn: 0 },
+            { label: 'Countries · no ISO',     value: geoHealth?.countries_no_code,    warn: 0 },
+            { label: 'Countries · duplicates', value: geoHealth?.countries_duplicates, warn: 0 },
+            { label: 'Merge candidates',       value: geoHealth?.geo_merge_candidates, warn: 0 },
+          ].map(({ label, value, warn }) => (
+            <div key={label} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 10 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: (value ?? 0) > warn ? brandColors.main : '#22c55e' }}>
+                {value ?? '–'}
+              </div>
+              <div style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>{label}</div>
             </div>
           ))}
         </div>

@@ -3,7 +3,10 @@ import {
   Play, CheckCircle, XCircle, BarChart3, Database,
 } from 'lucide-react';
 import { useUnifiedMonitor, type UnifiedRun } from '../hooks/useUnifiedMonitor';
-import { useStagingStats } from '../hooks/usePipelineHistory';
+import {
+  useStagingStats, useEventIngestStats,
+  useCityIngestStats, useCountryIngestStats,
+} from '../hooks/usePipelineHistory';
 import { brandColors } from '@/theme/muiTheme';
 
 const statusBadgeStyle: Record<string, React.CSSProperties> = {
@@ -18,9 +21,54 @@ const statusBadgeStyle: Record<string, React.CSSProperties> = {
 export default function MonitorTab() {
   const { allRuns, stats, isLoading } = useUnifiedMonitor();
   const { data: stagingStats } = useStagingStats();
+  const { data: eventStats } = useEventIngestStats(14);
+  const { data: cityStats } = useCityIngestStats(14);
+  const { data: countryStats } = useCountryIngestStats(14);
   const [selectedRun, setSelectedRun] = useState<UnifiedRun | null>(null);
 
   const totalStaging = stagingStats?.reduce((sum, s) => sum + s.count, 0) || 0;
+
+  type Agg = {
+    staged: number; validated: number; unique_items: number; duplicates: number;
+    merge_candidates: number; inserted: number; committed?: number; updated: number; rejected: number; pending_review: number;
+  };
+  function aggregateBySource(rows: Array<{source: string | null} & Partial<Agg>> | undefined): Array<[string, Agg]> {
+    const acc: Record<string, Agg> = {};
+    for (const row of rows || []) {
+      const src = row.source || 'unknown';
+      if (!acc[src]) acc[src] = { staged: 0, validated: 0, unique_items: 0, duplicates: 0, merge_candidates: 0, inserted: 0, updated: 0, rejected: 0, pending_review: 0 };
+      acc[src].staged           += Number(row.staged || 0);
+      acc[src].validated        += Number(row.validated || 0);
+      acc[src].unique_items     += Number(row.unique_items || 0);
+      acc[src].duplicates       += Number(row.duplicates || 0);
+      acc[src].merge_candidates += Number(row.merge_candidates || 0);
+      // city_/country_ingest_stats uses `committed` instead of `inserted`/`updated`
+      acc[src].inserted         += Number(row.inserted || row.committed || 0);
+      acc[src].updated          += Number(row.updated || 0);
+      acc[src].rejected         += Number(row.rejected || 0);
+      acc[src].pending_review   += Number(row.pending_review || 0);
+    }
+    return Object.entries(acc).sort((a, b) => b[1].staged - a[1].staged);
+  }
+
+  const eventSources   = aggregateBySource(eventStats);
+  const citySources    = aggregateBySource(cityStats);
+  const countrySources = aggregateBySource(countryStats);
+
+  function totalsFor(sources: Array<[string, Agg]>) {
+    return sources.reduce(
+      (t, [, v]) => ({
+        staged: t.staged + v.staged,
+        inserted: t.inserted + v.inserted,
+        rejected: t.rejected + v.rejected,
+        pending_review: t.pending_review + v.pending_review,
+      }),
+      { staged: 0, inserted: 0, rejected: 0, pending_review: 0 }
+    );
+  }
+  const eventTotals   = totalsFor(eventSources);
+  const cityTotals    = totalsFor(citySources);
+  const countryTotals = totalsFor(countrySources);
 
   const cardStyle: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 8, padding: '14px 16px', background: '#fff' };
   const iconRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8 };
@@ -52,6 +100,51 @@ export default function MonitorTab() {
           <p style={label}>Total Runs</p>
         </div>
       </div>
+
+      {/* Per-entity ingest — events + cities + countries */}
+      {[
+        { label: 'Event',   sources: eventSources,   totals: eventTotals   },
+        { label: 'City',    sources: citySources,    totals: cityTotals    },
+        { label: 'Country', sources: countrySources, totals: countryTotals },
+      ].map(({ label, sources, totals }) => (
+        <div key={label} style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', overflow: 'hidden' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontWeight: 600, fontSize: 14 }}>{label} Ingest — last 14 days</div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>
+              staged {totals.staged} · committed {totals.inserted} · review {totals.pending_review} · rejected {totals.rejected}
+            </div>
+          </div>
+          <div style={{ maxHeight: 220, overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
+                  {['Source', 'Staged', 'Validated', 'Unique', 'Dupe', 'Merge?', 'Committed', 'Updated', 'Review', 'Rejected'].map(h => (
+                    <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 500, color: '#6b7280', fontSize: 12 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sources.length === 0 ? (
+                  <tr><td colSpan={10} style={{ padding: 20, textAlign: 'center', color: '#9ca3af' }}>No {label.toLowerCase()} ingest activity</td></tr>
+                ) : sources.map(([src, v]) => (
+                  <tr key={src} style={{ borderBottom: '1px solid #f9fafb' }}>
+                    <td style={{ padding: '8px 12px', fontWeight: 500 }}>{src}</td>
+                    <td style={{ padding: '8px 12px' }}>{v.staged}</td>
+                    <td style={{ padding: '8px 12px' }}>{v.validated}</td>
+                    <td style={{ padding: '8px 12px' }}>{v.unique_items}</td>
+                    <td style={{ padding: '8px 12px', color: v.duplicates ? '#f59e0b' : '#6b7280' }}>{v.duplicates}</td>
+                    <td style={{ padding: '8px 12px', color: v.merge_candidates ? '#f59e0b' : '#6b7280' }}>{v.merge_candidates}</td>
+                    <td style={{ padding: '8px 12px', color: v.inserted ? '#15803d' : '#6b7280' }}>{v.inserted}</td>
+                    <td style={{ padding: '8px 12px' }}>{v.updated}</td>
+                    <td style={{ padding: '8px 12px', color: v.pending_review ? brandColors.main : '#6b7280' }}>{v.pending_review}</td>
+                    <td style={{ padding: '8px 12px', color: v.rejected ? '#b91c1c' : '#6b7280' }}>{v.rejected}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
 
       {/* Runs table + detail panel */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>

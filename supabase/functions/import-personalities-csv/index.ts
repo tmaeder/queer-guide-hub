@@ -1,282 +1,136 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
+// ============================================================
+// import-personalities-csv
+// Stages CSV rows into ingestion_staging and triggers the
+// bulletproof personality-ingestion pipeline. Replaces the
+// legacy direct-INSERT path.
+// ============================================================
 
-interface PersonalityRow {
-  name: string;
-  description?: string;
-  birth_date?: string;
-  death_date?: string;
-  is_living?: boolean;
-  profession?: string;
-  nationality?: string;
-  birth_place?: string;
-  image_url?: string;
-  website_url?: string;
-  pronouns?: string;
-  verification_status?: string;
-  visibility?: string;
-  is_featured?: boolean;
-  fields?: string[];
+import 'https://deno.land/x/xhr@0.1.0/mod.ts'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+import { stagePersonality, triggerPersonalityPipeline, type RawPersonality } from '../_shared/personality-staging.ts'
+
+// Robust RFC 4180-ish CSV parser — handles embedded newlines + escaped quotes.
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let inQuotes = false
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    if (inQuotes) {
+      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; continue }
+      if (ch === '"') { inQuotes = false; continue }
+      field += ch
+    } else {
+      if (ch === '"') { inQuotes = true; continue }
+      if (ch === ',') { row.push(field); field = ''; continue }
+      if (ch === '\r') continue
+      if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; continue }
+      field += ch
+    }
+  }
+  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row) }
+  return rows.filter(r => r.length > 0 && r.some(c => c.trim()))
 }
 
 serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req);
-
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  if (req.method !== 'POST') {
-    return new Response('Method not allowed', {
-      status: 405,
-      headers: corsHeaders
-    });
-  }
+  const cors = getCorsHeaders(req)
+  if (req.method === 'OPTIONS') return new Response(null, { headers: cors })
+  if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: cors })
 
   try {
-    const supabase = getServiceClient();
-    const auth = await requireAdmin(req, supabase);
-    if (auth instanceof Response) return auth;
+    const supabase = getServiceClient()
+    const auth = await requireAdmin(req, supabase)
+    if (auth instanceof Response) return auth
 
-    const supabaseClient = supabase;
-
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
-    
+    const form = await req.formData()
+    const file = form.get('file') as File | null
     if (!file) {
-      return new Response(JSON.stringify({ error: 'No file provided' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(JSON.stringify({ error: 'No file provided' }),
+        { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+    const autoRun = form.get('auto_run') !== 'false' // default true
+
+    const csvText = await file.text()
+    const rows = parseCsv(csvText)
+    if (rows.length < 2) {
+      return new Response(JSON.stringify({ error: 'Empty CSV or missing rows' }),
+        { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
 
-    const csvText = await file.text();
-    console.log('CSV content length:', csvText.length);
-
-    // Parse CSV content
-    const lines = csvText.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-    if (lines.length === 0) {
-      return new Response(JSON.stringify({ error: 'Empty CSV file' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const headers = rows[0].map(h => h.trim().toLowerCase())
+    if (!headers.includes('name')) {
+      return new Response(JSON.stringify({ error: 'Missing required header: name' }),
+        { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
 
-    // Parse header row
-    const headerLine = lines[0];
-    console.log('Raw header line:', headerLine);
-    
-    const headers = [];
-    let current = '';
-    let inQuotes = false;
-    
-    for (let i = 0; i < headerLine.length; i++) {
-      const char = headerLine[i];
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        headers.push(current.trim().toLowerCase().replace(/"/g, ''));
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    headers.push(current.trim().toLowerCase().replace(/"/g, ''));
-    
-    console.log('CSV headers:', headers);
+    const staged: string[] = []
+    const updated: string[] = []
+    const errors: string[] = []
 
-    // Validate required headers
-    const requiredHeaders = ['name'];
-    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
-    
-    if (missingHeaders.length > 0) {
-      return new Response(JSON.stringify({ 
-        error: `Missing required headers: ${missingHeaders.join(', ')}. Required: name` 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    for (let i = 1; i < rows.length; i++) {
+      const values = rows[i]
+      const obj: Record<string, string> = {}
+      headers.forEach((h, idx) => { obj[h] = (values[idx] ?? '').trim() })
 
-    // Parse data rows
-    const personalities: PersonalityRow[] = [];
-    const errors: string[] = [];
+      if (!obj.name) { errors.push(`Row ${i + 1}: missing name`); continue }
 
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-
-      console.log(`Processing row ${i}: ${line}`);
-
-      // Parse CSV values with quote handling
-      const values: string[] = [];
-      let current = '';
-      let inQuotes = false;
-      
-      for (let j = 0; j < line.length; j++) {
-        const char = line[j];
-        if (char === '"') {
-          inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-          values.push(current.trim().replace(/^"(.*)"$/, '$1'));
-          current = '';
-        } else {
-          current += char;
-        }
-      }
-      values.push(current.trim().replace(/^"(.*)"$/, '$1'));
-
-      console.log(`Row ${i} values:`, values);
-
-      // Create personality object
-      const personality: PersonalityRow = {
-        name: '',
-        verification_status: 'pending',
-        visibility: 'public',
-        is_featured: false,
-        is_living: true
-      };
-
-      headers.forEach((header, index) => {
-        const value = (values[index] || '').trim();
-        
-        switch (header) {
-          case 'name':
-            personality.name = value;
-            break;
-          case 'description':
-            if (value) personality.description = value;
-            break;
-          case 'birth_date':
-            if (value && value !== '') personality.birth_date = value;
-            break;
-          case 'death_date':
-            if (value && value !== '') personality.death_date = value;
-            break;
-          case 'is_living':
-            if (value) personality.is_living = value.toLowerCase() === 'true';
-            break;
-          case 'profession':
-            if (value) personality.profession = value;
-            break;
-          case 'nationality':
-            if (value) personality.nationality = value;
-            break;
-          case 'birth_place':
-            if (value) personality.birth_place = value;
-            break;
-          case 'image_url':
-            if (value) personality.image_url = value;
-            break;
-          case 'website_url':
-            if (value) personality.website_url = value;
-            break;
-          case 'pronouns':
-            if (value) personality.pronouns = value;
-            break;
-          case 'verification_status':
-            if (value && ['verified', 'pending', 'disputed'].includes(value)) {
-              personality.verification_status = value;
-            }
-            break;
-          case 'visibility':
-            if (value && ['public', 'private', 'draft'].includes(value)) {
-              personality.visibility = value;
-            }
-            break;
-          case 'is_featured':
-            if (value) personality.is_featured = value.toLowerCase() === 'true';
-            break;
-          case 'fields':
-            if (value) {
-              personality.fields = value.split(',').map(f => f.trim()).filter(f => f);
-            }
-            break;
-        }
-      });
-
-      // Validate personality
-      if (!personality.name.trim()) {
-        errors.push(`Row ${i + 1}: Missing personality name`);
-        continue;
+      const raw: RawPersonality = {
+        name: obj.name,
+        description: obj.description || undefined,
+        birth_date: obj.birth_date || null,
+        death_date: obj.death_date || null,
+        is_living: obj.is_living ? obj.is_living.toLowerCase() === 'true' : (obj.death_date ? false : true),
+        profession: obj.profession || undefined,
+        nationality: obj.nationality || undefined,
+        birth_place: obj.birth_place || undefined,
+        image_url: obj.image_url || undefined,
+        website_url: obj.website_url || undefined,
+        pronouns: obj.pronouns || undefined,
+        verification_status: obj.verification_status && ['verified','pending','disputed'].includes(obj.verification_status) ? obj.verification_status : 'pending',
+        visibility: obj.visibility && ['public','private','draft'].includes(obj.visibility) ? obj.visibility : 'draft',
+        is_featured: obj.is_featured ? obj.is_featured.toLowerCase() === 'true' : false,
+        fields: obj.fields ? obj.fields.split(',').map(f => f.trim()).filter(Boolean) : undefined,
+        wikidata_qid: obj.wikidata_qid || undefined,
+        lgbti_connection: obj.lgbti_connection || undefined,
+        lgbti_details: obj.lgbti_details || undefined,
       }
 
-      console.log(`Row ${i + 1}: Valid personality:`, personality);
-      personalities.push(personality);
+      try {
+        const res = await stagePersonality(supabase, raw, {
+          source_name: 'csv-upload',
+          source_type: 'csv',
+          source_entity_id: obj.wikidata_qid || null,
+          actor: auth.userId,
+        })
+        if (res.inserted) staged.push(res.staging_id)
+        else updated.push(res.staging_id)
+      } catch (e) {
+        errors.push(`Row ${i + 1} (${obj.name}): ${(e as Error).message}`)
+      }
     }
 
-    console.log(`Parsed ${personalities.length} personalities with ${errors.length} errors`);
-
-    if (personalities.length === 0) {
-      return new Response(JSON.stringify({
-        error: 'No valid personalities found in CSV'
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    let pipelineRunId: string | null = null
+    let pipelineError: string | undefined
+    if (autoRun && (staged.length + updated.length) > 0) {
+      const trig = await triggerPersonalityPipeline(supabase, { triggered_by: `csv-import:${auth.userId}` })
+      pipelineRunId = trig.pipeline_run_id
+      pipelineError = trig.error
     }
 
-    // Prepare personalities for insertion
-    const personalitiesToInsert = personalities.map(personality => ({
-      name: personality.name.trim(),
-      description: personality.description || null,
-      birth_date: personality.birth_date || null,
-      death_date: personality.death_date || null,
-      is_living: personality.is_living,
-      profession: personality.profession || null,
-      nationality: personality.nationality || null,
-      birth_place: personality.birth_place || null,
-      image_url: personality.image_url || null,
-      website_url: personality.website_url || null,
-      pronouns: personality.pronouns || null,
-      verification_status: personality.verification_status,
-      visibility: personality.visibility,
-      is_featured: personality.is_featured,
-      fields: personality.fields || [],
-      view_count: 0,
-      created_by: auth.userId
-    }));
-
-    console.log('Processing personalities:', personalitiesToInsert.length);
-
-    // Insert personalities
-    const { data: insertedPersonalities, error: insertError } = await supabaseClient
-      .from('personalities')
-      .insert(personalitiesToInsert)
-      .select();
-
-    if (insertError) {
-      console.error('Database insert error:', insertError);
-      return new Response(JSON.stringify({
-        error: 'Internal server error'
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const result = {
-      success: true,
-      imported: insertedPersonalities?.length || 0,
-      total_parsed: personalities.length,
-      errors: errors.length > 0 ? errors : undefined
-    };
-
-    console.log('Import completed:', result);
-
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
-  } catch (error) {
-    console.error('Import error:', error);
     return new Response(JSON.stringify({
-      error: 'Internal server error'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      success: true,
+      staged: staged.length,
+      updated: updated.length,
+      total_parsed: rows.length - 1,
+      errors: errors.length ? errors : undefined,
+      pipeline_run_id: pipelineRunId,
+      pipeline_error: pipelineError,
+    }), { headers: { ...cors, 'Content-Type': 'application/json' } })
+  } catch (error) {
+    console.error('import-personalities-csv error:', error)
+    return new Response(JSON.stringify({ error: (error as Error).message }),
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
   }
-});
+})

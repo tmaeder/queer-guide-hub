@@ -19,8 +19,10 @@ import { useNavigate } from 'react-router';
 
 import BaseNode from './nodes/BaseNode';
 import NodeConfigPanel from './panels/NodeConfigPanel';
-import { usePipelineBuilder, usePipelineNodeTypes, type PipelineNodeType } from './hooks/usePipelineBuilder';
+import { usePipelineBuilder, usePipelineNodeTypes, usePipelineDefinitions, type PipelineNodeType } from './hooks/usePipelineBuilder';
 import { usePipelineExecution } from './hooks/usePipelineExecution';
+import { useLatestPipelineRun } from './hooks/usePipelineHistory';
+import { useSearchParams } from 'react-router';
 
 const nodeTypes = { baseNode: BaseNode };
 
@@ -38,8 +40,27 @@ const categoryOrder = ['source', 'processor', 'validator', 'enricher', 'output',
 function PipelineBuilderInner() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
   const { data: nodeTypeList } = usePipelineNodeTypes();
+  const { data: pipelineList } = usePipelineDefinitions();
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
+  const initialPipelineParam = params.get('pipeline') ?? params.get('pipeline_id') ?? undefined;
+  const [selectedPipelineId, setSelectedPipelineId] = useState<string | undefined>(undefined);
+
+  // Resolve pipeline name → id once list loads. If no param given, default to the
+  // bulletproof events pipeline so the canvas is never empty on first visit.
+  useEffect(() => {
+    if (!pipelineList || selectedPipelineId) return;
+    if (initialPipelineParam) {
+      const match = pipelineList.find(p => p.id === initialPipelineParam || p.name === initialPipelineParam);
+      if (match) { setSelectedPipelineId(match.id); return; }
+    }
+    const defaultDef = pipelineList.find(p => p.name === 'hotel-ingestion-pipeline')
+                    ?? pipelineList.find(p => p.name === 'events-ingestion-bulletproof')
+                    ?? pipelineList.find(p => p.is_enabled && !p.is_template)
+                    ?? pipelineList[0];
+    if (defaultDef) setSelectedPipelineId(defaultDef.id);
+  }, [pipelineList, initialPipelineParam, selectedPipelineId]);
 
   const {
     nodes, edges, setNodes,
@@ -47,9 +68,37 @@ function PipelineBuilderInner() {
     addNode, pipelineName, setPipelineName,
     save, isSaving, run, isRunning,
     selectedNodeId, setSelectedNodeId,
-  } = usePipelineBuilder();
+    loadPipeline,
+  } = usePipelineBuilder(selectedPipelineId);
+
+  // Auto-load the selected pipeline definition (wait for nodeTypes so icons/colors populate)
+  useEffect(() => {
+    if (!selectedPipelineId || !pipelineList || !nodeTypeList) return;
+    const def = pipelineList.find(p => p.id === selectedPipelineId);
+    if (def) loadPipeline(def, nodeTypeList);
+  }, [selectedPipelineId, pipelineList, nodeTypeList, loadPipeline]);
 
   const { runStatus, clearOverlay } = usePipelineExecution(activeRunId, setNodes);
+
+  // Auto-overlay the latest run's node_states when a pipeline loads (so admins
+  // see the most recent execution status without clicking Run). Live realtime
+  // takes over when activeRunId is set.
+  const { data: latestRun } = useLatestPipelineRun(selectedPipelineId);
+  useEffect(() => {
+    if (!latestRun || activeRunId) return;
+    const states = latestRun.node_states || {};
+    setNodes((current) => current.map((node) => {
+      const s = states[node.id];
+      return s ? { ...node, data: {
+        ...node.data,
+        status: s.status,
+        itemsOut: s.items_out,
+        itemsIn: s.items_in,
+        durationMs: s.duration_ms,
+        errorMessage: s.error,
+      } } : node;
+    }));
+  }, [latestRun, activeRunId, setNodes]);
 
   const selectedNode = useMemo(
     () => nodes.find(n => n.id === selectedNodeId) || null,
@@ -181,6 +230,46 @@ function PipelineBuilderInner() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid #e5e7eb', background: '#fff', flexShrink: 0, zIndex: 10 }}>
+          <select
+            value={selectedPipelineId ?? ''}
+            onChange={(e) => {
+              const id = e.target.value || undefined;
+              setSelectedPipelineId(id);
+              if (id) {
+                const def = pipelineList?.find(p => p.id === id);
+                if (def) setParams(prev => {
+                  const next = new URLSearchParams(prev);
+                  next.set('pipeline', def.name);
+                  return next;
+                });
+              } else {
+                setParams(prev => { const next = new URLSearchParams(prev); next.delete('pipeline'); return next; });
+              }
+            }}
+            style={{ height: 32, padding: '0 8px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 12, minWidth: 220 }}
+          >
+            <option value="">— New pipeline —</option>
+            {pipelineList?.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.is_enabled ? '' : '(off) '}{p.display_name || p.name}
+              </option>
+            ))}
+          </select>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 px-2"
+            onClick={() => {
+              setSelectedPipelineId(undefined);
+              setNodes([]);
+              setPipelineName('');
+              setParams(prev => { const next = new URLSearchParams(prev); next.delete('pipeline'); return next; });
+            }}
+            title="Start a new blank pipeline"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            New
+          </Button>
           <Input
             value={pipelineName}
             onChange={(e) => setPipelineName(e.target.value)}
@@ -211,8 +300,37 @@ function PipelineBuilderInner() {
             </Button>
           )}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#6b7280' }}>
+            {latestRun && !activeRunId && (
+              <Badge
+                variant="outline"
+                className={`text-xs gap-1 ${
+                  latestRun.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' :
+                  latestRun.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200' :
+                  latestRun.status === 'running' ? 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse' :
+                  'bg-gray-50 text-gray-700'
+                }`}
+                title={`Run ${latestRun.id.slice(0, 8)} • ${latestRun.items_succeeded ?? 0}/${latestRun.items_total ?? 0} succeeded${latestRun.error_message ? ` • ${latestRun.error_message}` : ''}`}
+              >
+                <Clock className="h-3 w-3" />
+                Last: {formatDistanceToNow(new Date(latestRun.started_at || latestRun.created_at), { addSuffix: true })} • {latestRun.status}
+              </Badge>
+            )}
             <Badge variant="outline" className="text-xs">{nodes.length} nodes</Badge>
             <Badge variant="outline" className="text-xs">{edges.length} edges</Badge>
+            {(() => {
+              const def = pipelineList?.find(p => p.id === selectedPipelineId);
+              if (!def || !latestRun?.pipeline_version) return null;
+              if (latestRun.pipeline_version === def.version) return null;
+              return (
+                <Badge
+                  variant="outline"
+                  className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200"
+                  title={`DAG was edited (current v${def.version}) since the last run (v${latestRun.pipeline_version}). Run again to refresh metrics.`}
+                >
+                  edited since last run (v{latestRun.pipeline_version}→v{def.version})
+                </Badge>
+              );
+            })()}
             <Separator orientation="vertical" className="h-4 mx-1" />
             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/pipelines/dashboard')}>
               <BarChart3 className="h-3 w-3 mr-1" /> Dashboard

@@ -34,6 +34,7 @@ import {
 } from '@/utils/excelExport';
 import { TagCategorizer } from '@/components/admin/TagCategorizer';
 import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
+import TagMergeCandidates from '@/components/admin/TagMergeCandidates';
 import { TagImageUpload } from '@/components/admin/TagImageUpload';
 import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
 import BatchAutoTagDialog from '@/components/admin/BatchAutoTagDialog';
@@ -463,6 +464,9 @@ export default function AdminTags() {
       <Box sx={{ mb: 3 }}>
         <TagCategorizer />
       </Box>
+
+      {/* Near-duplicate tag merge (find_unified_tag_duplicates + merge_unified_tag) */}
+      <TagMergeCandidates />
 
       {/* Data Table */}
       <AdminDataTable config={tableConfig} />

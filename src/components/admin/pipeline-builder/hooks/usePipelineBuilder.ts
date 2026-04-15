@@ -92,11 +92,31 @@ export function usePipelineDefinition(id: string | undefined) {
   });
 }
 
+/** Fetch a single pipeline definition by slug/name — used for URL-param loading */
+export function usePipelineDefinitionByName(name: string | undefined) {
+  return useQuery({
+    queryKey: ['pipeline-definition-by-name', name],
+    queryFn: async () => {
+      if (!name) return null;
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        .from('pipeline_definitions')
+        .select('*')
+        .eq('name', name)
+        .maybeSingle();
+      if (error) throw error;
+      return data as PipelineDefinition | null;
+    },
+    enabled: !!name,
+  });
+}
+
 /** Main pipeline builder hook — manages React Flow state + save/load */
 export function usePipelineBuilder(pipelineId?: string) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [pipelineName, setPipelineName] = useState('');
+  const [pipelineSlug, setPipelineSlug] = useState<string | null>(null);
+  const [currentPipelineId, setCurrentPipelineId] = useState<string | null>(pipelineId ?? null);
   const [pipelineDescription, setPipelineDescription] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
@@ -134,48 +154,101 @@ export function usePipelineBuilder(pipelineId?: string) {
     [setNodes]
   );
 
-  /** Load a pipeline definition into the canvas */
+  /**
+   * Load a pipeline definition into the canvas.
+   * Transforms stored nodes (type=<slug>) → React Flow shape (type='baseNode'
+   * + data enriched from nodeTypes), auto-lays-out any missing positions,
+   * and remembers the original slug so save() can reverse the transform.
+   */
   const loadPipeline = useCallback(
-    (pipeline: PipelineDefinition) => {
-      setNodes(pipeline.nodes || []);
-      setEdges(pipeline.edges || []);
+    (pipeline: PipelineDefinition, nodeTypes?: PipelineNodeType[]) => {
+      const typeBySlug = new Map<string, PipelineNodeType>();
+      for (const nt of nodeTypes || []) typeBySlug.set(nt.slug, nt);
+
+      const transformed = (pipeline.nodes || []).map((n: Node, i: number) => {
+        const storedType = (n as Node & { type?: string }).type || '';
+        const storedData = (n.data || {}) as Record<string, unknown>;
+        const slug = (storedData.nodeTypeSlug as string) || storedType;
+        const nt = typeBySlug.get(slug);
+        const position = n.position || { x: 50 + i * 240, y: 200 };
+        return {
+          ...n,
+          type: 'baseNode',
+          position,
+          data: {
+            label: (storedData.label as string) || nt?.display_name || slug,
+            config: storedData.config || {},
+            icon: (storedData.icon as string) || nt?.icon || 'Box',
+            color: (storedData.color as string) || nt?.color || '#6b7280',
+            category: (storedData.category as string) || nt?.category,
+            description: (storedData.description as string) || nt?.description,
+            nodeTypeSlug: slug,
+            inputPorts: (storedData.inputPorts as unknown) || nt?.input_ports || [],
+            outputPorts: (storedData.outputPorts as unknown) || nt?.output_ports || [],
+          },
+        } as Node;
+      });
+      setNodes(transformed);
+      setEdges((pipeline.edges || []).map(e => ({ ...e, animated: true })));
       setPipelineName(pipeline.display_name || pipeline.name);
+      setPipelineSlug(pipeline.name);
+      setCurrentPipelineId(pipeline.id);
       setPipelineDescription(pipeline.description || '');
     },
     [setNodes, setEdges]
   );
 
-  /** Save mutation */
+  /** Save mutation — converts type='baseNode' back to node type slug for executor */
   const saveMutation = useMutation({
     mutationFn: async (overrides?: { name?: string }) => {
       const name = overrides?.name || pipelineName || `pipeline-${Date.now()}`;
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const slug = pipelineSlug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+      const serializedNodes = nodes.map(n => {
+        const d = (n.data || {}) as Record<string, unknown>;
+        const nodeTypeSlug = (d.nodeTypeSlug as string) || (n as Node & { type?: string }).type || '';
+        return {
+          id: n.id,
+          type: nodeTypeSlug,
+          position: n.position,
+          data: {
+            label: d.label,
+            config: d.config || {},
+          },
+        };
+      });
 
       const payload = {
         name: slug,
         display_name: name,
         description: pipelineDescription,
-        nodes,
+        nodes: serializedNodes,
         edges,
         default_context: {},
         version: 1,
       };
 
-      if (pipelineId) {
+      const targetId = currentPipelineId || pipelineId;
+      if (targetId) {
         const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
           .from('pipeline_definitions')
           .update(payload)
-          .eq('id', pipelineId);
+          .eq('id', targetId);
         if (error) throw error;
       } else {
-        const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
           .from('pipeline_definitions')
-          .insert(payload);
+          .insert(payload)
+          .select('id')
+          .single();
         if (error) throw error;
+        if (data?.id) setCurrentPipelineId(data.id);
+        setPipelineSlug(slug);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipeline-definitions'] });
+      queryClient.invalidateQueries({ queryKey: ['pipeline-definition-by-name'] });
       toast({ title: 'Pipeline saved' });
     },
     onError: (error: Error) => {
@@ -189,8 +262,8 @@ export function usePipelineBuilder(pipelineId?: string) {
       const { data, error } = await supabase.functions.invoke('pipeline-executor', {
         body: {
           action: 'start',
-          pipeline_id: pipelineId,
-          pipeline_name: pipelineName?.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          pipeline_id: currentPipelineId || pipelineId,
+          pipeline_name: pipelineSlug || pipelineName?.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
           dry_run: options?.dryRun || false,
           triggered_by: 'admin',
         },
@@ -211,6 +284,8 @@ export function usePipelineBuilder(pipelineId?: string) {
     onNodesChange, onEdgesChange, onConnect,
     addNode, loadPipeline,
     pipelineName, setPipelineName,
+    pipelineSlug, setPipelineSlug,
+    currentPipelineId,
     pipelineDescription, setPipelineDescription,
     selectedNodeId, setSelectedNodeId,
     save: saveMutation.mutate,

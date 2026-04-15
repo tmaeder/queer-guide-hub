@@ -12,6 +12,9 @@ const FSQ_BASE = 'https://api.foursquare.com/v3/places/search'
 const FSQ_FIELDS = 'fsq_id,name,geocodes,location,categories,description,tel,website,email,hours,rating,price,photos,features,tastes'
 
 const SEARCH_TERMS = ['gay bar', 'lgbtq', 'pride', 'queer', 'drag', 'leather bar']
+// Foursquare v3 category IDs for accommodations (https://docs.foursquare.com/data-products/docs/categories)
+const HOTEL_CATEGORY_IDS = '19014,19015,19016,19009,19021,19011' // hotel, hostel, b&b, resort, motel, lodging
+const HOTEL_TERMS = ['gay friendly hotel', 'lgbtq hotel', 'gay bed and breakfast', 'gay guesthouse', 'gay resort']
 
 const DEFAULT_CITIES = [
   'New York, NY', 'San Francisco, CA', 'Los Angeles, CA', 'Chicago, IL',
@@ -32,11 +35,16 @@ const foursquareAdapter: SourceAdapter = {
     const supabase = getServiceClient()
     const cities = (config.filters?.cities as string[]) || getCityForHour()
     const limit = config.batchSize || 20
+    const mode  = (config.filters?.mode as string) || 'all'  // 'venues' | 'hotels' | 'all'
+    const terms = mode === 'hotels' ? HOTEL_TERMS
+                : mode === 'venues' ? SEARCH_TERMS
+                : [...SEARCH_TERMS, ...HOTEL_TERMS]
     const allItems: RawItem[] = []
 
     for (const city of cities) {
-      for (const term of SEARCH_TERMS) {
+      for (const term of terms) {
         try {
+          const isHotelTerm = HOTEL_TERMS.includes(term)
           const items = await withCircuitBreaker(supabase, 'foursquare', async () => {
             const params = new URLSearchParams({
               near: city,
@@ -45,6 +53,7 @@ const foursquareAdapter: SourceAdapter = {
               radius: '30000',
               fields: FSQ_FIELDS,
             })
+            if (isHotelTerm) params.set('categories', HOTEL_CATEGORY_IDS)
             const res = await fetch(`${FSQ_BASE}?${params}`, {
               headers: { 'Authorization': apiKey, 'Accept': 'application/json' },
             })
@@ -57,7 +66,7 @@ const foursquareAdapter: SourceAdapter = {
           for (const place of items) {
             allItems.push({
               sourceId: place.fsq_id || `fsq-${Date.now()}`,
-              data: { ...place, _search_city: city, _search_term: term },
+              data: { ...place, _search_city: city, _search_term: term, _is_accommodation: isHotelTerm },
             })
           }
 
@@ -87,6 +96,16 @@ const foursquareAdapter: SourceAdapter = {
     const geo = (d.geocodes as Record<string, Record<string, number>>)?.main || {}
     const loc = (d.location as Record<string, unknown>) || {}
     const cats = (d.categories as Array<Record<string, unknown>>) || []
+    const catNames = cats.map(c => String(c.name ?? '').toLowerCase())
+    const isHotel = Boolean(d._is_accommodation) ||
+      catNames.some(n => /(hotel|hostel|bed.*breakfast|b&b|resort|motel|guesthouse|guest house|inn|lodging)/.test(n))
+    const accType = isHotel
+      ? (catNames.find(n => /b&b|bed.*breakfast/.test(n)) ? 'bnb'
+       : catNames.find(n => /hostel/.test(n))           ? 'hostel'
+       : catNames.find(n => /resort/.test(n))           ? 'resort'
+       : catNames.find(n => /guest/.test(n))            ? 'guesthouse'
+       : 'hotel')
+      : null
 
     return {
       entityType: 'venue',
@@ -110,6 +129,7 @@ const foursquareAdapter: SourceAdapter = {
         website: d.website ? String(d.website) : undefined,
         email: d.email ? String(d.email) : undefined,
       },
+      ...(accType ? { accommodation_type: accType } : {}),
       metadata: {
         foursquare_id: raw.sourceId,
         foursquare_rating: d.rating,
@@ -117,9 +137,10 @@ const foursquareAdapter: SourceAdapter = {
         hours: d.hours,
         categories: cats.map(c => c.name),
         features: d.features,
+        platform_ids: { foursquare: raw.sourceId },
         data_source: 'foursquare',
       },
-    }
+    } as NormalizedItem
   },
 
   getSourceId(raw: RawItem): string {
@@ -163,7 +184,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     const config: AdapterConfig = {
       batchSize: body.limit || body.batch_size || 20,
-      filters: { cities: body.cities },
+      filters: { cities: body.cities, mode: body.mode || 'all' },
       apiKey: body.apiKey || Deno.env.get('FOURSQUARE_API_KEY'),
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id,

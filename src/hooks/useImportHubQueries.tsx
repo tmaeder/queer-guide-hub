@@ -338,9 +338,10 @@ export function useStagingAction() {
 
   return useMutation({
     mutationFn: async (params: {
-      action: 'approve' | 'reject' | 'bulk_approve' | 'bulk_reject';
+      action: 'approve' | 'reject' | 'bulk_approve' | 'bulk_reject' | 'merge';
       stagingId?: string;
       stagingIds?: string[];
+      targetVenueId?: string;
       notes?: string;
     }) => {
       const { data, error } = await supabase.functions.invoke('ingestion-review-api', {
@@ -348,6 +349,7 @@ export function useStagingAction() {
           action: params.action,
           staging_id: params.stagingId,
           staging_ids: params.stagingIds,
+          target_venue_id: params.targetVenueId,
           notes: params.notes,
         },
       });
@@ -358,7 +360,9 @@ export function useStagingAction() {
       queryClient.invalidateQueries({ queryKey: ['staging-items'] });
       queryClient.invalidateQueries({ queryKey: ['import-statistics'] });
       const count = variables.stagingIds?.length || 1;
-      const action = variables.action.includes('approve') ? 'approved' : 'rejected';
+      const action = variables.action === 'merge'
+        ? 'merged'
+        : variables.action.includes('approve') ? 'approved' : 'rejected';
       toast({
         title: `${count} item${count > 1 ? 's' : ''} ${action}`,
       });
