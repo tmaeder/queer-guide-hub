@@ -100,6 +100,7 @@ Deno.serve(async (req) => {
           p_lng:            loc.lng ?? null,
           p_city_id:        null,
           p_limit:          10,
+          p_address:        (loc.address as string) ?? null,
         }
         if (isHotel) {
           rpcArgs.p_platform_ids = (n.platform_ids as Record<string, unknown>) ?? {}
