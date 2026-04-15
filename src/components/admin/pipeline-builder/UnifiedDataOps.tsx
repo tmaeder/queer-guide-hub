@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { Workflow, BarChart3, Zap, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug } from 'lucide-react';
+import { Workflow, BarChart3, Zap, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug, Bug } from 'lucide-react';
 
 const PipelineBuilder = lazy(() => import('./PipelineBuilder'));
 const MonitorTab = lazy(() => import('./tabs/MonitorTab'));
@@ -13,8 +13,9 @@ const DLQTab = lazy(() => import('./tabs/DLQTab'));
 const CoverageTab = lazy(() => import('./tabs/CoverageTab'));
 const GeoReviewTab = lazy(() => import('./tabs/GeoReviewTab'));
 const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
+const ErrorsTab = lazy(() => import('./tabs/ErrorsTab'));
 
-type Tab = 'builder' | 'monitor' | 'sources' | 'review' | 'dlq' | 'coverage' | 'news' | 'modules' | 'health' | 'geo-review';
+type Tab = 'builder' | 'monitor' | 'sources' | 'review' | 'dlq' | 'errors' | 'coverage' | 'news' | 'modules' | 'health' | 'geo-review';
 
 const TABS: { key: Tab; label: string; icon: React.ComponentType<{ style?: React.CSSProperties }> }[] = [
   { key: 'builder',    label: 'Builder',    icon: Workflow },
@@ -23,6 +24,7 @@ const TABS: { key: Tab; label: string; icon: React.ComponentType<{ style?: React
   { key: 'review',     label: 'Review',     icon: ClipboardCheck },
   { key: 'geo-review', label: 'Geo Review', icon: GitMerge },
   { key: 'dlq',        label: 'DLQ',        icon: AlertTriangle },
+  { key: 'errors',     label: 'Errors',     icon: Bug },
   { key: 'coverage',   label: 'Coverage',   icon: Map },
   { key: 'news',       label: 'News',       icon: Newspaper },
   { key: 'modules',    label: 'Modules',    icon: Zap },
@@ -96,6 +98,11 @@ export default function UnifiedDataOps() {
       {activeTab === 'dlq' && (
         <Suspense fallback={fallback}>
           <DLQTab />
+        </Suspense>
+      )}
+      {activeTab === 'errors' && (
+        <Suspense fallback={fallback}>
+          <ErrorsTab />
         </Suspense>
       )}
       {activeTab === 'coverage' && (

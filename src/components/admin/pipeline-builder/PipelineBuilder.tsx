@@ -317,6 +317,20 @@ function PipelineBuilderInner() {
             )}
             <Badge variant="outline" className="text-xs">{nodes.length} nodes</Badge>
             <Badge variant="outline" className="text-xs">{edges.length} edges</Badge>
+            {(() => {
+              const def = pipelineList?.find(p => p.id === selectedPipelineId);
+              if (!def || !latestRun?.pipeline_version) return null;
+              if (latestRun.pipeline_version === def.version) return null;
+              return (
+                <Badge
+                  variant="outline"
+                  className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200"
+                  title={`DAG was edited (current v${def.version}) since the last run (v${latestRun.pipeline_version}). Run again to refresh metrics.`}
+                >
+                  edited since last run (v{latestRun.pipeline_version}→v{def.version})
+                </Badge>
+              );
+            })()}
             <Separator orientation="vertical" className="h-4 mx-1" />
             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/pipelines/dashboard')}>
               <BarChart3 className="h-3 w-3 mr-1" /> Dashboard

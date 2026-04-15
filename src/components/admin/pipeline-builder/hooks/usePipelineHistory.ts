@@ -17,6 +17,8 @@ interface PipelineRun {
   error_message: string | null;
   triggered_by: string;
   created_at: string;
+  pipeline_version: number | null;
+  pipeline_snapshot: Record<string, unknown> | null;
 }
 
 interface CircuitBreaker {

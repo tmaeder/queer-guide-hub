@@ -287,17 +287,22 @@ serve(async (req) => {
       }
     }
 
-    // Insert in chunks
+    // Route through ingestion_staging so the bullet-proof pipeline (validate →
+    // dedup → commit) gates every bulk-scraped event.
     let inserted = 0;
-    const chunkSize = 100;
-    for (let i = 0; i < normalized.length; i += chunkSize) {
-      const chunk = normalized.slice(i, i + chunkSize);
-      const { error } = await supabase.from('events').insert(chunk);
-      if (error) {
-        console.error('Insert error', error);
-      } else {
-        inserted += chunk.length;
-      }
+    for (let i = 0; i < normalized.length; i++) {
+      const ev = normalized[i] as Record<string, unknown>;
+      const sourceEntityId = String(ev.external_id ?? ev.id ?? ev.source_url ?? ev.ticket_url ?? `${ev.title}-${ev.start_date}`);
+      const { error } = await supabase.rpc('stage_event_for_commit', {
+        p_source_type: 'bulk-scrape',
+        p_source_name: (ev.data_source as string) ?? 'bulk-scrape',
+        p_source_entity_id: sourceEntityId,
+        p_raw: ev,
+        p_normalized: ev,
+        p_source_url: (ev.source_url as string) ?? (ev.ticket_url as string) ?? null,
+      });
+      if (error) console.error('stage error', error);
+      else inserted++;
     }
 
     return new Response(JSON.stringify({
