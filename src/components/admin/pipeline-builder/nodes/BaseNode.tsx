@@ -15,6 +15,9 @@ interface BaseNodeData {
   outputPorts?: Array<{ id: string; label: string; type: string }>;
   status?: 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
   itemsOut?: number;
+  itemsIn?: number;
+  durationMs?: number;
+  errorMessage?: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -70,11 +73,28 @@ function BaseNode({ data, selected }: NodeProps) {
       </div>
 
       {/* Body */}
-      {(nodeData.description || nodeData.itemsOut !== undefined) && (
+      {(nodeData.description || nodeData.itemsOut !== undefined || nodeData.errorMessage) && (
         <div className="px-3 py-1.5 text-xs text-muted-foreground border-t" style={{ borderColor: `${color}30` }}>
           {nodeData.description && <div className="truncate">{nodeData.description}</div>}
-          {nodeData.itemsOut !== undefined && (
-            <div className="mt-1 font-mono">{nodeData.itemsOut} items</div>
+          {(nodeData.itemsOut !== undefined || nodeData.itemsIn !== undefined) && (
+            <div className="mt-1 flex items-center gap-2 font-mono text-[11px]">
+              {nodeData.itemsIn !== undefined && (
+                <span title="items in" className="text-gray-500">↓{nodeData.itemsIn}</span>
+              )}
+              {nodeData.itemsOut !== undefined && (
+                <span title="items out" className="font-semibold" style={{ color }}>↑{nodeData.itemsOut}</span>
+              )}
+              {nodeData.durationMs !== undefined && nodeData.durationMs > 0 && (
+                <span title="duration" className="ml-auto text-gray-400">
+                  {nodeData.durationMs < 1000 ? `${nodeData.durationMs}ms` : `${(nodeData.durationMs / 1000).toFixed(1)}s`}
+                </span>
+              )}
+            </div>
+          )}
+          {nodeData.errorMessage && (
+            <div className="mt-1 text-[10px] text-red-600 truncate" title={nodeData.errorMessage}>
+              ⚠ {nodeData.errorMessage}
+            </div>
           )}
         </div>
       )}
