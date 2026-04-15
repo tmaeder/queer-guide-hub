@@ -380,22 +380,22 @@ const AppRoutes = () => {
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />
 
-                {/* Imports & Data section */}
-                <Route path="imports" element={<AdminImportHub />} />
-                <Route path="imports/create" element={<Navigate to="/admin/imports" replace />} />
-                <Route path="imports/news-sources" element={<NewsSourcesManager />} />
+                {/* Imports & Data section — all redirect to unified /admin/pipelines */}
+                <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
+                <Route path="imports/create" element={<Navigate to="/admin/pipelines" replace />} />
+                <Route path="imports/news-sources" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
                 <Route path="imports/pipeline" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
                 <Route path="imports/enrichment" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
-                <Route path="imports/venues" element={<VenueImportQuickActions />} />
+                <Route path="imports/venues" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
                 <Route path="imports/email-ingestions" element={<AdminEmailIngestions />} />
-                <Route path="imports/history" element={<AdminImportHub />} />
-                <Route path="workflows" element={<Navigate to="/admin/pipelines?tab=health" replace />} />
+                <Route path="imports/history" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
+                <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
-                <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
-                <Route path="scraping" element={<Navigate to="/admin/imports" replace />} />
+                <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines" replace />} />
+                <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 
                 {/* Review & Workflow section -- unified dashboard */}
-                <Route path="automation" element={<Navigate to="/admin/pipelines?tab=modules" replace />} />
+                <Route path="automation" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="review" element={<AdminReview />} />
                 <Route path="feedback" element={<AdminFeedback />} />
                 <Route
@@ -445,7 +445,7 @@ const AppRoutes = () => {
                 <Route path="groups" element={<AdminGroups />} />
                 <Route path="news-sources" element={<AdminNewsSources />} />
                 <Route path="cms" element={<AdminCMS />} />
-                <Route path="import-hub" element={<AdminImportHub />} />
+                <Route path="import-hub" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="festivals" element={<Navigate to="/admin/events" replace />} />
                 <Route
                   path="venue-categories"
