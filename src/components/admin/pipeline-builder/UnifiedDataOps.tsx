@@ -1,20 +1,28 @@
 import { lazy, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { Workflow, BarChart3, Zap, Shield } from 'lucide-react';
+import { Workflow, BarChart3, Zap, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map } from 'lucide-react';
 
 const PipelineBuilder = lazy(() => import('./PipelineBuilder'));
 const MonitorTab = lazy(() => import('./tabs/MonitorTab'));
 const AutomationDashboard = lazy(() => import('../automation/AutomationDashboard').then(m => ({ default: m.AutomationDashboard })));
 const HealthTab = lazy(() => import('./tabs/HealthTab'));
+const NewsTab = lazy(() => import('./tabs/NewsTab'));
+const ReviewQueueTab = lazy(() => import('./tabs/ReviewQueueTab'));
+const DLQTab = lazy(() => import('./tabs/DLQTab'));
+const CoverageTab = lazy(() => import('./tabs/CoverageTab'));
 
-type Tab = 'builder' | 'monitor' | 'modules' | 'health';
+type Tab = 'builder' | 'monitor' | 'review' | 'dlq' | 'coverage' | 'news' | 'modules' | 'health';
 
 const TABS: { key: Tab; label: string; icon: React.ComponentType<{ style?: React.CSSProperties }> }[] = [
-  { key: 'builder', label: 'Builder', icon: Workflow },
-  { key: 'monitor', label: 'Monitor', icon: BarChart3 },
-  { key: 'modules', label: 'Modules', icon: Zap },
-  { key: 'health', label: 'Health', icon: Shield },
+  { key: 'builder',  label: 'Builder',  icon: Workflow },
+  { key: 'monitor',  label: 'Monitor',  icon: BarChart3 },
+  { key: 'review',   label: 'Review',   icon: ClipboardCheck },
+  { key: 'dlq',      label: 'DLQ',      icon: AlertTriangle },
+  { key: 'coverage', label: 'Coverage', icon: Map },
+  { key: 'news',     label: 'News',     icon: Newspaper },
+  { key: 'modules',  label: 'Modules',  icon: Zap },
+  { key: 'health',   label: 'Health',   icon: Shield },
 ];
 
 const fallback = <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af' }}>Loading...</div>;
@@ -64,6 +72,26 @@ export default function UnifiedDataOps() {
       {activeTab === 'monitor' && (
         <Suspense fallback={fallback}>
           <MonitorTab />
+        </Suspense>
+      )}
+      {activeTab === 'review' && (
+        <Suspense fallback={fallback}>
+          <ReviewQueueTab />
+        </Suspense>
+      )}
+      {activeTab === 'dlq' && (
+        <Suspense fallback={fallback}>
+          <DLQTab />
+        </Suspense>
+      )}
+      {activeTab === 'coverage' && (
+        <Suspense fallback={fallback}>
+          <CoverageTab />
+        </Suspense>
+      )}
+      {activeTab === 'news' && (
+        <Suspense fallback={fallback}>
+          <NewsTab />
         </Suspense>
       )}
       {activeTab === 'modules' && (
