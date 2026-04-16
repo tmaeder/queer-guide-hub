@@ -67,23 +67,24 @@ export function FeedbackButton() {
     try {
       const context = captureContext();
 
-      // Upload screenshot in parallel with DB insert
-      const screenshotPromise = includeScreenshot
-        ? captureScreenshot().then(async (blob) => {
-            if (!blob) return null;
-            const fileName = `${crypto.randomUUID()}.jpg`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('feedback-screenshots')
-              .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
-            if (uploadError || !uploadData) return null;
+      let screenshotUrl: string | null = null;
+      if (includeScreenshot) {
+        const blob = await captureScreenshot();
+        if (blob) {
+          const fileName = `${crypto.randomUUID()}.jpg`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('feedback-screenshots')
+            .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
+          if (!uploadError && uploadData) {
             const { data: publicUrl } = supabase.storage
               .from('feedback-screenshots')
               .getPublicUrl(uploadData.path);
-            return publicUrl.publicUrl;
-          })
-        : Promise.resolve(null);
+            screenshotUrl = publicUrl.publicUrl;
+          }
+        }
+      }
 
-      const insertPromise = supabase.from('community_submissions' as const).insert({
+      const { error } = await supabase.from('community_submissions' as const).insert({
         content_type: 'feedback',
         data: {
           title: form.title.trim(),
@@ -91,23 +92,11 @@ export function FeedbackButton() {
           category: form.category,
           contact_email: form.email.trim() || null,
           context,
-          screenshot_url: null, // updated below if screenshot succeeds
+          screenshot_url: screenshotUrl,
         },
         submitted_by: user?.id || null,
       });
-
-      const [screenshotUrl, { error }] = await Promise.all([screenshotPromise, insertPromise]);
       if (error) throw error;
-
-      // If screenshot uploaded, update the submission with the URL
-      if (screenshotUrl) {
-        await supabase
-          .from('community_submissions' as const)
-          .update({ data: { title: form.title.trim(), description: form.description.trim(), category: form.category, contact_email: form.email.trim() || null, context, screenshot_url: screenshotUrl } })
-          .eq('submitted_by', user?.id ?? '')
-          .order('created_at', { ascending: false })
-          .limit(1);
-      }
 
       setStatus('submitted');
       toast({ title: 'Feedback submitted! Thank you.' });
