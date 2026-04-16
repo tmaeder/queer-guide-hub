@@ -2,7 +2,6 @@ import { useCallback, useRef, useMemo, useState, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
-  Controls,
   MiniMap,
   ConnectionLineType,
   type DragEvent,
@@ -33,6 +32,8 @@ import QuickAddPalette from './panels/QuickAddPalette';
 import NodeContextMenu from './panels/NodeContextMenu';
 import RunStatsBar from './panels/RunStatsBar';
 import CanvasEmptyState from './panels/CanvasEmptyState';
+import MultiSelectActionBar from './panels/MultiSelectActionBar';
+import CanvasControls from './panels/CanvasControls';
 import { autoLayout } from './utils/autoLayout';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useDraftAutosave } from './hooks/useDraftAutosave';
@@ -214,6 +215,77 @@ function PipelineBuilderInner() {
     event.preventDefault();
     setContextMenu({ nodeId: node.id, x: event.clientX, y: event.clientY });
   }, []);
+
+  // Bulk operations on multi-selection
+  const handleBulkDelete = useCallback(() => {
+    const selectedIds = new Set(nodes.filter(n => n.selected).map(n => n.id));
+    if (selectedIds.size === 0) return;
+    if (selectedIds.size > 3 && !window.confirm(`Delete ${selectedIds.size} nodes and their edges?`)) return;
+    undoRedo.commitNow();
+    setNodes(nds => nds.filter(n => !selectedIds.has(n.id)));
+    setEdges(eds => eds.filter(e => !selectedIds.has(e.source) && !selectedIds.has(e.target)));
+    setSelectedNodeId(null);
+    setIsDirty(true);
+    toast({ title: `Deleted ${selectedIds.size} nodes` });
+  }, [nodes, setNodes, setEdges, setSelectedNodeId, undoRedo, toast]);
+
+  const handleBulkDuplicate = useCallback(() => {
+    const selected = nodes.filter(n => n.selected);
+    if (selected.length === 0) return;
+    undoRedo.commitNow();
+    const idMap = new Map<string, string>();
+    const now = Date.now();
+    const clones: Node[] = selected.map((src, i) => {
+      const newId = `${(src.data as { nodeTypeSlug?: string })?.nodeTypeSlug || 'node'}-${now}-${i}`;
+      idMap.set(src.id, newId);
+      return {
+        ...src,
+        id: newId,
+        position: { x: (src.position?.x || 0) + 40, y: (src.position?.y || 0) + 40 },
+        selected: true,
+        data: JSON.parse(JSON.stringify(src.data)),
+      };
+    });
+    const selectedIds = new Set(selected.map(n => n.id));
+    const cloneEdges: Edge[] = edges
+      .filter(e => selectedIds.has(e.source) && selectedIds.has(e.target))
+      .map((e, i) => ({
+        ...e,
+        id: `${e.id}-dup-${now}-${i}`,
+        source: idMap.get(e.source)!,
+        target: idMap.get(e.target)!,
+        animated: true,
+      }));
+    setNodes(nds => [...nds.map(n => ({ ...n, selected: false })), ...clones]);
+    setEdges(eds => [...eds, ...cloneEdges]);
+    setIsDirty(true);
+    toast({ title: `Duplicated ${selected.length} nodes` });
+  }, [nodes, edges, setNodes, setEdges, undoRedo, toast]);
+
+  const handleLayoutSelection = useCallback(() => {
+    const selected = nodes.filter(n => n.selected);
+    if (selected.length === 0) return;
+    const selectedIds = new Set(selected.map(n => n.id));
+    const subEdges = edges.filter(e => selectedIds.has(e.source) && selectedIds.has(e.target));
+    undoRedo.commitNow();
+    const laidOut = autoLayout(selected, subEdges);
+    // Translate laid-out positions to top-left of original selection bbox
+    const origMinX = Math.min(...selected.map(n => n.position?.x || 0));
+    const origMinY = Math.min(...selected.map(n => n.position?.y || 0));
+    const newMinX = Math.min(...laidOut.map(n => n.position.x));
+    const newMinY = Math.min(...laidOut.map(n => n.position.y));
+    const dx = origMinX - newMinX;
+    const dy = origMinY - newMinY;
+    const posMap = new Map(laidOut.map(n => [n.id, { x: n.position.x + dx, y: n.position.y + dy }]));
+    setNodes(nds => nds.map(n => posMap.has(n.id) ? { ...n, position: posMap.get(n.id)! } : n));
+    setIsDirty(true);
+    toast({ title: 'Selection arranged', description: `${selected.length} nodes` });
+  }, [nodes, edges, setNodes, undoRedo, toast]);
+
+  const handleDeselectAll = useCallback(() => {
+    setNodes(nds => nds.map(n => n.selected ? { ...n, selected: false } : n));
+    setSelectedNodeId(null);
+  }, [setNodes, setSelectedNodeId]);
 
   // Edge click → open condition editor
   const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
@@ -874,13 +946,34 @@ function PipelineBuilderInner() {
               className="bg-muted/10"
             >
               <Background gap={16} size={1} />
-              <Controls />
               <MiniMap
                 nodeStrokeWidth={2}
                 nodeColor={(node) => (node.data as Record<string, string>)?.color || '#6b7280'}
                 className="!bg-background !border"
+                position="bottom-left"
               />
             </ReactFlow>
+
+            {/* Custom canvas controls (zoom, fit, export PNG) */}
+            <CanvasControls
+              pipelineName={pipelineName}
+              hasSelection={selectedForTemplate.nodes.length > 0}
+            />
+
+            {/* Multi-select action bar */}
+            {selectedForTemplate.nodes.length >= 2 && (
+              <MultiSelectActionBar
+                count={selectedForTemplate.nodes.length}
+                onDeselect={handleDeselectAll}
+                onDelete={handleBulkDelete}
+                onDuplicate={handleBulkDuplicate}
+                onLayoutSelected={handleLayoutSelection}
+                onSaveAsTemplate={() => {
+                  const btn = document.querySelector('button[aria-haspopup="dialog"]') as HTMLButtonElement | null;
+                  btn?.click();
+                }}
+              />
+            )}
 
             {/* Empty state overlay when canvas has no nodes */}
             {nodes.length === 0 && nodeTypeList && (
