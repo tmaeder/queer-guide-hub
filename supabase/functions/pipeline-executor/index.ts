@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { reportApiError } from '../_shared/report-api-error.ts'
 import { evaluateCondition } from '../_shared/condition-evaluator.ts'
 import type { PipelineMessage, PipelineNode, PipelineEdge, NodeState } from '../_shared/pipeline-message.ts'
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
@@ -35,6 +36,7 @@ Deno.serve(async (req) => {
     }
   } catch (error) {
     console.error('pipeline-executor error:', error)
+    reportApiError('pipeline-executor', error, { endpoint: '/functions/v1/pipeline-executor' })
     return errorResponse((error as Error).message, 500, req)
   }
 })
@@ -237,7 +239,7 @@ async function handleContinue(
       status: 'completed',
       completed_at: new Date().toISOString(),
       items_out: result.items_out,
-      duration_ms: Date.now() - new Date(nodeStates[currentNodeId].started_at!).getTime(),
+      duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
     }
     await updateNodeStates(supabase, runId, nodeStates)
     await advanceToNextNodes(supabase, run, nodes, edges, currentNodeId, nodeStates)
@@ -285,7 +287,7 @@ async function handleContinue(
         status: 'completed',
         completed_at: new Date().toISOString(),
         items_out: itemsOut,
-        duration_ms: Date.now() - new Date(nodeStates[currentNodeId].started_at!).getTime(),
+        duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
       }
       await updateNodeStates(supabase, runId, nodeStates)
 
@@ -315,7 +317,7 @@ async function handleContinue(
         status: 'failed',
         completed_at: new Date().toISOString(),
         error: errorMsg,
-        duration_ms: Date.now() - new Date(nodeStates[currentNodeId].started_at!).getTime(),
+        duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
       }
       await updateNodeStates(supabase, runId, nodeStates)
 

@@ -345,7 +345,7 @@ Deno.serve(async (req) => {
       items_processed: approved + rejected + needsReview,
       items_failed: hardFailures,
       items_succeeded: approved,
-      items_failed: rejected,
+      items_rejected: rejected,
       approved, rejected, needs_review: needsReview,
       dry_run: dryRun,
     }, 200, req)
