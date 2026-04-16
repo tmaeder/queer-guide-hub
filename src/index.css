@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ── Self-hosted fonts (no external CDN) ────────────────────────────── */
 
 /* Plus Jakarta Sans — variable weight 200-800, latin */
