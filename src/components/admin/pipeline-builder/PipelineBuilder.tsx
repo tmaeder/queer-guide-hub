@@ -73,15 +73,21 @@ function PipelineBuilderInner() {
     loadPipeline,
   } = usePipelineBuilder(selectedPipelineId);
 
-  // Track dirty state
-  const wrappedOnNodesChange = useCallback((...args: Parameters<typeof onNodesChange>) => {
-    setIsDirty(true);
-    return onNodesChange(...args);
+  // Track dirty state — only on user-originated structural edits, not on
+  // React Flow's internal dimension/select/position-during-fitView churn
+  const wrappedOnNodesChange = useCallback((changes: Parameters<typeof onNodesChange>[0]) => {
+    const isUserEdit = changes.some(c =>
+      c.type === 'add' || c.type === 'remove' || c.type === 'replace' ||
+      (c.type === 'position' && c.dragging === false)
+    );
+    if (isUserEdit) setIsDirty(true);
+    return onNodesChange(changes);
   }, [onNodesChange]);
 
-  const wrappedOnEdgesChange = useCallback((...args: Parameters<typeof onEdgesChange>) => {
-    setIsDirty(true);
-    return onEdgesChange(...args);
+  const wrappedOnEdgesChange = useCallback((changes: Parameters<typeof onEdgesChange>[0]) => {
+    const isUserEdit = changes.some(c => c.type === 'add' || c.type === 'remove' || c.type === 'replace');
+    if (isUserEdit) setIsDirty(true);
+    return onEdgesChange(changes);
   }, [onEdgesChange]);
 
   // Cmd+S / Ctrl+S keyboard shortcut
@@ -127,17 +133,26 @@ function PipelineBuilderInner() {
   useEffect(() => {
     if (!latestRun || activeRunId) return;
     const states = latestRun.node_states || {};
-    setNodes((current) => current.map((node) => {
-      const s = states[node.id];
-      return s ? { ...node, data: {
-        ...node.data,
-        status: s.status,
-        itemsOut: s.items_out,
-        itemsIn: s.items_in,
-        durationMs: s.duration_ms,
-        errorMessage: s.error,
-      } } : node;
-    }));
+    setNodes((current) => {
+      let changed = false;
+      const next = current.map((node) => {
+        const s = states[node.id];
+        if (!s) return node;
+        const d = node.data as Record<string, unknown>;
+        if (d.status === s.status && d.itemsOut === s.items_out && d.itemsIn === s.items_in &&
+            d.durationMs === s.duration_ms && d.errorMessage === s.error) return node;
+        changed = true;
+        return { ...node, data: {
+          ...node.data,
+          status: s.status,
+          itemsOut: s.items_out,
+          itemsIn: s.items_in,
+          durationMs: s.duration_ms,
+          errorMessage: s.error,
+        } };
+      });
+      return changed ? next : current;
+    });
   }, [latestRun, activeRunId, setNodes]);
 
   const selectedNode = useMemo(
