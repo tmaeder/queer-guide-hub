@@ -124,7 +124,7 @@ const htmlBodySx = {
 function ChildPageCard({ page }: { page: CMSPage }) {
   return (
     <Box
-      component={RouterLink}
+      component={LocalizedLink}
       to={`/${page.slug}`}
       sx={{
         p: 2.5,
@@ -173,7 +173,7 @@ function LegalHubCard({ page }: { page: CMSPage }) {
 
   return (
     <Box
-      component={RouterLink}
+      component={LocalizedLink}
       to={`/${page.slug}`}
       sx={{
         p: 3,
@@ -350,7 +350,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
               separator={<ChevronRight size={14} style={{ color: '#94a3b8' }} />}
             >
               <Link
-                component={RouterLink}
+                component={LocalizedLink}
                 to={`/${parentPage.slug}`}
                 underline="hover"
                 color="text.secondary"
@@ -391,7 +391,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           sx={{ mb: 2 }}
         >
           <Link
-            component={RouterLink}
+            component={LocalizedLink}
             to={`/${parentPage.slug}`}
             underline="hover"
             color="text.secondary"
