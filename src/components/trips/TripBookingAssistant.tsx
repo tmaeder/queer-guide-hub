@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/material/styles';
-import { Plane, Hotel, Ticket, Plus, Shield, MapPin, Star, Calendar, Check } from 'lucide-react';
+import { Plane, Hotel, Plus, Shield, MapPin, Star, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,6 @@ import { useTripMutations, type TripPlace, type TripDay } from '@/hooks/useTrips
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useHotelSearch } from '@/hooks/useHotelSearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
-import { UnifiedBookingCard } from '@/components/booking/UnifiedBookingCard';
 import { HotelBookingFlow } from '@/components/booking/HotelBookingFlow';
 import type { BookingResult } from '@/lib/booking/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';

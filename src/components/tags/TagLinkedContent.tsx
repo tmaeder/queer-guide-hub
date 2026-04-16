@@ -9,7 +9,6 @@ import {
   Newspaper,
   Calendar,
   Users as UsersIcon,
-  User,
   Star,
   ExternalLink,
 } from 'lucide-react';

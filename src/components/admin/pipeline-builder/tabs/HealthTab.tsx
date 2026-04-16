@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Shield, Zap } from 'lucide-react';
 import { useCircuitBreakers, useStagingStats, usePipelineDefinitionsList } from '../hooks/usePipelineHistory';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import { useNavigate } from 'react-router';
 import { brandColors } from '@/theme/muiTheme';

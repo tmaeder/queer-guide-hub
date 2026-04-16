@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle, XCircle, GitMerge, RefreshCw, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 type Disposition = 'approve' | 'reject' | 'merge' | 'create_new';

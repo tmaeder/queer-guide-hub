@@ -5,7 +5,7 @@ import {
 } from '@/components/ui/select';
 import { SwitchField } from './fields';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
-import type { ProfileFormData, PrivacySettings } from '@/types/profileForm';
+import type { ProfileFormData } from '@/types/profileForm';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { stack, row } from '@/lib/sx';

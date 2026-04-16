@@ -31,7 +31,7 @@ import { IdentityTab } from '@/components/profile/settings/IdentityTab';
 import { RelationshipsTab } from '@/components/profile/settings/RelationshipsTab';
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
-import type { ProfileFormData, ComingOutStatus, PrivacySettings } from '@/types/profileForm';
+import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile } from '@/hooks/useProfile';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';

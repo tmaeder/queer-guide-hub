@@ -10,7 +10,7 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { useNews } from '@/hooks/useNews';
-import { ArrowRight, Clock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import Box from '@mui/material/Box';

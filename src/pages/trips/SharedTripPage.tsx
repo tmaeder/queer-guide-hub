@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';

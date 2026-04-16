@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
-import { Receipt, Plane, Hotel, Ticket, ExternalLink, Calendar } from 'lucide-react';
+import { Receipt, Plane, Hotel, Ticket, Calendar } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
