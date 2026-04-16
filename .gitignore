@@ -10,3 +10,4 @@ tmp/
 *.xlsx
 *.csv
 *.numbers
+.gstack/
