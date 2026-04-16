@@ -1224,12 +1224,19 @@ async function processSource(
       }
     }
 
+    // ── Resolve ingestion_sources ID (FK target) ───────────
+    const { data: ingestionSource } = await supabase
+      .from('ingestion_sources')
+      .select('id')
+      .eq('slug', source.slug)
+      .maybeSingle()
+
     // ── Create import job ────────────────────────────────────
     const { data: job, error: jobError } = await supabase
       .from('import_jobs_enhanced')
       .insert({
         user_id: '00000000-0000-0000-0000-000000000000',
-        source_id: source.id,
+        source_id: ingestionSource?.id ?? null,
         source_type: 'web_scraping',
         type: 'web-scraping',
         status: 'processing',
@@ -1348,9 +1355,13 @@ Deno.serve(async (req) => {
   try {
     const supabase = getServiceClient()
 
-    // Require admin for manual invocations (cron goes through workflow-dispatcher)
+    // Require admin for manual invocations (cron/workflow-dispatcher passes service role)
     const authHeader = req.headers.get('Authorization')
-    if (authHeader && !authHeader.includes(Deno.env.get('SUPABASE_ANON_KEY') || '___none___')) {
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '___none___'
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || '___none___'
+    const isServiceRole = authHeader?.includes(serviceRoleKey)
+    const isAnon = authHeader?.includes(anonKey)
+    if (authHeader && !isServiceRole && !isAnon) {
       const authResult = await requireAdmin(req, supabase)
       if (authResult instanceof Response) return authResult
     }
