@@ -1112,7 +1112,7 @@ async function processSource(
           console.log(`[${source.slug}] Falling back to native_crawl`)
           const fallback = await crawlNative(source)
           if (fallback.error || fallback.pages.length === 0) {
-            return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: 0, error: error + ' (native_crawl fallback also failed)' }
+            throw new Error(error + ' (native_crawl fallback also failed)')
           }
           pagesCrawled = fallback.pages.length
           for (const page of fallback.pages) {
@@ -1132,7 +1132,7 @@ async function processSource(
         const { pages, error } = await crawlNative(source)
         if (error) {
           console.error(`[${source.slug}] Native crawl error: ${error}`)
-          return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: 0, error }
+          throw new Error(error)
         }
         pagesCrawled = pages.length
         for (const page of pages) {
@@ -1166,7 +1166,7 @@ async function processSource(
         const { pages, error } = await crawlWithFirecrawl(source)
         if (error) {
           console.error(`[${source.slug}] Firecrawl error: ${error}`)
-          return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: 0, error }
+          throw new Error(error)
         }
         pagesCrawled = pages.length
         for (const page of pages) {
@@ -1190,13 +1190,7 @@ async function processSource(
       }
 
       default:
-        return {
-          source_slug: source.slug,
-          items_found: 0,
-          items_staged: 0,
-          pages_crawled: 0,
-          error: `Unknown scrape method: ${source.scrape_method}`,
-        }
+        throw new Error(`Unknown scrape method: ${source.scrape_method}`)
     }
 
     // ── Deduplicate ──────────────────────────────────────────
@@ -1206,6 +1200,13 @@ async function processSource(
     console.log(`[${source.slug}] Extracted ${itemsFound} items from ${pagesCrawled} pages`)
 
     if (itemsFound === 0) {
+      // Still update last_run_at so this source isn't re-dispatched every cycle
+      await supabase.from('scrape_sources').update({
+        last_run_at: new Date().toISOString(),
+        last_error: 'No items extracted',
+        consecutive_failures: (source.consecutive_failures || 0) + 1,
+        total_runs: (source.total_runs || 0) + 1,
+      }).eq('id', source.id)
       return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: pagesCrawled }
     }
 
@@ -1405,6 +1406,7 @@ Deno.serve(async (req) => {
     } else {
       query = query
         .order('priority', { ascending: true })
+        .order('last_run_at', { ascending: true, nullsFirst: true })
         .limit(MAX_SOURCES_PER_RUN)
     }
 
