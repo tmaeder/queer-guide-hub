@@ -132,8 +132,10 @@ async function fetchFromApi(source: NewsSource, sinceHours: number): Promise<Rec
 }
 
 async function fetchNewsApi(baseUrl: string, since: string): Promise<Record<string, unknown>[]> {
+  const apiKey = Deno.env.get('NEWS_API_KEY')
+  if (!apiKey) throw new Error('NEWS_API_KEY not configured')
   const query = LGBTQ_KEYWORDS.slice(0, 5).join(' OR ')
-  const url = `${baseUrl}&q=${encodeURIComponent(query)}&from=${since}&sortBy=publishedAt&pageSize=50`
+  const url = `${baseUrl}?apiKey=${apiKey}&q=${encodeURIComponent(query)}&from=${since}&sortBy=publishedAt&pageSize=50`
   const res = await fetch(url)
   if (!res.ok) throw new Error(`NewsAPI ${res.status}`)
   const json = await res.json()
@@ -145,7 +147,11 @@ async function fetchNewsApi(baseUrl: string, since: string): Promise<Record<stri
 }
 
 async function fetchNewsData(baseUrl: string): Promise<Record<string, unknown>[]> {
-  const res = await fetch(baseUrl)
+  const apiKey = Deno.env.get('NEWSDATA_API_KEY')
+  if (!apiKey) throw new Error('NEWSDATA_API_KEY not configured')
+  const query = LGBTQ_KEYWORDS.slice(0, 5).join(' OR ')
+  const url = `${baseUrl}?apikey=${apiKey}&q=${encodeURIComponent(query)}&language=en`
+  const res = await fetch(url)
   if (!res.ok) throw new Error(`NewsData ${res.status}`)
   const json = await res.json()
   return (json.results || []).map((a: Record<string, unknown>) => ({
@@ -156,7 +162,11 @@ async function fetchNewsData(baseUrl: string): Promise<Record<string, unknown>[]
 }
 
 async function fetchGNews(baseUrl: string): Promise<Record<string, unknown>[]> {
-  const res = await fetch(baseUrl)
+  const apiKey = Deno.env.get('GNEWS_API_KEY')
+  if (!apiKey) throw new Error('GNEWS_API_KEY not configured')
+  const query = LGBTQ_KEYWORDS.slice(0, 5).join(' OR ')
+  const url = `${baseUrl}?token=${apiKey}&q=${encodeURIComponent(query)}&lang=en&max=50`
+  const res = await fetch(url)
   if (!res.ok) throw new Error(`GNews ${res.status}`)
   const json = await res.json()
   return (json.articles || []).map((a: Record<string, unknown>) => ({
@@ -167,7 +177,11 @@ async function fetchGNews(baseUrl: string): Promise<Record<string, unknown>[]> {
 }
 
 async function fetchTheNewsApi(baseUrl: string): Promise<Record<string, unknown>[]> {
-  const res = await fetch(baseUrl)
+  const apiKey = Deno.env.get('THENEWSAPI_API_KEY')
+  if (!apiKey) throw new Error('THENEWSAPI_API_KEY not configured')
+  const query = LGBTQ_KEYWORDS.slice(0, 5).join(' OR ')
+  const url = `${baseUrl}?api_token=${apiKey}&search=${encodeURIComponent(query)}&language=en&limit=50`
+  const res = await fetch(url)
   if (!res.ok) throw new Error(`TheNewsAPI ${res.status}`)
   const json = await res.json()
   return (json.data || []).map((a: Record<string, unknown>) => ({
