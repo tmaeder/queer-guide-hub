@@ -54,6 +54,25 @@ export function usePipelineRuns(limit = 20) {
   });
 }
 
+/** Fetch recent runs for a specific pipeline */
+export function usePipelineRunsForPipeline(pipelineId: string | undefined, limit = 20) {
+  return useQuery({
+    queryKey: ['pipeline-runs-for-pipeline', pipelineId, limit],
+    queryFn: async () => {
+      if (!pipelineId) return [];
+      const { data, error } = await untypedFrom('pipeline_runs')
+        .select('id, pipeline_id, status, items_total, items_succeeded, items_failed, items_processed, started_at, completed_at, duration_ms, error_message, triggered_by, created_at, pipeline_version, node_states')
+        .eq('pipeline_id', pipelineId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data || []) as PipelineRun[];
+    },
+    enabled: !!pipelineId,
+    refetchInterval: 10_000,
+  });
+}
+
 /** Fetch the most recent run for a given pipeline */
 export function useLatestPipelineRun(pipelineId: string | undefined) {
   return useQuery({
