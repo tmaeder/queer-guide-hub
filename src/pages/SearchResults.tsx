@@ -40,6 +40,8 @@ import {
 } from 'lucide-react';
 import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
+import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
+import { useTrackClick } from '@/hooks/useSearchActions';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import Box from '@mui/material/Box';
@@ -78,6 +80,7 @@ export default function SearchResults() {
   const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useLocalizedNavigate();
+  const trackClick = useTrackClick();
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTab, setSelectedTab] = useState('all');
   const initialSort = searchParams.get('sort') || 'relevance';
@@ -189,6 +192,7 @@ export default function SearchResults() {
   };
 
   const navigateToResult = (result: SearchResult) => {
+    trackClick({ type: result.type, id: result.objectID }, 'search', { query });
     const slug = result.metadata?.slug || result.objectID;
     switch (result.type) {
       case 'venue':
@@ -362,13 +366,19 @@ export default function SearchResults() {
               ) : (
                 <Box />
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                style={{ transition: 'color 0.15s, background-color 0.15s' }}
-              >
-                View
-              </Button>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <SearchFeedbackButtons
+                  entity={{ type: result.type, id: result.objectID }}
+                  query={query}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  style={{ transition: 'color 0.15s, background-color 0.15s' }}
+                >
+                  View
+                </Button>
+              </Box>
             </Box>
           </CardContent>
         </Card>
@@ -512,6 +522,10 @@ export default function SearchResults() {
                       ${result.price}
                     </Typography>
                   )}
+                  <SearchFeedbackButtons
+                    entity={{ type: result.type, id: result.objectID }}
+                    query={query}
+                  />
                   <Button
                     variant="outline"
                     size="sm"

@@ -246,7 +246,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
     setBulkLoading(true);
     setActionError(null);
-    const _successCount = 0;
+    let _successCount = 0;
 
     for (const item of items) {
       const ok = await transition(item.metadata.source_table, item.metadata.source_id, 'published');
