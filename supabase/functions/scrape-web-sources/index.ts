@@ -1472,9 +1472,9 @@ Deno.serve(async (req) => {
         }).catch(err => console.error(`Dispatch failed for ${source.slug}:`, err))
       )
       // Keep runtime alive until all dispatched requests are sent
-      // @ts-ignore — EdgeRuntime is available in Supabase Deno runtime
+      // @ts-expect-error — EdgeRuntime is available in Supabase Deno runtime
       if (typeof EdgeRuntime !== 'undefined') {
-        // @ts-ignore
+        // @ts-expect-error — EdgeRuntime global is Deno-only
         EdgeRuntime.waitUntil(Promise.allSettled(dispatches))
       }
 
