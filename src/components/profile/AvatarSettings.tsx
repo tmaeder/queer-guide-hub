@@ -14,7 +14,7 @@ import Typography from '@mui/material/Typography';
 interface AvatarData {
   avatarUrl?: string;
   avatarConfig?: Record<string, unknown>;
-  avatarType?: 'upload' | 'builder' | 'gravatar';
+  avatarType?: 'upload' | 'builder' | 'initials';
   email: string;
 }
 
@@ -80,7 +80,7 @@ export const AvatarSettings = ({
     updateData({
       avatarUrl: undefined,
       avatarConfig: undefined,
-      avatarType: 'initials' as 'upload' | 'builder' | 'gravatar',
+      avatarType: 'initials',
     });
   };
 

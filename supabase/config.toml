@@ -133,9 +133,6 @@ verify_jwt = false
 [functions.bulk-scrape-events]
 verify_jwt = true
 
-[functions.secure-google-maps-key]
-verify_jwt = false
-
 [functions.manage-placeholder-images]
 verify_jwt = false
 
@@ -144,18 +141,6 @@ verify_jwt = true
 
 [functions.mapbox-geocoding]
 verify_jwt = false
-
-[functions.redis-get]
-verify_jwt = true
-
-[functions.redis-set]
-verify_jwt = true
-
-[functions.redis-delete]
-verify_jwt = true
-
-[functions.redis-keys]
-verify_jwt = true
 
 [functions.fetch-ilga-data]
 verify_jwt = false
