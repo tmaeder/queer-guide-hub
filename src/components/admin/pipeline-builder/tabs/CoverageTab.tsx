@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Map, RefreshCw, Hotel, Bed } from 'lucide-react';
+import { Map as MapIcon, RefreshCw, Hotel, Bed } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -121,7 +121,7 @@ export default function CoverageTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Map style={{ width: 16, height: 16, color: '#6366f1' }} />
+        <MapIcon style={{ width: 16, height: 16, color: '#6366f1' }} />
         <span style={{ fontSize: 14, fontWeight: 600 }}>Source Coverage & SLOs</span>
         <div style={{ flex: 1 }} />
         <button
