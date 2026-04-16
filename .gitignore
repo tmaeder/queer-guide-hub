@@ -7,7 +7,32 @@ dist/
 tmp/
 /tmp/*
 !tmp/.gitkeep
+
+# Spreadsheets + binary data dumps (imported into DB, not source code)
 *.xlsx
+*.xls
 *.csv
 *.numbers
+
+# Reference dumps + source data artifacts
+*.xml
+*.ics
+*.docx
+*.rtf
+*.pptx
+# Root-only txt/json dumps (keep nested ones for real code, e.g. worker/ config)
+/*.txt
+/*.json
+
+# Local workspaces + tool outputs
+.claude/
 .gstack/
+.gstack-audit/
+
+# Other repos (tracked separately)
+Dev/
+
+# Asset staging dirs
+Icons/
+stich/
+Queer Guide/
