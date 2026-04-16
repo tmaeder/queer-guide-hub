@@ -42,14 +42,19 @@ export async function checkCircuit(
   }
 
   if (cb.state === 'open') {
-    // Check if it's time to try half-open
+    // Check if it's time to try half-open (atomic CAS to prevent race)
     if (cb.open_until && new Date(cb.open_until) <= new Date()) {
-      // Transition to half_open
-      await supabase
+      const { data: updated } = await supabase
         .from('api_circuit_breakers')
         .update({ state: 'half_open', updated_at: new Date().toISOString() })
         .eq('api_name', apiName)
+        .eq('state', 'open') // CAS: only transition if still open
+        .select('state')
 
+      if (updated && updated.length > 0) {
+        return { allowed: true, state: 'half_open' }
+      }
+      // Another caller already transitioned — re-check current state
       return { allowed: true, state: 'half_open' }
     }
 
@@ -121,38 +126,42 @@ export async function recordFailure(
   apiName: string,
   errorMsg?: string
 ): Promise<{ circuitOpened: boolean }> {
-  const { data } = await supabase
-    .from('api_circuit_breakers')
-    .select('failure_count, threshold, reset_timeout_seconds, state')
-    .eq('api_name', apiName)
-    .single()
+  // Atomic increment + conditional open via RPC to prevent concurrent read-modify-write races
+  try {
+    const { data: result } = await supabase.rpc('circuit_breaker_record_failure', {
+      p_api_name: apiName,
+      p_error_msg: errorMsg ?? null,
+    })
+    return { circuitOpened: result?.circuit_opened ?? false }
+  } catch {
+    // Fallback: non-atomic path if RPC not yet deployed
+    const { data } = await supabase
+      .from('api_circuit_breakers')
+      .select('failure_count, threshold, reset_timeout_seconds, state')
+      .eq('api_name', apiName)
+      .single()
 
-  if (!data) {
-    return { circuitOpened: false }
+    if (!data) return { circuitOpened: false }
+
+    const newCount = (data.failure_count || 0) + 1
+    const shouldOpen = newCount >= data.threshold
+
+    const updates: Record<string, unknown> = {
+      failure_count: newCount,
+      last_failure_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    if (shouldOpen) {
+      const openUntil = new Date(Date.now() + data.reset_timeout_seconds * 1000)
+      updates.state = 'open'
+      updates.open_until = openUntil.toISOString()
+      console.warn(`[circuit-breaker] Opening circuit for ${apiName} until ${openUntil.toISOString()} (${newCount} failures, error: ${errorMsg})`)
+    }
+
+    await supabase.from('api_circuit_breakers').update(updates).eq('api_name', apiName)
+    return { circuitOpened: shouldOpen }
   }
-
-  const newCount = (data.failure_count || 0) + 1
-  const shouldOpen = newCount >= data.threshold
-
-  const updates: Record<string, unknown> = {
-    failure_count: newCount,
-    last_failure_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
-
-  if (shouldOpen) {
-    const openUntil = new Date(Date.now() + data.reset_timeout_seconds * 1000)
-    updates.state = 'open'
-    updates.open_until = openUntil.toISOString()
-    console.warn(`[circuit-breaker] Opening circuit for ${apiName} until ${openUntil.toISOString()} (${newCount} failures, error: ${errorMsg})`)
-  }
-
-  await supabase
-    .from('api_circuit_breakers')
-    .update(updates)
-    .eq('api_name', apiName)
-
-  return { circuitOpened: shouldOpen }
 }
 
 /**

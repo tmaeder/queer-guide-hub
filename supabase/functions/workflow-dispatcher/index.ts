@@ -1,5 +1,6 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { jsonResponse, errorResponse, corsResponse, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts'
+import { reportApiError } from '../_shared/report-api-error.ts'
 
 // Queue configuration: name → visibility timeout in seconds
 const QUEUE_CONFIG: Record<string, number> = {
@@ -98,6 +99,7 @@ Deno.serve(async (req) => {
     }
   } catch (error) {
     console.error('workflow-dispatcher error:', error)
+    reportApiError('workflow-dispatcher', error, { endpoint: '/functions/v1/workflow-dispatcher' })
     return errorResponse('Internal server error', 500, req)
   }
 })
@@ -254,8 +256,8 @@ async function handleDispatch(
         continue
       }
 
-      // Invoke the edge function (fire-and-forget with timeout tracking)
-      dispatchEdgeFunction(
+      // Invoke the edge function and await completion for reliability
+      await dispatchEdgeFunction(
         supabase,
         supabaseUrl,
         serviceRoleKey,

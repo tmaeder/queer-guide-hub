@@ -37,8 +37,11 @@ const awinAdapter: SourceAdapter = {
       for (let j = 0; j < headers.length; j++) {
         row[headers[j]] = values[j]
       }
+      // Content-addressed fallback: use title+merchant hash instead of row index
+      const fallbackId = row.aw_product_id || row.product_id
+        || `awin-${String(row.product_name ?? '').slice(0, 50)}-${String(row.merchant_name ?? '')}`
       items.push({
-        sourceId: String(row.aw_product_id || row.product_id || `awin-${i}`),
+        sourceId: String(fallbackId),
         data: row,
       })
     }

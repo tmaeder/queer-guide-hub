@@ -37,8 +37,8 @@ export function evaluateCondition(expression: string, context: ParseContext): bo
   try {
     return parseOr(expression.trim(), context)
   } catch (e) {
-    console.warn(`[condition-parser] Failed to parse "${expression}":`, e)
-    return true // default to pass on parse errors
+    console.error(`[condition-parser] Failed to parse "${expression}":`, e)
+    return false // fail-closed: broken conditions block the edge, not pass silently
   }
 }
 

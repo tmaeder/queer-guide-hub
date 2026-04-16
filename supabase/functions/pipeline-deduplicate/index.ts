@@ -28,8 +28,8 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string
-    const autoMergeMin  = body.auto_merge_min ?? 0.90
-    const reviewMin     = body.review_min ?? 0.75
+    const autoMergeMin  = Math.max(body.auto_merge_min ?? 0.90, 0.5)
+    const reviewMin     = Math.min(body.review_min ?? 0.75, autoMergeMin)
     const batchSize     = body.batch_size || 50
     const dryRun        = body.dry_run || false
 
