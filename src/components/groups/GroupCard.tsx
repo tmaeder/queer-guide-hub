@@ -76,13 +76,7 @@ export const GroupCard = ({
         <Box sx={{ pb: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
             <Avatar>
-              <AvatarImage
-                src={group.image_url || undefined}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${group.name}`;
-                }}
-              />
+              <AvatarImage src={group.image_url || undefined} />
               <AvatarFallback>{group.name.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
 
