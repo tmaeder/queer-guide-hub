@@ -12745,7 +12745,7 @@ export type Database = {
       }
       circuit_breaker_check: { Args: { p_api_name: string }; Returns: boolean }
       circuit_breaker_record_failure: {
-        Args: { p_api_name: string; p_error?: string }
+        Args: { p_api_name: string; p_error_msg?: string }
         Returns: Json
       }
       circuit_breaker_record_success: {
@@ -13740,6 +13740,10 @@ export type Database = {
         }
         Returns: Json
       }
+      merge_pipeline_node_states: {
+        Args: { p_patch: Json; p_run_id: string }
+        Returns: undefined
+      }
       merge_tag: {
         Args: { canonical_tag_id: string; source_tag_id: string }
         Returns: undefined
@@ -13830,6 +13834,7 @@ export type Database = {
           score: number
         }[]
       }
+      pg_try_advisory_lock: { Args: { key: number }; Returns: boolean }
       pgmq_archive: {
         Args: { p_msg_id: number; p_queue: string }
         Returns: boolean
@@ -14343,3 +14348,4 @@ export const Constants = {
     },
   },
 } as const
+
