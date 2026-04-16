@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, CheckCircle, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Alert {
   id: number;
@@ -29,6 +30,7 @@ const KIND_LABEL: Record<string, string> = {
 
 export default function AlertsTab() {
   const qc = useQueryClient();
+  const { toast } = useToast();
   const [filter, setFilter] = useState<'open' | 'all'>('open');
 
   const { data: alerts = [], isLoading } = useQuery<Alert[]>({
@@ -53,6 +55,7 @@ export default function AlertsTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['data-ops-alerts'] }),
+    onError: (e: Error) => toast({ title: 'Acknowledge failed', description: e.message, variant: 'destructive' }),
   });
 
   const generateNow = useMutation({
@@ -61,6 +64,7 @@ export default function AlertsTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['data-ops-alerts'] }),
+    onError: (e: Error) => toast({ title: 'Alert scan failed', description: e.message, variant: 'destructive' }),
   });
 
   const counts = {

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Map, RefreshCw, Hotel, Bed } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface CoverageRow {
   id: number;
@@ -33,6 +34,7 @@ const cellStyle: React.CSSProperties = { padding: '8px 12px', fontSize: 13, vert
 
 export default function CoverageTab() {
   const qc = useQueryClient();
+  const { toast } = useToast();
 
   const { data: coverage = [], isLoading: covLoading } = useQuery<CoverageRow[]>({
     queryKey: ['source-coverage'],
@@ -64,6 +66,7 @@ export default function CoverageTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['source-coverage'] }),
+    onError: (e: Error) => toast({ title: 'Refresh failed', description: e.message, variant: 'destructive' }),
   });
 
   const bySource = useMemo(() => {

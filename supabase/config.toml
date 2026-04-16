@@ -195,3 +195,89 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+# Pipeline orchestration & processing nodes
+[functions.pipeline-executor]
+verify_jwt = false
+
+[functions.pipeline-normalize]
+verify_jwt = false
+
+[functions.pipeline-validate]
+verify_jwt = false
+
+[functions.pipeline-deduplicate]
+verify_jwt = false
+
+[functions.pipeline-quality-score]
+verify_jwt = false
+
+[functions.pipeline-review-gate]
+verify_jwt = false
+
+[functions.pipeline-commit]
+verify_jwt = false
+
+[functions.pipeline-dlq-consumer]
+verify_jwt = false
+
+[functions.pipeline-enrich-personality]
+verify_jwt = false
+
+# Workflow dispatcher
+[functions.workflow-dispatcher]
+verify_jwt = false
+
+# Source data fetchers
+[functions.source-airbnb]
+verify_jwt = false
+
+[functions.source-airports]
+verify_jwt = false
+
+[functions.source-awin]
+verify_jwt = false
+
+[functions.source-booking]
+verify_jwt = false
+
+[functions.source-csv-upload]
+verify_jwt = false
+
+[functions.source-eventbrite]
+verify_jwt = false
+
+[functions.source-foursquare]
+verify_jwt = false
+
+[functions.source-gaycities]
+verify_jwt = false
+
+[functions.source-geonames]
+verify_jwt = false
+
+[functions.source-google-places]
+verify_jwt = false
+
+[functions.source-ilga]
+verify_jwt = false
+
+[functions.source-misterbnb]
+verify_jwt = false
+
+[functions.source-refuge-restrooms]
+verify_jwt = false
+
+[functions.source-rest-countries]
+verify_jwt = false
+
+[functions.source-rss-news]
+verify_jwt = false
+
+[functions.source-spartacus]
+verify_jwt = false
+
+[functions.source-ticketmaster]
+verify_jwt = false
+
+[functions.source-tomtom]
+verify_jwt = false

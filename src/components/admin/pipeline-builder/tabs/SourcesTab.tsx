@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Power, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { brandColors } from '@/theme/muiTheme';
 
@@ -31,12 +33,12 @@ interface ScrapeSource {
 
 export default function SourcesTab() {
   const qc = useQueryClient();
+  const { toast } = useToast();
 
   const { data: sources, isLoading } = useQuery({
     queryKey: ['scrape-sources'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
-        .from('scrape_sources')
+      const { data, error } = await untypedFrom('scrape_sources')
         .select('*')
         .order('priority', { ascending: false })
         .order('name', { ascending: true });
@@ -48,11 +50,11 @@ export default function SourcesTab() {
 
   const toggle = useMutation({
     mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
-      const { error } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
-        .from('scrape_sources').update({ is_enabled: enabled }).eq('id', id);
+      const { error } = await untypedFrom('scrape_sources').update({ is_enabled: enabled }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['scrape-sources'] }),
+    onError: (e: Error) => toast({ title: 'Toggle failed', description: e.message, variant: 'destructive' }),
   });
 
   const th: React.CSSProperties = { textAlign: 'left', padding: '8px 12px', fontWeight: 500, color: '#6b7280', fontSize: 12 };

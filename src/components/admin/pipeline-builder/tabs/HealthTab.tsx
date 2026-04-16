@@ -4,6 +4,7 @@ import { Shield, Zap } from 'lucide-react';
 import { useCircuitBreakers, useStagingStats, usePipelineDefinitionsList } from '../hooks/usePipelineHistory';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import { useNavigate } from 'react-router';
 import { brandColors } from '@/theme/muiTheme';
 
@@ -29,8 +30,7 @@ export default function HealthTab() {
   const { data: workflowDefs } = useQuery({
     queryKey: ['workflow-definitions-list'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from>; rpc: typeof supabase.rpc })
-        .from('workflow_definitions')
+      const { data, error } = await untypedFrom('workflow_definitions')
         .select('id, name, display_name, edge_function, schedule, is_enabled, queue_name')
         .order('name', { ascending: true });
       if (error) throw error;
@@ -42,7 +42,7 @@ export default function HealthTab() {
   const { data: queueMetrics } = useQuery({
     queryKey: ['queue-metrics'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from>; rpc: typeof supabase.rpc }).rpc('pgmq_metrics_all');
+      const { data, error } = await untypedSupabase.rpc('pgmq_metrics_all');
       if (error) throw error;
       return data;
     },
@@ -57,18 +57,17 @@ export default function HealthTab() {
     queryKey: ['geo-health'],
     refetchInterval: 60_000,
     queryFn: async () => {
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
       const [
         citiesNoCoords, citiesNoCountry, citiesDupes,
         countriesNoCode, countriesDupes,
         geoMergeCandidates,
       ] = await Promise.all([
-        sb.from('cities').select('id', { count: 'exact', head: true }).is('latitude', null).is('duplicate_of_id', null),
-        sb.from('cities').select('id', { count: 'exact', head: true }).is('country_id', null),
-        sb.from('cities').select('id', { count: 'exact', head: true }).not('duplicate_of_id', 'is', null),
-        sb.from('countries').select('id', { count: 'exact', head: true }).is('code', null).is('duplicate_of_id', null),
-        sb.from('countries').select('id', { count: 'exact', head: true }).not('duplicate_of_id', 'is', null),
-        sb.from('ingestion_staging').select('id', { count: 'exact', head: true })
+        untypedFrom('cities').select('id', { count: 'exact', head: true }).is('latitude', null).is('duplicate_of_id', null),
+        untypedFrom('cities').select('id', { count: 'exact', head: true }).is('country_id', null),
+        untypedFrom('cities').select('id', { count: 'exact', head: true }).not('duplicate_of_id', 'is', null),
+        untypedFrom('countries').select('id', { count: 'exact', head: true }).is('code', null).is('duplicate_of_id', null),
+        untypedFrom('countries').select('id', { count: 'exact', head: true }).not('duplicate_of_id', 'is', null),
+        untypedFrom('ingestion_staging').select('id', { count: 'exact', head: true })
           .in('target_table', ['cities','countries'])
           .eq('dedup_status', 'merge_candidate')
           .eq('review_status', 'pending_review'),
@@ -94,9 +93,8 @@ export default function HealthTab() {
     queryKey: ['ingestion-dead-letter'],
     refetchInterval: 60_000,
     queryFn: async () => {
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data } = await sb.from('ingestion_events')
+      const { data } = await untypedFrom('ingestion_events')
         .select('stage, new_status, payload')
         .in('new_status', ['rejected', 'failed', 'error'])
         .gte('created_at', since)
@@ -118,9 +116,8 @@ export default function HealthTab() {
     queryKey: ['enrichment-audit-summary'],
     refetchInterval: 60_000,
     queryFn: async () => {
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data } = await sb.from('enrichment_audit')
+      const { data } = await untypedFrom('enrichment_audit')
         .select('stage, status').gte('created_at', since).limit(5000);
       const counts: Record<string, { success: number; partial: number; failed: number }> = {};
       for (const r of (data ?? []) as Array<{ stage: string; status: string }>) {

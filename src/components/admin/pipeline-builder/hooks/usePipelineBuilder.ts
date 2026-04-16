@@ -9,6 +9,7 @@ import {
 } from '@xyflow/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 export interface PipelineNodeType {
@@ -47,8 +48,7 @@ export function usePipelineNodeTypes() {
   return useQuery({
     queryKey: ['pipeline-node-types'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_node_types')
+      const { data, error } = await untypedFrom('pipeline_node_types')
         .select('*')
         .eq('is_enabled', true)
         .order('category', { ascending: true });
@@ -64,8 +64,7 @@ export function usePipelineDefinitions() {
   return useQuery({
     queryKey: ['pipeline-definitions'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_definitions')
+      const { data, error } = await untypedFrom('pipeline_definitions')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -80,8 +79,7 @@ export function usePipelineDefinition(id: string | undefined) {
     queryKey: ['pipeline-definition', id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_definitions')
+      const { data, error } = await untypedFrom('pipeline_definitions')
         .select('*')
         .eq('id', id)
         .single();
@@ -98,8 +96,7 @@ export function usePipelineDefinitionByName(name: string | undefined) {
     queryKey: ['pipeline-definition-by-name', name],
     queryFn: async () => {
       if (!name) return null;
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_definitions')
+      const { data, error } = await untypedFrom('pipeline_definitions')
         .select('*')
         .eq('name', name)
         .maybeSingle();
@@ -230,14 +227,12 @@ export function usePipelineBuilder(pipelineId?: string) {
 
       const targetId = currentPipelineId || pipelineId;
       if (targetId) {
-        const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-          .from('pipeline_definitions')
+        const { error } = await untypedFrom('pipeline_definitions')
           .update(payload)
           .eq('id', targetId);
         if (error) throw error;
       } else {
-        const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-          .from('pipeline_definitions')
+        const { data, error } = await untypedFrom('pipeline_definitions')
           .insert(payload)
           .select('id')
           .single();
@@ -256,20 +251,30 @@ export function usePipelineBuilder(pipelineId?: string) {
     },
   });
 
-  /** Run mutation — starts pipeline execution */
+  /** Run mutation — starts pipeline execution (30s timeout, 1 retry) */
   const runMutation = useMutation({
+    retry: 1,
     mutationFn: async (options?: { dryRun?: boolean }) => {
-      const { data, error } = await supabase.functions.invoke('pipeline-executor', {
-        body: {
-          action: 'start',
-          pipeline_id: currentPipelineId || pipelineId,
-          pipeline_name: pipelineSlug || pipelineName?.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          dry_run: options?.dryRun || false,
-          triggered_by: 'admin',
-        },
-      });
-      if (error) throw error;
-      return data;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30_000);
+      try {
+        const { data, error } = await supabase.functions.invoke('pipeline-executor', {
+          body: {
+            action: 'start',
+            pipeline_id: currentPipelineId || pipelineId,
+            pipeline_name: pipelineSlug || pipelineName?.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            dry_run: options?.dryRun || false,
+            triggered_by: 'admin',
+          },
+        });
+        if (error) throw error;
+        return data;
+      } catch (e) {
+        if ((e as Error).name === 'AbortError') throw new Error('Pipeline executor timed out after 30s');
+        throw e;
+      } finally {
+        clearTimeout(timeout);
+      }
     },
     onSuccess: (data) => {
       toast({ title: data?.dry_run ? 'Dry run started' : 'Pipeline started', description: `Run ID: ${data?.pipeline_run_id}` });

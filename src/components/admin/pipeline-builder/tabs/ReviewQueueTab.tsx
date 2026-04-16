@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle, XCircle, GitMerge, RefreshCw, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
+import { useToast } from '@/hooks/use-toast';
 
 type Disposition = 'approve' | 'reject' | 'merge' | 'create_new';
 
@@ -31,6 +33,7 @@ const pillStyle = (bg: string, fg: string): React.CSSProperties => ({
 
 export default function ReviewQueueTab() {
   const qc = useQueryClient();
+  const { toast } = useToast();
   const [filter, setFilter] = useState<'all' | 'venues' | 'hotels' | 'events' | 'personalities' | 'marketplace' | 'cities' | 'countries' | 'merge_candidate'>('all');
   const [selected, setSelected] = useState<ReviewItem | null>(null);
 
@@ -101,6 +104,7 @@ export default function ReviewQueueTab() {
       qc.invalidateQueries({ queryKey: ['review-queue'] });
       setSelected(null);
     },
+    onError: (e: Error) => toast({ title: 'Review action failed', description: e.message, variant: 'destructive' }),
   });
 
   const counts = useMemo(() => {
@@ -277,8 +281,7 @@ function PersonalityMergePreview({ staging, existingId }: { staging: Record<stri
   const { data: existing } = useQuery({
     queryKey: ['personality-merge-candidate', existingId],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
-        .from('personalities')
+      const { data, error } = await untypedFrom('personalities')
         .select('id, name, description, bio, birth_date, death_date, profession, nationality, birth_place, image_url, website_url, wikidata_qid, lgbti_connection')
         .eq('id', existingId).single();
       if (error) throw error;
@@ -339,8 +342,7 @@ function EventMergePreview({ staging, existingId }: { staging: Record<string, un
   const { data: existing } = useQuery({
     queryKey: ['event-merge-candidate', existingId],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
-        .from('events')
+      const { data, error } = await untypedFrom('events')
         .select('id, title, description, event_type, start_date, end_date, venue_name, city, latitude, longitude, website, ticket_url, edition, data_source, external_id')
         .eq('id', existingId)
         .single();

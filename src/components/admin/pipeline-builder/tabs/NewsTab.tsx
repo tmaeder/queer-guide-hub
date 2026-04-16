@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Newspaper, AlertCircle } from 'lucide-react';
 
 // News pipeline observability — sources health, staging, dedup audit.
@@ -10,8 +10,7 @@ export default function NewsTab() {
     queryKey: ['news-sources-health'],
     refetchInterval: 30_000,
     queryFn: async () => {
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
-      const { data } = await sb.from('news_sources')
+      const { data } = await untypedFrom('news_sources')
         .select('id, name, source_type, status, consecutive_failures, auto_paused, backoff_until, last_fetched_at, last_successful_fetch, reliability_score, avg_articles_per_fetch')
         .order('status', { ascending: false })
         .order('consecutive_failures', { ascending: false })
@@ -24,11 +23,10 @@ export default function NewsTab() {
     queryKey: ['news-staging-stats'],
     refetchInterval: 30_000,
     queryFn: async () => {
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
       const [pending, rejected, committed] = await Promise.all([
-        sb.from('ingestion_staging').select('id', { count: 'exact', head: true }).eq('target_table', 'news_articles').eq('disposition', 'pending'),
-        sb.from('ingestion_staging').select('id', { count: 'exact', head: true }).eq('target_table', 'news_articles').eq('disposition', 'rejected'),
-        sb.from('ingestion_staging').select('id', { count: 'exact', head: true }).eq('target_table', 'news_articles').eq('disposition', 'committed'),
+        untypedFrom('ingestion_staging').select('id', { count: 'exact', head: true }).eq('target_table', 'news_articles').eq('disposition', 'pending'),
+        untypedFrom('ingestion_staging').select('id', { count: 'exact', head: true }).eq('target_table', 'news_articles').eq('disposition', 'rejected'),
+        untypedFrom('ingestion_staging').select('id', { count: 'exact', head: true }).eq('target_table', 'news_articles').eq('disposition', 'committed'),
       ]);
       return {
         pending: pending.count ?? 0,
@@ -42,8 +40,7 @@ export default function NewsTab() {
     queryKey: ['news-dedup-audit-recent'],
     refetchInterval: 60_000,
     queryFn: async () => {
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
-      const { data } = await sb.from('news_dedup_audit')
+      const { data } = await untypedFrom('news_dedup_audit')
         .select('match_strategy, match_decision')
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .limit(5000);

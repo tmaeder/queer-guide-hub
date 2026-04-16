@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, RefreshCw, Trash2, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 interface DlqRow {
   id: number;
@@ -37,13 +39,17 @@ const statusColor: Record<string, [string, string]> = {
 
 export default function DLQTab() {
   const qc = useQueryClient();
+  const { toast } = useToast();
   const [filter, setFilter] = useState<'pending' | 'permanent_failed' | 'all'>('pending');
 
   const { data: summary = [] } = useQuery<SummaryRow[]>({
     queryKey: ['dlq-summary'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('dlq_summary').select('*');
-      if (error) throw error;
+      const { data, error } = await untypedFrom('dlq_summary').select('*');
+      if (error) {
+        console.warn('dlq_summary view unavailable, falling back to empty:', error.message);
+        return [];
+      }
       return (data ?? []) as SummaryRow[];
     },
     refetchInterval: 15000,
@@ -67,6 +73,7 @@ export default function DLQTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dlq-rows'] }),
+    onError: (e: Error) => toast({ title: 'DLQ consumer failed', description: e.message, variant: 'destructive' }),
   });
 
   const retryNow = useMutation({
@@ -77,6 +84,7 @@ export default function DLQTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dlq-rows'] }),
+    onError: (e: Error) => toast({ title: 'Retry failed', description: e.message, variant: 'destructive' }),
   });
 
   const resolveItem = useMutation({
@@ -85,6 +93,7 @@ export default function DLQTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dlq-rows'] }),
+    onError: (e: Error) => toast({ title: 'Resolve failed', description: e.message, variant: 'destructive' }),
   });
 
   const totals = summary.reduce(

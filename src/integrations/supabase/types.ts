@@ -1046,8 +1046,10 @@ export type Database = {
           cost_of_living: Json | null
           country_id: string
           created_at: string
+          data_source: string | null
           demographics: Json | null
           description: string | null
+          duplicate_of_id: string | null
           economy_sectors: string[] | null
           elevation_m: number | null
           founded_year: number | null
@@ -1056,6 +1058,8 @@ export type Database = {
           image_url: string | null
           is_capital: boolean | null
           is_major_city: boolean | null
+          last_refreshed_at: string | null
+          last_synced_at: string | null
           latitude: number | null
           lgbt_friendly_rating: number | null
           local_customs: string | null
@@ -1064,6 +1068,7 @@ export type Database = {
           major_airport_code: string | null
           mayor: string | null
           name: string
+          name_normalized: string | null
           notable_landmarks: string[] | null
           official_website: string | null
           population: number | null
@@ -1086,8 +1091,10 @@ export type Database = {
           cost_of_living?: Json | null
           country_id: string
           created_at?: string
+          data_source?: string | null
           demographics?: Json | null
           description?: string | null
+          duplicate_of_id?: string | null
           economy_sectors?: string[] | null
           elevation_m?: number | null
           founded_year?: number | null
@@ -1096,6 +1103,8 @@ export type Database = {
           image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbt_friendly_rating?: number | null
           local_customs?: string | null
@@ -1104,6 +1113,7 @@ export type Database = {
           major_airport_code?: string | null
           mayor?: string | null
           name: string
+          name_normalized?: string | null
           notable_landmarks?: string[] | null
           official_website?: string | null
           population?: number | null
@@ -1126,8 +1136,10 @@ export type Database = {
           cost_of_living?: Json | null
           country_id?: string
           created_at?: string
+          data_source?: string | null
           demographics?: Json | null
           description?: string | null
+          duplicate_of_id?: string | null
           economy_sectors?: string[] | null
           elevation_m?: number | null
           founded_year?: number | null
@@ -1136,6 +1148,8 @@ export type Database = {
           image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbt_friendly_rating?: number | null
           local_customs?: string | null
@@ -1144,6 +1158,7 @@ export type Database = {
           major_airport_code?: string | null
           mayor?: string | null
           name?: string
+          name_normalized?: string | null
           notable_landmarks?: string[] | null
           official_website?: string | null
           population?: number | null
@@ -1163,6 +1178,13 @@ export type Database = {
             columns: ["country_id"]
             isOneToOne: false
             referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cities_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
             referencedColumns: ["id"]
           },
         ]
@@ -2248,12 +2270,15 @@ export type Database = {
           content_type: string
           data: Json
           feedback_status: string
+          fingerprint: string | null
           flyer_scan_id: string | null
           forwarded_at: string | null
           github_issue_number: number | null
           github_issue_url: string | null
           id: string
           ip_address: unknown
+          last_seen_at: string | null
+          occurrence_count: number
           promoted_to_id: string | null
           promoted_to_table: string | null
           reviewed_at: string | null
@@ -2268,12 +2293,15 @@ export type Database = {
           content_type: string
           data?: Json
           feedback_status?: string
+          fingerprint?: string | null
           flyer_scan_id?: string | null
           forwarded_at?: string | null
           github_issue_number?: number | null
           github_issue_url?: string | null
           id?: string
           ip_address?: unknown
+          last_seen_at?: string | null
+          occurrence_count?: number
           promoted_to_id?: string | null
           promoted_to_table?: string | null
           reviewed_at?: string | null
@@ -2288,12 +2316,15 @@ export type Database = {
           content_type?: string
           data?: Json
           feedback_status?: string
+          fingerprint?: string | null
           flyer_scan_id?: string | null
           forwarded_at?: string | null
           github_issue_number?: number | null
           github_issue_url?: string | null
           id?: string
           ip_address?: unknown
+          last_seen_at?: string | null
+          occurrence_count?: number
           promoted_to_id?: string | null
           promoted_to_table?: string | null
           reviewed_at?: string | null
@@ -2817,8 +2848,10 @@ export type Database = {
           continent_id: string
           created_at: string
           currency: string | null
+          data_source: string | null
           description: string | null
           driving_side: string | null
+          duplicate_of_id: string | null
           equality_score: number | null
           exports: string[] | null
           flag_emoji: string | null
@@ -2832,6 +2865,8 @@ export type Database = {
           imports: string[] | null
           internet_tld: string | null
           languages: string[] | null
+          last_refreshed_at: string | null
+          last_synced_at: string | null
           latitude: number | null
           lgbt_legal_status: string | null
           lgbt_rights_status: string | null
@@ -2860,6 +2895,7 @@ export type Database = {
           major_industries: string[] | null
           major_religions: string[] | null
           name: string
+          name_normalized: string | null
           national_anthem: string | null
           national_day: string | null
           national_symbols: Json | null
@@ -2884,8 +2920,10 @@ export type Database = {
           continent_id: string
           created_at?: string
           currency?: string | null
+          data_source?: string | null
           description?: string | null
           driving_side?: string | null
+          duplicate_of_id?: string | null
           equality_score?: number | null
           exports?: string[] | null
           flag_emoji?: string | null
@@ -2899,6 +2937,8 @@ export type Database = {
           imports?: string[] | null
           internet_tld?: string | null
           languages?: string[] | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbt_legal_status?: string | null
           lgbt_rights_status?: string | null
@@ -2927,6 +2967,7 @@ export type Database = {
           major_industries?: string[] | null
           major_religions?: string[] | null
           name: string
+          name_normalized?: string | null
           national_anthem?: string | null
           national_day?: string | null
           national_symbols?: Json | null
@@ -2951,8 +2992,10 @@ export type Database = {
           continent_id?: string
           created_at?: string
           currency?: string | null
+          data_source?: string | null
           description?: string | null
           driving_side?: string | null
+          duplicate_of_id?: string | null
           equality_score?: number | null
           exports?: string[] | null
           flag_emoji?: string | null
@@ -2966,6 +3009,8 @@ export type Database = {
           imports?: string[] | null
           internet_tld?: string | null
           languages?: string[] | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbt_legal_status?: string | null
           lgbt_rights_status?: string | null
@@ -2994,6 +3039,7 @@ export type Database = {
           major_industries?: string[] | null
           major_religions?: string[] | null
           name?: string
+          name_normalized?: string | null
           national_anthem?: string | null
           national_day?: string | null
           national_symbols?: Json | null
@@ -3013,6 +3059,13 @@ export type Database = {
             columns: ["continent_id"]
             isOneToOne: false
             referencedRelation: "continents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "countries_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
             referencedColumns: ["id"]
           },
           {
@@ -3132,6 +3185,42 @@ export type Database = {
         }
         Relationships: []
       }
+      data_ops_alerts: {
+        Row: {
+          acked_at: string | null
+          acked_by: string | null
+          alert_kind: string
+          created_at: string
+          detail: Json
+          fingerprint: string
+          id: number
+          severity: string
+          source_slug: string | null
+        }
+        Insert: {
+          acked_at?: string | null
+          acked_by?: string | null
+          alert_kind: string
+          created_at?: string
+          detail: Json
+          fingerprint: string
+          id?: number
+          severity?: string
+          source_slug?: string | null
+        }
+        Update: {
+          acked_at?: string | null
+          acked_by?: string | null
+          alert_kind?: string
+          created_at?: string
+          detail?: Json
+          fingerprint?: string
+          id?: number
+          severity?: string
+          source_slug?: string | null
+        }
+        Relationships: []
+      }
       dedup_decisions_feedback: {
         Row: {
           candidate_venue_id: string | null
@@ -3173,6 +3262,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "venues"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dedup_decisions_feedback_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
           },
           {
             foreignKeyName: "dedup_decisions_feedback_staging_id_fkey"
@@ -3363,6 +3459,80 @@ export type Database = {
           variables?: Json | null
         }
         Relationships: []
+      }
+      enrichment_audit: {
+        Row: {
+          actor: string
+          after_data: Json | null
+          before_data: Json | null
+          changed_fields: string[]
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          pipeline_run_id: string | null
+          stage: string
+          staging_id: string
+          status: string
+        }
+        Insert: {
+          actor?: string
+          after_data?: Json | null
+          before_data?: Json | null
+          changed_fields?: string[]
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          pipeline_run_id?: string | null
+          stage: string
+          staging_id: string
+          status?: string
+        }
+        Update: {
+          actor?: string
+          after_data?: Json | null
+          before_data?: Json | null
+          changed_fields?: string[]
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          pipeline_run_id?: string | null
+          stage?: string
+          staging_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrichment_audit_pipeline_run_id_fkey"
+            columns: ["pipeline_run_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrichment_audit_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
+          },
+          {
+            foreignKeyName: "enrichment_audit_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrichment_audit_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       enrichment_log: {
         Row: {
@@ -4263,6 +4433,27 @@ export type Database = {
           },
         ]
       }
+      fx_rates: {
+        Row: {
+          currency: string
+          fetched_at: string
+          rate_to_usd: number
+          source: string | null
+        }
+        Insert: {
+          currency: string
+          fetched_at?: string
+          rate_to_usd: number
+          source?: string | null
+        }
+        Update: {
+          currency?: string
+          fetched_at?: string
+          rate_to_usd?: number
+          source?: string | null
+        }
+        Relationships: []
+      }
       geo_link_log: {
         Row: {
           created_at: string
@@ -4292,6 +4483,69 @@ export type Database = {
           total_skipped?: number
         }
         Relationships: []
+      }
+      geo_sources: {
+        Row: {
+          city_id: string | null
+          confidence: number | null
+          country_id: string | null
+          entity_type: string
+          first_seen_at: string
+          id: string
+          is_primary: boolean
+          last_seen_at: string
+          payload: Json | null
+          payload_hash: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url: string | null
+        }
+        Insert: {
+          city_id?: string | null
+          confidence?: number | null
+          country_id?: string | null
+          entity_type: string
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url?: string | null
+        }
+        Update: {
+          city_id?: string | null
+          confidence?: number | null
+          country_id?: string | null
+          entity_type?: string
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id?: string
+          source_slug?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_sources_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geo_sources_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       group_comment_likes: {
         Row: {
@@ -5115,6 +5369,13 @@ export type Database = {
             foreignKeyName: "ingestion_dlq_staging_id_fkey"
             columns: ["staging_id"]
             isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
+          },
+          {
+            foreignKeyName: "ingestion_dlq_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
             referencedRelation: "ingestion_staging"
             referencedColumns: ["id"]
           },
@@ -5130,6 +5391,8 @@ export type Database = {
       ingestion_events: {
         Row: {
           actor: string
+          city_id: string | null
+          country_id: string | null
           created_at: string
           id: number
           new_status: string | null
@@ -5141,6 +5404,8 @@ export type Database = {
         }
         Insert: {
           actor?: string
+          city_id?: string | null
+          country_id?: string | null
           created_at?: string
           id?: number
           new_status?: string | null
@@ -5152,6 +5417,8 @@ export type Database = {
         }
         Update: {
           actor?: string
+          city_id?: string | null
+          country_id?: string | null
           created_at?: string
           id?: number
           new_status?: string | null
@@ -5162,6 +5429,27 @@ export type Database = {
           venue_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ingestion_events_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
+          },
           {
             foreignKeyName: "ingestion_events_staging_id_fkey"
             columns: ["staging_id"]
@@ -5277,7 +5565,7 @@ export type Database = {
           error_message: string | null
           id: string
           idempotency_key: string | null
-          job_id: string
+          job_id: string | null
           node_id: string | null
           normalized_data: Json | null
           payload_hash: string | null
@@ -5314,7 +5602,7 @@ export type Database = {
           error_message?: string | null
           id?: string
           idempotency_key?: string | null
-          job_id: string
+          job_id?: string | null
           node_id?: string | null
           normalized_data?: Json | null
           payload_hash?: string | null
@@ -5351,7 +5639,7 @@ export type Database = {
           error_message?: string | null
           id?: string
           idempotency_key?: string | null
-          job_id?: string
+          job_id?: string | null
           node_id?: string | null
           normalized_data?: Json | null
           payload_hash?: string | null
@@ -5369,15 +5657,7 @@ export type Database = {
           target_table?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "ingestion_staging_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "import_jobs_enhanced"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       knowledge_base: {
         Row: {
@@ -5673,89 +5953,205 @@ export type Database = {
           },
         ]
       }
+      marketplace_listing_sources: {
+        Row: {
+          confidence: number | null
+          first_seen_at: string | null
+          id: string
+          is_primary: boolean | null
+          last_seen_at: string | null
+          listing_id: string
+          payload_hash: string | null
+          raw: Json | null
+          source_entity_id: string | null
+          source_slug: string
+          source_url: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          first_seen_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_seen_at?: string | null
+          listing_id: string
+          payload_hash?: string | null
+          raw?: Json | null
+          source_entity_id?: string | null
+          source_slug: string
+          source_url?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          first_seen_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_seen_at?: string | null
+          listing_id?: string
+          payload_hash?: string | null
+          raw?: Json | null
+          source_entity_id?: string | null
+          source_slug?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listing_sources_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_listings: {
         Row: {
+          affiliate_url: string | null
+          availability: string | null
+          brand: string | null
           business_name: string
           business_type: string | null
           category: string
           category_id: string | null
+          classified_at: string | null
           contact_email: string | null
           contact_phone: string | null
           created_at: string
           created_by: string | null
           currency: string | null
+          deprecated_at: string | null
           description: string | null
+          external_url: string | null
           featured: boolean | null
           id: string
+          image_hashes: Json | null
           images: string[] | null
+          in_stock: boolean | null
+          last_seen_at: string | null
+          last_verified_at: string | null
+          lgbti_relevance_score: number | null
+          link_health: string | null
           location: string | null
+          merchant_domain: string | null
+          merchant_id: string | null
+          payload_hash: string | null
           price: number | null
           price_type: string | null
+          price_usd: number | null
+          quality_score: number | null
+          review_status: string | null
+          sensitivity_flags: Json | null
           shipping_available: boolean | null
           shipping_info: string | null
           slug: string
           social_media: Json | null
+          source_entity_id: string | null
+          source_type: string | null
           status: string | null
           subcategory: string | null
           title: string
+          title_normalized: string | null
           updated_at: string
           venue_id: string | null
           views_count: number | null
           website: string | null
         }
         Insert: {
+          affiliate_url?: string | null
+          availability?: string | null
+          brand?: string | null
           business_name: string
           business_type?: string | null
           category: string
           category_id?: string | null
+          classified_at?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
+          deprecated_at?: string | null
           description?: string | null
+          external_url?: string | null
           featured?: boolean | null
           id?: string
+          image_hashes?: Json | null
           images?: string[] | null
+          in_stock?: boolean | null
+          last_seen_at?: string | null
+          last_verified_at?: string | null
+          lgbti_relevance_score?: number | null
+          link_health?: string | null
           location?: string | null
+          merchant_domain?: string | null
+          merchant_id?: string | null
+          payload_hash?: string | null
           price?: number | null
           price_type?: string | null
+          price_usd?: number | null
+          quality_score?: number | null
+          review_status?: string | null
+          sensitivity_flags?: Json | null
           shipping_available?: boolean | null
           shipping_info?: string | null
           slug: string
           social_media?: Json | null
+          source_entity_id?: string | null
+          source_type?: string | null
           status?: string | null
           subcategory?: string | null
           title: string
+          title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           views_count?: number | null
           website?: string | null
         }
         Update: {
+          affiliate_url?: string | null
+          availability?: string | null
+          brand?: string | null
           business_name?: string
           business_type?: string | null
           category?: string
           category_id?: string | null
+          classified_at?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
+          deprecated_at?: string | null
           description?: string | null
+          external_url?: string | null
           featured?: boolean | null
           id?: string
+          image_hashes?: Json | null
           images?: string[] | null
+          in_stock?: boolean | null
+          last_seen_at?: string | null
+          last_verified_at?: string | null
+          lgbti_relevance_score?: number | null
+          link_health?: string | null
           location?: string | null
+          merchant_domain?: string | null
+          merchant_id?: string | null
+          payload_hash?: string | null
           price?: number | null
           price_type?: string | null
+          price_usd?: number | null
+          quality_score?: number | null
+          review_status?: string | null
+          sensitivity_flags?: Json | null
           shipping_available?: boolean | null
           shipping_info?: string | null
           slug?: string
           social_media?: Json | null
+          source_entity_id?: string | null
+          source_type?: string | null
           status?: string | null
           subcategory?: string | null
           title?: string
+          title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           views_count?: number | null
@@ -5791,10 +6187,123 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "marketplace_listings_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_partners"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "marketplace_listings_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
             referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_merchants: {
+        Row: {
+          affiliate_partner_id: string | null
+          api_key_env: string | null
+          api_key_vault_id: string | null
+          config: Json
+          created_at: string
+          display_name: string
+          id: string
+          is_enabled: boolean
+          last_sync_at: string | null
+          last_sync_items: number | null
+          last_sync_status: string | null
+          provider: string
+          shop_domain: string | null
+          shop_id: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_partner_id?: string | null
+          api_key_env?: string | null
+          api_key_vault_id?: string | null
+          config?: Json
+          created_at?: string
+          display_name: string
+          id?: string
+          is_enabled?: boolean
+          last_sync_at?: string | null
+          last_sync_items?: number | null
+          last_sync_status?: string | null
+          provider: string
+          shop_domain?: string | null
+          shop_id?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_partner_id?: string | null
+          api_key_env?: string | null
+          api_key_vault_id?: string | null
+          config?: Json
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_enabled?: boolean
+          last_sync_at?: string | null
+          last_sync_items?: number | null
+          last_sync_status?: string | null
+          provider?: string
+          shop_domain?: string | null
+          shop_id?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_merchants_affiliate_partner_id_fkey"
+            columns: ["affiliate_partner_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_price_history: {
+        Row: {
+          availability: string | null
+          currency: string | null
+          id: string
+          listing_id: string
+          observed_at: string
+          price: number
+          price_usd: number | null
+          source_slug: string | null
+        }
+        Insert: {
+          availability?: string | null
+          currency?: string | null
+          id?: string
+          listing_id: string
+          observed_at?: string
+          price: number
+          price_usd?: number | null
+          source_slug?: string | null
+        }
+        Update: {
+          availability?: string | null
+          currency?: string | null
+          id?: string
+          listing_id?: string
+          observed_at?: string
+          price?: number
+          price_usd?: number | null
+          source_slug?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_price_history_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -6179,7 +6688,7 @@ export type Database = {
           duplicate_of_id: string | null
           enrichment_status: Json | null
           excerpt: string | null
-          fingerprint: string | null
+          fingerprint: string
           first_seen_at: string | null
           id: string
           image_url: string | null
@@ -6215,7 +6724,7 @@ export type Database = {
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
           excerpt?: string | null
-          fingerprint?: string | null
+          fingerprint: string
           first_seen_at?: string | null
           id?: string
           image_url?: string | null
@@ -6251,7 +6760,7 @@ export type Database = {
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
           excerpt?: string | null
-          fingerprint?: string | null
+          fingerprint?: string
           first_seen_at?: string | null
           id?: string
           image_url?: string | null
@@ -6599,20 +7108,24 @@ export type Database = {
           description: string | null
           duplicate_of_id: string | null
           enrichment_status: Json | null
+          external_ids: Json | null
           fields: Json | null
           geo_linked_at: string | null
           id: string
           image_url: string | null
           is_featured: boolean | null
           is_living: boolean | null
+          last_refreshed_at: string | null
           lgbti_connection: string | null
           lgbti_details: string | null
           lgbti_relevance_score: number | null
           name: string
           name_initial: string | null
+          name_normalized: string | null
           nationality: string | null
           needs_attention: boolean | null
           next_concerts: Json | null
+          payload_hash: string | null
           profession: string | null
           profile_url: string | null
           pronouns: string | null
@@ -6629,6 +7142,7 @@ export type Database = {
           view_count: number | null
           visibility: string | null
           website_url: string | null
+          wikidata_qid: string | null
         }
         Insert: {
           achievements?: Json | null
@@ -6644,20 +7158,24 @@ export type Database = {
           description?: string | null
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
+          external_ids?: Json | null
           fields?: Json | null
           geo_linked_at?: string | null
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
           is_living?: boolean | null
+          last_refreshed_at?: string | null
           lgbti_connection?: string | null
           lgbti_details?: string | null
           lgbti_relevance_score?: number | null
           name: string
           name_initial?: string | null
+          name_normalized?: string | null
           nationality?: string | null
           needs_attention?: boolean | null
           next_concerts?: Json | null
+          payload_hash?: string | null
           profession?: string | null
           profile_url?: string | null
           pronouns?: string | null
@@ -6674,6 +7192,7 @@ export type Database = {
           view_count?: number | null
           visibility?: string | null
           website_url?: string | null
+          wikidata_qid?: string | null
         }
         Update: {
           achievements?: Json | null
@@ -6689,20 +7208,24 @@ export type Database = {
           description?: string | null
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
+          external_ids?: Json | null
           fields?: Json | null
           geo_linked_at?: string | null
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
           is_living?: boolean | null
+          last_refreshed_at?: string | null
           lgbti_connection?: string | null
           lgbti_details?: string | null
           lgbti_relevance_score?: number | null
           name?: string
           name_initial?: string | null
+          name_normalized?: string | null
           nationality?: string | null
           needs_attention?: boolean | null
           next_concerts?: Json | null
+          payload_hash?: string | null
           profession?: string | null
           profile_url?: string | null
           pronouns?: string | null
@@ -6719,6 +7242,7 @@ export type Database = {
           view_count?: number | null
           visibility?: string | null
           website_url?: string | null
+          wikidata_qid?: string | null
         }
         Relationships: [
           {
@@ -6738,6 +7262,56 @@ export type Database = {
           {
             foreignKeyName: "personalities_duplicate_of_id_fkey"
             columns: ["duplicate_of_id"]
+            isOneToOne: false
+            referencedRelation: "personalities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personality_sources: {
+        Row: {
+          confidence: number | null
+          first_seen_at: string | null
+          id: string
+          is_primary: boolean | null
+          last_seen_at: string | null
+          payload_hash: string | null
+          personality_id: string
+          raw: Json | null
+          source_entity_id: string | null
+          source_slug: string
+          source_url: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          first_seen_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_seen_at?: string | null
+          payload_hash?: string | null
+          personality_id: string
+          raw?: Json | null
+          source_entity_id?: string | null
+          source_slug: string
+          source_url?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          first_seen_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_seen_at?: string | null
+          payload_hash?: string | null
+          personality_id?: string
+          raw?: Json | null
+          source_entity_id?: string | null
+          source_slug?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personality_sources_personality_id_fkey"
+            columns: ["personality_id"]
             isOneToOne: false
             referencedRelation: "personalities"
             referencedColumns: ["id"]
@@ -6798,6 +7372,42 @@ export type Database = {
           timeout_seconds?: number | null
           updated_at?: string | null
           version?: number | null
+        }
+        Relationships: []
+      }
+      pipeline_errors: {
+        Row: {
+          context: Json | null
+          created_at: string
+          function_name: string
+          id: number
+          message: string
+          pipeline_run_id: string | null
+          severity: string
+          stack: string | null
+          staging_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          function_name: string
+          id?: number
+          message: string
+          pipeline_run_id?: string | null
+          severity?: string
+          stack?: string | null
+          staging_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          function_name?: string
+          id?: number
+          message?: string
+          pipeline_run_id?: string | null
+          severity?: string
+          stack?: string | null
+          staging_id?: string | null
         }
         Relationships: []
       }
@@ -6867,6 +7477,8 @@ export type Database = {
           node_states: Json | null
           pipeline_id: string | null
           pipeline_name: string
+          pipeline_snapshot: Json | null
+          pipeline_version: number | null
           started_at: string | null
           status: string
           triggered_by: string | null
@@ -6886,6 +7498,8 @@ export type Database = {
           node_states?: Json | null
           pipeline_id?: string | null
           pipeline_name: string
+          pipeline_snapshot?: Json | null
+          pipeline_version?: number | null
           started_at?: string | null
           status?: string
           triggered_by?: string | null
@@ -6905,6 +7519,8 @@ export type Database = {
           node_states?: Json | null
           pipeline_id?: string | null
           pipeline_name?: string
+          pipeline_snapshot?: Json | null
+          pipeline_version?: number | null
           started_at?: string | null
           status?: string
           triggered_by?: string | null
@@ -8127,11 +8743,13 @@ export type Database = {
           decided_by: string
           decision: string
           entity_a_id: string
-          entity_b_id: string
+          entity_b_id: string | null
           entity_type: string
           id: string
           match_method: string
+          pipeline_run_id: string | null
           rules_fired: Json | null
+          staging_id: string | null
         }
         Insert: {
           action?: string | null
@@ -8140,11 +8758,13 @@ export type Database = {
           decided_by?: string
           decision: string
           entity_a_id: string
-          entity_b_id: string
+          entity_b_id?: string | null
           entity_type: string
           id?: string
           match_method: string
+          pipeline_run_id?: string | null
           rules_fired?: Json | null
+          staging_id?: string | null
         }
         Update: {
           action?: string | null
@@ -8153,13 +8773,44 @@ export type Database = {
           decided_by?: string
           decision?: string
           entity_a_id?: string
-          entity_b_id?: string
+          entity_b_id?: string | null
           entity_type?: string
           id?: string
           match_method?: string
+          pipeline_run_id?: string | null
           rules_fired?: Json | null
+          staging_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "scraper_dedupe_decisions_pipeline_run_id_fkey"
+            columns: ["pipeline_run_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scraper_dedupe_decisions_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
+          },
+          {
+            foreignKeyName: "scraper_dedupe_decisions_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scraper_dedupe_decisions_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scraper_entity_map: {
         Row: {
@@ -8837,6 +9488,13 @@ export type Database = {
             referencedRelation: "unified_tags"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tag_aliases_canonical_tag_id_fkey"
+            columns: ["canonical_tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
         ]
       }
       tag_categories: {
@@ -8935,6 +9593,13 @@ export type Database = {
             columns: ["tag_id"]
             isOneToOne: false
             referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_category_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
             referencedColumns: ["id"]
           },
         ]
@@ -9053,6 +9718,13 @@ export type Database = {
             columns: ["tag_id"]
             isOneToOne: false
             referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_suggestions_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
             referencedColumns: ["id"]
           },
         ]
@@ -9783,6 +10455,13 @@ export type Database = {
             referencedRelation: "unified_tags"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
         ]
       }
       unified_tags: {
@@ -9863,6 +10542,13 @@ export type Database = {
             columns: ["merged_into_id"]
             isOneToOne: false
             referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
             referencedColumns: ["id"]
           },
         ]
@@ -10701,6 +11387,7 @@ export type Database = {
           accessibility_notes: string | null
           accommodation_type: string | null
           address: string
+          address_normalized: string | null
           amenities: string[] | null
           amenities_verified: boolean
           booking_url: string | null
@@ -10760,6 +11447,9 @@ export type Database = {
           tripadvisor_rating: number | null
           tripadvisor_review_count: number | null
           updated_at: string
+          url_checked_at: string | null
+          url_status: string | null
+          venue_subtype: string | null
           verification_status: string
           verified: boolean | null
           website: string | null
@@ -10770,6 +11460,7 @@ export type Database = {
           accessibility_notes?: string | null
           accommodation_type?: string | null
           address: string
+          address_normalized?: string | null
           amenities?: string[] | null
           amenities_verified?: boolean
           booking_url?: string | null
@@ -10829,6 +11520,9 @@ export type Database = {
           tripadvisor_rating?: number | null
           tripadvisor_review_count?: number | null
           updated_at?: string
+          url_checked_at?: string | null
+          url_status?: string | null
+          venue_subtype?: string | null
           verification_status?: string
           verified?: boolean | null
           website?: string | null
@@ -10839,6 +11533,7 @@ export type Database = {
           accessibility_notes?: string | null
           accommodation_type?: string | null
           address?: string
+          address_normalized?: string | null
           amenities?: string[] | null
           amenities_verified?: boolean
           booking_url?: string | null
@@ -10898,6 +11593,9 @@ export type Database = {
           tripadvisor_rating?: number | null
           tripadvisor_review_count?: number | null
           updated_at?: string
+          url_checked_at?: string | null
+          url_status?: string | null
+          venue_subtype?: string | null
           verification_status?: string
           verified?: boolean | null
           website?: string | null
@@ -11290,6 +11988,63 @@ export type Database = {
       }
     }
     Views: {
+      city_ingest_stats: {
+        Row: {
+          committed: number | null
+          day: string | null
+          duplicates: number | null
+          merge_candidates: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          validated: number | null
+        }
+        Relationships: []
+      }
+      country_ingest_stats: {
+        Row: {
+          committed: number | null
+          day: string | null
+          duplicates: number | null
+          merge_candidates: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          validated: number | null
+        }
+        Relationships: []
+      }
+      coverage_gaps: {
+        Row: {
+          accommodation_type: string | null
+          actual_count: number | null
+          city: string | null
+          expected_count: number | null
+          gap_kind: string | null
+          last_run_at: string | null
+          source_slug: string | null
+          success_ratio: number | null
+        }
+        Relationships: []
+      }
+      dedup_precision: {
+        Row: {
+          avg_rpc_score: number | null
+          avg_score_when_wrong: number | null
+          confirmed: number | null
+          decisions: number | null
+          last_decision: string | null
+          merged: number | null
+          precision: number | null
+          rejected: number | null
+          rpc_match_type: string | null
+        }
+        Relationships: []
+      }
       dlq_summary: {
         Row: {
           items: number | null
@@ -11400,6 +12155,31 @@ export type Database = {
           },
         ]
       }
+      geo_merge_candidates: {
+        Row: {
+          created_at: string | null
+          dedup_details: Json | null
+          entity_type: string | null
+          match_country_code: string | null
+          match_country_name: string | null
+          match_id: string | null
+          match_lat: number | null
+          match_lng: number | null
+          match_name: string | null
+          match_score: number | null
+          proposed_code: string | null
+          proposed_country_code: string | null
+          proposed_country_name: string | null
+          proposed_lat: number | null
+          proposed_lng: number | null
+          proposed_name: string | null
+          source: string | null
+          source_entity_id: string | null
+          staging_id: string | null
+          target_table: string | null
+        }
+        Relationships: []
+      }
       hotel_ingest_stats: {
         Row: {
           accommodation_type: string | null
@@ -11412,6 +12192,35 @@ export type Database = {
           staged: number | null
           unique_items: number | null
           validated: number | null
+        }
+        Relationships: []
+      }
+      personality_data_health: {
+        Row: {
+          avg_quality: number | null
+          draft_rows: number | null
+          known_duplicates: number | null
+          missing_description: number | null
+          missing_image: number | null
+          missing_lgbti: number | null
+          missing_qid: number | null
+          needs_attention: number | null
+          open_reviews: number | null
+          pending_verification: number | null
+          public_rows: number | null
+          total: number | null
+          verified: number | null
+        }
+        Relationships: []
+      }
+      pipeline_error_summary: {
+        Row: {
+          function_name: string | null
+          last_1h: number | null
+          last_24h: number | null
+          last_7d: number | null
+          last_seen_at: string | null
+          severity: string | null
         }
         Relationships: []
       }
@@ -11617,6 +12426,102 @@ export type Database = {
             referencedRelation: "unified_tags"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_active_tags: {
+        Row: {
+          category: string | null
+          category_id: string | null
+          created_at: string | null
+          deprecated_at: string | null
+          deprecation_reason: string | null
+          description: string | null
+          id: string | null
+          image_url: string | null
+          merged_into_id: string | null
+          name: string | null
+          scientific_data: Json | null
+          slug: string | null
+          status: string | null
+          updated_at: string | null
+          usage_count: number | null
+          wikipedia_url: string | null
+          wolfram_enriched_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          deprecated_at?: string | null
+          deprecation_reason?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          merged_into_id?: string | null
+          name?: string | null
+          scientific_data?: Json | null
+          slug?: string | null
+          status?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          wikipedia_url?: string | null
+          wolfram_enriched_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          deprecated_at?: string | null
+          deprecation_reason?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          merged_into_id?: string | null
+          name?: string | null
+          scientific_data?: Json | null
+          slug?: string | null
+          status?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          wikipedia_url?: string | null
+          wolfram_enriched_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
         ]
       }
       v_popular_entities: {
@@ -11697,6 +12602,19 @@ export type Database = {
         Returns: number
       }
       apply_content_change: { Args: { p_change_id: string }; Returns: boolean }
+      apply_enrichment: {
+        Args: {
+          p_actor?: string
+          p_duration_ms?: number
+          p_error_message?: string
+          p_new_enriched: Json
+          p_pipeline_run_id: string
+          p_stage: string
+          p_staging_id: string
+          p_status?: string
+        }
+        Returns: string
+      }
       approve_tag_suggestions: {
         Args: { p_reviewer_id?: string; p_suggestion_ids: string[] }
         Returns: number
@@ -11825,10 +12743,49 @@ export type Database = {
         }
         Returns: boolean
       }
+      circuit_breaker_check: { Args: { p_api_name: string }; Returns: boolean }
+      circuit_breaker_record_failure: {
+        Args: { p_api_name: string; p_error?: string }
+        Returns: Json
+      }
+      circuit_breaker_record_success: {
+        Args: { p_api_name: string }
+        Returns: undefined
+      }
       clean_old_rate_limits: { Args: never; Returns: undefined }
       clean_staging_duplicates: {
         Args: { p_dry_run?: boolean; p_skip_threshold?: number }
         Returns: Json
+      }
+      commit_city_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          city_id: string
+          staging_id: string
+        }[]
+      }
+      commit_city_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          city_id: string
+        }[]
+      }
+      commit_country_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          country_id: string
+          staging_id: string
+        }[]
+      }
+      commit_country_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          country_id: string
+        }[]
       }
       commit_event_staging_batch: {
         Args: { p_limit?: number }
@@ -11843,6 +12800,29 @@ export type Database = {
         Returns: {
           action: string
           event_id: string
+        }[]
+      }
+      commit_marketplace_staging_batch: {
+        Args: { p_limit?: number; p_pipeline_run_id?: string }
+        Returns: {
+          action: string
+          listing_id: string
+          staging_id: string
+        }[]
+      }
+      commit_personality_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          personality_id: string
+          staging_id: string
+        }[]
+      }
+      commit_personality_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          personality_id: string
         }[]
       }
       commit_venue_staging_batch: {
@@ -11863,6 +12843,15 @@ export type Database = {
       compute_quality_score: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: number
+      }
+      compute_staging_idempotency_key: {
+        Args: {
+          p_fallback: string
+          p_payload_hash: string
+          p_source_entity_id: string
+          p_source_name: string
+        }
+        Returns: string
       }
       compute_tag_similarities: { Args: never; Returns: Json }
       create_notification: {
@@ -11952,6 +12941,21 @@ export type Database = {
         }[]
       }
       extract_website_domain: { Args: { url: string }; Returns: string }
+      find_city_duplicate_candidates: {
+        Args: {
+          p_country_id?: string
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_name: string
+        }
+        Returns: {
+          city_id: string
+          distance_m: number
+          match_type: string
+          score: number
+        }[]
+      }
       find_city_duplicates: {
         Args: {
           p_country_id?: string
@@ -11967,6 +12971,14 @@ export type Database = {
           geo_distance_km: number
           name_similarity: number
           same_country: boolean
+        }[]
+      }
+      find_country_duplicate_candidates: {
+        Args: { p_code?: string; p_limit?: number; p_name: string }
+        Returns: {
+          country_id: string
+          match_type: string
+          score: number
         }[]
       }
       find_duplicate_candidates: {
@@ -12012,24 +13024,65 @@ export type Database = {
           title_similarity: number
         }[]
       }
-      find_hotel_duplicate_candidates: {
+      find_hotel_duplicate_candidates:
+        | {
+            Args: {
+              p_booking_url?: string
+              p_city_id?: string
+              p_email?: string
+              p_lat?: number
+              p_limit?: number
+              p_lng?: number
+              p_name: string
+              p_phone_e164?: string
+              p_platform_ids?: Json
+              p_website_domain?: string
+            }
+            Returns: {
+              distance_m: number
+              match_type: string
+              score: number
+              venue_id: string
+            }[]
+          }
+        | {
+            Args: {
+              p_address?: string
+              p_booking_url?: string
+              p_city_id?: string
+              p_email?: string
+              p_lat?: number
+              p_limit?: number
+              p_lng?: number
+              p_name: string
+              p_phone_e164?: string
+              p_platform_ids?: Json
+              p_website_domain?: string
+            }
+            Returns: {
+              distance_m: number
+              match_type: string
+              score: number
+              venue_id: string
+            }[]
+          }
+      find_marketplace_duplicate_candidates: {
         Args: {
-          p_booking_url?: string
-          p_city_id?: string
-          p_email?: string
-          p_lat?: number
+          p_brand?: string
+          p_external_url?: string
           p_limit?: number
-          p_lng?: number
-          p_name: string
-          p_phone_e164?: string
-          p_platform_ids?: Json
-          p_website_domain?: string
+          p_merchant_domain?: string
+          p_source_entity_id?: string
+          p_source_slug?: string
+          p_title: string
         }
         Returns: {
           distance_m: number
+          listing_id: string
           match_type: string
+          matched_title: string
           score: number
-          venue_id: string
+          time_diff_hours: number
         }[]
       }
       find_nearest_airport: {
@@ -12057,6 +13110,25 @@ export type Database = {
           title_similarity: number
         }[]
       }
+      find_personality_duplicate_candidates: {
+        Args: {
+          p_birth_date?: string
+          p_external_ids?: Json
+          p_limit?: number
+          p_name: string
+          p_nationality?: string
+          p_profession?: string
+          p_wikidata_qid?: string
+        }
+        Returns: {
+          distance_m: number
+          match_type: string
+          matched_name: string
+          personality_id: string
+          score: number
+          time_diff_hours: number
+        }[]
+      }
       find_personality_duplicates: {
         Args: { p_name: string; p_threshold?: number }
         Returns: {
@@ -12073,24 +13145,54 @@ export type Database = {
           village_name: string
         }[]
       }
-      find_venue_duplicate_candidates: {
-        Args: {
-          p_city_id?: string
-          p_email?: string
-          p_lat?: number
-          p_limit?: number
-          p_lng?: number
-          p_name: string
-          p_phone_e164?: string
-          p_website_domain?: string
-        }
+      find_unified_tag_duplicates: {
+        Args: { p_limit?: number; p_threshold?: number }
         Returns: {
-          distance_m: number
-          match_type: string
-          score: number
-          venue_id: string
+          similarity: number
+          tag_a_id: string
+          tag_a_slug: string
+          tag_b_id: string
+          tag_b_slug: string
         }[]
       }
+      find_venue_duplicate_candidates:
+        | {
+            Args: {
+              p_city_id?: string
+              p_email?: string
+              p_lat?: number
+              p_limit?: number
+              p_lng?: number
+              p_name: string
+              p_phone_e164?: string
+              p_website_domain?: string
+            }
+            Returns: {
+              distance_m: number
+              match_type: string
+              score: number
+              venue_id: string
+            }[]
+          }
+        | {
+            Args: {
+              p_address?: string
+              p_city_id?: string
+              p_email?: string
+              p_lat?: number
+              p_limit?: number
+              p_lng?: number
+              p_name: string
+              p_phone_e164?: string
+              p_website_domain?: string
+            }
+            Returns: {
+              distance_m: number
+              match_type: string
+              score: number
+              venue_id: string
+            }[]
+          }
       find_venue_duplicates: {
         Args: {
           p_category?: string
@@ -12109,6 +13211,17 @@ export type Database = {
         }[]
       }
       fix_missing_junction_entries: { Args: never; Returns: number }
+      fx_to_usd: {
+        Args: { p_amount: number; p_currency: string }
+        Returns: number
+      }
+      generate_data_ops_alerts: {
+        Args: never
+        Returns: {
+          alert_kind: string
+          fingerprint: string
+        }[]
+      }
       generate_slug: { Args: { input_text: string }; Returns: string }
       generate_unique_slug: {
         Args: {
@@ -12437,6 +13550,7 @@ export type Database = {
           accessibility_notes: string | null
           accommodation_type: string | null
           address: string
+          address_normalized: string | null
           amenities: string[] | null
           amenities_verified: boolean
           booking_url: string | null
@@ -12496,6 +13610,9 @@ export type Database = {
           tripadvisor_rating: number | null
           tripadvisor_review_count: number | null
           updated_at: string
+          url_checked_at: string | null
+          url_status: string | null
+          venue_subtype: string | null
           verification_status: string
           verified: boolean | null
           website: string | null
@@ -12627,6 +13744,14 @@ export type Database = {
         Args: { canonical_tag_id: string; source_tag_id: string }
         Returns: undefined
       }
+      merge_unified_tag: {
+        Args: {
+          p_actor?: string
+          p_canonical_id: string
+          p_duplicate_id: string
+        }
+        Returns: undefined
+      }
       news_commit_staging_batch: {
         Args: { p_job_id: string; p_limit?: number; p_pipeline_run_id?: string }
         Returns: {
@@ -12668,8 +13793,10 @@ export type Database = {
           url: string
         }[]
       }
+      normalize_address: { Args: { a: string }; Returns: string }
       normalize_name: { Args: { n: string }; Returns: string }
       normalize_phone: { Args: { p: string }; Returns: string }
+      normalize_tag_slug: { Args: { p_input: string }; Returns: string }
       normalize_venue_category: { Args: { c: string }; Returns: string }
       optimize_auth_uid_in_policies: {
         Args: never
@@ -12776,6 +13903,22 @@ export type Database = {
           total: number
         }[]
       }
+      recompute_marketplace_price_usd: { Args: never; Returns: number }
+      record_dedup_decision: {
+        Args: {
+          p_action: string
+          p_confidence: number
+          p_decided_by?: string
+          p_decision: string
+          p_entity_type: string
+          p_match_id: string
+          p_match_method: string
+          p_pipeline_run_id: string
+          p_rules: Json
+          p_staging_id: string
+        }
+        Returns: string
+      }
       record_redirect_click: {
         Args: {
           p_country?: string
@@ -12789,8 +13932,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      recount_unified_tag_usage: { Args: never; Returns: undefined }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
       refresh_source_coverage: { Args: never; Returns: undefined }
+      register_circuit_breaker: {
+        Args: {
+          p_api_name: string
+          p_reset_seconds?: number
+          p_threshold?: number
+        }
+        Returns: string
+      }
       remove_tag_from_category: {
         Args: { p_category_id: string; p_tag_id: string }
         Returns: undefined
@@ -12822,6 +13974,14 @@ export type Database = {
         Returns: {
           currency_code: string
           currency_symbol: string
+        }[]
+      }
+      resolve_geo_merge_candidate: {
+        Args: { p_actor?: string; p_decision: string; p_staging_id: string }
+        Returns: {
+          action: string
+          entity_id: string
+          entity_type: string
         }[]
       }
       resolve_path_redirect: {
@@ -12892,6 +14052,21 @@ export type Database = {
         Args: { p_operation: string; p_user_id: string }
         Returns: boolean
       }
+      snapshot_pipeline_definition: {
+        Args: { p_pipeline_id: string }
+        Returns: Json
+      }
+      stage_event_for_commit: {
+        Args: {
+          p_normalized?: Json
+          p_raw: Json
+          p_source_entity_id: string
+          p_source_name: string
+          p_source_type: string
+          p_source_url?: string
+        }
+        Returns: string
+      }
       tag_hygiene_report: {
         Args: never
         Returns: {
@@ -12948,6 +14123,10 @@ export type Database = {
           subtitle: string
           title: string
         }[]
+      }
+      upsert_api_error: {
+        Args: { p_data: Json; p_fingerprint: string; p_source?: string }
+        Returns: string
       }
       validate_content_security: {
         Args: { content_text: string; content_type?: string }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { AlertTriangle, AlertCircle, Info, Bug } from 'lucide-react';
 
 interface ErrorRow {
@@ -38,8 +38,7 @@ export default function ErrorsTab() {
   const { data: summary } = useQuery({
     queryKey: ['pipeline-error-summary'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_error_summary')
+      const { data, error } = await untypedFrom('pipeline_error_summary')
         .select('*')
         .order('last_seen_at', { ascending: false });
       if (error) throw error;
@@ -54,8 +53,7 @@ export default function ErrorsTab() {
       const sevs = minSeverity === 'fatal' ? ['fatal']
                  : minSeverity === 'error' ? ['error','fatal']
                  : ['warn','error','fatal'];
-      const { data, error } = await (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_errors')
+      const { data, error } = await untypedFrom('pipeline_errors')
         .select('*')
         .in('severity', sevs)
         .order('created_at', { ascending: false })

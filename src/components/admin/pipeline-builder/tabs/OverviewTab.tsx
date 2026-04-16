@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -68,6 +70,7 @@ function StatusDots({ statuses }: { statuses: string[] }) {
 export default function OverviewTab() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { toast } = useToast();
   const { data: rows, isLoading } = useUnifiedPipelineOverview();
   const { data: counts24h } = usePipelineRunCounts24h();
   const { data: circuitBreakers } = useCircuitBreakers();
@@ -81,11 +84,11 @@ export default function OverviewTab() {
   const toggleEnabled = useMutation({
     mutationFn: async ({ row, enabled }: { row: UnifiedPipelineRow; enabled: boolean }) => {
       const table = row.kind === 'pipeline' ? 'pipeline_definitions' : 'workflow_definitions';
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
-      const { error } = await sb.from(table).update({ is_enabled: enabled }).eq('id', row.id);
+      const { error } = await untypedFrom(table).update({ is_enabled: enabled }).eq('id', row.id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['unified-pipeline-overview'] }),
+    onError: (e: Error) => toast({ title: 'Toggle failed', description: e.message, variant: 'destructive' }),
   });
 
   const runNow = useMutation({
@@ -103,6 +106,7 @@ export default function OverviewTab() {
       }
     },
     onSuccess: () => setTimeout(() => qc.invalidateQueries({ queryKey: ['unified-pipeline-overview'] }), 1500),
+    onError: (e: Error) => toast({ title: 'Run failed', description: e.message, variant: 'destructive' }),
   });
 
   const filtered = useMemo(() => {

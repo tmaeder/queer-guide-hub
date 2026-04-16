@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 
 interface PipelineRun {
   id: string;
@@ -43,8 +44,7 @@ export function usePipelineRuns(limit = 20) {
   return useQuery({
     queryKey: ['pipeline-runs', limit],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_runs')
+      const { data, error } = await untypedFrom('pipeline_runs')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(limit);
@@ -61,8 +61,7 @@ export function useLatestPipelineRun(pipelineId: string | undefined) {
     queryKey: ['latest-pipeline-run', pipelineId],
     queryFn: async () => {
       if (!pipelineId) return null;
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_runs')
+      const { data, error } = await untypedFrom('pipeline_runs')
         .select('*')
         .eq('pipeline_id', pipelineId)
         .order('created_at', { ascending: false })
@@ -82,8 +81,7 @@ export function usePipelineRun(runId: string | undefined) {
     queryKey: ['pipeline-run', runId],
     queryFn: async () => {
       if (!runId) return null;
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_runs')
+      const { data, error } = await untypedFrom('pipeline_runs')
         .select('*')
         .eq('id', runId)
         .single();
@@ -100,8 +98,7 @@ export function useCircuitBreakers() {
   return useQuery({
     queryKey: ['circuit-breakers'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('api_circuit_breakers')
+      const { data, error } = await untypedFrom('api_circuit_breakers')
         .select('*')
         .order('api_name', { ascending: true });
       if (error) throw error;
@@ -116,8 +113,7 @@ export function useStagingStats() {
   return useQuery({
     queryKey: ['staging-stats'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('ingestion_staging')
+      const { data, error } = await untypedFrom('ingestion_staging')
         .select('disposition')
         .limit(5000);
       if (error) throw error;
@@ -153,8 +149,7 @@ export function useEventIngestStats(days = 14) {
     queryKey: ['event-ingest-stats', days],
     queryFn: async () => {
       const cutoff = new Date(Date.now() - days * 86400_000).toISOString();
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('event_ingest_stats')
+      const { data, error } = await untypedFrom('event_ingest_stats')
         .select('*')
         .gte('day', cutoff)
         .order('day', { ascending: false });
@@ -171,8 +166,7 @@ function useIngestStatsView(view: string, days: number) {
     queryKey: [view, days],
     queryFn: async () => {
       const cutoff = new Date(Date.now() - days * 86400_000).toISOString();
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from(view)
+      const { data, error } = await untypedFrom(view)
         .select('*')
         .gte('day', cutoff)
         .order('day', { ascending: false });
@@ -192,12 +186,11 @@ export function useMarketplaceStats() {
     queryKey: ['marketplace-stats'],
     queryFn: async () => {
       type Row = { id: string; status: string | null; availability: string | null; link_health: string | null; review_status: string | null; source_type: string | null; last_verified_at: string | null };
-      const sb = supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> };
       const [listingsRes, priceCountRes, stagingCountRes, dlqCountRes] = await Promise.all([
-        sb.from('marketplace_listings').select('id, status, availability, link_health, review_status, source_type, last_verified_at').limit(5000),
-        sb.from('marketplace_price_history').select('id', { count: 'exact', head: true }),
-        sb.from('ingestion_staging').select('id, disposition', { count: 'exact' }).eq('target_table', 'marketplace_listings').limit(2000),
-        sb.from('ingestion_dlq').select('id', { count: 'exact', head: true }).eq('target_table', 'marketplace_listings'),
+        untypedFrom('marketplace_listings').select('id, status, availability, link_health, review_status, source_type, last_verified_at').limit(5000),
+        untypedFrom('marketplace_price_history').select('id', { count: 'exact', head: true }),
+        untypedFrom('ingestion_staging').select('id, disposition', { count: 'exact' }).eq('target_table', 'marketplace_listings').limit(2000),
+        untypedFrom('ingestion_dlq').select('id', { count: 'exact', head: true }).eq('target_table', 'marketplace_listings'),
       ]);
       if (listingsRes.error) throw listingsRes.error;
       const rows = (listingsRes.data || []) as unknown as Row[];
@@ -237,8 +230,7 @@ export function usePipelineDefinitionsList() {
   return useQuery({
     queryKey: ['pipeline-definitions-list'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_definitions')
+      const { data, error } = await untypedFrom('pipeline_definitions')
         .select('id, name, display_name, is_template, is_enabled, schedule, created_at')
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -269,12 +261,11 @@ export function useUnifiedPipelineOverview() {
   return useQuery({
     queryKey: ['unified-pipeline-overview'],
     queryFn: async (): Promise<UnifiedPipelineRow[]> => {
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
       const [pipeDefs, wfDefs, pipeRuns, wfRuns] = await Promise.all([
-        sb.from('pipeline_definitions').select('id, name, display_name, is_template, is_enabled, schedule').order('name'),
-        sb.from('workflow_definitions').select('id, name, display_name, is_enabled, schedule').order('name'),
-        sb.from('pipeline_runs').select('pipeline_id, status, duration_ms, items_succeeded, items_total, created_at, completed_at').order('created_at', { ascending: false }).limit(500),
-        sb.from('workflow_runs').select('definition_id, status, duration_ms, items_succeeded, items_total, created_at, completed_at').order('created_at', { ascending: false }).limit(500),
+        untypedFrom('pipeline_definitions').select('id, name, display_name, is_template, is_enabled, schedule').order('name'),
+        untypedFrom('workflow_definitions').select('id, name, display_name, is_enabled, schedule').order('name'),
+        untypedFrom('pipeline_runs').select('pipeline_id, status, duration_ms, items_succeeded, items_total, created_at, completed_at').order('created_at', { ascending: false }).limit(500),
+        untypedFrom('workflow_runs').select('definition_id, status, duration_ms, items_succeeded, items_total, created_at, completed_at').order('created_at', { ascending: false }).limit(500),
       ]);
       if (pipeDefs.error) throw pipeDefs.error;
       if (wfDefs.error) throw wfDefs.error;
@@ -333,10 +324,9 @@ export function usePipelineRunCounts24h() {
     queryKey: ['pipeline-run-counts-24h'],
     queryFn: async () => {
       const cutoff = new Date(Date.now() - 86400_000).toISOString();
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
       const [pipeRes, wfRes] = await Promise.all([
-        sb.from('pipeline_runs').select('status').gte('created_at', cutoff).limit(2000),
-        sb.from('workflow_runs').select('status').gte('created_at', cutoff).limit(2000),
+        untypedFrom('pipeline_runs').select('status').gte('created_at', cutoff).limit(2000),
+        untypedFrom('workflow_runs').select('status').gte('created_at', cutoff).limit(2000),
       ]);
       const all = [...(pipeRes.data || []), ...(wfRes.data || [])] as Array<{ status: string }>;
       return {

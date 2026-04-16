@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -26,8 +27,7 @@ export default function GeoReviewTab() {
     queryKey: ['geo-merge-candidates'],
     refetchInterval: 30_000,
     queryFn: async () => {
-      const sb = supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> };
-      const { data } = await sb.from('ingestion_staging')
+      const { data } = await untypedFrom('ingestion_staging')
         .select('id, target_table, normalized_data, dedup_match_id, dedup_match_score, dedup_details, created_at')
         .in('target_table', ['cities', 'countries'])
         .eq('dedup_status', 'merge_candidate')
