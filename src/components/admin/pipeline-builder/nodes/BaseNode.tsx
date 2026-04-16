@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import * as Icons from 'lucide-react';
 
 interface BaseNodeData {
@@ -20,101 +21,146 @@ interface BaseNodeData {
   errorMessage?: string;
 }
 
-const statusColors: Record<string, string> = {
-  pending: 'bg-gray-100 text-gray-600',
-  running: 'bg-blue-100 text-blue-700 animate-pulse',
-  completed: 'bg-green-100 text-green-700',
-  failed: 'bg-red-100 text-red-700',
-  skipped: 'bg-yellow-100 text-yellow-600',
+const statusConfig: Record<string, { className: string; icon: string }> = {
+  pending:   { className: 'bg-muted text-muted-foreground', icon: 'Clock' },
+  running:   { className: 'bg-blue-100 text-blue-700 animate-pulse', icon: 'Loader2' },
+  completed: { className: 'bg-green-100 text-green-700', icon: 'CheckCircle2' },
+  failed:    { className: 'bg-red-100 text-red-700', icon: 'XCircle' },
+  skipped:   { className: 'bg-yellow-100 text-yellow-600', icon: 'SkipForward' },
 };
 
+function portPosition(index: number, total: number): string {
+  if (total <= 1) return '50%';
+  return `${((index + 1) / (total + 1)) * 100}%`;
+}
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+  return `${(ms / 60000).toFixed(1)}m`;
+}
+
 function BaseNode({ data, selected }: NodeProps) {
-  const nodeData = data as BaseNodeData;
-  const IconComponent = nodeData.icon ? (Icons as Record<string, unknown>)[nodeData.icon] as React.ComponentType<{ className?: string }> : Icons.Box;
-  const color = nodeData.color || '#6b7280';
+  const d = data as BaseNodeData;
+  const IconComponent = d.icon
+    ? (Icons as Record<string, unknown>)[d.icon] as React.ComponentType<{ className?: string }>
+    : Icons.Box;
+  const color = d.color || '#6b7280';
+  const status = d.status;
+  const sc = status ? statusConfig[status] : null;
+  const StatusIcon = sc ? (Icons as Record<string, unknown>)[sc.icon] as React.ComponentType<{ className?: string }> : null;
 
   return (
-    <div
-      className={`rounded-lg border-2 bg-white shadow-sm min-w-[180px] transition-shadow ${
-        selected ? 'ring-2 ring-blue-500 shadow-md' : ''
-      }`}
-      style={{ borderColor: color }}
-    >
-      {/* Input handles */}
-      {(nodeData.inputPorts || []).map((port, i) => (
-        <Handle
-          key={port.id}
-          type="target"
-          position={Position.Left}
-          id={port.id}
-          style={{
-            top: `${((i + 1) / ((nodeData.inputPorts?.length || 1) + 1)) * 100}%`,
-            background: color,
-            width: 10,
-            height: 10,
-          }}
-        />
-      ))}
-
-      {/* Header */}
+    <TooltipProvider delayDuration={300}>
       <div
-        className="flex items-center gap-2 px-3 py-2 rounded-t-md"
-        style={{ backgroundColor: `${color}15` }}
+        className={`rounded-lg border-2 bg-background shadow-sm min-w-[200px] max-w-[280px] transition-all ${
+          selected ? 'ring-2 ring-ring shadow-md scale-[1.02]' : 'hover:shadow-md'
+        } ${status === 'failed' ? 'border-destructive' : ''}`}
+        style={{ borderColor: status === 'failed' ? undefined : color }}
       >
-        {IconComponent && <IconComponent className="h-4 w-4 shrink-0" />}
-        <span className="text-sm font-medium truncate">
-          {nodeData.label || nodeData.nodeTypeSlug || 'Node'}
-        </span>
-        {nodeData.status && (
-          <Badge variant="outline" className={`ml-auto text-[10px] px-1.5 py-0 ${statusColors[nodeData.status]}`}>
-            {nodeData.status}
-          </Badge>
-        )}
-      </div>
+        {/* Input handles */}
+        {(d.inputPorts || []).map((port, i) => (
+          <Tooltip key={port.id}>
+            <TooltipTrigger asChild>
+              <Handle
+                type="target"
+                position={Position.Left}
+                id={port.id}
+                style={{
+                  top: portPosition(i, d.inputPorts?.length || 0),
+                  background: status === 'failed' ? 'hsl(var(--destructive))' : color,
+                  width: 10,
+                  height: 10,
+                  border: '2px solid hsl(var(--background))',
+                }}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="left" className="text-xs">{port.label || port.id}</TooltipContent>
+          </Tooltip>
+        ))}
 
-      {/* Body */}
-      {(nodeData.description || nodeData.itemsOut !== undefined || nodeData.errorMessage) && (
-        <div className="px-3 py-1.5 text-xs text-muted-foreground border-t" style={{ borderColor: `${color}30` }}>
-          {nodeData.description && <div className="truncate">{nodeData.description}</div>}
-          {(nodeData.itemsOut !== undefined || nodeData.itemsIn !== undefined) && (
-            <div className="mt-1 flex items-center gap-2 font-mono text-[11px]">
-              {nodeData.itemsIn !== undefined && (
-                <span title="items in" className="text-gray-500">↓{nodeData.itemsIn}</span>
-              )}
-              {nodeData.itemsOut !== undefined && (
-                <span title="items out" className="font-semibold" style={{ color }}>↑{nodeData.itemsOut}</span>
-              )}
-              {nodeData.durationMs !== undefined && nodeData.durationMs > 0 && (
-                <span title="duration" className="ml-auto text-gray-400">
-                  {nodeData.durationMs < 1000 ? `${nodeData.durationMs}ms` : `${(nodeData.durationMs / 1000).toFixed(1)}s`}
-                </span>
-              )}
-            </div>
-          )}
-          {nodeData.errorMessage && (
-            <div className="mt-1 text-[10px] text-red-600 truncate" title={nodeData.errorMessage}>
-              ⚠ {nodeData.errorMessage}
-            </div>
+        {/* Header */}
+        <div
+          className="flex items-center gap-2 px-3 py-2.5 rounded-t-md"
+          style={{ backgroundColor: `${color}12` }}
+        >
+          {IconComponent && <IconComponent className="h-4 w-4 shrink-0" />}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-sm font-medium truncate max-w-[140px]">
+                {d.label || d.nodeTypeSlug || 'Node'}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">
+              {d.label || d.nodeTypeSlug || 'Node'}
+              {d.description && <div className="text-muted-foreground mt-0.5">{d.description}</div>}
+            </TooltipContent>
+          </Tooltip>
+          {sc && (
+            <Badge variant="outline" className={`ml-auto text-[10px] px-1.5 py-0 gap-1 ${sc.className}`}>
+              {StatusIcon && <StatusIcon className="h-2.5 w-2.5" />}
+              {status}
+            </Badge>
           )}
         </div>
-      )}
 
-      {/* Output handles */}
-      {(nodeData.outputPorts || []).map((port, i) => (
-        <Handle
-          key={port.id}
-          type="source"
-          position={Position.Right}
-          id={port.id}
-          style={{
-            top: `${((i + 1) / ((nodeData.outputPorts?.length || 1) + 1)) * 100}%`,
-            background: color,
-            width: 10,
-            height: 10,
-          }}
-        />
-      ))}
-    </div>
+        {/* Metrics bar */}
+        {(d.itemsOut !== undefined || d.itemsIn !== undefined || d.durationMs) && (
+          <div className="flex items-center gap-3 px-3 py-1.5 text-[11px] font-mono border-t border-border/50">
+            {d.itemsIn !== undefined && (
+              <span className="text-muted-foreground" title="items in">
+                <Icons.ArrowDownToLine className="h-3 w-3 inline mr-0.5" />{d.itemsIn}
+              </span>
+            )}
+            {d.itemsOut !== undefined && (
+              <span className="font-semibold" style={{ color }} title="items out">
+                <Icons.ArrowUpFromLine className="h-3 w-3 inline mr-0.5" />{d.itemsOut}
+              </span>
+            )}
+            {d.durationMs !== undefined && d.durationMs > 0 && (
+              <span className="ml-auto text-muted-foreground" title="duration">
+                <Icons.Timer className="h-3 w-3 inline mr-0.5" />{formatDuration(d.durationMs)}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Error message */}
+        {d.errorMessage && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="px-3 py-1.5 text-[10px] text-destructive bg-destructive/5 border-t border-destructive/20 truncate cursor-help">
+                {d.errorMessage}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs max-w-[300px] whitespace-pre-wrap">
+              {d.errorMessage}
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* Output handles */}
+        {(d.outputPorts || []).map((port, i) => (
+          <Tooltip key={port.id}>
+            <TooltipTrigger asChild>
+              <Handle
+                type="source"
+                position={Position.Right}
+                id={port.id}
+                style={{
+                  top: portPosition(i, d.outputPorts?.length || 0),
+                  background: status === 'failed' ? 'hsl(var(--destructive))' : color,
+                  width: 10,
+                  height: 10,
+                  border: '2px solid hsl(var(--background))',
+                }}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="right" className="text-xs">{port.label || port.id}</TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
+    </TooltipProvider>
   );
 }
 

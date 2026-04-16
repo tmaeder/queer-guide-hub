@@ -13,7 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router';
@@ -47,9 +48,9 @@ function PipelineBuilderInner() {
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const initialPipelineParam = params.get('pipeline') ?? params.get('pipeline_id') ?? undefined;
   const [selectedPipelineId, setSelectedPipelineId] = useState<string | undefined>(undefined);
+  const [isDirty, setIsDirty] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
 
-  // Resolve pipeline name → id once list loads. If no param given, default to the
-  // bulletproof events pipeline so the canvas is never empty on first visit.
   useEffect(() => {
     if (!pipelineList || selectedPipelineId) return;
     if (initialPipelineParam) {
@@ -72,18 +73,56 @@ function PipelineBuilderInner() {
     loadPipeline,
   } = usePipelineBuilder(selectedPipelineId);
 
-  // Auto-load the selected pipeline definition (wait for nodeTypes so icons/colors populate)
+  // Track dirty state
+  const wrappedOnNodesChange = useCallback((...args: Parameters<typeof onNodesChange>) => {
+    setIsDirty(true);
+    return onNodesChange(...args);
+  }, [onNodesChange]);
+
+  const wrappedOnEdgesChange = useCallback((...args: Parameters<typeof onEdgesChange>) => {
+    setIsDirty(true);
+    return onEdgesChange(...args);
+  }, [onEdgesChange]);
+
+  // Cmd+S / Ctrl+S keyboard shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        if (!isSaving) {
+          save();
+          setIsDirty(false);
+          setLastSavedAt(Date.now());
+        }
+      }
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedNodeId && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+          setNodes(nds => nds.filter(n => n.id !== selectedNodeId));
+          setSelectedNodeId(null);
+          setIsDirty(true);
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isSaving, save, selectedNodeId, setNodes, setSelectedNodeId]);
+
+  // Unsaved changes warning
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
+
   useEffect(() => {
     if (!selectedPipelineId || !pipelineList || !nodeTypeList) return;
     const def = pipelineList.find(p => p.id === selectedPipelineId);
-    if (def) loadPipeline(def, nodeTypeList);
+    if (def) { loadPipeline(def, nodeTypeList); setIsDirty(false); }
   }, [selectedPipelineId, pipelineList, nodeTypeList, loadPipeline]);
 
   const { runStatus, clearOverlay } = usePipelineExecution(activeRunId, setNodes);
 
-  // Auto-overlay the latest run's node_states when a pipeline loads (so admins
-  // see the most recent execution status without clicking Run). Live realtime
-  // takes over when activeRunId is set.
   const { data: latestRun } = useLatestPipelineRun(selectedPipelineId);
   useEffect(() => {
     if (!latestRun || activeRunId) return;
@@ -108,7 +147,14 @@ function PipelineBuilderInner() {
 
   const handleUpdateNode = useCallback((nodeId: string, data: Record<string, unknown>) => {
     setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data } : n));
+    setIsDirty(true);
   }, [setNodes]);
+
+  const handleSave = useCallback(() => {
+    save();
+    setIsDirty(false);
+    setLastSavedAt(Date.now());
+  }, [save]);
 
   const handleRun = useCallback((opts?: { dryRun?: boolean }) => {
     run(opts, {
@@ -145,17 +191,11 @@ function PipelineBuilderInner() {
       event.preventDefault();
       const data = event.dataTransfer.getData('application/pipeline-node');
       if (!data) return;
-
       const nodeType = JSON.parse(data) as PipelineNodeType;
       const bounds = reactFlowWrapper.current?.getBoundingClientRect();
       if (!bounds) return;
-
-      const position = {
-        x: event.clientX - bounds.left - 90,
-        y: event.clientY - bounds.top - 20,
-      };
-
-      addNode(nodeType, position);
+      addNode(nodeType, { x: event.clientX - bounds.left - 90, y: event.clientY - bounds.top - 20 });
+      setIsDirty(true);
     },
     [addNode]
   );
@@ -164,15 +204,13 @@ function PipelineBuilderInner() {
     setSelectedNodeId(node.id);
   }, [setSelectedNodeId]);
 
-  // Measure available height and lock the layout
   const [containerHeight, setContainerHeight] = useState(600);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const measure = () => {
       if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setContainerHeight(window.innerHeight - rect.top);
+        setContainerHeight(window.innerHeight - containerRef.current.getBoundingClientRect().top);
       }
     };
     measure();
@@ -181,209 +219,222 @@ function PipelineBuilderInner() {
   }, []);
 
   return (
-    <div ref={containerRef} style={{ display: 'flex', height: containerHeight, overflow: 'hidden', margin: '-16px -24px' }}>
-      {/* Sidebar — Node Palette */}
-      <div style={{ width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb', background: '#fafafa', overflow: 'hidden' }}>
-        <div style={{ padding: '10px 12px', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{ fontWeight: 600, fontSize: 13 }}>Node Palette</div>
-          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Drag nodes onto the canvas</div>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {categoryOrder.map(cat => {
-              const types = nodeTypesByCategory[cat];
-              if (!types || types.length === 0) return null;
-              return (
-                <div key={cat}>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 8px', marginBottom: 4 }}>
-                    {categoryLabels[cat] || cat}
+    <TooltipProvider delayDuration={200}>
+      <div ref={containerRef} className="flex overflow-hidden -mx-6 -mt-4" style={{ height: containerHeight }}>
+        {/* Sidebar — Node Palette */}
+        <div className="w-60 shrink-0 flex flex-col border-r border-border bg-muted/30 overflow-hidden">
+          <div className="px-3 py-2.5 border-b border-border">
+            <div className="font-semibold text-[13px]">Node Palette</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">Drag onto canvas</div>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2">
+            <div className="flex flex-col gap-3">
+              {categoryOrder.map(cat => {
+                const types = nodeTypesByCategory[cat];
+                if (!types?.length) return null;
+                return (
+                  <div key={cat}>
+                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-1">
+                      {categoryLabels[cat] || cat}
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      {types.map(nt => {
+                        const Icon = (Icons as Record<string, unknown>)[nt.icon] as React.ComponentType<{ className?: string }> || Icons.Box;
+                        return (
+                          <Tooltip key={nt.slug}>
+                            <TooltipTrigger asChild>
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-grab text-[13px] hover:bg-accent transition-colors active:cursor-grabbing"
+                                draggable
+                                onDragStart={(e) => onDragStart(e as unknown as DragEvent<HTMLDivElement>, nt)}
+                              >
+                                <div
+                                  className="w-5 h-5 rounded flex items-center justify-center shrink-0"
+                                  style={{ backgroundColor: `${nt.color}20`, color: nt.color }}
+                                >
+                                  <Icon className="h-3 w-3" />
+                                </div>
+                                <span className="truncate">{nt.display_name}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="text-xs max-w-[200px]">
+                              <div className="font-medium">{nt.display_name}</div>
+                              {nt.description && <div className="text-muted-foreground mt-0.5">{nt.description}</div>}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {types.map(nt => {
-                      const Icon = (Icons as Record<string, unknown>)[nt.icon] as React.ComponentType<{ className?: string }> || Icons.Box;
-                      return (
-                        <div
-                          key={nt.slug}
-                          role="button"
-                          tabIndex={0}
-                          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, cursor: 'grab', fontSize: 13 }}
-                          draggable
-                          onDragStart={(e) => onDragStart(e as unknown as DragEvent<HTMLDivElement>, nt)}
-                        >
-                          <div
-                            style={{ width: 20, height: 20, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: `${nt.color}20`, color: nt.color }}
-                          >
-                            <Icon className="h-3 w-3" />
-                          </div>
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nt.display_name}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Canvas Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid #e5e7eb', background: '#fff', flexShrink: 0, zIndex: 10 }}>
-          <select
-            value={selectedPipelineId ?? ''}
-            onChange={(e) => {
-              const id = e.target.value || undefined;
-              setSelectedPipelineId(id);
-              if (id) {
-                const def = pipelineList?.find(p => p.id === id);
-                if (def) setParams(prev => {
-                  const next = new URLSearchParams(prev);
-                  next.set('pipeline', def.name);
-                  return next;
-                });
-              } else {
+        {/* Main Canvas Area */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Toolbar */}
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-background shrink-0 z-10">
+            <select
+              value={selectedPipelineId ?? ''}
+              onChange={(e) => {
+                if (isDirty && !window.confirm('Unsaved changes will be lost. Continue?')) return;
+                const id = e.target.value || undefined;
+                setSelectedPipelineId(id);
+                if (id) {
+                  const def = pipelineList?.find(p => p.id === id);
+                  if (def) setParams(prev => { const next = new URLSearchParams(prev); next.set('pipeline', def.name); return next; });
+                } else {
+                  setParams(prev => { const next = new URLSearchParams(prev); next.delete('pipeline'); return next; });
+                }
+              }}
+              className="h-8 px-2 border border-border rounded-md text-xs min-w-[220px] bg-background"
+            >
+              <option value="">-- New pipeline --</option>
+              {pipelineList?.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.is_enabled ? '' : '(off) '}{p.display_name || p.name}
+                </option>
+              ))}
+            </select>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 px-2"
+              onClick={() => {
+                if (isDirty && !window.confirm('Unsaved changes will be lost. Continue?')) return;
+                setSelectedPipelineId(undefined);
+                setNodes([]);
+                setPipelineName('');
+                setIsDirty(false);
                 setParams(prev => { const next = new URLSearchParams(prev); next.delete('pipeline'); return next; });
-              }
-            }}
-            style={{ height: 32, padding: '0 8px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 12, minWidth: 220 }}
-          >
-            <option value="">— New pipeline —</option>
-            {pipelineList?.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.is_enabled ? '' : '(off) '}{p.display_name || p.name}
-              </option>
-            ))}
-          </select>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-8 px-2"
-            onClick={() => {
-              setSelectedPipelineId(undefined);
-              setNodes([]);
-              setPipelineName('');
-              setParams(prev => { const next = new URLSearchParams(prev); next.delete('pipeline'); return next; });
-            }}
-            title="Start a new blank pipeline"
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            New
-          </Button>
-          <Input
-            value={pipelineName}
-            onChange={(e) => setPipelineName(e.target.value)}
-            placeholder="Pipeline name..."
-            className="w-64 h-8 text-sm"
-          />
-          <Separator orientation="vertical" className="h-6" />
-          <Button size="sm" variant="outline" onClick={() => save()} disabled={isSaving}>
-            <Save className="h-3.5 w-3.5 mr-1.5" />
-            {isSaving ? 'Saving...' : 'Save'}
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => handleRun({ dryRun: true })} disabled={isRunning}>
-            <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
-            Dry Run
-          </Button>
-          <Button size="sm" onClick={() => handleRun()} disabled={isRunning}>
-            <Play className="h-3.5 w-3.5 mr-1.5" />
-            {isRunning ? 'Starting...' : 'Run'}
-          </Button>
-          {activeRunId && runStatus && (
-            <Badge variant="outline" className={`text-xs ${runStatus === 'running' ? 'bg-blue-100 text-blue-700 animate-pulse' : runStatus === 'completed' ? 'bg-green-100 text-green-700' : runStatus === 'failed' ? 'bg-red-100 text-red-700' : ''}`}>
-              {runStatus}
-            </Badge>
-          )}
-          {activeRunId && runStatus && ['completed', 'failed', 'cancelled'].includes(runStatus) && (
-            <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setActiveRunId(null); clearOverlay(); }}>
-              Clear
+              }}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              New
             </Button>
-          )}
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#6b7280' }}>
-            {latestRun && !activeRunId && (
-              <Badge
-                variant="outline"
-                className={`text-xs gap-1 ${
-                  latestRun.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' :
-                  latestRun.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200' :
-                  latestRun.status === 'running' ? 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse' :
-                  'bg-gray-50 text-gray-700'
-                }`}
-                title={`Run ${latestRun.id.slice(0, 8)} • ${latestRun.items_succeeded ?? 0}/${latestRun.items_total ?? 0} succeeded${latestRun.error_message ? ` • ${latestRun.error_message}` : ''}`}
-              >
-                <Clock className="h-3 w-3" />
-                Last: {formatDistanceToNow(new Date(latestRun.started_at || latestRun.created_at), { addSuffix: true })} • {latestRun.status}
+            <Input
+              value={pipelineName}
+              onChange={(e) => { setPipelineName(e.target.value); setIsDirty(true); }}
+              placeholder="Pipeline name..."
+              className="w-56 h-8 text-sm"
+            />
+            <Separator orientation="vertical" className="h-6" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="sm" variant={isDirty ? 'default' : 'outline'} onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">
+                {isDirty ? 'Unsaved changes' : 'All saved'}
+                <span className="ml-1 text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘S' : 'Ctrl+S'}</span>
+              </TooltipContent>
+            </Tooltip>
+            <Button size="sm" variant="outline" onClick={() => handleRun({ dryRun: true })} disabled={isRunning}>
+              <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
+              Dry Run
+            </Button>
+            <Button size="sm" onClick={() => handleRun()} disabled={isRunning}>
+              {isRunning ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
+              {isRunning ? 'Starting...' : 'Run'}
+            </Button>
+            {activeRunId && runStatus && (
+              <Badge variant="outline" className={`text-xs ${runStatus === 'running' ? 'bg-blue-100 text-blue-700 animate-pulse' : runStatus === 'completed' ? 'bg-green-100 text-green-700' : runStatus === 'failed' ? 'bg-red-100 text-red-700' : ''}`}>
+                {runStatus}
               </Badge>
             )}
-            <Badge variant="outline" className="text-xs">{nodes.length} nodes</Badge>
-            <Badge variant="outline" className="text-xs">{edges.length} edges</Badge>
-            {(() => {
-              const def = pipelineList?.find(p => p.id === selectedPipelineId);
-              if (!def || !latestRun?.pipeline_version) return null;
-              if (latestRun.pipeline_version === def.version) return null;
-              return (
+            {activeRunId && runStatus && ['completed', 'failed', 'cancelled'].includes(runStatus) && (
+              <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setActiveRunId(null); clearOverlay(); }}>
+                Clear
+              </Button>
+            )}
+            <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+              {latestRun && !activeRunId && (
                 <Badge
                   variant="outline"
-                  className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200"
-                  title={`DAG was edited (current v${def.version}) since the last run (v${latestRun.pipeline_version}). Run again to refresh metrics.`}
+                  className={`text-xs gap-1 ${
+                    latestRun.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' :
+                    latestRun.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200' :
+                    latestRun.status === 'running' ? 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse' :
+                    'bg-muted text-muted-foreground'
+                  }`}
+                  title={`Run ${latestRun.id.slice(0, 8)} • ${latestRun.items_succeeded ?? 0}/${latestRun.items_total ?? 0} succeeded${latestRun.error_message ? ` • ${latestRun.error_message}` : ''}`}
                 >
-                  edited since last run (v{latestRun.pipeline_version}→v{def.version})
+                  <Clock className="h-3 w-3" />
+                  {formatDistanceToNow(new Date(latestRun.started_at || latestRun.created_at), { addSuffix: true })} • {latestRun.status}
                 </Badge>
-              );
-            })()}
-            <Separator orientation="vertical" className="h-4 mx-1" />
-            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/pipelines?tab=monitor')}>
-              <BarChart3 className="h-3 w-3 mr-1" /> Monitor
-            </Button>
-            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/imports')}>
-              <Upload className="h-3 w-3 mr-1" /> Imports
-            </Button>
+              )}
+              <Badge variant="outline" className="text-xs">{nodes.length} nodes</Badge>
+              <Badge variant="outline" className="text-xs">{edges.length} edges</Badge>
+              {isDirty && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">unsaved</Badge>}
+              {(() => {
+                const def = pipelineList?.find(p => p.id === selectedPipelineId);
+                if (!def || !latestRun?.pipeline_version) return null;
+                if (latestRun.pipeline_version === def.version) return null;
+                return (
+                  <Badge variant="outline" className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200">
+                    v{latestRun.pipeline_version}→v{def.version}
+                  </Badge>
+                );
+              })()}
+              <Separator orientation="vertical" className="h-4 mx-1" />
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/pipelines?tab=monitor')}>
+                <BarChart3 className="h-3 w-3 mr-1" /> Monitor
+              </Button>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => navigate('/admin/imports')}>
+                <Upload className="h-3 w-3 mr-1" /> Imports
+              </Button>
+            </div>
+          </div>
+
+          {/* React Flow Canvas */}
+          <div ref={reactFlowWrapper} className="flex-1 min-h-0">
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={wrappedOnNodesChange}
+              onEdgesChange={wrappedOnEdgesChange}
+              onConnect={(c) => { onConnect(c); setIsDirty(true); }}
+              onDrop={onDrop as React.DragEventHandler}
+              onDragOver={onDragOver as React.DragEventHandler}
+              onNodeClick={onNodeClick as (event: React.MouseEvent, node: unknown) => void}
+              onPaneClick={() => setSelectedNodeId(null)}
+              nodeTypes={nodeTypes}
+              fitView
+              deleteKeyCode={null}
+              defaultEdgeOptions={{ animated: true, style: { strokeWidth: 2 } }}
+              className="bg-muted/10"
+            >
+              <Background gap={16} size={1} />
+              <Controls />
+              <MiniMap
+                nodeStrokeWidth={2}
+                nodeColor={(node) => (node.data as Record<string, string>)?.color || '#6b7280'}
+                className="!bg-background !border"
+              />
+            </ReactFlow>
           </div>
         </div>
 
-        {/* React Flow Canvas */}
-        <div ref={reactFlowWrapper} style={{ flex: 1, minHeight: 0 }}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onDrop={onDrop as React.DragEventHandler}
-            onDragOver={onDragOver as React.DragEventHandler}
-            onNodeClick={onNodeClick as (event: React.MouseEvent, node: unknown) => void}
-            onPaneClick={() => setSelectedNodeId(null)}
-            nodeTypes={nodeTypes}
-            fitView
-            defaultEdgeOptions={{ animated: true, style: { strokeWidth: 2 } }}
-            className="bg-muted/10"
-          >
-            <Background gap={16} size={1} />
-            <Controls />
-            <MiniMap
-              nodeStrokeWidth={2}
-              nodeColor={(node) => (node.data as Record<string, string>)?.color || '#6b7280'}
-              className="!bg-background !border"
-            />
-          </ReactFlow>
-        </div>
+        {/* Right Panel — Node Config */}
+        {selectedNode && nodeTypeList && (
+          <NodeConfigPanel
+            node={selectedNode}
+            nodeTypes={nodeTypeList}
+            onUpdate={handleUpdateNode}
+            onClose={() => setSelectedNodeId(null)}
+          />
+        )}
       </div>
-
-      {/* Right Panel — Node Config */}
-      {selectedNode && nodeTypeList && (
-        <NodeConfigPanel
-          node={selectedNode}
-          nodeTypes={nodeTypeList}
-          onUpdate={handleUpdateNode}
-          onClose={() => setSelectedNodeId(null)}
-        />
-      )}
-    </div>
+    </TooltipProvider>
   );
 }
 
-// Note: ReactFlowProvider is provided by UnifiedDataOps wrapper
 export default function PipelineBuilder() {
   return <PipelineBuilderInner />;
 }
