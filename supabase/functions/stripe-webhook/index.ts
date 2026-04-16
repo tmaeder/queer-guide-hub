@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@17?target=deno";
 import { getServiceClient } from "../_shared/supabase-client.ts";
+import { reportApiError } from "../_shared/report-api-error.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-12-18.acacia" });
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")!;
@@ -121,6 +122,7 @@ serve(async (req) => {
     }
   } catch (err) {
     console.error("Webhook processing error:", err);
+    reportApiError("stripe-webhook", err, { endpoint: "/functions/v1/stripe-webhook" });
     return new Response("Webhook processing failed", { status: 500 });
   }
 

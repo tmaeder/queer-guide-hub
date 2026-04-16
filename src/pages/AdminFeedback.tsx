@@ -13,6 +13,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useFeedbackVoteCounts } from '@/hooks/useFeedbackVote';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import {
   ChevronUp,
   Clock,
@@ -27,6 +29,9 @@ import {
   Camera,
   MessageSquarePlus,
   Copy,
+  Server,
+  Hash,
+  Zap,
 } from 'lucide-react';
 import { feedbackCategoryMap } from '@/config/feedbackCategories';
 import { timeAgo } from '@/utils/timezone';
@@ -133,12 +138,100 @@ function formatClaudePrompt(item: FeedbackSubmission): string {
   return lines.join('\n');
 }
 
+// ── API Error types + prompt ──────────────────────────────────────
+
+const SERVICE_FILE_HINTS: Record<string, string> = {
+  'cloudflare-worker': 'Dev/workers/',
+  'edge-function': 'Dev/web/supabase/functions/',
+  scraper: 'Dev/scraper/src/',
+  frontend: 'Dev/web/src/',
+  sentry: '',
+};
+
+interface ApiErrorSubmission {
+  id: string;
+  data: {
+    service: string;
+    function_name: string;
+    message: string;
+    stack?: string;
+    status_code?: number;
+    endpoint?: string;
+    metadata?: Record<string, unknown>;
+    reported_at?: string;
+    last_occurrence?: Record<string, unknown>;
+  };
+  fingerprint: string;
+  occurrence_count: number;
+  last_seen_at: string;
+  submitted_at: string;
+  feedback_status: string;
+  reviewer_notes?: string | null;
+  github_issue_url?: string | null;
+  github_issue_number?: number | null;
+  forwarded_at?: string | null;
+}
+
+const SERVICE_COLORS: Record<string, string> = {
+  'cloudflare-worker': '#f38020',
+  'edge-function': '#3ecf8e',
+  scraper: '#8b5cf6',
+  frontend: '#3b82f6',
+  sentry: '#362d59',
+};
+
+function formatErrorClaudePrompt(item: ApiErrorSubmission): string {
+  const d = item.data;
+  const lines: string[] = [];
+
+  lines.push('Investigate and fix this API error from queer.guide infrastructure:');
+  lines.push('');
+  lines.push(`## ${d.function_name}: ${d.message}`);
+  lines.push(`Service: ${d.service} | Occurrences: ${item.occurrence_count} | Last seen: ${item.last_seen_at}`);
+  if (d.status_code) lines.push(`Status code: ${d.status_code}`);
+  if (d.endpoint) lines.push(`Endpoint: ${d.endpoint}`);
+  lines.push('');
+
+  if (d.stack) {
+    lines.push('### Stack trace');
+    lines.push('```');
+    lines.push(d.stack);
+    lines.push('```');
+    lines.push('');
+  }
+
+  if (d.metadata && Object.keys(d.metadata).length > 0) {
+    lines.push('### Metadata');
+    lines.push('```json');
+    lines.push(JSON.stringify(d.metadata, null, 2));
+    lines.push('```');
+    lines.push('');
+  }
+
+  const hint = SERVICE_FILE_HINTS[d.service];
+  if (hint) {
+    lines.push(`### Where to look`);
+    lines.push(`Start in \`${hint}${d.function_name}/\` or search for \`${d.function_name}\``);
+    lines.push('');
+  }
+
+  lines.push('---');
+  lines.push('Repo: queer-guide-hub');
+  lines.push(
+    `This error has occurred ${item.occurrence_count} time(s). Find the root cause, fix it, and ensure the fix handles edge cases. Check error handling in the relevant service.`,
+  );
+
+  return lines.join('\n');
+}
+
 export default function AdminFeedback() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const [activeTab, setActiveTab] = useState(0);
   const [selected, setSelected] = useState<FeedbackSubmission | null>(null);
+  const [selectedError, setSelectedError] = useState<ApiErrorSubmission | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const { data: items = [], isLoading } = useQuery<FeedbackSubmission[]>({
@@ -154,6 +247,21 @@ export default function AdminFeedback() {
         .order('submitted_at', { ascending: false });
       if (error) throw error;
       return (data || []) as FeedbackSubmission[];
+    },
+  });
+
+  const { data: apiErrors = [], isLoading: errorsLoading } = useQuery<ApiErrorSubmission[]>({
+    queryKey: ['admin-api-errors'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('community_submissions' as const)
+        .select(
+          'id,data,fingerprint,occurrence_count,last_seen_at,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at',
+        )
+        .eq('content_type', 'api_error')
+        .order('last_seen_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as ApiErrorSubmission[];
     },
   });
 
@@ -259,7 +367,49 @@ export default function AdminFeedback() {
     [selected, statusMutation],
   );
 
-  if (isLoading) {
+  const handleErrorCardClick = useCallback((item: ApiErrorSubmission) => {
+    setSelectedError(item);
+    setDrawerOpen(true);
+  }, []);
+
+  const errorStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: KanbanStatus }) => {
+      const { error } = await supabase
+        .from('community_submissions' as const)
+        .update({
+          feedback_status: status,
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-api-errors'] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Update failed', description: err.message, variant: 'destructive' });
+    },
+  });
+
+  const errorForwardMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.functions.invoke('forward-feedback-to-github', {
+        body: { submission_id: id },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({ title: 'Forwarded to GitHub', description: `Issue #${data.number} created` });
+      queryClient.invalidateQueries({ queryKey: ['admin-api-errors'] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Forward failed', description: err.message, variant: 'destructive' });
+    },
+  });
+
+  if (isLoading || errorsLoading) {
     return (
       <Box sx={{ p: 6, textAlign: 'center' }}>
         <CircularProgress />
@@ -270,10 +420,35 @@ export default function AdminFeedback() {
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
       <PageHeader
-        title="Feedback"
-        subtitle={`${items.length} submissions — ideas, bugs, and improvements from the community`}
+        title="Feedback & Errors"
+        subtitle="Community feedback and automated API error reports"
       />
 
+      <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 2 }}>
+        <Tab label={`Community (${items.length})`} />
+        <Tab label={`API Errors (${apiErrors.length})`} />
+      </Tabs>
+
+      {activeTab === 1 && (
+        <ApiErrorsList
+          errors={apiErrors}
+          onCardClick={handleErrorCardClick}
+          onStatusChange={(id, status) => errorStatusMutation.mutate({ id, status })}
+          onCopyPrompt={async (item) => {
+            const prompt = formatErrorClaudePrompt(item);
+            try {
+              await navigator.clipboard.writeText(prompt);
+              toast({ title: 'Prompt copied' });
+            } catch {
+              toast({ title: 'Copy failed', variant: 'destructive' });
+            }
+          }}
+          onForward={(id) => errorForwardMutation.mutate(id)}
+          isForwarding={errorForwardMutation.isPending}
+        />
+      )}
+
+      {activeTab === 0 && (
       <Box
         sx={{
           display: 'grid',
@@ -337,9 +512,10 @@ export default function AdminFeedback() {
           );
         })}
       </Box>
+      )}
 
       <FeedbackDetailDrawer
-        open={drawerOpen}
+        open={drawerOpen && activeTab === 0}
         item={selected}
         onClose={() => setDrawerOpen(false)}
         onStatusChange={handleStatusChange}
@@ -920,12 +1096,144 @@ function FeedbackDetailDrawer({
   );
 }
 
+// ── API Errors List ───────────────────────────────────────────────
+
+interface ApiErrorsListProps {
+  errors: ApiErrorSubmission[];
+  onCardClick: (item: ApiErrorSubmission) => void;
+  onStatusChange: (id: string, status: KanbanStatus) => void;
+  onCopyPrompt: (item: ApiErrorSubmission) => void;
+  onForward: (id: string) => void;
+  isForwarding: boolean;
+}
+
+function ApiErrorsList({ errors, onCopyPrompt, onForward, isForwarding }: ApiErrorsListProps) {
+  const groupedByStatus = useMemo(() => {
+    const map: Record<string, ApiErrorSubmission[]> = { new: [], under_review: [], in_progress: [], done: [] };
+    for (const e of errors) {
+      const s = e.feedback_status || 'new';
+      if (map[s]) map[s].push(e);
+      else map.new.push(e);
+    }
+    return map;
+  }, [errors]);
+
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      {errors.length === 0 && (
+        <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+          No API errors recorded
+        </Typography>
+      )}
+      {['new', 'under_review', 'in_progress', 'done'].map((status) => {
+        const group = groupedByStatus[status] || [];
+        if (group.length === 0) return null;
+        const col = kanbanColumns.find((c) => c.id === status);
+        return (
+          <Box key={status} sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, pb: 0.5, borderBottom: 2, borderColor: col?.color || '#888' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{col?.label || status}</Typography>
+              <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>{group.length}</Badge>
+            </Box>
+            {group.map((item) => (
+              <Box
+                key={item.id}
+                sx={{
+                  p: 1.5,
+                  mb: 1,
+                  border: 1,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                  cursor: 'pointer',
+                  '&:hover': { borderColor: 'primary.main' },
+                }}
+                onClick={() => setExpanded(expanded === item.id ? null : item.id)}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                  <Badge
+                    variant="outline"
+                    style={{
+                      borderColor: SERVICE_COLORS[item.data.service] || '#888',
+                      color: SERVICE_COLORS[item.data.service] || '#888',
+                      fontSize: '0.6rem',
+                      padding: '1px 5px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 3,
+                    }}
+                  >
+                    <Server style={{ width: 9, height: 9 }} />
+                    {item.data.service}
+                  </Badge>
+                  <Badge variant="outline" style={{ fontSize: '0.6rem', padding: '1px 5px', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                    <Zap style={{ width: 9, height: 9 }} />
+                    {item.data.function_name}
+                  </Badge>
+                  <Box sx={{ flex: 1 }} />
+                  <Badge variant="secondary" style={{ fontSize: '0.6rem', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                    <Hash style={{ width: 9, height: 9 }} />
+                    {item.occurrence_count}x
+                  </Badge>
+                </Box>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                  {item.data.message}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                  Last seen {timeAgo(item.last_seen_at)}
+                  {item.data.status_code ? ` · ${item.data.status_code}` : ''}
+                  {item.data.endpoint ? ` · ${item.data.endpoint}` : ''}
+                </Typography>
+
+                <Collapse in={expanded === item.id}>
+                  <Box sx={{ mt: 1.5, pt: 1.5, borderTop: 1, borderColor: 'divider' }}>
+                    {item.data.stack && (
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>Stack trace</Typography>
+                        <Box sx={{ p: 1, bgcolor: 'action.hover', fontFamily: 'monospace', fontSize: '0.6rem', maxHeight: 200, overflowY: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                          {item.data.stack}
+                        </Box>
+                      </Box>
+                    )}
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button variant="outline" onClick={(e: React.MouseEvent) => { e.stopPropagation(); onCopyPrompt(item); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Copy style={{ width: 14, height: 14 }} />
+                        Copy Prompt
+                      </Button>
+                      {item.github_issue_url ? (
+                        <Button variant="outline" onClick={(e: React.MouseEvent) => { e.stopPropagation(); window.open(item.github_issue_url!, '_blank'); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Github style={{ width: 14, height: 14 }} />
+                          Issue #{item.github_issue_number}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={(e: React.MouseEvent) => { e.stopPropagation(); onForward(item.id); }}
+                          disabled={isForwarding}
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: '#DB2777', color: '#fff' }}
+                        >
+                          <MessageSquarePlus style={{ width: 14, height: 14 }} />
+                          {isForwarding ? 'Forwarding...' : 'Fix with Claude'}
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                </Collapse>
+              </Box>
+            ))}
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
 function MetaItem({
   icon: Icon,
   label,
   value,
 }: {
-  icon: typeof Bug;
+  icon: typeof Clock;
   label: string;
   value: string;
 }) {
