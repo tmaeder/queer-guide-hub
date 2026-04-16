@@ -77,7 +77,8 @@ const USER_AGENTS = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
 ]
 
-const MAX_SOURCES_PER_RUN = 1
+const MAX_SOURCES_PER_RUN = 1   // process only 1 per invocation
+const DB_FETCH_LIMIT = 50       // over-fetch so in-memory interval filter has enough candidates
 const MAX_ITEMS_PER_SOURCE = 500
 
 // ─── HTML Fetch ─────────────────────────────────────────────────────────────
@@ -1400,14 +1401,20 @@ Deno.serve(async (req) => {
 
       // Only run sources that are due (last_run_at + interval < now)
       // Sort by priority ASC (lower = higher priority), then oldest first
-      query = query.order('priority', { ascending: true })
-        .order('last_run_at', { ascending: true, nullsFirst: true })
-        .limit(MAX_SOURCES_PER_RUN)
-    } else {
+      // Exclude sources with too many consecutive failures at DB level so LIMIT picks correctly
+      // Over-fetch (DB_FETCH_LIMIT) so the in-memory interval filter has enough candidates
+      // even when the top DB rows were recently run and not yet due.
       query = query
+        .lt('consecutive_failures', 5)
         .order('priority', { ascending: true })
         .order('last_run_at', { ascending: true, nullsFirst: true })
-        .limit(MAX_SOURCES_PER_RUN)
+        .limit(DB_FETCH_LIMIT)
+    } else {
+      query = query
+        .lt('consecutive_failures', 5)
+        .order('priority', { ascending: true })
+        .order('last_run_at', { ascending: true, nullsFirst: true })
+        .limit(DB_FETCH_LIMIT)
     }
 
     const { data: sources, error: sourcesError } = await query
@@ -1433,6 +1440,9 @@ Deno.serve(async (req) => {
 
       // Also skip sources with too many consecutive failures
       filteredSources = filteredSources.filter(s => (s.consecutive_failures || 0) < 5)
+
+      // Limit to MAX_SOURCES_PER_RUN after filtering (DB over-fetched for candidate pool)
+      filteredSources = filteredSources.slice(0, MAX_SOURCES_PER_RUN)
     }
 
     if (filteredSources.length === 0) {
