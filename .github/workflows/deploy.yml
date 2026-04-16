@@ -51,22 +51,31 @@ jobs:
           command: pages deploy ./dist --project-name=queer-guide --branch=main --commit-dirty=true
 
       - name: Purge Cloudflare edge cache
+        # Soft-fail: uses CLOUDFLARE_PURGE_TOKEN if present (needs Zone:Cache Purge scope).
+        # Falls back to CLOUDFLARE_API_TOKEN but that token lacks cache purge by default —
+        # a failure here only leaves stale HTML at the edge, does NOT break the deploy.
+        continue-on-error: true
         env:
           CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CF_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
+          TOKEN="${CF_PURGE_TOKEN:-$CF_API_TOKEN}"
+          if [ -z "$CF_ZONE_ID" ] || [ -z "$TOKEN" ]; then
+            echo "::warning::Skipping cache purge — CLOUDFLARE_ZONE_ID or token missing"
+            exit 0
+          fi
           RESPONSE=$(curl -sS -X POST \
             "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
-            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            -H "Authorization: Bearer ${TOKEN}" \
             -H "Content-Type: application/json" \
             --data '{"purge_everything":true}')
           echo "$RESPONSE"
-          SUCCESS=$(echo "$RESPONSE" | grep -o '"success":true' || true)
-          if [ -z "$SUCCESS" ]; then
-            echo "::error::Cache purge failed"
-            exit 1
+          if echo "$RESPONSE" | grep -q '"success":true'; then
+            echo "Cache purged successfully"
+          else
+            echo "::warning::Cache purge failed — add CLOUDFLARE_PURGE_TOKEN secret with Zone:Cache Purge scope (edge cache will still expire after TTL)"
           fi
-          echo "Cache purged successfully"
 
       - name: Verify deployment
         run: |
