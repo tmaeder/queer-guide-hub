@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check, LayoutGrid, Undo2, Redo2, Search, AlertCircle } from 'lucide-react';
+import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check, LayoutGrid, Undo2, Redo2, Search, AlertCircle, Command } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router';
@@ -29,8 +29,13 @@ import ImportExportMenu, { type PipelineExport } from './panels/ImportExportMenu
 import TemplateLibrary from './panels/TemplateLibrary';
 import KeyboardShortcuts from './panels/KeyboardShortcuts';
 import EdgeConditionPopover from './panels/EdgeConditionPopover';
+import QuickAddPalette from './panels/QuickAddPalette';
+import NodeContextMenu from './panels/NodeContextMenu';
+import RunStatsBar from './panels/RunStatsBar';
+import CanvasEmptyState from './panels/CanvasEmptyState';
 import { autoLayout } from './utils/autoLayout';
 import { useUndoRedo } from './hooks/useUndoRedo';
+import { useDraftAutosave } from './hooks/useDraftAutosave';
 import { usePipelineBuilder, usePipelineNodeTypes, usePipelineDefinitions, type PipelineNodeType } from './hooks/usePipelineBuilder';
 import { usePipelineExecution } from './hooks/usePipelineExecution';
 import { useLatestPipelineRun, usePipelineRun } from './hooks/usePipelineHistory';
@@ -64,6 +69,9 @@ function PipelineBuilderInner() {
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [paletteSearch, setPaletteSearch] = useState('');
   const [editingEdge, setEditingEdge] = useState<{ edge: Edge; x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const configClipboardRef = useRef<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     if (!pipelineList || selectedPipelineId) return;
@@ -106,6 +114,9 @@ function PipelineBuilderInner() {
   // Undo/redo stack
   const undoRedo = useUndoRedo(nodes, edges, setNodes, setEdges);
 
+  // Auto-save draft to localStorage (debounced 2s)
+  const draftAutosave = useDraftAutosave(selectedPipelineId, pipelineName, nodes, edges, isDirty);
+
   // Wrap change handlers to record history on each structural edit
   const nodesChangeWithHistory = useCallback((changes: Parameters<typeof wrappedOnNodesChange>[0]) => {
     const needsHistory = changes.some(c =>
@@ -131,10 +142,9 @@ function PipelineBuilderInner() {
     toast({ title: 'Layout applied', description: `${nodes.length} nodes arranged` });
   }, [nodes, edges, setNodes, undoRedo, toast]);
 
-  // Duplicate selected node
-  const handleDuplicate = useCallback(() => {
-    if (!selectedNodeId) return;
-    const src = nodes.find(n => n.id === selectedNodeId);
+  // Duplicate a specific node (or selected if no ID)
+  const duplicateNode = useCallback((nodeId: string) => {
+    const src = nodes.find(n => n.id === nodeId);
     if (!src) return;
     undoRedo.commitNow();
     const newId = `${(src.data as { nodeTypeSlug?: string })?.nodeTypeSlug || 'node'}-${Date.now()}`;
@@ -148,7 +158,62 @@ function PipelineBuilderInner() {
     setNodes(nds => [...nds.map(n => ({ ...n, selected: false })), clone]);
     setSelectedNodeId(newId);
     setIsDirty(true);
-  }, [selectedNodeId, nodes, setNodes, setSelectedNodeId, undoRedo]);
+  }, [nodes, setNodes, setSelectedNodeId, undoRedo]);
+
+  const handleDuplicate = useCallback(() => {
+    if (selectedNodeId) duplicateNode(selectedNodeId);
+  }, [selectedNodeId, duplicateNode]);
+
+  // Delete a specific node (for context menu)
+  const deleteNode = useCallback((nodeId: string) => {
+    undoRedo.commitNow();
+    setNodes(nds => nds.filter(n => n.id !== nodeId));
+    setEdges(eds => eds.filter(e => e.source !== nodeId && e.target !== nodeId));
+    if (selectedNodeId === nodeId) setSelectedNodeId(null);
+    setIsDirty(true);
+  }, [setNodes, setEdges, selectedNodeId, setSelectedNodeId, undoRedo]);
+
+  // Copy node's config to in-memory clipboard
+  const copyNodeConfig = useCallback((nodeId: string) => {
+    const n = nodes.find(x => x.id === nodeId);
+    const cfg = (n?.data as { config?: Record<string, unknown> } | undefined)?.config;
+    if (cfg && Object.keys(cfg).length > 0) {
+      configClipboardRef.current = JSON.parse(JSON.stringify(cfg));
+      toast({ title: 'Config copied', description: `${Object.keys(cfg).length} fields` });
+    } else {
+      toast({ title: 'No config to copy', variant: 'destructive' });
+    }
+  }, [nodes, toast]);
+
+  // Paste clipboard config into a node (only fills fields valid for that node's schema)
+  const pasteNodeConfig = useCallback((nodeId: string) => {
+    const cfg = configClipboardRef.current;
+    if (!cfg) return;
+    undoRedo.commitNow();
+    setNodes(nds => nds.map(n => {
+      if (n.id !== nodeId) return n;
+      const d = n.data as Record<string, unknown>;
+      return { ...n, data: { ...d, config: { ...(d.config as Record<string, unknown> || {}), ...cfg } } };
+    }));
+    setIsDirty(true);
+    toast({ title: 'Config pasted' });
+  }, [setNodes, undoRedo, toast]);
+
+  // Quick-add from Cmd+K palette — places at center of viewport
+  const handleQuickAdd = useCallback((nt: PipelineNodeType) => {
+    const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+    const center = bounds
+      ? { x: bounds.width / 2 - 90, y: bounds.height / 2 - 20 }
+      : { x: 200, y: 200 };
+    undoRedo.commitNow();
+    addNode(nt, center);
+    setIsDirty(true);
+  }, [addNode, undoRedo]);
+
+  const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
+    event.preventDefault();
+    setContextMenu({ nodeId: node.id, x: event.clientX, y: event.clientY });
+  }, []);
 
   // Edge click → open condition editor
   const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
@@ -182,11 +247,12 @@ function PipelineBuilderInner() {
       onSuccess: () => {
         setIsDirty(false);
         setLastSavedAt(Date.now());
+        draftAutosave.clearDraft();
         toast({ title: 'Pipeline saved', description: `${nodes.length} nodes, ${edges.length} edges` });
       },
       onError: (e: Error) => toast({ title: 'Save failed', description: e.message, variant: 'destructive' }),
     } as Record<string, unknown>);
-  }, [isSaving, save, toast, nodes.length, edges.length]);
+  }, [isSaving, save, toast, nodes.length, edges.length, draftAutosave]);
 
   const handleRun = useCallback((opts?: { dryRun?: boolean }) => {
     run(opts, {
@@ -327,8 +393,29 @@ function PipelineBuilderInner() {
   useEffect(() => {
     if (!selectedPipelineId || !pipelineList || !nodeTypeList) return;
     const def = pipelineList.find(p => p.id === selectedPipelineId);
-    if (def) { loadPipeline(def, nodeTypeList); setIsDirty(false); undoRedo.reset(); }
-  }, [selectedPipelineId, pipelineList, nodeTypeList, loadPipeline, undoRedo]);
+    if (!def) return;
+
+    loadPipeline(def, nodeTypeList);
+    setIsDirty(false);
+    undoRedo.reset();
+
+    // Offer to restore draft if it's for this pipeline and newer than load
+    const draft = draftAutosave.loadDraft();
+    if (draft?.pipelineId === selectedPipelineId && draft.nodes.length > 0) {
+      const age = Math.round((Date.now() - draft.savedAt) / 1000);
+      const ageStr = age < 60 ? `${age}s` : age < 3600 ? `${Math.round(age / 60)}m` : `${Math.round(age / 3600)}h`;
+      if (window.confirm(`Unsaved draft found (${draft.nodes.length} nodes, saved ${ageStr} ago). Restore?`)) {
+        setNodes(draft.nodes);
+        setEdges(draft.edges);
+        setPipelineName(draft.pipelineName);
+        setIsDirty(true);
+        toast({ title: 'Draft restored' });
+      } else {
+        draftAutosave.clearDraft();
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPipelineId, pipelineList, nodeTypeList]);
 
   const { runStatus, clearOverlay } = usePipelineExecution(activeRunId, setNodes);
 
@@ -513,9 +600,16 @@ function PipelineBuilderInner() {
                               <div
                                 role="button"
                                 tabIndex={0}
-                                className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-grab text-[13px] hover:bg-accent transition-colors active:cursor-grabbing"
+                                aria-label={`Add ${nt.display_name} node`}
+                                className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-grab text-[13px] hover:bg-accent focus:bg-accent focus:outline-none focus:ring-1 focus:ring-ring transition-colors active:cursor-grabbing"
                                 draggable
                                 onDragStart={(e) => onDragStart(e as unknown as DragEvent<HTMLDivElement>, nt)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleQuickAdd(nt);
+                                  }
+                                }}
                               >
                                 <div
                                   className="w-5 h-5 rounded flex items-center justify-center shrink-0"
@@ -644,6 +738,23 @@ function PipelineBuilderInner() {
               </TooltipTrigger>
               <TooltipContent className="text-xs">Auto-layout <span className="ml-1 text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘L' : 'Ctrl+L'}</span></TooltipContent>
             </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  onClick={() => {
+                    // Dispatch Cmd+K to open QuickAddPalette
+                    const evt = new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true });
+                    window.dispatchEvent(evt);
+                  }}
+                >
+                  <Command className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">Quick-add node <span className="ml-1 text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}</span></TooltipContent>
+            </Tooltip>
             <TemplateLibrary
               selectedNodes={selectedForTemplate.nodes}
               selectedEdges={selectedForTemplate.edges}
@@ -727,8 +838,13 @@ function PipelineBuilderInner() {
             </div>
           </div>
 
+          {/* Historical run stats bar */}
+          {viewingRunId && (
+            <RunStatsBar runId={viewingRunId} onClose={() => setViewingRunId(null)} />
+          )}
+
           {/* React Flow Canvas */}
-          <div ref={reactFlowWrapper} className="flex-1 min-h-0">
+          <div ref={reactFlowWrapper} className="flex-1 min-h-0 relative">
             <ReactFlow
               nodes={nodes.map(n => validationIssues.nodeIds.has(n.id) ? {
                 ...n,
@@ -742,7 +858,8 @@ function PipelineBuilderInner() {
               onDragOver={onDragOver as React.DragEventHandler}
               onNodeClick={onNodeClick as (event: React.MouseEvent, node: unknown) => void}
               onEdgeClick={onEdgeClick as (event: React.MouseEvent, edge: unknown) => void}
-              onPaneClick={() => { setSelectedNodeId(null); setEditingEdge(null); }}
+              onPaneClick={() => { setSelectedNodeId(null); setEditingEdge(null); setContextMenu(null); }}
+              onNodeContextMenu={onNodeContextMenu as (event: React.MouseEvent, node: unknown) => void}
               nodeTypes={nodeTypes}
               fitView
               deleteKeyCode={null}
@@ -764,6 +881,33 @@ function PipelineBuilderInner() {
                 className="!bg-background !border"
               />
             </ReactFlow>
+
+            {/* Empty state overlay when canvas has no nodes */}
+            {nodes.length === 0 && nodeTypeList && (
+              <CanvasEmptyState
+                onOpenCommandPalette={() => setQuickAddOpen(true)}
+                onOpenTemplateLibrary={() => {
+                  const btn = document.querySelector('[aria-haspopup="dialog"]') as HTMLButtonElement | null;
+                  btn?.click();
+                }}
+                onImport={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.json,application/json';
+                  input.onchange = async (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (!file) return;
+                    try {
+                      const parsed = JSON.parse(await file.text()) as PipelineExport;
+                      handleImport(parsed);
+                    } catch (err) {
+                      toast({ title: 'Import failed', description: (err as Error).message, variant: 'destructive' });
+                    }
+                  };
+                  input.click();
+                }}
+              />
+            )}
           </div>
         </div>
 
@@ -797,9 +941,57 @@ function PipelineBuilderInner() {
             onDelete={deleteEdge}
           />
         )}
+
+        {/* Right-click context menu */}
+        {contextMenu && (
+          <NodeContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            nodeId={contextMenu.nodeId}
+            canPaste={!!configClipboardRef.current}
+            onClose={() => setContextMenu(null)}
+            onDuplicate={duplicateNode}
+            onDelete={deleteNode}
+            onConfigure={(id) => { setSelectedNodeId(id); setContextMenu(null); }}
+            onCopyConfig={copyNodeConfig}
+            onPasteConfig={pasteNodeConfig}
+          />
+        )}
+
+        {/* Quick-add command palette (Cmd+K) */}
+        {nodeTypeList && (
+          <QuickAddPalette
+            nodeTypes={nodeTypeList}
+            onAdd={handleQuickAdd}
+          />
+        )}
+        {/* Render a hidden trigger to listen for Cmd+K from CanvasEmptyState and toolbar */}
+        {quickAddOpen && nodeTypeList && (
+          <QuickAddPaletteController
+            nodeTypes={nodeTypeList}
+            onAdd={handleQuickAdd}
+            onClose={() => setQuickAddOpen(false)}
+          />
+        )}
       </div>
     </TooltipProvider>
   );
+}
+
+// Controlled variant used for programmatic open (empty state button)
+function QuickAddPaletteController({ nodeTypes, onAdd, onClose }: {
+  nodeTypes: PipelineNodeType[];
+  onAdd: (nt: PipelineNodeType) => void;
+  onClose: () => void;
+}) {
+  // Simulate Cmd+K keystroke to open the QuickAddPalette
+  useEffect(() => {
+    const evt = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true });
+    window.dispatchEvent(evt);
+    onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
 }
 
 export default function PipelineBuilder() {
