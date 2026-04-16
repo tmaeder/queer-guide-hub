@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check } from 'lucide-react';
+import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check, LayoutGrid, Undo2, Redo2, Search, AlertCircle } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router';
@@ -27,6 +27,9 @@ import RunHistorySidebar from './panels/RunHistorySidebar';
 import ImportExportMenu, { type PipelineExport } from './panels/ImportExportMenu';
 import TemplateLibrary from './panels/TemplateLibrary';
 import KeyboardShortcuts from './panels/KeyboardShortcuts';
+import EdgeConditionPopover from './panels/EdgeConditionPopover';
+import { autoLayout } from './utils/autoLayout';
+import { useUndoRedo } from './hooks/useUndoRedo';
 import { usePipelineBuilder, usePipelineNodeTypes, usePipelineDefinitions, type PipelineNodeType } from './hooks/usePipelineBuilder';
 import { usePipelineExecution } from './hooks/usePipelineExecution';
 import { useLatestPipelineRun, usePipelineRun } from './hooks/usePipelineHistory';
@@ -58,6 +61,8 @@ function PipelineBuilderInner() {
   const [selectedPipelineId, setSelectedPipelineId] = useState<string | undefined>(undefined);
   const [isDirty, setIsDirty] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [paletteSearch, setPaletteSearch] = useState('');
+  const [editingEdge, setEditingEdge] = useState<{ edge: Edge; x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (!pipelineList || selectedPipelineId) return;
@@ -96,6 +101,79 @@ function PipelineBuilderInner() {
     if (isUserEdit) setIsDirty(true);
     return onEdgesChange(changes);
   }, [onEdgesChange]);
+
+  // Undo/redo stack
+  const undoRedo = useUndoRedo(nodes, edges, setNodes, setEdges);
+
+  // Wrap change handlers to record history on each structural edit
+  const nodesChangeWithHistory = useCallback((changes: Parameters<typeof wrappedOnNodesChange>[0]) => {
+    const needsHistory = changes.some(c =>
+      c.type === 'add' || c.type === 'remove' || c.type === 'replace' ||
+      (c.type === 'position' && c.dragging === false)
+    );
+    if (needsHistory) undoRedo.markEdit();
+    return wrappedOnNodesChange(changes);
+  }, [wrappedOnNodesChange, undoRedo]);
+
+  const edgesChangeWithHistory = useCallback((changes: Parameters<typeof wrappedOnEdgesChange>[0]) => {
+    const needsHistory = changes.some(c => c.type === 'add' || c.type === 'remove' || c.type === 'replace');
+    if (needsHistory) undoRedo.markEdit();
+    return wrappedOnEdgesChange(changes);
+  }, [wrappedOnEdgesChange, undoRedo]);
+
+  // Auto-layout: topological level-based positioning
+  const handleAutoLayout = useCallback(() => {
+    if (nodes.length === 0) return;
+    undoRedo.commitNow();
+    setNodes(autoLayout(nodes, edges));
+    setIsDirty(true);
+    toast({ title: 'Layout applied', description: `${nodes.length} nodes arranged` });
+  }, [nodes, edges, setNodes, undoRedo, toast]);
+
+  // Duplicate selected node
+  const handleDuplicate = useCallback(() => {
+    if (!selectedNodeId) return;
+    const src = nodes.find(n => n.id === selectedNodeId);
+    if (!src) return;
+    undoRedo.commitNow();
+    const newId = `${(src.data as { nodeTypeSlug?: string })?.nodeTypeSlug || 'node'}-${Date.now()}`;
+    const clone: Node = {
+      ...src,
+      id: newId,
+      position: { x: (src.position?.x || 0) + 40, y: (src.position?.y || 0) + 40 },
+      selected: true,
+      data: JSON.parse(JSON.stringify(src.data)),
+    };
+    setNodes(nds => [...nds.map(n => ({ ...n, selected: false })), clone]);
+    setSelectedNodeId(newId);
+    setIsDirty(true);
+  }, [selectedNodeId, nodes, setNodes, setSelectedNodeId, undoRedo]);
+
+  // Edge click → open condition editor
+  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+    event.stopPropagation();
+    setEditingEdge({ edge, x: event.clientX, y: event.clientY });
+  }, []);
+
+  const updateEdgeCondition = useCallback((edgeId: string, condition: string) => {
+    undoRedo.commitNow();
+    setEdges(eds => eds.map(e => e.id === edgeId ? {
+      ...e,
+      data: { ...(e.data || {}), condition: condition || undefined },
+      label: condition ? condition.slice(0, 30) + (condition.length > 30 ? '…' : '') : undefined,
+      labelStyle: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' },
+      labelBgStyle: { fill: 'hsl(var(--background))' },
+      labelBgPadding: [4, 2],
+      labelBgBorderRadius: 4,
+    } : e));
+    setIsDirty(true);
+  }, [setEdges, undoRedo]);
+
+  const deleteEdge = useCallback((edgeId: string) => {
+    undoRedo.commitNow();
+    setEdges(eds => eds.filter(e => e.id !== edgeId));
+    setIsDirty(true);
+  }, [setEdges, undoRedo]);
 
   const handleSave = useCallback(() => {
     if (isSaving) return;
@@ -199,6 +277,28 @@ function PipelineBuilderInner() {
         handleRun({ dryRun: e.shiftKey });
         return;
       }
+      if (mod && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undoRedo.undo();
+        setIsDirty(true);
+        return;
+      }
+      if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        undoRedo.redo();
+        setIsDirty(true);
+        return;
+      }
+      if (mod && e.key === 'd' && !inInput) {
+        e.preventDefault();
+        handleDuplicate();
+        return;
+      }
+      if (mod && e.key === 'l' && !inInput) {
+        e.preventDefault();
+        handleAutoLayout();
+        return;
+      }
       if (e.key === 'Escape' && selectedNodeId) {
         setSelectedNodeId(null);
         return;
@@ -213,7 +313,7 @@ function PipelineBuilderInner() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleSave, handleRun, selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
+  }, [handleSave, handleRun, handleDuplicate, handleAutoLayout, undoRedo, selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
 
   // Unsaved changes warning
   useEffect(() => {
@@ -226,8 +326,8 @@ function PipelineBuilderInner() {
   useEffect(() => {
     if (!selectedPipelineId || !pipelineList || !nodeTypeList) return;
     const def = pipelineList.find(p => p.id === selectedPipelineId);
-    if (def) { loadPipeline(def, nodeTypeList); setIsDirty(false); }
-  }, [selectedPipelineId, pipelineList, nodeTypeList, loadPipeline]);
+    if (def) { loadPipeline(def, nodeTypeList); setIsDirty(false); undoRedo.reset(); }
+  }, [selectedPipelineId, pipelineList, nodeTypeList, loadPipeline, undoRedo]);
 
   const { runStatus, clearOverlay } = usePipelineExecution(activeRunId, setNodes);
 
@@ -290,13 +390,33 @@ function PipelineBuilderInner() {
 
   const nodeTypesByCategory = useMemo(() => {
     if (!nodeTypeList) return {};
+    const q = paletteSearch.trim().toLowerCase();
     const grouped: Record<string, PipelineNodeType[]> = {};
     for (const nt of nodeTypeList) {
+      if (q && !nt.display_name.toLowerCase().includes(q)
+          && !nt.slug.toLowerCase().includes(q)
+          && !(nt.description || '').toLowerCase().includes(q)) continue;
       if (!grouped[nt.category]) grouped[nt.category] = [];
       grouped[nt.category].push(nt);
     }
     return grouped;
-  }, [nodeTypeList]);
+  }, [nodeTypeList, paletteSearch]);
+
+  // Validation: count nodes with missing required config
+  const validationIssues = useMemo(() => {
+    if (!nodeTypeList) return { count: 0, nodeIds: new Set<string>() };
+    const nodeIds = new Set<string>();
+    for (const n of nodes) {
+      const d = n.data as { nodeTypeSlug?: string; config?: Record<string, unknown> };
+      const nt = nodeTypeList.find(t => t.slug === d.nodeTypeSlug);
+      const schema = nt?.config_schema as { required?: string[] } | undefined;
+      const required = schema?.required || [];
+      const config = d.config || {};
+      const missing = required.some(k => config[k] === undefined || config[k] === null || config[k] === '');
+      if (missing) nodeIds.add(n.id);
+    }
+    return { count: nodeIds.size, nodeIds };
+  }, [nodes, nodeTypeList]);
 
   const onDragStart = useCallback((event: DragEvent<HTMLDivElement>, nodeType: PipelineNodeType) => {
     event.dataTransfer.setData('application/pipeline-node', JSON.stringify(nodeType));
@@ -350,8 +470,30 @@ function PipelineBuilderInner() {
           <div className="px-3 py-2.5 border-b border-border">
             <div className="font-semibold text-[13px]">Node Palette</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">Drag onto canvas</div>
+            <div className="relative mt-2">
+              <Search className="h-3 w-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={paletteSearch}
+                onChange={(e) => setPaletteSearch(e.target.value)}
+                placeholder="Search nodes..."
+                className="w-full h-7 pl-6 pr-2 text-[12px] border border-border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+              {paletteSearch && (
+                <button
+                  onClick={() => setPaletteSearch('')}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-[14px] leading-none p-1"
+                  title="Clear search"
+                >×</button>
+              )}
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto p-2">
+            {paletteSearch && Object.values(nodeTypesByCategory).every(t => !t || t.length === 0) && (
+              <div className="text-center text-[11px] text-muted-foreground py-6 px-2">
+                No nodes match "{paletteSearch}"
+              </div>
+            )}
             <div className="flex flex-col gap-3">
               {categoryOrder.map(cat => {
                 const types = nodeTypesByCategory[cat];
@@ -476,6 +618,31 @@ function PipelineBuilderInner() {
               {isRunning ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
               {isRunning ? 'Starting...' : 'Run'}
             </Button>
+            <Separator orientation="vertical" className="h-6" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={undoRedo.undo} disabled={!undoRedo.canUndo}>
+                  <Undo2 className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">Undo <span className="ml-1 text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘Z' : 'Ctrl+Z'}</span></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={undoRedo.redo} disabled={!undoRedo.canRedo}>
+                  <Redo2 className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">Redo <span className="ml-1 text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘⇧Z' : 'Ctrl+Y'}</span></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleAutoLayout} disabled={nodes.length === 0}>
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">Auto-layout <span className="ml-1 text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘L' : 'Ctrl+L'}</span></TooltipContent>
+            </Tooltip>
             <TemplateLibrary
               selectedNodes={selectedForTemplate.nodes}
               selectedEdges={selectedForTemplate.edges}
@@ -524,6 +691,19 @@ function PipelineBuilderInner() {
               )}
               <Badge variant="outline" className="text-xs">{nodes.length} nodes</Badge>
               <Badge variant="outline" className="text-xs">{edges.length} edges</Badge>
+              {validationIssues.count > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200 cursor-help">
+                      <AlertCircle className="h-3 w-3" />
+                      {validationIssues.count} incomplete
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent className="text-xs max-w-[240px]">
+                    {validationIssues.count} node{validationIssues.count === 1 ? '' : 's'} with missing required config. Click a node to see its config panel.
+                  </TooltipContent>
+                </Tooltip>
+              )}
               {isDirty && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">unsaved</Badge>}
               {(() => {
                 const def = pipelineList?.find(p => p.id === selectedPipelineId);
@@ -549,15 +729,19 @@ function PipelineBuilderInner() {
           {/* React Flow Canvas */}
           <div ref={reactFlowWrapper} className="flex-1 min-h-0">
             <ReactFlow
-              nodes={nodes}
+              nodes={nodes.map(n => validationIssues.nodeIds.has(n.id) ? {
+                ...n,
+                data: { ...n.data, hasValidationIssue: true },
+              } : n)}
               edges={edges}
-              onNodesChange={wrappedOnNodesChange}
-              onEdgesChange={wrappedOnEdgesChange}
-              onConnect={(c) => { onConnect(c); setIsDirty(true); }}
+              onNodesChange={nodesChangeWithHistory}
+              onEdgesChange={edgesChangeWithHistory}
+              onConnect={(c) => { undoRedo.commitNow(); onConnect(c); setIsDirty(true); }}
               onDrop={onDrop as React.DragEventHandler}
               onDragOver={onDragOver as React.DragEventHandler}
               onNodeClick={onNodeClick as (event: React.MouseEvent, node: unknown) => void}
-              onPaneClick={() => setSelectedNodeId(null)}
+              onEdgeClick={onEdgeClick as (event: React.MouseEvent, edge: unknown) => void}
+              onPaneClick={() => { setSelectedNodeId(null); setEditingEdge(null); }}
               nodeTypes={nodeTypes}
               fitView
               deleteKeyCode={null}
@@ -592,6 +776,18 @@ function PipelineBuilderInner() {
             pipelineId={selectedPipelineId}
             activeRunId={viewingRunId || activeRunId}
             onSelectRun={setViewingRunId}
+          />
+        )}
+
+        {/* Edge condition editor popover */}
+        {editingEdge && (
+          <EdgeConditionPopover
+            edge={editingEdge.edge}
+            anchorX={editingEdge.x}
+            anchorY={editingEdge.y}
+            onClose={() => setEditingEdge(null)}
+            onUpdate={updateEdgeCondition}
+            onDelete={deleteEdge}
           />
         )}
       </div>

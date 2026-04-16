@@ -19,6 +19,7 @@ interface BaseNodeData {
   itemsIn?: number;
   durationMs?: number;
   errorMessage?: string;
+  hasValidationIssue?: boolean;
 }
 
 const statusConfig: Record<string, { className: string; icon: string }> = {
@@ -96,6 +97,14 @@ function BaseNode({ data, selected }: NodeProps) {
               {d.description && <div className="text-muted-foreground mt-0.5">{d.description}</div>}
             </TooltipContent>
           </Tooltip>
+          {d.hasValidationIssue && !sc && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Icons.AlertCircle className="h-3.5 w-3.5 text-amber-600 ml-auto shrink-0" />
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">Missing required config</TooltipContent>
+            </Tooltip>
+          )}
           {sc && (
             <Badge variant="outline" className={`ml-auto text-[10px] px-1.5 py-0 gap-1 ${sc.className}`}>
               {StatusIcon && <StatusIcon className="h-2.5 w-2.5" />}
