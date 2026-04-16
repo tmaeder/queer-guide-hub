@@ -44,6 +44,7 @@ export const hotellookProvider: BookingProvider = {
   },
 
   getBookingUrl(result: BookingResult): string {
-    return result.bookingUrl || 'https://www.hotellook.com';
+    // Hotellook closed 2025-10-20; fall back to Booking.com via affiliate marker.
+    return result.bookingUrl || 'https://www.booking.com?aid=2381426&label=queerguide-452012';
   },
 };
