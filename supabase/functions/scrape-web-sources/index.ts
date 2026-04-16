@@ -1437,13 +1437,50 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, message: 'No sources due for scraping', results: [] }, 200, req)
     }
 
-    // ── Process each source ──────────────────────────────────
+    // ── Fan-out for batch mode to avoid edge function timeout ─────────
+    // When processing multiple sources, dispatch each to a separate invocation
+    // (fire-and-forget) so each runs within its own timeout budget.
+    const isBatch = !sourceSlug && !sourceId && filteredSources.length > 1
+    if (isBatch) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      const selfUrl = `${supabaseUrl}/functions/v1/scrape-web-sources`
+
+      // Dispatch each source as a separate invocation.
+      // Use EdgeRuntime.waitUntil() so Deno doesn't kill the background fetches
+      // when this response is returned.
+      const dispatches = filteredSources.map(source =>
+        fetch(selfUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${serviceRoleKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ source_id: source.id, dry_run: dryRun }),
+        }).catch(err => console.error(`Dispatch failed for ${source.slug}:`, err))
+      )
+      // Keep runtime alive until all dispatched requests are sent
+      // @ts-ignore — EdgeRuntime is available in Supabase Deno runtime
+      if (typeof EdgeRuntime !== 'undefined') {
+        // @ts-ignore
+        EdgeRuntime.waitUntil(Promise.allSettled(dispatches))
+      }
+
+      return jsonResponse({
+        success: true,
+        mode: 'fan-out',
+        sources_dispatched: filteredSources.length,
+        dispatched: filteredSources.map(s => s.slug),
+        dry_run: dryRun,
+      }, 200, req)
+    }
+
+    // ── Single-source (or single-item batch) — process inline ─────────
     const results = []
     for (const source of filteredSources) {
       const result = await processSource(supabase, source, dryRun)
       results.push(result)
 
-      // Rate limit between sources
       if (filteredSources.length > 1) {
         await delay(source.rate_limit_ms || 2000)
       }
