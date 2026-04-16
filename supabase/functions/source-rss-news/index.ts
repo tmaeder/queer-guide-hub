@@ -56,9 +56,10 @@ const rssNewsAdapter: SourceAdapter = {
           articles = await fetchFromRss(source.url)
         }
 
-        for (const article of articles.slice(0, maxArticles)) {
+        for (let i = 0; i < Math.min(articles.length, maxArticles); i++) {
+          const article = articles[i]
           allItems.push({
-            sourceId: (article.url as string) || `${source.id}-${Date.now()}`,
+            sourceId: (article.url as string) || `${source.id}-${Date.now()}-${i}`,
             data: { ...article, source_id: source.id, source_name: source.name },
           })
         }

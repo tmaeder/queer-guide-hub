@@ -183,8 +183,21 @@ async function handleContinue(
     return errorResponse(`Node ${currentNodeId} not found in pipeline`, 400, req)
   }
 
-  // Check if upstream nodes are all completed
+  // Check if upstream nodes are all completed (with advisory lock for fan-in safety)
   const incomingEdges = edges.filter(e => e.target === currentNodeId)
+  if (incomingEdges.length > 1) {
+    // Fan-in: acquire advisory lock to prevent concurrent duplicate enqueues
+    const lockKey = Math.abs(hashCode(`${runId}:${currentNodeId}`))
+    const { data: lockResult } = await supabase.rpc('pg_try_advisory_lock', { key: lockKey })
+    if (!lockResult) {
+      // Another invocation is already checking this node — re-enqueue with jitter
+      await enqueueStep(supabase, body as PipelineMessage, 5 + Math.floor(Math.random() * 10))
+      return jsonResponse({ success: true, message: 'Fan-in lock contention, re-enqueued' }, 200, req)
+    }
+    // Re-fetch node_states to avoid stale reads
+    const { data: freshRun } = await supabase.from('pipeline_runs').select('node_states').eq('id', runId).single()
+    if (freshRun) Object.assign(nodeStates, freshRun.node_states)
+  }
   for (const edge of incomingEdges) {
     const upstreamState = nodeStates[edge.source]
     if (upstreamState && upstreamState.status !== 'completed' && upstreamState.status !== 'skipped') {
@@ -330,6 +343,10 @@ async function handleContinue(
         })
         .eq('id', runId)
 
+      // Skip all downstream nodes so they don't hang as 'pending'
+      skipDescendants(nodes, edges, currentNodeId, nodeStates)
+      await updateNodeStates(supabase, runId, nodeStates)
+
       return jsonResponse({
         success: false,
         node: currentNodeId,
@@ -348,6 +365,7 @@ async function handleContinue(
       error: errorMsg,
       completed_at: new Date().toISOString(),
     }
+    skipDescendants(nodes, edges, currentNodeId, nodeStates)
     await updateNodeStates(supabase, runId, nodeStates)
 
     await supabase
@@ -392,19 +410,28 @@ function topologicalSort(nodes: PipelineNode[], edges: PipelineEdge[]): string[]
     }
   }
 
+  if (sorted.length !== nodes.length) {
+    throw new Error(`Pipeline DAG has a cycle — ${nodes.length - sorted.length} nodes unreachable`)
+  }
+
   return sorted
 }
 
-/** Update node_states in pipeline_runs */
+/** Update node_states in pipeline_runs using atomic JSONB merge to prevent lost updates */
 async function updateNodeStates(
   supabase: SupabaseClient,
   runId: string,
   nodeStates: Record<string, NodeState>
 ): Promise<void> {
-  await supabase
-    .from('pipeline_runs')
-    .update({ node_states: nodeStates })
-    .eq('id', runId)
+  await supabase.rpc('merge_pipeline_node_states', {
+    p_run_id: runId,
+    p_patch: nodeStates,
+  }).then(({ error }) => {
+    if (error) {
+      // Fallback to full overwrite if RPC not available
+      return supabase.from('pipeline_runs').update({ node_states: nodeStates }).eq('id', runId)
+    }
+  })
 }
 
 /** Enqueue a pipeline step message to pgmq */
@@ -464,6 +491,39 @@ async function advanceToNextNodes(
         total_steps: nodes.length,
         context: run.context as Record<string, unknown>,
       })
+    }
+  }
+}
+
+/** Simple string hash for advisory lock keys */
+function hashCode(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h + s.charCodeAt(i)) | 0
+  }
+  return h
+}
+
+/** Mark all transitive descendants of a failed node as 'skipped' */
+function skipDescendants(
+  nodes: PipelineNode[],
+  edges: PipelineEdge[],
+  failedNodeId: string,
+  nodeStates: Record<string, NodeState>
+): void {
+  const visited = new Set<string>()
+  const queue = [failedNodeId]
+  while (queue.length > 0) {
+    const current = queue.shift()!
+    for (const edge of edges) {
+      if (edge.source === current && !visited.has(edge.target)) {
+        visited.add(edge.target)
+        const state = nodeStates[edge.target]
+        if (!state || state.status === 'pending') {
+          nodeStates[edge.target] = { status: 'skipped', items_in: 0, items_out: 0 }
+          queue.push(edge.target)
+        }
+      }
     }
   }
 }

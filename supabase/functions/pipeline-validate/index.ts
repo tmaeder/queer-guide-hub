@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
         if (!n.profession)             warnings.push('W_NO_PROFESSION')
         if (!n.nationality)            warnings.push('W_NO_NATIONALITY')
         if (!n.image_url)              warnings.push('W_NO_IMAGE')
-        if (!n.lgbti_connection)       warnings.push('W_NO_LGBTI_CONNECTION')
+        if (!n.lgbti_connection)       errors.push('E_NO_LGBTI_CONNECTION')
         if (!n.wikidata_qid)           warnings.push('W_NO_WIKIDATA_QID')
 
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 40)

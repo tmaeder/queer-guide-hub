@@ -1,6 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { logoUrlFromWebsite } from '../_shared/logo-enrichment.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { reportApiError } from '../_shared/report-api-error.ts'
 import { rpcWithBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 
 // ============================================================
@@ -212,6 +213,27 @@ Deno.serve(async (req) => {
           continue
         }
 
+        // Secondary idempotency: if staging update failed after a successful
+        // insert on a prior attempt, target_record_id is null but the row
+        // exists in the target table. Check via idempotency_key to avoid dupes.
+        if (item.idempotency_key) {
+          const { count } = await supabase
+            .from('ingestion_staging')
+            .select('id', { count: 'exact', head: true })
+            .eq('idempotency_key', item.idempotency_key)
+            .eq('disposition', 'committed')
+            .neq('id', item.id)
+          if (count && count > 0) {
+            await supabase.from('ingestion_staging').update({
+              disposition: 'committed',
+              processed_at: new Date().toISOString(),
+              error_message: 'idempotency_key already committed by sibling row',
+            }).eq('id', item.id)
+            skipped++
+            continue
+          }
+        }
+
         const normalized = (item.normalized_data ?? {}) as Record<string, unknown>
         const enriched   = (item.enriched_data ?? {}) as Record<string, unknown>
         const record     = buildRecord(table, normalized, enriched, item.entity_type)
@@ -268,6 +290,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('pipeline-commit:', error)
     await logPipelineError(supabase, 'pipeline-commit', error, { severity: 'fatal' })
+    reportApiError('pipeline-commit', error, { endpoint: '/functions/v1/pipeline-commit' })
     return errorResponse((error as Error).message, 500, req)
   }
 })
