@@ -4,6 +4,7 @@ import {
   Background,
   Controls,
   MiniMap,
+  ConnectionLineType,
   type DragEvent,
   type Node,
   type Edge,
@@ -746,7 +747,13 @@ function PipelineBuilderInner() {
               fitView
               deleteKeyCode={null}
               multiSelectionKeyCode="Shift"
-              defaultEdgeOptions={{ animated: true, style: { strokeWidth: 2 } }}
+              defaultEdgeOptions={{
+                animated: true,
+                type: 'smoothstep',
+                style: { strokeWidth: 2 },
+                pathOptions: { borderRadius: 16, offset: 20 },
+              }}
+              connectionLineType={ConnectionLineType.SmoothStep}
               className="bg-muted/10"
             >
               <Background gap={16} size={1} />
