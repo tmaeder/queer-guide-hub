@@ -35,7 +35,7 @@ export function OAuthButtons({ onError }: Props) {
         variant="outline"
         onClick={() => handle('google')}
         disabled={loading !== null}
-        sx={{ width: '100%', height: 44 }}
+
       >
         {loading === 'google' ? (
           <Loader2 style={{ width: 18, height: 18, marginRight: 8, animation: 'spin 1s linear infinite' }} />
@@ -49,7 +49,7 @@ export function OAuthButtons({ onError }: Props) {
         variant="outline"
         onClick={() => handle('apple')}
         disabled={loading !== null}
-        sx={{ width: '100%', height: 44 }}
+
       >
         {loading === 'apple' ? (
           <Loader2 style={{ width: 18, height: 18, marginRight: 8, animation: 'spin 1s linear infinite' }} />

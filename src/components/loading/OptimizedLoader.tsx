@@ -21,18 +21,18 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
       <Box sx={{ width: '100%', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
         {showTitle && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Skeleton sx={{ height: 32, width: 256 }} />
-            <Skeleton sx={{ height: 16, width: 384 }} />
+            <Skeleton />
+            <Skeleton />
           </Box>
         )}
 
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-              <Skeleton sx={{ height: 16, width: 128 }} />
-              <Skeleton sx={{ height: 16, width: 48 }} />
+              <Skeleton />
+              <Skeleton />
             </Box>
-            <Skeleton sx={{ height: 8, width: '100%' }} />
+            <Skeleton />
           </CardContent>
         </Card>
 
@@ -40,16 +40,16 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
-                <Skeleton sx={{ height: 24, width: 128 }} />
+                <Skeleton />
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Skeleton sx={{ height: 16, width: 96 }} />
-                  <Skeleton sx={{ height: 40, width: '100%' }} />
+                  <Skeleton />
+                  <Skeleton />
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Skeleton sx={{ height: 16, width: 96 }} />
-                  <Skeleton sx={{ height: 40, width: '100%' }} />
+                  <Skeleton />
+                  <Skeleton />
                 </Box>
               </CardContent>
             </Card>
@@ -65,13 +65,13 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i}>
-              <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
-                <Skeleton sx={{ height: 16, width: 96 }} />
-                <Skeleton sx={{ height: 16, width: 16 }} />
+              <CardHeader>
+                <Skeleton />
+                <Skeleton />
               </CardHeader>
               <CardContent>
-                <Skeleton sx={{ height: 32, width: 64, mb: 1 }} />
-                <Skeleton sx={{ height: 12, width: 128 }} />
+                <Skeleton />
+                <Skeleton />
               </CardContent>
             </Card>
           ))}
@@ -79,16 +79,16 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
 
         <Card>
           <CardHeader>
-            <Skeleton sx={{ height: 24, width: 128 }} />
+            <Skeleton />
           </CardHeader>
           <CardContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {Array.from({ length: 5 }).map((_, i) => (
                 <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Skeleton sx={{ height: 40, width: 40, borderRadius: '50%' }} />
+                  <Skeleton />
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
-                    <Skeleton sx={{ height: 16, width: '100%' }} />
-                    <Skeleton sx={{ height: 12, width: '75%' }} />
+                    <Skeleton />
+                    <Skeleton />
                   </Box>
                 </Box>
               ))}
@@ -104,12 +104,12 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {Array.from({ length: count }).map((_, i) => (
           <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
-            <Skeleton sx={{ height: 48, width: 48, borderRadius: '50%' }} />
+            <Skeleton />
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
-              <Skeleton sx={{ height: 16, width: '100%' }} />
-              <Skeleton sx={{ height: 12, width: '66%' }} />
+              <Skeleton />
+              <Skeleton />
             </Box>
-            <Skeleton sx={{ height: 32, width: 80 }} />
+            <Skeleton />
           </Box>
         ))}
       </Box>
@@ -133,14 +133,14 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
       {Array.from({ length: count }).map((_, i) => (
         <Card key={i}>
           <CardHeader>
-            <Skeleton sx={{ height: 24, width: '75%' }} />
-            <Skeleton sx={{ height: 16, width: '50%' }} />
+            <Skeleton />
+            <Skeleton />
           </CardHeader>
           <CardContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Skeleton sx={{ height: 16, width: '100%' }} />
-              <Skeleton sx={{ height: 16, width: '83%' }} />
-              <Skeleton sx={{ height: 16, width: '66%' }} />
+              <Skeleton />
+              <Skeleton />
+              <Skeleton />
             </Box>
           </CardContent>
         </Card>

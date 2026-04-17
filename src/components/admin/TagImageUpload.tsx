@@ -132,7 +132,7 @@ export const TagImageUpload = ({
             type="button"
             variant="destructive"
             size="sm"
-            sx={{ position: 'absolute', top: 8, right: 8 }}
+
             onClick={handleDeleteImage}
           >
             <X style={{ width: 16, height: 16 }} />
@@ -157,7 +157,7 @@ export const TagImageUpload = ({
             accept="image/*"
             onChange={handleFileUpload}
             disabled={uploading}
-            sx={{ mt: 1 }}
+
           />
         </Box>
       )}

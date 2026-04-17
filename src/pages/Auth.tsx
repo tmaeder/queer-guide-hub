@@ -93,8 +93,8 @@ export default function Auth() {
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <Container sx={{ px: 3, py: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 6rem)' }}>
-          <Card sx={{ width: '100%' }}>
-            <CardHeader sx={{ textAlign: 'center' }}>
+          <Card>
+            <CardHeader>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                   <Heart style={{ width: 32, height: 32, fill: 'currentcolor' }} color="var(--mui-palette-primary-main)" />
@@ -174,7 +174,7 @@ export default function Auth() {
                                 setMode('forgot');
                                 setError(null);
                               }}
-                              sx={{ p: 0, height: 'auto', fontSize: '0.75rem' }}
+
                             >
                               {t('auth.forgotPassword', 'Forgot password?')}
                             </Button>
@@ -193,15 +193,7 @@ export default function Auth() {
                               type="button"
                               variant="ghost"
                               size="sm"
-                              sx={{
-                                position: 'absolute',
-                                right: 4,
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                height: 32,
-                                width: 32,
-                                p: 0,
-                              }}
+
                               onClick={() => setShowPassword(!showPassword)}
                               disabled={isLoading}
                               aria-label={showPassword ? t('auth.hidePassword', 'Hide password') : t('auth.showPassword', 'Show password')}
@@ -212,7 +204,7 @@ export default function Auth() {
                         </Box>
                       )}
 
-                      <Button type="submit" sx={{ width: '100%' }} disabled={isLoading}>
+                      <Button type="submit" disabled={isLoading}>
                         {isLoading && <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />}
                         {mode === 'forgot' ? t('auth.sendResetLink', 'Send reset link') : t('auth.signIn', 'Sign in')}
                       </Button>

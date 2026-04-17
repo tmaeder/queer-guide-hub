@@ -268,7 +268,7 @@ export function ImageOptimizationManager() {
       {/* Current Job Progress */}
       {currentJob && (currentJob.status === 'pending' || currentJob.status === 'processing') && (
         <Card>
-          <CardContent sx={{ p: 3 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                 <span>Processing {currentJob.total_images} images in background...</span>
@@ -285,17 +285,17 @@ export function ImageOptimizationManager() {
         </Card>
       )}
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
           <TabsTrigger value="scan">Images Found ({images.length})</TabsTrigger>
           <TabsTrigger value="jobs">Background Jobs ({jobs.length})</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="scan" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <TabsContent value="scan">
           {images.length === 0 ? (
             <Card>
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
+              <CardContent>
                 <FileImage style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
                 <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Images Found</Typography>
                 <Typography sx={{ color: 'text.secondary', mb: 2 }}>Click "Scan Images" to find images in your project</Typography>
@@ -310,7 +310,7 @@ export function ImageOptimizationManager() {
               {/* Summary Cards */}
               <Box sx={{ display: 'grid', gridTemplateColumns: { md: 'repeat(4, 1fr)' }, gap: 2 }}>
                 <Card>
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <FileImage style={{ height: 20, width: 20, color: '#3b82f6' }} />
                       <div>
@@ -322,7 +322,7 @@ export function ImageOptimizationManager() {
                 </Card>
 
                 <Card>
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <HardDrive style={{ height: 20, width: 20, color: '#555555' }} />
                       <div>
@@ -336,7 +336,7 @@ export function ImageOptimizationManager() {
                 </Card>
 
                 <Card>
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Server style={{ height: 20, width: 20, color: '#22c55e' }} />
                       <div>
@@ -350,7 +350,7 @@ export function ImageOptimizationManager() {
                 </Card>
 
                 <Card>
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Zap style={{ height: 20, width: 20, color: '#f97316' }} />
                       <div>
@@ -369,7 +369,7 @@ export function ImageOptimizationManager() {
                   <CardDescription>Images found in storage buckets ready for optimization</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea sx={{ height: 384 }}>
+                  <ScrollArea>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                       {images.map((image, index) => (
                         <Box key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
@@ -384,7 +384,7 @@ export function ImageOptimizationManager() {
                           </Box>
 
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
+                            <Badge variant="outline">
                               Ready
                             </Badge>
                           </Box>
@@ -398,10 +398,10 @@ export function ImageOptimizationManager() {
           )}
         </TabsContent>
 
-        <TabsContent value="jobs" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <TabsContent value="jobs">
           {jobs.length === 0 ? (
             <Card>
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
+              <CardContent>
                 <Server style={{ height: 48, width: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
                 <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No Background Jobs</Typography>
                 <Typography sx={{ color: 'text.secondary', mb: 2 }}>Start an optimization job to see it here</Typography>
@@ -419,7 +419,7 @@ export function ImageOptimizationManager() {
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {getStatusIcon(job.status)}
-                        <CardTitle sx={{ fontSize: '1.125rem' }}>Job {job.id.slice(0, 8)}</CardTitle>
+                        <CardTitle>Job {job.id.slice(0, 8)}</CardTitle>
                       </Box>
                       <Badge variant={
                         job.status === 'completed' ? 'default' :
@@ -491,13 +491,13 @@ export function ImageOptimizationManager() {
           )}
         </TabsContent>
 
-        <TabsContent value="settings" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <TabsContent value="settings">
           <Card>
             <CardHeader>
               <CardTitle>Background Processing Settings</CardTitle>
               <CardDescription>Configure server-side optimization parameters</CardDescription>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <CardContent>
               <Alert>
                 <Server style={{ height: 16, width: 16 }} />
                 <AlertDescription>
@@ -526,7 +526,7 @@ export function ImageOptimizationManager() {
                 </Typography>
               </div>
               
-              <Button sx={{ width: '100%' }}>Save Settings</Button>
+              <Button>Save Settings</Button>
             </CardContent>
           </Card>
         </TabsContent>

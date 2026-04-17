@@ -215,7 +215,7 @@ const Venues = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate('/submit/venue')}
-              sx={{ gap: 1, height: 34, fontSize: '0.8rem' }}
+
             >
               <Plus style={{ width: 14, height: 14 }} />
               Submit

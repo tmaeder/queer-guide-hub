@@ -154,9 +154,9 @@ export default function LGBTJurisdictionInfo({ country, className = '', _country
 
   return (
     <Card className={className} style={style}>
-      <CardHeader sx={{ pb: 1 }}>
+      <CardHeader>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Shield style={{ height: 20, width: 20, color: 'hsl(var(--primary))' }} />
             LGBTI Rights Overview
           </CardTitle>
@@ -168,7 +168,7 @@ export default function LGBTJurisdictionInfo({ country, className = '', _country
           </Typography>
         )}
       </CardHeader>
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 0 }}>
+      <CardContent>
         {/* Section 1: Criminalisation & Freedoms */}
         <Box>
           <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', mb: 1 }}>

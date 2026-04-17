@@ -121,8 +121,8 @@ export const EventImageUpload = ({
       <Label>Event Images (Optional)</Label>
 
       {/* Upload Area */}
-      <Card sx={{ border: 2, borderStyle: 'dashed', borderColor: 'divider', transition: 'border-color 0.2s', '&:hover': { borderColor: 'primary.main', opacity: 0.5 } }}>
-        <CardContent sx={{ p: 3 }}>
+      <Card>
+        <CardContent>
           <input
             ref={fileInputRef}
             type="file"
@@ -174,7 +174,7 @@ export const EventImageUpload = ({
               <Button
                 variant="destructive"
                 size="sm"
-                sx={{ position: 'absolute', top: 8, right: 8, opacity: 0, transition: 'opacity 0.2s' }}
+
                 className="remove-button"
                 onClick={() => removeImage(index)}
               >

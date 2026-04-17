@@ -136,7 +136,7 @@ export function SecurityMonitoringDashboard() {
 
       {/* System Statistics Overview */}
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(3, 1fr)' } }}>
-        <Card sx={{ p: 2 }}>
+        <Card>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2 }}>
               <Activity style={{ height: 16, width: 16, color: 'var(--foreground)' }} />
@@ -155,7 +155,7 @@ export function SecurityMonitoringDashboard() {
           </Box>
         </Card>
 
-        <Card sx={{ p: 2 }}>
+        <Card>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box sx={{ p: 1, bgcolor: 'rgba(var(--destructive-rgb), 0.1)', borderRadius: 2 }}>
               <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
@@ -174,7 +174,7 @@ export function SecurityMonitoringDashboard() {
           </Box>
         </Card>
 
-        <Card sx={{ p: 2 }}>
+        <Card>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box sx={{ p: 1, bgcolor: 'rgba(var(--success-rgb), 0.1)', borderRadius: 2 }}>
               <Shield style={{ height: 16, width: 16, color: 'var(--success)' }} />

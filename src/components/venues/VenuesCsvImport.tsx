@@ -99,7 +99,7 @@ Central Park Cafe,Cozy cafe overlooking Central Park,cafe,2 E 60th St,New York,N
           Import CSV
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: '28rem' }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Import Venues from CSV</DialogTitle>
         </DialogHeader>
@@ -111,7 +111,7 @@ Central Park Cafe,Cozy cafe overlooking Central Park,cafe,2 E 60th St,New York,N
               type="file"
               accept=".csv"
               onChange={handleFileChange}
-              sx={{ mt: 1 }}
+
             />
           </Box>
 

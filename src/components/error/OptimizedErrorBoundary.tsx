@@ -60,7 +60,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400, p: 3 }}>
-      <Card sx={{ width: '100%' }}>
+      <Card>
         <CardHeader>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {isNetworkError ? (
@@ -68,12 +68,12 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
             ) : (
               <AlertCircle style={{ height: 20, width: 20, color: 'var(--destructive)' }} />
             )}
-            <CardTitle sx={{ fontSize: '1.125rem' }}>
+            <CardTitle>
               {isNetworkError ? 'Connection Issue' : 'Something went wrong'}
             </CardTitle>
           </Box>
         </CardHeader>
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <CardContent>
           <Alert variant="destructive">
             <AlertTitle>Error Details</AlertTitle>
             <AlertDescription>
@@ -108,7 +108,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
             <Button
               onClick={resetErrorBoundary}
               variant="outline"
-              sx={{ flex: 1 }}
+
             >
               <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
               Try Again
@@ -116,7 +116,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
             <Button
               onClick={() => window.location.reload()}
               variant="default"
-              sx={{ flex: 1 }}
+
             >
               Refresh Page
             </Button>
@@ -134,10 +134,10 @@ export const DataErrorFallback: React.FC<ErrorFallbackProps> = ({
   errors = []
 }) => {
   return (
-    <Alert variant="destructive" sx={{ m: 2 }}>
+    <Alert variant="destructive">
       <AlertCircle style={{ height: 16, width: 16 }} />
       <AlertTitle>Failed to load data</AlertTitle>
-      <AlertDescription sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <AlertDescription>
         <Typography variant="body2">Some information couldn't be loaded. You can continue using the app with limited functionality.</Typography>
         {errors.length > 0 && (
           <Box component="details" sx={{ fontSize: '0.75rem' }}>
@@ -153,7 +153,7 @@ export const DataErrorFallback: React.FC<ErrorFallbackProps> = ({
           onClick={resetErrorBoundary}
           variant="outline"
           size="sm"
-          sx={{ mt: 1 }}
+
         >
           <RefreshCw style={{ height: 12, width: 12, marginRight: 4 }} />
           Retry

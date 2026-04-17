@@ -436,7 +436,7 @@ export default function VenueDetail() {
             Add to Trip
           </Button>
           {tripStatus?.isInTrip && (
-            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
+            <Badge variant="secondary">
               In {tripStatus.count} trip{tripStatus.count !== 1 ? 's' : ''}
             </Badge>
           )}
@@ -611,7 +611,7 @@ export default function VenueDetail() {
               {/* Location Map */}
               {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
                 <Card>
-                  <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+                  <CardContent>
                     <EntityMap
                       center={[Number(venue.longitude), Number(venue.latitude)]}
                       zoom={15}
@@ -641,7 +641,7 @@ export default function VenueDetail() {
                 <CardHeader>
                   <CardTitle>{t('pages.venueDetail.contact', 'Contact')}</CardTitle>
                 </CardHeader>
-                <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <CardContent>
                   {venue.address && (
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                       <MapPin
@@ -752,7 +752,7 @@ export default function VenueDetail() {
                       </Box>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <CardContent>
                     {formatHours(venue.hours)}
                   </CardContent>
                 </Card>
@@ -849,7 +849,7 @@ export default function VenueDetail() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
               {reviews.map((review) => (
                 <Card key={review.id}>
-                  <CardContent sx={{ pt: 2.5 }}>
+                  <CardContent>
                     <Box
                       sx={{
                         display: 'flex',

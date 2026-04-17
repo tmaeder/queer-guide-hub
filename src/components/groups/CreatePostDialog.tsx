@@ -142,20 +142,20 @@ export const CreatePostDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button sx={{ background: 'linear-gradient(to right, var(--gradient-primary))', '&:hover': { opacity: 0.9 } }}>
+        <Button>
           <MessageSquare style={{ height: 16, width: 16, marginRight: 8 }} />
           New Post
         </Button>
       </DialogTrigger>
 
-      <DialogContent sx={{ maxWidth: '42rem', maxHeight: '90vh', overflowY: 'auto' }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New Post</DialogTitle>
         </DialogHeader>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Tabs value={postType} onValueChange={(value: string) => setPostType(value as 'text' | 'announcement' | 'poll')}>
-            <TabsList sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+            <TabsList>
               <TabsTrigger value="text">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <MessageSquare style={{ height: 16, width: 16 }} />
@@ -287,7 +287,7 @@ export const CreatePostDialog = ({
                   </Button>
                 </PopoverTrigger>
 
-                <PopoverContent sx={{ width: 320, p: 0 }} align="end">
+                <PopoverContent align="end">
                   <Command>
                     <CommandInput placeholder="Search group members..." />
                     <CommandEmpty>No members found.</CommandEmpty>

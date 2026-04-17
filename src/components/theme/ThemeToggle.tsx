@@ -19,7 +19,7 @@ export function ThemeToggle() {
           variant="ghost"
           size="sm"
           aria-label="Toggle theme"
-          sx={{ height: 36, width: 36, p: 0 }}
+
         >
           {isDark ? (
             <Moon style={{ height: '1.2rem', width: '1.2rem' }} />

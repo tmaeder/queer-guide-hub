@@ -198,7 +198,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       {/* Upload Zone */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Music style={{ width: 20, height: 20 }} />
             Upload Audio Files
           </CardTitle>
@@ -242,7 +242,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {audios.map((audio) => (
             <Card key={audio.id}>
-              <CardContent sx={{ p: 3 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                   <Box sx={{ flexShrink: 0 }}>
                     <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -378,7 +378,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeAudio(audio.id)}
-                    sx={{ flexShrink: 0 }}
+
                   >
                     <X style={{ width: 16, height: 16 }} />
                   </Button>

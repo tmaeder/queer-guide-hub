@@ -63,13 +63,13 @@ export function SocialLinksList({
                             value={link.url}
                             onChange={(e) => onCustomLinkChange(index, 'url', e.target.value)}
                             placeholder="https://platform.com/username"
-                            sx={{ flex: 1 }}
+
                           />
                           {link.url && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              sx={{ ml: 1 }}
+
                               onClick={() => window.open(link.url, '_blank')}
                             >
                               <ExternalLink style={{ height: 16, width: 16 }} />
@@ -83,7 +83,7 @@ export function SocialLinksList({
                     variant="ghost"
                     size="sm"
                     onClick={() => onRemoveCustomLink(index)}
-                    sx={{ color: 'error.main', '&:hover': { color: 'error.main', bgcolor: 'error.light' } }}
+
                   >
                     <Trash2 style={{ height: 16, width: 16 }} />
                   </Button>

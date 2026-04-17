@@ -108,7 +108,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
 
   return (
     <Card>
-      <CardContent sx={{ p: 3 }}>
+      <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Camera style={{ width: 20, height: 20 }} />

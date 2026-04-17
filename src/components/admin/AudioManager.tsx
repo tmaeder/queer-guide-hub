@@ -137,7 +137,7 @@ export function AudioManager() {
             placeholder="Search audio..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ pl: 5 }}
+
           />
         </Box>
       </Box>
@@ -145,7 +145,7 @@ export function AudioManager() {
       {/* Audio Grid */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
         {filteredAudios.map((audio) => (
-          <Card key={audio.id} sx={{ overflow: 'hidden' }}>
+          <Card key={audio.id}>
             <Box sx={{ aspectRatio: '1/1', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
               {audio.poster_image_path ? (
                 <Box
@@ -171,7 +171,7 @@ export function AudioManager() {
               )}
             </Box>
 
-            <CardContent sx={{ p: 2 }}>
+            <CardContent>
               <Typography variant="h3" sx={{ fontWeight: 600, mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{audio.title}</Typography>
 
               {audio.artist && (
@@ -209,7 +209,7 @@ export function AudioManager() {
                         <Play style={{ height: 16, width: 16 }} />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent sx={{ maxWidth: 448 }}>
+                    <DialogContent>
                       <DialogHeader>
                         <DialogTitle>{audio.title}</DialogTitle>
                       </DialogHeader>
@@ -235,7 +235,7 @@ export function AudioManager() {
                             }))
                           }}
                           controls={true}
-                          sx={{ width: '100%' }}
+
                         />
                       </Box>
                     </DialogContent>
@@ -246,7 +246,7 @@ export function AudioManager() {
                   variant="outline"
                   size="sm"
                   onClick={() => deleteAudio(audio.id)}
-                  sx={{ color: 'error.main', '&:hover': { color: 'error.main' } }}
+
                 >
                   <Trash2 style={{ height: 16, width: 16 }} />
                 </Button>

@@ -55,7 +55,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useTranslation } from 'react-i18next';
 
-
 type Profile = {
   user_id: string;
   display_name?: string | null;
@@ -471,8 +470,8 @@ const UserDirectory = () => {
 
       {/* Privacy notice for logged-out users */}
       {!user && (
-        <Card sx={{ mb: 4, bgcolor: 'action.hover' }}>
-          <CardContent sx={{ p: 3, textAlign: 'center' }}>
+        <Card>
+          <CardContent>
             <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
               Community Directory
             </Typography>

@@ -50,7 +50,6 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 
-
 const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
   venue: MapPin,
   venues: MapPin,
@@ -250,11 +249,7 @@ export default function SearchResults() {
       return (
         <Card
           key={`${result.type}-${result.objectID}`}
-          sx={{
-            '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' },
-            transition: 'all 0.2s',
-            cursor: 'pointer',
-          }}
+
           onClick={() => navigateToResult(result)}
         >
           <Box sx={{ position: 'relative' }}>
@@ -388,11 +383,7 @@ export default function SearchResults() {
     return (
       <Card
         key={`${result.type}-${result.objectID}`}
-        sx={{
-          '&:hover': { boxShadow: 4, borderColor: 'primary.main' },
-          transition: 'all 0.2s',
-          cursor: 'pointer',
-        }}
+
         onClick={() => navigateToResult(result)}
       >
         <CardContent style={{ padding: 16 }}>
@@ -614,7 +605,7 @@ export default function SearchResults() {
 
       {/* Filters Panel */}
       {showFilters && (
-        <Card sx={{ mb: 3, borderColor: 'primary.main', boxShadow: 6 }}>
+        <Card>
           <SearchFiltersPanel filters={filters} onFiltersChange={handleFiltersChange} />
         </Card>
       )}
@@ -733,7 +724,7 @@ export default function SearchResults() {
         <>
           {/* Search Suggestions -- shown when query is empty */}
           {(!query || query.trim() === '') && (
-            <Card sx={{ p: 4 }}>
+            <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                   Try searching for...

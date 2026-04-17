@@ -152,11 +152,7 @@ export function TripTemplates() {
                 <Box sx={{ mt: 1.5 }}>
                   <Badge
                     variant="secondary"
-                    sx={{
-                      bgcolor: 'rgba(255,255,255,0.2)',
-                      color: 'common.white',
-                      backdropFilter: 'blur(4px)',
-                    }}
+
                   >
                     <Box
                       component="span"
@@ -169,7 +165,7 @@ export function TripTemplates() {
                 </Box>
               </Box>
 
-              <CardContent sx={{ pt: 2 }}>
+              <CardContent>
                 <Button
                   variant="ghost"
                   size="sm"

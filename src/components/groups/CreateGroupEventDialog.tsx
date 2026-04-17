@@ -98,12 +98,12 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button sx={{ background: 'linear-gradient(to right, var(--gradient-primary))', '&:hover': { opacity: 0.9 } }}>
+        <Button>
           <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
           Create Event
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: { sm: '600px' }, maxHeight: '80vh', overflowY: 'auto' }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Group Event</DialogTitle>
         </DialogHeader>
@@ -138,13 +138,13 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    sx={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 'normal', ...(!startDate && { color: 'text.secondary' }) }}
+
                   >
                     <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
                     {startDate ? format(startDate, "PPP") : "Select start date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent sx={{ width: 'auto', p: 0 }}>
+                <PopoverContent>
                   <Calendar
                     mode="single"
                     selected={startDate}
@@ -162,13 +162,13 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    sx={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', fontWeight: 'normal', ...(!endDate && { color: 'text.secondary' }) }}
+
                   >
                     <CalendarIcon style={{ marginRight: 8, height: 16, width: 16 }} />
                     {endDate ? format(endDate, "PPP") : "Select end date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent sx={{ width: 'auto', p: 0 }}>
+                <PopoverContent>
                   <Calendar
                     mode="single"
                     selected={endDate}
@@ -359,7 +359,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
             <Button
               type="submit"
               disabled={isCreating || !startDate || !formData.title || !formData.city}
-              sx={{ background: 'linear-gradient(to right, var(--gradient-primary))', '&:hover': { opacity: 0.9 } }}
+
             >
               {isCreating ? "Creating..." : "Create Event"}
             </Button>

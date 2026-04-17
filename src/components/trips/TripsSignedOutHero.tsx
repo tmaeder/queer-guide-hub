@@ -91,13 +91,7 @@ export function TripsSignedOutHero() {
           <Box>
             <Badge
               variant="outline"
-              sx={{
-                mb: 2,
-                borderColor: `${brand}40`,
-                color: brand,
-                bgcolor: `${brand}0d`,
-                fontWeight: 600,
-              }}
+
             >
               <Box
                 component="span"
@@ -262,7 +256,7 @@ export function TripsSignedOutHero() {
                     {t('trips.signedOut.safeLabel')}
                   </Box>
                 </Box>
-                <CardContent sx={{ py: 1.5 }}>
+                <CardContent>
                   <Typography
                     variant="caption"
                     color="text.secondary"

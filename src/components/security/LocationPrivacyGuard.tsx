@@ -55,9 +55,9 @@ export function LocationPrivacyGuard({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {showWarning && locationData && (
-        <Alert sx={{ borderColor: 'warning.main' }}>
+        <Alert>
           <Shield style={{ height: 16, width: 16 }} />
-          <AlertDescription sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <AlertDescription>
             <Box component="span">Location data is protected by privacy controls</Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'text.secondary' }}>
               <Clock style={{ height: 12, width: 12 }} />
@@ -68,14 +68,14 @@ export function LocationPrivacyGuard({
       )}
 
       {isLocationAnonymized && (
-        <Card sx={{ bgcolor: 'action.hover' }}>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Card>
+          <CardHeader>
+            <CardTitle>
               <MapPin style={{ height: 16, width: 16 }} />
               Location Privacy Protection Active
             </CardTitle>
           </CardHeader>
-          <CardContent sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+          <CardContent>
             This location data has been automatically anonymized for privacy protection.
             Only general area information is available.
           </CardContent>

@@ -106,7 +106,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'created':
-        return <Badge variant="default" sx={{ bgcolor: 'success.main', color: 'success.contrastText' }}>Created</Badge>;
+        return <Badge variant="default">Created</Badge>;
       case 'exists':
         return <Badge variant="secondary">Already Exists</Badge>;
       case 'error':
@@ -119,14 +119,14 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" sx={{ gap: 1 }}>
+        <Button variant="outline">
           <Sparkles style={{ width: 16, height: 16 }} />
           AI Bulk Create
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: 672, maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <DialogTitle>
             <Sparkles style={{ width: 20, height: 20 }} />
             AI-Powered Bulk Tag Creation
           </DialogTitle>
@@ -212,7 +212,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
             <Button
               onClick={handleSubmit}
               disabled={isLoading || !terms.trim()}
-              sx={{ gap: 1 }}
+
             >
               {isLoading && <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />}
               Create Tags with AI

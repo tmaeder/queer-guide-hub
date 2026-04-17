@@ -86,7 +86,7 @@ export function VenueEnrichmentPreview({
                 </Box>
               </CardHeader>
 
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <CardContent>
                 {result.data.address && (
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                     <MapPin style={{ height: 16, width: 16, marginTop: 2, color: 'var(--muted-foreground)', flexShrink: 0 }} />

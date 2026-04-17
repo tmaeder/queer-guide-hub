@@ -206,7 +206,7 @@ export function ReviewQueueEnhanced() {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Filters */}
       <Card>
-        <CardContent sx={{ p: 2 }}>
+        <CardContent>
           <Box
             sx={{
               display: 'flex',
@@ -353,7 +353,7 @@ export function ReviewQueueEnhanced() {
       {/* Empty State */}
       {!isLoading && items.length === 0 && (
         <Card>
-          <CardContent sx={{ p: 6, textAlign: 'center' }}>
+          <CardContent>
             <Box
               sx={{
                 mx: 'auto',
@@ -416,7 +416,7 @@ export function ReviewQueueEnhanced() {
                   transition: 'background-color 0.15s',
                 }}
               >
-                <CardContent sx={{ p: 2 }}>
+                <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                     <input
                       type="checkbox"

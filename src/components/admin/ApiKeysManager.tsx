@@ -83,7 +83,7 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case 'configured':
       return (
-        <Badge variant="default" sx={{ bgcolor: '#166534', color: 'white' }}>
+        <Badge variant="default">
           Configured
         </Badge>
       );
@@ -91,7 +91,7 @@ const getStatusBadge = (status: string) => {
       return <Badge variant="destructive">Missing</Badge>;
     case 'error':
       return (
-        <Badge variant="secondary" sx={{ bgcolor: '#92400e', color: 'white' }}>
+        <Badge variant="secondary">
           Error
         </Badge>
       );
@@ -325,7 +325,7 @@ export const ApiKeysManager = () => {
 
       {loading ? (
         <Card>
-          <CardContent sx={{ p: 4, textAlign: 'center' }}>
+          <CardContent>
             <RefreshCw
               style={{
                 height: 32,
@@ -381,7 +381,7 @@ export const ApiKeysManager = () => {
             <Card>
               <CardHeader>
                 <CardTitle
-                  sx={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: 1 }}
+
                 >
                   <Shield style={{ width: 20, height: 20 }} />
                   Supabase Environment Secrets
@@ -465,7 +465,7 @@ export const ApiKeysManager = () => {
           <Card>
             <CardHeader>
               <CardTitle
-                sx={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: 1 }}
+
               >
                 <Server style={{ width: 20, height: 20 }} />
                 Custom API Keys

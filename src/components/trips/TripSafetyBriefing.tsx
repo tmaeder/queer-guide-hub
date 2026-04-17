@@ -478,12 +478,7 @@ function CountryAccordion({
                   </Typography>
                   <Badge
                     variant="secondary"
-                    sx={{
-                      bgcolor: scoreInfo.bgColor,
-                      color: scoreInfo.color,
-                      fontSize: '0.6875rem',
-                      height: 20,
-                    }}
+
                   >
                     {t(
                       `trips.safety.scoreLabel.${scoreLabelToKey(scoreInfo.label)}`,
@@ -493,7 +488,7 @@ function CountryAccordion({
                   {warningCount > 0 && (
                     <Badge
                       variant="destructive"
-                      sx={{ fontSize: '0.6875rem', height: 20 }}
+
                     >
                       {t('trips.safety.warningCount', { count: warningCount })}
                     </Badge>
@@ -536,7 +531,7 @@ function CountryAccordion({
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent sx={{ pt: 0, pb: 2, px: 2 }}>
+          <CardContent>
             <Box
               sx={{
                 borderTop: '1px solid',

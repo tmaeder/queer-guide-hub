@@ -60,7 +60,7 @@ export function TagCategorizer() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <CardTitle>
           <Tag style={{ width: 20, height: 20 }} />
           Tag Categorization
         </CardTitle>
@@ -68,7 +68,7 @@ export function TagCategorizer() {
           Automatically categorize all uncategorized tags using AI
         </CardDescription>
       </CardHeader>
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <CardContent>
         {progress && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -77,7 +77,7 @@ export function TagCategorizer() {
             </Box>
             <Progress
               value={(progress.categorized / progress.total) * 100}
-              sx={{ width: '100%' }}
+
             />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <CheckCircle style={{ width: 16, height: 16, color: '#22c55e' }} />
@@ -90,7 +90,7 @@ export function TagCategorizer() {
           <Button
             onClick={handleCategorizeAll}
             disabled={isRunning}
-            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+
           >
             {isRunning ? (
               <>

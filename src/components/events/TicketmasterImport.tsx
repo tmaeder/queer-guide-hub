@@ -107,7 +107,7 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
           Import from Ticketmaster
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: 448 }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Import Events from Ticketmaster</DialogTitle>
         </DialogHeader>

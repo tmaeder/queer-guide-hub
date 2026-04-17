@@ -424,18 +424,7 @@ export const UniversalSearchBar = () => {
                 {activeFiltersCount > 0 && (
                   <Badge
                     variant="destructive"
-                    sx={{
-                      position: 'absolute',
-                      top: -4,
-                      right: -4,
-                      height: 20,
-                      width: 20,
-                      p: 0,
-                      fontSize: '0.75rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
+
                   >
                     {activeFiltersCount}
                   </Badge>
@@ -572,12 +561,7 @@ export const UniversalSearchBar = () => {
                           </Box>
                           <Badge
                             variant="outline"
-                            sx={{
-                              ml: 1,
-                              fontSize: '0.75rem',
-                              textTransform: 'capitalize',
-                              flexShrink: 0,
-                            }}
+
                           >
                             {suggestion.type}
                           </Badge>

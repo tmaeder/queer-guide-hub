@@ -72,8 +72,8 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Enhanced Month Stats */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
-        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderColor: 'divider', borderWidth: 1, borderStyle: 'solid' }}>
-          <CardContent sx={{ p: 2 }}>
+        <Card>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
                 <CalendarIcon style={{ height: 20, width: 20 }} />
@@ -86,8 +86,8 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
           </CardContent>
         </Card>
 
-        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.1))', borderColor: 'success.main', borderWidth: 1, borderStyle: 'solid', opacity: 0.2 }}>
-          <CardContent sx={{ p: 2 }}>
+        <Card>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ p: 1, bgcolor: 'success.main', borderRadius: 2, opacity: 0.1, position: 'relative' }}>
                 <Ticket style={{ height: 20, width: 20, color: '#16a34a' }} />
@@ -100,8 +100,8 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
           </CardContent>
         </Card>
 
-        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderColor: 'divider', borderWidth: 1, borderStyle: 'solid' }}>
-          <CardContent sx={{ p: 2 }}>
+        <Card>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover', position: 'relative' }}>
                 <Star style={{ height: 20, width: 20, color: '#555555' }} />
@@ -119,10 +119,10 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
         {/* Calendar Section */}
         <Box>
-          <Card sx={{ boxShadow: 3 }}>
-            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
+          <Card>
+            <CardHeader>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <CardTitle sx={{ fontSize: '1.25rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 3 }}>
+                <CardTitle>
                   <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
                     <CalendarIcon style={{ height: 20, width: 20 }} />
                   </Box>
@@ -148,7 +148,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                 </Box>
               </Box>
             </CardHeader>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent>
               <Calendar
                 mode="single"
                 selected={selectedDate}
@@ -173,9 +173,9 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
 
         {/* Events Section */}
         <Box>
-          <Card sx={{ boxShadow: 3, height: '100%' }}>
-            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(var(--secondary-rgb), 0.05), rgba(var(--secondary-rgb), 0.1))', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
-              <CardTitle sx={{ fontSize: '1.125rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Card>
+            <CardHeader>
+              <CardTitle>
                 <Box sx={{ width: 12, height: 12, bgcolor: 'primary.main', borderRadius: '50%', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                 {format(selectedDate, 'MMM d, yyyy')}
               </CardTitle>
@@ -185,7 +185,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                 </Typography>
               )}
             </CardHeader>
-            <CardContent sx={{ p: 2 }}>
+            <CardContent>
               {eventsForSelectedDate.length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
                   <Box sx={{ mx: 'auto', width: 48, height: 48, bgcolor: 'action.hover', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>

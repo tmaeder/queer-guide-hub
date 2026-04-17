@@ -39,7 +39,6 @@ import Typography from '@mui/material/Typography';
 import { PageHeader } from '@/components/layout/PageHeader';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-
 export default function ProfileSettings() {
   const navigate = useLocalizedNavigate();
   const { user, hasPasskey } = useAuth();
@@ -231,7 +230,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         }
       >
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Profile Completion</Typography>
               <Typography variant="body2" color="text.secondary">{profileCompletion}%</Typography>

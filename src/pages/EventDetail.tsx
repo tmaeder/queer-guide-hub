@@ -49,7 +49,6 @@ import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { SendEventDialog } from '@/components/messaging/SendEventDialog';import { useTranslation } from 'react-i18next';
 
-
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
     id: string;
@@ -565,7 +564,7 @@ export default function EventDetail() {
             </Button>
           )}
           {!isPast && tripStatus?.isInTrip && (
-            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
+            <Badge variant="secondary">
               In {tripStatus.count} trip{tripStatus.count !== 1 ? 's' : ''}
             </Badge>
           )}
@@ -821,7 +820,7 @@ export default function EventDetail() {
             const lng = event.longitude ?? event.venues?.longitude;
             return typeof lat === 'number' && typeof lng === 'number' ? (
               <Card ref={venueRef}>
-                <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+                <CardContent>
                   <EntityMap
                     center={[Number(lng), Number(lat)]}
                     zoom={15}
@@ -848,7 +847,7 @@ export default function EventDetail() {
             <CardHeader>
               <CardTitle>Event Details</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Calendar style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                 <Typography variant="body2">
@@ -916,7 +915,7 @@ export default function EventDetail() {
               <CardHeader>
                 <CardTitle>Links</CardTitle>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <CardContent>
                 {event.website && (
                   <Button
                     variant="outline"
@@ -953,7 +952,7 @@ export default function EventDetail() {
               <CardHeader>
                 <CardTitle>Venue</CardTitle>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <CardContent>
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
                   {event.venues.name}
                 </Typography>

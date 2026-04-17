@@ -43,8 +43,8 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
   };
 
   return (
-    <Card sx={{ maxWidth: 480, mx: 'auto' }}>
-      <CardHeader sx={{ textAlign: 'center' }}>
+    <Card>
+      <CardHeader>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Mail size={48} color="var(--mui-palette-primary-main)" />
         </Box>
@@ -82,7 +82,7 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
             variant="outline"
             onClick={handleResend}
             disabled={cooldown > 0 || status === 'sending'}
-            sx={{ width: '100%' }}
+
           >
             {status === 'sending' && (
               <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
@@ -92,7 +92,7 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
               : t('auth.verifyEmail.resend', 'Resend verification email')}
           </Button>
 
-          <Button type="button" variant="ghost" onClick={onBackToLogin} sx={{ width: '100%' }}>
+          <Button type="button" variant="ghost" onClick={onBackToLogin}>
             {t('auth.verifyEmail.backToLogin', 'Back to sign in')}
           </Button>
         </Box>

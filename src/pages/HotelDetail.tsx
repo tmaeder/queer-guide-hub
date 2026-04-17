@@ -185,7 +185,7 @@ export default function HotelDetail() {
             Add to Trip
           </Button>
           {tripStatus?.isInTrip && (
-            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>
+            <Badge variant="secondary">
               In {tripStatus.count} trip{tripStatus.count !== 1 ? 's' : ''}
             </Badge>
           )}
@@ -319,7 +319,7 @@ export default function HotelDetail() {
                 <CardHeader>
                   <CardTitle>{t('pages.hotelDetail.contact', 'Contact')}</CardTitle>
                 </CardHeader>
-                <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <CardContent>
                   {hotel.address && (
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                       <MapPin style={{ width: 16, height: 16, marginTop: 2, flexShrink: 0 }} />

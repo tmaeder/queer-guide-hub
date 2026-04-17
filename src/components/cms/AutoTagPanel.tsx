@@ -100,13 +100,13 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
           </Box>
         </CardTitle>
       </CardHeader>
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <CardContent>
         {/* Initial state: show suggest button */}
         {!suggestions && !loading && !applied && (
           <Button
             variant="outline"
             size="sm"
-            sx={{ width: '100%' }}
+
             onClick={handleSuggest}
           >
             <Sparkles style={{ height: 14, width: 14, marginRight: 6 }} />
@@ -190,7 +190,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
             <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
               <Button
                 size="sm"
-                sx={{ flex: 1 }}
+
                 onClick={handleApply}
                 disabled={applying || selected.size === 0}
               >
@@ -235,7 +235,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
             <Button
               variant="outline"
               size="sm"
-              sx={{ width: '100%' }}
+
               onClick={() => {
                 clearSuggestions();
                 setApplied(false);

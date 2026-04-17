@@ -256,7 +256,7 @@ export default function CountryDetail() {
         >
           {/* Navigation */}
           <Box sx={{ mb: 2 }}>
-            <Button variant="ghost" asChild sx={{ mb: 1 }}>
+            <Button variant="ghost" asChild>
               <LocalizedLink to="/users">
                 <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
                 Back to Directory
@@ -412,68 +412,60 @@ export default function CountryDetail() {
       {/* Main Content — Tabs immediately */}
       <Box sx={{ mx: 'auto', px: 3, pb: 8 }}>
         <Card>
-          <CardContent sx={{ p: 3 }}>
+          <CardContent>
             <Tabs
               defaultValue="overview"
               style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
             >
               <TabsList
-                sx={{
-                  display: 'grid',
-                  width: '100%',
-                  maxWidth: 768,
-                  gridTemplateColumns: 'repeat(8, 1fr)',
-                  mx: 'auto',
-                  height: 48,
-                  bgcolor: 'action.hover',
-                }}
+
               >
                 <TabsTrigger
                   value="overview"
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+
                 >
                   <Info style={{ height: 16, width: 16 }} />
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                     Overview
                   </Box>
                 </TabsTrigger>
-                <TabsTrigger value="rights" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TabsTrigger value="rights">
                   <Shield style={{ height: 16, width: 16 }} />
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                     Rights
                   </Box>
                 </TabsTrigger>
-                <TabsTrigger value="cities" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TabsTrigger value="cities">
                   <Building2 style={{ height: 16, width: 16 }} />
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                     Cities
                   </Box>
                 </TabsTrigger>
-                <TabsTrigger value="venues" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TabsTrigger value="venues">
                   <MapPin style={{ height: 16, width: 16 }} />
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                     Venues
                   </Box>
                 </TabsTrigger>
-                <TabsTrigger value="events" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TabsTrigger value="events">
                   <Calendar style={{ height: 16, width: 16 }} />
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                     Events
                   </Box>
                 </TabsTrigger>
-                <TabsTrigger value="travel" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TabsTrigger value="travel">
                   <Plane style={{ height: 16, width: 16 }} />
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                     Travel
                   </Box>
                 </TabsTrigger>
-                <TabsTrigger value="news" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TabsTrigger value="news">
                   <Newspaper style={{ height: 16, width: 16 }} />
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                     News
                   </Box>
                 </TabsTrigger>
-                <TabsTrigger value="map" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TabsTrigger value="map">
                   <MapIcon style={{ height: 16, width: 16 }} />
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                     Map
@@ -498,7 +490,7 @@ export default function CountryDetail() {
                   {/* About Card */}
                   <Card>
                     <CardHeader>
-                      <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CardTitle>
                         <Globe style={{ height: 20, width: 20 }} />
                         About {country.name}
                       </CardTitle>
@@ -514,12 +506,12 @@ export default function CountryDetail() {
                   {/* Quick Facts Card */}
                   <Card>
                     <CardHeader>
-                      <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CardTitle>
                         <Star style={{ height: 20, width: 20 }} />
                         Quick Facts
                       </CardTitle>
                     </CardHeader>
-                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <CardContent>
                       {country.capital && (
                         <Box
                           sx={{
@@ -642,7 +634,7 @@ export default function CountryDetail() {
                 {/* Weather Forecast */}
                 {country.latitude && country.longitude && (
                   <Card>
-                    <CardContent sx={{ p: 0 }}>
+                    <CardContent>
                       <WeatherForecast
                         latitude={country.latitude}
                         longitude={country.longitude}
@@ -746,7 +738,7 @@ export default function CountryDetail() {
                   </Box>
                 ) : (
                   <Card>
-                    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+                    <CardContent>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box
                           sx={{
@@ -825,7 +817,7 @@ export default function CountryDetail() {
                   </Box>
                 ) : (
                   <Card>
-                    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+                    <CardContent>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box
                           sx={{
@@ -904,7 +896,7 @@ export default function CountryDetail() {
                   </Box>
                 ) : (
                   <Card>
-                    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+                    <CardContent>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box
                           sx={{
@@ -959,7 +951,7 @@ export default function CountryDetail() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CardTitle>
                       <Activity style={{ height: 20, width: 20 }} />
                       Activities & Tours
                     </CardTitle>
@@ -1024,7 +1016,7 @@ export default function CountryDetail() {
                   </Box>
                 ) : (
                   <Card>
-                    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+                    <CardContent>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box
                           sx={{

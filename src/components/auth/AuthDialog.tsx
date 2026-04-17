@@ -64,8 +64,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent sx={{ maxWidth: { sm: '28rem' }, width: '100%', mx: 2, p: 0, gap: 0 }}>
-        <DialogHeader sx={{ px: 3, pt: 3, pb: 2, textAlign: 'center' }}>
+      <DialogContent>
+        <DialogHeader>
           <Box
             sx={{
               display: 'flex',
@@ -88,7 +88,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               The Queer Guide
             </Typography>
           </Box>
-          <DialogTitle sx={{ fontSize: '1.5rem', fontWeight: 600, color: 'text.primary' }}>
+          <DialogTitle>
             Welcome Back
           </DialogTitle>
           <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
@@ -106,7 +106,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label
                   htmlFor="email"
-                  sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}
+
                 >
                   Email Address
                 </Label>
@@ -123,7 +123,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label
                   htmlFor="password"
-                  sx={{ fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}
+
                 >
                   Password
                 </Label>
@@ -141,15 +141,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     variant="ghost"
                     size="sm"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    sx={{
-                      position: 'absolute',
-                      right: 4,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      height: 36,
-                      width: 36,
-                      p: 0,
-                    }}
+
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
                   >

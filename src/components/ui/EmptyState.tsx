@@ -40,7 +40,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
   return (
     <Card>
-      <CardContent sx={{ p: 6, textAlign: 'center' }}>
+      <CardContent>
         <Box
           sx={{
             width: 72,
@@ -112,7 +112,7 @@ export const LoadingTimeout: React.FC<LoadingTimeoutProps> = ({
 }) => {
   return (
     <Card>
-      <CardContent sx={{ p: 4, textAlign: 'center' }}>
+      <CardContent>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
           {message}
         </Typography>
@@ -138,7 +138,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 }) => {
   return (
     <Card>
-      <CardContent sx={{ p: 4, textAlign: 'center' }}>
+      <CardContent>
         <Typography variant="body1" color="error.main" sx={{ mb: 2 }}>
           {message}
         </Typography>

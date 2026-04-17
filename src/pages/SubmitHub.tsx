@@ -46,8 +46,8 @@ const SubmitHub = () => {
 
       {/* Auth gate */}
       {!user && (
-        <Card sx={{ mb: 3, bgcolor: 'action.hover' }}>
-          <CardContent sx={{ p: 2 }}>
+        <Card>
+          <CardContent>
             <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
               <strong>Tip:</strong>{' '}
               <Box
@@ -73,16 +73,10 @@ const SubmitHub = () => {
       >
         {/* Scan Flyer card */}
         <Card
-          sx={{
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            '&:hover': { transform: 'translateY(-2px)' },
-            gridColumn: { sm: '1 / -1', md: '1 / -1' },
-            background: 'linear-gradient(135deg, #ec489910 0%, #DB277710 100%)',
-          }}
+
           onClick={() => navigate('/submit/event?mode=scan')}
         >
-          <CardContent sx={{ p: 3 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box
                 sx={{
@@ -117,14 +111,10 @@ const SubmitHub = () => {
           return (
             <Card
               key={type.id}
-              sx={{
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                '&:hover': { transform: 'translateY(-2px)' },
-              }}
+
               onClick={() => navigate(`/submit/${type.id}`)}
             >
-              <CardContent sx={{ p: 3 }}>
+              <CardContent>
                 <Box
                   sx={{
                     width: 44,

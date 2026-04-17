@@ -144,7 +144,7 @@ export function SecurityDashboard() {
       {/* Security Metrics */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">Events (24h)</Typography>
@@ -156,7 +156,7 @@ export function SecurityDashboard() {
         </Card>
 
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">Critical Events</Typography>
@@ -168,7 +168,7 @@ export function SecurityDashboard() {
         </Card>
 
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">Admin Access</Typography>
@@ -180,7 +180,7 @@ export function SecurityDashboard() {
         </Card>
 
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">Failed Logins</Typography>

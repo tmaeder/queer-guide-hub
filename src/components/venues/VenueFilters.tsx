@@ -314,7 +314,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            sx={{ pl: 4.5, height: 44 }}
+
           />
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -323,7 +323,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             onClick={handleNearMeToggle}
             disabled={isDetectingLocation}
             size="icon"
-            sx={{ height: 44, width: 44 }}
+
             aria-label="Find near me"
           >
             {isDetectingLocation ? (
@@ -334,7 +334,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           </Button>
           <Button
             onClick={handleSearch}
-            sx={{ bgcolor: 'primary.main', height: 44, width: 44 }}
+
             size="icon"
             aria-label="Search"
           >
@@ -343,7 +343,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           <Button
             variant={showAdvanced ? 'default' : 'outline'}
             onClick={() => setShowAdvanced(!showAdvanced)}
-            sx={{ height: 44, gap: 1, px: 2 }}
+
             aria-label="Toggle filters"
           >
             <Filter style={{ width: 16, height: 16 }} />
@@ -384,14 +384,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             variant={category === cat ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleCategoryClick(cat)}
-            sx={{
-              height: 32,
-              px: 2,
-              fontSize: '0.8rem',
-              fontWeight: 500,
-              textTransform: 'capitalize',
-              borderRadius: 9999,
-            }}
+
           >
             {cat}
           </Button>
@@ -402,54 +395,54 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
       {hasActiveFilters && !showAdvanced && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center' }}>
           {search && (
-            <Badge variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+            <Badge variant="secondary">
               &ldquo;{search}&rdquo;
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => { setSearch(''); autoApply({ search: '' }); }} />
             </Badge>
           )}
           {city && (
-            <Badge variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+            <Badge variant="secondary">
               {city}
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => { setCity(''); autoApply({ city: '' }); }} />
             </Badge>
           )}
           {selectedTags.map((tag) => (
-            <Badge key={tag} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+            <Badge key={tag} variant="secondary">
               {tag}
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleTagToggle(tag)} />
             </Badge>
           ))}
           {selectedAmenities.map((a) => (
-            <Badge key={a} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+            <Badge key={a} variant="secondary">
               {a}
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleAmenityToggle(a)} />
             </Badge>
           ))}
           {selectedServices.map((s) => (
-            <Badge key={s} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+            <Badge key={s} variant="secondary">
               {s}
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleServiceToggle(s)} />
             </Badge>
           ))}
           {selectedAccessibilityAttributes.map((a) => (
-            <Badge key={a} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+            <Badge key={a} variant="secondary">
               {a}
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleAccessibilityToggle(a)} />
             </Badge>
           ))}
           {selectedTargetGroups.map((g) => (
-            <Badge key={g} variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+            <Badge key={g} variant="secondary">
               {g}
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => handleTargetGroupToggle(g)} />
             </Badge>
           ))}
           {nearMe && (
-            <Badge variant="secondary" sx={{ gap: 1, fontSize: '0.75rem' }}>
+            <Badge variant="secondary">
               Near Me
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={handleNearMeToggle} />
             </Badge>
           )}
-          <Button variant="ghost" size="sm" onClick={clearFilters} sx={{ height: 24, px: 1.5, fontSize: '0.75rem', color: 'text.secondary' }}>
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
             Clear all
           </Button>
         </Box>
@@ -471,7 +464,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
         >
           {/* City input */}
           <Box sx={{ maxWidth: 400 }}>
-            <Label htmlFor="city" sx={{ fontSize: '0.8rem', fontWeight: 500, mb: 0.5, display: 'block' }}>
+            <Label htmlFor="city">
               City
             </Label>
             <Input
@@ -480,7 +473,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               value={city}
               onChange={(e) => setCity(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              sx={{ height: 38 }}
+
             />
           </Box>
 
@@ -573,7 +566,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
                 variant="outline"
                 onClick={clearFilters}
                 size="sm"
-                sx={{ gap: 1 }}
+
               >
                 <X style={{ width: 14, height: 14 }} />
                 Clear All
@@ -616,7 +609,7 @@ function FilterDropdown({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Label sx={{ fontSize: '0.8rem', fontWeight: 500 }}>
+      <Label>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ width: 7, height: 7, bgcolor: dotColor, borderRadius: '50%' }} />
           {label}
@@ -628,7 +621,7 @@ function FilterDropdown({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            sx={{ width: '100%', justifyContent: 'space-between', height: 38, fontSize: '0.8rem' }}
+
           >
             {selected.length > 0
               ? `${selected.length} selected`
@@ -638,7 +631,7 @@ function FilterDropdown({
             />
           </Button>
         </PopoverTrigger>
-        <PopoverContent sx={{ width: '100%', p: 0 }} align="start">
+        <PopoverContent align="start">
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
             <CommandList>
@@ -683,7 +676,7 @@ function FilterDropdown({
       {selected.length > 0 && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {selected.map((val) => (
-            <Badge key={val} variant="secondary" sx={{ gap: 1, fontSize: '0.7rem' }}>
+            <Badge key={val} variant="secondary">
               {val}
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => onToggle(val)} />
             </Badge>

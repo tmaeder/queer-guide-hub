@@ -422,7 +422,7 @@ export default function AdminPersonalities() {
     return (
       <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
         <Card>
-          <CardContent sx={{ py: 6, textAlign: 'center' }}>
+          <CardContent>
             <AlertCircle
               style={{
                 height: 48,

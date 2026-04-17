@@ -166,7 +166,7 @@ export function PersonalizedFeed() {
                   )}
                 </Box>
                 {city.reason !== 'trending' && (
-                  <Badge variant="outline" sx={{ fontSize: '0.65rem' }}>
+                  <Badge variant="outline">
                     {reasonLabels[city.reason] || city.reason}
                   </Badge>
                 )}

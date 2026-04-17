@@ -57,16 +57,16 @@ export function VenueCheckInButton({
         <Button
           onClick={() => setShowPrivacyDialog(true)}
           disabled={loading}
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+
           variant="default"
         >
           <Shield style={{ width: 16, height: 16 }} />
           Check In Securely
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: { sm: '28rem' } }}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <DialogTitle>
             <Shield style={{ width: 20, height: 20 }} />
             Privacy-Protected Check-In
           </DialogTitle>

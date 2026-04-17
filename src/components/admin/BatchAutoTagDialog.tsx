@@ -79,7 +79,7 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
           Batch Auto-Tag
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: 540 }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -225,7 +225,7 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
 
           {/* Run button */}
           {!loading && (
-            <Button onClick={handleRun} sx={{ width: '100%' }}>
+            <Button onClick={handleRun}>
               <Sparkles style={{ height: 16, width: 16, marginRight: 8 }} />
               {result ? 'Run Again' : 'Start Batch Auto-Tag'}
             </Button>

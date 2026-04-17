@@ -68,7 +68,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
             <CardContent style={{ padding: 16 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                 <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.name}</Typography>
-                <Badge variant="outline" sx={{ fontSize: '0.6rem' }}>{p.badge}</Badge>
+                <Badge variant="outline">{p.badge}</Badge>
               </Box>
               <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1 }}>
                 {p.description}

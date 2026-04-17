@@ -96,12 +96,7 @@ export function MarketplaceCard({
 
   return (
     <Card
-      sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'opacity 0.2s',
-        bgcolor: 'background.paper',
-      }}
+
     >
       {showFavoriteButton && (
         <Box sx={{ position: 'absolute', top: 3, right: 3, zIndex: 10 }}>
@@ -110,7 +105,7 @@ export function MarketplaceCard({
             type="marketplace"
             variant="ghost"
             size="sm"
-            sx={{ bgcolor: 'background.default' }}
+
           />
         </Box>
       )}
@@ -145,7 +140,7 @@ export function MarketplaceCard({
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-              <Badge variant="secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+              <Badge variant="secondary">
                 {listing.category}
               </Badge>
               {listing.featured && <Box sx={{ width: 8, height: 8, bgcolor: 'text.primary' }} />}
@@ -200,7 +195,7 @@ export function MarketplaceCard({
               {formatPrice()}
             </Typography>
             {listing.shipping_available && (
-              <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
+              <Badge variant="outline">
                 Ships
               </Badge>
             )}
@@ -223,7 +218,7 @@ export function MarketplaceCard({
               <Button
                 size="sm"
                 variant="ghost"
-                sx={{ height: 28, width: 28, p: 0 }}
+
                 aria-label="Visit website"
                 asChild
               >
@@ -241,7 +236,7 @@ export function MarketplaceCard({
               <Button
                 size="sm"
                 variant="ghost"
-                sx={{ height: 28, width: 28, p: 0 }}
+
                 aria-label={`Call ${listing.contact_phone}`}
                 asChild
               >
@@ -254,7 +249,7 @@ export function MarketplaceCard({
               <Button
                 size="sm"
                 variant="ghost"
-                sx={{ height: 28, width: 28, p: 0 }}
+
                 aria-label={`Email ${listing.contact_email}`}
                 asChild
               >
@@ -282,7 +277,7 @@ export function MarketplaceCard({
           </Box>
 
           <LocalizedLink to={`/marketplace/${listing.slug}`}>
-            <Button size="sm" sx={{ height: 28, fontSize: '0.75rem' }}>
+            <Button size="sm">
               View
             </Button>
           </LocalizedLink>

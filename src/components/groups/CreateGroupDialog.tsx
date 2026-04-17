@@ -62,12 +62,12 @@ export const CreateGroupDialog = ({
   };
   return <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button sx={{ background: 'linear-gradient(to right, var(--gradient-primary))', '&:hover': { opacity: 0.9 }, color: 'rgb(2 6 23)' }}>
+        <Button>
           <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
           Create Group
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: { sm: '28rem' } }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -135,10 +135,10 @@ export const CreateGroupDialog = ({
           </Box>
 
           <Box sx={{ display: 'flex', gap: 1.5, pt: 2 }}>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} sx={{ flex: 1 }}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!formData.name.trim() || isCreating} sx={{ flex: 1, background: 'linear-gradient(to right, var(--gradient-primary))', '&:hover': { opacity: 0.9 } }}>
+            <Button type="submit" disabled={!formData.name.trim() || isCreating}>
               {isCreating ? "Creating..." : "Create Group"}
             </Button>
           </Box>

@@ -110,7 +110,7 @@ function StatCard({ icon: Icon, label, count, color, active, onClick }: StatCard
         transition: 'border-color 0.15s, opacity 0.15s',
       }}
     >
-      <CardContent sx={{ p: 2, textAlign: 'center', '&:last-child': { pb: 2 } }}>
+      <CardContent>
         <Box
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}
         >

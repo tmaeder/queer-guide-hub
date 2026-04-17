@@ -366,7 +366,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           {type !== 'country' && type !== 'city' && getStats()}
         </CardTitle>
       </CardHeader>
-      {getSubtitle() && <CardContent sx={{ pt: 0 }}>{getSubtitle()}</CardContent>}
+      {getSubtitle() && <CardContent>{getSubtitle()}</CardContent>}
     </Card>
   );
 

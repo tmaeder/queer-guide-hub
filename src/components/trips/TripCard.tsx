@@ -139,17 +139,7 @@ export function TripCard({ trip }: Props) {
         aria-label={t('trips.card.ariaLabel', { title: trip.title })}
         onClick={handleNavigate}
         onKeyDown={handleKeyDown}
-        sx={{
-          '& .trip-card-menu': {
-            opacity: 0,
-            transform: 'translateY(-2px)',
-            transition: 'opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1), transform 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
-          },
-          '&:hover .trip-card-menu, &:focus-within .trip-card-menu': {
-            opacity: 1,
-            transform: 'translateY(0)',
-          },
-        }}
+
       >
         <CardImage
           src={trip.cover_image_url}

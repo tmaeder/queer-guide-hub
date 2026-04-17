@@ -99,13 +99,13 @@ export function UniversalContentDashboard() {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Skeleton sx={{ height: 32, width: 256 }} />
+        <Skeleton />
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} sx={{ height: 96 }} />
+            <Skeleton key={i} />
           ))}
         </Box>
-        <Skeleton sx={{ height: 384 }} />
+        <Skeleton />
       </Box>
     );
   }
@@ -114,12 +114,12 @@ export function UniversalContentDashboard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle sx={{ color: 'error.main' }}>Error</CardTitle>
+          <CardTitle>Error</CardTitle>
         </CardHeader>
         <CardContent>
           <Typography>{error}</Typography>
-          <Button onClick={handleRefresh} sx={{ mt: 2 }}>
-            <RefreshCw sx={{ height: 16, width: 16, mr: 1 }} />
+          <Button onClick={handleRefresh}>
+            <RefreshCw />
             Retry
           </Button>
         </CardContent>
@@ -136,11 +136,11 @@ export function UniversalContentDashboard() {
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button onClick={() => setIsCreatorOpen(true)}>
-            <Plus sx={{ height: 16, width: 16, mr: 1 }} />
+            <Plus />
             Create Content
           </Button>
           <Button onClick={handleRefresh} variant="outline">
-            <RefreshCw sx={{ height: 16, width: 16, mr: 1 }} />
+            <RefreshCw />
             Refresh
           </Button>
         </Box>
@@ -149,25 +149,25 @@ export function UniversalContentDashboard() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview">
-            <BarChart3 sx={{ height: 16, width: 16, mr: 1 }} />
+            <BarChart3 />
             Overview
           </TabsTrigger>
           <TabsTrigger value="content-list">
-            <Database sx={{ height: 16, width: 16, mr: 1 }} />
+            <Database />
             Content List
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="overview">
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' } }}>
             {contentStats.map((stat) => (
               <Card
                 key={stat.content_type}
-                sx={{ cursor: 'pointer', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 6 } }}
+
                 onClick={() => handleContentTypeFilter(stat.content_type)}
               >
-                <CardHeader sx={{ pb: 1.5 }}>
-                  <CardTitle sx={{ fontSize: 14, fontWeight: 'medium', textTransform: 'capitalize' }}>
+                <CardHeader>
+                  <CardTitle>
                     {stat.content_type.replace('_', ' ')}
                   </CardTitle>
                 </CardHeader>
@@ -182,29 +182,29 @@ export function UniversalContentDashboard() {
           </Box>
         </TabsContent>
 
-        <TabsContent value="content-list" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="content-list">
           <Card>
             <CardHeader>
-              <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Filter sx={{ height: 20, width: 20 }} />
+              <CardTitle>
+                <Filter />
                 Filters & Search
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                 <Box sx={{ flex: 1, position: 'relative' }}>
-                  <Search sx={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'text.secondary', height: 16, width: 16 }} />
+                  <Search />
                   <Input
                     placeholder="Search content..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    sx={{ pl: 4.5 }}
+
                   />
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <Select value={filters.contentType} onValueChange={(value) => handleFilterChange('contentType', value)}>
-                    <SelectTrigger sx={{ width: 192 }}>
+                    <SelectTrigger>
                       <SelectValue placeholder="Content Type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -224,7 +224,7 @@ export function UniversalContentDashboard() {
                   </Select>
 
                   <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
-                    <SelectTrigger sx={{ width: 128 }}>
+                    <SelectTrigger>
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -273,18 +273,18 @@ export function UniversalContentDashboard() {
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
+                          <Badge variant="outline">
                             {content.content_type.replace('_', ' ')}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge
-                            sx={{ bgcolor: getStatusColor(content.status || 'unknown', content.content_type), color: 'white' }}
+
                           >
                             {content.status || 'unknown'}
                           </Badge>
                         </TableCell>
-                        <TableCell sx={{ fontSize: 14 }}>
+                        <TableCell>
                           {formatDistanceToNow(new Date(content.updated_at), { addSuffix: true })}
                         </TableCell>
                         <TableCell>
@@ -296,14 +296,14 @@ export function UniversalContentDashboard() {
                                   size="sm"
                                   onClick={() => setSelectedContent(content)}
                                 >
-                                  <Eye sx={{ height: 16, width: 16 }} />
+                                  <Eye />
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent sx={{ maxWidth: 896, maxHeight: '80vh' }}>
+                              <DialogContent>
                                 <DialogHeader>
                                   <DialogTitle>{content.title}</DialogTitle>
                                 </DialogHeader>
-                                <ScrollArea sx={{ height: '60vh' }}>
+                                <ScrollArea>
                                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
                                       <Box>
@@ -312,7 +312,7 @@ export function UniversalContentDashboard() {
                                       </Box>
                                       <Box>
                                         <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Status</Typography>
-                                        <Badge sx={{ bgcolor: getStatusColor(content.status || 'unknown', content.content_type), color: 'white' }}>
+                                        <Badge>
                                           {content.status || 'unknown'}
                                         </Badge>
                                       </Box>
@@ -353,7 +353,7 @@ export function UniversalContentDashboard() {
                                 setIsEditorOpen(true);
                               }}
                             >
-                              <Edit sx={{ height: 16, width: 16 }} />
+                              <Edit />
                             </Button>
 
                             {(content.content_type === 'cms_content' || content.content_type === 'community_posts') && (
@@ -362,7 +362,7 @@ export function UniversalContentDashboard() {
                                 size="sm"
                                 onClick={() => handleDelete(content.content_type, content.id)}
                               >
-                                <Trash2 sx={{ height: 16, width: 16 }} />
+                                <Trash2 />
                               </Button>
                             )}
                           </Box>

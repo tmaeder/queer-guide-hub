@@ -175,13 +175,13 @@ export const VenueImportQuickActions = () => {
     const status = getKeyStatus(source);
     switch (status) {
       case 'ready':
-        return <Badge variant="default" sx={{ gap: 0.5, bgcolor: 'rgba(34,197,94,0.1)', color: '#16a34a', fontSize: '0.7rem' }}><Key style={{ width: 10, height: 10 }} />API Ready</Badge>;
+        return <Badge variant="default"><Key style={{ width: 10, height: 10 }} />API Ready</Badge>;
       case 'error':
-        return <Badge variant="destructive" sx={{ gap: 0.5, fontSize: '0.7rem' }}><AlertTriangle style={{ width: 10, height: 10 }} />Key Error</Badge>;
+        return <Badge variant="destructive"><AlertTriangle style={{ width: 10, height: 10 }} />Key Error</Badge>;
       case 'missing':
-        return <Badge variant="destructive" sx={{ gap: 0.5, fontSize: '0.7rem' }}><XCircle style={{ width: 10, height: 10 }} />Key Missing</Badge>;
+        return <Badge variant="destructive"><XCircle style={{ width: 10, height: 10 }} />Key Missing</Badge>;
       default:
-        return <Badge variant="secondary" sx={{ gap: 0.5, fontSize: '0.7rem' }}>No Key Needed</Badge>;
+        return <Badge variant="secondary">No Key Needed</Badge>;
     }
   };
 
@@ -318,7 +318,7 @@ export const VenueImportQuickActions = () => {
             Import venues from APIs and scrapers — sources loaded from ingestion registry
           </Typography>
         </Box>
-        <Badge variant="secondary" sx={{ gap: 0.5 }}>
+        <Badge variant="secondary">
           <Database style={{ width: 12, height: 12 }} />
           Data-Driven
         </Badge>
@@ -326,7 +326,7 @@ export const VenueImportQuickActions = () => {
 
       {/* Overall Stats */}
       <Card>
-        <CardContent sx={{ pt: 2 }}>
+        <CardContent>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(5, 1fr)' }, gap: 2 }}>
             <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: '#eff6ff', borderRadius: 2 }}>
               <Typography variant="h5" sx={{ color: '#2563eb' }}>{totalVenues.toLocaleString()}</Typography>
@@ -360,8 +360,8 @@ export const VenueImportQuickActions = () => {
           const venueCount = getSourceVenueCount(source);
 
           return (
-            <Card key={source.id} sx={{ position: 'relative', overflow: 'hidden', '&:hover': { boxShadow: 6 }, transition: 'all 0.2s', opacity: !source.is_enabled ? 0.6 : 1 }}>
-              <CardHeader sx={{ pb: 1.5 }}>
+            <Card key={source.id}>
+              <CardHeader>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ p: 1, borderRadius: 2, color: 'white', bgcolor: color }}>
                     {icon}
@@ -371,12 +371,12 @@ export const VenueImportQuickActions = () => {
                     {getStatusIcon(source)}
                   </Box>
                 </Box>
-                <CardTitle sx={{ fontSize: '1.125rem' }}>{source.name}</CardTitle>
+                <CardTitle>{source.name}</CardTitle>
                 <CardDescription>
                   {source.source_type === 'scraper' ? 'Web scraper' : 'API import'} &middot; {source.is_enabled ? 'Enabled' : 'Disabled'}
                 </CardDescription>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <CardContent>
                 {/* Stats */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2" color="text.secondary">Venues in DB:</Typography>
@@ -412,13 +412,13 @@ export const VenueImportQuickActions = () => {
                 {loadingStates[source.slug] && (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <Typography variant="caption">Processing...</Typography>
-                    <Progress value={45} sx={{ height: 6 }} />
+                    <Progress value={45} />
                   </Box>
                 )}
 
                 {/* Action Button */}
                 <Button
-                  sx={{ width: '100%', gap: 1, mt: 0.5 }}
+
                   size="sm"
                   variant={canImport(source) ? "default" : "secondary"}
                   disabled={!canImport(source)}
@@ -445,7 +445,7 @@ export const VenueImportQuickActions = () => {
       {/* Venue Breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Download style={{ width: 20, height: 20 }} />
             Venue Source Breakdown
           </CardTitle>

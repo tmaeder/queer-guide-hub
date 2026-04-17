@@ -34,8 +34,8 @@ const GroupCardFixture = () => (
         <Badge variant="outline"><Typography variant="caption">Tag 2</Typography></Badge>
       </Box>
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <Button variant="ghost" size="sm" sx={{ flex: 1 }}>View</Button>
-        <Button size="sm" sx={{ flex: 1 }}>Join</Button>
+        <Button variant="ghost" size="sm">View</Button>
+        <Button size="sm">Join</Button>
       </Box>
     </CardContent>
   </Card>
@@ -71,7 +71,7 @@ export const GroupCard = ({
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
 
   return (
-    <Card sx={{ '&:hover': { boxShadow: 3 }, transition: 'all 0.3s' }}>
+    <Card>
       <CardHeader>
         <Box sx={{ pb: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
@@ -144,7 +144,7 @@ export const GroupCard = ({
                 size="sm"
                 onClick={() => onManage(group)}
                 aria-label="Manage group settings"
-                sx={{ opacity: 0, transition: 'opacity 0.2s' }}
+
               >
                 <Settings style={{ width: 16, height: 16 }} />
               </Button>
@@ -186,7 +186,7 @@ export const GroupCard = ({
         )}
 
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button asChild variant="ghost" size="sm" sx={{ flex: 1 }}>
+          <Button asChild variant="ghost" size="sm">
             <LocalizedLink to={`/groups/${group.id}`}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
@@ -200,7 +200,7 @@ export const GroupCard = ({
               onClick={() => onJoin?.(group.id)}
               disabled={isJoining}
               size="sm"
-              sx={{ flex: 1 }}
+
             >
               <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
               {isJoining ? 'Joining...' : 'Join'}
@@ -211,7 +211,7 @@ export const GroupCard = ({
               disabled={isLeaving}
               variant="outline"
               size="sm"
-              sx={{ flex: 1 }}
+
             >
               <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />
               {isLeaving ? 'Leaving...' : 'Leave'}

@@ -23,7 +23,6 @@ import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
 import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-
 const SubmitForm = () => {
   const { t } = useTranslation();
   const { contentType } = useParams<{ contentType: string }>();
@@ -179,7 +178,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
     return (
       <Box sx={{ mx: 'auto', py: 6, px: 2 }}>
         <Card>
-          <CardContent sx={{ p: 6, textAlign: 'center' }}>
+          <CardContent>
             <CheckCircle
               style={{ width: 48, height: 48, margin: '0 auto 16px', color: '#4caf50' }}
             />
@@ -230,8 +229,8 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
       {/* Auth gate */}
       {!user && (
-        <Card sx={{ mb: 3, bgcolor: 'action.hover' }}>
-          <CardContent sx={{ p: 2 }}>
+        <Card>
+          <CardContent>
             <Typography variant="body2" color="text.secondary">
               <strong>Tip:</strong>{' '}
               <Box
@@ -340,7 +339,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
       {/* Form card */}
       <Card>
-        <CardContent sx={{ p: 3 }}>
+        <CardContent>
           <form
             noValidate
             onSubmit={(e) => {

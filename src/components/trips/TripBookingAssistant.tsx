@@ -182,7 +182,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
             key={key}
             variant={activeTab === key ? 'default' : 'outline'}
             onClick={() => setActiveTab(key)}
-            sx={{ cursor: 'pointer', minHeight: 36, px: 1.5, display: 'flex', gap: 0.5, alignItems: 'center' }}
+
           >
             <Icon size={13} />
             {label}

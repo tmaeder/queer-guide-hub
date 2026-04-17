@@ -174,7 +174,7 @@ export default function MultiStepSignup({ onBack }: Props) {
   };
 
   return (
-    <Card sx={{ maxWidth: 560, mx: 'auto' }}>
+    <Card>
       <CardHeader>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

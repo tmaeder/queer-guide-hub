@@ -270,10 +270,7 @@ export default function Favorites() {
       return (
         <Card
           key={`${item.type}-${item.id}`}
-          sx={{
-            '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' },
-            transition: 'all 200ms',
-          }}
+
         >
           <Box sx={{ position: 'relative' }}>
             {item.image_url ? (
@@ -301,7 +298,7 @@ export default function Favorites() {
                 <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
                   <Badge
                     variant="secondary"
-                    sx={{ fontSize: '0.75rem', bgcolor: 'background.paper' }}
+
                   >
                     {getIcon()}
                     <Box component="span" sx={{ ml: 0.5, textTransform: 'capitalize' }}>
@@ -314,7 +311,7 @@ export default function Favorites() {
                     itemId={item.id}
                     type={item.type}
                     variant="ghost"
-                    sx={{ bgcolor: 'background.paper', '&:hover': { bgcolor: 'action.hover' } }}
+
                   />
                 </Box>
               </Box>
@@ -338,7 +335,7 @@ export default function Favorites() {
               </Box>
             )}
           </Box>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Typography
               variant="h6"
               sx={{
@@ -394,7 +391,7 @@ export default function Favorites() {
                 </Box>
               )}
               {item.category && (
-                <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
+                <Badge variant="outline">
                   {item.category}
                 </Badge>
               )}
@@ -411,10 +408,7 @@ export default function Favorites() {
                 asChild
                 variant="outline"
                 size="sm"
-                sx={{
-                  '.group:hover &': { bgcolor: 'primary.main', color: 'primary.contrastText' },
-                  transition: 'color 150ms, background-color 150ms',
-                }}
+
               >
                 <LocalizedLink to={getItemUrl()}>
                   <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
@@ -429,9 +423,9 @@ export default function Favorites() {
     return (
       <Card
         key={`${item.type}-${item.id}`}
-        sx={{ '&:hover': { boxShadow: 3 }, transition: 'all 200ms' }}
+
       >
-        <CardContent sx={{ p: 2 }}>
+        <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             {item.image_url && (
               <Box sx={{ flexShrink: 0 }}>
@@ -464,12 +458,12 @@ export default function Favorites() {
                     {getIcon()}
                     <Badge
                       variant="secondary"
-                      sx={{ fontSize: '0.75rem', textTransform: 'capitalize' }}
+
                     >
                       {item.type}
                     </Badge>
                     {item.category && (
-                      <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
+                      <Badge variant="outline">
                         {item.category}
                       </Badge>
                     )}
@@ -549,10 +543,7 @@ export default function Favorites() {
                     asChild
                     variant="outline"
                     size="sm"
-                    sx={{
-                      '.group:hover &': { bgcolor: 'primary.main', color: 'primary.contrastText' },
-                      transition: 'color 150ms, background-color 150ms',
-                    }}
+
                   >
                     <LocalizedLink to={getItemUrl()}>
                       <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
@@ -580,7 +571,7 @@ export default function Favorites() {
             variant="outline"
             onClick={handleCalendarSubscription}
             disabled={calendarLoading}
-            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+
           >
             <CalendarDays style={{ height: 16, width: 16 }} />
             Subscribe to Events Calendar
@@ -599,7 +590,7 @@ export default function Favorites() {
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-              sx={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+
             >
               <List style={{ height: 16, width: 16 }} />
             </Button>
@@ -607,7 +598,7 @@ export default function Favorites() {
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('grid')}
-              sx={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+
             >
               <Grid style={{ height: 16, width: 16 }} />
             </Button>
@@ -623,9 +614,9 @@ export default function Favorites() {
 
         {/* Calendar Subscription Dialog */}
         <Dialog open={calendarDialogOpen} onOpenChange={setCalendarDialogOpen}>
-          <DialogContent sx={{ maxWidth: { sm: 672 } }}>
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <DialogTitle>
                 <CalendarDays style={{ height: 20, width: 20 }} />
                 Subscribe to Your Events Calendar
               </DialogTitle>
@@ -668,10 +659,10 @@ export default function Favorites() {
                 sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}
               >
                 <Card>
-                  <CardHeader sx={{ pb: 1.5 }}>
-                    <CardTitle sx={{ fontSize: '1.125rem' }}>Subscribe in Calendar App</CardTitle>
+                  <CardHeader>
+                    <CardTitle>Subscribe in Calendar App</CardTitle>
                   </CardHeader>
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <CardContent>
                     <Typography variant="body2" color="text.secondary">
                       Copy the URL above and add it as a new calendar subscription in your preferred
                       calendar app.
@@ -700,7 +691,7 @@ export default function Favorites() {
                       size="sm"
                       onClick={copyCalendarFeedUrl}
                       disabled={calendarLoading}
-                      sx={{ width: '100%' }}
+
                     >
                       <LinkIcon style={{ height: 16, width: 16, marginRight: 8 }} />
                       Copy Subscription URL
@@ -709,10 +700,10 @@ export default function Favorites() {
                 </Card>
 
                 <Card>
-                  <CardHeader sx={{ pb: 1.5 }}>
-                    <CardTitle sx={{ fontSize: '1.125rem' }}>Download Calendar File</CardTitle>
+                  <CardHeader>
+                    <CardTitle>Download Calendar File</CardTitle>
                   </CardHeader>
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <CardContent>
                     <Typography variant="body2" color="text.secondary">
                       Download a one-time .ics file that you can import into any calendar
                       application.
@@ -726,7 +717,7 @@ export default function Favorites() {
                       size="sm"
                       onClick={downloadCalendarFile}
                       disabled={calendarLoading}
-                      sx={{ width: '100%' }}
+
                     >
                       <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                       Download .ics File
@@ -772,26 +763,26 @@ export default function Favorites() {
         ) : (
           <Paper elevation={0} sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 3 }}>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList sx={{ mb: 3 }}>
-                <TabsTrigger value="all" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <TabsList>
+                <TabsTrigger value="all">
                   All ({getTabCount('all')})
                 </TabsTrigger>
-                <TabsTrigger value="venue" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TabsTrigger value="venue">
                   <MapPin style={{ height: 12, width: 12 }} />
                   Venues ({getTabCount('venue')})
                 </TabsTrigger>
-                <TabsTrigger value="event" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TabsTrigger value="event">
                   <Calendar style={{ height: 12, width: 12 }} />
                   Events ({getTabCount('event')})
                 </TabsTrigger>
                 <TabsTrigger
                   value="marketplace"
-                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+
                 >
                   <ShoppingBag style={{ height: 12, width: 12 }} />
                   Marketplace ({getTabCount('marketplace')})
                 </TabsTrigger>
-                <TabsTrigger value="news" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TabsTrigger value="news">
                   <Newspaper style={{ height: 12, width: 12 }} />
                   News ({getTabCount('news')})
                 </TabsTrigger>

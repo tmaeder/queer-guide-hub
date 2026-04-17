@@ -715,7 +715,7 @@ export default function AdminVenues() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent sx={{ maxWidth: '72rem', maxHeight: '95vh', overflowY: 'auto' }}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingVenue ? 'Edit Venue' : 'Add New Venue'}</DialogTitle>
           </DialogHeader>

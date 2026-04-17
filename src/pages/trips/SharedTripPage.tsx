@@ -495,11 +495,7 @@ function SharedTripPage() {
         {/* Conversion CTA: turn viewers into signups */}
         <Card
           className="mt-5"
-          sx={{
-            background: `linear-gradient(135deg, ${theme.palette.brand?.main || '#DB2777'}14 0%, ${theme.palette.accent?.main || '#F59E0B'}14 100%)`,
-            border: '1px solid',
-            borderColor: 'divider',
-          }}
+
         >
           <CardContent>
             <Box className="flex flex-col sm:flex-row items-center gap-3">

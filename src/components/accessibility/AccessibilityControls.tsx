@@ -16,7 +16,7 @@ export function AccessibilityControls() {
       {/* Font Size Control */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Eye style={{ height: 20, width: 20 }} />
             Text Size
           </CardTitle>
@@ -48,7 +48,7 @@ export function AccessibilityControls() {
       {/* Visual Settings */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Palette style={{ height: 20, width: 20 }} />
             Visual Settings
           </CardTitle>
@@ -56,7 +56,7 @@ export function AccessibilityControls() {
             Customize visual appearance for better accessibility
           </CardDescription>
         </CardHeader>
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               <Label htmlFor="high-contrast">High Contrast Mode</Label>
@@ -90,7 +90,7 @@ export function AccessibilityControls() {
       {/* Motion Settings */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <MousePointer style={{ height: 20, width: 20 }} />
             Motion & Animation
           </CardTitle>
@@ -118,7 +118,7 @@ export function AccessibilityControls() {
       {/* Screen Reader Settings */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Volume2 style={{ height: 20, width: 20 }} />
             Screen Reader Support
           </CardTitle>
@@ -146,7 +146,7 @@ export function AccessibilityControls() {
       {/* Keyboard Navigation Info */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Keyboard style={{ height: 20, width: 20 }} />
             Keyboard Navigation
           </CardTitle>
@@ -154,7 +154,7 @@ export function AccessibilityControls() {
             Learn about keyboard shortcuts and navigation
           </CardDescription>
         </CardHeader>
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <CardContent>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5, fontSize: '0.875rem' }}>
             <Box>
               <strong>Tab:</strong> Navigate forward
@@ -190,7 +190,7 @@ export function AccessibilityControls() {
           <Button
             variant="outline"
             onClick={resetToDefaults}
-            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+
           >
             <RefreshCw style={{ height: 16, width: 16 }} />
             Reset to Defaults

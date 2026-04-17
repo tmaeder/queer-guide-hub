@@ -46,16 +46,10 @@ export const SDGDataPanel: React.FC<SDGDataPanelProps> = ({ data, _countryName }
   }
 
   return (
-    <Card sx={{ borderColor: 'divider' }}>
+    <Card>
       <CardHeader>
         <CardTitle
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 1,
-          }}
+
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Target style={{ height: 20, width: 20 }} />

@@ -254,14 +254,14 @@ export function CMSDuplicateManager() {
           {Math.round(candidate.similarity_score * 100)}%
         </Typography>
         <Typography variant="body2" color="text.secondary">Similarity Score</Typography>
-        <Progress value={candidate.similarity_score * 100} sx={{ mt: 1 }} />
+        <Progress value={candidate.similarity_score * 100} />
       </Box>
 
       {/* Side-by-side comparison */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
         <Card>
           <CardHeader>
-            <CardTitle sx={{ fontSize: '1.125rem' }}>Original Content</CardTitle>
+            <CardTitle>Original Content</CardTitle>
             <CardDescription>
               Created {new Date(candidate.content_1.created_at).toLocaleDateString()} •
               Source: {candidate.content_1.source}
@@ -270,12 +270,12 @@ export function CMSDuplicateManager() {
           <CardContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box>
-                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Title</Label>
+                <Label>Title</Label>
                 <Typography variant="body2">{Object.values(candidate.content_1.title)[0] as string}</Typography>
               </Box>
               <Box>
-                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Type</Label>
-                <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
+                <Label>Type</Label>
+                <Badge variant="outline">
                   {candidate.content_1.content_type}
                 </Badge>
               </Box>
@@ -285,7 +285,7 @@ export function CMSDuplicateManager() {
 
         <Card>
           <CardHeader>
-            <CardTitle sx={{ fontSize: '1.125rem' }}>Potential Duplicate</CardTitle>
+            <CardTitle>Potential Duplicate</CardTitle>
             <CardDescription>
               Created {new Date(candidate.content_2.created_at).toLocaleDateString()} •
               Source: {candidate.content_2.source}
@@ -294,12 +294,12 @@ export function CMSDuplicateManager() {
           <CardContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box>
-                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Title</Label>
+                <Label>Title</Label>
                 <Typography variant="body2">{Object.values(candidate.content_2.title)[0] as string}</Typography>
               </Box>
               <Box>
-                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Type</Label>
-                <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
+                <Label>Type</Label>
+                <Badge variant="outline">
                   {candidate.content_2.content_type}
                 </Badge>
               </Box>
@@ -311,7 +311,7 @@ export function CMSDuplicateManager() {
       {/* Matching Criteria */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ fontSize: '1.125rem' }}>Matching Criteria</CardTitle>
+          <CardTitle>Matching Criteria</CardTitle>
         </CardHeader>
         <CardContent>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
@@ -372,7 +372,7 @@ export function CMSDuplicateManager() {
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
               onClick={() => handleDecision(candidate.id, 'merge')}
-              sx={{ flex: 1 }}
+
             >
               <Merge style={{ height: 16, width: 16, marginRight: 8 }} />
               Merge Items
@@ -380,7 +380,7 @@ export function CMSDuplicateManager() {
             <Button
               variant="outline"
               onClick={() => handleDecision(candidate.id, 'not_duplicate')}
-              sx={{ flex: 1 }}
+
             >
               <X style={{ height: 16, width: 16, marginRight: 8 }} />
               Not Duplicate
@@ -418,8 +418,8 @@ export function CMSDuplicateManager() {
       {/* Stats */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Pending Review</CardTitle>
+          <CardHeader>
+            <CardTitle>Pending Review</CardTitle>
           </CardHeader>
           <CardContent>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'warning.main' }}>{pendingCandidates.length}</Typography>
@@ -427,8 +427,8 @@ export function CMSDuplicateManager() {
         </Card>
 
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Auto-Merged</CardTitle>
+          <CardHeader>
+            <CardTitle>Auto-Merged</CardTitle>
           </CardHeader>
           <CardContent>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>
@@ -438,8 +438,8 @@ export function CMSDuplicateManager() {
         </Card>
 
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Not Duplicates</CardTitle>
+          <CardHeader>
+            <CardTitle>Not Duplicates</CardTitle>
           </CardHeader>
           <CardContent>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'info.main' }}>
@@ -449,8 +449,8 @@ export function CMSDuplicateManager() {
         </Card>
 
         <Card>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Deferred</CardTitle>
+          <CardHeader>
+            <CardTitle>Deferred</CardTitle>
           </CardHeader>
           <CardContent>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
@@ -460,7 +460,7 @@ export function CMSDuplicateManager() {
         </Card>
       </Box>
 
-      <Tabs defaultValue="pending" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Tabs defaultValue="pending">
         <TabsList>
           <TabsTrigger value="pending">Pending Review ({pendingCandidates.length})</TabsTrigger>
           <TabsTrigger value="reviewed">Reviewed ({reviewedCandidates.length})</TabsTrigger>
@@ -470,7 +470,7 @@ export function CMSDuplicateManager() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {pendingCandidates.length === 0 ? (
               <Card>
-                <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                <CardContent>
                   <Check style={{ height: 48, width: 48, color: '#22c55e', margin: '0 auto 16px' }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No pending duplicates</Typography>
                   <Typography variant="body2" color="text.secondary">All potential duplicates have been reviewed</Typography>
@@ -482,7 +482,7 @@ export function CMSDuplicateManager() {
                   <CardHeader>
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                       <Box sx={{ flex: 1 }}>
-                        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <CardTitle>
                           <AlertTriangle style={{ height: 20, width: 20, color: '#eab308' }} />
                           Potential Duplicate Detected
                           <Badge style={{ border: '1px solid' }}>
@@ -516,7 +516,7 @@ export function CMSDuplicateManager() {
                             Review
                           </Button>
                         </DialogTrigger>
-                        <DialogContent sx={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
+                        <DialogContent>
                           <DialogHeader>
                             <DialogTitle>Review Potential Duplicate</DialogTitle>
                             <DialogDescription>
@@ -541,7 +541,7 @@ export function CMSDuplicateManager() {
                 <CardHeader>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <Box sx={{ flex: 1 }}>
-                      <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CardTitle>
                         <Badge style={getStatusStyle(candidate.status)}>
                           {candidate.status.replace('_', ' ')}
                         </Badge>

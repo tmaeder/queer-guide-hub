@@ -127,11 +127,11 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Upload sx={{ height: '16px', width: '16px', mr: 1 }} />
+          <Upload />
           Import CSV
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: '768px' }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Import Personalities from CSV</DialogTitle>
         </DialogHeader>
@@ -139,9 +139,9 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Instructions */}
           <Card>
-            <CardContent sx={{ p: 2 }}>
+            <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <FileText sx={{ height: '16px', width: '16px' }} />
+                <FileText />
                 CSV Format Requirements
               </Typography>
               <Box component="ul" sx={{ fontSize: '0.875rem', color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -156,9 +156,9 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                 variant="ghost"
                 size="sm"
                 onClick={downloadTemplate}
-                sx={{ mt: 1.5 }}
+
               >
-                <Download sx={{ height: '16px', width: '16px', mr: 1 }} />
+                <Download />
                 Download Template
               </Button>
             </CardContent>
@@ -193,12 +193,12 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
           {/* Import Results */}
           {importResult && (
             <Card>
-              <CardContent sx={{ p: 2 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   {importResult.success ? (
-                    <CheckCircle sx={{ height: '20px', width: '20px', color: 'success.main' }} />
+                    <CheckCircle />
                   ) : (
-                    <AlertCircle sx={{ height: '20px', width: '20px', color: 'error.main' }} />
+                    <AlertCircle />
                   )}
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>
                     {importResult.success ? 'Import Successful' : 'Import Failed'}

@@ -33,7 +33,6 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';import { useTranslation } from 'react-i18next';
 
-
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {
   profiles: { display_name: string; avatar_url: string | null } | null;
@@ -591,7 +590,7 @@ export default function MarketplaceItemDetail() {
             <CardHeader>
               <CardTitle>{t('pages.marketplaceDetail.priceContact', 'Price & Contact')}</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <CardContent>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" color="primary" sx={{ fontWeight: 700, mb: 1 }}>
                   {formatPrice()}
@@ -658,7 +657,7 @@ export default function MarketplaceItemDetail() {
             <CardHeader>
               <CardTitle>{t('pages.marketplaceDetail.businessDetails', 'Business Details')}</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <CardContent>
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
                   Business Type
@@ -699,7 +698,7 @@ export default function MarketplaceItemDetail() {
               <CardHeader>
                 <CardTitle>{t('pages.marketplaceDetail.socialMedia', 'Social Media')}</CardTitle>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <CardContent>
                 {Object.entries(listing.social_media as Record<string, string>).map(
                   ([platform, url]) => (
                     <Button

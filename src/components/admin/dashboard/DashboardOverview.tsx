@@ -127,12 +127,9 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
           {[...Array(4)].map((_, i) => (
             <Card
               key={i}
-              sx={{
-                '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              }}
+
             >
-              <CardHeader sx={{ pb: 1 }}>
+              <CardHeader>
                 <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: 96 }}></Box>
               </CardHeader>
               <CardContent>
@@ -171,23 +168,13 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
             return (
               <Card
                 key={card.title}
-                sx={{
-                  cursor: 'pointer',
-                  '&:hover': { boxShadow: 3 },
-                  transition: 'box-shadow 0.2s',
-                }}
+
                 onClick={card.onClick}
               >
                 <CardHeader
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    pb: 1,
-                  }}
+
                 >
-                  <CardTitle sx={{ fontSize: 14, fontWeight: 500 }}>{card.title}</CardTitle>
+                  <CardTitle>{card.title}</CardTitle>
                   <Icon style={{ height: 16, width: 16, color: 'rgba(0, 0, 0, 0.6)' }} />
                 </CardHeader>
                 <CardContent>
@@ -205,7 +192,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
                   >
                     <Badge
                       variant={card.changeType === 'positive' ? 'default' : 'destructive'}
-                      sx={{ fontSize: 12 }}
+
                     >
                       {card.change}
                     </Badge>
@@ -241,7 +228,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
             const Icon = card.icon;
             return (
               <Card key={card.title}>
-                <CardContent sx={{ p: 2 }}>
+                <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Box sx={{ p: 1, borderRadius: '50%', bgcolor: 'action.hover' }}>
                       <Icon style={{ height: 16, width: 16, color: card.color }} />
@@ -265,7 +252,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       {/* Storage Usage */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ fontSize: 16 }}>Storage Usage</CardTitle>
+          <CardTitle>Storage Usage</CardTitle>
         </CardHeader>
         <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -277,7 +264,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
                 {systemHealth.storageUsed}% of limit
               </Typography>
             </Box>
-            <Progress value={systemHealth.storageUsed} sx={{ height: 8 }} />
+            <Progress value={systemHealth.storageUsed} />
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               {systemHealth.storageUsed < 80
                 ? 'Storage usage is within normal limits'

@@ -84,13 +84,7 @@ export function VenueCard({
           <Card
             hoverable
             style={{ overflow: 'hidden' }}
-            sx={{
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: 4,
-              },
-            }}
+
           >
             <Box sx={{ position: 'relative' }}>
               {hasImage ? (

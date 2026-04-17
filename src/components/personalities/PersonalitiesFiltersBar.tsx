@@ -223,7 +223,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Verification status</Label>
+              <Label>Verification status</Label>
               <Select
                 value={filters.verification_status ?? 'all'}
                 onValueChange={(v) =>
@@ -256,7 +256,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
                   })
                 }
               />
-              <Label htmlFor="featured-only" sx={{ fontSize: '0.875rem', cursor: 'pointer' }}>
+              <Label htmlFor="featured-only">
                 Featured only
               </Label>
             </Box>
@@ -273,7 +273,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
                 }
               />
               <Box>
-                <Label htmlFor="include-adult" sx={{ fontSize: '0.875rem', cursor: 'pointer', fontWeight: 500 }}>
+                <Label htmlFor="include-adult">
                   Include adult performers
                 </Label>
                 <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>

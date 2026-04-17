@@ -61,8 +61,8 @@ interface EventCardProps {
 const EventCardFixture = () => (
   <Card hoverable>
     <CardImage src="" alt="Event" fallbackIcon={Calendar} height={200} />
-    <CardHeader sx={{ pb: 2 }}>
-      <CardTitle sx={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Sample Event Title</CardTitle>
+    <CardHeader>
+      <CardTitle>Sample Event Title</CardTitle>
       <Box sx={{ display: 'flex', gap: 1.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, bgcolor: 'action.hover', borderRadius: 2 }}>
           <Calendar style={{ height: 16, width: 16 }} />
@@ -74,7 +74,7 @@ const EventCardFixture = () => (
         </Box>
       </Box>
     </CardHeader>
-    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 0 }}>
+    <CardContent>
       <Typography variant="body2" color="text.secondary">A sample event description spanning a couple of lines.</Typography>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
         <MapPin style={{ height: 16, width: 16, marginTop: 2, flexShrink: 0 }} />
@@ -199,7 +199,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
                 </Box>
               )}
               {event.featured && (
-                <Badge sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                <Badge>
                   <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                   Featured
                 </Badge>
@@ -208,7 +208,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
             </Box>
 
             {event.images && event.images.length > 1 && (
-              <Badge variant="secondary" sx={{ bgcolor: 'action.hover', color: 'text.primary' }}>
+              <Badge variant="secondary">
                 +{event.images.length - 1} photos
               </Badge>
             )}
@@ -244,14 +244,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
             <Box sx={{ position: 'absolute', bottom: 16, right: 16, zIndex: 20 }}>
               <Badge
                 variant={event.is_free ? 'default' : 'secondary'}
-                sx={{
-                  ...(event.is_free
-                    ? { bgcolor: 'success.main', color: 'success.contrastText' }
-                    : { bgcolor: 'action.hover', color: 'text.primary' }),
-                  fontSize: '0.875rem',
-                  px: 1.5,
-                  py: 0.5,
-                }}
+
               >
                 {event.is_free ? (
                   <Ticket style={{ height: 12, width: 12, marginRight: 4 }} />
@@ -265,12 +258,12 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
         </Box>
       )}
 
-      <CardHeader sx={{ pb: 2 }}>
+      <CardHeader>
         {/* Inline badges for no-image cards */}
         {!hasImage && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
             {event.featured && (
-              <Badge sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+              <Badge>
                 <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                 Featured
               </Badge>
@@ -279,9 +272,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
             {priceDisplay && (
               <Badge
                 variant={event.is_free ? 'default' : 'secondary'}
-                sx={event.is_free
-                  ? { bgcolor: 'success.main', color: 'success.contrastText' }
-                  : {}}
+
               >
                 {priceDisplay}
               </Badge>
@@ -290,16 +281,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
         )}
 
         <CardTitle
-          sx={{
-            fontSize: '1.25rem',
-            fontWeight: 'bold',
-            lineHeight: 1.25,
-            transition: 'color 0.3s',
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-          }}
+
         >
           {event.title}
         </CardTitle>
@@ -342,12 +324,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
       </CardHeader>
 
       <CardContent
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          pt: 0,
-        }}
+
       >
         {/* Description */}
         {event.description && (
@@ -430,7 +407,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
             {event.age_restriction && (
               <Badge
                 variant="outline"
-                sx={{ fontSize: '0.75rem', bgcolor: 'rgba(var(--muted-rgb), 0.5)' }}
+
               >
                 {event.age_restriction}
               </Badge>
@@ -496,11 +473,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
           <Button
             size="sm"
             variant="outline"
-            sx={{
-              flex: 1,
-              transition: 'all 0.3s',
-              '&:hover': { bgcolor: 'primary.main', color: 'primary.contrastText' },
-            }}
+
           >
             <Eye
               style={{ height: 16, width: 16, marginRight: 8 }}
@@ -514,7 +487,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
               <Button
                 size="sm"
                 variant="outline"
-                sx={{ px: 1.5, '&:hover': { bgcolor: 'rgba(var(--primary-rgb), 0.1)' } }}
+
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); window.open(event.venues!.website!, '_blank'); }}
               >
                 <ExternalLink style={{ height: 16, width: 16 }} />
@@ -524,7 +497,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
               <Button
                 size="sm"
                 variant="default"
-                sx={{ px: 1.5, bgcolor: 'primary.main', '&:hover': { opacity: 0.9 } }}
+
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); window.open(event.ticket_url!, '_blank'); }}
               >
                 <Ticket style={{ height: 16, width: 16 }} />
@@ -539,12 +512,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
             <Button
               size="sm"
               variant="default"
-              sx={{
-                flex: 1,
-                bgcolor: 'success.main',
-                color: 'success.contrastText',
-                '&:hover': { opacity: 0.9 },
-              }}
+
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -557,7 +525,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, _onVi
             <Button
               size="sm"
               variant="outline"
-              sx={{ flex: 1, '&:hover': { opacity: 0.9 } }}
+
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();

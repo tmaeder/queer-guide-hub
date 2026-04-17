@@ -340,8 +340,8 @@ const AppRoutes = () => {
                     gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
                   }}
                 >
-                  <Skeleton sx={{ height: 192 }} />
-                  <Skeleton sx={{ height: 192 }} />
+                  <Skeleton />
+                  <Skeleton />
                 </Box>
               </Box>
             }

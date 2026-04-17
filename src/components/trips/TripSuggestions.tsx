@@ -249,7 +249,7 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
             key={label}
             variant={filter === filterKeys[i] ? 'default' : 'outline'}
             onClick={() => setFilter(filterKeys[i])}
-            sx={{ cursor: 'pointer', minHeight: 44, px: 1.5 }}
+
           >
             {label}
           </Badge>

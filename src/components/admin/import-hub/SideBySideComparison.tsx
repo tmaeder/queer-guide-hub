@@ -125,7 +125,7 @@ export function SideBySideComparison({
 
       {/* Comparison Table */}
       <Card>
-        <CardContent sx={{ p: 0 }}>
+        <CardContent>
           {/* Column Headers */}
           <Box sx={{
             display: 'grid',

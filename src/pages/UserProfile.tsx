@@ -20,7 +20,6 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
-
 export default function UserProfile() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
@@ -175,7 +174,7 @@ export default function UserProfile() {
 
         {/* Profile Header */}
         <Card>
-          <CardContent sx={{ p: 3 }}>
+          <CardContent>
             <Box
               sx={{
                 display: 'flex',
@@ -199,7 +198,7 @@ export default function UserProfile() {
                   </AvatarFallback>
                 </Avatar>
                 {(profile as Record<string, unknown>)?.verified_identity && (
-                  <Badge variant="secondary" sx={{ mb: 1 }}>
+                  <Badge variant="secondary">
                     <Check style={{ width: 12, height: 12, marginRight: 4 }} />
                     Verified
                   </Badge>

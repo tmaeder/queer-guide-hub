@@ -144,9 +144,9 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <DialogTitle>
             <Settings style={{ height: 20, width: 20 }} />
             Advanced Import Configuration - {importType}
           </DialogTitle>
@@ -155,27 +155,27 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="duplicates" sx={{ width: '100%' }}>
-          <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-            <TabsTrigger value="duplicates" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Tabs defaultValue="duplicates">
+          <TabsList>
+            <TabsTrigger value="duplicates">
               <Shield style={{ height: 16, width: 16 }} />
               Duplicates
             </TabsTrigger>
-            <TabsTrigger value="errors" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TabsTrigger value="errors">
               <Shield style={{ height: 16, width: 16 }} />
               Errors
             </TabsTrigger>
-            <TabsTrigger value="filters" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TabsTrigger value="filters">
               <Filter style={{ height: 16, width: 16 }} />
               Filters
             </TabsTrigger>
-            <TabsTrigger value="advanced" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TabsTrigger value="advanced">
               <Zap style={{ height: 16, width: 16 }} />
               Advanced
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="duplicates" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TabsContent value="duplicates">
             <Card>
               <CardHeader>
                 <CardTitle>Duplicate Handling Strategy</CardTitle>
@@ -183,7 +183,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                   Choose how to handle items that already exist in the database
                 </CardDescription>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <CardContent>
                 <Box sx={{ display: 'grid', gap: 2 }}>
                   {DUPLICATE_STRATEGIES.map((strategy) => (
                     <div
@@ -208,7 +208,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
             </Card>
           </TabsContent>
 
-          <TabsContent value="errors" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TabsContent value="errors">
             <Card>
               <CardHeader>
                 <CardTitle>Error Handling Strategy</CardTitle>
@@ -216,7 +216,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                   Choose how to handle errors during the import process
                 </CardDescription>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <CardContent>
                 <Box sx={{ display: 'grid', gap: 2 }}>
                   {ERROR_STRATEGIES.map((strategy) => (
                     <div
@@ -271,7 +271,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                     </Box>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {requiredFields.map((field) => (
-                        <Badge key={field} variant="secondary" sx={{ cursor: 'pointer' }}>
+                        <Badge key={field} variant="secondary">
                           {field}
                           <X
                             style={{ height: 12, width: 12, marginLeft: 4 }}
@@ -286,7 +286,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
             </Card>
           </TabsContent>
 
-          <TabsContent value="filters" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TabsContent value="filters">
             <Card>
               <CardHeader>
                 <CardTitle>Import Filters</CardTitle>
@@ -294,7 +294,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                   Filter and limit the data to be imported
                 </CardDescription>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <CardContent>
                 <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr' } }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Label htmlFor="location">Location</Label>
@@ -337,7 +337,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                   </Box>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {keywords.map((keyword) => (
-                      <Badge key={keyword} variant="secondary" sx={{ cursor: 'pointer' }}>
+                      <Badge key={keyword} variant="secondary">
                         {keyword}
                         <X
                           style={{ height: 12, width: 12, marginLeft: 4 }}
@@ -355,7 +355,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       <Badge
                         key={category}
                         variant={categories.includes(category) ? "default" : "outline"}
-                        sx={{ cursor: 'pointer' }}
+
                         onClick={() => toggleCategory(category)}
                       >
                         {category}
@@ -408,7 +408,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
             </Card>
           </TabsContent>
 
-          <TabsContent value="advanced" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TabsContent value="advanced">
             <Card>
               <CardHeader>
                 <CardTitle>Advanced Processing Options</CardTitle>
@@ -416,7 +416,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                   Configure advanced processing features and performance settings
                 </CardDescription>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Checkbox

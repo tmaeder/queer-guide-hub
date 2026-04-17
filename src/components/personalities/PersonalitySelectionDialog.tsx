@@ -46,7 +46,7 @@ export function PersonalitySelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent sx={{ maxWidth: '768px', maxHeight: '80vh', overflowY: 'auto' }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Multiple Results Found</DialogTitle>
           <Typography sx={{ color: 'text.secondary' }}>
@@ -58,38 +58,32 @@ export function PersonalitySelectionDialog({
           {candidates.map((candidate) => (
             <Card
               key={candidate.id}
-              sx={{
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                ...(selectedCandidate?.id === candidate.id
-                  ? { boxShadow: 2, bgcolor: 'action.selected', outline: 2, outlineColor: 'primary.main' }
-                  : { '&:hover': { bgcolor: 'action.hover' } })
-              }}
+
               onClick={() => setSelectedCandidate(candidate)}
             >
-              <CardHeader sx={{ pb: 1 }}>
+              <CardHeader>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                   <Box sx={{ mt: 0.5 }}>
-                    <User sx={{ height: '20px', width: '20px', color: 'text.secondary' }} />
+                    <User />
                   </Box>
                   <Box sx={{ flex: 1 }}>
-                    <CardTitle sx={{ fontSize: '1rem' }}>{candidate.title}</CardTitle>
-                    <CardDescription sx={{ mt: 0.5, mb: 1.5 }}>
+                    <CardTitle>{candidate.title}</CardTitle>
+                    <CardDescription>
                       {candidate.description}
                     </CardDescription>
 
                     {candidate.details && (
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {candidate.details.profession && (
-                          <Badge variant="secondary" sx={{ fontSize: '0.75rem', gap: 0.5 }}>
-                            <Briefcase sx={{ height: '12px', width: '12px' }} />
+                          <Badge variant="secondary">
+                            <Briefcase />
                             {candidate.details.profession}
                           </Badge>
                         )}
 
                         {(candidate.details.birthYear || candidate.details.deathYear) && (
-                          <Badge variant="outline" sx={{ fontSize: '0.75rem', gap: 0.5 }}>
-                            <Calendar sx={{ height: '12px', width: '12px' }} />
+                          <Badge variant="outline">
+                            <Calendar />
                             {candidate.details.birthYear && candidate.details.deathYear
                               ? `${candidate.details.birthYear}–${candidate.details.deathYear}`
                               : candidate.details.birthYear
@@ -105,8 +99,8 @@ export function PersonalitySelectionDialog({
                         )}
 
                         {candidate.details.nationality && (
-                          <Badge variant="outline" sx={{ fontSize: '0.75rem', gap: 0.5 }}>
-                            <MapPin sx={{ height: '12px', width: '12px' }} />
+                          <Badge variant="outline">
+                            <MapPin />
                             {candidate.details.nationality}
                           </Badge>
                         )}
@@ -140,9 +134,9 @@ export function PersonalitySelectionDialog({
           <Button
             onClick={handleSelect}
             disabled={!selectedCandidate || loading}
-            sx={{ gap: 1 }}
+
           >
-            {loading && <Loader2 sx={{ height: '16px', width: '16px' }} />}
+            {loading && <Loader2 />}
             {loading ? 'Processing...' : 'Select Person'}
           </Button>
         </Box>

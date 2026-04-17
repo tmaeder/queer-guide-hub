@@ -502,10 +502,10 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
     if (readonly) {
       return (
         <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Label sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Label>
             {icon}
             {label}
-            <Badge variant="secondary" sx={{ fontSize: '0.75rem' }}>Read-only</Badge>
+            <Badge variant="secondary">Read-only</Badge>
           </Label>
           <Box sx={{ px: 1.5, py: 1, bgcolor: 'action.hover', borderRadius: 1, fontSize: '0.875rem' }}>
             {fieldValue?.toLocaleString() || 'N/A'}
@@ -521,7 +521,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         if (key === 'profession') {
           return (
             <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Label htmlFor={key}>
                 {icon}
                 {label}
                 {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -541,7 +541,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         if (key === 'nationality') {
           return (
             <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Label htmlFor={key}>
                 {icon}
                 {label}
                 {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -559,7 +559,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -576,7 +576,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       case 'textarea':
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -594,7 +594,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       case 'number':
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -612,7 +612,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       case 'email':
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -630,7 +630,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       case 'tel':
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -664,7 +664,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -682,7 +682,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       case 'date':
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -700,7 +700,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       case 'datetime':
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -723,7 +723,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               checked={fieldValue || false}
               onCheckedChange={(checked) => handleFieldChange(key, checked)}
             />
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
             </Label>
@@ -733,7 +733,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       case 'select':
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -742,9 +742,9 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
               </SelectTrigger>
-              <SelectContent sx={{ bgcolor: 'background.default', border: 1, borderColor: 'divider', boxShadow: 6, zIndex: 50 }}>
+              <SelectContent>
                 {options?.filter((option: string) => option && option.trim() !== '').map((option: string) => (
-                  <SelectItem key={option} value={option} sx={{ textTransform: 'capitalize' }}>
+                  <SelectItem key={option} value={option}>
                     {option.replace(/_/g, ' ')}
                   </SelectItem>
                 ))}
@@ -780,7 +780,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -793,7 +793,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                 handleFieldChange(key, items);
               }}
               placeholder="Enter comma-separated values"
-              sx={{ minHeight: 96 }}
+
             />
             {displayValue && (
               <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
@@ -826,7 +826,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
         return (
           <Box key={key} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Label htmlFor={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Label htmlFor={key}>
               {icon}
               {label}
               {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
@@ -843,7 +843,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                   handleFieldChange(key, e.target.value);
                 }
               }}
-              sx={{ minHeight: 96, fontFamily: 'monospace', fontSize: '0.875rem' }}
+
               placeholder="Enter JSON data"
             />
             {jsonDisplayValue && (
@@ -894,9 +894,9 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
   if (!content) {
     return (
       <Card>
-        <CardContent sx={{ p: 4, textAlign: 'center' }}>
+        <CardContent>
           <p style={{ color: 'var(--muted-foreground)' }}>No content selected for editing</p>
-          <Button onClick={onClose} sx={{ mt: 2 }}>
+          <Button onClick={onClose}>
             <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
             Back
           </Button>
@@ -930,7 +930,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <div>
               <Typography variant="h1" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{content.title || content.name || 'Edit Content'}</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                <Badge variant="outline" sx={{ textTransform: 'capitalize' }}>
+                <Badge variant="outline">
                   {content.content_type.replace('_', ' ')}
                 </Badge>
                 <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>ID: {content.id}</Box>
@@ -965,9 +965,9 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                <TabsList>
                   {tabs.map(tab => (
-                    <TabsTrigger key={tab} value={tab} sx={{ textTransform: 'capitalize' }}>
+                    <TabsTrigger key={tab} value={tab}>
                       {tab === 'basic' && <Tag style={{ height: 16, width: 16, marginRight: 8 }} />}
                       {tab === 'datetime' && <Clock style={{ height: 16, width: 16, marginRight: 8 }} />}
                       {tab === 'location' && <MapPin style={{ height: 16, width: 16, marginRight: 8 }} />}
@@ -984,7 +984,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                 </TabsList>
 
                 {tabs.map(tab => (
-                  <TabsContent key={tab} value={tab} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 3 }}>
+                  <TabsContent key={tab} value={tab}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                       {fieldGroups[tab]?.map(field => renderField(field))}
                     </Box>
@@ -1003,21 +1003,21 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </CardHeader>
             <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div>
-                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Content Type</Label>
+                <Label>Content Type</Label>
                 <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', textTransform: 'capitalize' }}>
                   {content.content_type.replace('_', ' ')}
                 </Typography>
               </div>
               
               <div>
-                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Created</Label>
+                <Label>Created</Label>
                 <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                   {new Date(content.created_at).toLocaleString()}
                 </Typography>
               </div>
               
               <div>
-                <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Last Updated</Label>
+                <Label>Last Updated</Label>
                 <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                   {new Date(content.updated_at).toLocaleString()}
                 </Typography>
@@ -1025,7 +1025,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
               {content.status && (
                 <div>
-                  <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Status</Label>
+                  <Label>Status</Label>
                   <Badge sx={{ ml: 1 }} variant={content.status === 'active' ? 'default' : 'secondary'}>
                     {content.status}
                   </Badge>
@@ -1039,16 +1039,16 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Button variant="outline" size="sm" sx={{ width: '100%' }} disabled>
+            <CardContent>
+              <Button variant="outline" size="sm" disabled>
                 <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
                 View Public Page
               </Button>
-              <Button variant="outline" size="sm" sx={{ width: '100%' }} disabled>
+              <Button variant="outline" size="sm" disabled>
                 <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
                 Upload Media
               </Button>
-              <Button variant="outline" size="sm" sx={{ width: '100%', color: 'error.main' }} disabled>
+              <Button variant="outline" size="sm" disabled>
                 <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
                 Delete Content
               </Button>
@@ -1093,7 +1093,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea sx={{ height: 192 }}>
+              <ScrollArea>
                 <Box component="pre" sx={{ fontSize: '0.75rem', bgcolor: 'action.hover', p: 1, borderRadius: 1, overflow: 'auto' }}>
                   {JSON.stringify(content, null, 2)}
                 </Box>

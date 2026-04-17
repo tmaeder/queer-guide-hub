@@ -110,7 +110,7 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
             placeholder="Search platforms..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ pl: 5 }}
+
           />
         </Box>
 
@@ -159,15 +159,7 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
             <Button
               key={platform.platform}
               variant="outline"
-              sx={{
-                height: 'auto',
-                p: 1.5,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 1,
-                '&:hover': { bgcolor: 'action.hover' },
-              }}
+
               onClick={() => handleQuickAdd(platform)}
             >
               <Icon style={{ width: 20, height: 20 }} />
