@@ -1,252 +1,84 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import Drawer from '@mui/material/Drawer';
-import Collapse from '@mui/material/Collapse';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useFeedbackVoteCounts } from '@/hooks/useFeedbackVote';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
+import { useFeedbackUrlState } from '@/hooks/useFeedbackUrlState';
+import { useFeedbackAdmins, buildAdminMap } from '@/hooks/useFeedbackAdmins';
+import { useFeedbackRealtime } from '@/hooks/useFeedbackRealtime';
+import { useFeedbackShortcuts } from '@/hooks/useFeedbackShortcuts';
 import {
-  ChevronUp,
-  Clock,
-  X,
-  Github,
-  ExternalLink,
-  ChevronDown,
-  ChevronRight,
-  Monitor,
-  AlertTriangle,
-  Wifi,
-  Camera,
-  MessageSquarePlus,
-  Copy,
-  Server,
-  Hash,
-  Zap,
-} from 'lucide-react';
-import { feedbackCategoryMap } from '@/config/feedbackCategories';
-import { timeAgo } from '@/utils/timezone';
+  useFeedbackDuplicateSuggestions,
+  buildDuplicateMap,
+  useDismissDuplicateSuggestion,
+  useMergeDuplicate,
+} from '@/hooks/useFeedbackDuplicates';
+import { useFeedbackAudit } from '@/hooks/useFeedbackAudit';
+import { useReplyToFeedback } from '@/hooks/useFeedbackReply';
+import { useApiErrorDailySeries } from '@/hooks/useFeedbackAnalytics';
+import { AnalyticsTab } from '@/components/admin/feedback/analytics/AnalyticsTab';
+import type { FeedbackResolution } from '@/components/admin/feedback/types';
+import {
+  kanbanColumns,
+  kanbanStatusSet,
+  type KanbanStatus,
+} from '@/components/admin/feedback/constants';
+import type {
+  AdminProfile,
+  FeedbackSubmission,
+} from '@/components/admin/feedback/types';
+import { FeedbackKanban } from '@/components/admin/feedback/FeedbackKanban';
+import { FeedbackFilters } from '@/components/admin/feedback/FeedbackFilters';
+import { FeedbackBulkBar } from '@/components/admin/feedback/FeedbackBulkBar';
+import { FeedbackCommandPalette } from '@/components/admin/feedback/FeedbackCommandPalette';
+import { FeedbackDetailDrawer } from '@/components/admin/feedback/FeedbackDetailDrawer';
+import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDialog';
+import { ApiErrorsTab } from '@/components/admin/feedback/ApiErrorsTab';
+import {
+  formatClaudePrompt,
+  formatErrorClaudePrompt,
+  type ApiErrorSubmission,
+} from '@/components/admin/feedback/claudePrompts';
 
-const kanbanColumns = [
-  { id: 'new', label: 'New', color: '#f59e0b' },
-  { id: 'under_review', label: 'Under Review', color: '#3b82f6' },
-  { id: 'planned', label: 'Planned', color: '#8b5cf6' },
-  { id: 'in_progress', label: 'In Progress', color: '#f97316' },
-  { id: 'done', label: 'Done', color: '#22c55e' },
-] as const;
-
-type KanbanStatus = (typeof kanbanColumns)[number]['id'];
-
-interface FeedbackContext {
-  url?: string;
-  viewport?: { width: number; height: number };
-  user_agent?: string;
-  color_scheme?: string;
-  timestamp?: string;
-  errors?: Array<{ message: string; stack?: string; ts: string }>;
-  network_failures?: Array<{ method: string; url: string; status: number; ts: string }>;
-}
-
-interface FeedbackSubmission {
-  id: string;
-  data: {
-    title: string;
-    description: string;
-    category: string;
-    contact_email?: string | null;
-    context?: FeedbackContext;
-    screenshot_url?: string | null;
-  };
-  submitted_at: string;
-  feedback_status: string;
-  reviewer_notes?: string | null;
-  github_issue_url?: string | null;
-  github_issue_number?: number | null;
-  forwarded_at?: string | null;
-}
-
-function formatClaudePrompt(item: FeedbackSubmission): string {
-  const d = item.data;
-  const ctx = d.context || {};
-  const lines: string[] = [];
-
-  lines.push('Fix this user-reported issue from queer.guide:');
-  lines.push('');
-  lines.push(`## ${d.title}`);
-  lines.push(
-    `Category: ${d.category} | Submission ID: ${item.id} | Reported: ${item.submitted_at}`,
-  );
-  lines.push('');
-  lines.push('### Description');
-  lines.push(d.description || '_(no description)_');
-  lines.push('');
-
-  const contextLines: string[] = [];
-  if (ctx.url) contextLines.push(`- URL: ${ctx.url}`);
-  if (ctx.viewport) contextLines.push(`- Viewport: ${ctx.viewport.width}×${ctx.viewport.height}`);
-  if (ctx.color_scheme) contextLines.push(`- Color scheme: ${ctx.color_scheme}`);
-  if (ctx.user_agent) contextLines.push(`- User agent: ${ctx.user_agent}`);
-  if (d.contact_email) contextLines.push(`- Contact: ${d.contact_email}`);
-  if (contextLines.length > 0) {
-    lines.push('### Context');
-    lines.push(...contextLines);
-    lines.push('');
-  }
-
-  if (d.screenshot_url) {
-    lines.push('### Screenshot');
-    lines.push(d.screenshot_url);
-    lines.push('');
-  }
-
-  if (ctx.errors && ctx.errors.length > 0) {
-    lines.push(`### Console errors (${ctx.errors.length})`);
-    lines.push('```');
-    for (const err of ctx.errors) {
-      lines.push(`[${err.ts}] ${err.message}`);
-      if (err.stack) lines.push(err.stack.split('\n').slice(0, 5).join('\n'));
-    }
-    lines.push('```');
-    lines.push('');
-  }
-
-  if (ctx.network_failures && ctx.network_failures.length > 0) {
-    lines.push(`### Network failures (${ctx.network_failures.length})`);
-    lines.push('```');
-    for (const nf of ctx.network_failures) {
-      lines.push(`[${nf.ts}] ${nf.method} ${nf.url} → ${nf.status}`);
-    }
-    lines.push('```');
-    lines.push('');
-  }
-
-  lines.push('---');
-  lines.push('Repo: queer-guide-hub');
-  lines.push(
-    'Please investigate, find root cause, and propose a fix. Check relevant components based on the URL path and error messages.',
-  );
-
-  return lines.join('\n');
-}
-
-// ── API Error types + prompt ──────────────────────────────────────
-
-const SERVICE_FILE_HINTS: Record<string, string> = {
-  'cloudflare-worker': 'Dev/workers/',
-  'edge-function': 'Dev/web/supabase/functions/',
-  scraper: 'Dev/scraper/src/',
-  frontend: 'Dev/web/src/',
-  sentry: '',
-};
-
-interface ApiErrorSubmission {
-  id: string;
-  data: {
-    service: string;
-    function_name: string;
-    message: string;
-    stack?: string;
-    status_code?: number;
-    endpoint?: string;
-    metadata?: Record<string, unknown>;
-    reported_at?: string;
-    last_occurrence?: Record<string, unknown>;
-  };
-  fingerprint: string;
-  occurrence_count: number;
-  last_seen_at: string;
-  submitted_at: string;
-  feedback_status: string;
-  reviewer_notes?: string | null;
-  github_issue_url?: string | null;
-  github_issue_number?: number | null;
-  forwarded_at?: string | null;
-}
-
-const SERVICE_COLORS: Record<string, string> = {
-  'cloudflare-worker': '#f38020',
-  'edge-function': '#3ecf8e',
-  scraper: '#8b5cf6',
-  frontend: '#3b82f6',
-  sentry: '#362d59',
-};
-
-function formatErrorClaudePrompt(item: ApiErrorSubmission): string {
-  const d = item.data;
-  const lines: string[] = [];
-
-  lines.push('Investigate and fix this API error from queer.guide infrastructure:');
-  lines.push('');
-  lines.push(`## ${d.function_name}: ${d.message}`);
-  lines.push(`Service: ${d.service} | Occurrences: ${item.occurrence_count} | Last seen: ${item.last_seen_at}`);
-  if (d.status_code) lines.push(`Status code: ${d.status_code}`);
-  if (d.endpoint) lines.push(`Endpoint: ${d.endpoint}`);
-  lines.push('');
-
-  if (d.stack) {
-    lines.push('### Stack trace');
-    lines.push('```');
-    lines.push(d.stack);
-    lines.push('```');
-    lines.push('');
-  }
-
-  if (d.metadata && Object.keys(d.metadata).length > 0) {
-    lines.push('### Metadata');
-    lines.push('```json');
-    lines.push(JSON.stringify(d.metadata, null, 2));
-    lines.push('```');
-    lines.push('');
-  }
-
-  const hint = SERVICE_FILE_HINTS[d.service];
-  if (hint) {
-    lines.push(`### Where to look`);
-    lines.push(`Start in \`${hint}${d.function_name}/\` or search for \`${d.function_name}\``);
-    lines.push('');
-  }
-
-  lines.push('---');
-  lines.push('Repo: queer-guide-hub');
-  lines.push(
-    `This error has occurred ${item.occurrence_count} time(s). Find the root cause, fix it, and ensure the fix handles edge cases. Check error handling in the relevant service.`,
-  );
-
-  return lines.join('\n');
-}
+const FEEDBACK_COLUMNS =
+  'id,data,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at,priority,labels,assignee_id,duplicate_of,is_spam';
+const API_ERROR_COLUMNS =
+  'id,data,fingerprint,occurrence_count,last_seen_at,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at,priority,labels,assignee_id,duplicate_of,is_spam';
 
 export default function AdminFeedback() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState(0);
-  const [selected, setSelected] = useState<FeedbackSubmission | null>(null);
-  const [selectedError, setSelectedError] = useState<ApiErrorSubmission | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { state, update, clearFilters, activeFilterCount } = useFeedbackUrlState();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [focusedColumnIdx, setFocusedColumnIdx] = useState(0);
+  const [forwardingIds, setForwardingIds] = useState<Set<string>>(new Set());
+  const drawerOpen = !!state.sel;
 
+  // ── Queries ─────────────────────────────────────────────────
   const { data: items = [], isLoading } = useQuery<FeedbackSubmission[]>({
     queryKey: ['admin-feedback-board'],
     queryFn: async () => {
       const { data, error } = await supabase
-         
-        .from('community_submissions' as const)
-        .select(
-          'id,data,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at',
-        )
+        .from('community_submissions')
+        .select(FEEDBACK_COLUMNS)
         .eq('content_type', 'feedback')
         .order('submitted_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as FeedbackSubmission[];
+      return (data as unknown as FeedbackSubmission[]) || [];
     },
   });
 
@@ -254,19 +86,99 @@ export default function AdminFeedback() {
     queryKey: ['admin-api-errors'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('community_submissions' as const)
-        .select(
-          'id,data,fingerprint,occurrence_count,last_seen_at,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at',
-        )
+        .from('community_submissions')
+        .select(API_ERROR_COLUMNS)
         .eq('content_type', 'api_error')
         .order('last_seen_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as ApiErrorSubmission[];
+      return (data as unknown as ApiErrorSubmission[]) || [];
     },
   });
 
+  const { data: admins = [] } = useFeedbackAdmins();
+  const adminMap = useMemo(() => buildAdminMap(admins), [admins]);
+
   const submissionIds = useMemo(() => items.map((i) => i.id), [items]);
   const { data: votesMap = {} } = useFeedbackVoteCounts(submissionIds);
+
+  const selected = useMemo(
+    () => items.find((i) => i.id === state.sel) ?? null,
+    [items, state.sel],
+  );
+
+  // Realtime: invalidate queries + track which admins view which submission.
+  const { online } = useFeedbackRealtime(state.sel);
+  const watchersByItem = useMemo(() => {
+    const map: Record<string, AdminProfile[]> = {};
+    for (const p of online) {
+      if (!p.viewingId || p.userId === user?.id) continue;
+      const profile: AdminProfile = adminMap[p.userId] ?? {
+        user_id: p.userId,
+        display_name: p.displayName,
+        avatar_url: null,
+      };
+      (map[p.viewingId] ??= []).push(profile);
+    }
+    return map;
+  }, [online, adminMap, user]);
+
+  const availableLabels = useMemo(() => {
+    const set = new Set<string>();
+    for (const it of items) for (const l of it.labels || []) set.add(l);
+    return Array.from(set).sort();
+  }, [items]);
+
+  const itemsById = useMemo(() => {
+    const map: Record<string, FeedbackSubmission> = {};
+    for (const it of items) map[it.id] = it;
+    return map;
+  }, [items]);
+
+  const { data: duplicateSuggestions = [] } = useFeedbackDuplicateSuggestions();
+  const duplicateMap = useMemo(() => buildDuplicateMap(duplicateSuggestions), [duplicateSuggestions]);
+  const dismissSuggestion = useDismissDuplicateSuggestion();
+  const mergeDuplicate = useMergeDuplicate();
+
+  const { data: auditEntries = [] } = useFeedbackAudit(state.sel);
+  const replyMutation = useReplyToFeedback();
+  const { data: apiErrorDaily = [] } = useApiErrorDailySeries();
+
+  const spamCount = useMemo(() => items.filter((it) => it.is_spam).length, [items]);
+  const communityCount = useMemo(() => items.filter((it) => !it.is_spam).length, [items]);
+
+  // ── Filtering + grouping ────────────────────────────────────
+  const filteredItems = useMemo(() => {
+    const q = state.q.trim().toLowerCase();
+    const viewingSpam = state.tab === 'spam';
+    return items.filter((it) => {
+      // Spam/duplicate visibility rules vary by tab.
+      if (viewingSpam) {
+        if (!it.is_spam) return false;
+      } else {
+        if (it.is_spam && !state.showSpam) return false;
+        if (it.duplicate_of && !state.showDuplicates) return false;
+      }
+
+      const d = it.data || ({} as FeedbackSubmission['data']);
+      if (q) {
+        const haystack = [d.title, d.description, d.context?.url]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      if (state.category && d.category !== state.category) return false;
+      if (state.status && it.feedback_status !== state.status) return false;
+      if (state.priority != null && (it.priority ?? 2) !== state.priority) return false;
+      if (state.assignee === '__unassigned__' && it.assignee_id) return false;
+      if (state.assignee && state.assignee !== '__unassigned__' && it.assignee_id !== state.assignee)
+        return false;
+      if (state.label && !(it.labels ?? []).includes(state.label)) return false;
+      if (state.hasScreenshot && !d.screenshot_url) return false;
+      if (state.hasErrors && !(d.context?.errors && d.context.errors.length > 0)) return false;
+      return true;
+    });
+  }, [items, state]);
 
   const grouped = useMemo(() => {
     const map: Record<KanbanStatus, FeedbackSubmission[]> = {
@@ -276,43 +188,128 @@ export default function AdminFeedback() {
       in_progress: [],
       done: [],
     };
-    for (const item of items) {
+    for (const item of filteredItems) {
       const status = (item.feedback_status || 'new') as KanbanStatus;
-      if (map[status]) map[status].push(item);
-      else map.new.push(item);
+      const col = kanbanStatusSet.has(status) ? status : 'new';
+      map[col].push(item);
     }
     for (const col of kanbanColumns) {
-      map[col.id].sort((a, b) => (votesMap[b.id]?.count ?? 0) - (votesMap[a.id]?.count ?? 0));
+      map[col.id].sort((a, b) => {
+        const prioDiff = (a.priority ?? 2) - (b.priority ?? 2);
+        if (prioDiff !== 0) return prioDiff;
+        return (votesMap[b.id]?.count ?? 0) - (votesMap[a.id]?.count ?? 0);
+      });
     }
     return map;
-  }, [items, votesMap]);
+  }, [filteredItems, votesMap]);
+
+  // ── Mutations ───────────────────────────────────────────────
+  const updateRow = useCallback(
+    async (ids: string[], patch: Record<string, unknown>) => {
+      if (ids.length === 0) return;
+      const { error } = await supabase
+        .from('community_submissions')
+        .update({
+          ...patch,
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+        })
+        .in('id', ids);
+      if (error) throw error;
+    },
+    [user],
+  );
 
   const statusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: KanbanStatus }) => {
+    mutationFn: ({ ids, status }: { ids: string[]; status: KanbanStatus }) =>
+      updateRow(ids, { feedback_status: status }),
+    onMutate: async ({ ids, status }) => {
+      const idSet = new Set(ids);
+      queryClient.setQueryData<FeedbackSubmission[]>(['admin-feedback-board'], (old) =>
+        old?.map((it) => (idSet.has(it.id) ? { ...it, feedback_status: status } : it)),
+      );
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+    onError: (err: Error) => {
+      toast({ title: 'Update failed', description: err.message, variant: 'destructive' });
+      queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] });
+    },
+  });
+
+  const priorityMutation = useMutation({
+    mutationFn: ({ ids, priority }: { ids: string[]; priority: number }) =>
+      updateRow(ids, { priority }),
+    onMutate: async ({ ids, priority }) => {
+      const idSet = new Set(ids);
+      queryClient.setQueryData<FeedbackSubmission[]>(['admin-feedback-board'], (old) =>
+        old?.map((it) => (idSet.has(it.id) ? { ...it, priority } : it)),
+      );
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+    onError: (err: Error) =>
+      toast({ title: 'Priority failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: ({ ids, assigneeId }: { ids: string[]; assigneeId: string | null }) =>
+      updateRow(ids, { assignee_id: assigneeId }),
+    onMutate: async ({ ids, assigneeId }) => {
+      const idSet = new Set(ids);
+      queryClient.setQueryData<FeedbackSubmission[]>(['admin-feedback-board'], (old) =>
+        old?.map((it) => (idSet.has(it.id) ? { ...it, assignee_id: assigneeId } : it)),
+      );
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+    onError: (err: Error) =>
+      toast({ title: 'Assign failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const labelsMutation = useMutation({
+    mutationFn: async ({ id, labels }: { id: string; labels: string[] }) => {
       const { error } = await supabase
-         
-        .from('community_submissions' as const)
+        .from('community_submissions')
+        .update({ labels })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onMutate: async ({ id, labels }) => {
+      queryClient.setQueryData<FeedbackSubmission[]>(['admin-feedback-board'], (old) =>
+        old?.map((it) => (it.id === id ? { ...it, labels } : it)),
+      );
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+    onError: (err: Error) =>
+      toast({ title: 'Labels failed', description: err.message, variant: 'destructive' }),
+  });
+
+  const resolutionMutation = useMutation({
+    mutationFn: async ({
+      id,
+      resolution,
+    }: {
+      id: string;
+      resolution: FeedbackResolution | null;
+    }) => {
+      const { error } = await supabase
+        .from('community_submissions')
         .update({
-          feedback_status: status,
+          resolution,
+          resolved_at: resolution ? new Date().toISOString() : null,
           reviewed_by: user?.id,
           reviewed_at: new Date().toISOString(),
         })
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] });
-    },
-    onError: (err: Error) => {
-      toast({ title: 'Update failed', description: err.message, variant: 'destructive' });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+    onError: (err: Error) =>
+      toast({ title: 'Resolution failed', description: err.message, variant: 'destructive' }),
   });
 
   const notesMutation = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
       const { error } = await supabase
-         
-        .from('community_submissions' as const)
+        .from('community_submissions')
         .update({ reviewer_notes: notes })
         .eq('id', id);
       if (error) throw error;
@@ -325,90 +322,178 @@ export default function AdminFeedback() {
 
   const forwardMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await supabase.functions.invoke('forward-feedback-to-github', {
-        body: { submission_id: id },
-      });
-      if (error) throw error;
-      return data;
+      setForwardingIds((prev) => new Set(prev).add(id));
+      try {
+        const { data, error } = await supabase.functions.invoke('forward-feedback-to-github', {
+          body: { submission_id: id },
+        });
+        if (error) throw error;
+        return { id, data };
+      } finally {
+        setForwardingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }
     },
-    onSuccess: (data, id) => {
+    onSuccess: ({ id, data }) => {
       if (data?.already_forwarded) {
         toast({ title: 'Already forwarded', description: `Issue #${data.number}` });
       } else {
         toast({ title: 'Forwarded to GitHub', description: `Issue #${data.number} created` });
       }
-      queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] });
-      // Update selected item so the UI reflects the new state immediately
-      if (selected?.id === id) {
-        setSelected({
-          ...selected,
-          github_issue_url: data.url,
-          github_issue_number: data.number,
-          forwarded_at: new Date().toISOString(),
+      queryClient.setQueryData<FeedbackSubmission[]>(['admin-feedback-board'], (old) =>
+        old?.map((it) =>
+          it.id === id
+            ? {
+                ...it,
+                github_issue_url: data.url,
+                github_issue_number: data.number,
+                forwarded_at: new Date().toISOString(),
+              }
+            : it,
+        ),
+      );
+      queryClient.invalidateQueries({ queryKey: ['admin-api-errors'] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Forward failed', description: err.message, variant: 'destructive' });
+    },
+  });
+
+  // ── Selection helpers ───────────────────────────────────────
+  const toggleSelect = useCallback(
+    (id: string, shift: boolean) => {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        if (shift && lastSelectedId) {
+          // Range select within current focused column.
+          const col = kanbanColumns[focusedColumnIdx];
+          const colIds = grouped[col.id].map((i) => i.id);
+          const aIdx = colIds.indexOf(lastSelectedId);
+          const bIdx = colIds.indexOf(id);
+          if (aIdx >= 0 && bIdx >= 0) {
+            const [lo, hi] = aIdx < bIdx ? [aIdx, bIdx] : [bIdx, aIdx];
+            for (let i = lo; i <= hi; i++) next.add(colIds[i]);
+            setLastSelectedId(id);
+            return next;
+          }
+        }
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setLastSelectedId(id);
+        return next;
+      });
+    },
+    [grouped, focusedColumnIdx, lastSelectedId],
+  );
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+    setLastSelectedId(null);
+  }, []);
+
+  const selectAllVisible = useCallback(() => {
+    const next = new Set<string>();
+    for (const col of kanbanColumns) for (const it of grouped[col.id]) next.add(it.id);
+    setSelectedIds(next);
+  }, [grouped]);
+
+  const totalVisibleCount = useMemo(
+    () => Object.values(grouped).reduce((n, arr) => n + arr.length, 0),
+    [grouped],
+  );
+
+  // Keep focus valid as cards get filtered out.
+  useEffect(() => {
+    if (focusedId && !filteredItems.some((it) => it.id === focusedId)) {
+      setFocusedId(null);
+    }
+  }, [filteredItems, focusedId]);
+
+  // ── Keyboard navigation ─────────────────────────────────────
+  const moveFocus = useCallback(
+    (dir: 'up' | 'down' | 'left' | 'right') => {
+      if (dir === 'left' || dir === 'right') {
+        const nextIdx =
+          dir === 'left'
+            ? Math.max(0, focusedColumnIdx - 1)
+            : Math.min(kanbanColumns.length - 1, focusedColumnIdx + 1);
+        setFocusedColumnIdx(nextIdx);
+        const col = kanbanColumns[nextIdx];
+        const items = grouped[col.id];
+        setFocusedId(items[0]?.id ?? null);
+        return;
+      }
+      const col = kanbanColumns[focusedColumnIdx];
+      const items = grouped[col.id];
+      if (items.length === 0) return;
+      const idx = focusedId ? items.findIndex((i) => i.id === focusedId) : -1;
+      const nextIdx =
+        dir === 'down'
+          ? Math.min(items.length - 1, idx + 1)
+          : idx < 0
+            ? 0
+            : Math.max(0, idx - 1);
+      setFocusedId(items[nextIdx]?.id ?? null);
+    },
+    [focusedColumnIdx, focusedId, grouped],
+  );
+
+  const actionTargetIds = useMemo(() => {
+    if (selectedIds.size > 0) return Array.from(selectedIds);
+    if (focusedId) return [focusedId];
+    return [];
+  }, [selectedIds, focusedId]);
+
+  const handleCopyPrompt = useCallback(
+    async (item: FeedbackSubmission) => {
+      try {
+        await navigator.clipboard.writeText(formatClaudePrompt(item));
+        toast({ title: 'Prompt copied', description: 'Paste into Claude Code' });
+      } catch {
+        toast({
+          title: 'Copy failed',
+          description: 'Clipboard unavailable',
+          variant: 'destructive',
         });
       }
     },
-    onError: (err: Error) => {
-      toast({ title: 'Forward failed', description: err.message, variant: 'destructive' });
-    },
-  });
-
-  const handleCardClick = useCallback((item: FeedbackSubmission) => {
-    setSelected(item);
-    setDrawerOpen(true);
-  }, []);
-
-  const handleStatusChange = useCallback(
-    (status: KanbanStatus) => {
-      if (!selected) return;
-      statusMutation.mutate({ id: selected.id, status });
-      setSelected({ ...selected, feedback_status: status });
-    },
-    [selected, statusMutation],
+    [toast],
   );
 
-  const handleErrorCardClick = useCallback((item: ApiErrorSubmission) => {
-    setSelectedError(item);
-    setDrawerOpen(true);
-  }, []);
-
-  const errorStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: KanbanStatus }) => {
-      const { error } = await supabase
-        .from('community_submissions' as const)
-        .update({
-          feedback_status: status,
-          reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-      if (error) throw error;
+  useFeedbackShortcuts(!isLoading, {
+    onFocusSearch: () => searchInputRef.current?.focus(),
+    onOpenPalette: () => setPaletteOpen(true),
+    onOpenHelp: () => setHelpOpen(true),
+    onEscape: () => {
+      if (selectedIds.size > 0) clearSelection();
+      else if (drawerOpen) update({ sel: null });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-api-errors'] });
+    onMoveCard: moveFocus,
+    onOpenFocused: () => {
+      if (focusedId) update({ sel: focusedId });
     },
-    onError: (err: Error) => {
-      toast({ title: 'Update failed', description: err.message, variant: 'destructive' });
+    onSetStatusIndex: (i) => {
+      const status = kanbanColumns[i]?.id;
+      if (status && actionTargetIds.length) {
+        statusMutation.mutate({ ids: actionTargetIds, status });
+      }
     },
-  });
-
-  const errorForwardMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { data, error } = await supabase.functions.invoke('forward-feedback-to-github', {
-        body: { submission_id: id },
-      });
-      if (error) throw error;
-      return data;
+    onSetPriority: (priority) => {
+      if (actionTargetIds.length) priorityMutation.mutate({ ids: actionTargetIds, priority });
     },
-    onSuccess: (data) => {
-      toast({ title: 'Forwarded to GitHub', description: `Issue #${data.number} created` });
-      queryClient.invalidateQueries({ queryKey: ['admin-api-errors'] });
+    onAssignPicker: () => setPaletteOpen(true),
+    onForwardFocused: () => {
+      if (focusedId) forwardMutation.mutate(focusedId);
     },
-    onError: (err: Error) => {
-      toast({ title: 'Forward failed', description: err.message, variant: 'destructive' });
+    onToggleSelectFocused: (shift) => {
+      if (focusedId) toggleSelect(focusedId, shift);
     },
   });
 
+  // ── Render ──────────────────────────────────────────────────
   if (isLoading || errorsLoading) {
     return (
       <Box sx={{ p: 6, textAlign: 'center' }}>
@@ -417,6 +502,17 @@ export default function AdminFeedback() {
     );
   }
 
+  const tabIdx =
+    state.tab === 'errors'
+      ? 1
+      : state.tab === 'spam'
+        ? 2
+        : state.tab === 'analytics'
+          ? 3
+          : 0;
+  const tabValue: 'community' | 'errors' | 'spam' | 'analytics' =
+    tabIdx === 1 ? 'errors' : tabIdx === 2 ? 'spam' : tabIdx === 3 ? 'analytics' : 'community';
+
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
       <PageHeader
@@ -424,834 +520,201 @@ export default function AdminFeedback() {
         subtitle="Community feedback and automated API error reports"
       />
 
-      <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 2 }}>
-        <Tab label={`Community (${items.length})`} />
+      <Tabs
+        value={tabIdx}
+        onChange={(_, v) =>
+          update({
+            tab:
+              v === 1 ? 'errors' : v === 2 ? 'spam' : v === 3 ? 'analytics' : 'community',
+          })
+        }
+        sx={{ mb: 2 }}
+      >
+        <Tab label={`Community (${communityCount})`} />
         <Tab label={`API Errors (${apiErrors.length})`} />
+        <Tab label={`Spam (${spamCount})`} />
+        <Tab label="Analytics" />
       </Tabs>
 
-      {activeTab === 1 && (
-        <ApiErrorsList
+      {(tabValue === 'community' || tabValue === 'spam') && (
+        <>
+          <FeedbackFilters
+            state={state}
+            update={update}
+            clearFilters={clearFilters}
+            activeFilterCount={activeFilterCount}
+            admins={admins}
+            labels={availableLabels}
+            searchInputRef={searchInputRef}
+          />
+
+          {totalVisibleCount === 0 ? (
+            <Typography variant="body2" color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>
+              {activeFilterCount > 0
+                ? 'No submissions match the current filters.'
+                : 'No submissions yet.'}
+            </Typography>
+          ) : (
+            <FeedbackKanban
+              grouped={grouped}
+              voteCounts={votesMap}
+              selectedIds={selectedIds}
+              focusedId={focusedId}
+              watchersByItem={watchersByItem}
+              adminById={adminMap}
+              onCardClick={(item) => {
+                setFocusedId(item.id);
+                const colIdx = kanbanColumns.findIndex((c) => c.id === (item.feedback_status as KanbanStatus));
+                if (colIdx >= 0) setFocusedColumnIdx(colIdx);
+                update({ sel: item.id });
+              }}
+              onToggleSelect={toggleSelect}
+              onStatusDrop={(id, status) => statusMutation.mutate({ ids: [id], status })}
+            />
+          )}
+
+          <FeedbackBulkBar
+            selectedCount={selectedIds.size}
+            totalCount={totalVisibleCount}
+            onSelectAll={selectAllVisible}
+            onClear={clearSelection}
+            onSetStatus={(status) =>
+              statusMutation.mutate({ ids: Array.from(selectedIds), status })
+            }
+            onSetPriority={(priority) =>
+              priorityMutation.mutate({ ids: Array.from(selectedIds), priority })
+            }
+            onAssign={(assigneeId) =>
+              assignMutation.mutate({ ids: Array.from(selectedIds), assigneeId })
+            }
+            onAddLabel={(label) => {
+              for (const id of selectedIds) {
+                const it = items.find((i) => i.id === id);
+                if (!it) continue;
+                const next = Array.from(new Set([...(it.labels ?? []), label]));
+                labelsMutation.mutate({ id, labels: next });
+              }
+            }}
+            onForward={() => {
+              for (const id of selectedIds) forwardMutation.mutate(id);
+            }}
+            admins={admins}
+            loading={
+              statusMutation.isPending || priorityMutation.isPending || assignMutation.isPending
+            }
+          />
+        </>
+      )}
+
+      {tabValue === 'errors' && (
+        <ApiErrorsTab
           errors={apiErrors}
-          onCardClick={handleErrorCardClick}
-          onStatusChange={(id, status) => errorStatusMutation.mutate({ id, status })}
+          dailySeries={apiErrorDaily}
+          forwardingIds={forwardingIds}
           onCopyPrompt={async (item) => {
-            const prompt = formatErrorClaudePrompt(item);
             try {
-              await navigator.clipboard.writeText(prompt);
+              await navigator.clipboard.writeText(formatErrorClaudePrompt(item));
               toast({ title: 'Prompt copied' });
             } catch {
               toast({ title: 'Copy failed', variant: 'destructive' });
             }
           }}
-          onForward={(id) => errorForwardMutation.mutate(id)}
-          isForwarding={errorForwardMutation.isPending}
+          onForward={(id) => forwardMutation.mutate(id)}
+          onStatusChange={(id, status) => statusMutation.mutate({ ids: [id], status })}
         />
       )}
 
-      {activeTab === 0 && (
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: `repeat(${kanbanColumns.length}, 1fr)` },
-          gap: 2,
-          mt: 3,
-        }}
-      >
-        {kanbanColumns.map((col) => {
-          const colItems = grouped[col.id];
-          return (
-            <Box key={col.id}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  mb: 1.5,
-                  pb: 1,
-                  borderBottom: 2,
-                  borderColor: col.color,
-                }}
-              >
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  {col.label}
-                </Typography>
-                <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>
-                  {colItems.length}
-                </Badge>
-              </Box>
-
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1,
-                  maxHeight: { md: 'calc(100vh - 260px)' },
-                  overflowY: 'auto',
-                  pr: 0.5,
-                }}
-              >
-                {colItems.length === 0 && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ py: 3, textAlign: 'center' }}
-                  >
-                    No items
-                  </Typography>
-                )}
-                {colItems.map((item) => (
-                  <AdminFeedbackCard
-                    key={item.id}
-                    item={item}
-                    voteCount={votesMap[item.id]?.count ?? 0}
-                    onClick={() => handleCardClick(item)}
-                  />
-                ))}
-              </Box>
-            </Box>
-          );
-        })}
-      </Box>
+      {tabValue === 'analytics' && (
+        <AnalyticsTab items={items} voteCounts={votesMap} />
       )}
 
       <FeedbackDetailDrawer
-        open={drawerOpen && activeTab === 0}
+        open={drawerOpen && tabValue !== 'errors'}
         item={selected}
-        onClose={() => setDrawerOpen(false)}
-        onStatusChange={handleStatusChange}
+        voteCount={selected ? votesMap[selected.id]?.count ?? 0 : 0}
+        admins={admins}
+        availableLabels={availableLabels}
+        watchers={selected ? watchersByItem[selected.id] ?? [] : []}
+        isForwarding={selected ? forwardingIds.has(selected.id) : false}
+        duplicateSuggestions={selected ? duplicateMap[selected.id] ?? [] : []}
+        itemsById={itemsById}
+        canonical={
+          selected?.duplicate_of ? itemsById[selected.duplicate_of] ?? null : null
+        }
+        onOpenPartner={(id) => update({ sel: id })}
+        onMergeDuplicate={(args) => mergeDuplicate.mutate(args)}
+        onDismissDuplicate={(id) => dismissSuggestion.mutate(id)}
+        onToggleSpam={(isSpam) =>
+          selected &&
+          supabase
+            .from('community_submissions')
+            .update({ is_spam: isSpam })
+            .eq('id', selected.id)
+            .then(() =>
+              queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+            )
+        }
+        auditEntries={auditEntries}
+        adminById={adminMap}
+        onSendReply={(body, notify) =>
+          selected &&
+          replyMutation.mutate({ submissionId: selected.id, body, notify })
+        }
+        isSendingReply={replyMutation.isPending}
+        onResolutionChange={(resolution) =>
+          selected && resolutionMutation.mutate({ id: selected.id, resolution })
+        }
+        onClose={() => update({ sel: null })}
+        onStatusChange={(status) =>
+          selected && statusMutation.mutate({ ids: [selected.id], status })
+        }
+        onPriorityChange={(priority) =>
+          selected && priorityMutation.mutate({ ids: [selected.id], priority })
+        }
+        onAssign={(assigneeId) =>
+          selected && assignMutation.mutate({ ids: [selected.id], assigneeId })
+        }
+        onAddLabel={(label) => {
+          if (!selected) return;
+          const next = Array.from(new Set([...(selected.labels ?? []), label]));
+          labelsMutation.mutate({ id: selected.id, labels: next });
+        }}
+        onRemoveLabel={(label) => {
+          if (!selected) return;
+          const next = (selected.labels ?? []).filter((l) => l !== label);
+          labelsMutation.mutate({ id: selected.id, labels: next });
+        }}
         onSaveNotes={(notes) => selected && notesMutation.mutate({ id: selected.id, notes })}
         onForward={() => selected && forwardMutation.mutate(selected.id)}
-        isForwarding={forwardMutation.isPending}
-        voteCount={selected ? (votesMap[selected.id]?.count ?? 0) : 0}
+        onCopyPrompt={() => selected && handleCopyPrompt(selected)}
       />
-    </Box>
-  );
-}
 
-// ── Admin Feedback Card ─────────────────────────────────────────
-
-interface AdminFeedbackCardProps {
-  item: FeedbackSubmission;
-  voteCount: number;
-  onClick: () => void;
-}
-
-function AdminFeedbackCard({ item, voteCount, onClick }: AdminFeedbackCardProps) {
-  const cat = feedbackCategoryMap[item.data.category] || feedbackCategoryMap.idea;
-  const Icon = cat.icon;
-  const isForwarded = !!item.github_issue_url;
-
-  return (
-    <Box
-      onClick={onClick}
-      sx={{
-        p: 1.5,
-        borderRadius: 1.5,
-        border: 1,
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
-        cursor: 'pointer',
-        display: 'flex',
-        gap: 1.5,
-        transition: 'all 0.15s',
-        '&:hover': { borderColor: 'primary.main', boxShadow: 1 },
-      }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 0.25,
-          minWidth: 32,
-          pt: 0.25,
+      <FeedbackCommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        selectedCount={selectedIds.size || (focusedId ? 1 : 0)}
+        admins={admins}
+        onJumpToColumn={(status) => {
+          const idx = kanbanColumns.findIndex((c) => c.id === status);
+          if (idx >= 0) {
+            setFocusedColumnIdx(idx);
+            setFocusedId(grouped[status][0]?.id ?? null);
+          }
         }}
-      >
-        <ChevronUp style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
-        <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-          {voteCount}
-        </Typography>
-      </Box>
-
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5, flexWrap: 'wrap' }}>
-          <Badge
-            variant="outline"
-            style={{
-              borderColor: cat.color,
-              color: cat.color,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 3,
-              fontSize: '0.65rem',
-              padding: '1px 6px',
-            }}
-          >
-            <Icon style={{ width: 10, height: 10 }} />
-            {cat.label}
-          </Badge>
-          {isForwarded && (
-            <Badge
-              variant="outline"
-              style={{
-                borderColor: '#6366f1',
-                color: '#6366f1',
-                fontSize: '0.6rem',
-                padding: '1px 5px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 3,
-              }}
-            >
-              <Github style={{ width: 9, height: 9 }} />#{item.github_issue_number}
-            </Badge>
-          )}
-        </Box>
-        <Typography
-          variant="body2"
-          sx={{
-            fontWeight: 600,
-            mb: 0.25,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {item.data.title}
-        </Typography>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            lineHeight: 1.4,
-          }}
-        >
-          {item.data.description}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.75 }}>
-          <Clock style={{ width: 10, height: 10, color: 'var(--muted-foreground)' }} />
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-            {timeAgo(item.submitted_at)}
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
-  );
-}
-
-// ── Detail Drawer ───────────────────────────────────────────────
-
-interface FeedbackDetailDrawerProps {
-  open: boolean;
-  item: FeedbackSubmission | null;
-  voteCount: number;
-  onClose: () => void;
-  onStatusChange: (status: KanbanStatus) => void;
-  onSaveNotes: (notes: string) => void;
-  onForward: () => void;
-  isForwarding: boolean;
-}
-
-function FeedbackDetailDrawer({
-  open,
-  item,
-  voteCount,
-  onClose,
-  onStatusChange,
-  onSaveNotes,
-  onForward,
-  isForwarding,
-}: FeedbackDetailDrawerProps) {
-  const { toast } = useToast();
-  const [errorsExpanded, setErrorsExpanded] = useState(false);
-  const [networkExpanded, setNetworkExpanded] = useState(false);
-  const [screenshotOpen, setScreenshotOpen] = useState(false);
-  const [localNotes, setLocalNotes] = useState('');
-
-  const handleCopyPrompt = async () => {
-    if (!item) return;
-    const prompt = formatClaudePrompt(item);
-    try {
-      await navigator.clipboard.writeText(prompt);
-      toast({ title: 'Prompt kopiert', description: 'In Claude Code einfügen' });
-    } catch {
-      toast({
-        title: 'Copy fehlgeschlagen',
-        description: 'Clipboard nicht verfügbar',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  // Sync notes when item changes
-  const _itemId = item?.id;
-  useMemo(() => {
-    if (item) setLocalNotes(item.reviewer_notes || '');
-  }, [item]);
-
-  if (!item) return null;
-
-  const cat = feedbackCategoryMap[item.data.category] || feedbackCategoryMap.idea;
-  const CatIcon = cat.icon;
-  const ctx = item.data.context || {};
-  const isForwarded = !!item.github_issue_url;
-
-  return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '100%', sm: 520 }, p: 3 } }}
-    >
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-        <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1, flexWrap: 'wrap' }}>
-            <Badge
-              variant="outline"
-              style={{
-                borderColor: cat.color,
-                color: cat.color,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
-            >
-              <CatIcon style={{ width: 12, height: 12 }} />
-              {cat.label}
-            </Badge>
-            {isForwarded && (
-              <Badge
-                variant="outline"
-                style={{
-                  borderColor: '#6366f1',
-                  color: '#6366f1',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                <Github style={{ width: 11, height: 11 }} />
-                Forwarded
-              </Badge>
-            )}
-          </Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
-            {item.data.title}
-          </Typography>
-        </Box>
-        <Button variant="ghost" size="sm" onClick={onClose} style={{ padding: 6 }}>
-          <X style={{ width: 16, height: 16 }} />
-        </Button>
-      </Box>
-
-      {/* Description */}
-      <Typography
-        variant="body2"
-        sx={{ whiteSpace: 'pre-wrap', mb: 3, color: 'text.secondary' }}
-      >
-        {item.data.description}
-      </Typography>
-
-      {/* Status selector */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.75 }}>
-          Status
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          {kanbanColumns.map((col) => {
-            const active = item.feedback_status === col.id;
-            return (
-              <Badge
-                key={col.id}
-                variant={active ? 'default' : 'outline'}
-                style={{
-                  cursor: 'pointer',
-                  ...(active ? { backgroundColor: col.color, color: '#fff' } : {}),
-                }}
-                onClick={() => onStatusChange(col.id)}
-              >
-                {col.label}
-              </Badge>
-            );
-          })}
-        </Box>
-      </Box>
-
-      {/* Metadata grid */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 1.5,
-          mb: 3,
-          p: 1.5,
-          bgcolor: 'action.hover',
-          borderRadius: 1,
+        onSetPriority={(priority) =>
+          actionTargetIds.length && priorityMutation.mutate({ ids: actionTargetIds, priority })
+        }
+        onAssign={(assigneeId) =>
+          actionTargetIds.length && assignMutation.mutate({ ids: actionTargetIds, assigneeId })
+        }
+        onForwardSelected={() => {
+          for (const id of actionTargetIds) forwardMutation.mutate(id);
         }}
-      >
-        <MetaItem icon={ChevronUp} label="Votes" value={String(voteCount)} />
-        <MetaItem icon={Clock} label="Submitted" value={timeAgo(item.submitted_at)} />
-        {ctx.viewport && (
-          <MetaItem
-            icon={Monitor}
-            label="Viewport"
-            value={`${ctx.viewport.width}×${ctx.viewport.height}`}
-          />
-        )}
-        {ctx.color_scheme && (
-          <MetaItem icon={Monitor} label="Theme" value={ctx.color_scheme} />
-        )}
-      </Box>
+        onFocusSearch={() => searchInputRef.current?.focus()}
+        onOpenHelp={() => setHelpOpen(true)}
+      />
 
-      {/* Page URL */}
-      {ctx.url && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
-            Page URL
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.75,
-              p: 1,
-              bgcolor: 'action.hover',
-              borderRadius: 1,
-              fontFamily: 'monospace',
-              fontSize: '0.7rem',
-            }}
-          >
-            <a
-              href={ctx.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: 'inherit',
-                textDecoration: 'none',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                flex: 1,
-              }}
-            >
-              {ctx.url}
-            </a>
-            <ExternalLink style={{ width: 11, height: 11, flexShrink: 0 }} />
-          </Box>
-        </Box>
-      )}
-
-      {/* User agent */}
-      {ctx.user_agent && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
-            User Agent
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              display: 'block',
-              p: 1,
-              bgcolor: 'action.hover',
-              borderRadius: 1,
-              fontFamily: 'monospace',
-              fontSize: '0.65rem',
-              wordBreak: 'break-all',
-            }}
-          >
-            {ctx.user_agent}
-          </Typography>
-        </Box>
-      )}
-
-      {/* Screenshot */}
-      {item.data.screenshot_url && (
-        <Box sx={{ mb: 2 }}>
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}
-          >
-            <Camera style={{ width: 12, height: 12 }} /> Screenshot
-          </Typography>
-          <Box
-            onClick={() => setScreenshotOpen(true)}
-            sx={{
-              borderRadius: 1,
-              overflow: 'hidden',
-              border: 1,
-              borderColor: 'divider',
-              cursor: 'pointer',
-            }}
-          >
-            <img
-              src={item.data.screenshot_url}
-              alt="Page screenshot"
-              style={{ width: '100%', display: 'block', maxHeight: 280, objectFit: 'cover' }}
-            />
-          </Box>
-          {screenshotOpen && (
-            <Box
-              onClick={() => setScreenshotOpen(false)}
-              sx={{
-                position: 'fixed',
-                inset: 0,
-                bgcolor: 'rgba(0,0,0,0.9)',
-                zIndex: 2000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                p: 2,
-              }}
-            >
-              <img
-                src={item.data.screenshot_url}
-                alt="Page screenshot"
-                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-              />
-            </Box>
-          )}
-        </Box>
-      )}
-
-      {/* Errors collapsible */}
-      {ctx.errors && ctx.errors.length > 0 && (
-        <Box sx={{ mb: 2 }}>
-          <Box
-            onClick={() => setErrorsExpanded(!errorsExpanded)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              cursor: 'pointer',
-              py: 0.5,
-            }}
-          >
-            {errorsExpanded ? (
-              <ChevronDown style={{ width: 14, height: 14 }} />
-            ) : (
-              <ChevronRight style={{ width: 14, height: 14 }} />
-            )}
-            <AlertTriangle style={{ width: 12, height: 12, color: '#ef4444' }} />
-            <Typography variant="caption" sx={{ fontWeight: 600 }}>
-              Console errors ({ctx.errors.length})
-            </Typography>
-          </Box>
-          <Collapse in={errorsExpanded}>
-            <Box
-              sx={{
-                p: 1,
-                bgcolor: 'action.hover',
-                borderRadius: 1,
-                fontFamily: 'monospace',
-                fontSize: '0.65rem',
-                maxHeight: 240,
-                overflowY: 'auto',
-              }}
-            >
-              {ctx.errors.map((err, i) => (
-                <Box key={i} sx={{ mb: 1, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
-                  <Typography variant="caption" sx={{ display: 'block', color: '#ef4444' }}>
-                    {err.message}
-                  </Typography>
-                  {err.stack && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        display: 'block',
-                        color: 'text.secondary',
-                        fontSize: '0.6rem',
-                        mt: 0.25,
-                        whiteSpace: 'pre-wrap',
-                      }}
-                    >
-                      {err.stack.split('\n').slice(0, 3).join('\n')}
-                    </Typography>
-                  )}
-                </Box>
-              ))}
-            </Box>
-          </Collapse>
-        </Box>
-      )}
-
-      {/* Network failures collapsible */}
-      {ctx.network_failures && ctx.network_failures.length > 0 && (
-        <Box sx={{ mb: 2 }}>
-          <Box
-            onClick={() => setNetworkExpanded(!networkExpanded)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              cursor: 'pointer',
-              py: 0.5,
-            }}
-          >
-            {networkExpanded ? (
-              <ChevronDown style={{ width: 14, height: 14 }} />
-            ) : (
-              <ChevronRight style={{ width: 14, height: 14 }} />
-            )}
-            <Wifi style={{ width: 12, height: 12, color: '#f59e0b' }} />
-            <Typography variant="caption" sx={{ fontWeight: 600 }}>
-              Network failures ({ctx.network_failures.length})
-            </Typography>
-          </Box>
-          <Collapse in={networkExpanded}>
-            <Box
-              sx={{
-                p: 1,
-                bgcolor: 'action.hover',
-                borderRadius: 1,
-                fontFamily: 'monospace',
-                fontSize: '0.65rem',
-                maxHeight: 240,
-                overflowY: 'auto',
-              }}
-            >
-              {ctx.network_failures.map((nf, i) => (
-                <Box key={i} sx={{ mb: 0.5 }}>
-                  <Typography variant="caption" sx={{ display: 'block' }}>
-                    <span style={{ color: '#f59e0b', fontWeight: 700 }}>{nf.status}</span>{' '}
-                    {nf.method} {nf.url}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Collapse>
-        </Box>
-      )}
-
-      {/* Reviewer notes */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
-          Reviewer Notes
-        </Typography>
-        <Textarea
-          value={localNotes}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalNotes(e.target.value)}
-          onBlur={() => {
-            if (localNotes !== (item.reviewer_notes || '')) onSaveNotes(localNotes);
-          }}
-          placeholder="Internal notes (saved on blur)"
-          style={{ minHeight: 80 }}
-        />
-      </Box>
-
-      {/* Contact email */}
-      {item.data.contact_email && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.25 }}>
-            Contact
-          </Typography>
-          <Typography variant="body2">
-            <a href={`mailto:${item.data.contact_email}`}>{item.data.contact_email}</a>
-          </Typography>
-        </Box>
-      )}
-
-      {/* Actions */}
-      <Box sx={{ display: 'flex', gap: 1, mt: 'auto', pt: 2, borderTop: 1, borderColor: 'divider' }}>
-        <Button
-          variant="outline"
-          onClick={handleCopyPrompt}
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-        >
-          <Copy style={{ width: 14, height: 14 }} />
-          Copy Prompt
-        </Button>
-        {isForwarded ? (
-          <Button
-            variant="outline"
-            onClick={() => window.open(item.github_issue_url!, '_blank', 'noopener,noreferrer')}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}
-          >
-            <Github style={{ width: 14, height: 14 }} />
-            View issue #{item.github_issue_number}
-          </Button>
-        ) : (
-          <Button
-            onClick={onForward}
-            disabled={isForwarding}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              flex: 1,
-              backgroundColor: '#DB2777',
-              color: '#fff',
-            }}
-          >
-            <MessageSquarePlus style={{ width: 14, height: 14 }} />
-            {isForwarding ? 'Forwarding...' : 'Fix with Claude'}
-          </Button>
-        )}
-      </Box>
-    </Drawer>
-  );
-}
-
-// ── API Errors List ───────────────────────────────────────────────
-
-interface ApiErrorsListProps {
-  errors: ApiErrorSubmission[];
-  onCardClick: (item: ApiErrorSubmission) => void;
-  onStatusChange: (id: string, status: KanbanStatus) => void;
-  onCopyPrompt: (item: ApiErrorSubmission) => void;
-  onForward: (id: string) => void;
-  isForwarding: boolean;
-}
-
-function ApiErrorsList({ errors, onCopyPrompt, onForward, isForwarding }: ApiErrorsListProps) {
-  const groupedByStatus = useMemo(() => {
-    const map: Record<string, ApiErrorSubmission[]> = { new: [], under_review: [], in_progress: [], done: [] };
-    for (const e of errors) {
-      const s = e.feedback_status || 'new';
-      if (map[s]) map[s].push(e);
-      else map.new.push(e);
-    }
-    return map;
-  }, [errors]);
-
-  const [expanded, setExpanded] = useState<string | null>(null);
-
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {errors.length === 0 && (
-        <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-          No API errors recorded
-        </Typography>
-      )}
-      {['new', 'under_review', 'in_progress', 'done'].map((status) => {
-        const group = groupedByStatus[status] || [];
-        if (group.length === 0) return null;
-        const col = kanbanColumns.find((c) => c.id === status);
-        return (
-          <Box key={status} sx={{ mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, pb: 0.5, borderBottom: 2, borderColor: col?.color || '#888' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{col?.label || status}</Typography>
-              <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>{group.length}</Badge>
-            </Box>
-            {group.map((item) => (
-              <Box
-                key={item.id}
-                sx={{
-                  p: 1.5,
-                  mb: 1,
-                  border: 1,
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                  cursor: 'pointer',
-                  '&:hover': { borderColor: 'primary.main' },
-                }}
-                onClick={() => setExpanded(expanded === item.id ? null : item.id)}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <Badge
-                    variant="outline"
-                    style={{
-                      borderColor: SERVICE_COLORS[item.data.service] || '#888',
-                      color: SERVICE_COLORS[item.data.service] || '#888',
-                      fontSize: '0.6rem',
-                      padding: '1px 5px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 3,
-                    }}
-                  >
-                    <Server style={{ width: 9, height: 9 }} />
-                    {item.data.service}
-                  </Badge>
-                  <Badge variant="outline" style={{ fontSize: '0.6rem', padding: '1px 5px', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                    <Zap style={{ width: 9, height: 9 }} />
-                    {item.data.function_name}
-                  </Badge>
-                  <Box sx={{ flex: 1 }} />
-                  <Badge variant="secondary" style={{ fontSize: '0.6rem', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                    <Hash style={{ width: 9, height: 9 }} />
-                    {item.occurrence_count}x
-                  </Badge>
-                </Box>
-                <Typography variant="body2" sx={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                  {item.data.message}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                  Last seen {timeAgo(item.last_seen_at)}
-                  {item.data.status_code ? ` · ${item.data.status_code}` : ''}
-                  {item.data.endpoint ? ` · ${item.data.endpoint}` : ''}
-                </Typography>
-
-                <Collapse in={expanded === item.id}>
-                  <Box sx={{ mt: 1.5, pt: 1.5, borderTop: 1, borderColor: 'divider' }}>
-                    {item.data.stack && (
-                      <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>Stack trace</Typography>
-                        <Box sx={{ p: 1, bgcolor: 'action.hover', fontFamily: 'monospace', fontSize: '0.6rem', maxHeight: 200, overflowY: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                          {item.data.stack}
-                        </Box>
-                      </Box>
-                    )}
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button variant="outline" onClick={(e: React.MouseEvent) => { e.stopPropagation(); onCopyPrompt(item); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <Copy style={{ width: 14, height: 14 }} />
-                        Copy Prompt
-                      </Button>
-                      {item.github_issue_url ? (
-                        <Button variant="outline" onClick={(e: React.MouseEvent) => { e.stopPropagation(); window.open(item.github_issue_url!, '_blank'); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <Github style={{ width: 14, height: 14 }} />
-                          Issue #{item.github_issue_number}
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={(e: React.MouseEvent) => { e.stopPropagation(); onForward(item.id); }}
-                          disabled={isForwarding}
-                          style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: '#DB2777', color: '#fff' }}
-                        >
-                          <MessageSquarePlus style={{ width: 14, height: 14 }} />
-                          {isForwarding ? 'Forwarding...' : 'Fix with Claude'}
-                        </Button>
-                      )}
-                    </Box>
-                  </Box>
-                </Collapse>
-              </Box>
-            ))}
-          </Box>
-        );
-      })}
-    </Box>
-  );
-}
-
-function MetaItem({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof Clock;
-  label: string;
-  value: string;
-}) {
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-      <Icon style={{ width: 13, height: 13, color: 'var(--muted-foreground)', flexShrink: 0 }} />
-      <Box sx={{ minWidth: 0 }}>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ display: 'block', fontSize: '0.6rem', lineHeight: 1 }}
-        >
-          {label}
-        </Typography>
-        <Typography variant="caption" sx={{ display: 'block', fontWeight: 600 }}>
-          {value}
-        </Typography>
-      </Box>
+      <ShortcutHelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
     </Box>
   );
 }

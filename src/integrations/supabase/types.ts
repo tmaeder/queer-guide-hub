@@ -2267,8 +2267,10 @@ export type Database = {
       }
       community_submissions: {
         Row: {
+          assignee_id: string | null
           content_type: string
           data: Json
+          duplicate_of: string | null
           feedback_status: string
           fingerprint: string | null
           flyer_scan_id: string | null
@@ -2277,9 +2279,14 @@ export type Database = {
           github_issue_url: string | null
           id: string
           ip_address: unknown
+          is_spam: boolean
+          labels: string[]
           last_seen_at: string | null
           occurrence_count: number
+          priority: number
           promoted_to_id: string | null
+          resolution: string | null
+          resolved_at: string | null
           promoted_to_table: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -2290,8 +2297,10 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          assignee_id?: string | null
           content_type: string
           data?: Json
+          duplicate_of?: string | null
           feedback_status?: string
           fingerprint?: string | null
           flyer_scan_id?: string | null
@@ -2300,9 +2309,14 @@ export type Database = {
           github_issue_url?: string | null
           id?: string
           ip_address?: unknown
+          is_spam?: boolean
+          labels?: string[]
           last_seen_at?: string | null
           occurrence_count?: number
+          priority?: number
           promoted_to_id?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
           promoted_to_table?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -2313,8 +2327,10 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          assignee_id?: string | null
           content_type?: string
           data?: Json
+          duplicate_of?: string | null
           feedback_status?: string
           fingerprint?: string | null
           flyer_scan_id?: string | null
@@ -2323,9 +2339,14 @@ export type Database = {
           github_issue_url?: string | null
           id?: string
           ip_address?: unknown
+          is_spam?: boolean
+          labels?: string[]
           last_seen_at?: string | null
           occurrence_count?: number
+          priority?: number
           promoted_to_id?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
           promoted_to_table?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -2344,6 +2365,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      feedback_duplicate_suggestions: {
+        Row: {
+          a_id: string
+          b_id: string
+          created_at: string
+          dismissed: boolean
+          dismissed_at: string | null
+          dismissed_by: string | null
+          id: string
+          similarity: number
+        }
+        Insert: {
+          a_id: string
+          b_id: string
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          id?: string
+          similarity: number
+        }
+        Update: {
+          a_id?: string
+          b_id?: string
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          id?: string
+          similarity?: number
+        }
+        Relationships: []
+      }
+      community_submissions_audit: {
+        Row: {
+          actor_id: string | null
+          at: string
+          field: string
+          id: number
+          new_value: Json | null
+          old_value: Json | null
+          submission_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          at?: string
+          field: string
+          id?: number
+          new_value?: Json | null
+          old_value?: Json | null
+          submission_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          at?: string
+          field?: string
+          id?: number
+          new_value?: Json | null
+          old_value?: Json | null
+          submission_id?: string
+        }
+        Relationships: []
+      }
+      webhook_deliveries: {
+        Row: {
+          delivery_id: string
+          payload_digest: string | null
+          received_at: string
+          source: string
+        }
+        Insert: {
+          delivery_id: string
+          payload_digest?: string | null
+          received_at?: string
+          source: string
+        }
+        Update: {
+          delivery_id?: string
+          payload_digest?: string | null
+          received_at?: string
+          source?: string
+        }
+        Relationships: []
       }
       contact_submissions: {
         Row: {
