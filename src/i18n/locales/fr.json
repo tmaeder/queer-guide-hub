@@ -815,7 +815,8 @@
     "upcoming": {
       "title": "Événements à venir",
       "titleNear": "Événements à venir près de chez vous",
-      "empty": "Aucun autre événement prévu."
+      "empty": "Aucun autre événement prévu.",
+      "next14": "Les 14 prochains jours"
     },
     "news": {
       "title": "Actualités"
