@@ -1,0 +1,87 @@
+name: Deploy Supabase functions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "supabase/functions/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/deploy-supabase-functions.yml"
+  workflow_dispatch:
+    inputs:
+      redeploy_all:
+        description: "Redeploy every edge function (regardless of git diff)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-supabase
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Push migrations
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q "^supabase/migrations/"; then
+            echo "Migration changes detected. Pushing to remote project..."
+            supabase link --project-ref "$SUPABASE_PROJECT_REF"
+            supabase db push
+          else
+            echo "No migration changes. Skipping db push."
+          fi
+
+      - name: Deploy changed edge functions
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        env:
+          REDEPLOY_ALL: ${{ inputs.redeploy_all }}
+        run: |
+          # Manual trigger with redeploy_all=true forces a full redeploy.
+          # If a shared file changed in this push, also redeploy every function
+          # (each bundles shared code at deploy time).
+          if [ "$REDEPLOY_ALL" = "true" ] || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/functions/_shared/"; then
+            echo "Redeploying every function (manual trigger or shared code changed)."
+            CHANGED=$(ls -1 supabase/functions | grep -v '^_shared$')
+          else
+            CHANGED=$(git diff --name-only HEAD~1 HEAD | awk -F/ '/^supabase\/functions\// && $3 != "_shared" {print $3}' | sort -u)
+          fi
+
+          if [ -z "$CHANGED" ]; then
+            echo "No edge function changes detected."
+            exit 0
+          fi
+
+          for fn in $CHANGED; do
+            if [ -d "supabase/functions/$fn" ]; then
+              echo "::group::Deploying $fn"
+              supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF" || {
+                echo "::error::Failed to deploy $fn"
+                exit 1
+              }
+              echo "::endgroup::"
+            fi
+          done
+
+      - name: Skip notice
+        if: env.SUPABASE_ACCESS_TOKEN == ''
+        run: |
+          echo "::warning::SUPABASE_ACCESS_TOKEN secret is not configured."
+          echo "::warning::Add it under repo Settings to Secrets to enable automatic deploys."
+          echo "::warning::Generate a token at https://supabase.com/dashboard/account/tokens"
