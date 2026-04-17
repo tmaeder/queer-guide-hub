@@ -2287,6 +2287,7 @@ export type Database = {
           promoted_to_id: string | null
           resolution: string | null
           resolved_at: string | null
+          notify_submitter: boolean
           promoted_to_table: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -2317,6 +2318,7 @@ export type Database = {
           promoted_to_id?: string | null
           resolution?: string | null
           resolved_at?: string | null
+          notify_submitter?: boolean
           promoted_to_table?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -2347,6 +2349,7 @@ export type Database = {
           promoted_to_id?: string | null
           resolution?: string | null
           resolved_at?: string | null
+          notify_submitter?: boolean
           promoted_to_table?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null

@@ -59,6 +59,7 @@ interface Props {
   onMergeDuplicate: (args: { duplicateId: string; canonicalId: string; suggestionId: string }) => void;
   onDismissDuplicate: (suggestionId: string) => void;
   onToggleSpam: (isSpam: boolean) => void;
+  onToggleNotify: (notify: boolean) => void;
   auditEntries: FeedbackAuditEntry[];
   adminById: Record<string, AdminProfile>;
   onSendReply: (body: string, notify: boolean) => void;
@@ -90,6 +91,7 @@ export function FeedbackDetailDrawer({
   onMergeDuplicate,
   onDismissDuplicate,
   onToggleSpam,
+  onToggleNotify,
   auditEntries,
   adminById,
   onSendReply,
@@ -674,6 +676,66 @@ export function FeedbackDetailDrawer({
           </Collapse>
         </Box>
       )}
+
+      {isForwarded && item.feedback_status !== 'done' && (
+        <Box
+          sx={{
+            mb: 2,
+            p: 1.25,
+            borderLeft: 3,
+            borderColor: '#8b5cf6',
+            bgcolor: 'rgba(139, 92, 246, 0.08)',
+            borderRadius: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
+          <Github size={14} />
+          <Typography variant="caption" sx={{ flex: 1 }}>
+            Claude is working on this — GitHub{' '}
+            <a
+              href={item.github_issue_url!}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontWeight: 600 }}
+            >
+              #{item.github_issue_number}
+            </a>
+          </Typography>
+        </Box>
+      )}
+
+      <Box
+        sx={{
+          mb: 2,
+          p: 1,
+          bgcolor: 'action.hover',
+          borderRadius: 1,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        <input
+          id="notify-submitter-toggle"
+          type="checkbox"
+          checked={item.notify_submitter ?? true}
+          onChange={(e) => onToggleNotify(e.target.checked)}
+          style={{ margin: 0 }}
+        />
+        <label
+          htmlFor="notify-submitter-toggle"
+          style={{ fontSize: '0.75rem', cursor: 'pointer', flex: 1 }}
+        >
+          Email submitter on status changes
+          {!item.data.contact_email && (
+            <span style={{ color: 'var(--muted-foreground)', marginLeft: 6 }}>
+              (no contact email — nothing will be sent)
+            </span>
+          )}
+        </label>
+      </Box>
 
       <ReplyThread
         replies={item.data.replies ?? []}

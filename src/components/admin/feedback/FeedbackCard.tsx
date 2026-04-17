@@ -47,6 +47,9 @@ export function FeedbackCard({
   const Icon = cat.icon;
   const prio = priorityFor(item.priority);
   const isForwarded = !!item.github_issue_url;
+  // "With Claude" = forwarded + not yet resolved. Surfaces Claude's active work
+  // as a distinct card state between 'planned' and 'done'.
+  const withClaude = isForwarded && item.feedback_status !== 'done';
   const errorCount = item.data.context?.errors?.length ?? 0;
   const hasScreenshot = !!item.data.screenshot_url;
 
@@ -129,20 +132,31 @@ export function FeedbackCard({
               {cat.label}
             </Badge>
             {isForwarded && (
-              <Badge
-                variant="outline"
-                style={{
-                  borderColor: '#6366f1',
-                  color: '#6366f1',
-                  fontSize: '0.55rem',
-                  padding: '1px 4px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
+              <Tooltip
+                title={
+                  withClaude
+                    ? `Claude picked this up — GitHub #${item.github_issue_number}`
+                    : `Forwarded to GitHub #${item.github_issue_number}`
+                }
               >
-                <Github style={{ width: 9, height: 9 }} />#{item.github_issue_number}
-              </Badge>
+                <Badge
+                  variant="outline"
+                  style={{
+                    borderColor: withClaude ? '#8b5cf6' : '#6366f1',
+                    color: withClaude ? '#ffffff' : '#6366f1',
+                    backgroundColor: withClaude ? '#8b5cf6' : 'transparent',
+                    fontSize: '0.55rem',
+                    padding: '1px 4px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    fontWeight: withClaude ? 700 : 400,
+                  }}
+                >
+                  <Github style={{ width: 9, height: 9 }} />
+                  {withClaude ? `Claude · #${item.github_issue_number}` : `#${item.github_issue_number}`}
+                </Badge>
+              </Tooltip>
             )}
             {item.labels?.map((l) => (
               <Box

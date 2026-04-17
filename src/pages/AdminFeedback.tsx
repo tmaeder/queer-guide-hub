@@ -22,6 +22,7 @@ import {
 } from '@/hooks/useFeedbackDuplicates';
 import { useFeedbackAudit } from '@/hooks/useFeedbackAudit';
 import { useReplyToFeedback } from '@/hooks/useFeedbackReply';
+import { useNotifyFeedbackStatus } from '@/hooks/useFeedbackNotify';
 import { useApiErrorDailySeries } from '@/hooks/useFeedbackAnalytics';
 import { AnalyticsTab } from '@/components/admin/feedback/analytics/AnalyticsTab';
 import type { FeedbackResolution } from '@/components/admin/feedback/types';
@@ -40,7 +41,7 @@ import { FeedbackBulkBar } from '@/components/admin/feedback/FeedbackBulkBar';
 import { FeedbackCommandPalette } from '@/components/admin/feedback/FeedbackCommandPalette';
 import { FeedbackDetailDrawer } from '@/components/admin/feedback/FeedbackDetailDrawer';
 import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDialog';
-import { ApiErrorsTab } from '@/components/admin/feedback/ApiErrorsTab';
+import { ApiErrorsKanban } from '@/components/admin/feedback/ApiErrorsKanban';
 import {
   formatClaudePrompt,
   formatErrorClaudePrompt,
@@ -141,7 +142,21 @@ export default function AdminFeedback() {
 
   const { data: auditEntries = [] } = useFeedbackAudit(state.sel);
   const replyMutation = useReplyToFeedback();
+  const notifyStatus = useNotifyFeedbackStatus();
   const { data: apiErrorDaily = [] } = useApiErrorDailySeries();
+
+  const fireStatusNotification = useCallback(
+    (ids: string[], status: KanbanStatus) => {
+      for (const id of ids) {
+        const it = items.find((i) => i.id === id);
+        if (!it || it.is_spam || it.duplicate_of || !it.notify_submitter) continue;
+        if (!it.data.contact_email) continue;
+        const event = status === 'done' ? 'resolved' : 'status_changed';
+        notifyStatus.mutate({ submissionId: id, event, newStatus: status });
+      }
+    },
+    [items, notifyStatus],
+  );
 
   const spamCount = useMemo(() => items.filter((it) => it.is_spam).length, [items]);
   const communityCount = useMemo(() => items.filter((it) => !it.is_spam).length, [items]);
@@ -176,6 +191,10 @@ export default function AdminFeedback() {
       if (state.label && !(it.labels ?? []).includes(state.label)) return false;
       if (state.hasScreenshot && !d.screenshot_url) return false;
       if (state.hasErrors && !(d.context?.errors && d.context.errors.length > 0)) return false;
+      if (state.withClaude) {
+        const claudeActive = !!it.github_issue_url && it.feedback_status !== 'done';
+        if (!claudeActive) return false;
+      }
       return true;
     });
   }, [items, state]);
@@ -229,7 +248,10 @@ export default function AdminFeedback() {
         old?.map((it) => (idSet.has(it.id) ? { ...it, feedback_status: status } : it)),
       );
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+    onSuccess: (_data, { ids, status }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] });
+      fireStatusNotification(ids, status);
+    },
     onError: (err: Error) => {
       toast({ title: 'Update failed', description: err.message, variant: 'destructive' });
       queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] });
@@ -300,8 +322,18 @@ export default function AdminFeedback() {
         })
         .eq('id', id);
       if (error) throw error;
+      return { id, resolution };
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+    onSuccess: (_data, { id, resolution }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] });
+      const it = items.find((i) => i.id === id);
+      if (!it || it.is_spam || it.duplicate_of || !it.notify_submitter) return;
+      if (!it.data.contact_email) return;
+      notifyStatus.mutate({
+        submissionId: id,
+        event: resolution ? 'resolved' : 'reopened',
+      });
+    },
     onError: (err: Error) =>
       toast({ title: 'Resolution failed', description: err.message, variant: 'destructive' }),
   });
@@ -356,6 +388,18 @@ export default function AdminFeedback() {
         ),
       );
       queryClient.invalidateQueries({ queryKey: ['admin-api-errors'] });
+      // Notify submitter that their ticket went to Claude — only for community
+      // feedback rows (api_error rows have no submitter).
+      const it = items.find((i) => i.id === id);
+      if (
+        it &&
+        !it.is_spam &&
+        !it.duplicate_of &&
+        it.notify_submitter &&
+        it.data?.contact_email
+      ) {
+        notifyStatus.mutate({ submissionId: id, event: 'handed_to_claude' });
+      }
     },
     onError: (err: Error) => {
       toast({ title: 'Forward failed', description: err.message, variant: 'destructive' });
@@ -607,7 +651,7 @@ export default function AdminFeedback() {
       )}
 
       {tabValue === 'errors' && (
-        <ApiErrorsTab
+        <ApiErrorsKanban
           errors={apiErrors}
           dailySeries={apiErrorDaily}
           forwardingIds={forwardingIds}
@@ -649,6 +693,16 @@ export default function AdminFeedback() {
           supabase
             .from('community_submissions')
             .update({ is_spam: isSpam })
+            .eq('id', selected.id)
+            .then(() =>
+              queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+            )
+        }
+        onToggleNotify={(notify) =>
+          selected &&
+          supabase
+            .from('community_submissions')
+            .update({ notify_submitter: notify })
             .eq('id', selected.id)
             .then(() =>
               queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),

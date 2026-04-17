@@ -10,6 +10,7 @@ export interface FeedbackFiltersState {
   label: string | null;
   hasScreenshot: boolean;
   hasErrors: boolean;
+  withClaude: boolean;
 }
 
 export interface FeedbackUrlState extends FeedbackFiltersState {
@@ -29,6 +30,7 @@ const defaults: FeedbackUrlState = {
   label: null,
   hasScreenshot: false,
   hasErrors: false,
+  withClaude: false,
   sel: null,
   showSpam: false,
   showDuplicates: false,
@@ -67,6 +69,7 @@ export function useFeedbackUrlState() {
       label: params.get('label'),
       hasScreenshot: params.get('hasScreenshot') === '1',
       hasErrors: params.get('hasErrors') === '1',
+      withClaude: params.get('withClaude') === '1',
       sel: params.get('sel'),
       showSpam: params.get('showSpam') === '1',
       showDuplicates: params.get('showDuplicates') === '1',
@@ -104,9 +107,17 @@ export function useFeedbackUrlState() {
     setParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        ['q', 'category', 'status', 'priority', 'assignee', 'label', 'hasScreenshot', 'hasErrors'].forEach(
-          (k) => next.delete(k),
-        );
+        [
+          'q',
+          'category',
+          'status',
+          'priority',
+          'assignee',
+          'label',
+          'hasScreenshot',
+          'hasErrors',
+          'withClaude',
+        ].forEach((k) => next.delete(k));
         return next;
       },
       { replace: true },
@@ -123,6 +134,7 @@ export function useFeedbackUrlState() {
     if (state.label) n++;
     if (state.hasScreenshot) n++;
     if (state.hasErrors) n++;
+    if (state.withClaude) n++;
     return n;
   }, [state]);
 

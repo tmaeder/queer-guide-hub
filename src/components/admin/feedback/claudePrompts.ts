@@ -29,6 +29,7 @@ export interface ApiErrorSubmission {
   is_spam: boolean;
   resolution: string | null;
   resolved_at: string | null;
+  notify_submitter: boolean;
 }
 
 const SERVICE_FILE_HINTS: Record<string, string> = {

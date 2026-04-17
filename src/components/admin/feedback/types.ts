@@ -55,6 +55,7 @@ export interface FeedbackSubmission {
   is_spam: boolean;
   resolution: string | null;
   resolved_at: string | null;
+  notify_submitter: boolean;
 }
 
 export type FeedbackResolution = 'fixed' | 'wontfix' | 'duplicate' | 'invalid';

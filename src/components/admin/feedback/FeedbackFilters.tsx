@@ -194,6 +194,17 @@ export function FeedbackFilters({
         label="Has errors"
         sx={{ ml: 0.5, '& .MuiTypography-root': { fontSize: '0.75rem' } }}
       />
+      <FormControlLabel
+        control={
+          <Switch
+            size="small"
+            checked={state.withClaude}
+            onChange={(e) => update({ withClaude: e.target.checked })}
+          />
+        }
+        label="With Claude"
+        sx={{ ml: 0.5, '& .MuiTypography-root': { fontSize: '0.75rem' } }}
+      />
       {state.tab === 'community' && (
         <>
           <FormControlLabel
