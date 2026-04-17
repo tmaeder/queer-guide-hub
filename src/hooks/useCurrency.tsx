@@ -36,12 +36,13 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       setGeoResolved(true);
       return;
     }
-    if (!location?.country) return;
+    const country = location?.country;
+    if (!country) return;
 
     (async () => {
       try {
         const { data } = await supabase.rpc('resolve_currency_for_country', {
-          p_country_code: location.country,
+          p_country_code: country,
         });
         if (data?.[0]?.currency_code) {
           const code = data[0].currency_code.toUpperCase();

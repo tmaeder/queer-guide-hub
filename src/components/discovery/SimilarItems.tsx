@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { LocalizedLink } from "@/components/routing/LocalizedLink";
 import { fetchSimilar } from "@/lib/searchClient";
 import { useTrackClick, type Entity } from "@/hooks/useSearchActions";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +27,14 @@ const TYPE_PATH: Record<string, string> = {
 	news: "/news",
 	queer_village: "/villages",
 	marketplace: "/marketplace",
+	hotel: "/hotels",
 };
+
+function hitPath(type: string, slug: string): string | null {
+	if (type === "tag") return `/resources/${slug}`;
+	const base = TYPE_PATH[type];
+	return base ? `${base}/${slug}` : null;
+}
 
 interface SimItem {
 	content_type: string;
@@ -71,46 +78,49 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 						? Array.from({ length: limit }).map((_, i) => (
 								<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-lg" />
 							))
-						: items.map((it) => {
-								const path = TYPE_PATH[it.content_type] || "/";
-								const slug = it.metadata?.slug || it.content_id;
-								return (
-									<Link
-										key={`${it.content_type}:${it.content_id}`}
-										to={`${path}/${slug}`}
-										className="shrink-0 w-56"
-										onClick={() =>
-											trackClick(
-												{ type: it.content_type, id: it.content_id },
-												"similar",
-												{ score: it.score, source_entity: entity },
-											)
-										}
-									>
-										<Card className="h-40 overflow-hidden hover:shadow-md transition">
-											{it.metadata?.image_url ? (
-												<img
-													src={it.metadata.image_url}
-													alt=""
-													loading="lazy"
-													className="h-24 w-full object-cover"
-												/>
-											) : (
-												<div className="h-24 w-full bg-gradient-to-br from-pink-200 to-purple-200" />
-											)}
-											<CardContent className="p-2">
-												<div className="text-sm font-medium truncate">
-													{it.metadata?.slug?.replace(/-/g, " ") || it.content_id.slice(0, 8)}
-												</div>
-												<div className="text-xs text-muted-foreground truncate">
-													{[it.metadata?.city, it.metadata?.country].filter(Boolean).join(", ") ||
-														it.metadata?.category}
-												</div>
-											</CardContent>
-										</Card>
-									</Link>
-								);
-							})}
+						: items
+								.map((it) => {
+									const slug = it.metadata?.slug || it.content_id;
+									const to = hitPath(it.content_type, slug);
+									if (!to) return null;
+									return (
+										<LocalizedLink
+											key={`${it.content_type}:${it.content_id}`}
+											to={to}
+											className="shrink-0 w-56"
+											onClick={() =>
+												trackClick(
+													{ type: it.content_type, id: it.content_id },
+													"similar",
+													{ score: it.score, source_entity: entity },
+												)
+											}
+										>
+											<Card className="h-40 overflow-hidden hover:shadow-md transition">
+												{it.metadata?.image_url ? (
+													<img
+														src={it.metadata.image_url}
+														alt=""
+														loading="lazy"
+														className="h-24 w-full object-cover"
+													/>
+												) : (
+													<div className="h-24 w-full bg-gradient-to-br from-pink-200 to-purple-200" />
+												)}
+												<CardContent className="p-2">
+													<div className="text-sm font-medium truncate">
+														{it.metadata?.slug?.replace(/-/g, " ") || it.content_id.slice(0, 8)}
+													</div>
+													<div className="text-xs text-muted-foreground truncate">
+														{[it.metadata?.city, it.metadata?.country].filter(Boolean).join(", ") ||
+															it.metadata?.category}
+													</div>
+												</CardContent>
+											</Card>
+										</LocalizedLink>
+									);
+								})
+								.filter(Boolean)}
 				</div>
 				<ScrollBar orientation="horizontal" />
 			</ScrollArea>

@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { lazy, useEffect } from 'react';
 import { Outlet, useParams, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_LOCALE, RTL_LOCALES, SUPPORTED_LOCALES, isSupportedLocale } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
+
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 function getLocaleFromPath(pathname: string): SupportedLocale {
   const segment = pathname.split('/')[1];
@@ -14,6 +16,11 @@ export function LocaleRouter() {
   const { i18n } = useTranslation();
   const { locale } = useParams<{ locale?: string }>();
   const location = useLocation();
+
+  // If the first path segment exists but is not a supported locale, this URL
+  // is not a real route — render NotFound instead of letting the index route
+  // swallow it into the homepage.
+  const localeIsUnknown = !!locale && !isSupportedLocale(locale);
 
   const resolvedLocale = locale && isSupportedLocale(locale) ? locale : DEFAULT_LOCALE;
 
@@ -60,6 +67,8 @@ export function LocaleRouter() {
       document.querySelectorAll('link[data-hreflang]').forEach((el) => el.remove());
     };
   }, [location.pathname, locale]);
+
+  if (localeIsUnknown) return <NotFound />;
 
   return <Outlet />;
 }
