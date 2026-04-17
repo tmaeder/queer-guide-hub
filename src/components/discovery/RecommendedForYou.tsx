@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { LocalizedLink } from "@/components/routing/LocalizedLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrackClick } from "@/hooks/useSearchActions";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,9 +21,41 @@ const TYPE_PATH: Record<string, string> = {
 	venue: "/venues",
 	event: "/events",
 	city: "/city",
+	country: "/country",
 	personality: "/personalities",
 	queer_village: "/villages",
+	news: "/news",
+	marketplace: "/marketplace",
+	hotel: "/hotels",
 };
+
+function hitPath(type: string, slug: string): string | null {
+	if (type === "tag") return `/resources/${slug}`;
+	const base = TYPE_PATH[type];
+	return base ? `${base}/${slug}` : null;
+}
+
+const NAMED_ENTITIES: Record<string, string> = {
+	amp: "&",
+	lt: "<",
+	gt: ">",
+	quot: '"',
+	apos: "'",
+	nbsp: "\u00A0",
+};
+
+function decodeEntities(s: string): string {
+	return s.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, ent: string) => {
+		if (ent[0] === "#") {
+			const code =
+				ent[1] === "x" || ent[1] === "X"
+					? parseInt(ent.slice(2), 16)
+					: parseInt(ent.slice(1), 10);
+			return Number.isFinite(code) ? String.fromCodePoint(code) : match;
+		}
+		return NAMED_ENTITIES[ent.toLowerCase()] ?? match;
+	});
+}
 
 interface Hit {
 	id: string;
@@ -90,32 +122,37 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 						? Array.from({ length: limit }).map((_, i) => (
 								<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-lg" />
 							))
-						: items.map((it) => {
-								const path = TYPE_PATH[it.type] || "/";
-								const slug = it.slug || it.id;
-								return (
-									<Link
-										key={`${it.type}:${it.id}`}
-										to={`${path}/${slug}`}
-										className="shrink-0 w-56"
-										onClick={() => trackClick({ type: it.type, id: it.id }, "recommended")}
-									>
-										<Card className="h-40 overflow-hidden hover:shadow-md transition">
-											{it.image_url ? (
-												<img src={it.image_url} alt="" loading="lazy" className="h-24 w-full object-cover" />
-											) : (
-												<div className="h-24 w-full bg-gradient-to-br from-purple-200 to-pink-200" />
-											)}
-											<CardContent className="p-2">
-												<div className="text-sm font-medium truncate">{it.title || it.id.slice(0, 8)}</div>
-												<div className="text-xs text-muted-foreground truncate">
-													{[it.city, it.country].filter(Boolean).join(", ")}
-												</div>
-											</CardContent>
-										</Card>
-									</Link>
-								);
-							})}
+						: items
+								.map((it) => {
+									const slug = it.slug || it.id;
+									const to = hitPath(it.type, slug);
+									if (!to) return null;
+									return (
+										<LocalizedLink
+											key={`${it.type}:${it.id}`}
+											to={to}
+											className="shrink-0 w-56"
+											onClick={() => trackClick({ type: it.type, id: it.id }, "recommended")}
+										>
+											<Card className="h-40 overflow-hidden hover:shadow-md transition">
+												{it.image_url ? (
+													<img src={it.image_url} alt="" loading="lazy" className="h-24 w-full object-cover" />
+												) : (
+													<div className="h-24 w-full bg-gradient-to-br from-purple-200 to-pink-200" />
+												)}
+												<CardContent className="p-2">
+													<div className="text-sm font-medium truncate">
+														{it.title ? decodeEntities(it.title) : it.id.slice(0, 8)}
+													</div>
+													<div className="text-xs text-muted-foreground truncate">
+														{[it.city, it.country].filter(Boolean).join(", ")}
+													</div>
+												</CardContent>
+											</Card>
+										</LocalizedLink>
+									);
+								})
+								.filter(Boolean)}
 				</div>
 				<ScrollBar orientation="horizontal" />
 			</ScrollArea>

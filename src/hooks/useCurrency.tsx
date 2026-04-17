@@ -67,7 +67,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           .from('profiles')
           .select('preferences')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
         const saved = (data?.preferences as Record<string, unknown>)?.currency;
         if (typeof saved === 'string' && saved.length === 3) {
           const code = saved.toUpperCase();
@@ -92,7 +92,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           .from('profiles')
           .select('preferences')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
           .then(({ data }) => {
             const prefs = (data?.preferences as Record<string, unknown>) || {};
             supabase
