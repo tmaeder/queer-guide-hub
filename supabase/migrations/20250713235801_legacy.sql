@@ -12,4 +12,5 @@ INSERT INTO public.tags (name, category, description) VALUES
 ('Subspace', 'scene_safety', 'Scene safety tag'),
 ('Trauma Awareness', 'scene_safety', 'Scene safety tag'),
 ('Vetting', 'scene_safety', 'Scene safety tag'),
-('White Knight', 'scene_safety', 'Scene safety tag');
+('White Knight', 'scene_safety', 'Scene safety tag')
+ON CONFLICT (name) DO NOTHING;

@@ -101,7 +101,8 @@ INSERT INTO public.tags (name, category, description) VALUES
 ('Wolffian', 'gender-identity', 'Referring to Wolffian duct development'),
 ('Woman', 'gender-identity', 'Adult female gender identity'),
 ('Xenogender', 'gender-identity', 'Gender identity that cannot be described in traditional terms'),
-('XXY', 'gender-identity', 'Klinefelter syndrome chromosome pattern');
+('XXY', 'gender-identity', 'Klinefelter syndrome chromosome pattern')
+ON CONFLICT (name) DO NOTHING;
 
 -- Insert some common general tags for other categories
 INSERT INTO public.tags (name, category, description) VALUES
@@ -123,7 +124,8 @@ INSERT INTO public.tags (name, category, description) VALUES
 ('Workshop', 'events', 'Educational or skill-building sessions'),
 ('Conference', 'events', 'Professional or academic meetings'),
 ('Networking', 'events', 'Professional connection building'),
-('Celebration', 'events', 'Festive or commemorative events');
+('Celebration', 'events', 'Festive or commemorative events')
+ON CONFLICT (name) DO NOTHING;
 
 -- Create function to update tag usage counts
 CREATE OR REPLACE FUNCTION public.update_tag_usage_count()

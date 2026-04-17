@@ -83,4 +83,5 @@ INSERT INTO public.tags (name, category, description) VALUES
 ('Shiny Clothing', 'toys', 'Toys tag'),
 ('Silicone Clothing', 'toys', 'Toys tag'),
 ('Spandex Clothing', 'toys', 'Toys tag'),
-('Vinyl Clothing', 'toys', 'Toys tag');
+('Vinyl Clothing', 'toys', 'Toys tag')
+ON CONFLICT (name) DO NOTHING;

@@ -26,4 +26,5 @@ INSERT INTO public.tags (name, category, description) VALUES
 ('Polyromantic', 'romantic-orientation', 'Romantic attraction to multiple but not all genders'),
 ('Recipromantic', 'romantic-orientation', 'Romantic attraction only when attraction is mutual'),
 ('Romantically Fluid', 'romantic-orientation', 'Romantic orientation that changes over time'),
-('Sapioromantic', 'romantic-orientation', 'Romantic attraction based on intelligence');
+('Sapioromantic', 'romantic-orientation', 'Romantic attraction based on intelligence')
+ON CONFLICT (name) DO NOTHING;
