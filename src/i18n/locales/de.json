@@ -437,6 +437,11 @@
       "reservations": "Reservierungen",
       "packing": "Packliste",
       "collaborate": "Zusammenarbeit"
+    },
+    "today": {
+      "offlineBanner": "Offline — zeigt deinen zuletzt gespeicherten Reiseplan.",
+      "pushPrompt": "Erinnere mich 30 Minuten vor jeder Reservierung.",
+      "pushEnable": "Aktivieren"
     }
   },
   "help": {
@@ -867,7 +872,8 @@
       "friends": "Freund*innen",
       "myGroups": "Meine Gruppen",
       "accessibility": "Barrierefreiheit",
-      "bookings": "Buchungen"
+      "bookings": "Buchungen",
+      "tripInbox": "Reise-Posteingang"
     },
     "modes": {
       "dating": "Auf der Suche nach Liebe",
@@ -1154,6 +1160,14 @@
     },
     "sitemap": {
       "searchPlaceholder": "Sitemap durchsuchen..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "Reiseerinnerungen",
+      "body": "Erhalte eine Browser-Benachrichtigung 30 Minuten vor jeder Reservierung und erneut, wenn ein Pass- oder Visum-Datum näher rückt.",
+      "turnOn": "Einschalten",
+      "turnOff": "Ausschalten"
     }
   }
 }

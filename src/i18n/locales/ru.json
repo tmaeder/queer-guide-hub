@@ -461,6 +461,11 @@
       "reservations": "Бронирования",
       "packing": "Сборы",
       "collaborate": "Совместная работа"
+    },
+    "today": {
+      "offlineBanner": "You're offline — showing your last-saved itinerary.",
+      "pushPrompt": "Get a reminder 30 min before each reservation.",
+      "pushEnable": "Enable"
     }
   },
   "auth": {
@@ -891,7 +896,8 @@
       "friends": "Друзья",
       "myGroups": "Мои группы",
       "accessibility": "Доступность",
-      "bookings": "Бронирования"
+      "bookings": "Бронирования",
+      "tripInbox": "Trip inbox"
     },
     "modes": {
       "dating": "Ищу отношения",
@@ -1178,6 +1184,14 @@
     },
     "sitemap": {
       "searchPlaceholder": "Поиск по карте сайта..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "Travel reminders",
+      "body": "Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.",
+      "turnOn": "Turn on",
+      "turnOff": "Turn off"
     }
   }
 }

@@ -39,6 +39,7 @@ import {
   Building,
   Luggage,
   LifeBuoy,
+  Inbox,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -56,7 +57,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { useInboxBadge } from '@/hooks/useInboxBadge';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 
 import Typography from '@mui/material/Typography';
 import MuiDrawer from '@mui/material/Drawer';
@@ -101,6 +104,7 @@ const navigationSections = [
 
 const userMenuItems = [
   { to: '/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
+  { to: '/trips/inbox', icon: Inbox, labelKey: 'header.userMenu.tripInbox' },
   { to: '/favorites', icon: Heart, labelKey: 'header.userMenu.favorites' },
   { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
   { to: '/inbox', icon: Mail, labelKey: 'header.userMenu.inbox' },
@@ -141,6 +145,7 @@ export function Header() {
   const { profile, updateProfile } = useProfile();
   const { unreadCount } = useNotifications();
   const { isAdmin, isModerator } = useAdminRoles();
+  const inboxBadgeCount = useInboxBadge();
 
   const avatarSrc =
     profile?.avatar_url ||
@@ -404,16 +409,27 @@ export function Header() {
         {/* User actions (logged in) */}
         {user && (
           <>
-            {userMenuItems.map((item) => (
-              <ListItemButton
-                key={item.to}
-                onClick={() => handleDrawerNav(item.to)}
-                sx={{ minHeight: 48, px: 2, gap: 1 }}
-              >
-                <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
-                <Typography variant="body2">{t(item.labelKey)}</Typography>
-              </ListItemButton>
-            ))}
+            {userMenuItems.map((item) => {
+              const showBadge = item.to === '/trips/inbox' && inboxBadgeCount > 0;
+              return (
+                <ListItemButton
+                  key={item.to}
+                  onClick={() => handleDrawerNav(item.to)}
+                  sx={{ minHeight: 48, px: 2, gap: 1 }}
+                >
+                  <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                  <Typography variant="body2" sx={{ flex: 1 }}>{t(item.labelKey)}</Typography>
+                  {showBadge && (
+                    <Chip
+                      label={inboxBadgeCount}
+                      size="small"
+                      color="primary"
+                      sx={{ height: 20, fontSize: '0.7rem' }}
+                    />
+                  )}
+                </ListItemButton>
+              );
+            })}
 
             {/* Admin link */}
             {(isAdmin || isModerator) && (
@@ -681,25 +697,38 @@ export function Header() {
 
                     <Box sx={{ my: 1 }} />
 
-                    {userMenuItems.map((item) => (
-                      <Button
-                        key={item.to}
-                        variant="ghost"
-                        size="sm"
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'flex-start',
-                          width: '100%',
-                          gap: 8,
-                          padding: '8px 12px',
-                        }}
-                        onClick={() => navigate(item.to)}
-                      >
-                        <item.icon style={{ width: 16, height: 16 }} />
-                        <Typography variant="body2">{t(item.labelKey)}</Typography>
-                      </Button>
-                    ))}
+                    {userMenuItems.map((item) => {
+                      const showBadge = item.to === '/trips/inbox' && inboxBadgeCount > 0;
+                      return (
+                        <Button
+                          key={item.to}
+                          variant="ghost"
+                          size="sm"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                            width: '100%',
+                            gap: 8,
+                            padding: '8px 12px',
+                          }}
+                          onClick={() => navigate(item.to)}
+                        >
+                          <item.icon style={{ width: 16, height: 16 }} />
+                          <Typography variant="body2" sx={{ flex: 1, textAlign: 'left' }}>
+                            {t(item.labelKey)}
+                          </Typography>
+                          {showBadge && (
+                            <Chip
+                              label={inboxBadgeCount}
+                              size="small"
+                              color="primary"
+                              sx={{ height: 20, fontSize: '0.7rem' }}
+                            />
+                          )}
+                        </Button>
+                      );
+                    })}
 
                     <Box sx={{ my: 1 }} />
 

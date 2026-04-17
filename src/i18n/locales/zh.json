@@ -433,6 +433,11 @@
       "reservations": "预订",
       "packing": "行李",
       "collaborate": "协作"
+    },
+    "today": {
+      "offlineBanner": "You're offline — showing your last-saved itinerary.",
+      "pushPrompt": "Get a reminder 30 min before each reservation.",
+      "pushEnable": "Enable"
     }
   },
   "auth": {
@@ -863,7 +868,8 @@
       "friends": "朋友",
       "myGroups": "我的群组",
       "accessibility": "无障碍",
-      "bookings": "预订"
+      "bookings": "预订",
+      "tripInbox": "Trip inbox"
     },
     "modes": {
       "dating": "寻找爱情",
@@ -1150,6 +1156,14 @@
     },
     "sitemap": {
       "searchPlaceholder": "搜索站点地图..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "Travel reminders",
+      "body": "Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.",
+      "turnOn": "Turn on",
+      "turnOff": "Turn off"
     }
   }
 }
