@@ -23,6 +23,7 @@ import {
   Hotel,
   Sparkles,
   MessagesSquare,
+  FileText,
 } from 'lucide-react';
 import MuiDrawer from '@mui/material/Drawer';
 import { format, differenceInDays } from 'date-fns';
@@ -62,6 +63,9 @@ const AiPlanTab = lazy(() =>
 );
 const TripChatTab = lazy(() =>
   import('@/components/trips/TripChatTab').then((m) => ({ default: m.TripChatTab })),
+);
+const DocumentsList = lazy(() =>
+  import('@/components/trips/DocumentsList').then((m) => ({ default: m.DocumentsList })),
 );
 
 /**
@@ -305,6 +309,11 @@ export default function TripPlannerPage() {
             iconPosition="start"
             label={t('trips.tabs.chat', 'Chat')}
           />
+          <Tab
+            icon={<FileText size={16} />}
+            iconPosition="start"
+            label={t('trips.tabs.documents', 'Documents')}
+          />
         </Tabs>
       </Box>
 
@@ -417,6 +426,12 @@ export default function TripPlannerPage() {
       {tab === 8 && (
         <Suspense fallback={<CircularProgress sx={{ display: 'block', mx: 'auto', my: 4 }} />}>
           <TripChatTab tripId={trip.id} />
+        </Suspense>
+      )}
+
+      {tab === 9 && (
+        <Suspense fallback={<CircularProgress sx={{ display: 'block', mx: 'auto', my: 4 }} />}>
+          <DocumentsList tripId={trip.id} />
         </Suspense>
       )}
 
