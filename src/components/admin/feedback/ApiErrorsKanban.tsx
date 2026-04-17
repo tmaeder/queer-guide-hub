@@ -27,6 +27,7 @@ import {
   Github,
   MessageSquarePlus,
   Check,
+  ShieldAlert,
 } from 'lucide-react';
 import { timeAgo } from '@/utils/timezone';
 import { kanbanColumns, type KanbanStatus } from './constants';
@@ -294,6 +295,19 @@ function SortableErrorCard({
   };
   const color = SERVICE_COLORS[item.data.service] || '#888';
   const withClaude = !!item.github_issue_url && item.feedback_status !== 'done';
+  // Supabase-advisor rows carry type + severity in metadata; render a
+  // Shield icon + severity-tinted chip so they visually separate from
+  // runtime errors even at a glance.
+  const advisorMeta = item.data.metadata as
+    | { source?: string; advisor_type?: string; severity?: string }
+    | undefined;
+  const isAdvisor = advisorMeta?.source === 'supabase-advisor';
+  const severityColor =
+    advisorMeta?.severity === 'ERROR'
+      ? '#ef4444'
+      : advisorMeta?.severity === 'WARN'
+        ? '#f59e0b'
+        : '#6b7280';
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
@@ -330,9 +344,28 @@ function SortableErrorCard({
               gap: 2,
             }}
           >
-            <Server style={{ width: 8, height: 8 }} />
-            {item.data.service}
+            {isAdvisor ? (
+              <ShieldAlert style={{ width: 8, height: 8 }} />
+            ) : (
+              <Server style={{ width: 8, height: 8 }} />
+            )}
+            {isAdvisor ? `advisor · ${advisorMeta?.advisor_type}` : item.data.service}
           </Badge>
+          {isAdvisor && advisorMeta?.severity && (
+            <Badge
+              variant="outline"
+              style={{
+                borderColor: severityColor,
+                backgroundColor: severityColor,
+                color: '#fff',
+                fontSize: '0.55rem',
+                padding: '1px 4px',
+                fontWeight: 700,
+              }}
+            >
+              {advisorMeta.severity}
+            </Badge>
+          )}
           <Badge
             variant="outline"
             style={{

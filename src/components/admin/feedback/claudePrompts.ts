@@ -46,6 +46,8 @@ export const SERVICE_COLORS: Record<string, string> = {
   scraper: '#8b5cf6',
   frontend: '#3b82f6',
   sentry: '#362d59',
+  'github-actions': '#24292e',
+  'supabase-advisor': '#3ecf8e',
 };
 
 export function formatClaudePrompt(item: FeedbackSubmission): string {
