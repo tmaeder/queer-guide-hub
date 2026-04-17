@@ -226,7 +226,7 @@ export const VenueImportQuickActions = () => {
       // Scraper — invoke directly
       setLoadingStates(prev => ({ ...prev, [source.slug]: true }));
       try {
-        const { _data, error } = await supabase.functions.invoke(source.edge_function, {
+        const { error } = await supabase.functions.invoke(source.edge_function, {
           body: {}
         });
         if (error) throw error;
@@ -252,7 +252,7 @@ export const VenueImportQuickActions = () => {
 
     try {
       const functionName = `import-${importDialog.provider}-venues`;
-      const { _data, error } = await supabase.functions.invoke(functionName, {
+      const { error } = await supabase.functions.invoke(functionName, {
         body: { config }
       });
       if (error) throw error;
