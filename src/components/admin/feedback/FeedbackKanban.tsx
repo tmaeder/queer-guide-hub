@@ -157,12 +157,20 @@ function Column({
           alignItems: 'center',
           gap: 1,
           mb: 1.5,
-          pb: 1,
-          borderBottom: 2,
+          px: 1,
+          py: 0.75,
+          borderTop: 3,
           borderColor: col.color,
+          // Subtle 10%-alpha tint of the column color so each column is
+          // recognisable at a glance, including while dragging.
+          bgcolor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
+          borderRadius: '0 0 4px 4px',
         }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+        <Typography
+          variant="subtitle2"
+          sx={{ fontWeight: 700, color: col.color, letterSpacing: 0.3 }}
+        >
           {col.label}
         </Typography>
         <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>
@@ -181,7 +189,10 @@ function Column({
           pr: 0.5,
           p: 0.5,
           borderRadius: 1,
-          bgcolor: isOver && activeId ? 'action.hover' : 'transparent',
+          bgcolor:
+            isOver && activeId
+              ? `color-mix(in srgb, ${col.color} 14%, transparent)`
+              : 'transparent',
           transition: 'background-color 0.15s',
         }}
       >

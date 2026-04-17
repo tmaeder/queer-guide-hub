@@ -37,6 +37,7 @@ import type {
 } from '@/components/admin/feedback/types';
 import { FeedbackKanban } from '@/components/admin/feedback/FeedbackKanban';
 import { FeedbackFilters } from '@/components/admin/feedback/FeedbackFilters';
+import { FeedbackPresets } from '@/components/admin/feedback/FeedbackPresets';
 import { FeedbackBulkBar } from '@/components/admin/feedback/FeedbackBulkBar';
 import { FeedbackCommandPalette } from '@/components/admin/feedback/FeedbackCommandPalette';
 import { FeedbackDetailDrawer } from '@/components/admin/feedback/FeedbackDetailDrawer';
@@ -559,10 +560,39 @@ export default function AdminFeedback() {
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
-      <PageHeader
-        title="Feedback & Errors"
-        subtitle="Community feedback and automated API error reports"
-      />
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1 }}>
+        <Box sx={{ flex: 1 }}>
+          <PageHeader
+            title="Feedback & Errors"
+            subtitle="Community feedback and automated API error reports"
+          />
+        </Box>
+        <Box
+          component="button"
+          onClick={() => setHelpOpen(true)}
+          aria-label="Keyboard shortcuts"
+          title="Keyboard shortcuts (?)"
+          sx={{
+            border: 1,
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            px: 1,
+            py: 0.5,
+            cursor: 'pointer',
+            fontSize: '0.7rem',
+            color: 'text.secondary',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.5,
+            fontFamily: 'monospace',
+            mt: 1,
+            '&:hover': { borderColor: 'primary.main', color: 'primary.main' },
+          }}
+        >
+          ?
+        </Box>
+      </Box>
 
       <Tabs
         value={tabIdx}
@@ -582,6 +612,12 @@ export default function AdminFeedback() {
 
       {(tabValue === 'community' || tabValue === 'spam') && (
         <>
+          <FeedbackPresets
+            state={state}
+            update={update}
+            clearFilters={clearFilters}
+            currentUserId={user?.id ?? null}
+          />
           <FeedbackFilters
             state={state}
             update={update}

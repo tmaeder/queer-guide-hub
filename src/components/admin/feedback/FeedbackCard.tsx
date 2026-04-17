@@ -79,7 +79,9 @@ export function FeedbackCard({
       <Box
         onClick={onClick}
         sx={{
+          position: 'relative',
           p: 1.25,
+          pl: 1.75,
           borderRadius: 1.5,
           border: 1,
           borderColor: focused ? 'primary.main' : selected ? 'primary.light' : 'divider',
@@ -90,6 +92,18 @@ export function FeedbackCard({
           transition: 'all 0.15s',
           boxShadow: focused ? 2 : 0,
           '&:hover': { borderColor: 'primary.main' },
+          // Priority stripe — primary scanning signal at the card's leading edge.
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 4,
+            bgcolor: prio.color,
+            borderTopLeftRadius: 'inherit',
+            borderBottomLeftRadius: 'inherit',
+          },
         }}
       >
         <Box
@@ -120,16 +134,17 @@ export function FeedbackCard({
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5, flexWrap: 'wrap' }}>
             <Tooltip title={`${prio.short} · ${prio.label}`}>
-              <Box
+              <Typography
                 component="span"
                 sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  bgcolor: prio.color,
-                  flexShrink: 0,
+                  fontSize: '0.55rem',
+                  fontWeight: 700,
+                  color: prio.color,
+                  letterSpacing: 0.4,
                 }}
-              />
+              >
+                {prio.short}
+              </Typography>
             </Tooltip>
             <Badge
               variant="outline"
@@ -173,12 +188,13 @@ export function FeedbackCard({
                 </Badge>
               </Tooltip>
             )}
-            {item.labels?.map((l) => (
+            {item.labels?.slice(0, 3).map((l) => (
               <Box
                 key={l}
                 component="span"
                 sx={{
                   px: 0.75,
+                  py: 0.125,
                   fontSize: '0.55rem',
                   bgcolor: 'action.hover',
                   color: 'text.secondary',
@@ -188,6 +204,23 @@ export function FeedbackCard({
                 {l}
               </Box>
             ))}
+            {(item.labels?.length ?? 0) > 3 && (
+              <Tooltip title={(item.labels ?? []).slice(3).join(', ')}>
+                <Box
+                  component="span"
+                  sx={{
+                    px: 0.75,
+                    py: 0.125,
+                    fontSize: '0.55rem',
+                    bgcolor: 'action.hover',
+                    color: 'text.secondary',
+                    borderRadius: 0.5,
+                  }}
+                >
+                  +{(item.labels?.length ?? 0) - 3}
+                </Box>
+              </Tooltip>
+            )}
           </Box>
 
           <Typography
