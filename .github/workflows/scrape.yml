@@ -81,6 +81,10 @@ jobs:
         # Use env: for all workflow_dispatch inputs to prevent injection
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Staging publish — required so scraped entities flow into the
+          # Supabase ingestion_staging table and downstream pipeline.
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PUBLISH_TO_STAGING: '1'
           SCRAPER_USER_AGENT: ${{ secrets.SCRAPER_USER_AGENT }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           POLITE_MODE: 'true'
@@ -150,6 +154,8 @@ jobs:
       - name: Scrape events (rolling 90-day window)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PUBLISH_TO_STAGING: '1'
           SCRAPER_USER_AGENT: ${{ secrets.SCRAPER_USER_AGENT }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           POLITE_MODE: 'true'
