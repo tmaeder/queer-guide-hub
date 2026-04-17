@@ -215,7 +215,8 @@ export function formatCombinedStoryPrompt(
 
 /**
  * Prompt used by the clusterer to ask Claude Haiku for a short title that
- * captures what a cluster has in common.
+ * captures what a cluster has in common. Kept short; the admin can always
+ * edit the proposed title before accepting the suggestion.
  */
 export function formatStoryClusterPrompt(titles: string[]): string {
   const capped = titles.slice(0, 12);

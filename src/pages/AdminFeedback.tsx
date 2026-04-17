@@ -44,6 +44,24 @@ import { FeedbackCommandPalette } from '@/components/admin/feedback/FeedbackComm
 import { FeedbackDetailDrawer } from '@/components/admin/feedback/FeedbackDetailDrawer';
 import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDialog';
 import { ApiErrorsKanban } from '@/components/admin/feedback/ApiErrorsKanban';
+import { StoriesKanban } from '@/components/admin/feedback/StoriesKanban';
+import { StoryDetailDrawer } from '@/components/admin/feedback/StoryDetailDrawer';
+import { StorySuggestionsPanel } from '@/components/admin/feedback/StorySuggestionsPanel';
+import {
+  useStories,
+  useStory,
+  useSubmissionStoryMap,
+  useStorySuggestions,
+  useCreateStory,
+  useAddStoryMembers,
+  useRemoveStoryMembers,
+  useUpdateStory,
+  useResolveStory,
+  useAcceptStorySuggestion,
+  useDismissStorySuggestion,
+  useGroupedStories,
+} from '@/hooks/useFeedbackStories';
+import type { StoryStatus } from '@/components/admin/feedback/types';
 import {
   ApiErrorFilters,
   DEFAULT_ERROR_FILTERS,
@@ -730,6 +748,45 @@ export default function AdminFeedback() {
       if (focusedId) toggleSelect(focusedId, shift);
     },
   });
+
+  const handleCreateStoryFromSelection = useCallback(
+    (title: string) => {
+      const ids = Array.from(selectedIds);
+      if (ids.length === 0) return;
+      createStory.mutate(
+        { title, submissionIds: ids },
+        {
+          onSuccess: (storyId) => {
+            toast({ title: 'Story created', description: `${ids.length} items bundled` });
+            clearSelection();
+            update({ tab: 'stories', story: storyId });
+          },
+          onError: (e: Error) =>
+            toast({ title: 'Create story failed', description: e.message, variant: 'destructive' }),
+        },
+      );
+    },
+    [selectedIds, createStory, toast, clearSelection, update],
+  );
+
+  const handleAddSelectionToStory = useCallback(
+    (storyId: string) => {
+      const ids = Array.from(selectedIds);
+      if (ids.length === 0) return;
+      addStoryMembers.mutate(
+        { storyId, submissionIds: ids },
+        {
+          onSuccess: () => {
+            toast({ title: 'Added to story', description: `${ids.length} item(s)` });
+            clearSelection();
+          },
+          onError: (e: Error) =>
+            toast({ title: 'Add to story failed', description: e.message, variant: 'destructive' }),
+        },
+      );
+    },
+    [selectedIds, addStoryMembers, toast, clearSelection],
+  );
 
   // ── Render ──────────────────────────────────────────────────
   if (isLoading || errorsLoading) {
