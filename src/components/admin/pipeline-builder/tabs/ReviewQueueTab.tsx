@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle, XCircle, GitMerge, RefreshCw, Search } from 'lucide-react';
+import { CheckCircle, XCircle, GitMerge, FilePlus2, ClipboardCheck, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 type Disposition = 'approve' | 'reject' | 'merge' | 'create_new';
 
@@ -24,17 +26,12 @@ interface ReviewItem {
   created_at: string;
 }
 
-const cellStyle: React.CSSProperties = { padding: '8px 12px', fontSize: 13, verticalAlign: 'top' };
-const labelStyle: React.CSSProperties = { fontSize: 11, color: '#6b7280', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.4 };
-const pillStyle = (bg: string, fg: string): React.CSSProperties => ({
-  display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: bg, color: fg,
-  fontSize: 11, fontWeight: 500, marginRight: 6,
-});
+type Filter = 'all' | 'venues' | 'hotels' | 'events' | 'personalities' | 'marketplace' | 'cities' | 'countries' | 'merge_candidate';
 
 export default function ReviewQueueTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const [filter, setFilter] = useState<'all' | 'venues' | 'hotels' | 'events' | 'personalities' | 'marketplace' | 'cities' | 'countries' | 'merge_candidate'>('all');
+  const [filter, setFilter] = useState<Filter>('all');
   const [selected, setSelected] = useState<ReviewItem | null>(null);
 
   const { data: items = [], isLoading } = useQuery<ReviewItem[]>({
@@ -46,30 +43,28 @@ export default function ReviewQueueTab() {
         .eq('review_status', 'pending_review')
         .order('created_at', { ascending: false })
         .limit(200);
-      if (filter === 'venues' || filter === 'hotels')   q = q.eq('target_table', 'venues');
-      if (filter === 'events')                           q = q.eq('target_table', 'events');
-      if (filter === 'personalities')                    q = q.eq('target_table', 'personalities');
-      if (filter === 'marketplace')                      q = q.eq('target_table', 'marketplace_listings');
-      if (filter === 'cities')                           q = q.eq('target_table', 'cities');
-      if (filter === 'countries')                        q = q.eq('target_table', 'countries');
-      if (filter === 'merge_candidate')                  q = q.eq('dedup_status', 'merge_candidate');
+      if (filter === 'venues' || filter === 'hotels') q = q.eq('target_table', 'venues');
+      if (filter === 'events')                        q = q.eq('target_table', 'events');
+      if (filter === 'personalities')                 q = q.eq('target_table', 'personalities');
+      if (filter === 'marketplace')                   q = q.eq('target_table', 'marketplace_listings');
+      if (filter === 'cities')                        q = q.eq('target_table', 'cities');
+      if (filter === 'countries')                     q = q.eq('target_table', 'countries');
+      if (filter === 'merge_candidate')               q = q.eq('dedup_status', 'merge_candidate');
       const { data, error } = await q;
       if (error) throw error;
       const rows = (data ?? []) as ReviewItem[];
-      if (filter === 'hotels') {
-        return rows.filter(r => !!r.normalized_data?.accommodation_type);
-      }
+      if (filter === 'hotels') return rows.filter(r => !!r.normalized_data?.accommodation_type);
       return rows;
     },
-    refetchInterval: 30000,
+    refetchInterval: 30_000,
   });
 
   const decide = useMutation({
     mutationFn: async ({ item, disposition, reason }: { item: ReviewItem; disposition: Disposition; reason?: string }) => {
       const update: Record<string, unknown> = {
         review_status: disposition === 'reject' ? 'rejected' : 'approved',
-        disposition:   disposition === 'reject' ? 'rejected' : (disposition === 'merge' ? 'pending' : 'pending'),
-        updated_at:    new Date().toISOString(),
+        disposition: disposition === 'reject' ? 'rejected' : 'pending',
+        updated_at: new Date().toISOString(),
       };
       if (disposition === 'merge' || disposition === 'create_new') {
         update.dedup_status = disposition === 'create_new' ? 'unique' : 'duplicate';
@@ -77,11 +72,8 @@ export default function ReviewQueueTab() {
       const { error: upErr } = await supabase.from('ingestion_staging').update(update).eq('id', item.id);
       if (upErr) throw upErr;
 
-      // Feedback loop on dedup decisions.
       if (item.dedup_match_id && (disposition === 'merge' || disposition === 'create_new' || disposition === 'reject')) {
-        const human = disposition === 'merge'      ? 'confirmed_duplicate'
-                    : disposition === 'create_new' ? 'not_duplicate'
-                    : 'not_duplicate';
+        const human = disposition === 'merge' ? 'confirmed_duplicate' : 'not_duplicate';
         await supabase.from('dedup_decisions_feedback').insert({
           staging_id: item.id,
           candidate_venue_id: item.dedup_match_id,
@@ -91,7 +83,6 @@ export default function ReviewQueueTab() {
           reason: reason ?? null,
         });
       }
-      // Audit
       await supabase.from('ingestion_events').insert({
         staging_id: item.id,
         stage: 'review_gate',
@@ -111,60 +102,63 @@ export default function ReviewQueueTab() {
     const c = { all: items.length, hotels: 0, merge: 0 };
     for (const i of items) {
       if (i.normalized_data?.accommodation_type) c.hotels++;
-      if (i.dedup_status === 'merge_candidate')  c.merge++;
+      if (i.dedup_status === 'merge_candidate') c.merge++;
     }
     return c;
   }, [items]);
 
-  const filterBtn = (key: typeof filter, label: string, n?: number) => (
+  const FilterButton = ({ value, label, count }: { value: Filter; label: string; count?: number }) => (
     <button
-      key={key}
-      onClick={() => setFilter(key)}
-      style={{
-        padding: '6px 12px', fontSize: 12, fontWeight: filter === key ? 600 : 400,
-        background: filter === key ? '#6366f1' : '#fff', color: filter === key ? '#fff' : '#374151',
-        border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer',
-      }}
-    >{label}{n != null ? ` (${n})` : ''}</button>
+      onClick={() => setFilter(value)}
+      className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
+        filter === value
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-background text-muted-foreground border-border hover:bg-accent'
+      }`}
+    >{label}{count != null && <span className="ml-1 opacity-70">{count}</span>}</button>
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Search style={{ width: 16, height: 16, color: '#6b7280' }} />
-        <span style={{ fontSize: 14, fontWeight: 600 }}>Review Queue</span>
-        <span style={{ fontSize: 12, color: '#9ca3af' }}>{items.length} items pending</span>
-        <div style={{ flex: 1 }} />
-        {filterBtn('all', 'All')}
-        {filterBtn('hotels', 'Hotels/B&Bs', counts.hotels)}
-        {filterBtn('venues', 'Venues')}
-        {filterBtn('events', 'Events')}
-        {filterBtn('personalities', 'Personalities')}
-        {filterBtn('marketplace', 'Marketplace')}
-        {filterBtn('cities', 'Cities')}
-        {filterBtn('countries', 'Countries')}
-        {filterBtn('merge_candidate', 'Merge candidates', counts.merge)}
+    <div className="flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-semibold">Review Queue</span>
+        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{items.length} pending</Badge>
+        <div className="flex-1" />
+        <FilterButton value="all" label="All" />
+        <FilterButton value="hotels" label="Hotels/B&Bs" count={counts.hotels} />
+        <FilterButton value="venues" label="Venues" />
+        <FilterButton value="events" label="Events" />
+        <FilterButton value="personalities" label="Personalities" />
+        <FilterButton value="marketplace" label="Marketplace" />
+        <FilterButton value="cities" label="Cities" />
+        <FilterButton value="countries" label="Countries" />
+        <FilterButton value="merge_candidate" label="Merge candidates" count={counts.merge} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 3fr', gap: 16 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-4">
         {/* Item list */}
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', overflow: 'hidden', maxHeight: 600, overflowY: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead style={{ background: '#f9fafb' }}>
-              <tr>
-                <th style={{ ...cellStyle, fontWeight: 500, color: '#6b7280' }}>Source</th>
-                <th style={{ ...cellStyle, fontWeight: 500, color: '#6b7280' }}>Name</th>
-                <th style={{ ...cellStyle, fontWeight: 500, color: '#6b7280' }}>Issue</th>
+        <div className="border border-border rounded-md bg-background overflow-hidden max-h-[600px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 sticky top-0">
+              <tr className="border-b border-border">
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Source</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Name</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Issue</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={3} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>Loading…</td></tr>
+                <tr><td colSpan={3} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
               ) : items.length === 0 ? (
-                <tr><td colSpan={3} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>Nothing to review</td></tr>
+                <tr><td colSpan={3} className="p-6 text-center">
+                  <CheckCircle className="h-5 w-5 text-green-600 inline mr-1" />
+                  <span className="text-sm text-green-600 font-medium">Nothing to review</span>
+                </td></tr>
               ) : items.map(it => {
                 const n = it.normalized_data ?? {};
-                const name = String(n.name ?? '(unnamed)');
+                const name = String(n.name ?? n.title ?? '(unnamed)');
                 const isHotel = !!n.accommodation_type;
                 const issue = it.dedup_status === 'merge_candidate'
                   ? `merge: ${it.dedup_details?.match_type ?? '?'} ${(Number(it.dedup_match_score ?? 0) * 100).toFixed(0)}%`
@@ -173,14 +167,20 @@ export default function ReviewQueueTab() {
                   <tr
                     key={it.id}
                     onClick={() => setSelected(it)}
-                    style={{ cursor: 'pointer', background: selected?.id === it.id ? '#eef2ff' : 'transparent', borderBottom: '1px solid #f3f4f6' }}
+                    className={`border-b border-border/40 cursor-pointer transition-colors ${
+                      selected?.id === it.id ? 'bg-primary/10' : 'hover:bg-muted/30'
+                    }`}
                   >
-                    <td style={cellStyle}>
-                      {isHotel && <span style={pillStyle('#fef3c7', '#92400e')}>{String(n.accommodation_type)}</span>}
-                      <div style={{ fontSize: 11, color: '#6b7280' }}>{it.source_type}</div>
+                    <td className="px-3 py-2 align-top">
+                      {isHotel && (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200 mb-1">
+                          {String(n.accommodation_type)}
+                        </Badge>
+                      )}
+                      <div className="text-[11px] text-muted-foreground font-mono">{it.source_type}</div>
                     </td>
-                    <td style={cellStyle}>{name}</td>
-                    <td style={{ ...cellStyle, fontSize: 11, color: '#b45309' }}>{issue}</td>
+                    <td className="px-3 py-2 font-medium align-top truncate max-w-[200px]" title={name}>{name}</td>
+                    <td className="px-3 py-2 text-[11px] text-amber-700 align-top">{issue}</td>
                   </tr>
                 );
               })}
@@ -189,76 +189,114 @@ export default function ReviewQueueTab() {
         </div>
 
         {/* Detail panel */}
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', padding: 16, maxHeight: 600, overflowY: 'auto' }}>
+        <div className="border border-border rounded-md bg-background p-4 max-h-[600px] overflow-y-auto">
           {!selected ? (
-            <div style={{ color: '#9ca3af', textAlign: 'center', padding: 40 }}>Select an item</div>
+            <div className="text-muted-foreground text-center py-10 text-sm">Select an item to review</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="flex flex-col gap-3">
               <div>
-                <div style={labelStyle}>Name</div>
-                <div style={{ fontSize: 16, fontWeight: 600 }}>{String(selected.normalized_data?.name ?? '(unnamed)')}</div>
+                <Label>Name</Label>
+                <div className="text-base font-semibold">{String(selected.normalized_data?.name ?? selected.normalized_data?.title ?? '(unnamed)')}</div>
+                <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                  {selected.target_table} · {selected.source_type}
+                </div>
               </div>
+
+              {selected.ai_confidence_score != null && (
+                <div>
+                  <Label>Confidence</Label>
+                  <div className="text-sm font-mono">{(selected.ai_confidence_score * 100).toFixed(0)}%</div>
+                </div>
+              )}
+
               {selected.ai_validation_result?.warnings?.length ? (
                 <div>
-                  <div style={labelStyle}>Warnings</div>
-                  <div>{selected.ai_validation_result.warnings.map(w => <span key={w} style={pillStyle('#fef3c7', '#92400e')}>{w}</span>)}</div>
+                  <Label>Warnings</Label>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {selected.ai_validation_result.warnings.map(w => (
+                      <Badge key={w} variant="outline" className="text-[10px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200">
+                        {w}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               ) : null}
+
               {selected.dedup_status === 'merge_candidate' && (
-                <div style={{ background: '#fef9c3', padding: 12, borderRadius: 6 }}>
-                  <div style={labelStyle}>Possible duplicate</div>
-                  <div style={{ fontSize: 13 }}>
-                    {selected.dedup_details?.match_type} · score {(Number(selected.dedup_match_score ?? 0) * 100).toFixed(0)}%
+                <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                  <Label>Possible duplicate</Label>
+                  <div className="text-sm mt-0.5">
+                    <span className="font-mono">{selected.dedup_details?.match_type}</span>
+                    {' · score '}
+                    <span className="font-semibold">{(Number(selected.dedup_match_score ?? 0) * 100).toFixed(0)}%</span>
                   </div>
-                  <div style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>match_id: {selected.dedup_match_id}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1">
+                    match_id: <code className="bg-amber-100/60 px-1 rounded">{selected.dedup_match_id}</code>
+                  </div>
                 </div>
               )}
+
               {selected.dedup_status === 'merge_candidate' && selected.target_table === 'events' && selected.dedup_match_id && (
-                <EventMergePreview
-                  staging={selected.normalized_data ?? {}}
-                  existingId={selected.dedup_match_id}
-                />
+                <EventMergePreview staging={selected.normalized_data ?? {}} existingId={selected.dedup_match_id} />
               )}
               {selected.dedup_status === 'merge_candidate' && selected.target_table === 'personalities' && selected.dedup_match_id && (
-                <PersonalityMergePreview
-                  staging={selected.normalized_data ?? {}}
-                  existingId={selected.dedup_match_id}
-                />
+                <PersonalityMergePreview staging={selected.normalized_data ?? {}} existingId={selected.dedup_match_id} />
               )}
-              <details>
-                <summary style={{ cursor: 'pointer', fontSize: 12, color: '#6b7280' }}>Normalized payload</summary>
-                <pre style={{ fontSize: 11, background: '#f9fafb', padding: 8, borderRadius: 4, overflow: 'auto', maxHeight: 240 }}>
-{JSON.stringify(selected.normalized_data, null, 2)}
+
+              <details className="text-xs">
+                <summary className="cursor-pointer text-muted-foreground hover:text-foreground py-1">Normalized payload</summary>
+                <pre className="text-[10px] bg-muted/40 p-2 rounded-md overflow-auto max-h-60 mt-1">
+                  {JSON.stringify(selected.normalized_data, null, 2)}
                 </pre>
               </details>
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                <button
+
+              <div className="flex gap-2 flex-wrap pt-2 border-t border-border">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="bg-green-600 hover:bg-green-700"
                   disabled={decide.isPending}
                   onClick={() => decide.mutate({ item: selected, disposition: 'approve' })}
-                  style={btnStyle('#22c55e', '#fff')}
-                ><CheckCircle style={{ width: 14, height: 14 }} /> Approve</button>
+                >
+                  {decide.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5 mr-1.5" />}
+                  Approve
+                </Button>
+
                 {selected.dedup_status === 'merge_candidate' && (
                   <>
-                    <button
+                    <Button
+                      size="sm"
+                      variant="default"
                       disabled={decide.isPending}
                       onClick={() => decide.mutate({ item: selected, disposition: 'merge', reason: 'human-confirmed' })}
-                      style={btnStyle('#6366f1', '#fff')}
-                    ><GitMerge style={{ width: 14, height: 14 }} /> Confirm merge</button>
-                    <button
+                    >
+                      <GitMerge className="h-3.5 w-3.5 mr-1.5" />
+                      Confirm merge
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       disabled={decide.isPending}
                       onClick={() => decide.mutate({ item: selected, disposition: 'create_new', reason: 'distinct entity' })}
-                      style={btnStyle('#fff', '#374151')}
-                    ><RefreshCw style={{ width: 14, height: 14 }} /> Create new</button>
+                    >
+                      <FilePlus2 className="h-3.5 w-3.5 mr-1.5" />
+                      Create new
+                    </Button>
                   </>
                 )}
-                <button
+
+                <Button
+                  size="sm"
+                  variant="destructive"
                   disabled={decide.isPending}
                   onClick={() => {
                     const reason = window.prompt('Reason for rejection?') ?? undefined;
                     decide.mutate({ item: selected, disposition: 'reject', reason });
                   }}
-                  style={btnStyle('#ef4444', '#fff')}
-                ><XCircle style={{ width: 14, height: 14 }} /> Reject</button>
+                >
+                  <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                  Reject
+                </Button>
               </div>
             </div>
           )}
@@ -268,13 +306,43 @@ export default function ReviewQueueTab() {
   );
 }
 
-function btnStyle(bg: string, fg: string): React.CSSProperties {
-  return {
-    display: 'inline-flex', alignItems: 'center', gap: 6,
-    padding: '8px 14px', fontSize: 13, fontWeight: 500,
-    background: bg, color: fg, border: bg === '#fff' ? '1px solid #d1d5db' : 'none',
-    borderRadius: 6, cursor: 'pointer',
-  };
+function Label({ children }: { children: React.ReactNode }) {
+  return <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{children}</div>;
+}
+
+function MergeTable({ title, rows }: { title: string; rows: Array<{ field: string; staged: unknown; existing: unknown }> }) {
+  const fmt = (v: unknown) => v == null || v === ''
+    ? <span className="text-muted-foreground/60">—</span>
+    : String(v);
+
+  return (
+    <div className="border border-border rounded-md overflow-hidden">
+      <div className="px-3 py-1.5 bg-muted/40 text-[11px] text-muted-foreground font-medium">
+        {title}
+      </div>
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-border">
+            <th className="text-left px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider w-[110px]">Field</th>
+            <th className="text-left px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Staged</th>
+            <th className="text-left px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Existing</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => {
+            const changed = String(r.staged ?? '') !== String(r.existing ?? '');
+            return (
+              <tr key={r.field} className={`border-b border-border/40 ${changed ? 'bg-amber-50/50' : ''}`}>
+                <td className="px-2 py-1 font-mono text-[11px]">{r.field}</td>
+                <td className="px-2 py-1 text-[11px] break-words">{fmt(r.staged)}</td>
+                <td className="px-2 py-1 text-[11px] break-words">{fmt(r.existing)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function PersonalityMergePreview({ staging, existingId }: { staging: Record<string, unknown>; existingId: string }) {
@@ -289,52 +357,25 @@ function PersonalityMergePreview({ staging, existingId }: { staging: Record<stri
     },
   });
 
-  if (!existing) return <div style={{ fontSize: 12, color: '#9ca3af' }}>Loading candidate…</div>;
-
-  const rows: Array<{ field: string; staged: unknown; existing: unknown }> = [
-    { field: 'name',            staged: staging.name,            existing: existing.name },
-    { field: 'wikidata_qid',    staged: staging.wikidata_qid,    existing: existing.wikidata_qid },
-    { field: 'birth_date',      staged: staging.birth_date,      existing: existing.birth_date },
-    { field: 'death_date',      staged: staging.death_date,      existing: existing.death_date },
-    { field: 'profession',      staged: staging.profession,      existing: existing.profession },
-    { field: 'nationality',     staged: staging.nationality,     existing: existing.nationality },
-    { field: 'birth_place',     staged: staging.birth_place,     existing: existing.birth_place },
-    { field: 'image_url',       staged: staging.image_url,       existing: existing.image_url },
-    { field: 'website_url',     staged: staging.website_url,     existing: existing.website_url },
-    { field: 'lgbti_connection',staged: staging.lgbti_connection,existing: existing.lgbti_connection },
-    { field: 'description',     staged: staging.description,     existing: existing.description },
-  ];
-
-  const cellBase: React.CSSProperties = { padding: '4px 8px', fontSize: 11, verticalAlign: 'top', wordBreak: 'break-word' };
-  const fmt = (v: unknown) => v == null || v === '' ? <span style={{ color: '#d1d5db' }}>—</span> : String(v);
+  if (!existing) return <div className="text-xs text-muted-foreground">Loading candidate…</div>;
 
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 10px', background: '#f9fafb', fontSize: 11, color: '#6b7280', fontWeight: 500 }}>
-        Personality field-by-field — staged vs existing
-      </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
-            <th style={{ ...cellBase, width: 120, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Field</th>
-            <th style={{ ...cellBase, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Staged</th>
-            <th style={{ ...cellBase, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Existing</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(r => {
-            const changed = String(r.staged ?? '') !== String(r.existing ?? '');
-            return (
-              <tr key={r.field} style={{ background: changed ? '#fffbeb' : 'transparent', borderBottom: '1px solid #f9fafb' }}>
-                <td style={{ ...cellBase, fontFamily: 'monospace', color: '#374151' }}>{r.field}</td>
-                <td style={cellBase}>{fmt(r.staged)}</td>
-                <td style={cellBase}>{fmt(r.existing)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <MergeTable
+      title="Personality — staged vs existing"
+      rows={[
+        { field: 'name', staged: staging.name, existing: existing.name },
+        { field: 'wikidata_qid', staged: staging.wikidata_qid, existing: existing.wikidata_qid },
+        { field: 'birth_date', staged: staging.birth_date, existing: existing.birth_date },
+        { field: 'death_date', staged: staging.death_date, existing: existing.death_date },
+        { field: 'profession', staged: staging.profession, existing: existing.profession },
+        { field: 'nationality', staged: staging.nationality, existing: existing.nationality },
+        { field: 'birth_place', staged: staging.birth_place, existing: existing.birth_place },
+        { field: 'image_url', staged: staging.image_url, existing: existing.image_url },
+        { field: 'website_url', staged: staging.website_url, existing: existing.website_url },
+        { field: 'lgbti_connection', staged: staging.lgbti_connection, existing: existing.lgbti_connection },
+        { field: 'description', staged: staging.description, existing: existing.description },
+      ]}
+    />
   );
 }
 
@@ -344,14 +385,13 @@ function EventMergePreview({ staging, existingId }: { staging: Record<string, un
     queryFn: async () => {
       const { data, error } = await untypedFrom('events')
         .select('id, title, description, event_type, start_date, end_date, venue_name, city, latitude, longitude, website, ticket_url, edition, data_source, external_id')
-        .eq('id', existingId)
-        .single();
+        .eq('id', existingId).single();
       if (error) throw error;
       return data as Record<string, unknown>;
     },
   });
 
-  if (!existing) return <div style={{ fontSize: 12, color: '#9ca3af' }}>Loading candidate…</div>;
+  if (!existing) return <div className="text-xs text-muted-foreground">Loading candidate…</div>;
 
   const loc = (staging.location as Record<string, unknown>) ?? {};
   const dates = (staging.dates as Record<string, unknown>) ?? {};
@@ -368,49 +408,21 @@ function EventMergePreview({ staging, existingId }: { staging: Record<string, un
     edition: staging.edition,
   } as Record<string, unknown>;
 
-  const rows: Array<{ field: string; staged: unknown; existing: unknown }> = [
-    { field: 'title',       staged: sg.title,       existing: existing.title },
-    { field: 'event_type',  staged: sg.event_type,  existing: existing.event_type },
-    { field: 'start_date',  staged: sg.start_date,  existing: existing.start_date },
-    { field: 'end_date',    staged: sg.end_date,    existing: existing.end_date },
-    { field: 'venue_name',  staged: sg.venue_name,  existing: existing.venue_name },
-    { field: 'city',        staged: sg.city,        existing: existing.city },
-    { field: 'latitude',    staged: sg.latitude,    existing: existing.latitude },
-    { field: 'longitude',   staged: sg.longitude,   existing: existing.longitude },
-    { field: 'edition',     staged: sg.edition,     existing: existing.edition },
-    { field: 'website',     staged: sg.website,     existing: existing.website },
-  ];
-
-  const cellBase: React.CSSProperties = { padding: '4px 8px', fontSize: 11, verticalAlign: 'top', wordBreak: 'break-word' };
-  const fmt = (v: unknown) => v == null || v === '' ? <span style={{ color: '#d1d5db' }}>—</span> : String(v);
-
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 6, padding: 0, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 10px', background: '#f9fafb', fontSize: 11, color: '#6b7280', fontWeight: 500 }}>
-        Field-by-field — staged vs existing
-      </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
-            <th style={{ ...cellBase, width: 110, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Field</th>
-            <th style={{ ...cellBase, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Staged</th>
-            <th style={{ ...cellBase, color: '#6b7280', textAlign: 'left', fontWeight: 500 }}>Existing</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(r => {
-            const changed = String(r.staged ?? '') !== String(r.existing ?? '');
-            const bg = changed ? '#fffbeb' : 'transparent';
-            return (
-              <tr key={r.field} style={{ background: bg, borderBottom: '1px solid #f9fafb' }}>
-                <td style={{ ...cellBase, fontFamily: 'monospace', color: '#374151' }}>{r.field}</td>
-                <td style={cellBase}>{fmt(r.staged)}</td>
-                <td style={cellBase}>{fmt(r.existing)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <MergeTable
+      title="Event — staged vs existing"
+      rows={[
+        { field: 'title', staged: sg.title, existing: existing.title },
+        { field: 'event_type', staged: sg.event_type, existing: existing.event_type },
+        { field: 'start_date', staged: sg.start_date, existing: existing.start_date },
+        { field: 'end_date', staged: sg.end_date, existing: existing.end_date },
+        { field: 'venue_name', staged: sg.venue_name, existing: existing.venue_name },
+        { field: 'city', staged: sg.city, existing: existing.city },
+        { field: 'latitude', staged: sg.latitude, existing: existing.latitude },
+        { field: 'longitude', staged: sg.longitude, existing: existing.longitude },
+        { field: 'edition', staged: sg.edition, existing: existing.edition },
+        { field: 'website', staged: sg.website, existing: existing.website },
+      ]}
+    />
   );
 }

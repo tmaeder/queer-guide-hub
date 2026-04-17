@@ -1,16 +1,11 @@
 import { useMemo, useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Merge, Trash2, CheckCircle } from 'lucide-react';
+import { Merge, X, CheckCircle, Wand2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-/**
- * Pending dedupe decisions review tab.
- *
- * Surfaces rows from scraper_dedupe_decisions where decision = 'pending'
- * so an admin can accept (merge), reject (skip), or defer. Pulls incoming
- * source identity + confidence so the reviewer has enough context to decide.
- */
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface DedupRow {
   id: string;
@@ -25,12 +20,12 @@ interface DedupRow {
   created_at: string;
 }
 
-const cellStyle: React.CSSProperties = { padding: '8px 12px', fontSize: 13, verticalAlign: 'top' };
+type EntityFilter = 'all' | 'venue' | 'event' | 'place' | 'stay';
 
 export default function DedupDecisionsTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const [entityFilter, setEntityFilter] = useState<string>('all');
+  const [entityFilter, setEntityFilter] = useState<EntityFilter>('all');
 
   const { data: rows = [], isLoading } = useQuery<DedupRow[]>({
     queryKey: ['dedup-decisions', entityFilter],
@@ -58,14 +53,11 @@ export default function DedupDecisionsTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dedup-decisions'] }),
-    onError: (e: Error) =>
-      toast({ title: 'Update failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast({ title: 'Update failed', description: e.message, variant: 'destructive' }),
   });
 
   const autoResolve = useMutation({
     mutationFn: async () => {
-      // Auto-demote low-confidence stale decisions to 'skip' via the server-side
-      // helper. Mirrors scraper's resolvePendingDedupeDecisions().
       const { data, error } = await supabase.rpc('scraper_resolve_pending', {
         p_older_than_days: 30,
         p_confidence_floor: 0.75,
@@ -77,8 +69,7 @@ export default function DedupDecisionsTab() {
       toast({ title: `Auto-resolved ${n} decisions` });
       qc.invalidateQueries({ queryKey: ['dedup-decisions'] });
     },
-    onError: (e: Error) =>
-      toast({ title: 'Auto-resolve failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast({ title: 'Auto-resolve failed', description: e.message, variant: 'destructive' }),
   });
 
   const counts = useMemo(() => {
@@ -87,110 +78,126 @@ export default function DedupDecisionsTab() {
     return by;
   }, [rows]);
 
+  const FilterButton = ({ value, label }: { value: EntityFilter; label: string }) => (
+    <button
+      onClick={() => setEntityFilter(value)}
+      className={`text-[11px] px-2.5 py-1 rounded border transition-colors capitalize ${
+        entityFilter === value
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-background text-muted-foreground border-border hover:bg-accent'
+      }`}
+    >
+      {label}{counts[value] ? <span className="ml-1 opacity-70">{counts[value]}</span> : null}
+    </button>
+  );
+
   return (
-    <div style={{ padding: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Pending dedupe decisions</h2>
-        <span style={{ color: '#9ca3af', fontSize: 13 }}>{counts.all} pending</span>
-        <button
+    <div className="flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Merge className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-semibold">Pending dedupe decisions</span>
+        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{counts.all} pending</Badge>
+        <div className="flex-1" />
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 text-xs"
           onClick={() => autoResolve.mutate()}
           disabled={autoResolve.isPending}
-          style={{
-            marginLeft: 'auto',
-            padding: '6px 12px',
-            fontSize: 12,
-            background: '#f3f4f6',
-            border: '1px solid #d1d5db',
-            cursor: 'pointer',
-          }}
         >
-          {autoResolve.isPending ? 'Running…' : 'Auto-resolve < 0.75 older than 30d'}
-        </button>
+          {autoResolve.isPending
+            ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+            : <Wand2 className="h-3.5 w-3.5 mr-1.5" />}
+          Auto-resolve {'<'} 0.75 &amp; older than 30d
+        </Button>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        {(['all', 'venue', 'event', 'place', 'stay'] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setEntityFilter(t)}
-            style={{
-              padding: '4px 10px',
-              fontSize: 12,
-              background: entityFilter === t ? '#111827' : 'transparent',
-              color: entityFilter === t ? '#fff' : '#374151',
-              border: '1px solid #d1d5db',
-              cursor: 'pointer',
-            }}
-          >
-            {t} {counts[t] ? `(${counts[t]})` : ''}
-          </button>
-        ))}
+      {/* Entity filter chips */}
+      <div className="flex gap-1 flex-wrap">
+        <FilterButton value="all" label="all" />
+        <FilterButton value="venue" label="venue" />
+        <FilterButton value="event" label="event" />
+        <FilterButton value="place" label="place" />
+        <FilterButton value="stay" label="stay" />
       </div>
 
-      {isLoading ? (
-        <div style={{ color: '#9ca3af' }}>Loading…</div>
-      ) : rows.length === 0 ? (
-        <div style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <CheckCircle size={16} /> No pending decisions — queue is clean.
-        </div>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-          <thead>
-            <tr style={{ background: '#f9fafb', textAlign: 'left' }}>
-              <th style={cellStyle}>Type</th>
-              <th style={cellStyle}>Method</th>
-              <th style={cellStyle}>Confidence</th>
-              <th style={cellStyle}>Canonical ID</th>
-              <th style={cellStyle}>Incoming</th>
-              <th style={cellStyle}>Created</th>
-              <th style={cellStyle}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                <td style={cellStyle}>{r.entity_type}</td>
-                <td style={cellStyle}>{r.match_method}</td>
-                <td style={cellStyle}>
-                  <span
-                    style={{
-                      color: r.confidence >= 0.85 ? '#059669' : r.confidence >= 0.75 ? '#d97706' : '#6b7280',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    {r.confidence.toFixed(3)}
-                  </span>
-                </td>
-                <td style={{ ...cellStyle, fontFamily: 'monospace', fontSize: 11 }}>
-                  {r.entity_a_id?.slice(0, 8) ?? '—'}
-                </td>
-                <td style={{ ...cellStyle, fontSize: 11 }}>
-                  {r.incoming_source_name}/{r.incoming_source_id}
-                </td>
-                <td style={cellStyle}>{new Date(r.created_at).toLocaleString()}</td>
-                <td style={cellStyle}>
-                  <button
-                    onClick={() => resolve.mutate({ id: r.id, decision: 'merge' })}
-                    disabled={resolve.isPending}
-                    style={{ marginRight: 6, padding: '3px 8px', fontSize: 11, cursor: 'pointer' }}
-                  >
-                    <Merge size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
-                    merge
-                  </button>
-                  <button
-                    onClick={() => resolve.mutate({ id: r.id, decision: 'skip' })}
-                    disabled={resolve.isPending}
-                    style={{ padding: '3px 8px', fontSize: 11, cursor: 'pointer' }}
-                  >
-                    <Trash2 size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
-                    skip
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      {/* Table */}
+      <div className="border border-border rounded-md bg-background overflow-hidden">
+        {isLoading ? (
+          <div className="p-6 text-center text-muted-foreground text-xs">Loading…</div>
+        ) : rows.length === 0 ? (
+          <div className="p-8 text-center">
+            <CheckCircle className="h-5 w-5 text-green-600 inline mr-1" />
+            <span className="text-sm text-green-600 font-medium">No pending decisions — queue is clean</span>
+          </div>
+        ) : (
+          <div className="max-h-[600px] overflow-y-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 sticky top-0">
+                <tr className="border-b border-border">
+                  {['Type', 'Method', 'Confidence', 'Canonical', 'Incoming', 'Created', 'Actions'].map(h => (
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(r => {
+                  const confColor =
+                    r.confidence >= 0.85 ? 'text-green-600'
+                    : r.confidence >= 0.75 ? 'text-amber-600'
+                    : 'text-muted-foreground';
+                  return (
+                    <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                      <td className="px-3 py-2">
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{r.entity_type}</Badge>
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs">{r.match_method}</td>
+                      <td className={`px-3 py-2 font-mono tabular-nums font-semibold ${confColor}`}>
+                        {r.confidence.toFixed(3)}
+                      </td>
+                      <td className="px-3 py-2">
+                        <code className="text-[10px] bg-muted/60 px-1 rounded">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>
+                      </td>
+                      <td className="px-3 py-2 text-[11px] font-mono text-muted-foreground">
+                        {r.incoming_source_name}/{r.incoming_source_id}
+                      </td>
+                      <td className="px-3 py-2 text-[11px] text-muted-foreground"
+                          title={new Date(r.created_at).toISOString()}>
+                        {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="h-7 text-xs"
+                            onClick={() => resolve.mutate({ id: r.id, decision: 'merge' })}
+                            disabled={resolve.isPending}
+                          >
+                            <Merge className="h-3 w-3 mr-1" />
+                            Merge
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                            onClick={() => resolve.mutate({ id: r.id, decision: 'skip' })}
+                            disabled={resolve.isPending}
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Skip
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

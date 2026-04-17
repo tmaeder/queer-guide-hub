@@ -1,12 +1,28 @@
 import { useQuery } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { Newspaper, AlertCircle } from 'lucide-react';
+import { Newspaper, AlertCircle, GitMerge } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 // News pipeline observability — sources health, staging, dedup audit.
-// Mirrors the hardened news-ingestion DAG.
+
+function StatBlock({ label, value, variant }: { label: string; value: number; variant?: 'success' | 'warning' | 'destructive' | 'default' }) {
+  const colorClass =
+    variant === 'success' ? 'text-green-600' :
+    variant === 'warning' ? 'text-amber-600' :
+    variant === 'destructive' ? 'text-destructive' :
+    'text-foreground';
+  return (
+    <div className="border border-border rounded-md bg-background p-3">
+      <div className={`text-2xl font-bold tabular-nums ${colorClass}`}>
+        {value.toLocaleString()}
+      </div>
+      <div className="text-[11px] text-muted-foreground mt-1">{label}</div>
+    </div>
+  );
+}
 
 export default function NewsTab() {
-  const { data: sources } = useQuery({
+  const { data: sources = [] } = useQuery({
     queryKey: ['news-sources-health'],
     refetchInterval: 30_000,
     queryFn: async () => {
@@ -53,81 +69,105 @@ export default function NewsTab() {
     },
   });
 
-  const cardBorder: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', padding: 16 };
-  const sectionTitle: React.CSSProperties = { fontWeight: 600, fontSize: 15, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 };
-
-  const paused = (sources ?? []).filter(s => s.auto_paused).length;
-  const errored = (sources ?? []).filter(s => s.status === 'error' && !s.auto_paused).length;
+  const paused  = sources.filter(s => s.auto_paused).length;
+  const errored = sources.filter(s => s.status === 'error' && !s.auto_paused).length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col gap-4">
       {/* Staging stats */}
-      <div style={cardBorder}>
-        <div style={sectionTitle}><Newspaper style={{ width: 16, height: 16 }} /> News staging (disposition)</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-          <Stat label="Pending" value={staging?.pending ?? 0} />
-          <Stat label="Committed" value={staging?.committed ?? 0} color="#16a34a" />
-          <Stat label="Rejected" value={staging?.rejected ?? 0} color={staging?.rejected ? '#b91c1c' : undefined} />
+      <div className="border border-border rounded-md bg-background overflow-hidden">
+        <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2">
+          <Newspaper className="h-3.5 w-3.5" />
+          News staging (disposition)
+        </div>
+        <div className="grid grid-cols-3 gap-3 p-4">
+          <StatBlock label="Pending" value={staging?.pending ?? 0} />
+          <StatBlock label="Committed" value={staging?.committed ?? 0} variant="success" />
+          <StatBlock label="Rejected" value={staging?.rejected ?? 0} variant={(staging?.rejected ?? 0) > 0 ? 'destructive' : 'default'} />
         </div>
       </div>
 
       {/* Dedup audit */}
-      <div style={cardBorder}>
-        <div style={sectionTitle}>Dedup decisions (24h)</div>
-        {dedupAudit && Object.keys(dedupAudit).length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px', gap: 6, fontSize: 13 }}>
-            {Object.entries(dedupAudit).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k, v]) => {
-              const [strategy, decision] = k.split(':');
-              return (
-                <div key={k} style={{ display: 'contents' }}>
-                  <div>{strategy} → {decision}</div>
-                  <div style={{ textAlign: 'right', fontFamily: 'monospace', fontWeight: 600 }}>{v}</div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div style={{ fontSize: 12, color: '#9ca3af' }}>No dedup decisions in the last 24h.</div>
-        )}
+      <div className="border border-border rounded-md bg-background overflow-hidden">
+        <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2">
+          <GitMerge className="h-3.5 w-3.5" />
+          Dedup decisions
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-1">last 24h</Badge>
+        </div>
+        <div className="p-4">
+          {dedupAudit && Object.keys(dedupAudit).length > 0 ? (
+            <div className="grid grid-cols-[1fr_80px] gap-y-1.5 text-sm">
+              {Object.entries(dedupAudit).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k, v]) => {
+                const [strategy, decision] = k.split(':');
+                return (
+                  <div key={k} className="contents">
+                    <div className="text-muted-foreground">
+                      <span className="font-mono text-xs">{strategy}</span>
+                      <span className="text-muted-foreground mx-1">→</span>
+                      <span>{decision}</span>
+                    </div>
+                    <div className="text-right font-mono font-semibold tabular-nums">{v}</div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-xs text-muted-foreground text-center py-4">No dedup decisions in the last 24h</div>
+          )}
+        </div>
       </div>
 
       {/* Sources */}
-      <div style={cardBorder}>
-        <div style={sectionTitle}>
-          <AlertCircle style={{ width: 16, height: 16 }} />
+      <div className="border border-border rounded-md bg-background overflow-hidden">
+        <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2 flex-wrap">
+          <AlertCircle className="h-3.5 w-3.5" />
           News sources
-          {paused > 0 && <span style={{ fontSize: 12, color: '#b91c1c', fontWeight: 400 }}>({paused} auto-paused)</span>}
-          {errored > 0 && <span style={{ fontSize: 12, color: '#a16207', fontWeight: 400 }}>({errored} errored)</span>}
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{sources.length}</Badge>
+          {paused > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-700 border-red-200">{paused} auto-paused</Badge>}
+          {errored > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">{errored} errored</Badge>}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 100px 100px 80px', gap: 6, fontSize: 12 }}>
-          <div style={{ fontWeight: 600, color: '#6b7280' }}>Source</div>
-          <div style={{ fontWeight: 600, color: '#6b7280' }}>Status</div>
-          <div style={{ fontWeight: 600, color: '#6b7280', textAlign: 'right' }}>Fails</div>
-          <div style={{ fontWeight: 600, color: '#6b7280', textAlign: 'right' }}>Reliability</div>
-          <div style={{ fontWeight: 600, color: '#6b7280', textAlign: 'right' }}>Avg/fetch</div>
-          {(sources ?? []).map((s) => (
-            <div key={String(s.id)} style={{ display: 'contents' }}>
-              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={String(s.name)}>
-                {String(s.name)}
-                {s.auto_paused && <span style={{ marginLeft: 6, color: '#b91c1c', fontSize: 10 }}>paused</span>}
-              </div>
-              <div style={{ color: s.status === 'active' ? '#16a34a' : s.status === 'paused' ? '#b91c1c' : '#a16207' }}>{String(s.status ?? '-')}</div>
-              <div style={{ textAlign: 'right', color: (s.consecutive_failures as number) > 0 ? '#b91c1c' : '#6b7280', fontFamily: 'monospace' }}>{String(s.consecutive_failures ?? 0)}</div>
-              <div style={{ textAlign: 'right', fontFamily: 'monospace' }}>{((s.reliability_score as number | null) ?? 0).toFixed(2)}</div>
-              <div style={{ textAlign: 'right', fontFamily: 'monospace', color: '#6b7280' }}>{((s.avg_articles_per_fetch as number | null) ?? 0).toFixed(1)}</div>
-            </div>
-          ))}
+        <div className="max-h-[400px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 sticky top-0">
+              <tr className="border-b border-border">
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Source</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[100px]">Status</th>
+                <th className="text-right px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[80px]">Fails</th>
+                <th className="text-right px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[100px]">Reliability</th>
+                <th className="text-right px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[90px]">Avg/fetch</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sources.length === 0 ? (
+                <tr><td colSpan={5} className="p-6 text-center text-muted-foreground text-xs">No news sources</td></tr>
+              ) : sources.map(s => {
+                const status = String(s.status ?? '-');
+                const failures = Number(s.consecutive_failures ?? 0);
+                const reliability = Number(s.reliability_score ?? 0);
+                const avg = Number(s.avg_articles_per_fetch ?? 0);
+                const statusColor =
+                  status === 'active' ? 'text-green-600'
+                  : s.auto_paused || status === 'paused' ? 'text-destructive'
+                  : 'text-yellow-600';
+                return (
+                  <tr key={String(s.id)} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                    <td className="px-3 py-2 truncate max-w-[280px]" title={String(s.name)}>
+                      {String(s.name)}
+                      {s.auto_paused ? <Badge variant="outline" className="ml-2 text-[9px] px-1 py-0 bg-red-50 text-red-700 border-red-200">paused</Badge> : null}
+                    </td>
+                    <td className={`px-3 py-2 text-xs ${statusColor}`}>{status}</td>
+                    <td className={`px-3 py-2 text-right font-mono tabular-nums ${failures > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {failures}
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono tabular-nums">{reliability.toFixed(2)}</td>
+                    <td className="px-3 py-2 text-right font-mono tabular-nums text-muted-foreground">{avg.toFixed(1)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Stat({ label, value, color }: { label: string; value: number; color?: string }) {
-  return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
-      <div style={{ fontSize: 22, fontWeight: 700, color: color ?? '#111827' }}>{value.toLocaleString()}</div>
-      <div style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>{label}</div>
     </div>
   );
 }

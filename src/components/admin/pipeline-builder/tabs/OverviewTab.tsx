@@ -1,22 +1,22 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Activity, AlertTriangle, CheckCircle, Play, Workflow, GitBranch, Search, Zap } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Activity, AlertTriangle, CheckCircle, Play, Workflow, GitBranch, Search, Zap, Loader2 } from 'lucide-react';
 import { useUnifiedPipelineOverview, usePipelineRunCounts24h, useCircuitBreakers, type UnifiedPipelineRow } from '../hooks/usePipelineHistory';
 
 type Filter = 'all' | 'pipelines' | 'workflows' | 'failing' | 'disabled';
 
-const statusColors: Record<string, string> = {
-  queued: 'bg-gray-100 text-gray-700',
+const statusClass: Record<string, string> = {
+  queued: 'bg-muted text-muted-foreground',
   running: 'bg-blue-100 text-blue-700',
   completed: 'bg-green-100 text-green-700',
   failed: 'bg-red-100 text-red-700',
@@ -42,27 +42,38 @@ function humanSchedule(cron: string | null): string {
   return map[cron] || cron;
 }
 
-function relativeTime(iso: string | null): string {
-  if (!iso) return '—';
-  const diff = Date.now() - new Date(iso).getTime();
-  const s = Math.floor(diff / 1000);
-  if (s < 60) return `${s}s ago`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  return `${d}d ago`;
-}
-
 function StatusDots({ statuses }: { statuses: string[] }) {
   const cells = Array.from({ length: 10 }, (_, i) => statuses[i]);
   return (
-    <div style={{ display: 'flex', gap: 2 }}>
+    <div className="flex gap-[2px]">
       {cells.map((s, i) => {
-        const bg = s === 'completed' ? '#22c55e' : s === 'failed' ? '#ef4444' : s === 'running' ? '#3b82f6' : s ? '#9ca3af' : '#e5e7eb';
-        return <div key={i} style={{ width: 8, height: 14, background: bg, borderRadius: 1 }} title={s || 'no run'} />;
+        const bg = s === 'completed' ? 'bg-green-500'
+                 : s === 'failed' ? 'bg-destructive'
+                 : s === 'running' ? 'bg-blue-500'
+                 : s ? 'bg-muted-foreground' : 'bg-muted';
+        return (
+          <Tooltip key={i}>
+            <TooltipTrigger asChild>
+              <div className={`w-[8px] h-[14px] rounded-sm ${bg}`} />
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">{s || 'no run'}</TooltipContent>
+          </Tooltip>
+        );
       })}
+    </div>
+  );
+}
+
+function StatCard({ icon: Icon, color, value, label, alert }: {
+  icon: React.ComponentType<{ className?: string }>; color: string; value: React.ReactNode; label: string; alert?: boolean;
+}) {
+  return (
+    <div className="border border-border rounded-md bg-background p-4">
+      <div className="flex items-center gap-2">
+        <Icon className={`h-4 w-4 ${color}`} />
+        <span className={`text-2xl font-bold tabular-nums ${alert ? 'text-destructive' : ''}`}>{value}</span>
+      </div>
+      <div className="text-xs text-muted-foreground mt-1">{label}</div>
     </div>
   );
 }
@@ -80,6 +91,8 @@ export default function OverviewTab() {
   const openCircuits = circuitBreakers?.filter(cb => cb.state === 'open').length || 0;
   const activeCount = rows?.filter(r => r.is_enabled && !r.is_template).length || 0;
   const failingCount = rows?.filter(r => r.last_run_status === 'failed').length || 0;
+  const pipelineCount = rows?.filter(r => r.kind === 'pipeline').length || 0;
+  const workflowCount = rows?.filter(r => r.kind === 'workflow').length || 0;
 
   const toggleEnabled = useMutation({
     mutationFn: async ({ row, enabled }: { row: UnifiedPipelineRow; enabled: boolean }) => {
@@ -105,7 +118,10 @@ export default function OverviewTab() {
         if (error) throw error;
       }
     },
-    onSuccess: () => setTimeout(() => qc.invalidateQueries({ queryKey: ['unified-pipeline-overview'] }), 1500),
+    onSuccess: (_, row) => {
+      toast({ title: `Started: ${row.display_name || row.name}` });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ['unified-pipeline-overview'] }), 1500);
+    },
     onError: (e: Error) => toast({ title: 'Run failed', description: e.message, variant: 'destructive' }),
   });
 
@@ -126,156 +142,161 @@ export default function OverviewTab() {
     else navigate(`/admin/pipelines?tab=monitor&workflow=${row.name}`);
   };
 
-  const statCard: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 8, padding: '16px', background: '#fff' };
-  const statValue: React.CSSProperties = { fontSize: 24, fontWeight: 700 };
-  const statLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', marginTop: 4 };
+  const FilterButton = ({ value, label, count }: { value: Filter; label: string; count?: number }) => (
+    <button
+      onClick={() => setFilter(value)}
+      className={`text-xs px-3 py-1 rounded border transition-colors capitalize ${
+        filter === value
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-background text-muted-foreground border-border hover:bg-accent'
+      }`}
+    >
+      {label}
+      {count != null && <span className="ml-1 opacity-70">{count}</span>}
+    </button>
+  );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-        <div style={statCard}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Activity style={{ width: 16, height: 16, color: '#6366f1' }} />
-            <span style={statValue}>{activeCount}</span>
-          </div>
-          <div style={statLabel}>Active definitions</div>
-        </div>
-        <div style={statCard}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CheckCircle style={{ width: 16, height: 16, color: '#22c55e' }} />
-            <span style={statValue}>{counts24h?.total ?? '—'}</span>
-          </div>
-          <div style={statLabel}>Runs in last 24h</div>
-        </div>
-        <div style={statCard}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <AlertTriangle style={{ width: 16, height: 16, color: failingCount > 0 ? '#ef4444' : '#9ca3af' }} />
-            <span style={{ ...statValue, color: failingCount > 0 ? '#ef4444' : undefined }}>{failingCount}</span>
-          </div>
-          <div style={statLabel}>Currently failing</div>
-        </div>
-        <div style={statCard}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <AlertTriangle style={{ width: 16, height: 16, color: openCircuits > 0 ? '#ef4444' : '#22c55e' }} />
-            <span style={{ ...statValue, color: openCircuits > 0 ? '#ef4444' : undefined }}>{openCircuits}</span>
-          </div>
-          <div style={statLabel}>Open circuits</div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        {(['all', 'pipelines', 'workflows', 'failing', 'disabled'] as Filter[]).map(f => (
-          <Button
-            key={f}
-            size="sm"
-            variant={filter === f ? 'default' : 'outline'}
-            onClick={() => setFilter(f)}
-            style={{ textTransform: 'capitalize' }}
-          >
-            {f}
-            {f === 'all' && rows && <span style={{ marginLeft: 6, opacity: 0.7 }}>{rows.length}</span>}
-            {f === 'pipelines' && rows && <span style={{ marginLeft: 6, opacity: 0.7 }}>{rows.filter(r => r.kind === 'pipeline').length}</span>}
-            {f === 'workflows' && rows && <span style={{ marginLeft: 6, opacity: 0.7 }}>{rows.filter(r => r.kind === 'workflow').length}</span>}
-            {f === 'failing' && <span style={{ marginLeft: 6, opacity: 0.7 }}>{failingCount}</span>}
-          </Button>
-        ))}
-        <div style={{ position: 'relative', marginLeft: 'auto', width: 260 }}>
-          <Search style={{ position: 'absolute', left: 8, top: 9, width: 14, height: 14, color: '#9ca3af' }} />
-          <Input
-            placeholder="Search by name…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{ paddingLeft: 28 }}
+    <TooltipProvider delayDuration={200}>
+      <div className="flex flex-col gap-5">
+        {/* Stat cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard icon={Activity} color="text-primary" value={activeCount} label="Active definitions" />
+          <StatCard icon={CheckCircle} color="text-green-600" value={counts24h?.total ?? '—'} label="Runs in last 24h" />
+          <StatCard
+            icon={AlertTriangle}
+            color={failingCount > 0 ? 'text-destructive' : 'text-muted-foreground'}
+            value={failingCount}
+            label="Currently failing"
+            alert={failingCount > 0}
+          />
+          <StatCard
+            icon={AlertTriangle}
+            color={openCircuits > 0 ? 'text-destructive' : 'text-green-600'}
+            value={openCircuits}
+            label="Open circuits"
+            alert={openCircuits > 0}
           />
         </div>
-      </div>
 
-      <Card>
-        <CardContent style={{ padding: 0 }}>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead style={{ width: 90 }}>Kind</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead style={{ width: 130 }}>Schedule</TableHead>
-                <TableHead style={{ width: 110 }}>Last Run</TableHead>
-                <TableHead style={{ width: 100 }}>Status</TableHead>
-                <TableHead style={{ width: 160 }}>Last 10</TableHead>
-                <TableHead style={{ width: 110 }}>Items</TableHead>
-                <TableHead style={{ width: 80 }}>Enabled</TableHead>
-                <TableHead style={{ width: 140 }} />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        {/* Filter + search */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <FilterButton value="all" label="all" count={rows?.length} />
+          <FilterButton value="pipelines" label="pipelines" count={pipelineCount} />
+          <FilterButton value="workflows" label="workflows" count={workflowCount} />
+          <FilterButton value="failing" label="failing" count={failingCount} />
+          <FilterButton value="disabled" label="disabled" />
+          <div className="relative ml-auto w-60">
+            <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Search by name..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="h-8 pl-8 text-xs"
+            />
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="border border-border rounded-md bg-background overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40">
+              <tr className="border-b border-border">
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[90px]">Kind</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Name</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[130px]">Schedule</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[110px]">Last run</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[100px]">Status</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[160px]">Last 10</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[110px]">Items</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[80px]">Enabled</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[100px]" />
+              </tr>
+            </thead>
+            <tbody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
+                <tr><td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">No matches</TableCell></TableRow>
+                <tr><td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">
+                  {rows?.length === 0 ? 'No definitions yet' : 'No matches'}
+                </td></tr>
               ) : filtered.map(row => (
-                <TableRow key={`${row.kind}-${row.id}`} className="hover:bg-accent/50">
-                  <TableCell>
-                    <Badge variant="outline" className="text-xs" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      {row.kind === 'pipeline' ? <GitBranch style={{ width: 11, height: 11 }} /> : <Workflow style={{ width: 11, height: 11 }} />}
+                <tr key={`${row.kind}-${row.id}`} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                  <td className="px-3 py-2.5 align-top">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+                      {row.kind === 'pipeline' ? <GitBranch className="h-2.5 w-2.5" /> : <Workflow className="h-2.5 w-2.5" />}
                       {row.kind}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-3 py-2.5 align-top">
                     <button
                       onClick={() => openRow(row)}
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', color: '#6366f1', fontWeight: 500 }}
+                      className="text-primary font-medium hover:underline text-left"
                     >
                       {row.display_name || row.name}
                     </button>
-                    {row.is_template && <Badge variant="outline" className="ml-2 text-[10px]">Template</Badge>}
-                    <div style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>{row.name}</div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{humanSchedule(row.schedule)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{relativeTime(row.last_run_at)}</TableCell>
-                  <TableCell>
+                    {row.is_template && <Badge variant="outline" className="ml-2 text-[9px] px-1 py-0">Template</Badge>}
+                    <div className="text-[11px] text-muted-foreground font-mono truncate max-w-[320px]" title={row.name}>{row.name}</div>
+                  </td>
+                  <td className="px-3 py-2.5 align-top text-xs text-muted-foreground"
+                      title={row.schedule || 'manual'}>
+                    {humanSchedule(row.schedule)}
+                  </td>
+                  <td className="px-3 py-2.5 align-top text-xs text-muted-foreground"
+                      title={row.last_run_at ? new Date(row.last_run_at).toISOString() : ''}>
+                    {row.last_run_at ? formatDistanceToNow(new Date(row.last_run_at), { addSuffix: true }) : '—'}
+                  </td>
+                  <td className="px-3 py-2.5 align-top">
                     {row.last_run_status ? (
-                      <Badge variant="outline" className={`text-xs ${statusColors[row.last_run_status] || ''}`}>
+                      <Badge variant="outline" className={`text-[10px] px-2 py-0 ${statusClass[row.last_run_status] || ''}`}>
                         {row.last_run_status}
                       </Badge>
-                    ) : <span className="text-xs text-muted-foreground">never</span>}
-                  </TableCell>
-                  <TableCell>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    ) : <span className="text-[11px] text-muted-foreground">never</span>}
+                  </td>
+                  <td className="px-3 py-2.5 align-top">
+                    <div className="flex flex-col gap-1">
                       <StatusDots statuses={row.recent_statuses} />
-                      <span style={{ fontSize: 10, color: '#9ca3af' }}>
+                      <span className="text-[10px] text-muted-foreground">
                         {row.recent_total_count > 0 ? `${row.recent_success_count}/${row.recent_total_count} ok` : 'no runs'}
                       </span>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-sm">
+                  </td>
+                  <td className="px-3 py-2.5 align-top text-xs tabular-nums">
                     {row.last_items_total != null && row.last_items_total > 0
-                      ? `${row.last_items_succeeded ?? 0}/${row.last_items_total}`
-                      : '—'}
-                  </TableCell>
-                  <TableCell>
+                      ? <><span className="text-green-700 font-semibold">{row.last_items_succeeded ?? 0}</span><span className="text-muted-foreground">/{row.last_items_total}</span></>
+                      : <span className="text-muted-foreground">—</span>}
+                  </td>
+                  <td className="px-3 py-2.5 align-top">
                     <Switch
                       checked={row.is_enabled}
                       onCheckedChange={enabled => toggleEnabled.mutate({ row, enabled })}
                     />
-                  </TableCell>
-                  <TableCell>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={runNow.isPending || !row.is_enabled}
-                        onClick={() => runNow.mutate(row)}
-                      >
-                        {runNow.isPending && runNow.variables?.id === row.id ? <Zap className="h-3 w-3 animate-pulse" /> : <Play className="h-3 w-3" />}
-                        <span style={{ marginLeft: 4 }}>Run</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                  </td>
+                  <td className="px-3 py-2.5 align-top">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs"
+                      disabled={runNow.isPending || !row.is_enabled}
+                      onClick={() => runNow.mutate(row)}
+                    >
+                      {runNow.isPending && runNow.variables?.id === row.id
+                        ? <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        : <Play className="h-3 w-3 mr-1" />}
+                      Run
+                    </Button>
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+            </tbody>
+          </table>
+          {!isLoading && rows && (
+            <div className="px-3 py-1.5 border-t border-border text-[11px] text-muted-foreground">
+              Showing {filtered.length} of {rows.length} definitions
+            </div>
+          )}
+        </div>
+      </div>
+    </TooltipProvider>
   );
 }

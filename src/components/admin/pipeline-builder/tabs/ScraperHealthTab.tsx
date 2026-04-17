@@ -1,16 +1,10 @@
+import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
+import { AlertTriangle, Activity, BarChart3, Trash2, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-/**
- * Scraper-health tab: field coverage by source + orphan mapping counts.
- *
- * Reads the `scraper_ingest_coverage` view (% of entities with geo, phone,
- * website, images, tags, address, description per run) and the
- * `scraper_reconcile_orphans()` function (entity_map rows whose canonical
- * row has been deleted). Lets admins prune orphans in place.
- */
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface CoverageRow {
   source_name: string;
@@ -43,21 +37,23 @@ interface QualityRow {
   score_avg: number;
 }
 
-const cell: React.CSSProperties = { padding: '6px 10px', fontSize: 12, verticalAlign: 'top' };
-const head: React.CSSProperties = {
-  padding: '8px 10px',
-  fontSize: 11,
-  fontWeight: 600,
-  textTransform: 'uppercase',
-  color: '#6b7280',
-  background: '#f9fafb',
-  textAlign: 'left',
-};
+function PctCell({ v }: { v: number | null }) {
+  if (v == null) return <span className="text-muted-foreground">—</span>;
+  const colorClass =
+    v >= 80 ? 'text-green-600'
+    : v >= 50 ? 'text-amber-600'
+    : 'text-destructive';
+  return <span className={`font-mono tabular-nums ${colorClass}`}>{v.toFixed(1)}%</span>;
+}
 
-function pctCell(v: number | null) {
-  if (v == null) return '—';
-  const color = v >= 80 ? '#059669' : v >= 50 ? '#d97706' : '#dc2626';
-  return <span style={{ color, fontVariantNumeric: 'tabular-nums' }}>{v.toFixed(1)}%</span>;
+function SectionHeader({ icon: Icon, title, badge }: { icon: React.ComponentType<{ className?: string }>; title: string; badge?: React.ReactNode }) {
+  return (
+    <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+      <Icon className="h-3.5 w-3.5" />
+      <span>{title}</span>
+      {badge}
+    </div>
+  );
 }
 
 export default function ScraperHealthTab() {
@@ -67,10 +63,7 @@ export default function ScraperHealthTab() {
   const { data: coverage = [], isLoading: covLoading } = useQuery<CoverageRow[]>({
     queryKey: ['scraper-coverage'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('scraper_ingest_coverage')
-        .select('*')
-        .limit(200);
+      const { data, error } = await supabase.from('scraper_ingest_coverage').select('*').limit(200);
       if (error) throw error;
       return (data ?? []) as CoverageRow[];
     },
@@ -90,10 +83,7 @@ export default function ScraperHealthTab() {
   const { data: quality = [] } = useQuery<QualityRow[]>({
     queryKey: ['pipeline-quality-dist'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('pipeline_quality_distribution')
-        .select('*')
-        .limit(200);
+      const { data, error } = await supabase.from('pipeline_quality_distribution').select('*').limit(200);
       if (error) throw error;
       return (data ?? []) as QualityRow[];
     },
@@ -102,9 +92,7 @@ export default function ScraperHealthTab() {
 
   const prune = useMutation({
     mutationFn: async (entityType: string) => {
-      const { data, error } = await supabase.rpc('scraper_prune_orphan_mappings', {
-        p_entity_type: entityType,
-      });
+      const { data, error } = await supabase.rpc('scraper_prune_orphan_mappings', { p_entity_type: entityType });
       if (error) throw error;
       return data as number;
     },
@@ -112,46 +100,63 @@ export default function ScraperHealthTab() {
       toast({ title: `Pruned ${n} orphan ${entityType} mappings` });
       qc.invalidateQueries({ queryKey: ['scraper-orphans'] });
     },
-    onError: (e: Error) =>
-      toast({ title: 'Prune failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast({ title: 'Prune failed', description: e.message, variant: 'destructive' }),
   });
 
+  const totalOrphans = orphans.reduce((s, o) => s + o.orphan_count, 0);
+
   return (
-    <div style={{ padding: 16 }}>
+    <div className="flex flex-col gap-5">
       {/* Orphans */}
-      <section style={{ marginBottom: 32 }}>
-        <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>
-          <AlertTriangle size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-          Orphan mappings
-        </h2>
-        {orphans.every((r) => r.orphan_count === 0) ? (
-          <div style={{ color: '#059669', fontSize: 13 }}>No orphans — entity_map is clean.</div>
+      <div className="border border-border rounded-md bg-background overflow-hidden">
+        <SectionHeader
+          icon={AlertTriangle}
+          title="Orphan mappings"
+          badge={
+            totalOrphans > 0
+              ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-700 border-red-200">{totalOrphans} total</Badge>
+              : undefined
+          }
+        />
+        {totalOrphans === 0 ? (
+          <div className="p-6 text-center">
+            <CheckCircle className="h-5 w-5 text-green-600 inline mr-1" />
+            <span className="text-sm text-green-600 font-medium">No orphans — entity_map is clean</span>
+          </div>
         ) : (
-          <table style={{ borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={head}>Entity type</th>
-                <th style={head}>Orphans</th>
-                <th style={head}>Action</th>
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40">
+              <tr className="border-b border-border">
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Entity type</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Orphans</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody>
-              {orphans.map((o) => (
-                <tr key={o.entity_type} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={cell}>{o.entity_type}</td>
-                  <td style={{ ...cell, color: o.orphan_count > 0 ? '#dc2626' : '#6b7280' }}>
+              {orphans.map(o => (
+                <tr key={o.entity_type} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                  <td className="px-3 py-2 capitalize">{o.entity_type}</td>
+                  <td className={`px-3 py-2 tabular-nums font-semibold ${o.orphan_count > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                     {o.orphan_count}
                   </td>
-                  <td style={cell}>
+                  <td className="px-3 py-2">
                     {o.orphan_count > 0 && (
-                      <button
-                        onClick={() => prune.mutate(o.entity_type)}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                        onClick={() => {
+                          if (window.confirm(`Prune ${o.orphan_count} orphan ${o.entity_type} mappings?`)) {
+                            prune.mutate(o.entity_type);
+                          }
+                        }}
                         disabled={prune.isPending}
-                        style={{ padding: '3px 8px', fontSize: 11, cursor: 'pointer' }}
                       >
-                        <Trash2 size={11} style={{ marginRight: 3, verticalAlign: 'middle' }} />
-                        prune
-                      </button>
+                        {prune.isPending && prune.variables === o.entity_type
+                          ? <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          : <Trash2 className="h-3 w-3 mr-1" />}
+                        Prune
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -159,96 +164,84 @@ export default function ScraperHealthTab() {
             </tbody>
           </table>
         )}
-      </section>
+      </div>
 
       {/* Field coverage */}
-      <section style={{ marginBottom: 32 }}>
-        <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>
-          <RefreshCw size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-          Field coverage per recent run
-        </h2>
-        {covLoading ? (
-          <div style={{ color: '#9ca3af', fontSize: 13 }}>Loading…</div>
-        ) : coverage.length === 0 ? (
-          <div style={{ color: '#9ca3af', fontSize: 13 }}>No completed runs yet.</div>
-        ) : (
-          <table style={{ borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={head}>Source</th>
-                <th style={head}>Type</th>
-                <th style={head}>Parsed</th>
-                <th style={head}>Started</th>
-                <th style={head}>Geo</th>
-                <th style={head}>Phone</th>
-                <th style={head}>Website</th>
-                <th style={head}>Images</th>
-                <th style={head}>Tags</th>
-                <th style={head}>Address</th>
-                <th style={head}>Desc</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coverage.map((c, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={cell}>{c.source_name}</td>
-                  <td style={cell}>{c.entity_type}</td>
-                  <td style={cell}>{c.entities_parsed}</td>
-                  <td style={cell}>{new Date(c.started_at).toLocaleString()}</td>
-                  <td style={cell}>{pctCell(c.pct_geo)}</td>
-                  <td style={cell}>{pctCell(c.pct_phone)}</td>
-                  <td style={cell}>{pctCell(c.pct_website)}</td>
-                  <td style={cell}>{pctCell(c.pct_images)}</td>
-                  <td style={cell}>{pctCell(c.pct_tags)}</td>
-                  <td style={cell}>{pctCell(c.pct_address)}</td>
-                  <td style={cell}>{pctCell(c.pct_description)}</td>
+      <div className="border border-border rounded-md bg-background overflow-hidden">
+        <SectionHeader icon={Activity} title="Field coverage per recent run" />
+        <div className="max-h-[400px] overflow-y-auto">
+          {covLoading ? (
+            <div className="p-6 text-center text-muted-foreground text-xs">Loading…</div>
+          ) : coverage.length === 0 ? (
+            <div className="p-6 text-center text-muted-foreground text-xs">No completed runs yet</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 sticky top-0">
+                <tr className="border-b border-border">
+                  {['Source', 'Type', 'Parsed', 'Started', 'Geo', 'Phone', 'Website', 'Images', 'Tags', 'Address', 'Desc'].map(h => (
+                    <th key={h} className="text-left px-2 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
+              </thead>
+              <tbody>
+                {coverage.map((c, i) => (
+                  <tr key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                    <td className="px-2 py-1.5 font-mono text-xs">{c.source_name}</td>
+                    <td className="px-2 py-1.5 text-xs capitalize">{c.entity_type}</td>
+                    <td className="px-2 py-1.5 tabular-nums">{c.entities_parsed}</td>
+                    <td className="px-2 py-1.5 text-muted-foreground text-[11px]"
+                        title={new Date(c.started_at).toISOString()}>
+                      {formatDistanceToNow(new Date(c.started_at), { addSuffix: true })}
+                    </td>
+                    <td className="px-2 py-1.5"><PctCell v={c.pct_geo} /></td>
+                    <td className="px-2 py-1.5"><PctCell v={c.pct_phone} /></td>
+                    <td className="px-2 py-1.5"><PctCell v={c.pct_website} /></td>
+                    <td className="px-2 py-1.5"><PctCell v={c.pct_images} /></td>
+                    <td className="px-2 py-1.5"><PctCell v={c.pct_tags} /></td>
+                    <td className="px-2 py-1.5"><PctCell v={c.pct_address} /></td>
+                    <td className="px-2 py-1.5"><PctCell v={c.pct_description} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
 
       {/* Quality score distribution */}
-      <section>
-        <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>
-          Quality score distribution (30-day, per source × type)
-        </h2>
-        {quality.length === 0 ? (
-          <div style={{ color: '#9ca3af', fontSize: 13 }}>No scored items yet.</div>
-        ) : (
-          <table style={{ borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={head}>Entity</th>
-                <th style={head}>Source</th>
-                <th style={head}>N</th>
-                <th style={head}>min</th>
-                <th style={head}>p25</th>
-                <th style={head}>p50</th>
-                <th style={head}>p75</th>
-                <th style={head}>max</th>
-                <th style={head}>avg</th>
-              </tr>
-            </thead>
-            <tbody>
-              {quality.map((q, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={cell}>{q.entity_type}</td>
-                  <td style={cell}>{q.source_name}</td>
-                  <td style={cell}>{q.n}</td>
-                  <td style={cell}>{q.score_min}</td>
-                  <td style={cell}>{q.score_p25}</td>
-                  <td style={{ ...cell, fontWeight: 600 }}>{q.score_p50}</td>
-                  <td style={cell}>{q.score_p75}</td>
-                  <td style={cell}>{q.score_max}</td>
-                  <td style={cell}>{q.score_avg.toFixed(1)}</td>
+      <div className="border border-border rounded-md bg-background overflow-hidden">
+        <SectionHeader icon={BarChart3} title="Quality score distribution" badge={<Badge variant="outline" className="text-[10px] px-1.5 py-0">30-day · per source × type</Badge>} />
+        <div className="max-h-[400px] overflow-y-auto">
+          {quality.length === 0 ? (
+            <div className="p-6 text-center text-muted-foreground text-xs">No scored items yet</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 sticky top-0">
+                <tr className="border-b border-border">
+                  {['Entity', 'Source', 'N', 'min', 'p25', 'p50', 'p75', 'max', 'avg'].map(h => (
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
+              </thead>
+              <tbody>
+                {quality.map((q, i) => (
+                  <tr key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                    <td className="px-3 py-1.5 capitalize">{q.entity_type}</td>
+                    <td className="px-3 py-1.5 font-mono text-xs">{q.source_name}</td>
+                    <td className="px-3 py-1.5 tabular-nums">{q.n}</td>
+                    <td className="px-3 py-1.5 tabular-nums text-muted-foreground">{q.score_min}</td>
+                    <td className="px-3 py-1.5 tabular-nums">{q.score_p25}</td>
+                    <td className="px-3 py-1.5 tabular-nums font-semibold">{q.score_p50}</td>
+                    <td className="px-3 py-1.5 tabular-nums">{q.score_p75}</td>
+                    <td className="px-3 py-1.5 tabular-nums text-muted-foreground">{q.score_max}</td>
+                    <td className="px-3 py-1.5 tabular-nums font-mono">{q.score_avg.toFixed(1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
