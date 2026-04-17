@@ -39,7 +39,6 @@ import {
   Building,
   Luggage,
   LifeBuoy,
-  Receipt,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
