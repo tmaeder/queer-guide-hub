@@ -43,6 +43,9 @@ import VersionHistoryDialog from './panels/VersionHistoryDialog';
 import ScheduleDialog from './panels/ScheduleDialog';
 import OnboardingTour from './panels/OnboardingTour';
 import LogStreamDrawer from './panels/LogStreamDrawer';
+import AccessDialog from './panels/AccessDialog';
+import PresenceIndicator from './panels/PresenceIndicator';
+import AISuggestDialog from './panels/AISuggestDialog';
 import { autoLayout } from './utils/autoLayout';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useDraftAutosave } from './hooks/useDraftAutosave';
@@ -1015,6 +1018,10 @@ function PipelineBuilderInner() {
               pipelineId={selectedPipelineId}
               currentSchedule={pipelineList?.find(p => p.id === selectedPipelineId)?.schedule}
             />
+            <AccessDialog
+              pipelineId={selectedPipelineId}
+              pipelineName={pipelineName}
+            />
             <VersionHistoryDialog
               pipelineId={selectedPipelineId}
               currentVersion={pipelineList?.find(p => p.id === selectedPipelineId)?.version}
@@ -1043,6 +1050,18 @@ function PipelineBuilderInner() {
               selectedEdges={selectedForTemplate.edges}
               onApply={handleTemplateApply}
             />
+            {nodeTypeList && (
+              <AISuggestDialog
+                nodeTypes={nodeTypeList}
+                onApply={(suggestedNodes, suggestedEdges) => {
+                  if (isDirty && !window.confirm('Unsaved changes will be lost. Apply AI suggestion?')) return;
+                  undoRedo.commitNow();
+                  setNodes(suggestedNodes);
+                  setEdges(suggestedEdges);
+                  setIsDirty(true);
+                }}
+              />
+            )}
             <ImportExportMenu
               nodes={nodes}
               edges={edges}
@@ -1077,6 +1096,7 @@ function PipelineBuilderInner() {
             )}
 
             <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+              <PresenceIndicator pipelineId={selectedPipelineId} isDirty={isDirty} />
               {viewingRunId && (
                 <Badge variant="outline" className="text-xs gap-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900">
                   <Clock className="h-3 w-3" />
