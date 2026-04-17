@@ -41,44 +41,39 @@ function buildCors(origin: string) {
 }
 
 /**
- * Build a Mapbox-compatible place_name string from Photon properties.
+ * Build a Mapbox-compatible place_name string from Nominatim properties.
  */
-function buildPlaceName(props: Record<string, unknown>): string {
-  const parts: string[] = [];
-  if (props.housenumber && props.street) {
-    parts.push(`${props.street} ${props.housenumber}`);
-  } else if (props.street) {
-    parts.push(props.street);
-  } else if (props.name) {
-    parts.push(props.name);
-  }
-  if (props.city && !parts.includes(props.city)) parts.push(props.city);
-  if (props.state && !parts.includes(props.state)) parts.push(props.state);
-  if (props.country && !parts.includes(props.country)) parts.push(props.country);
-  return parts.join(', ') || props.name || 'Unknown';
+function buildPlaceName(displayName: string, address: Record<string, unknown>): string {
+  return displayName || 'Unknown';
 }
 
 /**
- * Transform a Photon GeoJSON feature into a Mapbox-compatible feature.
+ * Transform a Nominatim result into a Mapbox-compatible feature.
+ * Nominatim returns: { place_id, osm_id, display_name, lat, lon, address, ... }
  * The frontend expects: { id, place_name, center: [lng, lat], context }
  */
-function photonToMapbox(feature: unknown): unknown {
-  const props = feature.properties || {};
-  const coords = feature.geometry?.coordinates || [0, 0]; // [lng, lat]
+function nominatimToMapbox(result: Record<string, unknown>): unknown {
+  const lat = parseFloat(result.lat as string) || 0;
+  const lng = parseFloat(result.lon as string) || 0;
+  const displayName = (result.display_name as string) || 'Unknown';
+  const address = (result.address as Record<string, unknown>) || {};
 
   const context: Array<{ id: string; text: string }> = [];
-  if (props.city) context.push({ id: 'place', text: props.city });
-  if (props.state) context.push({ id: 'region', text: props.state });
-  if (props.country) context.push({ id: 'country', text: props.country });
-  if (props.postcode) context.push({ id: 'postcode', text: props.postcode });
+  if (address.city) context.push({ id: 'place', text: address.city });
+  if (address.state) context.push({ id: 'region', text: address.state });
+  if (address.country) context.push({ id: 'country', text: address.country });
+  if (address.postcode) context.push({ id: 'postcode', text: address.postcode });
 
   return {
-    id: `photon.${props.osm_id || Math.random().toString(36).slice(2)}`,
-    place_name: buildPlaceName(props),
-    center: coords, // [lng, lat] — same order as Mapbox
+    id: `nominatim.${result.osm_id || result.place_id || Math.random().toString(36).slice(2)}`,
+    place_name: displayName,
+    center: [lng, lat], // [lng, lat] — same order as Mapbox
     context,
-    properties: props,
-    geometry: feature.geometry,
+    properties: address,
+    geometry: {
+      type: 'Point',
+      coordinates: [lng, lat],
+    },
     type: 'Feature',
   };
 }
@@ -99,13 +94,6 @@ serve(async (req) => {
     });
   }
 
-  // Supabase client for rate limiting
-  const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-  const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
-  const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
-    ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    : null;
-
   try {
     const { query, isReverseGeocode = false } = await req.json();
 
@@ -116,41 +104,29 @@ serve(async (req) => {
       );
     }
 
-    // Basic IP-based rate limiting via RPC
-    const ip = getClientIp(req);
-    if (supabase) {
-      const { data: allowed, error: rlError } = await supabase.rpc('check_rate_limit_key', {
-        identifier: ip,
-        max_attempts: 60,
-        time_window_minutes: 1,
-      });
-      if (rlError) console.error('Rate limit RPC error:', rlError);
-      if (allowed === false) {
-        return new Response(JSON.stringify({ error: 'Too many requests' }), {
-          status: 429,
-          headers: { ...buildCors(origin), 'Content-Type': 'application/json' },
-        });
-      }
-    }
-
-    let photonUrl: string;
+    // Use Nominatim (OpenStreetMap free geocoding service)
+    let nominatimUrl: string;
     if (isReverseGeocode) {
-      // query format: "lng,lat" (Mapbox convention) — split and use Photon reverse
+      // query format: "lng,lat" (Mapbox convention)
       const [lng, lat] = query.split(',').map((s: string) => s.trim());
-      photonUrl = `https://photon.komoot.io/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&limit=1`;
+      nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`;
     } else {
-      photonUrl = `https://photon.komoot.io/api?q=${encodeURIComponent(query)}&limit=5&lang=en`;
+      nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`;
     }
 
-    const photonResponse = await fetch(photonUrl);
-    if (!photonResponse.ok) {
-      throw new Error(`Photon API error: ${photonResponse.status}`);
+    const nominatimResponse = await fetch(nominatimUrl, {
+      headers: { 'User-Agent': 'queer.guide geocoding service' },
+    });
+    if (!nominatimResponse.ok) {
+      throw new Error(`Nominatim API error: ${nominatimResponse.status}`);
     }
 
-    const photonData = await photonResponse.json();
+    const nominatimData = await nominatimResponse.json();
 
-    // Transform Photon response to Mapbox-compatible format
-    const transformedFeatures = (photonData.features || []).map(photonToMapbox);
+    // Transform Nominatim response to Mapbox-compatible format
+    // Nominatim returns array for search, single object for reverse
+    const results = Array.isArray(nominatimData) ? nominatimData : [nominatimData];
+    const transformedFeatures = results.map(nominatimToMapbox);
 
     const response = {
       type: 'FeatureCollection',

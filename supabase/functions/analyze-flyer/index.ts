@@ -150,7 +150,8 @@ Return ONLY valid JSON with this exact structure:
         "ticket_url": {"value": string|null, "confidence": 0.0-1.0},
         "website": {"value": string|null, "confidence": 0.0-1.0},
         "is_free": {"value": boolean|null, "confidence": 0.0-1.0},
-        "price_text": {"value": string|null, "confidence": 0.0-1.0},
+        "price_presale": {"value": string|number|null, "confidence": 0.0-1.0},
+        "price_box_office": {"value": string|number|null, "confidence": 0.0-1.0},
         "age_restriction": {"value": string|null, "confidence": 0.0-1.0}
       },
       "venue_fields": {
@@ -186,6 +187,7 @@ Rules:
 - Parse dates to ISO 8601 when possible (use current year if year not specified)
 - Extract ALL visible text into raw_text
 - Fill BOTH event_fields and venue_fields per item when possible (an event flyer often has venue data)
+- For pricing: extract presale price (advance tickets) into price_presale, box office/door price into price_box_office. If only one price exists, use price_box_office. If prices show different tiers (e.g., "€10 presale / €15 door"), extract both separately.
 - Do NOT hallucinate — only extract what's actually described`
 
 async function structureExtraction(

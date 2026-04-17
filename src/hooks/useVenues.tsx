@@ -35,6 +35,7 @@ export function useVenues(autoFetch: boolean = true) {
       search?: string;
       userLocation?: { latitude: number; longitude: number };
       nearMe?: boolean;
+      bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
       limit?: number;
     },
     options?: { page?: number; pageSize?: number; append?: boolean },
@@ -80,6 +81,15 @@ export function useVenues(autoFetch: boolean = true) {
 
       if (filters?.targetGroups?.length) {
         query = query.overlaps('target_groups', filters.targetGroups);
+      }
+
+      // Geographic bounds filtering (for map viewport)
+      if (filters?.bounds) {
+        query = query
+          .gte('latitude', filters.bounds.minLat)
+          .lte('latitude', filters.bounds.maxLat)
+          .gte('longitude', filters.bounds.minLng)
+          .lte('longitude', filters.bounds.maxLng);
       }
 
       if (typeof filters?.limit === 'number') {
