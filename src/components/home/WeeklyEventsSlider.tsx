@@ -24,34 +24,21 @@ const WeeklyEventsSlider = React.memo(() => {
   const isMobile = useIsMobile();
   const { location: userLocation, loading: locationLoading } = useVisitorLocation();
 
-  // Fetch upcoming-week events. Include nearMe only if we have coords AND
-  // the event inventory is geocoded enough to return results; otherwise
-  // fall back to a global week query so the section always shows something.
+  // Fetch upcoming-week events once location-loading settles.
+  // Only rerun when visitor coords actually change — fetchEvents is not
+  // memoized in the hook, so including it in deps causes an infinite loop.
+  const lat = userLocation?.latitude;
+  const lng = userLocation?.longitude;
   useEffect(() => {
     if (locationLoading) return;
     const now = new Date();
-    const weekStart = startOfWeek(now);
     const weekEnd = endOfWeek(now);
     fetchEvents({
-      dateRange: {
-        start: now.toISOString(),
-        end: weekEnd.toISOString(),
-      },
+      dateRange: { start: now.toISOString(), end: weekEnd.toISOString() },
       limit: 10,
-      ...(userLocation && {
-        nearMe: { lat: userLocation.latitude, lng: userLocation.longitude },
-      }),
-    }).then((res) => {
-      // Fallback: if nearMe filter produced zero (events lack coords),
-      // re-query without it so the slider isn't empty.
-      if (userLocation && res.fetched === 0) {
-        fetchEvents({
-          dateRange: { start: now.toISOString(), end: weekEnd.toISOString() },
-          limit: 10,
-        });
-      }
     });
-  }, [userLocation, locationLoading, fetchEvents]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lng, locationLoading]);
 
   const weeklyEvents = useMemo(() => events.slice(0, 10), [events]);
 
