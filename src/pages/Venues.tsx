@@ -30,7 +30,7 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 const Venues = () => {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
-  const { _user } = useAuth();
+  const {} = useAuth();
   const { venues, loading, error, hasMore, fetchVenues, loadingTimedOut } = useVenues(false);
 
   useMeta({
@@ -176,9 +176,13 @@ const Venues = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="featured">{t('pages.venues.sortFeatured', 'Featured')}</SelectItem>
+                <SelectItem value="featured">
+                  {t('pages.venues.sortFeatured', 'Featured')}
+                </SelectItem>
                 <SelectItem value="name">{t('pages.venues.sortName', 'Name')}</SelectItem>
-                <SelectItem value="category">{t('pages.venues.sortCategory', 'Category')}</SelectItem>
+                <SelectItem value="category">
+                  {t('pages.venues.sortCategory', 'Category')}
+                </SelectItem>
                 <SelectItem value="city">{t('pages.venues.sortCity', 'City')}</SelectItem>
                 <SelectItem value="created_at">{t('pages.venues.sortNewest', 'Newest')}</SelectItem>
               </SelectContent>
@@ -211,12 +215,7 @@ const Venues = () => {
               </IconButton>
             </Box>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/submit/venue')}
-              sx={{ gap: 1, height: 34, fontSize: '0.8rem' }}
-            >
+            <Button variant="outline" size="sm" onClick={() => navigate('/submit/venue')}>
               <Plus style={{ width: 14, height: 14 }} />
               Submit
             </Button>
@@ -229,8 +228,21 @@ const Venues = () => {
             {error && !loading && <ErrorState message={error} onRetry={() => fetchVenues()} />}
 
             {loading && (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-                {Array.from({ length: 8 }).map((_, i) => (<VenueCard key={i} loading />))}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: '1fr 1fr',
+                    md: 'repeat(3, 1fr)',
+                    lg: 'repeat(4, 1fr)',
+                  },
+                  gap: 2.5,
+                }}
+              >
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <VenueCard key={i} loading />
+                ))}
               </Box>
             )}
             {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchVenues()} />}
@@ -239,7 +251,10 @@ const Venues = () => {
               <EmptyState
                 icon={MapPin}
                 title={t('pages.venues.emptyTitle', 'No spots match your vibe yet')}
-                description={t('pages.venues.emptyDescription', 'Try widening your search or explore a different city.')}
+                description={t(
+                  'pages.venues.emptyDescription',
+                  'Try widening your search or explore a different city.',
+                )}
                 mood="encouraging"
                 primaryAction={{
                   label: t('pages.venues.submitVenue', 'Submit a Venue'),
@@ -266,15 +281,8 @@ const Venues = () => {
                 }}
               >
                 {sortedVenues.map((venue, index) => (
-                  <Box
-                    key={venue.id}
-                    className={index >= PAGE_SIZE ? 'content-enter' : undefined}
-                  >
-                    <VenueCard
-                      venue={venue}
-                      events={events}
-                      onViewDetails={handleViewDetails}
-                    />
+                  <Box key={venue.id} className={index >= PAGE_SIZE ? 'content-enter' : undefined}>
+                    <VenueCard venue={venue} events={events} onViewDetails={handleViewDetails} />
                   </Box>
                 ))}
               </StaggerGrid>

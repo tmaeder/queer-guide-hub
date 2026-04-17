@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -552,7 +552,7 @@ export function MediaLibrary() {
   };
 
   const getImageUrl = (item: MediaItem) => {
-    const bucket = (item as Record<string, unknown>).bucket as string || 'cms-media';
+    const bucket = (item as unknown as Record<string, unknown>).bucket as string || 'cms-media';
 
     const { data } = supabase.storage
       .from(bucket)

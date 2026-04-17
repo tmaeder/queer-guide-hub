@@ -219,7 +219,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
           {/* Statistics */}
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(3, 1fr)' } }}>
             <Card>
-              <CardContent sx={{ p: 2 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--success-rgb, 34, 197, 94), 0.1)' }}>
                     <TrendingUp style={{ height: 16, width: 16, color: 'var(--success)' }} />
@@ -234,7 +234,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
             </Card>
 
             <Card>
-              <CardContent sx={{ p: 2 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.1)' }}>
                     <TrendingDown style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
@@ -249,7 +249,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
             </Card>
 
             <Card>
-              <CardContent sx={{ p: 2 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.1)' }}>
                     <AlertTriangle style={{ height: 16, width: 16, color: 'var(--warning)' }} />

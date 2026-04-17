@@ -96,7 +96,7 @@ export function CMSAdvancedFilters({
                   placeholder="Search content..."
                   value={filters.search}
                   onChange={(e) => onFilterChange('search', e.target.value)}
-                  sx={{ pl: 5 }}
+
                 />
               </Box>
             </Box>

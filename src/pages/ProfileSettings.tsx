@@ -31,14 +31,13 @@ import { IdentityTab } from '@/components/profile/settings/IdentityTab';
 import { RelationshipsTab } from '@/components/profile/settings/RelationshipsTab';
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
-import type { ProfileFormData, ComingOutStatus, PrivacySettings } from '@/types/profileForm';
+import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile } from '@/hooks/useProfile';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { PageHeader } from '@/components/layout/PageHeader';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
-
 
 export default function ProfileSettings() {
   const navigate = useLocalizedNavigate();
@@ -231,7 +230,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         }
       >
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Profile Completion</Typography>
               <Typography variant="body2" color="text.secondary">{profileCompletion}%</Typography>

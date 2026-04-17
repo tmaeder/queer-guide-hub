@@ -96,7 +96,7 @@ export default function Feed() {
             </Box>
 
             {/* Create Post */}
-            <Card sx={{ mb: 4 }}>
+            <Card>
               <CardContent style={{ padding: 16 }}>
                 <CreatePostDialog>
                   <Button variant="outline" style={{ width: '100%', justifyContent: 'flex-start', height: 56, textAlign: 'left' }}>

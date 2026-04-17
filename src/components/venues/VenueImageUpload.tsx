@@ -183,15 +183,7 @@ export const VenueImageUpload = ({
               <Button
                 variant="destructive"
                 size="sm"
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  opacity: 0,
-                  transition: 'opacity 0.2s',
-                  '&:hover': { opacity: 1 },
-                  '.group:hover &': { opacity: 1 }
-                }}
+
                 onClick={() => removeImage(index)}
               >
                 <X style={{ width: 12, height: 12 }} />

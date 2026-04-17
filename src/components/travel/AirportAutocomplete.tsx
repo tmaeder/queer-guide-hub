@@ -78,7 +78,6 @@ export function AirportAutocomplete({
     setLoading(true);
 
     // Exact IATA match gets priority (e.g. "LHR")
-    const _isIataQuery = q.length === 3 && /^[A-Za-z]{3}$/.test(q);
 
     const { data } = await supabase
       .from('airports')

@@ -24,7 +24,6 @@ import { StickyLetterBar } from '@/components/personalities/StickyLetterBar';
 import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
 import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';import { useTranslation } from 'react-i18next';
 
-
 const PAGE_SIZE = 24;
 const AUTO_LOAD_CAP = 48;
 
@@ -309,7 +308,7 @@ export default function Personalities() {
               <Badge
                 key={chip.key}
                 variant="secondary"
-                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, pr: 0.5 }}
+
               >
                 {chip.label}
                 <Box

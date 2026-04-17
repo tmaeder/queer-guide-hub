@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string
     const entityType = body.entityType as string
-    const _minScore = body.minScore ?? 40
+    const minScore = body.minScore ?? 40
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
 
@@ -48,11 +48,13 @@ Deno.serve(async (req) => {
           : computeScore(normalized, type)
 
       if (!dryRun) {
+        const belowMin = score < minScore
         await supabase
           .from('ingestion_staging')
           .update({
             enrichment_status: 'completed',
             enriched_data: { ...(item.enriched_data as Record<string, unknown> || {}), quality_score: score },
+            ...(belowMin ? { review_status: 'pending_review', disposition: 'pending' } : {}),
           })
           .eq('id', item.id)
       }
@@ -76,8 +78,17 @@ function computeScore(data: Record<string, unknown>, _entityType: string): numbe
   let score = 0
   const max = 100
 
-  // Name (20 pts)
-  const name = String(data.name || '')
+  // Name (20 pts) — different entity types use different primary name fields.
+  // Events use `title`; marketplace uses `title` or `product_name`; venues and
+  // personalities use `name`. Without this fallback, events and products were
+  // scoring 0 on the name dimension despite being complete.
+  const name = String(
+    data.name
+      ?? data.title
+      ?? data.product_name
+      ?? (data as Record<string, unknown>).display_name
+      ?? '',
+  )
   if (name.length > 0) score += 10
   if (name.length > 10) score += 10
 

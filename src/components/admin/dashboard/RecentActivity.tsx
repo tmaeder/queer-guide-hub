@@ -39,19 +39,19 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
     return (
       <Card>
         <CardHeader>
-          <CardTitle sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Clock style={{ width: 16, height: 16 }} />
             Recent Activity
           </CardTitle>
         </CardHeader>
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <CardContent>
           {[...Array(5)].map((_, i) => (
             <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 , animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-              <Skeleton sx={{ height: 32, width: 32, borderRadius: '50%' }} />
+              <Skeleton />
               <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Skeleton sx={{ height: 16, width: 128 }} />
-                <Skeleton sx={{ height: 12, width: 192 }} />
-                <Skeleton sx={{ height: 12, width: 80 }} />
+                <Skeleton />
+                <Skeleton />
+                <Skeleton />
               </Box>
             </Box>
           ))}
@@ -62,8 +62,8 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
 
   return (
     <Card>
-      <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', py: 0 }}>
-        <CardTitle sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+      <CardHeader>
+        <CardTitle>
           <Clock style={{ width: 16, height: 16 }} />
           Recent Activity
         </CardTitle>
@@ -72,7 +72,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
             variant="ghost"
             size="sm"
             onClick={onRefresh}
-            sx={{ height: 32, width: 32, p: 0 }}
+
           >
             <RefreshCw style={{ width: 16, height: 16 }} />
           </Button>
@@ -100,7 +100,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
                       </Typography>
                       <Badge
                         variant={getBadgeVariant(activity.type)}
-                        sx={{ fontSize: '0.75rem' }}
+
                       >
                         {activity.badge}
                       </Badge>
@@ -119,7 +119,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
 
             {activities.length > 0 && (
               <Box sx={{ pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                <Button variant="ghost" size="sm" sx={{ width: '100%' }}>
+                <Button variant="ghost" size="sm">
                   View All Activity
                   <ArrowUpRight style={{ width: 16, height: 16, marginLeft: 8 }} />
                 </Button>

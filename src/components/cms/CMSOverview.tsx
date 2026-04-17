@@ -266,7 +266,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       // Collect unique actor IDs
       const actorIds = [
         ...new Set(
-          (entries as AuditEntry[])
+          (entries as unknown as AuditEntry[])
             .map((e) => e.actor_id)
             .filter(Boolean) as string[]
         ),
@@ -288,7 +288,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       }
 
       setRecentActivity(
-        (entries as AuditEntry[]).map((e) => ({
+        (entries as unknown as AuditEntry[]).map((e) => ({
           ...e,
           actorEmail: e.actor_id ? actorMap[e.actor_id] : undefined,
         })),
@@ -624,7 +624,6 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           { label: 'New Event', icon: Calendar, color: '#ec4899', onClick: () => onEdit('events', null) },
           { label: 'New Article', icon: Newspaper, color: '#3b82f6', onClick: () => onEdit('news_articles', null) },
         ].map((action) => {
-          const _ActionIcon = action.icon;
           return (
             <Grid key={action.label} size={{ xs: 6, sm: 3 }}>
               <Paper

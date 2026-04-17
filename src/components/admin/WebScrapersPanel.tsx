@@ -138,27 +138,27 @@ export const WebScrapersPanel = () => {
 
   return (
     <Card>
-      <CardHeader sx={{ pb: 1 }}>
-        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '1rem' }}>
+      <CardHeader>
+        <CardTitle>
           <Globe style={{ height: 18, width: 18 }} />
           Web Scrapers
           {online === true && (
-            <Badge variant="outline" sx={{ ml: 1, fontSize: '0.7rem', color: 'success.main' }}>
+            <Badge variant="outline">
               Online
             </Badge>
           )}
           {online === false && (
-            <Badge variant="destructive" sx={{ ml: 1, fontSize: '0.7rem' }}>
+            <Badge variant="destructive">
               Offline
             </Badge>
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <CardContent>
         {online === false && (
-          <Alert variant="destructive" sx={{ py: 1 }}>
+          <Alert variant="destructive">
             <AlertTriangle style={{ height: 14, width: 14 }} />
-            <AlertDescription sx={{ fontSize: '0.8rem' }}>
+            <AlertDescription>
               Scraper service unreachable. Check Worker deployment.
             </AlertDescription>
           </Alert>
@@ -202,7 +202,7 @@ export const WebScrapersPanel = () => {
               <Button
                 size="sm"
                 variant={running[s.key] ? 'secondary' : 'default'}
-                sx={{ height: 28, px: 1.5, fontSize: '0.75rem', flexShrink: 0 }}
+
                 disabled={online !== true || running[s.key]}
                 onClick={() => trigger(s.key)}
               >
@@ -242,7 +242,7 @@ export const WebScrapersPanel = () => {
             <Button
               size="sm"
               variant="outline"
-              sx={{ fontSize: '0.75rem' }}
+
               disabled={online !== true || Object.values(running).some(Boolean)}
               onClick={() => triggerAll()}
             >

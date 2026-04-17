@@ -20,7 +20,6 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
-
 export default function UserProfile() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
@@ -29,13 +28,7 @@ export default function UserProfile() {
   const { toast } = useToast();
 
   // Use the new secure profile hook
-  const {
-    profile,
-    loading: isLoading,
-    error,
-    isOwnProfile,
-    _canViewSensitiveField,
-  } = useSecurePublicProfile(userId);
+  const { profile, loading: isLoading, error, isOwnProfile } = useSecurePublicProfile(userId);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -175,7 +168,7 @@ export default function UserProfile() {
 
         {/* Profile Header */}
         <Card>
-          <CardContent sx={{ p: 3 }}>
+          <CardContent>
             <Box
               sx={{
                 display: 'flex',
@@ -198,8 +191,8 @@ export default function UserProfile() {
                     {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                {(profile as Record<string, unknown>)?.verified_identity && (
-                  <Badge variant="secondary" sx={{ mb: 1 }}>
+                {(profile as unknown as Record<string, unknown>)?.verified_identity && (
+                  <Badge variant="secondary">
                     <Check style={{ width: 12, height: 12, marginRight: 4 }} />
                     Verified
                   </Badge>
@@ -220,8 +213,11 @@ export default function UserProfile() {
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {profile.display_name || 'Anonymous User'}
                     </Typography>
-                    {(profile as Record<string, unknown>)?.user_mode && (
-                      <UserModeBadge mode={(profile as Record<string, unknown>).user_mode} size="lg" />
+                    {(profile as unknown as Record<string, unknown>)?.user_mode && (
+                      <UserModeBadge
+                        mode={(profile as unknown as Record<string, unknown>).user_mode}
+                        size="lg"
+                      />
                     )}
                   </Box>
 
@@ -237,10 +233,12 @@ export default function UserProfile() {
                     {profile.pronouns && (
                       <Typography variant="body2">{profile.pronouns}</Typography>
                     )}
-                    {(profile as Record<string, unknown>)?.age_range && (
+                    {(profile as unknown as Record<string, unknown>)?.age_range && (
                       <>
                         {profile.pronouns && <Typography variant="body2">&#8226;</Typography>}
-                        <Typography variant="body2">{(profile as Record<string, unknown>).age_range}</Typography>
+                        <Typography variant="body2">
+                          {(profile as unknown as Record<string, unknown>).age_range}
+                        </Typography>
                       </>
                     )}
                     {profile.location && (

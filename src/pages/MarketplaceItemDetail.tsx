@@ -33,7 +33,6 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';import { useTranslation } from 'react-i18next';
 
-
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {
   profiles: { display_name: string; avatar_url: string | null } | null;
@@ -200,17 +199,6 @@ export default function MarketplaceItemDetail() {
   const averageRating = reviews.length
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
-
-  const _getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      products: 'bg-primary/10 text-primary',
-      services: 'bg-accent/10 text-accent',
-      classes: 'bg-secondary/10 text-secondary',
-      events: 'bg-destructive/10 text-destructive',
-    };
-    return colors[category] || 'bg-muted/10 text-muted-foreground';
-  };
-
   const formatPrice = () => {
     if (!listing.price) {
       if (listing.price_type === 'free') return 'Free';
@@ -591,7 +579,7 @@ export default function MarketplaceItemDetail() {
             <CardHeader>
               <CardTitle>{t('pages.marketplaceDetail.priceContact', 'Price & Contact')}</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <CardContent>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" color="primary" sx={{ fontWeight: 700, mb: 1 }}>
                   {formatPrice()}
@@ -658,7 +646,7 @@ export default function MarketplaceItemDetail() {
             <CardHeader>
               <CardTitle>{t('pages.marketplaceDetail.businessDetails', 'Business Details')}</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <CardContent>
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
                   Business Type
@@ -699,7 +687,7 @@ export default function MarketplaceItemDetail() {
               <CardHeader>
                 <CardTitle>{t('pages.marketplaceDetail.socialMedia', 'Social Media')}</CardTitle>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <CardContent>
                 {Object.entries(listing.social_media as Record<string, string>).map(
                   ([platform, url]) => (
                     <Button

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Search, Link2, Hash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,6 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Container from '@mui/material/Container';import { useTranslation } from 'react-i18next';
-
 
 function setMetaTag(name: string, content: string) {
   let tag = document.querySelector(`meta[name="${name}"]`);
@@ -178,7 +177,7 @@ export default function Sitemap() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Filter pages by name or path"
                 aria-label="Filter sitemap links"
-                sx={{ pl: 4.5 }}
+
               />
               {query && (
                 <Button

@@ -54,7 +54,7 @@ export default function Blog() {
             {/* Sidebar - only newsletter CTA */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <Card>
-                <CardContent sx={{ p: 3 }}>
+                <CardContent>
                   <Typography sx={{ fontWeight: 600, mb: 1.5 }}>Stay Updated</Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     Get our latest articles and community updates delivered to your inbox.
@@ -111,7 +111,7 @@ export default function Blog() {
                       {blogPosts.map((post) => (
                         <Card key={post.id} style={{ overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
                           <Box sx={{ height: 192, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))' }}></Box>
-                          <CardContent sx={{ p: 3 }}>
+                          <CardContent>
                             <Badge variant="secondary">{post.category}</Badge>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 1.5, mb: 1 }}>{post.title}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{post.excerpt}</Typography>
@@ -141,7 +141,7 @@ export default function Blog() {
                         {blogPosts.filter(post => post.category === category).map((post) => (
                           <Card key={post.id} style={{ overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
                             <Box sx={{ height: 192, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))' }}></Box>
-                            <CardContent sx={{ p: 3 }}>
+                            <CardContent>
                               <Badge variant="secondary">{post.category}</Badge>
                               <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 1.5, mb: 1 }}>{post.title}</Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{post.excerpt}</Typography>
@@ -173,7 +173,7 @@ export default function Blog() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Newsletter Signup */}
               <Card>
-                <CardContent sx={{ p: 3 }}>
+                <CardContent>
                   <Typography sx={{ fontWeight: 600, mb: 1.5 }}>Stay Updated</Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     Get our latest articles and community updates delivered to your inbox.
@@ -190,7 +190,7 @@ export default function Blog() {
 
               {/* Popular Posts */}
               <Card>
-                <CardContent sx={{ p: 3 }}>
+                <CardContent>
                   <Typography sx={{ fontWeight: 600, mb: 2 }}>Popular Articles</Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {blogPosts.slice(0, 3).map((post) => (
@@ -210,7 +210,7 @@ export default function Blog() {
 
               {/* Categories */}
               <Card>
-                <CardContent sx={{ p: 3 }}>
+                <CardContent>
                   <Typography sx={{ fontWeight: 600, mb: 2 }}>Categories</Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {categories.slice(1).map((category) => (

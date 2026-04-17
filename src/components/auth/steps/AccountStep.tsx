@@ -60,7 +60,7 @@ export default function AccountStep({ data, updateData }: Props) {
             type="button"
             variant="ghost"
             size="sm"
-            sx={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', height: 32, width: 32, p: 0 }}
+
             onClick={() => setShowPassword((s) => !s)}
             aria-label={showPassword ? t('auth.hidePassword', 'Hide password') : t('auth.showPassword', 'Show password')}
           >

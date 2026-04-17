@@ -47,6 +47,9 @@ export function usePipelineExecution(
             ...node.data,
             status: state.status,
             itemsOut: state.items_out,
+            itemsIn: state.items_in,
+            durationMs: state.duration_ms,
+            errorMessage: state.error,
           },
         };
       })
@@ -61,6 +64,9 @@ export function usePipelineExecution(
           ...node.data,
           status: undefined,
           itemsOut: undefined,
+          itemsIn: undefined,
+          durationMs: undefined,
+          errorMessage: undefined,
         },
       }))
     );

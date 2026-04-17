@@ -101,7 +101,7 @@ export function useCMSEditor({
         isDirty: false,
         isLoading: false,
         errors: {},
-        metadata: meta as CMSContentMetadata | undefined,
+        metadata: meta as unknown as CMSContentMetadata | undefined,
       }));
     } catch (error) {
       console.error('Error loading content:', error);
@@ -237,7 +237,7 @@ export function useCMSEditor({
           .select()
           .maybeSingle();
 
-        if (newMeta) setMetadata(newMeta as CMSContentMetadata);
+        if (newMeta) setMetadata(newMeta as unknown as CMSContentMetadata);
       }
 
       // Create revision snapshot
@@ -316,7 +316,7 @@ export function useCMSEditor({
             .single();
 
           if (error) throw error;
-          setMetadata(data as CMSContentMetadata);
+          setMetadata(data as unknown as CMSContentMetadata);
         } else {
           // Insert new
           const { data, error } = await supabase
@@ -329,7 +329,7 @@ export function useCMSEditor({
             .single();
 
           if (error) throw error;
-          setMetadata(data as CMSContentMetadata);
+          setMetadata(data as unknown as CMSContentMetadata);
         }
       } catch (error) {
         console.error('Error updating metadata:', error);

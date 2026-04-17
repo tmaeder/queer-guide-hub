@@ -40,6 +40,8 @@ import {
 } from 'lucide-react';
 import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
+import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
+import { useTrackClick } from '@/hooks/useSearchActions';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import Box from '@mui/material/Box';
@@ -47,7 +49,6 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
-
 
 const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
   venue: MapPin,
@@ -78,6 +79,7 @@ export default function SearchResults() {
   const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useLocalizedNavigate();
+  const trackClick = useTrackClick();
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTab, setSelectedTab] = useState('all');
   const initialSort = searchParams.get('sort') || 'relevance';
@@ -189,6 +191,7 @@ export default function SearchResults() {
   };
 
   const navigateToResult = (result: SearchResult) => {
+    trackClick({ type: result.type, id: result.objectID }, 'search', { query });
     const slug = result.metadata?.slug || result.objectID;
     switch (result.type) {
       case 'venue':
@@ -246,11 +249,7 @@ export default function SearchResults() {
       return (
         <Card
           key={`${result.type}-${result.objectID}`}
-          sx={{
-            '&:hover': { boxShadow: 6, transform: 'translateY(-4px)' },
-            transition: 'all 0.2s',
-            cursor: 'pointer',
-          }}
+
           onClick={() => navigateToResult(result)}
         >
           <Box sx={{ position: 'relative' }}>
@@ -362,13 +361,19 @@ export default function SearchResults() {
               ) : (
                 <Box />
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                style={{ transition: 'color 0.15s, background-color 0.15s' }}
-              >
-                View
-              </Button>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <SearchFeedbackButtons
+                  entity={{ type: result.type, id: result.objectID }}
+                  query={query}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  style={{ transition: 'color 0.15s, background-color 0.15s' }}
+                >
+                  View
+                </Button>
+              </Box>
             </Box>
           </CardContent>
         </Card>
@@ -378,11 +383,7 @@ export default function SearchResults() {
     return (
       <Card
         key={`${result.type}-${result.objectID}`}
-        sx={{
-          '&:hover': { boxShadow: 4, borderColor: 'primary.main' },
-          transition: 'all 0.2s',
-          cursor: 'pointer',
-        }}
+
         onClick={() => navigateToResult(result)}
       >
         <CardContent style={{ padding: 16 }}>
@@ -512,6 +513,10 @@ export default function SearchResults() {
                       ${result.price}
                     </Typography>
                   )}
+                  <SearchFeedbackButtons
+                    entity={{ type: result.type, id: result.objectID }}
+                    query={query}
+                  />
                   <Button
                     variant="outline"
                     size="sm"
@@ -539,7 +544,6 @@ export default function SearchResults() {
     {} as Record<string, SearchResult[]>,
   );
 
-  const _availableTabs = ['all', ...Object.keys(resultsByType)];
 
   return (
     <Container sx={{ px: 2, py: 4 }}>
@@ -600,7 +604,7 @@ export default function SearchResults() {
 
       {/* Filters Panel */}
       {showFilters && (
-        <Card sx={{ mb: 3, borderColor: 'primary.main', boxShadow: 6 }}>
+        <Card>
           <SearchFiltersPanel filters={filters} onFiltersChange={handleFiltersChange} />
         </Card>
       )}
@@ -719,7 +723,7 @@ export default function SearchResults() {
         <>
           {/* Search Suggestions -- shown when query is empty */}
           {(!query || query.trim() === '') && (
-            <Card sx={{ p: 4 }}>
+            <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                   Try searching for...

@@ -59,7 +59,7 @@ export default function Welcome() {
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <Container sx={{ py: 6 }}>
         <Card>
-          <CardHeader sx={{ textAlign: 'center' }}>
+          <CardHeader>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
               <Heart size={48} color="var(--mui-palette-primary-main)" style={{ fill: 'currentcolor' }} />
             </Box>
@@ -84,7 +84,7 @@ export default function Welcome() {
                   )}
                 </Typography>
                 {enrollErr && (
-                  <Alert variant="destructive" sx={{ mb: 1.5 }}>
+                  <Alert variant="destructive">
                     <AlertDescription>{enrollErr}</AlertDescription>
                   </Alert>
                 )}
@@ -93,7 +93,7 @@ export default function Welcome() {
                   variant={hasPasskey ? 'outline' : 'default'}
                   onClick={handleEnrollPasskey}
                   disabled={enrolling || hasPasskey}
-                  sx={{ width: '100%' }}
+
                 >
                   {enrolling && (
                     <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
@@ -105,10 +105,10 @@ export default function Welcome() {
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                <Button onClick={() => finish(false)} sx={{ width: '100%' }}>
+                <Button onClick={() => finish(false)}>
                   {t('onboarding.continue', 'Continue to The Queer Guide')}
                 </Button>
-                <Button variant="ghost" onClick={() => finish(true)} sx={{ width: '100%' }}>
+                <Button variant="ghost" onClick={() => finish(true)}>
                   {t('onboarding.skip', 'Skip for now')}
                 </Button>
               </Box>

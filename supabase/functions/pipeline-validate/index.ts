@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
         if (!n.profession)             warnings.push('W_NO_PROFESSION')
         if (!n.nationality)            warnings.push('W_NO_NATIONALITY')
         if (!n.image_url)              warnings.push('W_NO_IMAGE')
-        if (!n.lgbti_connection)       warnings.push('W_NO_LGBTI_CONNECTION')
+        if (!n.lgbti_connection)       errors.push('E_NO_LGBTI_CONNECTION')
         if (!n.wikidata_qid)           warnings.push('W_NO_WIKIDATA_QID')
 
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 40)
@@ -206,6 +206,18 @@ Deno.serve(async (req) => {
         // Future > 5yr → warn (likely parse error)
         if (Number.isFinite(startTs) && startTs > Date.now() + 5 * 365 * 86400_000) {
           warnings.push('W_EVENT_TOO_FAR_FUTURE')
+        }
+
+        // Type-specific rules (pride/protest must start 10–15:00, Saturday)
+        // Mirrors automation_rules 'pride_demo_*' rules — centralized here
+        // so pipeline-validate is the single enforcement point.
+        const et = String(n.event_type ?? '').toLowerCase()
+        if ((et === 'pride' || et === 'protest') && Number.isFinite(startTs)) {
+          const d = new Date(startTs)
+          const hour = d.getUTCHours()
+          const dow = d.getUTCDay() // 0=Sun, 6=Sat
+          if (hour < 10 || hour > 15) warnings.push('W_PRIDE_TIME_WINDOW')
+          if (dow !== 6) warnings.push('W_PRIDE_NOT_SATURDAY')
         }
 
         // Location: need either venue_id, city, or geo
@@ -333,7 +345,7 @@ Deno.serve(async (req) => {
       items_processed: approved + rejected + needsReview,
       items_failed: hardFailures,
       items_succeeded: approved,
-      items_failed: rejected,
+      items_rejected: rejected,
       approved, rejected, needs_review: needsReview,
       dry_run: dryRun,
     }, 200, req)

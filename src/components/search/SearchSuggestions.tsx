@@ -23,7 +23,7 @@ export function SearchSuggestions({
       <>
         <CommandSeparator />
         <CommandGroup heading="Searching...">
-          <CommandItem disabled sx={{ color: 'text.secondary' }}>
+          <CommandItem disabled>
             <Search style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
             Finding results...
           </CommandItem>
@@ -49,7 +49,7 @@ export function SearchSuggestions({
             <CommandItem
               key={`${suggestion.type}-${suggestion.id}`}
               onSelect={() => onSelectSuggestion(suggestion)}
-              sx={{ cursor: 'pointer' }}
+
             >
               <Box component={Icon} sx={{ height: 16, width: 16, mr: 1.5, color: 'text.secondary', flexShrink: 0 }} />
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
@@ -60,7 +60,7 @@ export function SearchSuggestions({
               </Box>
               <Badge
                 variant="outline"
-                sx={{ ml: 1, fontSize: '0.75rem', textTransform: 'capitalize', flexShrink: 0 }}
+
               >
                 {suggestion.type}
               </Badge>

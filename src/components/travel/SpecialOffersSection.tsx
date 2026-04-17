@@ -27,7 +27,6 @@ export function SpecialOffersSection() {
     queryKey: ['special-offers', originIata],
     queryFn: async (): Promise<SpecialOffer[]> => {
       // Use the v2 latest prices endpoint for recent deals
-      const token = ''; // Token passed server-side
       const { data, error } = await supabase.functions.invoke('travel-deals', {
         body: {
           origin: originIata,

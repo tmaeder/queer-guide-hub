@@ -374,13 +374,13 @@ function CountryAccordion({
   const [open, setOpen] = useState(false);
   const scoreInfo = getScoreLabel(country.equality_score);
   const protectionStatus = getProtectionStatus(
-    country.lgbti_protection_employment,
+    country.lgbti_employment_protection,
   );
   const ssuSummary = parseSsuSummary(
-    typeof country.lgbti_recognition_ssu === 'string'
-      ? country.lgbti_recognition_ssu
-      : country.lgbti_recognition_ssu != null
-        ? JSON.stringify(country.lgbti_recognition_ssu)
+    typeof country.lgbti_same_sex_unions === 'string'
+      ? country.lgbti_same_sex_unions
+      : country.lgbti_same_sex_unions != null
+        ? JSON.stringify(country.lgbti_same_sex_unions)
         : null,
   );
   const warningCount =
@@ -478,12 +478,7 @@ function CountryAccordion({
                   </Typography>
                   <Badge
                     variant="secondary"
-                    sx={{
-                      bgcolor: scoreInfo.bgColor,
-                      color: scoreInfo.color,
-                      fontSize: '0.6875rem',
-                      height: 20,
-                    }}
+
                   >
                     {t(
                       `trips.safety.scoreLabel.${scoreLabelToKey(scoreInfo.label)}`,
@@ -493,7 +488,7 @@ function CountryAccordion({
                   {warningCount > 0 && (
                     <Badge
                       variant="destructive"
-                      sx={{ fontSize: '0.6875rem', height: 20 }}
+
                     >
                       {t('trips.safety.warningCount', { count: warningCount })}
                     </Badge>
@@ -536,7 +531,7 @@ function CountryAccordion({
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent sx={{ pt: 0, pb: 2, px: 2 }}>
+          <CardContent>
             <Box
               sx={{
                 borderTop: '1px solid',

@@ -23,7 +23,6 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';import { useTranslation } from 'react-i18next';
 
-
 export default function MyGroups() {
   const { userGroups, isLoading, createGroup, isCreating, leaveGroup, isLeaving } = useGroups();
   const { user } = useAuth();
@@ -198,7 +197,7 @@ export default function MyGroups() {
             />
           ) : (
             <Card>
-              <CardContent sx={{ p: 6, textAlign: 'center' }}>
+              <CardContent>
                 <Users
                   style={{
                     width: 48,

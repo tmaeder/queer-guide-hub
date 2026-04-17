@@ -2,7 +2,7 @@
  * ReviewQueue — Table of pending content_changes with approve/reject actions.
  */
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';

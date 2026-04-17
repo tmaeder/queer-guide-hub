@@ -150,7 +150,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
   return (
     <Card>
       <CardHeader>
-        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <CardTitle>
           <Languages style={{ width: 18, height: 18 }} />
           Translations
           <Badge variant="secondary" style={{ marginLeft: 'auto' }}>
@@ -158,7 +158,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <CardContent>
         <Select value={selectedLang} onValueChange={(v) => setSelectedLang(v as SupportedLocale)}>
           <SelectTrigger>
             <SelectValue />

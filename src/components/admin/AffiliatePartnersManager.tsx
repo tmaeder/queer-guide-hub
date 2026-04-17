@@ -44,7 +44,7 @@ export function AffiliatePartnersManager() {
       url_patterns: (p.url_patterns ?? []).join(', '),
       parameters: JSON.stringify(p.parameters, null, 2),
       redirect_template: p.redirect_template ?? '',
-      notes: (p as Record<string, unknown>).notes as string ?? '',
+      notes: (p as unknown as Record<string, unknown>).notes as string ?? '',
       enabled: p.enabled,
     });
     setDialogOpen(true);

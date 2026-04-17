@@ -1,4 +1,3 @@
-import React from 'react';
 import { formatCurrency } from '@/lib/currency';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -56,7 +55,7 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
                 <Typography variant="caption">{formatEventTime(event.start_date)}</Typography>
               </Box>
             </Box>
-            <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
+            <Badge variant="outline">
               {event.event_type}
             </Badge>
           </Box>
@@ -73,7 +72,7 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
   return (
     <Card>
       <CardHeader>
-        <CardTitle sx={{ fontSize: '1.125rem' }}>Upcoming Events at {venueName}</CardTitle>
+        <CardTitle>Upcoming Events at {venueName}</CardTitle>
       </CardHeader>
       <CardContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

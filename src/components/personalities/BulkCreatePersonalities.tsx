@@ -215,15 +215,15 @@ export const BulkCreatePersonalities = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Plus sx={{ height: '20px', width: '20px' }} />
+          <CardTitle>
+            <Plus />
             Bulk Create Personalities
           </CardTitle>
           <CardDescription>
             Enter personality names (one per line) to automatically create entries enriched with Wikipedia data
           </CardDescription>
         </CardHeader>
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Textarea
@@ -231,7 +231,7 @@ export const BulkCreatePersonalities = () => {
                 value={names}
                 onChange={(e) => setNames(e.target.value)}
                 rows={8}
-                sx={{ resize: 'none' }}
+
                 disabled={isLoading}
               />
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', color: 'text.secondary' }}>
@@ -252,7 +252,7 @@ export const BulkCreatePersonalities = () => {
             </Box>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Label sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Data Sources</Label>
+              <Label>Data Sources</Label>
               <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
@@ -263,7 +263,7 @@ export const BulkCreatePersonalities = () => {
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="wikidata" sx={{ fontSize: '0.875rem' }}>Wikidata (core data)</Label>
+                  <Label htmlFor="wikidata">Wikidata (core data)</Label>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
@@ -274,7 +274,7 @@ export const BulkCreatePersonalities = () => {
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="wikipedia" sx={{ fontSize: '0.875rem' }}>Wikipedia (bio)</Label>
+                  <Label htmlFor="wikipedia">Wikipedia (bio)</Label>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
@@ -285,7 +285,7 @@ export const BulkCreatePersonalities = () => {
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="openLibrary" sx={{ fontSize: '0.875rem' }}>Open Library (books)</Label>
+                  <Label htmlFor="openLibrary">Open Library (books)</Label>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
@@ -296,7 +296,7 @@ export const BulkCreatePersonalities = () => {
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="bandsintown" sx={{ fontSize: '0.875rem' }}>Bandsintown (concerts)</Label>
+                  <Label htmlFor="bandsintown">Bandsintown (concerts)</Label>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
@@ -307,7 +307,7 @@ export const BulkCreatePersonalities = () => {
                     }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="pexelsImages" sx={{ fontSize: '0.875rem' }}>Pexels (fallback images)</Label>
+                  <Label htmlFor="pexelsImages">Pexels (fallback images)</Label>
                 </Box>
               </Box>
             </Box>
@@ -327,16 +327,16 @@ export const BulkCreatePersonalities = () => {
             <Button
               onClick={handleBulkCreate}
               disabled={isLoading || !names.trim()}
-              sx={{ flex: 1 }}
+
             >
               {isLoading ? (
                 <>
-                  <Loader2 sx={{ mr: 1, height: '16px', width: '16px' }} />
+                  <Loader2 />
                   Creating Personalities...
                 </>
               ) : (
                 <>
-                  <Plus sx={{ mr: 1, height: '16px', width: '16px' }} />
+                  <Plus />
                   Create Personalities
                 </>
               )}
@@ -348,7 +348,7 @@ export const BulkCreatePersonalities = () => {
                 onClick={retryFailedItems}
                 disabled={isLoading}
               >
-                <RefreshCw sx={{ mr: 1, height: '16px', width: '16px' }} />
+                <RefreshCw />
                 Retry Failed
               </Button>
             )}
@@ -360,28 +360,28 @@ export const BulkCreatePersonalities = () => {
       {results && (
         <Card>
           <CardHeader>
-            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CardTitle>
               {results.created.length > 0 && results.errors.length === 0 && (
-                <CheckCircle sx={{ height: '20px', width: '20px', color: 'success.main' }} />
+                <CheckCircle />
               )}
               {results.created.length > 0 && results.errors.length > 0 && (
-                <AlertCircle sx={{ height: '20px', width: '20px', color: 'warning.main' }} />
+                <AlertCircle />
               )}
               {results.created.length === 0 && results.errors.length > 0 && (
-                <XCircle sx={{ height: '20px', width: '20px', color: 'error.main' }} />
+                <XCircle />
               )}
               Results Summary
             </CardTitle>
           </CardHeader>
-          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Badge variant="outline" sx={{ color: 'success.main', borderColor: 'success.main' }}>
-                <CheckCircle sx={{ width: '12px', height: '12px', mr: 0.5 }} />
+              <Badge variant="outline">
+                <CheckCircle />
                 {results.created.length} Created
               </Badge>
               {results.errors.length > 0 && (
-                <Badge variant="outline" sx={{ color: 'error.main', borderColor: 'error.main' }}>
-                  <XCircle sx={{ width: '12px', height: '12px', mr: 0.5 }} />
+                <Badge variant="outline">
+                  <XCircle />
                   {results.errors.length} Failed
                 </Badge>
               )}
@@ -390,12 +390,12 @@ export const BulkCreatePersonalities = () => {
             {results.created.length > 0 && (
               <Collapsible>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" sx={{ width: '100%', justifyContent: 'flex-start' }}>
-                    <CheckCircle sx={{ mr: 1, height: '16px', width: '16px', color: 'success.main' }} />
+                  <Button variant="ghost">
+                    <CheckCircle />
                     Successfully Created ({results.created.length})
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
+                <CollapsibleContent>
                   {results.created.map((personality, index: number) => (
                     <Box key={index} sx={{ fontSize: '0.875rem', p: 1, bgcolor: 'success.light', borderRadius: 1, borderLeft: 4, borderColor: 'success.main' }}>
                       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
@@ -429,12 +429,12 @@ export const BulkCreatePersonalities = () => {
             {results.errors.length > 0 && (
               <Collapsible>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" sx={{ width: '100%', justifyContent: 'flex-start' }}>
-                    <XCircle sx={{ mr: 1, height: '16px', width: '16px', color: 'error.main' }} />
+                  <Button variant="ghost">
+                    <XCircle />
                     Failed Imports ({results.errors.length})
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
+                <CollapsibleContent>
                   {results.errors.map((error, index: number) => (
                     <Box key={index} sx={{ fontSize: '0.875rem', p: 1, bgcolor: 'error.light', borderRadius: 1, borderLeft: 4, borderColor: 'error.main' }}>
                       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -442,7 +442,7 @@ export const BulkCreatePersonalities = () => {
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>{error.name}</Typography>
                           <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>{error.error}</Typography>
                         </Box>
-                        <Badge variant="secondary" sx={{ ml: 1 }}>
+                        <Badge variant="secondary">
                           {getErrorCategory(error.error)}
                         </Badge>
                       </Box>
@@ -457,7 +457,7 @@ export const BulkCreatePersonalities = () => {
 
       {/* Help Information */}
       <Alert>
-        <AlertCircle sx={{ height: '16px', width: '16px' }} />
+        <AlertCircle />
         <AlertDescription>
           <Typography component="strong">Tips for better results:</Typography>
           <Box component="ul" sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5, fontSize: '0.875rem', listStylePosition: 'inside' }}>

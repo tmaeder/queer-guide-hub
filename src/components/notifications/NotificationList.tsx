@@ -425,7 +425,7 @@ export const NotificationList = () => {
         );
       }
       case 'like': {
-        const l = item.data as LikeItem;
+        const l = item.data as unknown as LikeItem;
         return (
           <Box
             key={item.key}
@@ -485,7 +485,7 @@ export const NotificationList = () => {
         );
       }
       case 'comment': {
-        const c = item.data as CommentItem;
+        const c = item.data as unknown as CommentItem;
         return (
           <Box
             key={item.key}

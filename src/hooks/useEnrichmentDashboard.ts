@@ -70,7 +70,7 @@ async function fetchPipelineHealth(): Promise<EnrichmentPipelineHealth> {
     .select('step, status, duration_ms')
     .gte('created_at', since);
 
-  const items = (logs ?? []) as Array<{ step: string; status: string; duration_ms: number | null }>;
+  const items = (logs ?? []) as unknown as Array<{ step: string; status: string; duration_ms: number | null }>;
 
   const done = items.filter((l) => l.status === 'done').length;
   const failed = items.filter((l) => l.status === 'failed').length;
@@ -151,7 +151,7 @@ async function fetchReviewQueue(): Promise<ReviewQueueItem[]> {
     .order('created_at', { ascending: false })
     .limit(50);
 
-  return (data ?? []) as ReviewQueueItem[];
+  return (data ?? []) as unknown as ReviewQueueItem[];
 }
 
 async function fetchNeedsAttention(): Promise<NeedsAttentionSummary> {
@@ -214,7 +214,7 @@ export function useEnrichmentFailures() {
         p_since: '7 days',
         p_limit: 50,
       });
-      return (data ?? []) as EnrichmentFailure[];
+      return (data ?? []) as unknown as EnrichmentFailure[];
     },
     staleTime: 60_000,
   });
@@ -239,7 +239,7 @@ export function useRetryEnrichment() {
         p_steps: steps ?? null,
       });
       if (error) throw error;
-      return data as { status: string; steps: string[] };
+      return data as unknown as { status: string; steps: string[] };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enrichment-dashboard'] });

@@ -99,7 +99,7 @@ export function AutoCleanDuplicatesTab() {
         }}
       >
         {ENTITY_TYPES.map(({ key, label, icon: Icon, color }) => {
-          const count = (counts as Record<string, number>)?.[key] ?? 0;
+          const count = (counts as unknown as Record<string, number>)?.[key] ?? 0;
           const bg = count === 0 ? '#10b98115' : count <= 5 ? '#f59e0b15' : '#ef444415';
           const border = count === 0 ? '#10b98130' : count <= 5 ? '#f59e0b30' : '#ef444430';
           return (
@@ -448,7 +448,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
 
       {/* Per-type breakdown */}
       <Card>
-        <CardContent sx={{ p: 0 }}>
+        <CardContent>
           <Box
             sx={{
               display: 'grid',
@@ -570,7 +570,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
 
   return (
     <Card>
-      <CardHeader sx={{ pb: 1 }}>
+      <CardHeader>
         <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.95rem' }}>
           <Inbox style={{ width: 16, height: 16, color: '#6366f1' }} />
           Import Staging Cleanup
@@ -724,7 +724,7 @@ function PendingReviewSection() {
         </Box>
       ) : pairs.length === 0 ? (
         <Card>
-          <CardContent sx={{ p: 6, textAlign: 'center' }}>
+          <CardContent>
             <Box
               sx={{
                 mx: 'auto',

@@ -55,7 +55,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useTranslation } from 'react-i18next';
 
-
 type Profile = {
   user_id: string;
   display_name?: string | null;
@@ -216,12 +215,7 @@ const UserDirectory = () => {
     }
   };
 
-  const {
-    data: profiles,
-    isLoading,
-    _error,
-    _refetch,
-  } = useQuery({
+  const { data: profiles, isLoading } = useQuery({
     queryKey: ['user-directory', filters, nearMe, userLocation],
     enabled: !!user,
     queryFn: async () => {
@@ -471,8 +465,8 @@ const UserDirectory = () => {
 
       {/* Privacy notice for logged-out users */}
       {!user && (
-        <Card sx={{ mb: 4, bgcolor: 'action.hover' }}>
-          <CardContent sx={{ p: 3, textAlign: 'center' }}>
+        <Card>
+          <CardContent>
             <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
               Community Directory
             </Typography>
@@ -961,7 +955,10 @@ const UserDirectory = () => {
                         <Select
                           value={filters.sortBy}
                           onValueChange={(value) =>
-                            setFilters((prev) => ({ ...prev, sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active' }))
+                            setFilters((prev) => ({
+                              ...prev,
+                              sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active',
+                            }))
                           }
                         >
                           <SelectTrigger style={{ width: 200, border: '2px solid' }}>
@@ -1096,7 +1093,12 @@ const UserDirectory = () => {
               </Box>
               <Select
                 value={filters.sortBy}
-                onValueChange={(value) => setFilters((prev) => ({ ...prev, sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active' }))}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active',
+                  }))
+                }
               >
                 <SelectTrigger style={{ width: 'auto', border: 0 }}>
                   <SelectValue />
@@ -1224,7 +1226,10 @@ const UserDirectory = () => {
                       )}
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {(profile as Record<string, unknown>)?.user_mode && (
-                          <UserModeBadge mode={(profile as Record<string, unknown>).user_mode} size="sm" />
+                          <UserModeBadge
+                            mode={(profile as Record<string, unknown>).user_mode}
+                            size="sm"
+                          />
                         )}
                         {profile.is_business && (
                           <Badge

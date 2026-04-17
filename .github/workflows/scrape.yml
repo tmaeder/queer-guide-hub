@@ -47,6 +47,9 @@ jobs:
     concurrency:
       group: scraper-full
       cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: scraper
 
     steps:
       - name: Checkout
@@ -57,6 +60,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -65,7 +69,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('scraper/package-lock.json') }}
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
@@ -81,6 +85,10 @@ jobs:
         # Use env: for all workflow_dispatch inputs to prevent injection
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Staging publish — required so scraped entities flow into the
+          # Supabase ingestion_staging table and downstream pipeline.
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PUBLISH_TO_STAGING: '1'
           SCRAPER_USER_AGENT: ${{ secrets.SCRAPER_USER_AGENT }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           POLITE_MODE: 'true'
@@ -102,14 +110,14 @@ jobs:
           SOURCE="${INPUT_SOURCE:-all}"
           TYPE="${INPUT_TYPE:-venue,event,stay,place}"
           MAX="${INPUT_MAX_PAGES:-500}"
-          npm run scrape -- "--source=${SOURCE}" "--type=${TYPE}" "--max-pages=${MAX}"
+          npm run scrape -- scrape --source "${SOURCE}" --type "${TYPE}" --max-pages "${MAX}"
 
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: scrape-logs-${{ github.run_id }}
-          path: '*.log'
+          path: 'scraper/*.log'
           retention-days: 7
 
   # -----------------------------------------------------------------------
@@ -124,6 +132,9 @@ jobs:
     concurrency:
       group: scraper-events
       cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: scraper
 
     steps:
       - name: Checkout
@@ -134,6 +145,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -142,7 +154,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('scraper/package-lock.json') }}
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
@@ -150,6 +162,8 @@ jobs:
       - name: Scrape events (rolling 90-day window)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PUBLISH_TO_STAGING: '1'
           SCRAPER_USER_AGENT: ${{ secrets.SCRAPER_USER_AGENT }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           POLITE_MODE: 'true'
@@ -157,12 +171,12 @@ jobs:
           SNAPSHOT_RETENTION: '3'
           LOG_LEVEL: info
           DISABLE_SOURCE_MISTERBANDB: 'true'
-        run: npm run scrape -- --source=all --type=event --max-pages=100
+        run: npm run scrape -- scrape --source all --type event --max-pages 100
 
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: events-logs-${{ github.run_id }}
-          path: '*.log'
+          path: 'scraper/*.log'
           retention-days: 7

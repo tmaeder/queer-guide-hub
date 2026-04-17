@@ -30,7 +30,6 @@ import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
 import { CurrencyProvider } from '@/hooks/useCurrency';
 import Box from '@mui/material/Box';
-const Aurora = lazy(() => import('@/components/ui/Aurora'));
 
 const Index = lazyRetry(() => import('./pages/Index'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
@@ -84,7 +83,6 @@ const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
 const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
-const AdminImportHub = lazy(() => import('./pages/AdminImportHub'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
@@ -99,16 +97,12 @@ const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'))
 const AdminHotels = lazy(() => import('./pages/AdminHotels'));
 const AdminQueerVillages = lazy(() => import('./pages/AdminQueerVillages'));
 const AdminReview = lazy(() => import('./pages/AdminReview'));
-const _AdminSubmissions = lazy(() => import('./pages/AdminSubmissions'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 // CMS components rendered as admin views
 const AdminCMS = lazy(() => import('./pages/AdminCMS'));
 const ContentListPanel = lazy(() =>
   import('./components/cms/ContentListPanel').then((m) => ({ default: m.ContentListPanel })),
-);
-const _CMSOverview = lazy(() =>
-  import('./components/cms/CMSOverview').then((m) => ({ default: m.CMSOverview })),
 );
 // ReviewQueue (CMS) is now loaded inside AdminReview page
 const MediaLibrary = lazy(() =>
@@ -119,36 +113,12 @@ const AuditLog = lazy(() =>
 );
 
 // Import Hub components rendered as admin views
-const _ImportJobCreator = lazy(() =>
-  import('./components/admin/ImportJobCreator').then((m) => ({ default: m.ImportJobCreator })),
-);
-const NewsSourcesManager = lazy(() =>
-  import('./components/admin/NewsSourcesManager').then((m) => ({ default: m.NewsSourcesManager })),
-);
-const PipelineMonitor = lazy(() =>
-  import('./components/admin/PipelineMonitor').then((m) => ({ default: m.PipelineMonitor })),
-);
-const _EnrichmentDashboard = lazy(() =>
-  import('./components/admin/EnrichmentDashboard').then((m) => ({
-    default: m.EnrichmentDashboard,
-  })),
-);
-const VenueImportQuickActions = lazy(() =>
-  import('./components/admin/VenueImportQuickActions').then((m) => ({
-    default: m.VenueImportQuickActions,
-  })),
-);
 const ApiKeysManager = lazy(() =>
   import('./components/admin/ApiKeysManager').then((m) => ({ default: m.ApiKeysManager })),
 );
 const AffiliatePartnersManager = lazy(() =>
   import('./components/admin/AffiliatePartnersManager').then((m) => ({
     default: m.AffiliatePartnersManager,
-  })),
-);
-const _LinkHealthDashboard = lazy(() =>
-  import('./components/admin/LinkHealthDashboard').then((m) => ({
-    default: m.LinkHealthDashboard,
   })),
 );
 
@@ -161,11 +131,6 @@ const SecurityMonitoringDashboard = lazy(() =>
 const CloudflareDashboard = lazy(() =>
   import('./components/admin/CloudflareDashboard').then((m) => ({
     default: m.CloudflareDashboard,
-  })),
-);
-const _UmamiAnalyticsDashboard = lazy(() =>
-  import('./components/analytics/UmamiAnalyticsDashboard').then((m) => ({
-    default: m.UmamiAnalyticsDashboard,
   })),
 );
 const ProfessionDetail = lazyRetry(() => import('./pages/ProfessionDetail'));
@@ -187,7 +152,7 @@ const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const Favorites = lazyRetry(() => import('./pages/Favorites'));
 
 const TripsPage = lazyRetry(() => import('./pages/trips/TripsPage'));
-const BookingsPage = lazyRetry(() => import('./pages/BookingsPage'));
+const TripsInboxPage = lazyRetry(() => import('./pages/trips/TripsInboxPage'));
 const TripPlannerPage = lazyRetry(() => import('./pages/trips/TripPlannerPage'));
 const SharedTripPage = lazyRetry(() => import('./pages/trips/SharedTripPage'));
 const Donate = lazyRetry(() => import('./pages/Donate'));
@@ -346,8 +311,8 @@ const AppRoutes = () => {
                     gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
                   }}
                 >
-                  <Skeleton sx={{ height: 192 }} />
-                  <Skeleton sx={{ height: 192 }} />
+                  <Skeleton />
+                  <Skeleton />
                 </Box>
               </Box>
             }
@@ -380,22 +345,22 @@ const AppRoutes = () => {
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />
 
-                {/* Imports & Data section */}
-                <Route path="imports" element={<AdminImportHub />} />
-                <Route path="imports/create" element={<Navigate to="/admin/imports" replace />} />
-                <Route path="imports/news-sources" element={<NewsSourcesManager />} />
-                <Route path="imports/pipeline" element={<PipelineMonitor />} />
+                {/* Imports & Data section — all redirect to unified /admin/pipelines */}
+                <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
+                <Route path="imports/create" element={<Navigate to="/admin/pipelines" replace />} />
+                <Route path="imports/news-sources" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
+                <Route path="imports/pipeline" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
                 <Route path="imports/enrichment" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
-                <Route path="imports/venues" element={<VenueImportQuickActions />} />
+                <Route path="imports/venues" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
                 <Route path="imports/email-ingestions" element={<AdminEmailIngestions />} />
-                <Route path="imports/history" element={<AdminImportHub />} />
-                <Route path="workflows" element={<Navigate to="/admin/pipelines?tab=health" replace />} />
+                <Route path="imports/history" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
+                <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
-                <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
-                <Route path="scraping" element={<Navigate to="/admin/imports" replace />} />
+                <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines" replace />} />
+                <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 
                 {/* Review & Workflow section -- unified dashboard */}
-                <Route path="automation" element={<Navigate to="/admin/pipelines?tab=modules" replace />} />
+                <Route path="automation" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="review" element={<AdminReview />} />
                 <Route path="feedback" element={<AdminFeedback />} />
                 <Route
@@ -445,7 +410,7 @@ const AppRoutes = () => {
                 <Route path="groups" element={<AdminGroups />} />
                 <Route path="news-sources" element={<AdminNewsSources />} />
                 <Route path="cms" element={<AdminCMS />} />
-                <Route path="import-hub" element={<AdminImportHub />} />
+                <Route path="import-hub" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="festivals" element={<Navigate to="/admin/events" replace />} />
                 <Route
                   path="venue-categories"
@@ -500,9 +465,10 @@ const AppRoutes = () => {
                 <Route path="places" element={<Places />} />
                 <Route path="travel" element={<Travel />} />
                 <Route path="trips" element={<TripsPage />} />
-                <Route path="trips/:tripId" element={<TripPlannerPage />} />
+                <Route path="trips/inbox" element={<TripsInboxPage />} />
                 <Route path="trips/shared/:token" element={<SharedTripPage />} />
-                <Route path="bookings" element={<BookingsPage />} />
+                <Route path="trips/:tripId" element={<TripPlannerPage />} />
+                <Route path="bookings" element={<Navigate to="/trips/inbox" replace />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
                 <Route path="city/:slug" element={<CityDetail />} />

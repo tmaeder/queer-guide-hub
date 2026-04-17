@@ -1,4 +1,4 @@
-{"types":"export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: \"14.4\"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
@@ -272,6 +272,51 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_integrations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          id: string
+          kind: string
+          last_error: string | null
+          last_triggered_at: string | null
+          min_severity: string
+          name: string
+          total_sent: number
+          updated_at: string
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          kind: string
+          last_error?: string | null
+          last_triggered_at?: string | null
+          min_severity?: string
+          name: string
+          total_sent?: number
+          updated_at?: string
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          kind?: string
+          last_error?: string | null
+          last_triggered_at?: string | null
+          min_severity?: string
+          name?: string
+          total_sent?: number
+          updated_at?: string
+          webhook_url?: string
+        }
+        Relationships: []
+      }
       amenities: {
         Row: {
           icon_name: string | null
@@ -479,11 +524,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"audio_processing_jobs_audio_id_fkey\"
-            columns: [\"audio_id\"]
+            foreignKeyName: "audio_processing_jobs_audio_id_fkey"
+            columns: ["audio_id"]
             isOneToOne: false
-            referencedRelation: \"audio_files\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "audio_files"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -523,11 +568,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"audio_renditions_audio_id_fkey\"
-            columns: [\"audio_id\"]
+            foreignKeyName: "audio_renditions_audio_id_fkey"
+            columns: ["audio_id"]
             isOneToOne: false
-            referencedRelation: \"audio_files\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "audio_files"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -681,11 +726,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"automation_modules_workflow_definition_id_fkey\"
-            columns: [\"workflow_definition_id\"]
+            foreignKeyName: "automation_modules_workflow_definition_id_fkey"
+            columns: ["workflow_definition_id"]
             isOneToOne: false
-            referencedRelation: \"workflow_definitions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -740,11 +785,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"automation_rules_module_id_fkey\"
-            columns: [\"module_id\"]
+            foreignKeyName: "automation_rules_module_id_fkey"
+            columns: ["module_id"]
             isOneToOne: false
-            referencedRelation: \"automation_modules\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "automation_modules"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -793,18 +838,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"automation_run_log_module_id_fkey\"
-            columns: [\"module_id\"]
+            foreignKeyName: "automation_run_log_module_id_fkey"
+            columns: ["module_id"]
             isOneToOne: false
-            referencedRelation: \"automation_modules\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "automation_modules"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"automation_run_log_workflow_run_id_fkey\"
-            columns: [\"workflow_run_id\"]
+            foreignKeyName: "automation_run_log_workflow_run_id_fkey"
+            columns: ["workflow_run_id"]
             isOneToOne: false
-            referencedRelation: \"workflow_runs\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "workflow_runs"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -844,11 +889,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"booking_webhooks_booking_id_fkey\"
-            columns: [\"booking_id\"]
+            foreignKeyName: "booking_webhooks_booking_id_fkey"
+            columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: \"bookings\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -918,25 +963,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"bookings_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "bookings_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"bookings_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "bookings_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"bookings_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "bookings_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1046,8 +1091,10 @@ export type Database = {
           cost_of_living: Json | null
           country_id: string
           created_at: string
+          data_source: string | null
           demographics: Json | null
           description: string | null
+          duplicate_of_id: string | null
           economy_sectors: string[] | null
           elevation_m: number | null
           founded_year: number | null
@@ -1056,6 +1103,8 @@ export type Database = {
           image_url: string | null
           is_capital: boolean | null
           is_major_city: boolean | null
+          last_refreshed_at: string | null
+          last_synced_at: string | null
           latitude: number | null
           lgbt_friendly_rating: number | null
           local_customs: string | null
@@ -1064,6 +1113,7 @@ export type Database = {
           major_airport_code: string | null
           mayor: string | null
           name: string
+          name_normalized: string | null
           notable_landmarks: string[] | null
           official_website: string | null
           population: number | null
@@ -1086,8 +1136,10 @@ export type Database = {
           cost_of_living?: Json | null
           country_id: string
           created_at?: string
+          data_source?: string | null
           demographics?: Json | null
           description?: string | null
+          duplicate_of_id?: string | null
           economy_sectors?: string[] | null
           elevation_m?: number | null
           founded_year?: number | null
@@ -1096,6 +1148,8 @@ export type Database = {
           image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbt_friendly_rating?: number | null
           local_customs?: string | null
@@ -1104,6 +1158,7 @@ export type Database = {
           major_airport_code?: string | null
           mayor?: string | null
           name: string
+          name_normalized?: string | null
           notable_landmarks?: string[] | null
           official_website?: string | null
           population?: number | null
@@ -1126,8 +1181,10 @@ export type Database = {
           cost_of_living?: Json | null
           country_id?: string
           created_at?: string
+          data_source?: string | null
           demographics?: Json | null
           description?: string | null
+          duplicate_of_id?: string | null
           economy_sectors?: string[] | null
           elevation_m?: number | null
           founded_year?: number | null
@@ -1136,6 +1193,8 @@ export type Database = {
           image_url?: string | null
           is_capital?: boolean | null
           is_major_city?: boolean | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbt_friendly_rating?: number | null
           local_customs?: string | null
@@ -1144,6 +1203,7 @@ export type Database = {
           major_airport_code?: string | null
           mayor?: string | null
           name?: string
+          name_normalized?: string | null
           notable_landmarks?: string[] | null
           official_website?: string | null
           population?: number | null
@@ -1159,11 +1219,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cities_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "cities_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cities_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1188,11 +1255,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"city_aliases_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "city_aliases_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1259,11 +1326,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_audit_log_content_id_fkey\"
-            columns: [\"content_id\"]
+            foreignKeyName: "cms_audit_log_content_id_fkey"
+            columns: ["content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1305,7 +1372,7 @@ export type Database = {
           body_html: string | null
           body_json: Json | null
           content_data: Json
-          content_type: Database[\"public\"][\"Enums\"][\"cms_content_type\"]
+          content_type: Database["public"]["Enums"]["cms_content_type"]
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -1324,14 +1391,14 @@ export type Database = {
           title: Json
           updated_at: string
           updated_by: string | null
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Insert: {
           body_html?: string | null
           body_json?: Json | null
           content_data?: Json
-          content_type: Database[\"public\"][\"Enums\"][\"cms_content_type\"]
+          content_type: Database["public"]["Enums"]["cms_content_type"]
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1350,14 +1417,14 @@ export type Database = {
           title?: Json
           updated_at?: string
           updated_by?: string | null
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Update: {
           body_html?: string | null
           body_json?: Json | null
           content_data?: Json
-          content_type?: Database[\"public\"][\"Enums\"][\"cms_content_type\"]
+          content_type?: Database["public"]["Enums"]["cms_content_type"]
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1376,8 +1443,8 @@ export type Database = {
           title?: Json
           updated_at?: string
           updated_by?: string | null
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Relationships: []
       }
@@ -1387,7 +1454,7 @@ export type Database = {
           created_at: string
           id: string
           media_id: string
-          media_role: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role: Database["public"]["Enums"]["cms_media_role"]
           metadata: Json | null
           sort_order: number | null
         }
@@ -1396,7 +1463,7 @@ export type Database = {
           created_at?: string
           id?: string
           media_id: string
-          media_role?: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
           metadata?: Json | null
           sort_order?: number | null
         }
@@ -1405,24 +1472,24 @@ export type Database = {
           created_at?: string
           id?: string
           media_id?: string
-          media_role?: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
           metadata?: Json | null
           sort_order?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_content_media_content_id_fkey\"
-            columns: [\"content_id\"]
+            foreignKeyName: "cms_content_media_content_id_fkey"
+            columns: ["content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"cms_content_media_media_id_fkey\"
-            columns: [\"media_id\"]
+            foreignKeyName: "cms_content_media_media_id_fkey"
+            columns: ["media_id"]
             isOneToOne: false
-            referencedRelation: \"cms_media\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_media"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1445,8 +1512,8 @@ export type Database = {
           source_id: string
           source_table: string
           updated_at: string
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Insert: {
           canonical_url?: string | null
@@ -1466,8 +1533,8 @@ export type Database = {
           source_id: string
           source_table: string
           updated_at?: string
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Update: {
           canonical_url?: string | null
@@ -1487,8 +1554,8 @@ export type Database = {
           source_id?: string
           source_table?: string
           updated_at?: string
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Relationships: []
       }
@@ -1525,18 +1592,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_content_relationships_from_content_id_fkey\"
-            columns: [\"from_content_id\"]
+            foreignKeyName: "cms_content_relationships_from_content_id_fkey"
+            columns: ["from_content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"cms_content_relationships_to_content_id_fkey\"
-            columns: [\"to_content_id\"]
+            foreignKeyName: "cms_content_relationships_to_content_id_fkey"
+            columns: ["to_content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1554,8 +1621,8 @@ export type Database = {
           revision_number: number
           tags: string[] | null
           title: Json
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Insert: {
           change_summary?: string | null
@@ -1570,8 +1637,8 @@ export type Database = {
           revision_number: number
           tags?: string[] | null
           title: Json
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Update: {
           change_summary?: string | null
@@ -1586,16 +1653,16 @@ export type Database = {
           revision_number?: number
           tags?: string[] | null
           title?: Json
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_content_revisions_content_id_fkey\"
-            columns: [\"content_id\"]
+            foreignKeyName: "cms_content_revisions_content_id_fkey"
+            columns: ["content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1638,18 +1705,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_duplicate_candidates_content_id_1_fkey\"
-            columns: [\"content_id_1\"]
+            foreignKeyName: "cms_duplicate_candidates_content_id_1_fkey"
+            columns: ["content_id_1"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"cms_duplicate_candidates_content_id_2_fkey\"
-            columns: [\"content_id_2\"]
+            foreignKeyName: "cms_duplicate_candidates_content_id_2_fkey"
+            columns: ["content_id_2"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1722,7 +1789,7 @@ export type Database = {
           created_by: string | null
           id: string
           media_id: string
-          media_role: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role: Database["public"]["Enums"]["cms_media_role"]
           metadata: Json | null
           sort_order: number | null
           source_id: string
@@ -1733,7 +1800,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           media_id: string
-          media_role?: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
           metadata?: Json | null
           sort_order?: number | null
           source_id: string
@@ -1744,7 +1811,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           media_id?: string
-          media_role?: Database[\"public\"][\"Enums\"][\"cms_media_role\"]
+          media_role?: Database["public"]["Enums"]["cms_media_role"]
           metadata?: Json | null
           sort_order?: number | null
           source_id?: string
@@ -1752,11 +1819,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_media_attachments_media_id_fkey\"
-            columns: [\"media_id\"]
+            foreignKeyName: "cms_media_attachments_media_id_fkey"
+            columns: ["media_id"]
             isOneToOne: false
-            referencedRelation: \"cms_media\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_media"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1787,8 +1854,8 @@ export type Database = {
           title: string
           updated_at: string
           updated_by: string | null
-          visibility_level: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Insert: {
           author_id?: string | null
@@ -1816,8 +1883,8 @@ export type Database = {
           title: string
           updated_at?: string
           updated_by?: string | null
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Update: {
           author_id?: string | null
@@ -1845,16 +1912,16 @@ export type Database = {
           title?: string
           updated_at?: string
           updated_by?: string | null
-          visibility_level?: Database[\"public\"][\"Enums\"][\"cms_visibility_level\"]
-          workflow_state?: Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+          visibility_level?: Database["public"]["Enums"]["cms_visibility_level"]
+          workflow_state?: Database["public"]["Enums"]["cms_workflow_state"]
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_pages_parent_slug_fk\"
-            columns: [\"parent_slug\"]
+            foreignKeyName: "cms_pages_parent_slug_fk"
+            columns: ["parent_slug"]
             isOneToOne: false
-            referencedRelation: \"cms_pages\"
-            referencedColumns: [\"slug\"]
+            referencedRelation: "cms_pages"
+            referencedColumns: ["slug"]
           },
         ]
       }
@@ -1906,18 +1973,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_review_comments_parent_comment_id_fkey\"
-            columns: [\"parent_comment_id\"]
+            foreignKeyName: "cms_review_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
             isOneToOne: false
-            referencedRelation: \"cms_review_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_review_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"cms_review_comments_revision_id_fkey\"
-            columns: [\"revision_id\"]
+            foreignKeyName: "cms_review_comments_revision_id_fkey"
+            columns: ["revision_id"]
             isOneToOne: false
-            referencedRelation: \"cms_revisions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_revisions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1963,11 +2030,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_review_queue_content_id_fkey\"
-            columns: [\"content_id\"]
+            foreignKeyName: "cms_review_queue_content_id_fkey"
+            columns: ["content_id"]
             isOneToOne: false
-            referencedRelation: \"cms_content\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_content"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1983,7 +2050,7 @@ export type Database = {
           source_id: string
           source_table: string
           workflow_state:
-            | Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+            | Database["public"]["Enums"]["cms_workflow_state"]
             | null
         }
         Insert: {
@@ -1997,7 +2064,7 @@ export type Database = {
           source_id: string
           source_table: string
           workflow_state?:
-            | Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+            | Database["public"]["Enums"]["cms_workflow_state"]
             | null
         }
         Update: {
@@ -2011,7 +2078,7 @@ export type Database = {
           source_id?: string
           source_table?: string
           workflow_state?:
-            | Database[\"public\"][\"Enums\"][\"cms_workflow_state\"]
+            | Database["public"]["Enums"]["cms_workflow_state"]
             | null
         }
         Relationships: []
@@ -2052,11 +2119,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cms_sync_jobs_connector_id_fkey\"
-            columns: [\"connector_id\"]
+            foreignKeyName: "cms_sync_jobs_connector_id_fkey"
+            columns: ["connector_id"]
             isOneToOne: false
-            referencedRelation: \"cms_connectors\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cms_connectors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2081,32 +2148,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"comment_likes_comment_id_fkey\"
-            columns: [\"comment_id\"]
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
             isOneToOne: false
-            referencedRelation: \"post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"comment_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"comment_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"comment_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2221,41 +2288,52 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"community_posts_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"community_posts_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"community_posts_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
       community_submissions: {
         Row: {
+          assignee_id: string | null
           content_type: string
           data: Json
+          duplicate_of: string | null
           feedback_status: string
+          fingerprint: string | null
           flyer_scan_id: string | null
           forwarded_at: string | null
           github_issue_number: number | null
           github_issue_url: string | null
           id: string
           ip_address: unknown
+          is_spam: boolean
+          labels: string[]
+          last_seen_at: string | null
+          notify_submitter: boolean
+          occurrence_count: number
+          priority: number
           promoted_to_id: string | null
           promoted_to_table: string | null
+          resolution: string | null
+          resolved_at: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           reviewer_notes: string | null
@@ -2265,17 +2343,28 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          assignee_id?: string | null
           content_type: string
           data?: Json
+          duplicate_of?: string | null
           feedback_status?: string
+          fingerprint?: string | null
           flyer_scan_id?: string | null
           forwarded_at?: string | null
           github_issue_number?: number | null
           github_issue_url?: string | null
           id?: string
           ip_address?: unknown
+          is_spam?: boolean
+          labels?: string[]
+          last_seen_at?: string | null
+          notify_submitter?: boolean
+          occurrence_count?: number
+          priority?: number
           promoted_to_id?: string | null
           promoted_to_table?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           reviewer_notes?: string | null
@@ -2285,17 +2374,28 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          assignee_id?: string | null
           content_type?: string
           data?: Json
+          duplicate_of?: string | null
           feedback_status?: string
+          fingerprint?: string | null
           flyer_scan_id?: string | null
           forwarded_at?: string | null
           github_issue_number?: number | null
           github_issue_url?: string | null
           id?: string
           ip_address?: unknown
+          is_spam?: boolean
+          labels?: string[]
+          last_seen_at?: string | null
+          notify_submitter?: boolean
+          occurrence_count?: number
+          priority?: number
           promoted_to_id?: string | null
           promoted_to_table?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           reviewer_notes?: string | null
@@ -2306,11 +2406,70 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"community_submissions_flyer_scan_id_fkey\"
-            columns: [\"flyer_scan_id\"]
+            foreignKeyName: "community_submissions_duplicate_of_fkey"
+            columns: ["duplicate_of"]
             isOneToOne: false
-            referencedRelation: \"flyer_scans\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_submissions_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
+          },
+          {
+            foreignKeyName: "community_submissions_flyer_scan_id_fkey"
+            columns: ["flyer_scan_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_scans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_submissions_audit: {
+        Row: {
+          actor_id: string | null
+          at: string
+          field: string
+          id: number
+          new_value: Json | null
+          old_value: Json | null
+          submission_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          at?: string
+          field: string
+          id?: number
+          new_value?: Json | null
+          old_value?: Json | null
+          submission_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          at?: string
+          field?: string
+          id?: number
+          new_value?: Json | null
+          old_value?: Json | null
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_submissions_audit_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_submissions_audit_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
           },
         ]
       }
@@ -2416,25 +2575,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"content_changes_module_id_fkey\"
-            columns: [\"module_id\"]
+            foreignKeyName: "content_changes_module_id_fkey"
+            columns: ["module_id"]
             isOneToOne: false
-            referencedRelation: \"automation_modules\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "automation_modules"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"content_changes_rule_id_fkey\"
-            columns: [\"rule_id\"]
+            foreignKeyName: "content_changes_rule_id_fkey"
+            columns: ["rule_id"]
             isOneToOne: false
-            referencedRelation: \"automation_rules\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"content_changes_workflow_run_id_fkey\"
-            columns: [\"workflow_run_id\"]
+            foreignKeyName: "content_changes_workflow_run_id_fkey"
+            columns: ["workflow_run_id"]
             isOneToOne: false
-            referencedRelation: \"workflow_runs\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "workflow_runs"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2711,53 +2870,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"conversation_participants_conversation_id_fkey\"
-            columns: [\"conversation_id\"]
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: \"conversations\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"conversation_participants_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "conversation_participants_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"conversation_participants_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "conversation_participants_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"conversation_participants_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "conversation_participants_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"fk_conversation_participants_user_id\"
-            columns: [\"user_id\"]
+            foreignKeyName: "fk_conversation_participants_user_id"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"fk_conversation_participants_user_id\"
-            columns: [\"user_id\"]
+            foreignKeyName: "fk_conversation_participants_user_id"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"fk_conversation_participants_user_id\"
-            columns: [\"user_id\"]
+            foreignKeyName: "fk_conversation_participants_user_id"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2797,11 +2956,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"conversations_last_message_id_fkey\"
-            columns: [\"last_message_id\"]
+            foreignKeyName: "conversations_last_message_id_fkey"
+            columns: ["last_message_id"]
             isOneToOne: false
-            referencedRelation: \"messages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2817,8 +2976,10 @@ export type Database = {
           continent_id: string
           created_at: string
           currency: string | null
+          data_source: string | null
           description: string | null
           driving_side: string | null
+          duplicate_of_id: string | null
           equality_score: number | null
           exports: string[] | null
           flag_emoji: string | null
@@ -2832,6 +2993,8 @@ export type Database = {
           imports: string[] | null
           internet_tld: string | null
           languages: string[] | null
+          last_refreshed_at: string | null
+          last_synced_at: string | null
           latitude: number | null
           lgbt_legal_status: string | null
           lgbt_rights_status: string | null
@@ -2860,6 +3023,7 @@ export type Database = {
           major_industries: string[] | null
           major_religions: string[] | null
           name: string
+          name_normalized: string | null
           national_anthem: string | null
           national_day: string | null
           national_symbols: Json | null
@@ -2884,8 +3048,10 @@ export type Database = {
           continent_id: string
           created_at?: string
           currency?: string | null
+          data_source?: string | null
           description?: string | null
           driving_side?: string | null
+          duplicate_of_id?: string | null
           equality_score?: number | null
           exports?: string[] | null
           flag_emoji?: string | null
@@ -2899,6 +3065,8 @@ export type Database = {
           imports?: string[] | null
           internet_tld?: string | null
           languages?: string[] | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbt_legal_status?: string | null
           lgbt_rights_status?: string | null
@@ -2927,6 +3095,7 @@ export type Database = {
           major_industries?: string[] | null
           major_religions?: string[] | null
           name: string
+          name_normalized?: string | null
           national_anthem?: string | null
           national_day?: string | null
           national_symbols?: Json | null
@@ -2951,8 +3120,10 @@ export type Database = {
           continent_id?: string
           created_at?: string
           currency?: string | null
+          data_source?: string | null
           description?: string | null
           driving_side?: string | null
+          duplicate_of_id?: string | null
           equality_score?: number | null
           exports?: string[] | null
           flag_emoji?: string | null
@@ -2966,6 +3137,8 @@ export type Database = {
           imports?: string[] | null
           internet_tld?: string | null
           languages?: string[] | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbt_legal_status?: string | null
           lgbt_rights_status?: string | null
@@ -2994,6 +3167,7 @@ export type Database = {
           major_industries?: string[] | null
           major_religions?: string[] | null
           name?: string
+          name_normalized?: string | null
           national_anthem?: string | null
           national_day?: string | null
           national_symbols?: Json | null
@@ -3009,18 +3183,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"countries_continent_id_fkey\"
-            columns: [\"continent_id\"]
+            foreignKeyName: "countries_continent_id_fkey"
+            columns: ["continent_id"]
             isOneToOne: false
-            referencedRelation: \"continents\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "continents"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"countries_region_id_fkey\"
-            columns: [\"region_id\"]
+            foreignKeyName: "countries_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"regions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "countries_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3131,6 +3312,107 @@ export type Database = {
           symbol?: string | null
         }
         Relationships: []
+      }
+      data_ops_alerts: {
+        Row: {
+          acked_at: string | null
+          acked_by: string | null
+          alert_kind: string
+          created_at: string
+          detail: Json
+          fingerprint: string
+          id: number
+          severity: string
+          source_slug: string | null
+        }
+        Insert: {
+          acked_at?: string | null
+          acked_by?: string | null
+          alert_kind: string
+          created_at?: string
+          detail: Json
+          fingerprint: string
+          id?: number
+          severity?: string
+          source_slug?: string | null
+        }
+        Update: {
+          acked_at?: string | null
+          acked_by?: string | null
+          alert_kind?: string
+          created_at?: string
+          detail?: Json
+          fingerprint?: string
+          id?: number
+          severity?: string
+          source_slug?: string | null
+        }
+        Relationships: []
+      }
+      dedup_decisions_feedback: {
+        Row: {
+          candidate_venue_id: string | null
+          created_at: string
+          decided_by: string | null
+          human_decision: string
+          id: number
+          reason: string | null
+          rpc_match_type: string | null
+          rpc_score: number | null
+          staging_id: string | null
+        }
+        Insert: {
+          candidate_venue_id?: string | null
+          created_at?: string
+          decided_by?: string | null
+          human_decision: string
+          id?: number
+          reason?: string | null
+          rpc_match_type?: string | null
+          rpc_score?: number | null
+          staging_id?: string | null
+        }
+        Update: {
+          candidate_venue_id?: string | null
+          created_at?: string
+          decided_by?: string | null
+          human_decision?: string
+          id?: number
+          reason?: string | null
+          rpc_match_type?: string | null
+          rpc_score?: number | null
+          staging_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dedup_decisions_feedback_candidate_venue_id_fkey"
+            columns: ["candidate_venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dedup_decisions_feedback_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
+          },
+          {
+            foreignKeyName: "dedup_decisions_feedback_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dedup_decisions_feedback_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       donations: {
         Row: {
@@ -3306,6 +3588,80 @@ export type Database = {
         }
         Relationships: []
       }
+      enrichment_audit: {
+        Row: {
+          actor: string
+          after_data: Json | null
+          before_data: Json | null
+          changed_fields: string[]
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          pipeline_run_id: string | null
+          stage: string
+          staging_id: string
+          status: string
+        }
+        Insert: {
+          actor?: string
+          after_data?: Json | null
+          before_data?: Json | null
+          changed_fields?: string[]
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          pipeline_run_id?: string | null
+          stage: string
+          staging_id: string
+          status?: string
+        }
+        Update: {
+          actor?: string
+          after_data?: Json | null
+          before_data?: Json | null
+          changed_fields?: string[]
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          pipeline_run_id?: string | null
+          stage?: string
+          staging_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrichment_audit_pipeline_run_id_fkey"
+            columns: ["pipeline_run_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrichment_audit_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
+          },
+          {
+            foreignKeyName: "enrichment_audit_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrichment_audit_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enrichment_log: {
         Row: {
           created_at: string | null
@@ -3363,11 +3719,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"entity_attribute_assignments_attribute_id_fkey\"
-            columns: [\"attribute_id\"]
+            foreignKeyName: "entity_attribute_assignments_attribute_id_fkey"
+            columns: ["attribute_id"]
             isOneToOne: false
-            referencedRelation: \"attributes\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "attributes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3431,39 +3787,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"event_attendees_event_id_fkey\"
-            columns: [\"event_id\"]
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: \"events\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"event_attendees_event_id_fkey\"
-            columns: [\"event_id\"]
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: \"events_public\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"event_attendees_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"event_attendees_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"event_attendees_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "event_attendees_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3539,6 +3895,63 @@ export type Database = {
         }
         Relationships: []
       }
+      event_sources: {
+        Row: {
+          confidence: number | null
+          event_id: string
+          first_seen_at: string
+          id: string
+          is_primary: boolean
+          last_seen_at: string
+          payload: Json | null
+          payload_hash: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          event_id: string
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          event_id?: string
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id?: string
+          source_slug?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_sources_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_sources_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_types: {
         Row: {
           color: string | null
@@ -3595,6 +4008,7 @@ export type Database = {
           end_date: string | null
           enrichment_status: Json | null
           event_type: string
+          external_id: string | null
           featured: boolean | null
           festival_id: string | null
           geo_linked_at: string | null
@@ -3604,6 +4018,8 @@ export type Database = {
           is_free: boolean | null
           is_public: boolean
           is_recurring: boolean | null
+          last_refreshed_at: string | null
+          last_synced_at: string | null
           latitude: number | null
           lgbti_relevance_score: number | null
           logo_fetched_at: string | null
@@ -3627,9 +4043,11 @@ export type Database = {
           ticket_url: string | null
           timezone: string | null
           title: string
+          title_normalized: string | null
           updated_at: string
           venue_id: string | null
           venue_name: string | null
+          verification_status: string
           website: string | null
         }
         Insert: {
@@ -3651,6 +4069,7 @@ export type Database = {
           end_date?: string | null
           enrichment_status?: Json | null
           event_type: string
+          external_id?: string | null
           featured?: boolean | null
           festival_id?: string | null
           geo_linked_at?: string | null
@@ -3660,6 +4079,8 @@ export type Database = {
           is_free?: boolean | null
           is_public?: boolean
           is_recurring?: boolean | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
           logo_fetched_at?: string | null
@@ -3683,9 +4104,11 @@ export type Database = {
           ticket_url?: string | null
           timezone?: string | null
           title: string
+          title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           venue_name?: string | null
+          verification_status?: string
           website?: string | null
         }
         Update: {
@@ -3707,6 +4130,7 @@ export type Database = {
           end_date?: string | null
           enrichment_status?: Json | null
           event_type?: string
+          external_id?: string | null
           featured?: boolean | null
           festival_id?: string | null
           geo_linked_at?: string | null
@@ -3716,6 +4140,8 @@ export type Database = {
           is_free?: boolean | null
           is_public?: boolean
           is_recurring?: boolean | null
+          last_refreshed_at?: string | null
+          last_synced_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
           logo_fetched_at?: string | null
@@ -3739,88 +4165,90 @@ export type Database = {
           ticket_url?: string | null
           timezone?: string | null
           title?: string
+          title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           venue_name?: string | null
+          verification_status?: string
           website?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: \"events_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "events_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "events_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"events_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"events_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"events_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "events_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"events\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "events_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"events_public\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_festival_id_fkey\"
-            columns: [\"festival_id\"]
+            foreignKeyName: "events_festival_id_fkey"
+            columns: ["festival_id"]
             isOneToOne: false
-            referencedRelation: \"festivals\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_group_id_fkey\"
-            columns: [\"group_id\"]
+            foreignKeyName: "events_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: \"community_groups\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_queer_village_id_fkey\"
-            columns: [\"queer_village_id\"]
+            foreignKeyName: "events_queer_village_id_fkey"
+            columns: ["queer_village_id"]
             isOneToOne: false
-            referencedRelation: \"queer_villages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"events_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "events_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3908,6 +4336,68 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_duplicate_suggestions: {
+        Row: {
+          a_id: string
+          b_id: string
+          created_at: string
+          dismissed: boolean
+          dismissed_at: string | null
+          dismissed_by: string | null
+          id: string
+          similarity: number
+        }
+        Insert: {
+          a_id: string
+          b_id: string
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          id?: string
+          similarity: number
+        }
+        Update: {
+          a_id?: string
+          b_id?: string
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          id?: string
+          similarity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_duplicate_suggestions_a_id_fkey"
+            columns: ["a_id"]
+            isOneToOne: false
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_duplicate_suggestions_a_id_fkey"
+            columns: ["a_id"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
+          },
+          {
+            foreignKeyName: "feedback_duplicate_suggestions_b_id_fkey"
+            columns: ["b_id"]
+            isOneToOne: false
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_duplicate_suggestions_b_id_fkey"
+            columns: ["b_id"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
+          },
+        ]
+      }
       feedback_votes: {
         Row: {
           created_at: string
@@ -3929,11 +4419,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"feedback_votes_submission_id_fkey\"
-            columns: [\"submission_id\"]
+            foreignKeyName: "feedback_votes_submission_id_fkey"
+            columns: ["submission_id"]
             isOneToOne: false
-            referencedRelation: \"community_submissions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_votes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
           },
         ]
       }
@@ -4024,25 +4521,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"festivals_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "festivals_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"festivals_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "festivals_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"festivals_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "festivals_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4097,41 +4594,62 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"flyer_scans_duplicate_event_id_fkey\"
-            columns: [\"duplicate_event_id\"]
+            foreignKeyName: "flyer_scans_duplicate_event_id_fkey"
+            columns: ["duplicate_event_id"]
             isOneToOne: false
-            referencedRelation: \"events\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"flyer_scans_duplicate_event_id_fkey\"
-            columns: [\"duplicate_event_id\"]
+            foreignKeyName: "flyer_scans_duplicate_event_id_fkey"
+            columns: ["duplicate_event_id"]
             isOneToOne: false
-            referencedRelation: \"events_public\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"flyer_scans_matched_city_id_fkey\"
-            columns: [\"matched_city_id\"]
+            foreignKeyName: "flyer_scans_matched_city_id_fkey"
+            columns: ["matched_city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"flyer_scans_matched_country_id_fkey\"
-            columns: [\"matched_country_id\"]
+            foreignKeyName: "flyer_scans_matched_country_id_fkey"
+            columns: ["matched_country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"flyer_scans_matched_venue_id_fkey\"
-            columns: [\"matched_venue_id\"]
+            foreignKeyName: "flyer_scans_matched_venue_id_fkey"
+            columns: ["matched_venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
+      }
+      fx_rates: {
+        Row: {
+          currency: string
+          fetched_at: string
+          rate_to_usd: number
+          source: string | null
+        }
+        Insert: {
+          currency: string
+          fetched_at?: string
+          rate_to_usd: number
+          source?: string | null
+        }
+        Update: {
+          currency?: string
+          fetched_at?: string
+          rate_to_usd?: number
+          source?: string | null
+        }
+        Relationships: []
       }
       geo_link_log: {
         Row: {
@@ -4163,6 +4681,69 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_sources: {
+        Row: {
+          city_id: string | null
+          confidence: number | null
+          country_id: string | null
+          entity_type: string
+          first_seen_at: string
+          id: string
+          is_primary: boolean
+          last_seen_at: string
+          payload: Json | null
+          payload_hash: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url: string | null
+        }
+        Insert: {
+          city_id?: string | null
+          confidence?: number | null
+          country_id?: string | null
+          entity_type: string
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url?: string | null
+        }
+        Update: {
+          city_id?: string | null
+          confidence?: number | null
+          country_id?: string | null
+          entity_type?: string
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id?: string
+          source_slug?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_sources_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geo_sources_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_comment_likes: {
         Row: {
           comment_id: string
@@ -4184,11 +4765,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_comment_likes_comment_id_fkey\"
-            columns: [\"comment_id\"]
+            foreignKeyName: "group_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
             isOneToOne: false
-            referencedRelation: \"group_post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_post_comments"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4216,11 +4797,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_memberships_group_id_fkey\"
-            columns: [\"group_id\"]
+            foreignKeyName: "group_memberships_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: \"community_groups\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4263,25 +4844,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_notifications_group_id_fkey\"
-            columns: [\"group_id\"]
+            foreignKeyName: "group_notifications_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: \"community_groups\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"group_notifications_related_comment_id_fkey\"
-            columns: [\"related_comment_id\"]
+            foreignKeyName: "group_notifications_related_comment_id_fkey"
+            columns: ["related_comment_id"]
             isOneToOne: false
-            referencedRelation: \"group_post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_post_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"group_notifications_related_post_id_fkey\"
-            columns: [\"related_post_id\"]
+            foreignKeyName: "group_notifications_related_post_id_fkey"
+            columns: ["related_post_id"]
             isOneToOne: false
-            referencedRelation: \"group_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4312,11 +4893,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_poll_votes_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "group_poll_votes_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"group_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4356,18 +4937,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_post_comments_parent_comment_id_fkey\"
-            columns: [\"parent_comment_id\"]
+            foreignKeyName: "group_post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
             isOneToOne: false
-            referencedRelation: \"group_post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_post_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"group_post_comments_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "group_post_comments_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"group_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4392,11 +4973,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_post_likes_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "group_post_likes_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"group_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "group_posts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4448,11 +5029,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"group_posts_group_id_fkey\"
-            columns: [\"group_id\"]
+            foreignKeyName: "group_posts_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: \"community_groups\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4564,25 +5145,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"hotels_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "hotels_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"hotels_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "hotels_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"hotels_queer_village_id_fkey\"
-            columns: [\"queer_village_id\"]
+            foreignKeyName: "hotels_queer_village_id_fkey"
+            columns: ["queer_village_id"]
             isOneToOne: false
-            referencedRelation: \"queer_villages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4658,11 +5239,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"import_audit_log_import_job_id_fkey\"
-            columns: [\"import_job_id\"]
+            foreignKeyName: "import_audit_log_import_job_id_fkey"
+            columns: ["import_job_id"]
             isOneToOne: false
-            referencedRelation: \"import_jobs_enhanced\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "import_jobs_enhanced"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4870,11 +5451,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"import_jobs_enhanced_source_id_fkey\"
-            columns: [\"source_id\"]
+            foreignKeyName: "import_jobs_enhanced_source_id_fkey"
+            columns: ["source_id"]
             isOneToOne: false
-            referencedRelation: \"ingestion_sources\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "ingestion_sources"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4911,11 +5492,181 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"import_validation_results_import_job_id_fkey\"
-            columns: [\"import_job_id\"]
+            foreignKeyName: "import_validation_results_import_job_id_fkey"
+            columns: ["import_job_id"]
             isOneToOne: false
-            referencedRelation: \"import_jobs_enhanced\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "import_jobs_enhanced"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ingestion_dlq: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          id: number
+          last_attempt_at: string | null
+          locked_by: string | null
+          locked_until: string | null
+          max_attempts: number
+          next_retry_at: string
+          payload: Json | null
+          pipeline_run_id: string | null
+          resolved_at: string | null
+          source_slug: string | null
+          stage: string
+          staging_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: number
+          last_attempt_at?: string | null
+          locked_by?: string | null
+          locked_until?: string | null
+          max_attempts?: number
+          next_retry_at?: string
+          payload?: Json | null
+          pipeline_run_id?: string | null
+          resolved_at?: string | null
+          source_slug?: string | null
+          stage: string
+          staging_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: number
+          last_attempt_at?: string | null
+          locked_by?: string | null
+          locked_until?: string | null
+          max_attempts?: number
+          next_retry_at?: string
+          payload?: Json | null
+          pipeline_run_id?: string | null
+          resolved_at?: string | null
+          source_slug?: string | null
+          stage?: string
+          staging_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingestion_dlq_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
+          },
+          {
+            foreignKeyName: "ingestion_dlq_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_dlq_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ingestion_events: {
+        Row: {
+          actor: string
+          city_id: string | null
+          country_id: string | null
+          created_at: string
+          id: number
+          new_status: string | null
+          old_status: string | null
+          payload: Json | null
+          stage: string
+          staging_id: string | null
+          venue_id: string | null
+        }
+        Insert: {
+          actor?: string
+          city_id?: string | null
+          country_id?: string | null
+          created_at?: string
+          id?: number
+          new_status?: string | null
+          old_status?: string | null
+          payload?: Json | null
+          stage: string
+          staging_id?: string | null
+          venue_id?: string | null
+        }
+        Update: {
+          actor?: string
+          city_id?: string | null
+          country_id?: string | null
+          created_at?: string
+          id?: number
+          new_status?: string | null
+          old_status?: string | null
+          payload?: Json | null
+          stage?: string
+          staging_id?: string | null
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingestion_events_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5010,9 +5761,11 @@ export type Database = {
           entity_type: string | null
           error_message: string | null
           id: string
-          job_id: string
+          idempotency_key: string | null
+          job_id: string | null
           node_id: string | null
           normalized_data: Json | null
+          payload_hash: string | null
           pipeline_run_id: string | null
           processed_at: string | null
           raw_data: Json
@@ -5020,6 +5773,7 @@ export type Database = {
           review_status: string
           reviewed_at: string | null
           reviewed_by: string | null
+          source_entity_id: string | null
           source_name: string | null
           source_type: string
           target_record_id: string | null
@@ -5044,9 +5798,11 @@ export type Database = {
           entity_type?: string | null
           error_message?: string | null
           id?: string
-          job_id: string
+          idempotency_key?: string | null
+          job_id?: string | null
           node_id?: string | null
           normalized_data?: Json | null
+          payload_hash?: string | null
           pipeline_run_id?: string | null
           processed_at?: string | null
           raw_data: Json
@@ -5054,6 +5810,7 @@ export type Database = {
           review_status?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source_entity_id?: string | null
           source_name?: string | null
           source_type: string
           target_record_id?: string | null
@@ -5078,9 +5835,11 @@ export type Database = {
           entity_type?: string | null
           error_message?: string | null
           id?: string
-          job_id?: string
+          idempotency_key?: string | null
+          job_id?: string | null
           node_id?: string | null
           normalized_data?: Json | null
+          payload_hash?: string | null
           pipeline_run_id?: string | null
           processed_at?: string | null
           raw_data?: Json
@@ -5088,21 +5847,14 @@ export type Database = {
           review_status?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source_entity_id?: string | null
           source_name?: string | null
           source_type?: string
           target_record_id?: string | null
           target_table?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: \"ingestion_staging_job_id_fkey\"
-            columns: [\"job_id\"]
-            isOneToOne: false
-            referencedRelation: \"import_jobs_enhanced\"
-            referencedColumns: [\"id\"]
-          },
-        ]
+        Relationships: []
       }
       knowledge_base: {
         Row: {
@@ -5275,11 +6027,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"mailbox_emails_in_reply_to_email_id_fkey\"
-            columns: [\"in_reply_to_email_id\"]
+            foreignKeyName: "mailbox_emails_in_reply_to_email_id_fkey"
+            columns: ["in_reply_to_email_id"]
             isOneToOne: false
-            referencedRelation: \"mailbox_emails\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "mailbox_emails"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5340,11 +6092,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"marketplace_categories_parent_id_fkey\"
-            columns: [\"parent_id\"]
+            foreignKeyName: "marketplace_categories_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: \"marketplace_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5369,118 +6121,234 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"marketplace_favorites_listing_id_fkey\"
-            columns: [\"listing_id\"]
+            foreignKeyName: "marketplace_favorites_listing_id_fkey"
+            columns: ["listing_id"]
             isOneToOne: false
-            referencedRelation: \"marketplace_listings\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"marketplace_favorites_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_favorites_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_favorites_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_favorites_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      marketplace_listing_sources: {
+        Row: {
+          confidence: number | null
+          first_seen_at: string | null
+          id: string
+          is_primary: boolean | null
+          last_seen_at: string | null
+          listing_id: string
+          payload_hash: string | null
+          raw: Json | null
+          source_entity_id: string | null
+          source_slug: string
+          source_url: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          first_seen_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_seen_at?: string | null
+          listing_id: string
+          payload_hash?: string | null
+          raw?: Json | null
+          source_entity_id?: string | null
+          source_slug: string
+          source_url?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          first_seen_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_seen_at?: string | null
+          listing_id?: string
+          payload_hash?: string | null
+          raw?: Json | null
+          source_entity_id?: string | null
+          source_slug?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listing_sources_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
           },
         ]
       }
       marketplace_listings: {
         Row: {
+          affiliate_url: string | null
+          availability: string | null
+          brand: string | null
           business_name: string
           business_type: string | null
           category: string
           category_id: string | null
+          classified_at: string | null
           contact_email: string | null
           contact_phone: string | null
           created_at: string
           created_by: string | null
           currency: string | null
+          deprecated_at: string | null
           description: string | null
+          external_url: string | null
           featured: boolean | null
           id: string
+          image_hashes: Json | null
           images: string[] | null
+          in_stock: boolean | null
+          last_seen_at: string | null
+          last_verified_at: string | null
+          lgbti_relevance_score: number | null
+          link_health: string | null
           location: string | null
+          merchant_domain: string | null
+          merchant_id: string | null
+          payload_hash: string | null
           price: number | null
           price_type: string | null
+          price_usd: number | null
+          quality_score: number | null
+          review_status: string | null
+          sensitivity_flags: Json | null
           shipping_available: boolean | null
           shipping_info: string | null
           slug: string
           social_media: Json | null
+          source_entity_id: string | null
+          source_type: string | null
           status: string | null
           subcategory: string | null
           title: string
+          title_normalized: string | null
           updated_at: string
           venue_id: string | null
           views_count: number | null
           website: string | null
         }
         Insert: {
+          affiliate_url?: string | null
+          availability?: string | null
+          brand?: string | null
           business_name: string
           business_type?: string | null
           category: string
           category_id?: string | null
+          classified_at?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
+          deprecated_at?: string | null
           description?: string | null
+          external_url?: string | null
           featured?: boolean | null
           id?: string
+          image_hashes?: Json | null
           images?: string[] | null
+          in_stock?: boolean | null
+          last_seen_at?: string | null
+          last_verified_at?: string | null
+          lgbti_relevance_score?: number | null
+          link_health?: string | null
           location?: string | null
+          merchant_domain?: string | null
+          merchant_id?: string | null
+          payload_hash?: string | null
           price?: number | null
           price_type?: string | null
+          price_usd?: number | null
+          quality_score?: number | null
+          review_status?: string | null
+          sensitivity_flags?: Json | null
           shipping_available?: boolean | null
           shipping_info?: string | null
           slug: string
           social_media?: Json | null
+          source_entity_id?: string | null
+          source_type?: string | null
           status?: string | null
           subcategory?: string | null
           title: string
+          title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           views_count?: number | null
           website?: string | null
         }
         Update: {
+          affiliate_url?: string | null
+          availability?: string | null
+          brand?: string | null
           business_name?: string
           business_type?: string | null
           category?: string
           category_id?: string | null
+          classified_at?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
+          deprecated_at?: string | null
           description?: string | null
+          external_url?: string | null
           featured?: boolean | null
           id?: string
+          image_hashes?: Json | null
           images?: string[] | null
+          in_stock?: boolean | null
+          last_seen_at?: string | null
+          last_verified_at?: string | null
+          lgbti_relevance_score?: number | null
+          link_health?: string | null
           location?: string | null
+          merchant_domain?: string | null
+          merchant_id?: string | null
+          payload_hash?: string | null
           price?: number | null
           price_type?: string | null
+          price_usd?: number | null
+          quality_score?: number | null
+          review_status?: string | null
+          sensitivity_flags?: Json | null
           shipping_available?: boolean | null
           shipping_info?: string | null
           slug?: string
           social_media?: Json | null
+          source_entity_id?: string | null
+          source_type?: string | null
           status?: string | null
           subcategory?: string | null
           title?: string
+          title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           views_count?: number | null
@@ -5488,39 +6356,152 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"marketplace_listings_category_id_fkey\"
-            columns: [\"category_id\"]
+            foreignKeyName: "marketplace_listings_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: \"marketplace_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "marketplace_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"marketplace_listings_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_listings_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_listings_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "marketplace_listings_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_listings_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "marketplace_listings_merchant_id_fkey"
+            columns: ["merchant_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "affiliate_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_merchants: {
+        Row: {
+          affiliate_partner_id: string | null
+          api_key_env: string | null
+          api_key_vault_id: string | null
+          config: Json
+          created_at: string
+          display_name: string
+          id: string
+          is_enabled: boolean
+          last_sync_at: string | null
+          last_sync_items: number | null
+          last_sync_status: string | null
+          provider: string
+          shop_domain: string | null
+          shop_id: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_partner_id?: string | null
+          api_key_env?: string | null
+          api_key_vault_id?: string | null
+          config?: Json
+          created_at?: string
+          display_name: string
+          id?: string
+          is_enabled?: boolean
+          last_sync_at?: string | null
+          last_sync_items?: number | null
+          last_sync_status?: string | null
+          provider: string
+          shop_domain?: string | null
+          shop_id?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_partner_id?: string | null
+          api_key_env?: string | null
+          api_key_vault_id?: string | null
+          config?: Json
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_enabled?: boolean
+          last_sync_at?: string | null
+          last_sync_items?: number | null
+          last_sync_status?: string | null
+          provider?: string
+          shop_domain?: string | null
+          shop_id?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_merchants_affiliate_partner_id_fkey"
+            columns: ["affiliate_partner_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_price_history: {
+        Row: {
+          availability: string | null
+          currency: string | null
+          id: string
+          listing_id: string
+          observed_at: string
+          price: number
+          price_usd: number | null
+          source_slug: string | null
+        }
+        Insert: {
+          availability?: string | null
+          currency?: string | null
+          id?: string
+          listing_id: string
+          observed_at?: string
+          price: number
+          price_usd?: number | null
+          source_slug?: string | null
+        }
+        Update: {
+          availability?: string | null
+          currency?: string | null
+          id?: string
+          listing_id?: string
+          observed_at?: string
+          price?: number
+          price_usd?: number | null
+          source_slug?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_price_history_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5563,32 +6544,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"marketplace_reviews_listing_id_fkey\"
-            columns: [\"listing_id\"]
+            foreignKeyName: "marketplace_reviews_listing_id_fkey"
+            columns: ["listing_id"]
             isOneToOne: false
-            referencedRelation: \"marketplace_listings\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"marketplace_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"marketplace_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "marketplace_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5658,32 +6639,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"message_reactions_message_id_fkey\"
-            columns: [\"message_id\"]
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
             isOneToOne: false
-            referencedRelation: \"messages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"message_reactions_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "message_reactions_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"message_reactions_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "message_reactions_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"message_reactions_user_id_profiles_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "message_reactions_user_id_profiles_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5729,39 +6710,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"messages_conversation_id_fkey\"
-            columns: [\"conversation_id\"]
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: \"conversations\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"messages_reply_to_id_fkey\"
-            columns: [\"reply_to_id\"]
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
             isOneToOne: false
-            referencedRelation: \"messages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"messages_sender_id_profiles_user_id_fkey\"
-            columns: [\"sender_id\"]
+            foreignKeyName: "messages_sender_id_profiles_user_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"messages_sender_id_profiles_user_id_fkey\"
-            columns: [\"sender_id\"]
+            foreignKeyName: "messages_sender_id_profiles_user_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"messages_sender_id_profiles_user_id_fkey\"
-            columns: [\"sender_id\"]
+            foreignKeyName: "messages_sender_id_profiles_user_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5840,18 +6821,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"news_article_cities_article_id_fkey\"
-            columns: [\"article_id\"]
+            foreignKeyName: "news_article_cities_article_id_fkey"
+            columns: ["article_id"]
             isOneToOne: false
-            referencedRelation: \"news_articles\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"news_article_cities_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "news_article_cities_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5876,18 +6857,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"news_article_countries_article_id_fkey\"
-            columns: [\"article_id\"]
+            foreignKeyName: "news_article_countries_article_id_fkey"
+            columns: ["article_id"]
             isOneToOne: false
-            referencedRelation: \"news_articles\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"news_article_countries_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "news_article_countries_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5898,19 +6879,26 @@ export type Database = {
           city_ids: string[] | null
           classified_at: string | null
           content: string | null
+          content_hash: string | null
           country_ids: string[] | null
           created_at: string
           duplicate_of_id: string | null
           enrichment_status: Json | null
           excerpt: string | null
+          fingerprint: string
+          first_seen_at: string | null
           id: string
           image_url: string | null
+          ingestion_run_id: string | null
+          ingestion_staging_id: string | null
           is_featured: boolean | null
+          last_seen_at: string | null
           lgbti_relevance_score: number | null
           needs_attention: boolean | null
           published_at: string
           publisher_name: string | null
           quality_score: number | null
+          seen_count: number | null
           sensitivity_flags: Json | null
           sentiment: string | null
           slug: string
@@ -5927,19 +6915,26 @@ export type Database = {
           city_ids?: string[] | null
           classified_at?: string | null
           content?: string | null
+          content_hash?: string | null
           country_ids?: string[] | null
           created_at?: string
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
           excerpt?: string | null
+          fingerprint: string
+          first_seen_at?: string | null
           id?: string
           image_url?: string | null
+          ingestion_run_id?: string | null
+          ingestion_staging_id?: string | null
           is_featured?: boolean | null
+          last_seen_at?: string | null
           lgbti_relevance_score?: number | null
           needs_attention?: boolean | null
           published_at: string
           publisher_name?: string | null
           quality_score?: number | null
+          seen_count?: number | null
           sensitivity_flags?: Json | null
           sentiment?: string | null
           slug: string
@@ -5956,19 +6951,26 @@ export type Database = {
           city_ids?: string[] | null
           classified_at?: string | null
           content?: string | null
+          content_hash?: string | null
           country_ids?: string[] | null
           created_at?: string
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
           excerpt?: string | null
+          fingerprint?: string
+          first_seen_at?: string | null
           id?: string
           image_url?: string | null
+          ingestion_run_id?: string | null
+          ingestion_staging_id?: string | null
           is_featured?: boolean | null
+          last_seen_at?: string | null
           lgbti_relevance_score?: number | null
           needs_attention?: boolean | null
           published_at?: string
           publisher_name?: string | null
           quality_score?: number | null
+          seen_count?: number | null
           sensitivity_flags?: Json | null
           sentiment?: string | null
           slug?: string
@@ -5981,18 +6983,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"news_articles_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "news_articles_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"news_articles\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"news_articles_source_id_fkey\"
-            columns: [\"source_id\"]
+            foreignKeyName: "news_articles_ingestion_run_id_fkey"
+            columns: ["ingestion_run_id"]
             isOneToOne: false
-            referencedRelation: \"news_sources\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "pipeline_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_articles_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "news_sources"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6038,11 +7047,84 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"news_categories_parent_category_id_fkey\"
-            columns: [\"parent_category_id\"]
+            foreignKeyName: "news_categories_parent_category_id_fkey"
+            columns: ["parent_category_id"]
             isOneToOne: false
-            referencedRelation: \"news_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "news_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_dedup_audit: {
+        Row: {
+          candidate_fingerprint: string | null
+          candidate_published_at: string | null
+          candidate_title: string | null
+          candidate_url: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          match_decision: string
+          match_score: number | null
+          match_strategy: string
+          matched_article_id: string | null
+          pipeline_run_id: string | null
+          source_id: string | null
+          staging_id: string | null
+        }
+        Insert: {
+          candidate_fingerprint?: string | null
+          candidate_published_at?: string | null
+          candidate_title?: string | null
+          candidate_url?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          match_decision: string
+          match_score?: number | null
+          match_strategy: string
+          matched_article_id?: string | null
+          pipeline_run_id?: string | null
+          source_id?: string | null
+          staging_id?: string | null
+        }
+        Update: {
+          candidate_fingerprint?: string | null
+          candidate_published_at?: string | null
+          candidate_title?: string | null
+          candidate_url?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          match_decision?: string
+          match_score?: number | null
+          match_strategy?: string
+          matched_article_id?: string | null
+          pipeline_run_id?: string | null
+          source_id?: string | null
+          staging_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_dedup_audit_matched_article_id_fkey"
+            columns: ["matched_article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_dedup_audit_pipeline_run_id_fkey"
+            columns: ["pipeline_run_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_dedup_audit_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "news_sources"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6070,7 +7152,12 @@ export type Database = {
       news_sources: {
         Row: {
           articles_fetched: number | null
+          auto_paused: boolean
+          auto_paused_reason: string | null
+          avg_articles_per_fetch: number | null
+          backoff_until: string | null
           category: string
+          consecutive_failures: number
           created_at: string
           fetch_frequency: number
           id: string
@@ -6078,7 +7165,9 @@ export type Database = {
           keywords: string[] | null
           last_error: string | null
           last_fetched_at: string | null
+          last_successful_fetch: string | null
           name: string
+          reliability_score: number | null
           source_type: string
           status: string | null
           updated_at: string
@@ -6086,7 +7175,12 @@ export type Database = {
         }
         Insert: {
           articles_fetched?: number | null
+          auto_paused?: boolean
+          auto_paused_reason?: string | null
+          avg_articles_per_fetch?: number | null
+          backoff_until?: string | null
           category?: string
+          consecutive_failures?: number
           created_at?: string
           fetch_frequency?: number
           id?: string
@@ -6094,7 +7188,9 @@ export type Database = {
           keywords?: string[] | null
           last_error?: string | null
           last_fetched_at?: string | null
+          last_successful_fetch?: string | null
           name: string
+          reliability_score?: number | null
           source_type?: string
           status?: string | null
           updated_at?: string
@@ -6102,7 +7198,12 @@ export type Database = {
         }
         Update: {
           articles_fetched?: number | null
+          auto_paused?: boolean
+          auto_paused_reason?: string | null
+          avg_articles_per_fetch?: number | null
+          backoff_until?: string | null
           category?: string
+          consecutive_failures?: number
           created_at?: string
           fetch_frequency?: number
           id?: string
@@ -6110,7 +7211,9 @@ export type Database = {
           keywords?: string[] | null
           last_error?: string | null
           last_fetched_at?: string | null
+          last_successful_fetch?: string | null
           name?: string
+          reliability_score?: number | null
           source_type?: string
           status?: string | null
           updated_at?: string
@@ -6202,20 +7305,24 @@ export type Database = {
           description: string | null
           duplicate_of_id: string | null
           enrichment_status: Json | null
+          external_ids: Json | null
           fields: Json | null
           geo_linked_at: string | null
           id: string
           image_url: string | null
           is_featured: boolean | null
           is_living: boolean | null
+          last_refreshed_at: string | null
           lgbti_connection: string | null
           lgbti_details: string | null
           lgbti_relevance_score: number | null
           name: string
           name_initial: string | null
+          name_normalized: string | null
           nationality: string | null
           needs_attention: boolean | null
           next_concerts: Json | null
+          payload_hash: string | null
           profession: string | null
           profile_url: string | null
           pronouns: string | null
@@ -6232,6 +7339,7 @@ export type Database = {
           view_count: number | null
           visibility: string | null
           website_url: string | null
+          wikidata_qid: string | null
         }
         Insert: {
           achievements?: Json | null
@@ -6247,20 +7355,24 @@ export type Database = {
           description?: string | null
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
+          external_ids?: Json | null
           fields?: Json | null
           geo_linked_at?: string | null
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
           is_living?: boolean | null
+          last_refreshed_at?: string | null
           lgbti_connection?: string | null
           lgbti_details?: string | null
           lgbti_relevance_score?: number | null
           name: string
           name_initial?: string | null
+          name_normalized?: string | null
           nationality?: string | null
           needs_attention?: boolean | null
           next_concerts?: Json | null
+          payload_hash?: string | null
           profession?: string | null
           profile_url?: string | null
           pronouns?: string | null
@@ -6277,6 +7389,7 @@ export type Database = {
           view_count?: number | null
           visibility?: string | null
           website_url?: string | null
+          wikidata_qid?: string | null
         }
         Update: {
           achievements?: Json | null
@@ -6292,20 +7405,24 @@ export type Database = {
           description?: string | null
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
+          external_ids?: Json | null
           fields?: Json | null
           geo_linked_at?: string | null
           id?: string
           image_url?: string | null
           is_featured?: boolean | null
           is_living?: boolean | null
+          last_refreshed_at?: string | null
           lgbti_connection?: string | null
           lgbti_details?: string | null
           lgbti_relevance_score?: number | null
           name?: string
           name_initial?: string | null
+          name_normalized?: string | null
           nationality?: string | null
           needs_attention?: boolean | null
           next_concerts?: Json | null
+          payload_hash?: string | null
           profession?: string | null
           profile_url?: string | null
           pronouns?: string | null
@@ -6322,28 +7439,132 @@ export type Database = {
           view_count?: number | null
           visibility?: string | null
           website_url?: string | null
+          wikidata_qid?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: \"personalities_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "personalities_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"personalities_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "personalities_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"personalities_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "personalities_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"personalities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "personalities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personality_sources: {
+        Row: {
+          confidence: number | null
+          first_seen_at: string | null
+          id: string
+          is_primary: boolean | null
+          last_seen_at: string | null
+          payload_hash: string | null
+          personality_id: string
+          raw: Json | null
+          source_entity_id: string | null
+          source_slug: string
+          source_url: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          first_seen_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_seen_at?: string | null
+          payload_hash?: string | null
+          personality_id: string
+          raw?: Json | null
+          source_entity_id?: string | null
+          source_slug: string
+          source_url?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          first_seen_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_seen_at?: string | null
+          payload_hash?: string | null
+          personality_id?: string
+          raw?: Json | null
+          source_entity_id?: string | null
+          source_slug?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personality_sources_personality_id_fkey"
+            columns: ["personality_id"]
+            isOneToOne: false
+            referencedRelation: "personalities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipeline_definition_versions: {
+        Row: {
+          default_context: Json
+          description: string | null
+          display_name: string | null
+          edges: Json
+          id: string
+          name: string
+          nodes: Json
+          pipeline_id: string
+          saved_at: string
+          saved_by: string | null
+          schedule: string | null
+          version: number
+        }
+        Insert: {
+          default_context?: Json
+          description?: string | null
+          display_name?: string | null
+          edges?: Json
+          id?: string
+          name: string
+          nodes?: Json
+          pipeline_id: string
+          saved_at?: string
+          saved_by?: string | null
+          schedule?: string | null
+          version: number
+        }
+        Update: {
+          default_context?: Json
+          description?: string | null
+          display_name?: string | null
+          edges?: Json
+          id?: string
+          name?: string
+          nodes?: Json
+          pipeline_id?: string
+          saved_at?: string
+          saved_by?: string | null
+          schedule?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_definition_versions_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_definitions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6404,6 +7625,81 @@ export type Database = {
         }
         Relationships: []
       }
+      pipeline_errors: {
+        Row: {
+          context: Json | null
+          created_at: string
+          function_name: string
+          id: number
+          message: string
+          pipeline_run_id: string | null
+          severity: string
+          stack: string | null
+          staging_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          function_name: string
+          id?: number
+          message: string
+          pipeline_run_id?: string | null
+          severity?: string
+          stack?: string | null
+          staging_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          function_name?: string
+          id?: number
+          message?: string
+          pipeline_run_id?: string | null
+          severity?: string
+          stack?: string | null
+          staging_id?: string | null
+        }
+        Relationships: []
+      }
+      pipeline_node_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          edges: Json
+          id: string
+          name: string
+          nodes: Json
+          updated_at: string
+          use_count: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          edges?: Json
+          id?: string
+          name: string
+          nodes?: Json
+          updated_at?: string
+          use_count?: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          edges?: Json
+          id?: string
+          name?: string
+          nodes?: Json
+          updated_at?: string
+          use_count?: number
+        }
+        Relationships: []
+      }
       pipeline_node_types: {
         Row: {
           category: string
@@ -6455,6 +7751,41 @@ export type Database = {
         }
         Relationships: []
       }
+      pipeline_permissions: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          permission: string
+          pipeline_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission: string
+          pipeline_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission?: string
+          pipeline_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_permissions_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pipeline_runs: {
         Row: {
           completed_at: string | null
@@ -6470,6 +7801,8 @@ export type Database = {
           node_states: Json | null
           pipeline_id: string | null
           pipeline_name: string
+          pipeline_snapshot: Json | null
+          pipeline_version: number | null
           started_at: string | null
           status: string
           triggered_by: string | null
@@ -6489,6 +7822,8 @@ export type Database = {
           node_states?: Json | null
           pipeline_id?: string | null
           pipeline_name: string
+          pipeline_snapshot?: Json | null
+          pipeline_version?: number | null
           started_at?: string | null
           status?: string
           triggered_by?: string | null
@@ -6508,6 +7843,8 @@ export type Database = {
           node_states?: Json | null
           pipeline_id?: string | null
           pipeline_name?: string
+          pipeline_snapshot?: Json | null
+          pipeline_version?: number | null
           started_at?: string | null
           status?: string
           triggered_by?: string | null
@@ -6515,11 +7852,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"pipeline_runs_pipeline_id_fkey\"
-            columns: [\"pipeline_id\"]
+            foreignKeyName: "pipeline_runs_pipeline_id_fkey"
+            columns: ["pipeline_id"]
             isOneToOne: false
-            referencedRelation: \"pipeline_definitions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "pipeline_definitions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6607,39 +7944,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"post_comments_parent_comment_id_fkey\"
-            columns: [\"parent_comment_id\"]
+            foreignKeyName: "post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
             isOneToOne: false
-            referencedRelation: \"post_comments\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"post_comments_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"community_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"post_comments_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"post_comments_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"post_comments_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6664,32 +8001,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"post_likes_post_id_fkey\"
-            columns: [\"post_id\"]
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: \"community_posts\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"post_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"post_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"post_likes_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6849,7 +8186,7 @@ export type Database = {
           travel_preferences: Json | null
           updated_at: string
           user_id: string
-          user_mode: Database[\"public\"][\"Enums\"][\"user_mode\"] | null
+          user_mode: Database["public"]["Enums"]["user_mode"] | null
           verified_email: boolean | null
           verified_identity: boolean | null
           verified_phone: boolean | null
@@ -6995,7 +8332,7 @@ export type Database = {
           travel_preferences?: Json | null
           updated_at?: string
           user_id: string
-          user_mode?: Database[\"public\"][\"Enums\"][\"user_mode\"] | null
+          user_mode?: Database["public"]["Enums"]["user_mode"] | null
           verified_email?: boolean | null
           verified_identity?: boolean | null
           verified_phone?: boolean | null
@@ -7141,7 +8478,7 @@ export type Database = {
           travel_preferences?: Json | null
           updated_at?: string
           user_id?: string
-          user_mode?: Database[\"public\"][\"Enums\"][\"user_mode\"] | null
+          user_mode?: Database["public"]["Enums"]["user_mode"] | null
           verified_email?: boolean | null
           verified_identity?: boolean | null
           verified_phone?: boolean | null
@@ -7296,18 +8633,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"queer_villages_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "queer_villages_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"queer_villages_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "queer_villages_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7383,11 +8720,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"redirect_events_redirect_id_fkey\"
-            columns: [\"redirect_id\"]
+            foreignKeyName: "redirect_events_redirect_id_fkey"
+            columns: ["redirect_id"]
             isOneToOne: false
-            referencedRelation: \"redirects\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "redirects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7400,17 +8737,17 @@ export type Database = {
           end_at: string | null
           id: string
           is_enabled: boolean
-          match_kind: Database[\"public\"][\"Enums\"][\"redirect_match_kind\"]
+          match_kind: Database["public"]["Enums"]["redirect_match_kind"]
           notes: string | null
           preserve_query: boolean
-          query_mode: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode: Database["public"]["Enums"]["redirect_query_mode"]
           query_override: Json | null
           slug: string | null
           source_path: string | null
           start_at: string | null
           status_code: number
           target: string
-          type: Database[\"public\"][\"Enums\"][\"redirect_type\"]
+          type: Database["public"]["Enums"]["redirect_type"]
           updated_at: string
           utm_defaults: Json | null
         }
@@ -7422,17 +8759,17 @@ export type Database = {
           end_at?: string | null
           id?: string
           is_enabled?: boolean
-          match_kind?: Database[\"public\"][\"Enums\"][\"redirect_match_kind\"]
+          match_kind?: Database["public"]["Enums"]["redirect_match_kind"]
           notes?: string | null
           preserve_query?: boolean
-          query_mode?: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode?: Database["public"]["Enums"]["redirect_query_mode"]
           query_override?: Json | null
           slug?: string | null
           source_path?: string | null
           start_at?: string | null
           status_code?: number
           target: string
-          type?: Database[\"public\"][\"Enums\"][\"redirect_type\"]
+          type?: Database["public"]["Enums"]["redirect_type"]
           updated_at?: string
           utm_defaults?: Json | null
         }
@@ -7444,17 +8781,17 @@ export type Database = {
           end_at?: string | null
           id?: string
           is_enabled?: boolean
-          match_kind?: Database[\"public\"][\"Enums\"][\"redirect_match_kind\"]
+          match_kind?: Database["public"]["Enums"]["redirect_match_kind"]
           notes?: string | null
           preserve_query?: boolean
-          query_mode?: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode?: Database["public"]["Enums"]["redirect_query_mode"]
           query_override?: Json | null
           slug?: string | null
           source_path?: string | null
           start_at?: string | null
           status_code?: number
           target?: string
-          type?: Database[\"public\"][\"Enums\"][\"redirect_type\"]
+          type?: Database["public"]["Enums"]["redirect_type"]
           updated_at?: string
           utm_defaults?: Json | null
         }
@@ -7484,11 +8821,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"regions_continent_id_fkey\"
-            columns: [\"continent_id\"]
+            foreignKeyName: "regions_continent_id_fkey"
+            columns: ["continent_id"]
             isOneToOne: false
-            referencedRelation: \"continents\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "continents"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7528,11 +8865,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"review_queue_resolved_by_fkey\"
-            columns: [\"resolved_by\"]
+            foreignKeyName: "review_queue_resolved_by_fkey"
+            columns: ["resolved_by"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7542,7 +8879,7 @@ export type Database = {
           created_at: string
           id: string
           performed_by: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           target_user_id: string
           user_id: string
         }
@@ -7551,7 +8888,7 @@ export type Database = {
           created_at?: string
           id?: string
           performed_by: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           target_user_id: string
           user_id: string
         }
@@ -7560,7 +8897,7 @@ export type Database = {
           created_at?: string
           id?: string
           performed_by?: string
-          role?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role?: Database["public"]["Enums"]["app_role"]
           target_user_id?: string
           user_id?: string
         }
@@ -7626,18 +8963,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"scrape_runs_job_id_fkey\"
-            columns: [\"job_id\"]
+            foreignKeyName: "scrape_runs_job_id_fkey"
+            columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: \"import_jobs_enhanced\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "import_jobs_enhanced"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"scrape_runs_source_id_fkey\"
-            columns: [\"source_id\"]
+            foreignKeyName: "scrape_runs_source_id_fkey"
+            columns: ["source_id"]
             isOneToOne: false
-            referencedRelation: \"scrape_sources\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "scrape_sources"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7724,36 +9061,86 @@ export type Database = {
       }
       scraper_dedupe_decisions: {
         Row: {
+          action: string | null
           confidence: number
           created_at: string | null
+          decided_by: string
           decision: string
           entity_a_id: string
-          entity_b_id: string
+          entity_b_id: string | null
           entity_type: string
           id: string
+          incoming_source_id: string | null
+          incoming_source_name: string | null
           match_method: string
+          pipeline_run_id: string | null
+          rules_fired: Json | null
+          staging_id: string | null
         }
         Insert: {
+          action?: string | null
           confidence: number
           created_at?: string | null
+          decided_by?: string
           decision: string
           entity_a_id: string
-          entity_b_id: string
+          entity_b_id?: string | null
           entity_type: string
           id?: string
+          incoming_source_id?: string | null
+          incoming_source_name?: string | null
           match_method: string
+          pipeline_run_id?: string | null
+          rules_fired?: Json | null
+          staging_id?: string | null
         }
         Update: {
+          action?: string | null
           confidence?: number
           created_at?: string | null
+          decided_by?: string
           decision?: string
           entity_a_id?: string
-          entity_b_id?: string
+          entity_b_id?: string | null
           entity_type?: string
           id?: string
+          incoming_source_id?: string | null
+          incoming_source_name?: string | null
           match_method?: string
+          pipeline_run_id?: string | null
+          rules_fired?: Json | null
+          staging_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "scraper_dedupe_decisions_pipeline_run_id_fkey"
+            columns: ["pipeline_run_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scraper_dedupe_decisions_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "geo_merge_candidates"
+            referencedColumns: ["staging_id"]
+          },
+          {
+            foreignKeyName: "scraper_dedupe_decisions_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "ingestion_staging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scraper_dedupe_decisions_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stuck_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scraper_entity_map: {
         Row: {
@@ -7800,6 +9187,7 @@ export type Database = {
           first_seen_at: string | null
           id: string
           images: string[] | null
+          language: string | null
           last_seen_at: string | null
           lat: number | null
           lng: number | null
@@ -7826,6 +9214,7 @@ export type Database = {
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -7852,6 +9241,7 @@ export type Database = {
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -7872,6 +9262,13 @@ export type Database = {
       scraper_ingest_runs: {
         Row: {
           blocked_by_robots: number | null
+          coverage_address: number | null
+          coverage_description: number | null
+          coverage_geo: number | null
+          coverage_images: number | null
+          coverage_phone: number | null
+          coverage_tags: number | null
+          coverage_website: number | null
           entities_deduped: number | null
           entities_inserted: number | null
           entities_parsed: number | null
@@ -7888,6 +9285,13 @@ export type Database = {
         }
         Insert: {
           blocked_by_robots?: number | null
+          coverage_address?: number | null
+          coverage_description?: number | null
+          coverage_geo?: number | null
+          coverage_images?: number | null
+          coverage_phone?: number | null
+          coverage_tags?: number | null
+          coverage_website?: number | null
           entities_deduped?: number | null
           entities_inserted?: number | null
           entities_parsed?: number | null
@@ -7904,6 +9308,13 @@ export type Database = {
         }
         Update: {
           blocked_by_robots?: number | null
+          coverage_address?: number | null
+          coverage_description?: number | null
+          coverage_geo?: number | null
+          coverage_images?: number | null
+          coverage_phone?: number | null
+          coverage_tags?: number | null
+          coverage_website?: number | null
           entities_deduped?: number | null
           entities_inserted?: number | null
           entities_parsed?: number | null
@@ -7920,6 +9331,54 @@ export type Database = {
         }
         Relationships: []
       }
+      scraper_migrations: {
+        Row: {
+          applied_at: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          applied_at?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          applied_at?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      scraper_normalize_rejections: {
+        Row: {
+          entity_type: string
+          id: string
+          raw_sample: Json | null
+          reject_reason: string
+          rejected_at: string | null
+          source_id: string
+          source_name: string
+        }
+        Insert: {
+          entity_type: string
+          id?: string
+          raw_sample?: Json | null
+          reject_reason: string
+          rejected_at?: string | null
+          source_id: string
+          source_name: string
+        }
+        Update: {
+          entity_type?: string
+          id?: string
+          raw_sample?: Json | null
+          reject_reason?: string
+          rejected_at?: string | null
+          source_id?: string
+          source_name?: string
+        }
+        Relationships: []
+      }
       scraper_places: {
         Row: {
           city: string
@@ -7929,6 +9388,7 @@ export type Database = {
           first_seen_at: string | null
           id: string
           images: string[] | null
+          language: string | null
           last_seen_at: string | null
           lat: number | null
           lng: number | null
@@ -7947,6 +9407,7 @@ export type Database = {
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -7965,6 +9426,7 @@ export type Database = {
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -7979,29 +9441,41 @@ export type Database = {
       }
       scraper_snapshots: {
         Row: {
-          content: string
+          archived_at: string | null
+          content: string | null
+          content_encoding: string | null
+          content_gz: string | null
           content_hash: string
           content_type: string
           fetched_at: string | null
           id: string
+          r2_key: string | null
           source_name: string
           url: string
         }
         Insert: {
-          content: string
+          archived_at?: string | null
+          content?: string | null
+          content_encoding?: string | null
+          content_gz?: string | null
           content_hash: string
           content_type: string
           fetched_at?: string | null
           id?: string
+          r2_key?: string | null
           source_name: string
           url: string
         }
         Update: {
-          content?: string
+          archived_at?: string | null
+          content?: string | null
+          content_encoding?: string | null
+          content_gz?: string | null
           content_hash?: string
           content_type?: string
           fetched_at?: string | null
           id?: string
+          r2_key?: string | null
           source_name?: string
           url?: string
         }
@@ -8012,12 +9486,13 @@ export type Database = {
           address: string | null
           category: string | null
           city: string
-          country: string
+          country: string | null
           created_at: string | null
           description: string | null
           first_seen_at: string | null
           id: string
           images: string[] | null
+          language: string | null
           last_seen_at: string | null
           lat: number | null
           lng: number | null
@@ -8034,12 +9509,13 @@ export type Database = {
           address?: string | null
           category?: string | null
           city: string
-          country: string
+          country?: string | null
           created_at?: string | null
           description?: string | null
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -8056,12 +9532,13 @@ export type Database = {
           address?: string | null
           category?: string | null
           city?: string
-          country?: string
+          country?: string | null
           created_at?: string | null
           description?: string | null
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -8081,12 +9558,13 @@ export type Database = {
           address: string | null
           category: string | null
           city: string
-          country: string
+          country: string | null
           created_at: string | null
           description: string | null
           first_seen_at: string | null
           id: string
           images: string[] | null
+          language: string | null
           last_seen_at: string | null
           lat: number | null
           lng: number | null
@@ -8104,12 +9582,13 @@ export type Database = {
           address?: string | null
           category?: string | null
           city: string
-          country: string
+          country?: string | null
           created_at?: string | null
           description?: string | null
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -8127,12 +9606,13 @@ export type Database = {
           address?: string | null
           category?: string | null
           city?: string
-          country?: string
+          country?: string | null
           created_at?: string | null
           description?: string | null
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -8145,6 +9625,54 @@ export type Database = {
           tags?: string[] | null
           updated_at?: string | null
           website?: string | null
+        }
+        Relationships: []
+      }
+      search_queries: {
+        Row: {
+          clicked_entity_id: string | null
+          clicked_entity_type: string | null
+          created_at: string
+          filters: Json | null
+          had_rewrite: boolean | null
+          id: string
+          lang: string | null
+          n_results: number | null
+          query: string
+          query_normalized: string | null
+          session_id: string | null
+          took_ms: number | null
+          user_id: string | null
+        }
+        Insert: {
+          clicked_entity_id?: string | null
+          clicked_entity_type?: string | null
+          created_at?: string
+          filters?: Json | null
+          had_rewrite?: boolean | null
+          id?: string
+          lang?: string | null
+          n_results?: number | null
+          query: string
+          query_normalized?: string | null
+          session_id?: string | null
+          took_ms?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          clicked_entity_id?: string | null
+          clicked_entity_type?: string | null
+          created_at?: string
+          filters?: Json | null
+          had_rewrite?: boolean | null
+          id?: string
+          lang?: string | null
+          n_results?: number | null
+          query?: string
+          query_normalized?: string | null
+          session_id?: string | null
+          took_ms?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -8244,6 +9772,62 @@ export type Database = {
         }
         Relationships: []
       }
+      source_coverage_targets: {
+        Row: {
+          accommodation_type: string | null
+          actual_count: number
+          city_id: string | null
+          created_at: string
+          entity_type: string
+          expected_count: number | null
+          id: number
+          is_enabled: boolean
+          last_run_at: string | null
+          last_success_at: string | null
+          source_slug: string
+          success_ratio: number | null
+          updated_at: string
+        }
+        Insert: {
+          accommodation_type?: string | null
+          actual_count?: number
+          city_id?: string | null
+          created_at?: string
+          entity_type?: string
+          expected_count?: number | null
+          id?: number
+          is_enabled?: boolean
+          last_run_at?: string | null
+          last_success_at?: string | null
+          source_slug: string
+          success_ratio?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accommodation_type?: string | null
+          actual_count?: number
+          city_id?: string | null
+          created_at?: string
+          entity_type?: string
+          expected_count?: number | null
+          id?: number
+          is_enabled?: boolean
+          last_run_at?: string | null
+          last_success_at?: string | null
+          source_slug?: string
+          success_ratio?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_coverage_targets_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suspicious_activities: {
         Row: {
           activity_type: string
@@ -8307,25 +9891,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"tag_aliases_canonical_tag_id_fkey\"
-            columns: [\"canonical_tag_id\"]
+            foreignKeyName: "tag_aliases_canonical_tag_id_fkey"
+            columns: ["canonical_tag_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_aliases_canonical_tag_id_fkey\"
-            columns: [\"canonical_tag_id\"]
+            foreignKeyName: "tag_aliases_canonical_tag_id_fkey"
+            columns: ["canonical_tag_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_aliases_canonical_tag_id_fkey\"
-            columns: [\"canonical_tag_id\"]
+            foreignKeyName: "tag_aliases_canonical_tag_id_fkey"
+            columns: ["canonical_tag_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_aliases_canonical_tag_id_fkey"
+            columns: ["canonical_tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8368,11 +9959,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"tag_categories_parent_id_fkey\"
-            columns: [\"parent_id\"]
+            foreignKeyName: "tag_categories_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: \"tag_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_categories"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8400,32 +9991,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"tag_category_assignments_category_id_fkey\"
-            columns: [\"category_id\"]
+            foreignKeyName: "tag_category_assignments_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: \"tag_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_category_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_category_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_category_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_category_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_category_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_category_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_category_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8525,25 +10123,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"tag_suggestions_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_suggestions_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_suggestions_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_suggestions_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"tag_suggestions_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "tag_suggestions_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_suggestions_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8628,18 +10233,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_budget_items_place_id_fkey\"
-            columns: [\"place_id\"]
+            foreignKeyName: "trip_budget_items_place_id_fkey"
+            columns: ["place_id"]
             isOneToOne: false
-            referencedRelation: \"trip_places\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trip_places"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_budget_items_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_budget_items_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8670,11 +10275,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_days_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_days_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8705,32 +10310,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_members_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_members_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_members_user_id_profiles_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "trip_members_user_id_profiles_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"trip_members_user_id_profiles_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "trip_members_user_id_profiles_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"trip_members_user_id_profiles_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "trip_members_user_id_profiles_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -8764,18 +10369,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_messages_reply_to_fkey\"
-            columns: [\"reply_to\"]
+            foreignKeyName: "trip_messages_reply_to_fkey"
+            columns: ["reply_to"]
             isOneToOne: false
-            referencedRelation: \"trip_messages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trip_messages"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_messages_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_messages_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8815,11 +10420,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_notes_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_notes_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8859,11 +10464,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_packing_items_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_packing_items_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8936,60 +10541,60 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_places_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "trip_places_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "trip_places_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_day_id_fkey\"
-            columns: [\"day_id\"]
+            foreignKeyName: "trip_places_day_id_fkey"
+            columns: ["day_id"]
             isOneToOne: false
-            referencedRelation: \"trip_days\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trip_days"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_event_id_fkey\"
-            columns: [\"event_id\"]
+            foreignKeyName: "trip_places_event_id_fkey"
+            columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: \"events\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_event_id_fkey\"
-            columns: [\"event_id\"]
+            foreignKeyName: "trip_places_event_id_fkey"
+            columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: \"events_public\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "events_public"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_hotel_id_fkey\"
-            columns: [\"hotel_id\"]
+            foreignKeyName: "trip_places_hotel_id_fkey"
+            columns: ["hotel_id"]
             isOneToOne: false
-            referencedRelation: \"hotels\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_places_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_places_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "trip_places_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9029,11 +10634,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_polls_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_polls_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9106,25 +10711,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_reservations_booking_id_fkey\"
-            columns: [\"booking_id\"]
+            foreignKeyName: "trip_reservations_booking_id_fkey"
+            columns: ["booking_id"]
             isOneToOne: false
-            referencedRelation: \"bookings\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_reservations_place_id_fkey\"
-            columns: [\"place_id\"]
+            foreignKeyName: "trip_reservations_place_id_fkey"
+            columns: ["place_id"]
             isOneToOne: false
-            referencedRelation: \"trip_places\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trip_places"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"trip_reservations_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_reservations_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9158,11 +10763,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"trip_shares_trip_id_fkey\"
-            columns: [\"trip_id\"]
+            foreignKeyName: "trip_shares_trip_id_fkey"
+            columns: ["trip_id"]
             isOneToOne: false
-            referencedRelation: \"trips\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9253,25 +10858,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"unified_tag_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tag_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tag_assignments_tag_id_fkey\"
-            columns: [\"tag_id\"]
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9335,25 +10947,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9411,46 +11030,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"user_follows_follower_id_fkey\"
-            columns: [\"follower_id\"]
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_follower_id_fkey\"
-            columns: [\"follower_id\"]
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_follower_id_fkey\"
-            columns: [\"follower_id\"]
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_following_id_fkey\"
-            columns: [\"following_id\"]
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_following_id_fkey\"
-            columns: [\"following_id\"]
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"user_follows_following_id_fkey\"
-            columns: [\"following_id\"]
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -9675,7 +11294,7 @@ export type Database = {
           action_type: string
           admin_user_id: string
           id: string
-          role_changed: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role_changed: Database["public"]["Enums"]["app_role"]
           target_user_id: string
           timestamp: string
         }
@@ -9683,7 +11302,7 @@ export type Database = {
           action_type: string
           admin_user_id: string
           id?: string
-          role_changed: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role_changed: Database["public"]["Enums"]["app_role"]
           target_user_id: string
           timestamp?: string
         }
@@ -9691,7 +11310,7 @@ export type Database = {
           action_type?: string
           admin_user_id?: string
           id?: string
-          role_changed?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role_changed?: Database["public"]["Enums"]["app_role"]
           target_user_id?: string
           timestamp?: string
         }
@@ -9701,21 +11320,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          role?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id?: string
         }
@@ -9904,11 +11523,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"venue_checkins_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "venue_checkins_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10038,32 +11657,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"venue_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venue_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venue_reviews_user_id_fkey\"
-            columns: [\"user_id\"]
+            foreignKeyName: "venue_reviews_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venue_reviews_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "venue_reviews_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10106,6 +11725,56 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_sources: {
+        Row: {
+          confidence: number | null
+          first_seen_at: string
+          id: string
+          is_primary: boolean
+          last_seen_at: string
+          payload: Json | null
+          payload_hash: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url: string | null
+          venue_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id: string
+          source_slug: string
+          source_url?: string | null
+          venue_id: string
+        }
+        Update: {
+          confidence?: number | null
+          first_seen_at?: string
+          id?: string
+          is_primary?: boolean
+          last_seen_at?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          source_entity_id?: string
+          source_slug?: string
+          source_url?: string | null
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_sources_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       venue_tag_assignments: {
         Row: {
           created_at: string
@@ -10127,11 +11796,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"venue_tag_assignments_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "venue_tag_assignments_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10139,8 +11808,12 @@ export type Database = {
         Row: {
           accessibility_attributes: string[] | null
           accessibility_notes: string | null
+          accommodation_type: string | null
           address: string
+          address_normalized: string | null
           amenities: string[] | null
+          amenities_verified: boolean
+          booking_url: string | null
           category: string
           city: string
           city_id: string | null
@@ -10153,6 +11826,7 @@ export type Database = {
           description: string | null
           duplicate_of_id: string | null
           email: string | null
+          email_lower: string | null
           enrichment_status: Json | null
           external_id: string | null
           featured: boolean | null
@@ -10164,6 +11838,7 @@ export type Database = {
           id: string
           images: string[] | null
           instagram: string | null
+          last_refreshed_at: string | null
           last_synced_at: string | null
           latitude: number | null
           lgbti_relevance_score: number | null
@@ -10171,8 +11846,11 @@ export type Database = {
           logo_url: string | null
           longitude: number | null
           name: string
+          name_normalized: string | null
           needs_attention: boolean | null
           phone: string | null
+          phone_e164: string | null
+          platform_ids: Json
           postal_code: string | null
           price_range: number | null
           quality_score: number | null
@@ -10180,6 +11858,7 @@ export type Database = {
           sensitivity_flags: Json | null
           services: string[] | null
           slug: string
+          star_rating: number | null
           state: string | null
           sync_status: string | null
           tags: string[] | null
@@ -10191,14 +11870,23 @@ export type Database = {
           tripadvisor_rating: number | null
           tripadvisor_review_count: number | null
           updated_at: string
+          url_checked_at: string | null
+          url_status: string | null
+          venue_subtype: string | null
+          verification_status: string
           verified: boolean | null
           website: string | null
+          website_domain: string | null
         }
         Insert: {
           accessibility_attributes?: string[] | null
           accessibility_notes?: string | null
+          accommodation_type?: string | null
           address: string
+          address_normalized?: string | null
           amenities?: string[] | null
+          amenities_verified?: boolean
+          booking_url?: string | null
           category: string
           city: string
           city_id?: string | null
@@ -10211,6 +11899,7 @@ export type Database = {
           description?: string | null
           duplicate_of_id?: string | null
           email?: string | null
+          email_lower?: string | null
           enrichment_status?: Json | null
           external_id?: string | null
           featured?: boolean | null
@@ -10222,6 +11911,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           instagram?: string | null
+          last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
@@ -10229,8 +11919,11 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name: string
+          name_normalized?: string | null
           needs_attention?: boolean | null
           phone?: string | null
+          phone_e164?: string | null
+          platform_ids?: Json
           postal_code?: string | null
           price_range?: number | null
           quality_score?: number | null
@@ -10238,6 +11931,7 @@ export type Database = {
           sensitivity_flags?: Json | null
           services?: string[] | null
           slug: string
+          star_rating?: number | null
           state?: string | null
           sync_status?: string | null
           tags?: string[] | null
@@ -10249,14 +11943,23 @@ export type Database = {
           tripadvisor_rating?: number | null
           tripadvisor_review_count?: number | null
           updated_at?: string
+          url_checked_at?: string | null
+          url_status?: string | null
+          venue_subtype?: string | null
+          verification_status?: string
           verified?: boolean | null
           website?: string | null
+          website_domain?: string | null
         }
         Update: {
           accessibility_attributes?: string[] | null
           accessibility_notes?: string | null
+          accommodation_type?: string | null
           address?: string
+          address_normalized?: string | null
           amenities?: string[] | null
+          amenities_verified?: boolean
+          booking_url?: string | null
           category?: string
           city?: string
           city_id?: string | null
@@ -10269,6 +11972,7 @@ export type Database = {
           description?: string | null
           duplicate_of_id?: string | null
           email?: string | null
+          email_lower?: string | null
           enrichment_status?: Json | null
           external_id?: string | null
           featured?: boolean | null
@@ -10280,6 +11984,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           instagram?: string | null
+          last_refreshed_at?: string | null
           last_synced_at?: string | null
           latitude?: number | null
           lgbti_relevance_score?: number | null
@@ -10287,8 +11992,11 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name?: string
+          name_normalized?: string | null
           needs_attention?: boolean | null
           phone?: string | null
+          phone_e164?: string | null
+          platform_ids?: Json
           postal_code?: string | null
           price_range?: number | null
           quality_score?: number | null
@@ -10296,6 +12004,7 @@ export type Database = {
           sensitivity_flags?: Json | null
           services?: string[] | null
           slug?: string
+          star_rating?: number | null
           state?: string | null
           sync_status?: string | null
           tags?: string[] | null
@@ -10307,58 +12016,63 @@ export type Database = {
           tripadvisor_rating?: number | null
           tripadvisor_review_count?: number | null
           updated_at?: string
+          url_checked_at?: string | null
+          url_status?: string | null
+          venue_subtype?: string | null
+          verification_status?: string
           verified?: boolean | null
           website?: string | null
+          website_domain?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: \"venues_city_id_fkey\"
-            columns: [\"city_id\"]
+            foreignKeyName: "venues_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: \"cities\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"venues_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "venues_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"venues_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venues_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"public_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venues_created_by_fkey\"
-            columns: [\"created_by\"]
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: \"safe_profiles\"
-            referencedColumns: [\"user_id\"]
+            referencedRelation: "safe_profiles"
+            referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: \"venues_duplicate_of_id_fkey\"
-            columns: [\"duplicate_of_id\"]
+            foreignKeyName: "venues_duplicate_of_id_fkey"
+            columns: ["duplicate_of_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"venues_queer_village_id_fkey\"
-            columns: [\"queer_village_id\"]
+            foreignKeyName: "venues_queer_village_id_fkey"
+            columns: ["queer_village_id"]
             isOneToOne: false
-            referencedRelation: \"queer_villages\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10416,11 +12130,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"video_processing_jobs_video_id_fkey\"
-            columns: [\"video_id\"]
+            foreignKeyName: "video_processing_jobs_video_id_fkey"
+            columns: ["video_id"]
             isOneToOne: false
-            referencedRelation: \"videos\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10472,11 +12186,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"video_renditions_video_id_fkey\"
-            columns: [\"video_id\"]
+            foreignKeyName: "video_renditions_video_id_fkey"
+            columns: ["video_id"]
             isOneToOne: false
-            referencedRelation: \"videos\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10537,6 +12251,27 @@ export type Database = {
           storage_path?: string
           title?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      webhook_deliveries: {
+        Row: {
+          delivery_id: string
+          payload_digest: string | null
+          received_at: string
+          source: string
+        }
+        Insert: {
+          delivery_id: string
+          payload_digest?: string | null
+          received_at?: string
+          source: string
+        }
+        Update: {
+          delivery_id?: string
+          payload_digest?: string | null
+          received_at?: string
+          source?: string
         }
         Relationships: []
       }
@@ -10687,16 +12422,100 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"workflow_runs_definition_id_fkey\"
-            columns: [\"definition_id\"]
+            foreignKeyName: "workflow_runs_definition_id_fkey"
+            columns: ["definition_id"]
             isOneToOne: false
-            referencedRelation: \"workflow_definitions\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
           },
         ]
       }
     }
     Views: {
+      city_ingest_stats: {
+        Row: {
+          committed: number | null
+          day: string | null
+          duplicates: number | null
+          merge_candidates: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          validated: number | null
+        }
+        Relationships: []
+      }
+      country_ingest_stats: {
+        Row: {
+          committed: number | null
+          day: string | null
+          duplicates: number | null
+          merge_candidates: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          validated: number | null
+        }
+        Relationships: []
+      }
+      coverage_gaps: {
+        Row: {
+          accommodation_type: string | null
+          actual_count: number | null
+          city: string | null
+          expected_count: number | null
+          gap_kind: string | null
+          last_run_at: string | null
+          source_slug: string | null
+          success_ratio: number | null
+        }
+        Relationships: []
+      }
+      dedup_precision: {
+        Row: {
+          avg_rpc_score: number | null
+          avg_score_when_wrong: number | null
+          confirmed: number | null
+          decisions: number | null
+          last_decision: string | null
+          merged: number | null
+          precision: number | null
+          rejected: number | null
+          rpc_match_type: string | null
+        }
+        Relationships: []
+      }
+      dlq_summary: {
+        Row: {
+          items: number | null
+          last_attempt: string | null
+          next_retry: string | null
+          source_slug: string | null
+          stage: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
+      event_ingest_stats: {
+        Row: {
+          day: string | null
+          duplicates: number | null
+          inserted: number | null
+          merge_candidates: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          updated: number | null
+          validated: number | null
+        }
+        Relationships: []
+      }
       events_public: {
         Row: {
           address: string | null
@@ -10772,13 +12591,155 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"events_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "events_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
+      }
+      geo_merge_candidates: {
+        Row: {
+          created_at: string | null
+          dedup_details: Json | null
+          entity_type: string | null
+          match_country_code: string | null
+          match_country_name: string | null
+          match_id: string | null
+          match_lat: number | null
+          match_lng: number | null
+          match_name: string | null
+          match_score: number | null
+          proposed_code: string | null
+          proposed_country_code: string | null
+          proposed_country_name: string | null
+          proposed_lat: number | null
+          proposed_lng: number | null
+          proposed_name: string | null
+          source: string | null
+          source_entity_id: string | null
+          staging_id: string | null
+          target_table: string | null
+        }
+        Relationships: []
+      }
+      hotel_ingest_stats: {
+        Row: {
+          accommodation_type: string | null
+          committed: number | null
+          day: string | null
+          duplicates: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          validated: number | null
+        }
+        Relationships: []
+      }
+      personality_data_health: {
+        Row: {
+          avg_quality: number | null
+          draft_rows: number | null
+          known_duplicates: number | null
+          missing_description: number | null
+          missing_image: number | null
+          missing_lgbti: number | null
+          missing_qid: number | null
+          needs_attention: number | null
+          open_reviews: number | null
+          pending_verification: number | null
+          public_rows: number | null
+          total: number | null
+          verified: number | null
+        }
+        Relationships: []
+      }
+      pipeline_error_summary: {
+        Row: {
+          function_name: string | null
+          last_1h: number | null
+          last_24h: number | null
+          last_7d: number | null
+          last_seen_at: string | null
+          severity: string | null
+        }
+        Relationships: []
+      }
+      pipeline_quality_daily: {
+        Row: {
+          day: string | null
+          entity_type: string | null
+          n: number | null
+          score_avg: number | null
+          score_p50: number | null
+          source_name: string | null
+        }
+        Relationships: []
+      }
+      pipeline_quality_distribution: {
+        Row: {
+          entity_type: string | null
+          n: number | null
+          score_avg: number | null
+          score_max: number | null
+          score_min: number | null
+          score_p25: number | null
+          score_p50: number | null
+          score_p75: number | null
+          source_name: string | null
+        }
+        Relationships: []
+      }
+      pipeline_stuck_items: {
+        Row: {
+          ai_validation_status: string | null
+          created_at: string | null
+          dedup_status: string | null
+          disposition: string | null
+          error_message: string | null
+          id: string | null
+          review_status: string | null
+          source_name: string | null
+          source_type: string | null
+          stale_seconds: number | null
+          stuck_reason: string | null
+          target_table: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_validation_status?: string | null
+          created_at?: string | null
+          dedup_status?: string | null
+          disposition?: string | null
+          error_message?: string | null
+          id?: string | null
+          review_status?: string | null
+          source_name?: string | null
+          source_type?: string | null
+          stale_seconds?: never
+          stuck_reason?: never
+          target_table?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_validation_status?: string | null
+          created_at?: string | null
+          dedup_status?: string | null
+          disposition?: string | null
+          error_message?: string | null
+          id?: string | null
+          review_status?: string | null
+          source_name?: string | null
+          source_type?: string | null
+          stale_seconds?: never
+          stuck_reason?: never
+          target_table?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       public_profiles: {
         Row: {
@@ -10837,6 +12798,60 @@ export type Database = {
           display_name?: string | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      scraper_ingest_coverage: {
+        Row: {
+          entities_parsed: number | null
+          entity_type: string | null
+          pct_address: number | null
+          pct_description: number | null
+          pct_geo: number | null
+          pct_images: number | null
+          pct_phone: number | null
+          pct_tags: number | null
+          pct_website: number | null
+          source_name: string | null
+          started_at: string | null
+        }
+        Insert: {
+          entities_parsed?: number | null
+          entity_type?: string | null
+          pct_address?: never
+          pct_description?: never
+          pct_geo?: never
+          pct_images?: never
+          pct_phone?: never
+          pct_tags?: never
+          pct_website?: never
+          source_name?: string | null
+          started_at?: string | null
+        }
+        Update: {
+          entities_parsed?: number | null
+          entity_type?: string | null
+          pct_address?: never
+          pct_description?: never
+          pct_geo?: never
+          pct_images?: never
+          pct_phone?: never
+          pct_tags?: never
+          pct_website?: never
+          source_name?: string | null
+          started_at?: string | null
+        }
+        Relationships: []
+      }
+      scraper_snapshots_archive_candidates: {
+        Row: {
+          content_hash: string | null
+          content_type: string | null
+          fetched_at: string | null
+          gz_bytes: number | null
+          id: string | null
+          source_name: string | null
+          url: string | null
         }
         Relationships: []
       }
@@ -10914,27 +12929,169 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"tag_usage_summary\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"tags_with_categories\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: \"unified_tags_merged_into_id_fkey\"
-            columns: [\"merged_into_id\"]
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
             isOneToOne: false
-            referencedRelation: \"unified_tags\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
           },
         ]
+      }
+      v_active_tags: {
+        Row: {
+          category: string | null
+          category_id: string | null
+          created_at: string | null
+          deprecated_at: string | null
+          deprecation_reason: string | null
+          description: string | null
+          id: string | null
+          image_url: string | null
+          merged_into_id: string | null
+          name: string | null
+          scientific_data: Json | null
+          slug: string | null
+          status: string | null
+          updated_at: string | null
+          usage_count: number | null
+          wikipedia_url: string | null
+          wolfram_enriched_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          deprecated_at?: string | null
+          deprecation_reason?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          merged_into_id?: string | null
+          name?: string | null
+          scientific_data?: Json | null
+          slug?: string | null
+          status?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          wikipedia_url?: string | null
+          wolfram_enriched_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          deprecated_at?: string | null
+          deprecation_reason?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          merged_into_id?: string | null
+          name?: string | null
+          scientific_data?: Json | null
+          slug?: string | null
+          status?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          wikipedia_url?: string | null
+          wolfram_enriched_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_tags_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_api_error_daily: {
+        Row: {
+          day: string | null
+          fingerprint: string | null
+          n: number | null
+          submission_id: string | null
+        }
+        Relationships: []
+      }
+      v_feedback_analytics_daily: {
+        Row: {
+          category: string | null
+          content_type: string | null
+          day: string | null
+          feedback_status: string | null
+          n: number | null
+          priority: number | null
+        }
+        Relationships: []
+      }
+      v_popular_entities: {
+        Row: {
+          content_id: string | null
+          content_type: string | null
+          score: number | null
+        }
+        Relationships: []
+      }
+      v_top_queries: {
+        Row: {
+          avg_ms: number | null
+          avg_results: number | null
+          last_seen: string | null
+          n: number | null
+          query_normalized: string | null
+        }
+        Relationships: []
+      }
+      v_zero_hit_queries: {
+        Row: {
+          last_seen: string | null
+          n: number | null
+          query_normalized: string | null
+        }
+        Relationships: []
       }
       venue_checkin_stats: {
         Row: {
@@ -10946,13 +13103,28 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"venue_checkins_venue_id_fkey\"
-            columns: [\"venue_id\"]
+            foreignKeyName: "venue_checkins_venue_id_fkey"
+            columns: ["venue_id"]
             isOneToOne: false
-            referencedRelation: \"venues\"
-            referencedColumns: [\"id\"]
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
         ]
+      }
+      venue_ingest_stats: {
+        Row: {
+          day: string | null
+          duplicates: number | null
+          inserted: number | null
+          pending_review: number | null
+          rejected: number | null
+          source: string | null
+          staged: number | null
+          unique_items: number | null
+          updated: number | null
+          validated: number | null
+        }
+        Relationships: []
       }
     }
     Functions: {
@@ -10973,6 +13145,19 @@ export type Database = {
         Returns: number
       }
       apply_content_change: { Args: { p_change_id: string }; Returns: boolean }
+      apply_enrichment: {
+        Args: {
+          p_actor?: string
+          p_duration_ms?: number
+          p_error_message?: string
+          p_new_enriched: Json
+          p_pipeline_run_id: string
+          p_stage: string
+          p_staging_id: string
+          p_status?: string
+        }
+        Returns: string
+      }
       approve_tag_suggestions: {
         Args: { p_reviewer_id?: string; p_suggestion_ids: string[] }
         Returns: number
@@ -11026,6 +13211,7 @@ export type Database = {
         Args: { dry_run?: boolean; near_dupe_threshold?: number }
         Returns: Json
       }
+      auto_escalate_stale_feedback: { Args: never; Returns: number }
       auto_remove_broken_link: { Args: { link_id: string }; Returns: undefined }
       basic_rate_limit: {
         Args: { identifier: string; max_attempts?: number }
@@ -11054,13 +13240,13 @@ export type Database = {
             Args: { p_batch_id: string }
             Returns: {
               error: true
-            } & \"Could not choose the best candidate function between: public.bulk_apply_batch_changes(p_batch_id => text), public.bulk_apply_batch_changes(p_batch_id => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved\"
+            } & "Could not choose the best candidate function between: public.bulk_apply_batch_changes(p_batch_id => text), public.bulk_apply_batch_changes(p_batch_id => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
           }
         | {
             Args: { p_batch_id: string }
             Returns: {
               error: true
-            } & \"Could not choose the best candidate function between: public.bulk_apply_batch_changes(p_batch_id => text), public.bulk_apply_batch_changes(p_batch_id => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved\"
+            } & "Could not choose the best candidate function between: public.bulk_apply_batch_changes(p_batch_id => text), public.bulk_apply_batch_changes(p_batch_id => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
           }
       bulk_apply_content_changes: {
         Args: { p_change_ids: string[] }
@@ -11101,14 +13287,115 @@ export type Database = {
         }
         Returns: boolean
       }
+      circuit_breaker_check: { Args: { p_api_name: string }; Returns: boolean }
+      circuit_breaker_record_failure: {
+        Args: { p_api_name: string; p_error_msg?: string }
+        Returns: Json
+      }
+      circuit_breaker_record_success: {
+        Args: { p_api_name: string }
+        Returns: undefined
+      }
       clean_old_rate_limits: { Args: never; Returns: undefined }
       clean_staging_duplicates: {
         Args: { p_dry_run?: boolean; p_skip_threshold?: number }
         Returns: Json
       }
+      commit_city_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          city_id: string
+          staging_id: string
+        }[]
+      }
+      commit_city_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          city_id: string
+        }[]
+      }
+      commit_country_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          country_id: string
+          staging_id: string
+        }[]
+      }
+      commit_country_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          country_id: string
+        }[]
+      }
+      commit_event_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          event_id: string
+          staging_id: string
+        }[]
+      }
+      commit_event_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          event_id: string
+        }[]
+      }
+      commit_marketplace_staging_batch: {
+        Args: { p_limit?: number; p_pipeline_run_id?: string }
+        Returns: {
+          action: string
+          listing_id: string
+          staging_id: string
+        }[]
+      }
+      commit_personality_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          personality_id: string
+          staging_id: string
+        }[]
+      }
+      commit_personality_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          personality_id: string
+        }[]
+      }
+      commit_venue_staging_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          action: string
+          staging_id: string
+          venue_id: string
+        }[]
+      }
+      commit_venue_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          venue_id: string
+        }[]
+      }
       compute_quality_score: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: number
+      }
+      compute_staging_idempotency_key: {
+        Args: {
+          p_fallback: string
+          p_payload_hash: string
+          p_source_entity_id: string
+          p_source_name: string
+        }
+        Returns: string
       }
       compute_tag_similarities: { Args: never; Returns: Json }
       create_notification: {
@@ -11125,6 +13412,10 @@ export type Database = {
         Returns: undefined
       }
       decrement_post_likes: { Args: { post_id: string }; Returns: undefined }
+      detect_feedback_duplicates: {
+        Args: { p_days_window?: number; p_threshold?: number }
+        Returns: number
+      }
       detect_near_duplicate_tags: {
         Args: { min_sim?: number }
         Returns: {
@@ -11135,6 +13426,48 @@ export type Database = {
           tag_b_name: string
         }[]
       }
+      dlq_claim_batch: {
+        Args: { p_limit?: number; p_worker?: string }
+        Returns: {
+          attempts: number
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          id: number
+          last_attempt_at: string | null
+          locked_by: string | null
+          locked_until: string | null
+          max_attempts: number
+          next_retry_at: string
+          payload: Json | null
+          pipeline_run_id: string | null
+          resolved_at: string | null
+          source_slug: string | null
+          stage: string
+          staging_id: string | null
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "ingestion_dlq"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      dlq_enqueue: {
+        Args: {
+          p_error: string
+          p_error_code: string
+          p_payload?: Json
+          p_source?: string
+          p_stage: string
+          p_staging_id: string
+        }
+        Returns: number
+      }
+      dlq_fail: { Args: { p_err: string; p_id: number }; Returns: undefined }
+      dlq_resolve: { Args: { p_id: number }; Returns: undefined }
       enqueue_workflow: {
         Args: {
           p_payload?: Json
@@ -11155,6 +13488,32 @@ export type Database = {
           name: string
         }[]
       }
+      extract_website_domain: { Args: { url: string }; Returns: string }
+      feedback_sla_stats: {
+        Args: { p_days_window?: number }
+        Returns: {
+          category: string
+          median_seconds: number
+          p95_seconds: number
+          priority: number
+          resolved_n: number
+        }[]
+      }
+      find_city_duplicate_candidates: {
+        Args: {
+          p_country_id?: string
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_name: string
+        }
+        Returns: {
+          city_id: string
+          distance_m: number
+          match_type: string
+          score: number
+        }[]
+      }
       find_city_duplicates: {
         Args: {
           p_country_id?: string
@@ -11172,6 +13531,14 @@ export type Database = {
           same_country: boolean
         }[]
       }
+      find_country_duplicate_candidates: {
+        Args: { p_code?: string; p_limit?: number; p_name: string }
+        Returns: {
+          country_id: string
+          match_type: string
+          score: number
+        }[]
+      }
       find_duplicate_candidates: {
         Args: {
           p_entity_id: string
@@ -11185,6 +13552,25 @@ export type Database = {
           similarity_score: number
         }[]
       }
+      find_event_duplicate_candidates: {
+        Args: {
+          p_city?: string
+          p_edition?: string
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_start_date: string
+          p_title: string
+          p_venue_id?: string
+        }
+        Returns: {
+          distance_m: number
+          event_id: string
+          match_type: string
+          score: number
+          time_diff_hours: number
+        }[]
+      }
       find_event_duplicates: {
         Args: { p_city?: string; p_start_date: string; p_title: string }
         Returns: {
@@ -11194,6 +13580,67 @@ export type Database = {
           event_id: string
           event_title: string
           title_similarity: number
+        }[]
+      }
+      find_hotel_duplicate_candidates:
+        | {
+            Args: {
+              p_booking_url?: string
+              p_city_id?: string
+              p_email?: string
+              p_lat?: number
+              p_limit?: number
+              p_lng?: number
+              p_name: string
+              p_phone_e164?: string
+              p_platform_ids?: Json
+              p_website_domain?: string
+            }
+            Returns: {
+              distance_m: number
+              match_type: string
+              score: number
+              venue_id: string
+            }[]
+          }
+        | {
+            Args: {
+              p_address?: string
+              p_booking_url?: string
+              p_city_id?: string
+              p_email?: string
+              p_lat?: number
+              p_limit?: number
+              p_lng?: number
+              p_name: string
+              p_phone_e164?: string
+              p_platform_ids?: Json
+              p_website_domain?: string
+            }
+            Returns: {
+              distance_m: number
+              match_type: string
+              score: number
+              venue_id: string
+            }[]
+          }
+      find_marketplace_duplicate_candidates: {
+        Args: {
+          p_brand?: string
+          p_external_url?: string
+          p_limit?: number
+          p_merchant_domain?: string
+          p_source_entity_id?: string
+          p_source_slug?: string
+          p_title: string
+        }
+        Returns: {
+          distance_m: number
+          listing_id: string
+          match_type: string
+          matched_title: string
+          score: number
+          time_diff_hours: number
         }[]
       }
       find_nearest_airport: {
@@ -11221,6 +13668,25 @@ export type Database = {
           title_similarity: number
         }[]
       }
+      find_personality_duplicate_candidates: {
+        Args: {
+          p_birth_date?: string
+          p_external_ids?: Json
+          p_limit?: number
+          p_name: string
+          p_nationality?: string
+          p_profession?: string
+          p_wikidata_qid?: string
+        }
+        Returns: {
+          distance_m: number
+          match_type: string
+          matched_name: string
+          personality_id: string
+          score: number
+          time_diff_hours: number
+        }[]
+      }
       find_personality_duplicates: {
         Args: { p_name: string; p_threshold?: number }
         Returns: {
@@ -11237,6 +13703,54 @@ export type Database = {
           village_name: string
         }[]
       }
+      find_unified_tag_duplicates: {
+        Args: { p_limit?: number; p_threshold?: number }
+        Returns: {
+          similarity: number
+          tag_a_id: string
+          tag_a_slug: string
+          tag_b_id: string
+          tag_b_slug: string
+        }[]
+      }
+      find_venue_duplicate_candidates:
+        | {
+            Args: {
+              p_city_id?: string
+              p_email?: string
+              p_lat?: number
+              p_limit?: number
+              p_lng?: number
+              p_name: string
+              p_phone_e164?: string
+              p_website_domain?: string
+            }
+            Returns: {
+              distance_m: number
+              match_type: string
+              score: number
+              venue_id: string
+            }[]
+          }
+        | {
+            Args: {
+              p_address?: string
+              p_city_id?: string
+              p_email?: string
+              p_lat?: number
+              p_limit?: number
+              p_lng?: number
+              p_name: string
+              p_phone_e164?: string
+              p_website_domain?: string
+            }
+            Returns: {
+              distance_m: number
+              match_type: string
+              score: number
+              venue_id: string
+            }[]
+          }
       find_venue_duplicates: {
         Args: {
           p_category?: string
@@ -11255,6 +13769,17 @@ export type Database = {
         }[]
       }
       fix_missing_junction_entries: { Args: never; Returns: number }
+      fx_to_usd: {
+        Args: { p_amount: number; p_currency: string }
+        Returns: number
+      }
+      generate_data_ops_alerts: {
+        Args: never
+        Returns: {
+          alert_kind: string
+          fingerprint: string
+        }[]
+      }
       generate_slug: { Args: { input_text: string }; Returns: string }
       generate_unique_slug: {
         Args: {
@@ -11266,6 +13791,16 @@ export type Database = {
       }
       get_admin_counts: { Args: never; Returns: Json }
       get_automation_stats: { Args: never; Returns: Json }
+      get_bias_signal: {
+        Args: { p_session_id?: string; p_user_id?: string; p_window?: number }
+        Returns: {
+          age_days: number
+          embedding: string
+          entity_id: string
+          entity_type: string
+          event_type: string
+        }[]
+      }
       get_broken_marketplace_ids: { Args: never; Returns: string[] }
       get_category_ancestors: {
         Args: { p_category_id: string }
@@ -11347,8 +13882,8 @@ export type Database = {
           updated_at: string
         }[]
         SetofOptions: {
-          from: \"*\"
-          to: \"content_links\"
+          from: "*"
+          to: "content_links"
           isOneToOne: false
           isSetofReturn: true
         }
@@ -11459,6 +13994,14 @@ export type Database = {
         }
         Returns: Json
       }
+      get_stale_embeddings: {
+        Args: { p_limit?: number }
+        Returns: {
+          id: string
+          table_name: string
+          updated_at: string
+        }[]
+      }
       get_subcategories: {
         Args: { p_parent_id: string }
         Returns: {
@@ -11534,11 +14077,28 @@ export type Database = {
           translations: Json
         }[]
       }
+      get_trending_entities: {
+        Args: { p_city?: string; p_limit?: number; p_types?: string[] }
+        Returns: {
+          city: string
+          country: string
+          entity_id: string
+          entity_type: string
+          image_url: string
+          score: number
+          slug: string
+          title: string
+        }[]
+      }
       get_user_conversation_ids: {
         Args: { user_id_param?: string }
         Returns: {
           conversation_id: string
         }[]
+      }
+      get_user_signal: {
+        Args: { p_session_id?: string; p_user_id?: string }
+        Returns: Json
       }
       get_vault_secret: { Args: { secret_name: string }; Returns: string }
       get_venues_by_tag: {
@@ -11546,8 +14106,12 @@ export type Database = {
         Returns: {
           accessibility_attributes: string[] | null
           accessibility_notes: string | null
+          accommodation_type: string | null
           address: string
+          address_normalized: string | null
           amenities: string[] | null
+          amenities_verified: boolean
+          booking_url: string | null
           category: string
           city: string
           city_id: string | null
@@ -11560,6 +14124,7 @@ export type Database = {
           description: string | null
           duplicate_of_id: string | null
           email: string | null
+          email_lower: string | null
           enrichment_status: Json | null
           external_id: string | null
           featured: boolean | null
@@ -11571,6 +14136,7 @@ export type Database = {
           id: string
           images: string[] | null
           instagram: string | null
+          last_refreshed_at: string | null
           last_synced_at: string | null
           latitude: number | null
           lgbti_relevance_score: number | null
@@ -11578,8 +14144,11 @@ export type Database = {
           logo_url: string | null
           longitude: number | null
           name: string
+          name_normalized: string | null
           needs_attention: boolean | null
           phone: string | null
+          phone_e164: string | null
+          platform_ids: Json
           postal_code: string | null
           price_range: number | null
           quality_score: number | null
@@ -11587,6 +14156,7 @@ export type Database = {
           sensitivity_flags: Json | null
           services: string[] | null
           slug: string
+          star_rating: number | null
           state: string | null
           sync_status: string | null
           tags: string[] | null
@@ -11598,32 +14168,45 @@ export type Database = {
           tripadvisor_rating: number | null
           tripadvisor_review_count: number | null
           updated_at: string
+          url_checked_at: string | null
+          url_status: string | null
+          venue_subtype: string | null
+          verification_status: string
           verified: boolean | null
           website: string | null
+          website_domain: string | null
         }[]
         SetofOptions: {
-          from: \"*\"
-          to: \"venues\"
+          from: "*"
+          to: "venues"
           isOneToOne: false
           isSetofReturn: true
         }
       }
       has_any_role_jwt: {
-        Args: { required_roles: Database[\"public\"][\"Enums\"][\"app_role\"][] }
+        Args: { required_roles: Database["public"]["Enums"]["app_role"][] }
+        Returns: boolean
+      }
+      has_pipeline_permission: {
+        Args: { p_permission: string; p_pipeline_id: string }
         Returns: boolean
       }
       has_role: {
         Args: {
-          _role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
       }
       has_role_jwt: {
-        Args: { required_role: Database[\"public\"][\"Enums\"][\"app_role\"] }
+        Args: { required_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
-      immutable_unaccent: { Args: { \"\": string }; Returns: string }
+      haversine_m: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
+      immutable_unaccent: { Args: { "": string }; Returns: string }
       increment_article_views: {
         Args: { article_id: string }
         Returns: undefined
@@ -11635,6 +14218,10 @@ export type Database = {
           p_proposed?: number
           p_runs?: number
         }
+        Returns: undefined
+      }
+      increment_circuit_breaker_success: {
+        Args: { p_api_name: string }
         Returns: undefined
       }
       increment_comment_likes: {
@@ -11651,7 +14238,12 @@ export type Database = {
       }
       increment_post_comments: { Args: { post_id: string }; Returns: undefined }
       increment_post_likes: { Args: { post_id: string }; Returns: undefined }
+      increment_template_use_count: {
+        Args: { p_template_id: string }
+        Returns: undefined
+      }
       is_admin: { Args: { user_id: string }; Returns: boolean }
+      is_feedback_spam: { Args: { p_data: Json }; Returns: boolean }
       is_group_admin: {
         Args: { group_id: string; user_id: string }
         Returns: boolean
@@ -11661,6 +14253,18 @@ export type Database = {
         Returns: boolean
       }
       jwt_claim: { Args: { claim: string }; Returns: string }
+      log_search: {
+        Args: {
+          p_filters: Json
+          p_had_rewrite: boolean
+          p_lang: string
+          p_n_results: number
+          p_query: string
+          p_session_id: string
+          p_took_ms: number
+        }
+        Returns: undefined
+      }
       log_security_event: {
         Args: {
           p_event_type: string
@@ -11703,10 +14307,68 @@ export type Database = {
         }
         Returns: Json
       }
+      merge_pipeline_node_states: {
+        Args: { p_patch: Json; p_run_id: string }
+        Returns: undefined
+      }
       merge_tag: {
         Args: { canonical_tag_id: string; source_tag_id: string }
         Returns: undefined
       }
+      merge_unified_tag: {
+        Args: {
+          p_actor?: string
+          p_canonical_id: string
+          p_duplicate_id: string
+        }
+        Returns: undefined
+      }
+      news_commit_staging_batch: {
+        Args: { p_job_id: string; p_limit?: number; p_pipeline_run_id?: string }
+        Returns: {
+          details: Json
+          errors: number
+          inserted: number
+          skipped: number
+          updated: number
+        }[]
+      }
+      news_compute_fingerprint: {
+        Args: {
+          p_published_at: string
+          p_source_id: string
+          p_title: string
+          p_url?: string
+        }
+        Returns: string
+      }
+      news_source_record_outcome: {
+        Args: {
+          p_articles_count?: number
+          p_error?: string
+          p_source_id: string
+          p_success: boolean
+        }
+        Returns: undefined
+      }
+      news_sources_eligible: {
+        Args: { p_limit?: number }
+        Returns: {
+          category: string
+          fetch_frequency: number
+          id: string
+          keywords: string[]
+          last_fetched_at: string
+          name: string
+          source_type: string
+          url: string
+        }[]
+      }
+      normalize_address: { Args: { a: string }; Returns: string }
+      normalize_name: { Args: { n: string }; Returns: string }
+      normalize_phone: { Args: { p: string }; Returns: string }
+      normalize_tag_slug: { Args: { p_input: string }; Returns: string }
+      normalize_venue_category: { Args: { c: string }; Returns: string }
       optimize_auth_uid_in_policies: {
         Args: never
         Returns: {
@@ -11724,6 +14386,22 @@ export type Database = {
         }
         Returns: string
       }
+      personalized_semantic_search: {
+        Args: {
+          p_bias_vec?: string
+          p_bias_weight?: number
+          p_content_types?: string[]
+          p_limit?: number
+          p_query_vec: string
+        }
+        Returns: {
+          content_id: string
+          content_type: string
+          metadata: Json
+          score: number
+        }[]
+      }
+      pg_try_advisory_lock: { Args: { key: number }; Returns: boolean }
       pgmq_archive: {
         Args: { p_msg_id: number; p_queue: string }
         Returns: boolean
@@ -11782,6 +14460,37 @@ export type Database = {
           vt: string
         }[]
       }
+      pipeline_health_snapshot: {
+        Args: never
+        Returns: {
+          pending: number
+          rejected: number
+          review_pending: number
+          review_stale: number
+          stuck_commit: number
+          stuck_dedup: number
+          stuck_normalize: number
+          stuck_validate: number
+          target_table: string
+          total: number
+        }[]
+      }
+      recompute_marketplace_price_usd: { Args: never; Returns: number }
+      record_dedup_decision: {
+        Args: {
+          p_action: string
+          p_confidence: number
+          p_decided_by?: string
+          p_decision: string
+          p_entity_type: string
+          p_match_id: string
+          p_match_method: string
+          p_pipeline_run_id: string
+          p_rules: Json
+          p_staging_id: string
+        }
+        Returns: string
+      }
       record_redirect_click: {
         Args: {
           p_country?: string
@@ -11795,10 +14504,31 @@ export type Database = {
         }
         Returns: undefined
       }
+      recount_unified_tag_usage: { Args: never; Returns: undefined }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
+      refresh_source_coverage: { Args: never; Returns: undefined }
+      register_circuit_breaker: {
+        Args: {
+          p_api_name: string
+          p_reset_seconds?: number
+          p_threshold?: number
+        }
+        Returns: string
+      }
       remove_tag_from_category: {
         Args: { p_category_id: string; p_tag_id: string }
         Returns: undefined
+      }
+      replay_rejected_staging: {
+        Args: {
+          p_error_substring: string
+          p_limit?: number
+          p_target_table?: string
+        }
+        Returns: {
+          previous_error: string
+          staging_id: string
+        }[]
       }
       resolve_city_and_country: {
         Args: { p_city_name: string; p_country_name: string }
@@ -11811,15 +14541,30 @@ export type Database = {
           resolved_country_name: string
         }[]
       }
+      resolve_currency_for_country: {
+        Args: { p_country_code: string }
+        Returns: {
+          currency_code: string
+          currency_symbol: string
+        }[]
+      }
+      resolve_geo_merge_candidate: {
+        Args: { p_actor?: string; p_decision: string; p_staging_id: string }
+        Returns: {
+          action: string
+          entity_id: string
+          entity_type: string
+        }[]
+      }
       resolve_path_redirect: {
         Args: { p_path: string }
         Returns: {
           click_count: number
           click_limit: number
           id: string
-          match_kind: Database[\"public\"][\"Enums\"][\"redirect_match_kind\"]
+          match_kind: Database["public"]["Enums"]["redirect_match_kind"]
           preserve_query: boolean
-          query_mode: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode: Database["public"]["Enums"]["redirect_query_mode"]
           query_override: Json
           source_path: string
           status_code: number
@@ -11834,7 +14579,7 @@ export type Database = {
           click_limit: number
           id: string
           preserve_query: boolean
-          query_mode: Database[\"public\"][\"Enums\"][\"redirect_query_mode\"]
+          query_mode: Database["public"]["Enums"]["redirect_query_mode"]
           query_override: Json
           slug: string
           status_code: number
@@ -11875,9 +14620,44 @@ export type Database = {
             Returns: Json
           }
       schedule_location_anonymization: { Args: never; Returns: undefined }
+      scraper_mark_snapshot_archived: {
+        Args: { p_id: string; p_r2_key: string }
+        Returns: undefined
+      }
+      scraper_prune_orphan_mappings: {
+        Args: { p_entity_type: string }
+        Returns: number
+      }
+      scraper_reconcile_orphans: {
+        Args: never
+        Returns: {
+          entity_type: string
+          orphan_count: number
+        }[]
+      }
+      scraper_resolve_pending: {
+        Args: { p_confidence_floor?: number; p_older_than_days?: number }
+        Returns: number
+      }
+      scraper_snapshot_body: { Args: { p_id: string }; Returns: string }
       secure_passkey_access: {
         Args: { p_operation: string; p_user_id: string }
         Returns: boolean
+      }
+      snapshot_pipeline_definition: {
+        Args: { p_pipeline_id: string }
+        Returns: Json
+      }
+      stage_event_for_commit: {
+        Args: {
+          p_normalized?: Json
+          p_raw: Json
+          p_source_entity_id: string
+          p_source_name: string
+          p_source_type: string
+          p_source_url?: string
+        }
+        Returns: string
       }
       tag_hygiene_report: {
         Args: never
@@ -11887,7 +14667,28 @@ export type Database = {
           sample_items: string
         }[]
       }
+      track_event_secure: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_event_type: string
+          p_metadata?: Json
+          p_session_id: string
+        }
+        Returns: string
+      }
       track_umami_event: { Args: { payload: Json }; Returns: Json }
+      track_user_event: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_event_type: string
+          p_metadata?: Json
+          p_session_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       universal_search: {
         Args: {
           category_filter?: string
@@ -11915,6 +14716,10 @@ export type Database = {
           title: string
         }[]
       }
+      upsert_api_error: {
+        Args: { p_data: Json; p_fingerprint: string; p_source?: string }
+        Returns: string
+      }
       validate_content_security: {
         Args: { content_text: string; content_type?: string }
         Returns: Json
@@ -11936,37 +14741,44 @@ export type Database = {
         }
         Returns: boolean
       }
+      venue_duplicate_summary: {
+        Args: never
+        Returns: {
+          duplicates: number
+          slug: string
+        }[]
+      }
     }
     Enums: {
-      app_role: \"admin\" | \"moderator\" | \"user\" | \"editor\"
+      app_role: "admin" | "moderator" | "user" | "editor"
       cms_content_type:
-        | \"event\"
-        | \"space\"
-        | \"place\"
-        | \"market\"
-        | \"resource\"
-        | \"community\"
-        | \"news\"
-        | \"page\"
-        | \"personality\"
+        | "event"
+        | "space"
+        | "place"
+        | "market"
+        | "resource"
+        | "community"
+        | "news"
+        | "page"
+        | "personality"
       cms_media_role:
-        | \"cover\"
-        | \"gallery\"
-        | \"attachment\"
-        | \"avatar\"
-        | \"thumbnail\"
-      cms_visibility_level: \"public\" | \"private\" | \"restricted\"
-      cms_workflow_state: \"draft\" | \"review\" | \"published\" | \"archived\"
-      redirect_match_kind: \"EXACT\" | \"WILDCARD\" | \"REGEX\"
-      redirect_query_mode: \"PRESERVE\" | \"DROP\" | \"OVERRIDE\"
-      redirect_type: \"SHORT\" | \"PATH\"
+        | "cover"
+        | "gallery"
+        | "attachment"
+        | "avatar"
+        | "thumbnail"
+      cms_visibility_level: "public" | "private" | "restricted"
+      cms_workflow_state: "draft" | "review" | "published" | "archived"
+      redirect_match_kind: "EXACT" | "WILDCARD" | "REGEX"
+      redirect_query_mode: "PRESERVE" | "DROP" | "OVERRIDE"
+      redirect_type: "SHORT" | "PATH"
       user_mode:
-        | \"dating\"
-        | \"friends\"
-        | \"exploration\"
-        | \"fun\"
-        | \"networking\"
-        | \"community\"
+        | "dating"
+        | "friends"
+        | "exploration"
+        | "fun"
+        | "networking"
+        | "community"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -11974,33 +14786,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, \"__InternalSupabase\">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, \"public\">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema[\"Tables\"] & DefaultSchema[\"Views\"])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema[\"Tables\"] &
-        DefaultSchema[\"Views\"])
-    ? (DefaultSchema[\"Tables\"] &
-        DefaultSchema[\"Views\"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -12009,23 +14821,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema[\"Tables\"]
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]
-    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -12034,23 +14846,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema[\"Tables\"]
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]
-    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -12059,69 +14871,67 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema[\"Enums\"]
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema[\"Enums\"]
-    ? DefaultSchema[\"Enums\"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema[\"CompositeTypes\"]
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema[\"CompositeTypes\"]
-    ? DefaultSchema[\"CompositeTypes\"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
     Enums: {
-      app_role: [\"admin\", \"moderator\", \"user\", \"editor\"],
+      app_role: ["admin", "moderator", "user", "editor"],
       cms_content_type: [
-        \"event\",
-        \"space\",
-        \"place\",
-        \"market\",
-        \"resource\",
-        \"community\",
-        \"news\",
-        \"page\",
-        \"personality\",
+        "event",
+        "space",
+        "place",
+        "market",
+        "resource",
+        "community",
+        "news",
+        "page",
+        "personality",
       ],
-      cms_media_role: [\"cover\", \"gallery\", \"attachment\", \"avatar\", \"thumbnail\"],
-      cms_visibility_level: [\"public\", \"private\", \"restricted\"],
-      cms_workflow_state: [\"draft\", \"review\", \"published\", \"archived\"],
-      redirect_match_kind: [\"EXACT\", \"WILDCARD\", \"REGEX\"],
-      redirect_query_mode: [\"PRESERVE\", \"DROP\", \"OVERRIDE\"],
-      redirect_type: [\"SHORT\", \"PATH\"],
+      cms_media_role: ["cover", "gallery", "attachment", "avatar", "thumbnail"],
+      cms_visibility_level: ["public", "private", "restricted"],
+      cms_workflow_state: ["draft", "review", "published", "archived"],
+      redirect_match_kind: ["EXACT", "WILDCARD", "REGEX"],
+      redirect_query_mode: ["PRESERVE", "DROP", "OVERRIDE"],
+      redirect_type: ["SHORT", "PATH"],
       user_mode: [
-        \"dating\",
-        \"friends\",
-        \"exploration\",
-        \"fun\",
-        \"networking\",
-        \"community\",
+        "dating",
+        "friends",
+        "exploration",
+        "fun",
+        "networking",
+        "community",
       ],
     },
   },
 } as const
-"}
-

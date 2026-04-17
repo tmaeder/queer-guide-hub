@@ -77,7 +77,8 @@ const USER_AGENTS = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
 ]
 
-const MAX_SOURCES_PER_RUN = 10
+const MAX_SOURCES_PER_RUN = 1   // process only 1 per invocation
+const DB_FETCH_LIMIT = 50       // over-fetch so in-memory interval filter has enough candidates
 const MAX_ITEMS_PER_SOURCE = 500
 
 // ─── HTML Fetch ─────────────────────────────────────────────────────────────
@@ -1112,7 +1113,7 @@ async function processSource(
           console.log(`[${source.slug}] Falling back to native_crawl`)
           const fallback = await crawlNative(source)
           if (fallback.error || fallback.pages.length === 0) {
-            return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: 0, error: error + ' (native_crawl fallback also failed)' }
+            throw new Error(error + ' (native_crawl fallback also failed)')
           }
           pagesCrawled = fallback.pages.length
           for (const page of fallback.pages) {
@@ -1132,7 +1133,7 @@ async function processSource(
         const { pages, error } = await crawlNative(source)
         if (error) {
           console.error(`[${source.slug}] Native crawl error: ${error}`)
-          return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: 0, error }
+          throw new Error(error)
         }
         pagesCrawled = pages.length
         for (const page of pages) {
@@ -1166,7 +1167,7 @@ async function processSource(
         const { pages, error } = await crawlWithFirecrawl(source)
         if (error) {
           console.error(`[${source.slug}] Firecrawl error: ${error}`)
-          return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: 0, error }
+          throw new Error(error)
         }
         pagesCrawled = pages.length
         for (const page of pages) {
@@ -1190,13 +1191,7 @@ async function processSource(
       }
 
       default:
-        return {
-          source_slug: source.slug,
-          items_found: 0,
-          items_staged: 0,
-          pages_crawled: 0,
-          error: `Unknown scrape method: ${source.scrape_method}`,
-        }
+        throw new Error(`Unknown scrape method: ${source.scrape_method}`)
     }
 
     // ── Deduplicate ──────────────────────────────────────────
@@ -1206,6 +1201,13 @@ async function processSource(
     console.log(`[${source.slug}] Extracted ${itemsFound} items from ${pagesCrawled} pages`)
 
     if (itemsFound === 0) {
+      // Still update last_run_at so this source isn't re-dispatched every cycle
+      await supabase.from('scrape_sources').update({
+        last_run_at: new Date().toISOString(),
+        last_error: 'No items extracted',
+        consecutive_failures: (source.consecutive_failures || 0) + 1,
+        total_runs: (source.total_runs || 0) + 1,
+      }).eq('id', source.id)
       return { source_slug: source.slug, items_found: 0, items_staged: 0, pages_crawled: pagesCrawled }
     }
 
@@ -1224,12 +1226,19 @@ async function processSource(
       }
     }
 
+    // ── Resolve ingestion_sources ID (FK target) ───────────
+    const { data: ingestionSource } = await supabase
+      .from('ingestion_sources')
+      .select('id')
+      .eq('slug', source.slug)
+      .maybeSingle()
+
     // ── Create import job ────────────────────────────────────
     const { data: job, error: jobError } = await supabase
       .from('import_jobs_enhanced')
       .insert({
         user_id: '00000000-0000-0000-0000-000000000000',
-        source_id: source.id,
+        source_id: ingestionSource?.id ?? null,
         source_type: 'web_scraping',
         type: 'web-scraping',
         status: 'processing',
@@ -1348,9 +1357,13 @@ Deno.serve(async (req) => {
   try {
     const supabase = getServiceClient()
 
-    // Require admin for manual invocations (cron goes through workflow-dispatcher)
+    // Require admin for manual invocations (cron/workflow-dispatcher passes service role)
     const authHeader = req.headers.get('Authorization')
-    if (authHeader && !authHeader.includes(Deno.env.get('SUPABASE_ANON_KEY') || '___none___')) {
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '___none___'
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || '___none___'
+    const isServiceRole = authHeader?.includes(serviceRoleKey)
+    const isAnon = authHeader?.includes(anonKey)
+    if (authHeader && !isServiceRole && !isAnon) {
       const authResult = await requireAdmin(req, supabase)
       if (authResult instanceof Response) return authResult
     }
@@ -1388,13 +1401,20 @@ Deno.serve(async (req) => {
 
       // Only run sources that are due (last_run_at + interval < now)
       // Sort by priority ASC (lower = higher priority), then oldest first
-      query = query.order('priority', { ascending: true })
+      // Exclude sources with too many consecutive failures at DB level so LIMIT picks correctly
+      // Over-fetch (DB_FETCH_LIMIT) so the in-memory interval filter has enough candidates
+      // even when the top DB rows were recently run and not yet due.
+      query = query
+        .lt('consecutive_failures', 5)
+        .order('priority', { ascending: true })
         .order('last_run_at', { ascending: true, nullsFirst: true })
-        .limit(MAX_SOURCES_PER_RUN)
+        .limit(DB_FETCH_LIMIT)
     } else {
       query = query
+        .lt('consecutive_failures', 5)
         .order('priority', { ascending: true })
-        .limit(MAX_SOURCES_PER_RUN)
+        .order('last_run_at', { ascending: true, nullsFirst: true })
+        .limit(DB_FETCH_LIMIT)
     }
 
     const { data: sources, error: sourcesError } = await query
@@ -1420,19 +1440,59 @@ Deno.serve(async (req) => {
 
       // Also skip sources with too many consecutive failures
       filteredSources = filteredSources.filter(s => (s.consecutive_failures || 0) < 5)
+
+      // Limit to MAX_SOURCES_PER_RUN after filtering (DB over-fetched for candidate pool)
+      filteredSources = filteredSources.slice(0, MAX_SOURCES_PER_RUN)
     }
 
     if (filteredSources.length === 0) {
       return jsonResponse({ success: true, message: 'No sources due for scraping', results: [] }, 200, req)
     }
 
-    // ── Process each source ──────────────────────────────────
+    // ── Fan-out for batch mode to avoid edge function timeout ─────────
+    // When processing multiple sources, dispatch each to a separate invocation
+    // (fire-and-forget) so each runs within its own timeout budget.
+    const isBatch = !sourceSlug && !sourceId && filteredSources.length > 1
+    if (isBatch) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      const selfUrl = `${supabaseUrl}/functions/v1/scrape-web-sources`
+
+      // Dispatch each source as a separate invocation.
+      // Use EdgeRuntime.waitUntil() so Deno doesn't kill the background fetches
+      // when this response is returned.
+      const dispatches = filteredSources.map(source =>
+        fetch(selfUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${serviceRoleKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ source_id: source.id, dry_run: dryRun }),
+        }).catch(err => console.error(`Dispatch failed for ${source.slug}:`, err))
+      )
+      // Keep runtime alive until all dispatched requests are sent
+      // @ts-expect-error — EdgeRuntime is available in Supabase Deno runtime
+      if (typeof EdgeRuntime !== 'undefined') {
+        // @ts-expect-error — EdgeRuntime global is Deno-only
+        EdgeRuntime.waitUntil(Promise.allSettled(dispatches))
+      }
+
+      return jsonResponse({
+        success: true,
+        mode: 'fan-out',
+        sources_dispatched: filteredSources.length,
+        dispatched: filteredSources.map(s => s.slug),
+        dry_run: dryRun,
+      }, 200, req)
+    }
+
+    // ── Single-source (or single-item batch) — process inline ─────────
     const results = []
     for (const source of filteredSources) {
       const result = await processSource(supabase, source, dryRun)
       results.push(result)
 
-      // Rate limit between sources
       if (filteredSources.length > 1) {
         await delay(source.rate_limit_ms || 2000)
       }

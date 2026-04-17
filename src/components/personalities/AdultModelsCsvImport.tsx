@@ -114,12 +114,12 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" sx={{ gap: 1 }}>
-          <Upload sx={{ height: '16px', width: '16px' }} />
+        <Button variant="outline">
+          <Upload />
           Import Adult Models CSV
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: '768px', maxHeight: '90vh', overflowY: 'auto' }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Import Adult Models from CSV</DialogTitle>
         </DialogHeader>
@@ -127,7 +127,7 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
         {!importResult ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Alert>
-              <AlertCircle sx={{ height: '16px', width: '16px' }} />
+              <AlertCircle />
               <AlertDescription>
                 Upload a CSV file with adult model data. Each model will be created as a personality with the profession "adult model".
               </AlertDescription>
@@ -143,7 +143,7 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
                   accept=".csv"
                   onChange={handleFileUpload}
                   disabled={isUploading}
-                  sx={{ mt: 0.5 }}
+
                 />
               </Box>
 
@@ -160,16 +160,16 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Button variant="outline" onClick={downloadTemplate} sx={{ gap: 1 }}>
-                  <Download sx={{ height: '16px', width: '16px' }} />
+                <Button variant="outline" onClick={downloadTemplate}>
+                  <Download />
                   Download Template
                 </Button>
-                <Button disabled={isUploading} sx={{ gap: 1 }}>
+                <Button disabled={isUploading}>
                   {isUploading ? (
                     <>Processing...</>
                   ) : (
                     <>
-                      <Upload sx={{ height: '16px', width: '16px' }} />
+                      <Upload />
                       Upload File
                     </>
                   )}
@@ -181,16 +181,16 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Card>
               <CardHeader>
-                <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CardTitle>
                   {importResult.success ? (
-                    <CheckCircle sx={{ height: '20px', width: '20px', color: 'success.main' }} />
+                    <CheckCircle />
                   ) : (
-                    <XCircle sx={{ height: '20px', width: '20px', color: 'error.main' }} />
+                    <XCircle />
                   )}
                   Import Results
                 </CardTitle>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Badge variant="outline">
                     {importResult.imported} imported
@@ -207,7 +207,7 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
 
                 {importResult.error && (
                   <Alert variant="destructive">
-                    <XCircle sx={{ height: '16px', width: '16px' }} />
+                    <XCircle />
                     <AlertDescription>{importResult.error}</AlertDescription>
                   </Alert>
                 )}

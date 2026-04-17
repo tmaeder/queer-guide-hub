@@ -29,8 +29,8 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i} sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-            <CardContent sx={{ p: 3 }}>
+          <Card key={i}>
+            <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
                 <Box sx={{ height: 40, width: 40, bgcolor: 'action.hover', borderRadius: '50%' }}></Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -53,7 +53,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
   if (!posts.length) {
     return (
       <Card>
-        <CardContent sx={{ p: 4, textAlign: 'center' }}>
+        <CardContent>
           <Users style={{ width: 48, height: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
           <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>
             {isOwnProfile ? "You haven't posted anything yet" : "No posts yet"}
@@ -82,9 +82,9 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
       {/* Create Post Button for Own Profile */}
       {isOwnProfile && user && (
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <CreatePostDialog>
-              <Button variant="outline" sx={{ width: '100%', justifyContent: 'flex-start', height: 48 }}>
+              <Button variant="outline">
                 <PenSquare style={{ width: 16, height: 16, marginRight: 8 }} />
                 What's on your mind?
               </Button>

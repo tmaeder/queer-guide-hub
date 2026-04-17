@@ -235,6 +235,9 @@ export async function chatCompletion(
     messages,
     temperature,
     max_tokens,
+    // Privacy: opt out of OpenAI's 30-day retention; prompts + completions
+    // are not persisted. See docs/dependency-audit/migration-plan.md §1.5.
+    store: false,
   }
   if (response_format) body.response_format = response_format
 

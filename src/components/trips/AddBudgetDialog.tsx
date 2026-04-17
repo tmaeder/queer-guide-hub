@@ -57,12 +57,6 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
       prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
     );
   };
-
-  const _memberName = (userId: string) => {
-    const m = members.find((mb) => mb.user_id === userId);
-    return m?.profiles?.display_name || 'Unknown';
-  };
-
   const handleSubmit = async () => {
     if (!title.trim() || !amount || !paidBy || splitAmong.length === 0) return;
     try {

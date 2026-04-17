@@ -218,7 +218,7 @@ export const useImportHub = () => {
       if (type.startsWith('venues-') && !type.endsWith('-csv') && config.venueImportConfig) {
         const provider = type.replace('venues-', '');
         const functionName = `import-${provider}-venues`;
-        const { _data, error } = await supabase.functions.invoke(functionName, {
+        const { error } = await supabase.functions.invoke(functionName, {
           body: { config: config.venueImportConfig }
         });
         
@@ -493,7 +493,7 @@ export const useImportHub = () => {
 
   const triggerSource = useCallback(async (source: IngestionSource) => {
     try {
-      const { _data, error } = await supabase.functions.invoke(source.edge_function, {
+      const { error } = await supabase.functions.invoke(source.edge_function, {
         body: {}
       });
       if (error) throw error;

@@ -1,0 +1,100 @@
+export interface FeedbackContext {
+  url?: string;
+  viewport?: { width: number; height: number };
+  user_agent?: string;
+  color_scheme?: string;
+  timestamp?: string;
+  errors?: Array<{ message: string; stack?: string; ts: string }>;
+  network_failures?: Array<{ method: string; url: string; status: number; ts: string }>;
+}
+
+export interface FeedbackReply {
+  by: string | null;
+  by_name: string;
+  body: string;
+  at: string;
+  emailed?: boolean;
+  email_id?: string | null;
+  email_error?: string | null;
+  github_url?: string | null;
+  // Populated by resend-webhook as the email moves through Resend's pipeline.
+  delivered_at?: string | null;
+  opened_at?: string | null;
+  bounced_at?: string | null;
+  bounce_reason?: string | null;
+  complained_at?: string | null;
+}
+
+export type HandoffTarget = 'claude-code' | 'claude-chat' | 'github' | 'other';
+export type HandoffStatus = 'sent' | 'in_progress' | 'resolved' | 'failed';
+
+export interface FeedbackHandoff {
+  id: string;
+  at: string;
+  by: string | null;
+  by_name: string;
+  target: HandoffTarget;
+  /** First ~120 chars of the prompt for audit so admins can tell what they sent. */
+  prompt_preview?: string | null;
+  status: HandoffStatus;
+  /** Free-text note (e.g. "Claude landed fix in PR #42"). */
+  note?: string | null;
+  /** Timestamp of the last status transition, for 'waiting X days' hints. */
+  status_at?: string;
+}
+
+export interface FeedbackData {
+  title: string;
+  description: string;
+  category: string;
+  contact_email?: string | null;
+  context?: FeedbackContext;
+  screenshot_url?: string | null;
+  replies?: FeedbackReply[];
+  handoffs?: FeedbackHandoff[];
+}
+
+export interface FeedbackAuditEntry {
+  id: number;
+  submission_id: string;
+  actor_id: string | null;
+  field: string;
+  old_value: unknown;
+  new_value: unknown;
+  at: string;
+}
+
+export interface FeedbackSubmission {
+  id: string;
+  data: FeedbackData;
+  submitted_at: string;
+  feedback_status: string;
+  reviewer_notes?: string | null;
+  github_issue_url?: string | null;
+  github_issue_number?: number | null;
+  forwarded_at?: string | null;
+  priority: number;
+  labels: string[];
+  assignee_id: string | null;
+  duplicate_of: string | null;
+  is_spam: boolean;
+  resolution: string | null;
+  resolved_at: string | null;
+  notify_submitter: boolean;
+}
+
+export type FeedbackResolution = 'fixed' | 'wontfix' | 'duplicate' | 'invalid';
+
+export interface DuplicateSuggestion {
+  id: string;
+  a_id: string;
+  b_id: string;
+  similarity: number;
+  dismissed: boolean;
+}
+
+export interface AdminProfile {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}

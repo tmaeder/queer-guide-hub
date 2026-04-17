@@ -2,11 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
-import { Sparkles, TrendingUp, Shield, ArrowRight } from 'lucide-react';
+import { Sparkles, TrendingUp, Shield } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { supabase } from '@/integrations/supabase/client';
@@ -167,7 +166,7 @@ export function PersonalizedFeed() {
                   )}
                 </Box>
                 {city.reason !== 'trending' && (
-                  <Badge variant="outline" sx={{ fontSize: '0.65rem' }}>
+                  <Badge variant="outline">
                     {reasonLabels[city.reason] || city.reason}
                   </Badge>
                 )}

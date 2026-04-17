@@ -55,9 +55,9 @@ export function UserStatsCards() {
     >
       {cards.map((card) => (
         <Card key={card.key}>
-          <CardHeader sx={{ pb: 1 }}>
+          <CardHeader>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <CardTitle sx={{ fontSize: 14, fontWeight: 500, color: 'text.secondary' }}>
+              <CardTitle>
                 {card.label}
               </CardTitle>
               <card.icon style={{ height: 16, width: 16, color: card.color }} />

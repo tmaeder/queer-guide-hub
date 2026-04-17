@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -176,7 +176,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
       {/* Upload Zone */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Video style={{ width: 20, height: 20 }} />
             Upload Videos
           </CardTitle>
@@ -220,7 +220,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {videos.map((video) => (
             <Card key={video.id}>
-              <CardContent sx={{ p: 3 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                   <Box sx={{ flexShrink: 0 }}>
                     <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -287,7 +287,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeVideo(video.id)}
-                    sx={{ flexShrink: 0 }}
+
                   >
                     <X style={{ width: 16, height: 16 }} />
                   </Button>

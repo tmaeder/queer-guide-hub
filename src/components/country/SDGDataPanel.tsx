@@ -40,23 +40,15 @@ const formatValue = (value: number | null | undefined, unit: string): string => 
   return value.toFixed(2);
 };
 
-export const SDGDataPanel: React.FC<SDGDataPanelProps> = ({ data, _countryName }) => {
+export const SDGDataPanel: React.FC<SDGDataPanelProps> = ({ data }) => {
   if (!data.hasData) {
     return null;
   }
 
   return (
-    <Card sx={{ borderColor: 'divider' }}>
+    <Card>
       <CardHeader>
-        <CardTitle
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 1,
-          }}
-        >
+        <CardTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Target style={{ height: 20, width: 20 }} />
             UN Sustainable Development Goals

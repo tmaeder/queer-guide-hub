@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { LocalizedLink } from "@/components/routing/LocalizedLink";
 import { fetchTrending } from "@/lib/searchClient";
 import { useTrackClick } from "@/hooks/useSearchActions";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,9 +24,19 @@ const TYPE_PATH: Record<string, string> = {
 	venue: "/venues",
 	event: "/events",
 	city: "/city",
+	country: "/country",
 	personality: "/personalities",
 	queer_village: "/villages",
+	news: "/news",
+	marketplace: "/marketplace",
+	hotel: "/hotels",
 };
+
+function hitPath(type: string, slug: string): string | null {
+	if (type === "tag") return `/resources/${slug}`;
+	const base = TYPE_PATH[type];
+	return base ? `${base}/${slug}` : null;
+}
 
 interface TrendItem {
 	entity_type: string;
@@ -84,38 +94,41 @@ export function TrendingStrip({
 						? Array.from({ length: limit }).map((_, i) => (
 								<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-lg" />
 							))
-						: items.map((it) => {
-								const path = TYPE_PATH[it.entity_type] || "/";
-								const slug = it.slug || it.entity_id;
-								return (
-									<Link
-										key={`${it.entity_type}:${it.entity_id}`}
-										to={`${path}/${slug}`}
-										className="shrink-0 w-56"
-										onClick={() =>
-											trackClick(
-												{ type: it.entity_type, id: it.entity_id },
-												"trending",
-												{ score: it.score, city },
-											)
-										}
-									>
-										<Card className="h-40 overflow-hidden hover:shadow-md transition">
-											{it.image_url ? (
-												<img src={it.image_url} alt="" loading="lazy" className="h-24 w-full object-cover" />
-											) : (
-												<div className="h-24 w-full bg-gradient-to-br from-orange-200 to-pink-200" />
-											)}
-											<CardContent className="p-2">
-												<div className="text-sm font-medium truncate">{it.title || it.entity_id.slice(0, 8)}</div>
-												<div className="text-xs text-muted-foreground truncate">
-													{[it.city, it.country].filter(Boolean).join(", ")}
-												</div>
-											</CardContent>
-										</Card>
-									</Link>
-								);
-							})}
+						: items
+								.map((it) => {
+									const slug = it.slug || it.entity_id;
+									const to = hitPath(it.entity_type, slug);
+									if (!to) return null;
+									return (
+										<LocalizedLink
+											key={`${it.entity_type}:${it.entity_id}`}
+											to={to}
+											className="shrink-0 w-56"
+											onClick={() =>
+												trackClick(
+													{ type: it.entity_type, id: it.entity_id },
+													"trending",
+													{ score: it.score, city },
+												)
+											}
+										>
+											<Card className="h-40 overflow-hidden hover:shadow-md transition">
+												{it.image_url ? (
+													<img src={it.image_url} alt="" loading="lazy" className="h-24 w-full object-cover" />
+												) : (
+													<div className="h-24 w-full bg-gradient-to-br from-orange-200 to-pink-200" />
+												)}
+												<CardContent className="p-2">
+													<div className="text-sm font-medium truncate">{it.title || it.entity_id.slice(0, 8)}</div>
+													<div className="text-xs text-muted-foreground truncate">
+														{[it.city, it.country].filter(Boolean).join(", ")}
+													</div>
+												</CardContent>
+											</Card>
+										</LocalizedLink>
+									);
+								})
+								.filter(Boolean)}
 				</div>
 				<ScrollBar orientation="horizontal" />
 			</ScrollArea>

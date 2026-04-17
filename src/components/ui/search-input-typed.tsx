@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import TextType from "./TextType";
+import React, { useState, useRef, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import TextType from './TextType';
 
 interface SearchInputTypedProps extends React.InputHTMLAttributes<HTMLInputElement> {
   placeholders: string[];
@@ -12,26 +12,28 @@ interface SearchInputTypedProps extends React.InputHTMLAttributes<HTMLInputEleme
 }
 
 const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProps>(
-  ({
-    _className,
-    placeholders = ["Search..."],
-    typingSpeed = 50,
-    pauseDuration = 2000,
-    showCursor = true,
-    cursorCharacter = "|",
-    onValueChange,
-    value,
-    onChange,
-    style: externalStyle,
-    ...props
-  }, ref) => {
-    const [inputValue, setInputValue] = useState(value || "");
+  (
+    {
+      placeholders = ['Search...'],
+      typingSpeed = 50,
+      pauseDuration = 2000,
+      showCursor = true,
+      cursorCharacter = '|',
+      onValueChange,
+      value,
+      onChange,
+      style: externalStyle,
+      ...props
+    },
+    ref,
+  ) => {
+    const [inputValue, setInputValue] = useState(value || '');
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Sync internal state when external value prop changes
     useEffect(() => {
-      setInputValue(value || "");
+      setInputValue(value || '');
     }, [value]);
 
     useEffect(() => {
@@ -78,20 +80,22 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
           onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          placeholder={showTypedPlaceholder ? "" : props.placeholder || "Search..."}
+          placeholder={showTypedPlaceholder ? '' : props.placeholder || 'Search...'}
           {...props}
         />
 
         {showTypedPlaceholder && (
-          <div style={{
-            position: 'absolute',
-            left: 12,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            pointerEvents: 'none',
-            zIndex: 0,
-            color: 'hsl(var(--muted-foreground))',
-          }}>
+          <div
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              zIndex: 0,
+              color: 'hsl(var(--muted-foreground))',
+            }}
+          >
             <TextType
               text={placeholders}
               typingSpeed={typingSpeed}
@@ -106,9 +110,9 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
         )}
       </div>
     );
-  }
+  },
 );
 
-SearchInputTyped.displayName = "SearchInputTyped";
+SearchInputTyped.displayName = 'SearchInputTyped';
 
 export { SearchInputTyped };

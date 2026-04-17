@@ -1,183 +1,393 @@
-import { Button } from '@/components/ui/button';
-import { Shield, Zap } from 'lucide-react';
-import { useCircuitBreakers, useStagingStats, usePipelineDefinitionsList } from '../hooks/usePipelineHistory';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
-import { brandColors } from '@/theme/muiTheme';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Shield, Zap, Server, Package, GitBranch, Workflow } from 'lucide-react';
+import { useCircuitBreakers, useStagingStats, usePipelineDefinitionsList } from '../hooks/usePipelineHistory';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 
-const cbColors: Record<string, React.CSSProperties> = {
-  closed: { background: '#dcfce7', color: '#15803d' },
-  open: { background: '#fee2e2', color: '#b91c1c' },
-  half_open: { background: '#fef9c3', color: '#a16207' },
+const DuplicatesPanel = lazy(() => import('@/components/admin/import-hub/DuplicatesPanel').then(m => ({ default: m.DuplicatesPanel })));
+
+const cbClass: Record<string, string> = {
+  closed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+  open: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  half_open: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
 };
 
 const dispositionColors: Record<string, string> = {
-  pending: '#9ca3af', committed: '#22c55e', rejected: '#ef4444', skipped: '#f59e0b',
+  pending: 'bg-muted-foreground',
+  committed: 'bg-green-500',
+  rejected: 'bg-destructive',
+  skipped: 'bg-amber-500',
+  failed: 'bg-destructive',
 };
 
+function SectionCard({ icon: Icon, title, extra, children }: {
+  icon?: React.ComponentType<{ className?: string }>;
+  title: string;
+  extra?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border border-border rounded-md bg-background overflow-hidden">
+      <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+        {Icon && <Icon className="h-3.5 w-3.5" />}
+        <span>{title}</span>
+        {extra}
+      </div>
+      <div className="p-4">{children}</div>
+    </div>
+  );
+}
+
 export default function HealthTab() {
-  const { data: circuitBreakers } = useCircuitBreakers();
-  const { data: stagingStats } = useStagingStats();
-  const { data: pipelineDefs } = usePipelineDefinitionsList();
+  const { data: circuitBreakers = [] } = useCircuitBreakers();
+  const { data: stagingStats = [] } = useStagingStats();
+  const { data: pipelineDefs = [] } = usePipelineDefinitionsList();
   const navigate = useNavigate();
 
-  // Workflow definitions
-  const { data: workflowDefs } = useQuery({
+  const { data: workflowDefs = [] } = useQuery({
     queryKey: ['workflow-definitions-list'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from>; rpc: typeof supabase.rpc })
-        .from('workflow_definitions')
+      const { data, error } = await untypedFrom('workflow_definitions')
         .select('id, name, display_name, edge_function, schedule, is_enabled, queue_name')
         .order('name', { ascending: true });
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
-  // Queue metrics
-  const { data: queueMetrics } = useQuery({
+  const { data: queueMetrics = [] } = useQuery({
     queryKey: ['queue-metrics'],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from>; rpc: typeof supabase.rpc }).rpc('pgmq_metrics_all');
+      const { data, error } = await untypedSupabase.rpc('pgmq_metrics_all');
       if (error) throw error;
-      return data;
+      return (data || []) as Array<Record<string, unknown>>;
     },
     refetchInterval: 30_000,
   });
 
-  const totalStaging = stagingStats?.reduce((sum, s) => sum + s.count, 0) || 0;
-  const openCircuits = circuitBreakers?.filter(cb => cb.state === 'open').length || 0;
+  const totalStaging = stagingStats.reduce((sum, s) => sum + s.count, 0);
+  const openCircuits = circuitBreakers.filter(cb => cb.state === 'open').length;
 
-  const sectionTitle: React.CSSProperties = { fontWeight: 600, fontSize: 15, marginBottom: 12 };
-  const cardBorder: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', padding: 16 };
+  const { data: geoHealth } = useQuery({
+    queryKey: ['geo-health'],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const [
+        citiesNoCoords, citiesNoCountry, citiesDupes,
+        countriesNoCode, countriesDupes,
+        geoMergeCandidates,
+      ] = await Promise.all([
+        untypedFrom('cities').select('id', { count: 'exact', head: true }).is('latitude', null).is('duplicate_of_id', null),
+        untypedFrom('cities').select('id', { count: 'exact', head: true }).is('country_id', null),
+        untypedFrom('cities').select('id', { count: 'exact', head: true }).not('duplicate_of_id', 'is', null),
+        untypedFrom('countries').select('id', { count: 'exact', head: true }).is('code', null).is('duplicate_of_id', null),
+        untypedFrom('countries').select('id', { count: 'exact', head: true }).not('duplicate_of_id', 'is', null),
+        untypedFrom('ingestion_staging').select('id', { count: 'exact', head: true })
+          .in('target_table', ['cities', 'countries'])
+          .eq('dedup_status', 'merge_candidate')
+          .eq('review_status', 'pending_review'),
+      ]);
+      return {
+        cities_no_coords:     citiesNoCoords.count ?? 0,
+        cities_no_country:    citiesNoCountry.count ?? 0,
+        cities_duplicates:    citiesDupes.count ?? 0,
+        countries_no_code:    countriesNoCode.count ?? 0,
+        countries_duplicates: countriesDupes.count ?? 0,
+        geo_merge_candidates: geoMergeCandidates.count ?? 0,
+      };
+    },
+  });
+
+  const { data: deadLetter = [] } = useQuery({
+    queryKey: ['ingestion-dead-letter'],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await untypedFrom('ingestion_events')
+        .select('stage, new_status, payload')
+        .in('new_status', ['rejected', 'failed', 'error'])
+        .gte('created_at', since)
+        .limit(2000);
+      const groups: Record<string, { stage: string; errorClass: string; count: number; sample: string }> = {};
+      for (const r of (data ?? []) as unknown as Array<{ stage: string; new_status: string; payload: Record<string, unknown> | null }>) {
+        const errMsg = String((r.payload as Record<string, unknown>)?.error ?? (r.payload as Record<string, unknown>)?.crash ?? r.new_status);
+        const errorClass = errMsg.split(':')[0].slice(0, 60);
+        const k = `${r.stage}::${errorClass}`;
+        if (!groups[k]) groups[k] = { stage: r.stage, errorClass, count: 0, sample: errMsg.slice(0, 200) };
+        groups[k].count++;
+      }
+      return Object.values(groups).sort((a, b) => b.count - a.count).slice(0, 10);
+    },
+  });
+
+  const { data: enrichSummary = [] } = useQuery({
+    queryKey: ['enrichment-audit-summary'],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await untypedFrom('enrichment_audit')
+        .select('stage, status').gte('created_at', since).limit(5000);
+      const counts: Record<string, { success: number; partial: number; failed: number }> = {};
+      for (const r of (data ?? []) as unknown as Array<{ stage: string; status: string }>) {
+        if (!counts[r.stage]) counts[r.stage] = { success: 0, partial: 0, failed: 0 };
+        const k = r.status as 'success' | 'partial' | 'failed';
+        if (k in counts[r.stage]) counts[r.stage][k]++;
+      }
+      return Object.entries(counts).map(([stage, c]) => ({ stage, ...c }));
+    },
+  });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Circuit Breakers */}
-      <div>
-        <div style={{ ...sectionTitle, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Shield style={{ width: 16, height: 16 }} />
-          API Circuit Breakers
-          {openCircuits > 0 && <span style={{ fontSize: 12, color: '#ef4444' }}>({openCircuits} open)</span>}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-          {circuitBreakers?.map(cb => (
-            <div key={cb.id} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 500, fontSize: 13 }}>{cb.api_name}</span>
-                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, ...(cbColors[cb.state] || {}) }}>
-                  {cb.state === 'half_open' ? 'HALF OPEN' : cb.state.toUpperCase()}
-                </span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginTop: 6, fontSize: 11, color: '#6b7280' }}>
-                <div>Fails: <span style={{ color: cb.failure_count > 0 ? '#ef4444' : undefined, fontWeight: cb.failure_count > 0 ? 600 : undefined }}>{cb.failure_count}/{cb.threshold}</span></div>
-                <div>OK: {cb.success_count}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Queue Depths + Staging Stats side by side */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        {/* Queue Depths */}
-        <div style={cardBorder}>
-          <div style={sectionTitle}>Queue Depths</div>
-          {queueMetrics && queueMetrics.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {(queueMetrics as Array<Record<string, unknown>>).map((q) => (
-                <div key={q.queue_name as string} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #f3f4f6' }}>
-                  <span style={{ fontSize: 13 }}>{q.queue_name as string}</span>
-                  <div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#6b7280' }}>
-                    <span>Depth: <strong style={{ color: (q.queue_length as number) > 0 ? '#f59e0b' : '#22c55e' }}>{q.queue_length as number}</strong></span>
-                    <span>Total: {q.total_messages as number}</span>
+    <TooltipProvider delayDuration={200}>
+      <div className="flex flex-col gap-5">
+        {/* Dead-letter cluster */}
+        <SectionCard
+          icon={Zap}
+          title="Dead-letter — top failure clusters"
+          extra={
+            <>
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0">last 24h</Badge>
+              {deadLetter.length === 0 && <span className="text-[11px] font-normal text-muted-foreground">(no failures)</span>}
+            </>
+          }
+        >
+          {deadLetter.length > 0 && (
+            <div className="grid grid-cols-[120px_1fr_80px] gap-x-3 gap-y-1 text-xs">
+              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Stage</div>
+              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Error class</div>
+              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px] text-right">Count</div>
+              {deadLetter.map((g, i) => (
+                <div key={i} className="contents">
+                  <div className="font-mono text-[11px] py-1 border-t border-border/40">{g.stage}</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="py-1 border-t border-border/40 truncate cursor-help">{g.errorClass}</div>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-xs max-w-[400px] whitespace-pre-wrap">{g.sample}</TooltipContent>
+                  </Tooltip>
+                  <div className={`py-1 border-t border-border/40 text-right font-mono font-semibold ${g.count > 10 ? 'text-destructive' : ''}`}>
+                    {g.count}
                   </div>
                 </div>
               ))}
             </div>
+          )}
+        </SectionCard>
+
+        {/* Enrichment audit */}
+        {enrichSummary.length > 0 && (
+          <SectionCard title="Enrichment outcomes" extra={<Badge variant="outline" className="text-[10px] px-1.5 py-0">last 24h</Badge>}>
+            <div className="grid grid-cols-[1fr_80px_80px_80px] gap-x-3 gap-y-1 text-xs">
+              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Stage</div>
+              <div className="font-semibold text-green-700 dark:text-green-300 uppercase tracking-wider text-[10px] text-right">Success</div>
+              <div className="font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider text-[10px] text-right">Partial</div>
+              <div className="font-semibold text-destructive uppercase tracking-wider text-[10px] text-right">Failed</div>
+              {enrichSummary.map((s, i) => (
+                <div key={i} className="contents">
+                  <div className="font-mono py-1 border-t border-border/40">{s.stage}</div>
+                  <div className="py-1 border-t border-border/40 text-right tabular-nums">{s.success}</div>
+                  <div className={`py-1 border-t border-border/40 text-right tabular-nums ${s.partial > 0 ? 'text-amber-700 dark:text-amber-300' : ''}`}>{s.partial}</div>
+                  <div className={`py-1 border-t border-border/40 text-right tabular-nums ${s.failed > 0 ? 'text-destructive font-semibold' : ''}`}>{s.failed}</div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        )}
+
+        {/* Circuit Breakers */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Shield className="h-4 w-4" />
+            <span className="text-sm font-semibold">API Circuit Breakers</span>
+            {openCircuits > 0 && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{openCircuits} open</Badge>
+            )}
+          </div>
+          {circuitBreakers.length === 0 ? (
+            <div className="border border-border rounded-md bg-background p-4 text-center text-xs text-muted-foreground">
+              No circuit breakers configured
+            </div>
           ) : (
-            <p style={{ color: '#9ca3af', fontSize: 13 }}>No queue data</p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+              {circuitBreakers.map(cb => (
+                <div key={cb.id} className="border border-border rounded-md bg-background p-3 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-medium text-sm truncate">{cb.api_name}</span>
+                    <span className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${cbClass[cb.state] || 'bg-muted'}`}>
+                      {cb.state === 'half_open' ? 'half' : cb.state}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
+                    <div>
+                      Fails: <span className={`font-mono ${cb.failure_count > 0 ? 'text-destructive font-semibold' : ''}`}>
+                        {cb.failure_count}/{cb.threshold}
+                      </span>
+                    </div>
+                    <div>OK: <span className="font-mono">{cb.success_count}</span></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Staging Stats */}
-        <div style={cardBorder}>
-          <div style={sectionTitle}>Staging ({totalStaging} items)</div>
-          {stagingStats && stagingStats.length > 0 ? (
-            <>
-              <div style={{ display: 'flex', gap: 2, height: 20, borderRadius: 10, overflow: 'hidden', marginBottom: 12 }}>
-                {stagingStats.map(s => (
-                  <div key={s.status} style={{ background: dispositionColors[s.status] || '#d1d5db', width: `${(s.count / totalStaging) * 100}%` }} title={`${s.status}: ${s.count}`} />
-                ))}
+        {/* Geo Health */}
+        <SectionCard
+          title="Geo Health — Cities & Countries"
+          extra={
+            (geoHealth?.geo_merge_candidates ?? 0) > 0
+              ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30">{geoHealth?.geo_merge_candidates} merge candidates</Badge>
+              : undefined
+          }
+        >
+          <div className="grid grid-cols-3 lg:grid-cols-6 gap-2.5">
+            {[
+              { label: 'Cities · no coords',     value: geoHealth?.cities_no_coords },
+              { label: 'Cities · no country',    value: geoHealth?.cities_no_country },
+              { label: 'Cities · duplicates',    value: geoHealth?.cities_duplicates },
+              { label: 'Countries · no ISO',     value: geoHealth?.countries_no_code },
+              { label: 'Countries · duplicates', value: geoHealth?.countries_duplicates },
+              { label: 'Merge candidates',       value: geoHealth?.geo_merge_candidates },
+            ].map(({ label, value }) => (
+              <div key={label} className="border border-border rounded-md p-3">
+                <div className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-green-600 dark:text-green-400'}`}>
+                  {value ?? '–'}
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-1">{label}</div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8 }}>
-                {stagingStats.map(s => (
-                  <div key={s.status} style={{ textAlign: 'center', padding: 8, border: '1px solid #f3f4f6', borderRadius: 6 }}>
-                    <div style={{ fontSize: 18, fontWeight: 700 }}>{s.count.toLocaleString()}</div>
-                    <div style={{ fontSize: 11, color: '#9ca3af', textTransform: 'capitalize' }}>{s.status}</div>
+            ))}
+          </div>
+        </SectionCard>
+
+        {/* Queues + Staging side-by-side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <SectionCard icon={Server} title="Queue Depths">
+            {queueMetrics.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No queue data</p>
+            ) : (
+              <div className="flex flex-col">
+                {queueMetrics.map(q => (
+                  <div key={q.queue_name as string} className="flex justify-between items-center py-1.5 border-b border-border/40 last:border-0">
+                    <span className="text-sm font-mono">{q.queue_name as string}</span>
+                    <div className="flex gap-3 text-xs text-muted-foreground">
+                      <span>
+                        Depth:{' '}
+                        <strong className={(q.queue_length as number) > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}>
+                          {q.queue_length as number}
+                        </strong>
+                      </span>
+                      <span>Total: <span className="tabular-nums">{q.total_messages as number}</span></span>
+                    </div>
                   </div>
                 ))}
               </div>
-            </>
-          ) : (
-            <p style={{ color: '#9ca3af', fontSize: 13 }}>No staging items</p>
-          )}
-        </div>
-      </div>
+            )}
+          </SectionCard>
 
-      {/* Definitions */}
-      <div style={cardBorder}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div style={sectionTitle}>All Definitions</div>
-          <Button size="sm" onClick={() => navigate('/admin/pipelines')}>
-            <Zap style={{ width: 14, height: 14, marginRight: 4 }} /> Open Builder
-          </Button>
+          <SectionCard
+            icon={Package}
+            title="Staging"
+            extra={<Badge variant="outline" className="text-[10px] px-1.5 py-0">{totalStaging.toLocaleString()} items</Badge>}
+          >
+            {stagingStats.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No staging items</p>
+            ) : (
+              <>
+                <div className="flex h-5 rounded-full overflow-hidden mb-3 gap-[1px] bg-muted">
+                  {stagingStats.map(s => (
+                    <Tooltip key={s.status}>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={dispositionColors[s.status] || 'bg-muted-foreground'}
+                          style={{ width: `${(s.count / totalStaging) * 100}%` }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent className="text-xs capitalize">{s.status}: {s.count.toLocaleString()}</TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2">
+                  {stagingStats.map(s => (
+                    <div key={s.status} className="text-center p-2 border border-border rounded-md">
+                      <div className="text-lg font-bold tabular-nums">{s.count.toLocaleString()}</div>
+                      <div className="text-[10px] text-muted-foreground capitalize mt-0.5">{s.status}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </SectionCard>
         </div>
-        <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                {['Name', 'Type', 'Schedule', 'Enabled'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 500, color: '#6b7280', fontSize: 12 }}>{h}</th>
+
+        {/* Duplicates */}
+        <Suspense fallback={<div className="p-4"><Skeleton className="h-32 w-full" /></div>}>
+          <DuplicatesPanel />
+        </Suspense>
+
+        {/* Definitions */}
+        <div className="border border-border rounded-md bg-background overflow-hidden">
+          <div className="px-4 py-2 border-b border-border flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">All Definitions</span>
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate('/admin/pipelines')}>
+              <Zap className="h-3.5 w-3.5 mr-1.5" /> Open Builder
+            </Button>
+          </div>
+          <div className="max-h-[400px] overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 sticky top-0">
+                <tr className="border-b border-border">
+                  {['Name', 'Type', 'Schedule', 'Enabled'].map(h => (
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {pipelineDefs?.map((def: Record<string, unknown>) => (
+                  <tr key={def.id as string} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                    <td className="px-3 py-2 font-medium">{(def.display_name || def.name) as string}</td>
+                    <td className="px-3 py-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+                        <GitBranch className="h-2.5 w-2.5" /> pipeline
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
+                    <td className="px-3 py-2">
+                      <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {def.is_enabled ? 'ON' : 'OFF'}
+                      </span>
+                    </td>
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {/* Pipeline definitions */}
-              {pipelineDefs?.map((def: Record<string, unknown>) => (
-                <tr key={def.id as string} style={{ borderBottom: '1px solid #f9fafb' }}>
-                  <td style={{ padding: '8px 12px', fontWeight: 500 }}>{(def.display_name || def.name) as string}</td>
-                  <td style={{ padding: '8px 12px' }}>
-                    <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: '#fdf2f8', color: brandColors.main }}>pipeline</span>
-                  </td>
-                  <td style={{ padding: '8px 12px', color: '#6b7280' }}>{(def.schedule as string) || 'Manual'}</td>
-                  <td style={{ padding: '8px 12px' }}>
-                    <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: def.is_enabled ? '#dcfce7' : '#f3f4f6', color: def.is_enabled ? '#15803d' : '#9ca3af' }}>
-                      {def.is_enabled ? 'ON' : 'OFF'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {/* Workflow definitions */}
-              {workflowDefs?.map((def: Record<string, unknown>) => (
-                <tr key={def.id as string} style={{ borderBottom: '1px solid #f9fafb' }}>
-                  <td style={{ padding: '8px 12px', fontWeight: 500 }}>{(def.display_name || def.name) as string}</td>
-                  <td style={{ padding: '8px 12px' }}>
-                    <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: '#e0f2fe', color: '#0369a1' }}>workflow</span>
-                  </td>
-                  <td style={{ padding: '8px 12px', color: '#6b7280' }}>{(def.schedule as string) || 'Manual'}</td>
-                  <td style={{ padding: '8px 12px' }}>
-                    <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: def.is_enabled ? '#dcfce7' : '#f3f4f6', color: def.is_enabled ? '#15803d' : '#9ca3af' }}>
-                      {def.is_enabled ? 'ON' : 'OFF'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                {workflowDefs?.map((def: Record<string, unknown>) => (
+                  <tr key={def.id as string} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                    <td className="px-3 py-2 font-medium">{(def.display_name || def.name) as string}</td>
+                    <td className="px-3 py-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+                        <Workflow className="h-2.5 w-2.5" /> workflow
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
+                    <td className="px-3 py-2">
+                      <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {def.is_enabled ? 'ON' : 'OFF'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

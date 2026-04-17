@@ -91,7 +91,10 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
         {Object.entries(properties).map(([key, prop]) => {
           const value = config[key] ?? prop.default;
           const isRequired = requiredFields.includes(key);
-          const label = key.replace(/([A-Z])/g, ' $1').replace(/[_-]/g, ' ').replace(/^\w/, c => c.toUpperCase());
+          const label = key
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/[_-]/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
 
           return (
             <div key={key} className="space-y-1.5">
@@ -141,7 +144,12 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
                 <Input
                   type="number"
                   value={value !== undefined && value !== null ? Number(value) : ''}
-                  onChange={(e) => updateConfig(key, e.target.value === '' ? undefined : Number(e.target.value))}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v === '') { updateConfig(key, undefined); return; }
+                    const n = Number(v);
+                    if (!Number.isNaN(n)) updateConfig(key, n);
+                  }}
                   className="h-8 text-sm"
                   min={prop.minimum}
                   max={prop.maximum}

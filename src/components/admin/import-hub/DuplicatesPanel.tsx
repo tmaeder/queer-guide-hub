@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -231,7 +231,7 @@ function ExistingDedupSection() {
         </Box>
       ) : pairs.length === 0 ? (
         <Card>
-          <CardContent sx={{ p: 6, textAlign: 'center' }}>
+          <CardContent>
             <Box sx={{ mx: 'auto', width: 80, height: 80, bgcolor: 'var(--muted)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
               <Search style={{ width: 40, height: 40, color: 'var(--muted-foreground)' }} />
             </Box>

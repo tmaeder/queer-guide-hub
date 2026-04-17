@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -121,7 +120,7 @@ function SharedTripPage() {
     queryFn: async (): Promise<SharedTripData> => {
       const { data, error } = await supabase.rpc('get_shared_trip', { p_token: token! });
       if (error) throw error;
-      return data as SharedTripData;
+      return data as unknown as SharedTripData;
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
@@ -496,11 +495,7 @@ function SharedTripPage() {
         {/* Conversion CTA: turn viewers into signups */}
         <Card
           className="mt-5"
-          sx={{
-            background: `linear-gradient(135deg, ${theme.palette.brand?.main || '#DB2777'}14 0%, ${theme.palette.accent?.main || '#F59E0B'}14 100%)`,
-            border: '1px solid',
-            borderColor: 'divider',
-          }}
+
         >
           <CardContent>
             <Box className="flex flex-col sm:flex-row items-center gap-3">

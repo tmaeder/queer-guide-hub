@@ -64,7 +64,6 @@ export const TagSelector = ({
     }
     return tagsByCategory.find(cat => cat.category === activeCategory)?.tags || [];
   };
-  const _availableCategories = categories || tagsByCategory.map(cat => cat.category);
   return <Box className={className}>
       <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Tags</Label>
 

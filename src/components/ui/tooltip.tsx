@@ -1,5 +1,5 @@
-import * as React from "react"
-import MuiTooltip from "@mui/material/Tooltip"
+import * as React from 'react';
+import MuiTooltip from '@mui/material/Tooltip';
 
 // Internal context to pass tooltip content from TooltipContent up to the Tooltip wrapper
 const TooltipContext = React.createContext<{
@@ -10,11 +10,15 @@ function TooltipProvider({ children }: { children: React.ReactNode; delayDuratio
   return <>{children}</>;
 }
 
-function Tooltip({ children, delayDuration }: { children: React.ReactNode; delayDuration?: number }) {
-  const [title, setTitle] = React.useState<React.ReactNode>("");
-  const [placement, _setPlacement] = React.useState<
-    'top' | 'right' | 'bottom' | 'left'
-  >('top');
+function Tooltip({
+  children,
+  delayDuration,
+}: {
+  children: React.ReactNode;
+  delayDuration?: number;
+}) {
+  const [title, setTitle] = React.useState<React.ReactNode>('');
+  const [placement, _setPlacement] = React.useState<'top' | 'right' | 'bottom' | 'left'>('top');
 
   // Context also carries placement from TooltipContent
   const ctx = React.useMemo(() => ({ setTitle }), []);
@@ -22,7 +26,7 @@ function Tooltip({ children, delayDuration }: { children: React.ReactNode; delay
   return (
     <TooltipContext.Provider value={ctx}>
       <MuiTooltip
-        title={title || ""}
+        title={title || ''}
         placement={placement}
         enterDelay={delayDuration || 200}
         enterTouchDelay={50}
@@ -50,15 +54,23 @@ function Tooltip({ children, delayDuration }: { children: React.ReactNode; delay
   );
 }
 
-const TooltipTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }>(
-  ({ children, asChild, ...props }, ref) => {
-    if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { ref, ...props });
-    }
-    return <button ref={ref} type="button" {...props}>{children}</button>;
+const TooltipTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
+>(({ children, asChild, ...props }, ref) => {
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, {
+      ref,
+      ...props,
+    });
   }
-);
-TooltipTrigger.displayName = "TooltipTrigger"
+  return (
+    <button ref={ref} type="button" {...props}>
+      {children}
+    </button>
+  );
+});
+TooltipTrigger.displayName = 'TooltipTrigger';
 
 interface TooltipContentProps extends React.HTMLAttributes<HTMLDivElement> {
   side?: 'top' | 'right' | 'bottom' | 'left';
@@ -67,7 +79,7 @@ interface TooltipContentProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const TooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps>(
-  ({ _className, children, _side = "top", ..._props }, _ref) => {
+  ({ children, ..._props }, _ref) => {
     const { setTitle } = React.useContext(TooltipContext);
 
     // Push children as the tooltip title into MUI Tooltip via context
@@ -77,8 +89,8 @@ const TooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps>(
 
     // Render nothing visible — content is shown by MUI Tooltip
     return null;
-  }
+  },
 );
-TooltipContent.displayName = "TooltipContent"
+TooltipContent.displayName = 'TooltipContent';
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,14 +28,14 @@ interface SecurityMetrics {
 }
 
 export function SecurityDashboard() {
-  const { _user } = useAuth();
+  const {} = useAuth();
   const { isAdmin } = useAdminRoles();
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [metrics, setMetrics] = useState<SecurityMetrics>({
     totalEvents: 0,
     criticalEvents: 0,
     recentAdminAccess: 0,
-    failedLogins: 0
+    failedLogins: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -66,21 +66,22 @@ export function SecurityDashboard() {
         const now = new Date();
         const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-        const recentEvents = eventsData.filter(e => new Date(e.created_at) > last24h);
-        const criticalEvents = recentEvents.filter(e => {
+        const recentEvents = eventsData.filter((e) => new Date(e.created_at) > last24h);
+        const criticalEvents = recentEvents.filter((e) => {
           // Extract severity from metadata if available
-          const severity = (e.metadata as Record<string, unknown> | undefined)?.severity || 'unknown';
+          const severity =
+            (e.metadata as Record<string, unknown> | undefined)?.severity || 'unknown';
           return severity === 'critical';
         });
-        const adminAccess = recentEvents.filter(e =>
-          e.event_type.includes('ADMIN_') || e.event_type.includes('PRIVACY_OVERRIDE')
+        const adminAccess = recentEvents.filter(
+          (e) => e.event_type.includes('ADMIN_') || e.event_type.includes('PRIVACY_OVERRIDE'),
         );
 
         setMetrics({
           totalEvents: recentEvents.length,
           criticalEvents: criticalEvents.length,
           recentAdminAccess: adminAccess.length,
-          failedLogins: recentEvents.filter(e => e.event_type.includes('FAILED_LOGIN')).length
+          failedLogins: recentEvents.filter((e) => e.event_type.includes('FAILED_LOGIN')).length,
         });
       }
     } catch (error) {
@@ -106,7 +107,7 @@ export function SecurityDashboard() {
       low: 'secondary',
       medium: 'default',
       high: 'destructive',
-      critical: 'destructive'
+      critical: 'destructive',
     } as const;
 
     return (
@@ -133,22 +134,37 @@ export function SecurityDashboard() {
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Shield style={{ height: 24, width: 24 }} />
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Security Dashboard</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+            Security Dashboard
+          </Typography>
         </Box>
         <Button onClick={loadSecurityData} disabled={loading}>
-          <RefreshCw style={{ height: 16, width: 16, marginRight: 8, ...(loading ? { animation: 'spin 1s linear infinite' } : {}) }} />
+          <RefreshCw
+            style={{
+              height: 16,
+              width: 16,
+              marginRight: 8,
+              ...(loading ? { animation: 'spin 1s linear infinite' } : {}),
+            }}
+          />
           Refresh
         </Button>
       </Box>
 
       {/* Security Metrics */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+      <Box
+        sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}
+      >
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
-                <Typography variant="body2" color="text.secondary">Events (24h)</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{metrics.totalEvents}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Events (24h)
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                  {metrics.totalEvents}
+                </Typography>
               </Box>
               <Eye style={{ height: 32, width: 32, color: '#3b82f6' }} />
             </Box>
@@ -156,11 +172,15 @@ export function SecurityDashboard() {
         </Card>
 
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
-                <Typography variant="body2" color="text.secondary">Critical Events</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'error.main' }}>{metrics.criticalEvents}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Critical Events
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                  {metrics.criticalEvents}
+                </Typography>
               </Box>
               <AlertTriangle style={{ height: 32, width: 32, color: '#ef4444' }} />
             </Box>
@@ -168,11 +188,15 @@ export function SecurityDashboard() {
         </Card>
 
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
-                <Typography variant="body2" color="text.secondary">Admin Access</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{metrics.recentAdminAccess}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Admin Access
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                  {metrics.recentAdminAccess}
+                </Typography>
               </Box>
               <Lock style={{ height: 32, width: 32, color: '#555555' }} />
             </Box>
@@ -180,11 +204,15 @@ export function SecurityDashboard() {
         </Card>
 
         <Card>
-          <CardContent sx={{ p: 2 }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box>
-                <Typography variant="body2" color="text.secondary">Failed Logins</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{metrics.failedLogins}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Failed Logins
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                  {metrics.failedLogins}
+                </Typography>
               </Box>
               <AlertTriangle style={{ height: 32, width: 32, color: '#f97316' }} />
             </Box>
@@ -200,11 +228,24 @@ export function SecurityDashboard() {
         <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {events.slice(0, 20).map((event) => (
-              <Box key={event.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, p: 1.5, border: 1, borderColor: 'divider', borderRadius: 1 }}>
+              <Box
+                key={event.id}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 1.5,
+                  p: 1.5,
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                }}
+              >
                 {getSeverityIcon(event.severity)}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <Typography component="span" sx={{ fontWeight: 500 }}>{event.event_type}</Typography>
+                    <Typography component="span" sx={{ fontWeight: 500 }}>
+                      {event.event_type}
+                    </Typography>
                     {getSeverityBadge(event.severity)}
                   </Box>
                   <Typography variant="body2" color="text.secondary">
@@ -213,7 +254,14 @@ export function SecurityDashboard() {
                   {(event.details || event.metadata) && (
                     <Box
                       component="pre"
-                      sx={{ fontSize: '0.75rem', mt: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1, overflowX: 'auto' }}
+                      sx={{
+                        fontSize: '0.75rem',
+                        mt: 1,
+                        p: 1,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        overflowX: 'auto',
+                      }}
                     >
                       {JSON.stringify(event.details || event.metadata, null, 2)}
                     </Box>
@@ -240,7 +288,9 @@ export function SecurityDashboard() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
-              <Typography component="span">Profile data encryption and RLS policies hardened</Typography>
+              <Typography component="span">
+                Profile data encryption and RLS policies hardened
+              </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />

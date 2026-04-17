@@ -10,7 +10,7 @@ import {
   ExternalLink,
   UserPlus,
   UserMinus,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 import { formatEventDateTime } from '@/lib/event-time';
 import { GroupEvent } from '@/hooks/useGroupEvents';
@@ -50,9 +50,9 @@ export function GroupEventCard({
   isJoining,
   isLeaving,
   isDeleting,
-  canManage
+  canManage,
 }: GroupEventCardProps) {
-  const { _user } = useAuth();
+  const {} = useAuth();
 
   const formatEventDate = (startDate: string, endDate?: string) => {
     return formatEventDateTime(startDate, endDate);
@@ -90,7 +90,9 @@ export function GroupEventCard({
       <CardContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {event.description && (
-            <Typography variant="body2" color="text.secondary">{event.description}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {event.description}
+            </Typography>
           )}
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -108,7 +110,8 @@ export function GroupEventCard({
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <MapPin style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
               <Typography variant="body2">
-                {event.city}{event.state && `, ${event.state}`}
+                {event.city}
+                {event.state && `, ${event.state}`}
               </Typography>
             </Box>
 
@@ -134,7 +137,9 @@ export function GroupEventCard({
             {event.is_free && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <DollarSign style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
-                <Typography variant="body2" sx={{ color: 'success.main', fontWeight: 500 }}>Free</Typography>
+                <Typography variant="body2" sx={{ color: 'success.main', fontWeight: 500 }}>
+                  Free
+                </Typography>
               </Box>
             )}
 
@@ -146,7 +151,9 @@ export function GroupEventCard({
             )}
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2 }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2 }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {event.user_attending ? (
                 <Button
@@ -156,32 +163,31 @@ export function GroupEventCard({
                   disabled={isLeaving}
                 >
                   <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />
-                  {isLeaving ? "Leaving..." : "Leave"}
+                  {isLeaving ? 'Leaving...' : 'Leave'}
                 </Button>
               ) : (
                 <Button
                   size="sm"
                   onClick={() => onJoinEvent(event.id)}
-                  disabled={isJoining || (event.max_attendees && (event.attendee_count || 0) >= event.max_attendees)}
+                  disabled={
+                    isJoining ||
+                    (event.max_attendees && (event.attendee_count || 0) >= event.max_attendees)
+                  }
                 >
                   <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
-                  {isJoining ? "Joining..." : "Join"}
+                  {isJoining ? 'Joining...' : 'Join'}
                 </Button>
               )}
 
               {(event.ticket_url || event.website) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                >
+                <Button variant="outline" size="sm" asChild>
                   <a
                     href={event.ticket_url || event.website}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
-                    {event.ticket_url ? "Tickets" : "Website"}
+                    {event.ticket_url ? 'Tickets' : 'Website'}
                   </a>
                 </Button>
               )}

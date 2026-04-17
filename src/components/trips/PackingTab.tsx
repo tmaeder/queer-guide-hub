@@ -177,17 +177,7 @@ export function PackingTab({ tripId }: Props) {
               key={tpl}
               variant="outline"
               onClick={() => handleTemplate(tpl)}
-              sx={{
-                cursor: 'pointer',
-                px: 2,
-                py: 0.75,
-                fontSize: '0.8125rem',
-                transition: 'all 0.15s cubic-bezier(0.22, 1, 0.36, 1)',
-                '&:hover': {
-                  borderColor: 'brand.main',
-                  color: 'brand.main',
-                },
-              }}
+
             >
               {templateLabel(tpl)}
             </Badge>
@@ -272,18 +262,7 @@ export function PackingTab({ tripId }: Props) {
             key={tpl}
             variant="outline"
             onClick={() => handleTemplate(tpl)}
-            sx={{
-              cursor: 'pointer',
-              px: 1.75,
-              py: 0.75,
-              flexShrink: 0,
-              fontSize: '0.8125rem',
-              transition: 'all 0.15s cubic-bezier(0.22, 1, 0.36, 1)',
-              '&:hover': {
-                borderColor: 'brand.main',
-                color: 'brand.main',
-              },
-            }}
+
           >
             + {templateLabel(tpl)}
           </Badge>
@@ -341,15 +320,7 @@ export function PackingTab({ tripId }: Props) {
                   {hasItems && (
                     <Badge
                       variant={allChecked ? 'default' : 'secondary'}
-                      sx={
-                        allChecked
-                          ? {
-                              bgcolor: 'brand.main',
-                              color: 'brand.contrastText',
-                              borderColor: 'brand.main',
-                            }
-                          : undefined
-                      }
+
                     >
                       {groupChecked}/{group.items.length}
                     </Badge>

@@ -36,12 +36,13 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       setGeoResolved(true);
       return;
     }
-    if (!location?.country) return;
+    const country = location?.country;
+    if (!country) return;
 
     (async () => {
       try {
         const { data } = await supabase.rpc('resolve_currency_for_country', {
-          p_country_code: location.country,
+          p_country_code: country,
         });
         if (data?.[0]?.currency_code) {
           const code = data[0].currency_code.toUpperCase();
@@ -67,7 +68,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           .from('profiles')
           .select('preferences')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
         const saved = (data?.preferences as Record<string, unknown>)?.currency;
         if (typeof saved === 'string' && saved.length === 3) {
           const code = saved.toUpperCase();
@@ -92,7 +93,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           .from('profiles')
           .select('preferences')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
           .then(({ data }) => {
             const prefs = (data?.preferences as Record<string, unknown>) || {};
             supabase

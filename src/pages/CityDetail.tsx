@@ -70,7 +70,6 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTranslation } from 'react-i18next';
 
-
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CityDetail() {
@@ -391,7 +390,7 @@ export default function CityDetail() {
               <Box
                 sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, gap: 3 }}
               >
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Globe style={{ height: 20, width: 20 }} />
@@ -406,7 +405,7 @@ export default function CityDetail() {
                   </CardContent>
                 </Card>
 
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Star style={{ height: 20, width: 20 }} />
@@ -559,7 +558,7 @@ export default function CityDetail() {
               {/* Info Cards Grid — collapsible */}
               <Collapsible>
               <CollapsibleTrigger asChild>
-                <Button variant="outline" size="sm" sx={{ display: 'flex', alignItems: 'center', gap: 1, mx: 'auto' }}>
+                <Button variant="outline" size="sm">
                   <ChevronDown style={{ height: 16, width: 16 }} />
                   Show more details
                 </Button>
@@ -573,7 +572,7 @@ export default function CityDetail() {
                 }}
               >
                 {/* Basic Information */}
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Info style={{ height: 20, width: 20 }} />
@@ -685,7 +684,7 @@ export default function CityDetail() {
                 </Card>
 
                 {/* Climate & Geography */}
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Thermometer style={{ height: 20, width: 20 }} />
@@ -732,7 +731,7 @@ export default function CityDetail() {
                 </Card>
 
                 {/* Contact & Codes */}
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Phone style={{ height: 20, width: 20 }} />
@@ -804,7 +803,7 @@ export default function CityDetail() {
 
               {/* Demographics */}
               {city.demographics && Object.keys(city.demographics).length > 0 && (
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Users style={{ height: 20, width: 20 }} />
@@ -856,7 +855,7 @@ export default function CityDetail() {
                 }}
               >
                 {city.economy_sectors && city.economy_sectors.length > 0 && (
-                  <Card sx={{ borderColor: 'divider' }}>
+                  <Card>
                     <CardHeader>
                       <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <DollarSign style={{ height: 20, width: 20 }} />
@@ -875,7 +874,7 @@ export default function CityDetail() {
                   </Card>
                 )}
                 {city.cost_of_living && Object.keys(city.cost_of_living).length > 0 && (
-                  <Card sx={{ borderColor: 'divider' }}>
+                  <Card>
                     <CardHeader>
                       <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <DollarSign style={{ height: 20, width: 20 }} />
@@ -919,7 +918,7 @@ export default function CityDetail() {
 
               {/* Universities */}
               {city.universities && city.universities.length > 0 && (
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <GraduationCap style={{ height: 20, width: 20 }} />
@@ -965,7 +964,7 @@ export default function CityDetail() {
                 }}
               >
                 {city.notable_landmarks && city.notable_landmarks.length > 0 && (
-                  <Card sx={{ borderColor: 'divider' }}>
+                  <Card>
                     <CardHeader>
                       <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Landmark style={{ height: 20, width: 20 }} />
@@ -992,7 +991,7 @@ export default function CityDetail() {
                   </Card>
                 )}
                 {city.sister_cities && city.sister_cities.length > 0 && (
-                  <Card sx={{ borderColor: 'divider' }}>
+                  <Card>
                     <CardHeader>
                       <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Globe style={{ height: 20, width: 20 }} />
@@ -1023,7 +1022,7 @@ export default function CityDetail() {
 
               {/* Local Customs */}
               {city.local_customs && (
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Info style={{ height: 20, width: 20 }} />
@@ -1042,7 +1041,7 @@ export default function CityDetail() {
 
               {/* Queer Villages */}
               {!villagesLoading && villages.length > 0 && (
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Home style={{ height: 20, width: 20 }} />
@@ -1236,7 +1235,7 @@ export default function CityDetail() {
                 }}
               >
                 {/* Airports */}
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Plane style={{ height: 20, width: 20 }} />
@@ -1301,7 +1300,7 @@ export default function CityDetail() {
                 </Card>
 
                 {/* Transportation */}
-                <Card sx={{ borderColor: 'divider' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Bus style={{ height: 20, width: 20 }} />

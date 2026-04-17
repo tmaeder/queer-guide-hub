@@ -13,17 +13,17 @@ import { useNavigate } from 'react-router';
 
 const statusColors: Record<string, string> = {
   queued: 'bg-gray-100 text-gray-700',
-  running: 'bg-blue-100 text-blue-700',
-  completed: 'bg-green-100 text-green-700',
-  failed: 'bg-red-100 text-red-700',
-  cancelled: 'bg-yellow-100 text-yellow-700',
+  running: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+  completed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+  failed: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  cancelled: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
   paused: 'bg-purple-100 text-purple-700',
 };
 
 const cbStateColors: Record<string, string> = {
-  closed: 'bg-green-100 text-green-700',
-  open: 'bg-red-100 text-red-700',
-  half_open: 'bg-yellow-100 text-yellow-700',
+  closed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+  open: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  half_open: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
 };
 
 const dispositionColors: Record<string, string> = {
@@ -184,8 +184,8 @@ export default function PipelineDashboard() {
                         </div>
                       ))}
                       {selectedRun.error_message && (
-                        <div className="border border-red-200 rounded-md p-2 bg-red-50">
-                          <p className="text-xs text-red-700">{selectedRun.error_message}</p>
+                        <div className="border border-red-200 dark:border-red-900 rounded-md p-2 bg-red-50 dark:bg-red-950/30">
+                          <p className="text-xs text-red-700 dark:text-red-300">{selectedRun.error_message}</p>
                         </div>
                       )}
                     </div>
@@ -217,7 +217,7 @@ export default function PipelineDashboard() {
                       </Badge>
                     </div>
                     <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <div>Failures: <span className={cb.failure_count > 0 ? 'text-red-600 font-medium' : ''}>{cb.failure_count}/{cb.threshold}</span></div>
+                      <div>Failures: <span className={cb.failure_count > 0 ? 'text-red-600 dark:text-red-400 font-medium' : ''}>{cb.failure_count}/{cb.threshold}</span></div>
                       <div>Successes: {cb.success_count}</div>
                       {cb.last_failure_at && <div className="col-span-2">Last fail: {new Date(cb.last_failure_at).toLocaleString()}</div>}
                       {cb.state === 'open' && cb.open_until && (
@@ -298,7 +298,7 @@ export default function PipelineDashboard() {
                       <TableCell className="text-sm text-muted-foreground">{(def.schedule as string) || 'Manual'}</TableCell>
                       <TableCell>{def.is_template ? <Badge variant="outline" className="text-xs">Template</Badge> : null}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-xs ${def.is_enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        <Badge variant="outline" className={`text-xs ${def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 text-gray-500'}`}>
                           {def.is_enabled ? 'Enabled' : 'Disabled'}
                         </Badge>
                       </TableCell>

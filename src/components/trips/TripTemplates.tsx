@@ -61,7 +61,6 @@ export function TripTemplates() {
   const navigate = useLocalizedNavigate();
   const { createTrip } = useTripMutations();
   const { toast } = useToast();
-  const _theme = useTheme();
 
   const handleUseTemplate = (template: TripTemplate) => {
     const startDate = startOfDay(addMonths(new Date(), 1));
@@ -152,11 +151,7 @@ export function TripTemplates() {
                 <Box sx={{ mt: 1.5 }}>
                   <Badge
                     variant="secondary"
-                    sx={{
-                      bgcolor: 'rgba(255,255,255,0.2)',
-                      color: 'common.white',
-                      backdropFilter: 'blur(4px)',
-                    }}
+
                   >
                     <Box
                       component="span"
@@ -169,7 +164,7 @@ export function TripTemplates() {
                 </Box>
               </Box>
 
-              <CardContent sx={{ pt: 2 }}>
+              <CardContent>
                 <Button
                   variant="ghost"
                   size="sm"

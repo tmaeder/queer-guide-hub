@@ -315,8 +315,8 @@ export function FlyerScanResults({
 
   if (allItems.length === 0) {
     return (
-      <Card sx={{ mb: 2 }}>
-        <CardContent sx={{ p: 2.5 }}>
+      <Card>
+        <CardContent>
           <Typography variant="body2" color="text.secondary">
             No events or venues could be extracted from the uploaded files.
           </Typography>
@@ -334,8 +334,8 @@ export function FlyerScanResults({
     const effectiveItem = { ...item, detected_type: getItemType(resultIdx, itemIdx) };
 
     return (
-      <Card sx={{ mb: 2 }}>
-        <CardContent sx={{ p: 2.5 }}>
+      <Card>
+        <CardContent>
           <Box
             sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}
           >
@@ -367,8 +367,8 @@ export function FlyerScanResults({
 
   // Multiple items — accordion
   return (
-    <Card sx={{ mb: 2 }}>
-      <CardContent sx={{ p: 2.5 }}>
+    <Card>
+      <CardContent>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="body2" sx={{ fontWeight: 600 }}>
             Found {allItems.length} items{multipleFiles ? ` across ${results.length} files` : ''}

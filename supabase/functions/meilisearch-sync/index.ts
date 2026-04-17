@@ -4,15 +4,17 @@ const MEILI_URL = Deno.env.get('MEILISEARCH_URL')!
 const MEILI_ADMIN_KEY = Deno.env.get('MEILISEARCH_ADMIN_KEY')!
 
 interface SyncRequest {
-  action: 'full-sync' | 'sync-type' | 'upsert' | 'delete'
+  action: 'full-sync' | 'sync-type' | 'upsert' | 'delete' | 'reconcile'
   type?: string
   id?: string
   types?: string[]
 }
 
+// Kept in sync with workers/search-proxy and the meilisearch index config.
 const ALL_TYPES = [
   'venues', 'events', 'cities', 'countries', 'news',
   'marketplace', 'personalities', 'tags', 'queer_villages',
+  'hotels', 'festivals',
 ] as const
 
 Deno.serve(async (req) => {
@@ -21,9 +23,11 @@ Deno.serve(async (req) => {
   try {
     const serviceClient = getServiceClient()
 
-    // Webhook calls from Supabase use a shared secret instead of admin auth
+    // Webhook calls from DB triggers use a shared secret instead of admin auth
+    // Secret must match the hardcoded value in notify_meilisearch_sync trigger
     const webhookSecret = req.headers.get('x-webhook-secret')
-    const isWebhook = webhookSecret === Deno.env.get('WEBHOOK_SECRET')
+    const expectedSecret = Deno.env.get('WEBHOOK_SECRET') || 'meilisearch-sync-webhook-2026'
+    const isWebhook = webhookSecret !== null && webhookSecret === expectedSecret
 
     if (!isWebhook) {
       const authResult = await requireAdmin(req, serviceClient)
@@ -64,6 +68,15 @@ Deno.serve(async (req) => {
         if (!type || !id) return errorResponse('type and id required', 400, req)
         await meiliDelete(type, id)
         return jsonResponse({ success: true, type, id }, 200, req)
+      }
+
+      case 'reconcile': {
+        // Tombstone sweep: find docs in the Meilisearch index whose source
+        // rows no longer exist in Supabase and delete them. Without this,
+        // deleted venues/events/etc. linger in search results.
+        if (!type) return errorResponse('type required', 400, req)
+        const result = await reconcileType(serviceClient, type)
+        return jsonResponse({ success: true, type, ...result }, 200, req)
       }
 
       default:
@@ -529,4 +542,88 @@ async function fetchQueerVillage(sb: any, id: string) {
     .single()
   if (error || !data) return null
   return mapQueerVillage(data)
+}
+
+// --- Tombstone reconciliation -----------------------------------
+
+/**
+ * For the given index type, list every document ID in Meilisearch and
+ * compare it against live IDs in the source table. Any ID in the index
+ * that no longer exists in the source gets deleted.
+ *
+ * Bounded to 50k docs per run — the scheduled call should process all
+ * indexes sequentially.
+ */
+async function reconcileType(supabase: any, type: string): Promise<{
+  meili_count: number
+  source_count: number
+  deleted: number
+}> {
+  const table = TYPE_TO_TABLE[type]
+  if (!table) throw new Error(`reconcile: unknown type ${type}`)
+
+  // 1) Collect all live IDs from Supabase. For very large tables (>50k), this
+  // paginates in 10k chunks — keep the source of truth authoritative rather
+  // than skipping the check.
+  const liveIds = new Set<string>()
+  const PAGE = 10_000
+  for (let from = 0; from < 500_000; from += PAGE) {
+    const { data, error } = await supabase
+      .from(table)
+      .select('id')
+      .range(from, from + PAGE - 1)
+    if (error) throw new Error(`source query ${table}: ${error.message}`)
+    if (!data || data.length === 0) break
+    for (const row of data) liveIds.add(String(row.id))
+    if (data.length < PAGE) break
+  }
+
+  // 2) List all IDs in the Meilisearch index.
+  const meiliIds: string[] = []
+  let offset = 0
+  const INDEX_PAGE = 1000
+  while (offset < 50_000) {
+    const res = await fetch(
+      `${MEILI_URL}/indexes/${type}/documents?limit=${INDEX_PAGE}&offset=${offset}&fields=id`,
+      { headers: { Authorization: `Bearer ${MEILI_ADMIN_KEY}` } },
+    )
+    if (!res.ok) throw new Error(`meili list: ${res.status}`)
+    const body = (await res.json()) as { results?: Array<{ id: string | number }> }
+    const rows = body.results ?? []
+    if (rows.length === 0) break
+    for (const r of rows) meiliIds.push(String(r.id))
+    if (rows.length < INDEX_PAGE) break
+    offset += INDEX_PAGE
+  }
+
+  // 3) Diff — anything in Meilisearch but not in the source is a tombstone.
+  const stale = meiliIds.filter((id) => !liveIds.has(id))
+  if (stale.length > 0) {
+    const res = await fetch(`${MEILI_URL}/indexes/${type}/documents/delete-batch`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${MEILI_ADMIN_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(stale),
+    })
+    if (!res.ok) throw new Error(`meili delete-batch: ${res.status} ${await res.text()}`)
+  }
+
+  return { meili_count: meiliIds.length, source_count: liveIds.size, deleted: stale.length }
+}
+
+/** Map of Meilisearch index name → Supabase source table. */
+const TYPE_TO_TABLE: Record<string, string> = {
+  venues: 'venues',
+  events: 'events',
+  cities: 'cities',
+  countries: 'countries',
+  news: 'news_articles',
+  marketplace: 'marketplace_listings',
+  personalities: 'personalities',
+  tags: 'unified_tags',
+  queer_villages: 'queer_villages',
+  hotels: 'hotels',
+  festivals: 'festivals',
 }

@@ -76,7 +76,7 @@ export const IngestionSourcesManager = () => {
       {/* Summary Row */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardContent sx={{ p: 2, textAlign: 'center' }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
               <Zap style={{ height: 20, width: 20, color: '#2563eb' }} />
               <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{sources.length}</Typography>
@@ -85,7 +85,7 @@ export const IngestionSourcesManager = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardContent sx={{ p: 2, textAlign: 'center' }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
               <CheckCircle style={{ height: 20, width: 20, color: '#16a34a' }} />
               <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{enabledCount}</Typography>
@@ -94,7 +94,7 @@ export const IngestionSourcesManager = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardContent sx={{ p: 2, textAlign: 'center' }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
               <AlertTriangle style={{ height: 20, width: 20, color: '#dc2626' }} />
               <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{errorCount}</Typography>
@@ -103,7 +103,7 @@ export const IngestionSourcesManager = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardContent sx={{ p: 2, textAlign: 'center' }}>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
               <Database style={{ height: 20, width: 20, color: brandColors.main }} />
               <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
@@ -127,7 +127,6 @@ export const IngestionSourcesManager = () => {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {sources.map((source) => {
           const hasError = !!source.last_error;
-          const _needsKey = source.requires_api_key && !source.is_enabled;
           const isTriggering = triggeringId === source.id;
 
           return (
@@ -135,7 +134,7 @@ export const IngestionSourcesManager = () => {
               backgroundColor: 'var(--card)',
               borderLeft: `4px solid ${hasError ? '#dc2626' : source.is_enabled ? '#16a34a' : '#6b7280'}`,
             }}>
-              <CardContent sx={{ p: 2.5 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
                     <Box sx={{ p: 1, bgcolor: 'var(--muted)', borderRadius: 1 }}>

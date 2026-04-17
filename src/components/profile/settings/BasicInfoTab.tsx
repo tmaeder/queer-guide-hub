@@ -43,7 +43,7 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
             initialData={{
               avatarUrl: profile?.avatar_url,
               avatarConfig: profile?.avatar_config,
-              avatarType: profile?.avatar_type as 'upload' | 'builder' | 'gravatar' | undefined,
+              avatarType: profile?.avatar_type as 'upload' | 'builder' | 'initials' | undefined,
               email: user?.email || '',
             }}
             onSave={onAvatarSave}

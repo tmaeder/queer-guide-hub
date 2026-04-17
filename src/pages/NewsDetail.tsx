@@ -28,7 +28,6 @@ import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';import { useTranslation } from 'react-i18next';
 
-
 interface NewsArticle {
   id: string;
   title: string;
@@ -511,7 +510,7 @@ export default function NewsDetail() {
           {/* Read Full Article CTA Card */}
           <Card>
             <CardContent
-              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 3 }}
+
             >
               <Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
@@ -613,7 +612,7 @@ export default function NewsDetail() {
             <CardHeader>
               <CardTitle>{t('pages.newsDetail.articleInfo', 'Article Info')}</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <CardContent>
               {article.published_at && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Calendar style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
@@ -740,7 +739,7 @@ export default function NewsDetail() {
             <CardHeader>
               <CardTitle>{t('pages.newsDetail.links', 'Links')}</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <CardContent>
               <Button
                 variant="outline"
                 size="sm"

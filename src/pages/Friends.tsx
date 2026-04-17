@@ -182,7 +182,7 @@ export default function Friends() {
 
                       return (
                         <Card key={friendship.id}>
-                          <CardContent sx={{ p: 2 }}>
+                          <CardContent>
                             <Box
                               sx={{
                                 display: 'flex',
@@ -253,7 +253,7 @@ export default function Friends() {
 
                       return (
                         <Card key={request.id}>
-                          <CardContent sx={{ p: 2 }}>
+                          <CardContent>
                             <Box
                               sx={{
                                 display: 'flex',

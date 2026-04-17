@@ -12,7 +12,7 @@ export function AdminRoleRequest() {
   if (loading) {
     return (
       <Card>
-        <CardContent sx={{ p: 4, textAlign: 'center' }}>
+        <CardContent>
           <Typography>Checking your permissions...</Typography>
         </CardContent>
       </Card>
@@ -26,7 +26,7 @@ export function AdminRoleRequest() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <CardTitle>
           <Shield style={{ width: 20, height: 20 }} />
           Admin Access Required
         </CardTitle>

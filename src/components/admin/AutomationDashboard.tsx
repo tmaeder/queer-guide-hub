@@ -187,7 +187,7 @@ export function AutomationDashboard() {
               const CategoryIcon = CATEGORY_ICONS[mod.category] || Zap;
               return (
                 <Card key={mod.id}>
-                  <CardContent sx={{ py: 2 }}>
+                  <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       {/* Icon + Info */}
                       <Box
@@ -674,7 +674,7 @@ function StatCard({
 }) {
   return (
     <Card>
-      <CardContent sx={{ py: 1.5, px: 2 }}>
+      <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{label}</Typography>
           <Icon size={14} style={{ color: color || 'var(--muted-foreground)' }} />

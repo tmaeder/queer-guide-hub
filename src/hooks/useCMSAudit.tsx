@@ -136,7 +136,7 @@ export function useCMSAudit(): UseCMSAuditReturn {
 async function enrichWithActors(entries: Record<string, unknown>[]): Promise<CMSAuditEntry[]> {
   const actorIds = [...new Set(entries.filter(e => e.actor_id).map(e => e.actor_id))];
 
-  if (actorIds.length === 0) return entries as CMSAuditEntry[];
+  if (actorIds.length === 0) return entries as unknown as CMSAuditEntry[];
 
   const { data: profiles } = await supabase
     .from('profiles' as 'venues')

@@ -113,25 +113,25 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
       <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <Card>
           <CardHeader>
-            <Skeleton sx={{ height: 24, width: 192 }} />
+            <Skeleton />
           </CardHeader>
           <CardContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Skeleton sx={{ height: 16, width: '100%' }} />
-              <Skeleton sx={{ height: 16, width: '100%' }} />
-              <Skeleton sx={{ height: 16, width: '75%' }} />
+              <Skeleton />
+              <Skeleton />
+              <Skeleton />
             </Box>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader>
-            <Skeleton sx={{ height: 24, width: 128 }} />
+            <Skeleton />
           </CardHeader>
           <CardContent>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
               {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} sx={{ aspectRatio: '16/9' }} />
+                <Skeleton key={i} />
               ))}
             </div>
           </CardContent>
@@ -146,13 +146,13 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
       {wikipediaInfo && (
         <Card>
           <CardHeader>
-            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CardTitle>
               <Globe style={{ height: 20, width: 20 }} />
               About {name}
               <Badge variant="secondary">{type}</Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <CardContent>
             {wikipediaInfo.description && (
               <p style={{ fontSize: '1.125rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>
                 {wikipediaInfo.description}
@@ -188,7 +188,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
       {images.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CardTitle>
               <ImageIcon style={{ height: 20, width: 20 }} />
               Photo Gallery
             </CardTitle>
@@ -262,7 +262,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
             
             {/* Enhanced Photo Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <DialogContent sx={{ maxWidth: 1024, p: 0, bgcolor: 'rgba(0,0,0,0.95)', border: 'none' }}>
+              <DialogContent>
                 {selectedImage && (
                   <Box sx={{ position: 'relative' }}>
                     {/* Close button */}
@@ -339,7 +339,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
 
       {error && (
         <Card>
-          <CardContent sx={{ pt: 3 }}>
+          <CardContent>
             <Typography sx={{ textAlign: 'center', color: 'text.secondary' }}>{error}</Typography>
           </CardContent>
         </Card>

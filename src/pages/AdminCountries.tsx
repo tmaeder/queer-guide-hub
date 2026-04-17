@@ -26,6 +26,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { logAdminGeoEdit } from '@/lib/admin-audit';
 
 interface CountryRow {
   id: string;
@@ -92,6 +93,7 @@ export default function AdminCountries() {
     try {
       const { error } = await supabase.from('countries').delete().eq('id', country.id);
       if (error) throw error;
+      void logAdminGeoEdit('countries', 'delete', country.id, country as unknown as Record<string, unknown>, null);
       toast({ title: 'Success', description: `${country.name} deleted` });
       invalidateTable();
     } catch {
@@ -102,19 +104,18 @@ export default function AdminCountries() {
   const handleSave = async () => {
     if (!editingCountry) return;
     try {
-      const { error } = await supabase
-        .from('countries')
-        .update({
-          name: formData.name,
-          code: formData.code,
-          capital: formData.capital,
-          population: formData.population ? parseInt(formData.population) : null,
-          area_km2: formData.area_km2 ? parseFloat(formData.area_km2) : null,
-          gdp_usd: formData.gdp_usd ? parseFloat(formData.gdp_usd) : null,
-          currency: formData.currency,
-        })
-        .eq('id', editingCountry.id);
+      const update = {
+        name: formData.name,
+        code: formData.code,
+        capital: formData.capital,
+        population: formData.population ? parseInt(formData.population) : null,
+        area_km2: formData.area_km2 ? parseFloat(formData.area_km2) : null,
+        gdp_usd: formData.gdp_usd ? parseFloat(formData.gdp_usd) : null,
+        currency: formData.currency,
+      };
+      const { error } = await supabase.from('countries').update(update).eq('id', editingCountry.id);
       if (error) throw error;
+      void logAdminGeoEdit('countries', 'update', editingCountry.id, editingCountry as unknown as Record<string, unknown>, update);
       toast({ title: 'Success', description: `${formData.name} updated` });
       setEditDialogOpen(false);
       setEditingCountry(null);

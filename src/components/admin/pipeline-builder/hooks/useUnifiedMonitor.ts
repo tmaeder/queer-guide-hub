@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 export interface UnifiedRun {
   id: string;
@@ -22,8 +22,7 @@ function usePipelineRunsRaw(limit = 30) {
   return useQuery({
     queryKey: ['unified-pipeline-runs', limit],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('pipeline_runs')
+      const { data, error } = await untypedFrom('pipeline_runs')
         .select('id, pipeline_name, status, items_processed, items_succeeded, items_failed, duration_ms, error_message, started_at, created_at, node_states')
         .order('created_at', { ascending: false })
         .limit(limit);
@@ -51,8 +50,7 @@ function useWorkflowRunsRaw(limit = 30) {
   return useQuery({
     queryKey: ['unified-workflow-runs', limit],
     queryFn: async () => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
-        .from('workflow_runs')
+      const { data, error } = await untypedFrom('workflow_runs')
         .select('id, workflow_name, status, items_processed, items_succeeded, items_failed, duration_ms, error_message, started_at, created_at, output_result')
         .order('created_at', { ascending: false })
         .limit(limit);

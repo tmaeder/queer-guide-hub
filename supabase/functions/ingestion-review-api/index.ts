@@ -89,22 +89,69 @@ Deno.serve(async (req) => {
 
         if (error) throw error
 
-        // Trigger commit for this item by re-invoking the pipeline
+        // Log audit + direct-commit for venues via RPC (skips workflow latency).
+        await supabase.from('ingestion_events').insert({
+          staging_id, stage: 'review', new_status: 'approved',
+          actor: 'ingestion-review-api', payload: { user_id: userId, notes },
+        })
+
         const { data: item } = await supabase
           .from('ingestion_staging')
-          .select('job_id')
+          .select('job_id, target_table')
           .eq('id', staging_id)
           .single()
 
-        if (item?.job_id) {
+        let commitResult: unknown = null
+        if (item?.target_table === 'venues') {
+          const { data, error: rpcErr } = await supabase.rpc('commit_venue_staging_item', {
+            p_staging_id: staging_id,
+            p_actor: `review:${userId}`,
+          })
+          if (rpcErr) throw rpcErr
+          commitResult = data
+        } else if (item?.job_id) {
           supabase.functions.invoke('ingestion-pipeline', {
             body: { job_id: item.job_id, stage: 'commit' },
           }).catch(() => {})
         }
 
-        return new Response(JSON.stringify({ success: true, action: 'approved', staging_id }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        return new Response(JSON.stringify({
+          success: true, action: 'approved', staging_id, commit: commitResult,
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      case 'merge': {
+        // Force-merge a staging item INTO a chosen existing venue (used for
+        // merge_candidate review outcomes where the reviewer selects the target).
+        const { staging_id, target_venue_id, notes } = body
+        if (!staging_id || !target_venue_id) {
+          throw new Error('staging_id and target_venue_id are required')
+        }
+
+        // Override dedup match so commit_venue_staging_item uses the chosen target
+        const { error: prepErr } = await supabase
+          .from('ingestion_staging')
+          .update({
+            dedup_status: 'duplicate',
+            dedup_match_id: target_venue_id,
+            dedup_match_table: 'venues',
+            review_status: 'approved',
+            reviewed_by: userId,
+            reviewed_at: new Date().toISOString(),
+            review_notes: notes || `Merged into ${target_venue_id}`,
+          })
+          .eq('id', staging_id)
+        if (prepErr) throw prepErr
+
+        const { data, error: rpcErr } = await supabase.rpc('commit_venue_staging_item', {
+          p_staging_id: staging_id,
+          p_actor: `review-merge:${userId}`,
         })
+        if (rpcErr) throw rpcErr
+
+        return new Response(JSON.stringify({
+          success: true, action: 'merged', staging_id, target_venue_id, commit: data,
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
       case 'reject': {

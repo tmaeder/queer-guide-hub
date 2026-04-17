@@ -404,20 +404,20 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" sx={{ gap: 1 }}>
-          <Plus sx={{ height: '20px', width: '20px' }} />
+        <Button size="lg">
+          <Plus />
           Add Personality
         </Button>
       </DialogTrigger>
 
-      <DialogContent sx={{ maxWidth: '1024px', maxHeight: '90vh', overflowY: 'auto' }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Personality</DialogTitle>
         </DialogHeader>
 
         {/* Wikipedia/Wikidata Lookup */}
-        <Card sx={{ mb: 3 }}>
-          <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Card>
+          <CardContent>
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Quick Lookup</Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
               Search Wikipedia/Wikidata to automatically prefill personality information
@@ -434,12 +434,12 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 type="button"
                 onClick={handleWikipediaLookup}
                 disabled={lookupLoading || !searchTerm.trim()}
-                sx={{ gap: 1 }}
+
               >
                 {lookupLoading ? (
-                  <Loader2 sx={{ height: '16px', width: '16px' }} />
+                  <Loader2 />
                 ) : (
-                  <Search sx={{ height: '16px', width: '16px' }} />
+                  <Search />
                 )}
                 {lookupLoading ? 'Searching...' : 'Lookup'}
               </Button>
@@ -451,7 +451,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
             {/* Basic Information */}
             <Card>
-              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Basic Information</Typography>
 
                 <Box>
@@ -531,7 +531,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
             {/* Dates and Status */}
             <Card>
-              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Dates & Status</Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -602,15 +602,15 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                           type="button"
                           variant="destructive"
                           size="sm"
-                          sx={{ position: 'absolute', top: '-8px', right: '-8px', height: '24px', width: '24px', borderRadius: '50%', p: 0 }}
+
                           onClick={removeImage}
                         >
-                          <X sx={{ height: '12px', width: '12px' }} />
+                          <X />
                         </Button>
                       </Box>
                     ) : (
                       <Box sx={{ border: 2, borderStyle: 'dashed', borderColor: 'text.secondary', borderRadius: 2, p: 3, textAlign: 'center' }}>
-                        <ImageIcon sx={{ height: '32px', width: '32px', mx: 'auto', color: 'text.secondary', mb: 1 }} />
+                        <ImageIcon />
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>No image uploaded</Typography>
                       </Box>
                     )}
@@ -620,11 +620,11 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         type="button"
                         variant="outline"
                         size="sm"
-                        sx={{ gap: 1 }}
+
                         onClick={() => document.getElementById('image-upload')?.click()}
                         disabled={uploading}
                       >
-                        <Upload sx={{ height: '16px', width: '16px' }} />
+                        <Upload />
                         {uploading ? 'Uploading...' : 'Upload Image'}
                       </Button>
                       <Box
@@ -663,7 +663,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
           {/* Description and Bio */}
           <Card>
-            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Description & Biography</Typography>
 
               <Box>
@@ -692,22 +692,22 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
           {/* Fields of Work */}
           <Card>
-            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Fields of Work</Typography>
 
               {formData.fields.length > 0 && (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
                   {formData.fields.map((field) => (
-                    <Badge key={field} variant="secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Badge key={field} variant="secondary">
                       {field}
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        sx={{ height: '16px', width: '16px', p: 0 }}
+
                         onClick={() => handleFieldToggle(field)}
                       >
-                        <X sx={{ height: '12px', width: '12px' }} />
+                        <X />
                       </Button>
                     </Badge>
                   ))}
@@ -722,7 +722,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                       checked={formData.fields.includes(field)}
                       onCheckedChange={() => handleFieldToggle(field)}
                     />
-                    <Label htmlFor={field} sx={{ fontSize: '0.875rem', textTransform: 'capitalize', cursor: 'pointer' }}>
+                    <Label htmlFor={field}>
                       {field}
                     </Label>
                   </Box>
@@ -733,7 +733,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
           {/* Achievements */}
           <Card>
-            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Achievements</Typography>
 
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -744,7 +744,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAchievement())}
                 />
                 <Button type="button" onClick={addAchievement} size="sm">
-                  <Plus sx={{ height: '16px', width: '16px' }} />
+                  <Plus />
                 </Button>
               </Box>
 
@@ -759,7 +759,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         size="sm"
                         onClick={() => removeAchievement(index)}
                       >
-                        <X sx={{ height: '16px', width: '16px' }} />
+                        <X />
                       </Button>
                     </Box>
                   ))}
@@ -770,7 +770,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
 
           {/* Tags */}
           <Card>
-            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Tags</Typography>
 
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -781,23 +781,23 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                 />
                 <Button type="button" onClick={addTag} size="sm">
-                  <Plus sx={{ height: '16px', width: '16px' }} />
+                  <Plus />
                 </Button>
               </Box>
 
               {formData.tags.length > 0 && (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {formData.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Badge key={index} variant="outline">
                       {tag}
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        sx={{ height: '16px', width: '16px', p: 0 }}
+
                         onClick={() => removeTag(index)}
                       >
-                        <X sx={{ height: '12px', width: '12px' }} />
+                        <X />
                       </Button>
                     </Badge>
                   ))}

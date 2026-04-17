@@ -83,7 +83,7 @@ const getIncomeBadgeColor = (level?: string | null): string => {
   return '#6b7280';
 };
 
-export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data, _countryName }) => {
+export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data }) => {
   const { indicators } = data;
   const hasEconomyData =
     data.gdp_usd ||
@@ -146,14 +146,14 @@ export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data, _c
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
         {/* Economy */}
         {hasEconomyData && (
-          <Card sx={{ borderColor: 'divider' }}>
+          <Card>
             <CardHeader>
-              <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CardTitle>
                 <TrendingUp style={{ height: 20, width: 20 }} />
                 Economy
               </CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <CardContent>
               {data.gdp_usd && (
                 <DataRow icon={DollarSign} label="GDP" value={formatLargeNumber(data.gdp_usd)} />
               )}
@@ -207,14 +207,14 @@ export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data, _c
 
         {/* Demographics */}
         {hasDemographicsData && (
-          <Card sx={{ borderColor: 'divider' }}>
+          <Card>
             <CardHeader>
-              <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CardTitle>
                 <Users style={{ height: 20, width: 20 }} />
                 Demographics
               </CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <CardContent>
               {data.population && (
                 <DataRow
                   icon={Users}
@@ -260,14 +260,14 @@ export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data, _c
 
         {/* Society */}
         {hasSocietyData && (
-          <Card sx={{ borderColor: 'divider' }}>
+          <Card>
             <CardHeader>
-              <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CardTitle>
                 <GraduationCap style={{ height: 20, width: 20 }} />
                 Society
               </CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <CardContent>
               {data.literacy_rate && (
                 <DataRow
                   icon={GraduationCap}
@@ -312,14 +312,14 @@ export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data, _c
 
         {/* Environment & Health */}
         {hasEnvironmentData && (
-          <Card sx={{ borderColor: 'divider' }}>
+          <Card>
             <CardHeader>
-              <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CardTitle>
                 <Leaf style={{ height: 20, width: 20 }} />
                 Environment & Health
               </CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <CardContent>
               {indicators.health_expenditure_pc != null && (
                 <DataRow
                   icon={Heart}

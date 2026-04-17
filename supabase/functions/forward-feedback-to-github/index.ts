@@ -178,8 +178,8 @@ serve(async (req) => {
       return errorResponse('Submission not found', 404, req);
     }
 
-    if (submission.content_type !== 'feedback') {
-      return errorResponse('Submission is not a feedback item', 400, req);
+    if (submission.content_type !== 'feedback' && submission.content_type !== 'api_error') {
+      return errorResponse('Submission must be feedback or api_error', 400, req);
     }
 
     // Already forwarded — return existing URL
@@ -197,16 +197,59 @@ serve(async (req) => {
     }
 
     const data = (submission.data || {}) as FeedbackData;
-    const category = data.category || 'feedback';
-    const title = data.title || 'Untitled feedback';
 
     const githubToken = Deno.env.get('GITHUB_PAT');
     if (!githubToken) {
       return errorResponse('GITHUB_PAT not configured', 500, req);
     }
 
-    const issueBody = formatIssueBody(data, submission.id);
-    const issueTitle = `[${category}] ${title}`;
+    let issueBody: string;
+    let issueTitle: string;
+    let issueLabels: string[];
+
+    if (submission.content_type === 'api_error') {
+      const errData = data as unknown as {
+        service?: string; function_name?: string; message?: string;
+        stack?: string; status_code?: number; endpoint?: string;
+        metadata?: Record<string, unknown>;
+      };
+      issueTitle = `[api-error] ${errData.function_name || 'unknown'}: ${(errData.message || 'Unknown error').slice(0, 80)}`;
+      issueLabels = ['api-error', 'auto-reported', errData.service || 'unknown'];
+
+      const lines: string[] = [];
+      lines.push(`**Auto-reported API error** — submission \`${submission.id}\``);
+      lines.push('');
+      lines.push(`**Service:** ${errData.service} | **Function:** ${errData.function_name}`);
+      if (errData.status_code) lines.push(`**Status:** ${errData.status_code}`);
+      if (errData.endpoint) lines.push(`**Endpoint:** ${errData.endpoint}`);
+      lines.push('');
+      lines.push('### Error');
+      lines.push(`\`\`\`\n${errData.message}\n\`\`\``);
+      if (errData.stack) {
+        lines.push('');
+        lines.push('<details><summary>Stack trace</summary>');
+        lines.push('');
+        lines.push(`\`\`\`\n${errData.stack.slice(0, 3000)}\n\`\`\``);
+        lines.push('</details>');
+      }
+      if (errData.metadata && Object.keys(errData.metadata).length > 0) {
+        lines.push('');
+        lines.push('<details><summary>Metadata</summary>');
+        lines.push('');
+        lines.push(`\`\`\`json\n${JSON.stringify(errData.metadata, null, 2).slice(0, 2000)}\n\`\`\``);
+        lines.push('</details>');
+      }
+      lines.push('');
+      lines.push('---');
+      lines.push('@claude please investigate this error and propose a fix.');
+      issueBody = lines.join('\n');
+    } else {
+      const category = data.category || 'feedback';
+      const title = data.title || 'Untitled feedback';
+      issueTitle = `[${category}] ${title}`;
+      issueLabels = ['feedback', 'user-reported', category];
+      issueBody = formatIssueBody(data, submission.id);
+    }
 
     // Create GitHub issue via REST API (simpler than pulling Octokit for one call)
     const ghResponse = await fetch(
@@ -223,7 +266,7 @@ serve(async (req) => {
         body: JSON.stringify({
           title: issueTitle,
           body: issueBody,
-          labels: ['feedback', 'user-reported', category],
+          labels: issueLabels,
         }),
       },
     );

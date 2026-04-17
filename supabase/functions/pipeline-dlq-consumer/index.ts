@@ -53,10 +53,28 @@ Deno.serve(async (req) => {
     const supaUrl = Deno.env.get('SUPABASE_URL')!
     const supaKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
+    const MAX_ATTEMPTS = 8
+
     for (const row of rows) {
+      // Escalate to permanent failure after max attempts
+      if (row.attempts >= MAX_ATTEMPTS) {
+        await supabase.from('ingestion_dlq').update({
+          status: 'permanent_failed',
+          error_message: `max retries exceeded (${row.attempts} attempts)`,
+          updated_at: new Date().toISOString(),
+        }).eq('id', row.id)
+        failed++
+        continue
+      }
+
       const fn = STAGE_TO_FN[row.stage]
       if (!fn) {
-        await supabase.rpc('dlq_fail', { p_id: row.id, p_err: `unknown_stage: ${row.stage}` })
+        // Unknown stage — permanent failure, not retryable
+        await supabase.from('ingestion_dlq').update({
+          status: 'permanent_failed',
+          error_message: `unknown_stage: ${row.stage}`,
+          updated_at: new Date().toISOString(),
+        }).eq('id', row.id)
         failed++
         continue
       }

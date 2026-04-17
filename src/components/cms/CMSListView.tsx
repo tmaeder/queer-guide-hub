@@ -12,20 +12,46 @@ import {
   List,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
 } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from '@/components/ui/pagination';
 import { format } from 'date-fns';
 import { CMSAdvancedFilters } from './CMSAdvancedFilters';
 import { useCMSFilters } from '@/hooks/useCMSFilters';
@@ -49,7 +75,7 @@ export function CMSListView({
   onDelete,
   onRefresh,
   viewMode,
-  onViewModeChange
+  onViewModeChange,
 }: CMSListViewProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
@@ -59,25 +85,30 @@ export function CMSListView({
     updateSort,
     resetFilters,
     filteredData,
-    _allFilteredData,
     filterOptions,
     totalResults,
     totalRecords,
     totalPages,
     currentPage,
-    pageSize
+    pageSize,
   } = useCMSFilters({ data });
 
   const getSortIcon = (column: string) => {
     if (filters.sortBy !== column) {
       return <ArrowUpDown style={{ height: 16, width: 16 }} />;
     }
-    return filters.sortOrder === 'asc' ? <ArrowUp style={{ height: 16, width: 16 }} /> : <ArrowDown style={{ height: 16, width: 16 }} />;
+    return filters.sortOrder === 'asc' ? (
+      <ArrowUp style={{ height: 16, width: 16 }} />
+    ) : (
+      <ArrowDown style={{ height: 16, width: 16 }} />
+    );
   };
 
   const SortableHeader = ({ column, children }: { column: string; children: React.ReactNode }) => (
     <TableHead style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => updateSort(column)}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, '&:hover': { color: 'text.primary' } }}>
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', gap: 1, '&:hover': { color: 'text.primary' } }}
+      >
         {children}
         {getSortIcon(column)}
       </Box>
@@ -86,7 +117,7 @@ export function CMSListView({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedItems(filteredData.map(item => item.id));
+      setSelectedItems(filteredData.map((item) => item.id));
     } else {
       setSelectedItems([]);
     }
@@ -94,9 +125,9 @@ export function CMSListView({
 
   const handleSelectItem = (id: string, checked: boolean) => {
     if (checked) {
-      setSelectedItems(prev => [...prev, id]);
+      setSelectedItems((prev) => [...prev, id]);
     } else {
-      setSelectedItems(prev => prev.filter(item => item !== id));
+      setSelectedItems((prev) => prev.filter((item) => item !== id));
     }
   };
 
@@ -145,7 +176,14 @@ export function CMSListView({
         <Card>
           <CardContent>
             <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Box sx={{ '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } }, animation: 'pulse 2s infinite' }}>Loading content...</Box>
+              <Box
+                sx={{
+                  '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
+                  animation: 'pulse 2s infinite',
+                }}
+              >
+                Loading content...
+              </Box>
             </Box>
           </CardContent>
         </Card>
@@ -167,7 +205,9 @@ export function CMSListView({
         <Card>
           <CardContent>
             <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
+              <Typography color="error" sx={{ mb: 2 }}>
+                {error}
+              </Typography>
               <Button onClick={onRefresh}>Retry</Button>
             </Box>
           </CardContent>
@@ -240,7 +280,9 @@ export function CMSListView({
                   <TableRow>
                     <TableHead style={{ width: 48 }}>
                       <Checkbox
-                        checked={selectedItems.length === filteredData.length && filteredData.length > 0}
+                        checked={
+                          selectedItems.length === filteredData.length && filteredData.length > 0
+                        }
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
@@ -256,7 +298,11 @@ export function CMSListView({
                   {filteredData.map((item) => (
                     <TableRow
                       key={`${item.content_type}-${item.id}`}
-                      style={selectedItems.includes(item.id) ? { backgroundColor: 'rgba(0,0,0,0.03)' } : undefined}
+                      style={
+                        selectedItems.includes(item.id)
+                          ? { backgroundColor: 'rgba(0,0,0,0.03)' }
+                          : undefined
+                      }
                     >
                       <TableCell>
                         <Checkbox
@@ -299,7 +345,17 @@ export function CMSListView({
                               {item.title || 'Untitled'}
                             </Box>
                             {item.description && (
-                              <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', maxWidth: 320 }}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{
+                                  overflow: 'hidden',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 1,
+                                  WebkitBoxOrient: 'vertical',
+                                  maxWidth: 320,
+                                }}
+                              >
                                 {item.description}
                               </Typography>
                             )}
@@ -320,14 +376,20 @@ export function CMSListView({
                         <Select
                           value={item.status || item.workflow_state || 'unknown'}
                           onValueChange={(newStatus) => {
-                            const updatedItem = { ...item, status: newStatus, workflow_state: newStatus };
+                            const updatedItem = {
+                              ...item,
+                              status: newStatus,
+                              workflow_state: newStatus,
+                            };
                             onEdit(updatedItem);
                           }}
                         >
                           <SelectTrigger style={{ width: 128, height: 32 }}>
                             <SelectValue>
                               <Badge
-                                style={getStatusStyle(item.status || item.workflow_state || 'unknown')}
+                                style={getStatusStyle(
+                                  item.status || item.workflow_state || 'unknown',
+                                )}
                                 variant="outline"
                               >
                                 {item.status || item.workflow_state || 'unknown'}
@@ -336,19 +398,29 @@ export function CMSListView({
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="draft">
-                              <Badge style={getStatusStyle('draft')} variant="outline">draft</Badge>
+                              <Badge style={getStatusStyle('draft')} variant="outline">
+                                draft
+                              </Badge>
                             </SelectItem>
                             <SelectItem value="published">
-                              <Badge style={getStatusStyle('published')} variant="outline">published</Badge>
+                              <Badge style={getStatusStyle('published')} variant="outline">
+                                published
+                              </Badge>
                             </SelectItem>
                             <SelectItem value="archived">
-                              <Badge style={getStatusStyle('archived')} variant="outline">archived</Badge>
+                              <Badge style={getStatusStyle('archived')} variant="outline">
+                                archived
+                              </Badge>
                             </SelectItem>
                             <SelectItem value="pending">
-                              <Badge style={getStatusStyle('pending')} variant="outline">pending</Badge>
+                              <Badge style={getStatusStyle('pending')} variant="outline">
+                                pending
+                              </Badge>
                             </SelectItem>
                             <SelectItem value="review">
-                              <Badge style={getStatusStyle('review')} variant="outline">review</Badge>
+                              <Badge style={getStatusStyle('review')} variant="outline">
+                                review
+                              </Badge>
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -401,7 +473,14 @@ export function CMSListView({
                                 <MoreHorizontal style={{ height: 16, width: 16 }} />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                            <DropdownMenuContent
+                              align="end"
+                              style={{
+                                backgroundColor: 'var(--background)',
+                                border: '1px solid var(--border)',
+                                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                              }}
+                            >
                               <DropdownMenuItem onClick={() => onEdit(item)}>
                                 <Edit style={{ marginRight: 8, height: 16, width: 16 }} />
                                 Edit
@@ -410,15 +489,17 @@ export function CMSListView({
                                 <Eye style={{ marginRight: 8, height: 16, width: 16 }} />
                                 Preview
                               </DropdownMenuItem>
-                              {onDelete && (item.content_type === 'cms_content' || item.content_type === 'community_posts') && (
-                                <DropdownMenuItem
-                                  onClick={() => onDelete(item.id)}
-                                  style={{ color: 'var(--destructive)' }}
-                                >
-                                  <Trash2 style={{ marginRight: 8, height: 16, width: 16 }} />
-                                  Delete
-                                </DropdownMenuItem>
-                              )}
+                              {onDelete &&
+                                (item.content_type === 'cms_content' ||
+                                  item.content_type === 'community_posts') && (
+                                  <DropdownMenuItem
+                                    onClick={() => onDelete(item.id)}
+                                    style={{ color: 'var(--destructive)' }}
+                                  >
+                                    <Trash2 style={{ marginRight: 8, height: 16, width: 16 }} />
+                                    Delete
+                                  </DropdownMenuItem>
+                                )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </Box>
@@ -437,7 +518,8 @@ export function CMSListView({
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalResults)} of {totalResults} results
+              Showing {(currentPage - 1) * pageSize + 1} to{' '}
+              {Math.min(currentPage * pageSize, totalResults)} of {totalResults} results
             </Typography>
             <Select
               value={pageSize.toString()}
@@ -454,7 +536,9 @@ export function CMSListView({
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-            <Typography variant="body2" color="text.secondary">per page</Typography>
+            <Typography variant="body2" color="text.secondary">
+              per page
+            </Typography>
           </Box>
 
           <Pagination>
@@ -500,7 +584,9 @@ export function CMSListView({
               <PaginationItem>
                 <PaginationNext
                   onClick={() => currentPage < totalPages && updateFilter('page', currentPage + 1)}
-                  style={currentPage >= totalPages ? { pointerEvents: 'none', opacity: 0.5 } : undefined}
+                  style={
+                    currentPage >= totalPages ? { pointerEvents: 'none', opacity: 0.5 } : undefined
+                  }
                 />
               </PaginationItem>
             </PaginationContent>

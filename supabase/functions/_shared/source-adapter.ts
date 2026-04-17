@@ -68,11 +68,17 @@ export async function writeToStaging(
 ): Promise<number> {
   if (rawItems.length === 0) return 0
 
-  const rows = rawItems.map(raw => {
+  // Deduplicate within the batch by sourceId to prevent duplicate staging rows
+  const seen = new Set<string>()
+  const rows = rawItems.flatMap(raw => {
+    const sid = adapter.getSourceId(raw)
+    if (seen.has(sid)) return []
+    seen.add(sid)
     const normalized = adapter.normalize(raw)
-    return {
+    return [{
       source_type: adapter.name,
       source_name: adapter.name,
+      source_entity_id: sid,
       entity_type: adapter.entityType,
       target_table: config.targetTable,
       raw_data: raw.data,
@@ -80,8 +86,10 @@ export async function writeToStaging(
       pipeline_run_id: config.pipelineRunId || null,
       node_id: config.nodeId || null,
       job_id: config.pipelineRunId || '00000000-0000-0000-0000-000000000000',
-    }
+    }]
   })
+
+  if (rows.length === 0) return 0
 
   const { error } = await supabase.from('ingestion_staging').insert(rows)
   if (error) {

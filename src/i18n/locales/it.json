@@ -47,7 +47,10 @@
     "next": "Avanti",
     "back": "Indietro",
     "loadMore": "Carica altro",
-    "tryAgain": "Riprova"
+    "tryAgain": "Riprova",
+    "allEvents": "Tutti gli eventi",
+    "browseAll": "Sfoglia tutto",
+    "allStories": "Tutti gli articoli"
   },
   "navigation": {
     "home": "Home",
@@ -804,6 +807,18 @@
       "communityDesc": "Conosci persone e unisciti a gruppi",
       "resources": "Risorse",
       "resourcesDesc": "Diritti, cultura e supporto alla comunità"
+    },
+    "weekly": {
+      "title": "Questa settimana",
+      "titleNear": "Questa settimana vicino a te"
+    },
+    "upcoming": {
+      "title": "Prossimi eventi",
+      "titleNear": "Prossimi eventi vicino a te",
+      "empty": "Nessun altro evento in programma."
+    },
+    "news": {
+      "title": "Ultime notizie"
     }
   },
   "header": {

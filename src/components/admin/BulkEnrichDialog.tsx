@@ -30,16 +30,6 @@ import {
 import { Wand2, Loader2, CheckCircle, AlertTriangle, FileText, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-const _CONTENT_TYPES = [
-  { value: 'venues', label: 'Venues' },
-  { value: 'events', label: 'Events' },
-  { value: 'personalities', label: 'Personalities' },
-  { value: 'news_articles', label: 'News Articles' },
-  { value: 'cities', label: 'Cities' },
-  { value: 'countries', label: 'Countries' },
-];
-
 const MODULES = [
   {
     value: 'ai-enhancer',

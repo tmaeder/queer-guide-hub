@@ -97,9 +97,9 @@ const CommentItem = ({
   return (
     <>
       <Box sx={{ display: 'flex', gap: 1.5, py: 1.5 }}>
-        <Avatar sx={{ height: 32, width: 32 }}>
+        <Avatar>
           <AvatarImage src={comment.profiles?.avatar_url || undefined} />
-          <AvatarFallback sx={{ fontSize: '0.75rem' }}>
+          <AvatarFallback>
             {comment.profiles?.display_name?.charAt(0)?.toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
@@ -124,12 +124,7 @@ const CommentItem = ({
               size="sm"
               onClick={handleLikeToggle}
               disabled={isLiking || !user}
-              sx={{
-                height: 24,
-                px: 1,
-                fontSize: '0.75rem',
-                ...(comment.user_liked && { color: 'error.main' }),
-              }}
+
             >
               <Heart
                 style={{
@@ -147,7 +142,7 @@ const CommentItem = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => onReply(comment.id, comment.profiles?.display_name || 'User')}
-                sx={{ height: 24, px: 1, fontSize: '0.75rem', color: 'text.secondary' }}
+
               >
                 <Reply style={{ width: 12, height: 12, marginRight: 4 }} />
                 Reply
@@ -162,7 +157,7 @@ const CommentItem = ({
               <Button
                 variant="ghost"
                 size="sm"
-                sx={{ height: 24, width: 24, p: 0 }}
+
                 aria-label="Comment actions"
               >
                 <MoreHorizontal style={{ width: 12, height: 12 }} />
@@ -281,7 +276,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
   if (isLoading) {
     return (
       <Card>
-        <CardContent sx={{ p: 2 }}>
+        <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {Array.from({ length: 3 }).map((_, i) => (
               <Box
@@ -313,7 +308,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
 
   return (
     <Card>
-      <CardContent sx={{ p: 0 }}>
+      <CardContent>
         {/* Comments Header */}
         <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
           <Typography
@@ -350,7 +345,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                     setReplyingTo(null);
                     setNewComment('');
                   }}
-                  sx={{ ml: 1, height: 16, px: 0.5 }}
+
                 >
                   Cancel
                 </Button>
@@ -358,9 +353,9 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
             )}
 
             <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <Avatar sx={{ height: 32, width: 32 }}>
+              <Avatar>
                 <AvatarImage src={user.user_metadata?.avatar_url} />
-                <AvatarFallback sx={{ fontSize: '0.75rem' }}>
+                <AvatarFallback>
                   {user.email?.charAt(0)?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -372,7 +367,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  sx={{ minHeight: 60, resize: 'none', fontSize: '0.875rem' }}
+
                   maxLength={500}
                 />
 
@@ -412,7 +407,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                       size="sm"
                       onClick={handleSubmitComment}
                       disabled={!newComment.trim() || isCreatingComment}
-                      sx={{ height: 28 }}
+
                     >
                       <Send style={{ width: 12, height: 12, marginRight: 4 }} />
                       {isCreatingComment ? 'Posting...' : 'Post'}

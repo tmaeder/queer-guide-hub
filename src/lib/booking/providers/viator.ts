@@ -1,6 +1,5 @@
 import type { BookingProvider, BookingSearchParams, BookingResult } from '../types';
 
-const MARKER = '452012';
 
 /**
  * Viator Activity Provider (TripAdvisor owned)

@@ -140,7 +140,7 @@ export function useDuplicateCounts() {
         cities: 0,
         total: 0,
       };
-      for (const row of (data || []) as Array<{ entity_type: string }>) {
+      for (const row of (data || []) as unknown as Array<{ entity_type: string }>) {
         const t = row.entity_type as keyof Omit<DuplicateCounts, 'total'>;
         if (t in counts && t !== 'total') counts[t]++;
         counts.total++;

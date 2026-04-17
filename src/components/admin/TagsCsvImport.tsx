@@ -132,7 +132,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
           Import CSV
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: 672 }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Import Tags from CSV</DialogTitle>
         </DialogHeader>
@@ -140,7 +140,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Instructions */}
           <Card>
-            <CardContent sx={{ p: 2 }}>
+            <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                 <FileText style={{ width: 16, height: 16 }} />
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>CSV Format Requirements</Typography>
@@ -156,7 +156,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
                 variant="ghost"
                 size="sm"
                 onClick={downloadTemplate}
-                sx={{ mt: 1.5 }}
+
               >
                 <Download style={{ width: 16, height: 16, marginRight: 8 }} />
                 Download Template
@@ -193,7 +193,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
           {/* Import Results */}
           {importResult && (
             <Card>
-              <CardContent sx={{ p: 2 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   {importResult.success ? (
                     <CheckCircle style={{ width: 20, height: 20, color: '#22c55e' }} />

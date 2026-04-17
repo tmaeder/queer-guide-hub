@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -138,7 +137,7 @@ export default function SecurityDashboard() {
                 {securityFeatures.map((feature) => {
                   const IconComponent = feature.icon;
                   return (
-                    <Card key={feature.title} sx={{ transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 6 } }}>
+                    <Card key={feature.title}>
                       <CardHeader style={{ paddingBottom: 12 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <CardTitle style={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: 8 }}>

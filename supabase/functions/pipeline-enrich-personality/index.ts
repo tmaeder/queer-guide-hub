@@ -87,6 +87,7 @@ Deno.serve(async (req) => {
       .select('id, raw_data, normalized_data, enriched_data')
       .eq('target_table', 'personalities')
       .eq('ai_validation_status', 'pending')
+      .neq('enrichment_status', 'completed')
       .is('processed_at', null)
       .order('created_at', { ascending: true })
       .limit(batchSize)
@@ -138,15 +139,16 @@ Deno.serve(async (req) => {
         }
       }
 
-      if (!dryRun && Object.keys(patch).length) {
-        const nextEnriched = { ...(item.enriched_data as Record<string, unknown> ?? {}), ...patch }
-        const nextNormalized = { ...n, ...Object.fromEntries(Object.entries(patch).filter(([_, v]) => v !== null)) }
-        await supabase.from('ingestion_staging').update({
-          enriched_data: nextEnriched,
-          normalized_data: nextNormalized,
+      if (!dryRun) {
+        const updatePayload: Record<string, unknown> = {
           enrichment_status: 'completed',
           updated_at: new Date().toISOString(),
-        }).eq('id', item.id)
+        }
+        if (Object.keys(patch).length) {
+          updatePayload.enriched_data = { ...(item.enriched_data as Record<string, unknown> ?? {}), ...patch }
+          updatePayload.normalized_data = { ...n, ...Object.fromEntries(Object.entries(patch).filter(([_, v]) => v !== null)) }
+        }
+        await supabase.from('ingestion_staging').update(updatePayload).eq('id', item.id)
 
         await supabase.from('ingestion_events').insert({
           staging_id: item.id, stage: 'enrich', new_status: 'enriched',

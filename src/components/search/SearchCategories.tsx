@@ -1,17 +1,17 @@
-import { Badge } from "@/components/ui/badge";
-import { CommandGroup, CommandItem } from "@/components/ui/command";
-import { Search, MapPin, Calendar, Store, Newspaper, Users, Tag, Briefcase } from "lucide-react";
+import { Badge } from '@/components/ui/badge';
+import { CommandGroup, CommandItem } from '@/components/ui/command';
+import { Search, MapPin, Calendar, Store, Newspaper, Users, Tag, Briefcase } from 'lucide-react';
 import Box from '@mui/material/Box';
 
 export const searchCategories = [
-  { label: "All", value: "all", icon: Search },
-  { label: "Venues", value: "venues", icon: MapPin },
-  { label: "Events", value: "events", icon: Calendar },
-  { label: "Marketplace", value: "marketplace", icon: Store },
-  { label: "News", value: "news", icon: Newspaper },
-  { label: "Community", value: "community", icon: Users },
-  { label: "Resources", value: "tags", icon: Tag },
-  { label: "Professions", value: "professions", icon: Briefcase },
+  { label: 'All', value: 'all', icon: Search },
+  { label: 'Venues', value: 'venues', icon: MapPin },
+  { label: 'Events', value: 'events', icon: Calendar },
+  { label: 'Marketplace', value: 'marketplace', icon: Store },
+  { label: 'News', value: 'news', icon: Newspaper },
+  { label: 'Community', value: 'community', icon: Users },
+  { label: 'Resources', value: 'tags', icon: Tag },
+  { label: 'Professions', value: 'professions', icon: Briefcase },
 ];
 
 interface SearchCategoriesProps {
@@ -20,11 +20,7 @@ interface SearchCategoriesProps {
   onSelectCategory: (category: string) => void;
 }
 
-export function SearchCategories({
-  selectedCategory,
-  _query,
-  onSelectCategory
-}: SearchCategoriesProps) {
+export function SearchCategories({ selectedCategory, onSelectCategory }: SearchCategoriesProps) {
   return (
     <CommandGroup heading="Search in">
       {searchCategories.map((category) => {

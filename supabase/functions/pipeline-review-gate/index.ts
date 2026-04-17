@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     for (const item of items) {
       const confidence = item.ai_confidence_score || 0
       const enriched = (item.enriched_data || {}) as Record<string, unknown>
-      const qualityScore = (enriched.quality_score as number) || 50
+      const qualityScore = (enriched.quality_score as number) ?? 0
 
       const combinedScore = (confidence * 0.6) + (qualityScore / 100 * 0.4)
 

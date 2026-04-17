@@ -217,7 +217,7 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
           <CardContent>
             <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
               <DialogTrigger asChild>
-                <Button variant="outline" sx={{ width: '100%' }}>
+                <Button variant="outline">
                   <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
                   Request Admin Access
                 </Button>

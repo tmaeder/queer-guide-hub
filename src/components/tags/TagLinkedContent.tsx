@@ -9,7 +9,6 @@ import {
   Newspaper,
   Calendar,
   Users as UsersIcon,
-  User,
   Star,
   ExternalLink,
 } from 'lucide-react';
@@ -57,7 +56,7 @@ function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onCl
             {v.name}
           </Typography>
           {v.category && (
-            <Badge variant="secondary" sx={{ fontSize: '0.75rem', flexShrink: 0 }}>
+            <Badge variant="secondary">
               {v.category}
             </Badge>
           )}

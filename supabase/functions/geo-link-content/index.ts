@@ -502,8 +502,14 @@ Deno.serve(async (req) => {
 
   try {
     // SECURITY: Require admin for all operations (writes to DB via service_role)
-    const authResult = await requireAdmin(req, supabase);
-    if (authResult instanceof Response) return authResult;
+    // Exception: workflow-dispatcher calls with service role key directly
+    const authHeader = req.headers.get('Authorization');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '___none___';
+    const isServiceRole = authHeader?.includes(serviceRoleKey);
+    if (!isServiceRole) {
+      const authResult = await requireAdmin(req, supabase);
+      if (authResult instanceof Response) return authResult;
+    }
 
     const body = await req.json();
     const {

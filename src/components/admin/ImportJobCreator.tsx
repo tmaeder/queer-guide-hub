@@ -295,13 +295,13 @@ export const ImportJobCreator = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
       {/* ── CSV / Edge Function Imports ── */}
       <Card>
-        <CardHeader sx={{ pb: 2 }}>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '1rem' }}>
+        <CardHeader>
+          <CardTitle>
             <Upload style={{ height: 18, width: 18 }} />
             Import Data
           </CardTitle>
         </CardHeader>
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <Label>What to import</Label>
             <Select
@@ -316,10 +316,10 @@ export const ImportJobCreator = () => {
               <SelectTrigger>
                 <SelectValue placeholder="Select import type..." />
               </SelectTrigger>
-              <SelectContent sx={{ maxHeight: 400 }}>
+              <SelectContent>
                 {IMPORT_GROUPS.map((group) => (
                   <SelectGroup key={group.label}>
-                    <SelectLabel sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <SelectLabel>
                       <group.icon style={{ height: 14, width: 14 }} />
                       {group.label}
                     </SelectLabel>
@@ -437,7 +437,7 @@ export const ImportJobCreator = () => {
                         sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}
                       >
                         {uniqueKeyFields.map((f) => (
-                          <Badge key={f} variant="secondary" sx={{ gap: 0.5 }}>
+                          <Badge key={f} variant="secondary">
                             {f}
                             <button
                               onClick={() =>
@@ -460,7 +460,7 @@ export const ImportJobCreator = () => {
                               setUniqueKeyFields((prev) => [...prev, v]);
                           }}
                         >
-                          <SelectTrigger sx={{ width: 130, height: 28 }}>
+                          <SelectTrigger>
                             <SelectValue placeholder="+ Add" />
                           </SelectTrigger>
                           <SelectContent>
@@ -484,20 +484,20 @@ export const ImportJobCreator = () => {
           {/* Events scraper config */}
           {importType === 'scrape-gaycities-events' && (
             <Card variant="outlined">
-              <CardHeader sx={{ pb: 1 }}>
+              <CardHeader>
                 <CardTitle
-                  sx={{ fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 1 }}
+
                 >
                   <Sliders style={{ height: 14, width: 14 }} />
                   Events Scraper Config
                 </CardTitle>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   <Label>Cities ({scraperCities.length})</Label>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {scraperCities.map((city) => (
-                      <Badge key={city} variant="secondary" sx={{ gap: 0.5, fontSize: '0.75rem' }}>
+                      <Badge key={city} variant="secondary">
                         {city}
                         <button
                           onClick={() => setScraperCities((prev) => prev.filter((c) => c !== city))}
@@ -517,7 +517,7 @@ export const ImportJobCreator = () => {
                     placeholder="Search cities..."
                     value={citySearch}
                     onChange={(e) => setCitySearch(e.target.value)}
-                    sx={{ maxWidth: 260 }}
+
                   />
                   <Box
                     sx={{
@@ -546,7 +546,7 @@ export const ImportJobCreator = () => {
                             key={slug}
                             variant="outline"
                             size="sm"
-                            sx={{ fontSize: '0.7rem', height: 24 }}
+
                             onClick={() => setScraperCities((prev) => [...prev, slug])}
                           >
                             <Plus style={{ height: 10, width: 10, marginRight: 2 }} />
@@ -563,7 +563,7 @@ export const ImportJobCreator = () => {
                     value={scraperMaxCities.toString()}
                     onValueChange={(v) => setScraperMaxCities(parseInt(v))}
                   >
-                    <SelectTrigger sx={{ width: 100 }}>
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -582,15 +582,15 @@ export const ImportJobCreator = () => {
           {/* Spartacus scraper config */}
           {importType === 'scrape-spartacus' && (
             <Card variant="outlined">
-              <CardHeader sx={{ pb: 1 }}>
+              <CardHeader>
                 <CardTitle
-                  sx={{ fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 1 }}
+
                 >
                   <Sliders style={{ height: 14, width: 14 }} />
                   Spartacus Scraper Config
                 </CardTitle>
               </CardHeader>
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   <Label>Venue types</Label>
                   {[
@@ -615,7 +615,7 @@ export const ImportJobCreator = () => {
                   <Label>Countries ({spartacusCountries.length})</Label>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {spartacusCountries.map((c) => (
-                      <Badge key={c} variant="secondary" sx={{ gap: 0.5, fontSize: '0.75rem' }}>
+                      <Badge key={c} variant="secondary">
                         {c}
                         <button
                           onClick={() =>
@@ -641,7 +641,7 @@ export const ImportJobCreator = () => {
                           key={c}
                           variant="outline"
                           size="sm"
-                          sx={{ fontSize: '0.7rem', height: 24 }}
+
                           onClick={() => setSpartacusCountries((prev) => [...prev, c])}
                         >
                           <Plus style={{ height: 10, width: 10, marginRight: 2 }} />
@@ -657,7 +657,7 @@ export const ImportJobCreator = () => {
                       value={spartacusMaxCities.toString()}
                       onValueChange={(v) => setSpartacusMaxCities(parseInt(v))}
                     >
-                      <SelectTrigger sx={{ width: 100 }}>
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -687,7 +687,7 @@ export const ImportJobCreator = () => {
           {/* Submit */}
           {selected && (
             <Box sx={{ display: 'flex', pt: 1 }}>
-              <Button onClick={handleSubmit} disabled={loading} sx={{ gap: 1 }}>
+              <Button onClick={handleSubmit} disabled={loading}>
                 {loading ? (
                   <>
                     <RefreshCw

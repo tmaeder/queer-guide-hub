@@ -80,7 +80,7 @@ export function useAdminTableQuery<T = Record<string, unknown>>(
       const countBuilder = supabase
         .from(tableName as 'venues')
         .select(select, { count: 'exact', head: true });
-      const filtered = applyFilters(countBuilder as ReturnType<typeof supabase.from>, state, searchColumns, baseFilters);
+      const filtered = applyFilters(countBuilder as unknown as ReturnType<typeof supabase.from>, state, searchColumns, baseFilters);
       const { count, error: countError } = await (filtered as ReturnType<typeof supabase.from>);
       if (countError) throw countError;
 

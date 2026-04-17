@@ -35,9 +35,16 @@ interface Props {
 }
 
 export function TripNotes({ tripId }: Props) {
-  const { _user } = useAuth();
+  const {} = useAuth();
   const { toast } = useToast();
-  const { data: notes, isLoading, createNote, updateNote, deleteNote, togglePin } = useTripNotes(tripId);
+  const {
+    data: notes,
+    isLoading,
+    createNote,
+    updateNote,
+    deleteNote,
+    togglePin,
+  } = useTripNotes(tripId);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<TripNote | null>(null);
@@ -65,18 +72,43 @@ export function TripNotes({ tripId }: Props) {
   const handleSave = () => {
     if (editingNote) {
       updateNote.mutate(
-        { id: editingNote.id, title: formTitle || undefined, content: formContent || undefined, category: formCategory },
         {
-          onSuccess: () => { toast({ title: 'Note updated' }); setEditOpen(false); },
-          onError: (err) => toast({ title: 'Failed to save note', description: String(err), variant: 'destructive' }),
+          id: editingNote.id,
+          title: formTitle || undefined,
+          content: formContent || undefined,
+          category: formCategory,
+        },
+        {
+          onSuccess: () => {
+            toast({ title: 'Note updated' });
+            setEditOpen(false);
+          },
+          onError: (err) =>
+            toast({
+              title: 'Failed to save note',
+              description: String(err),
+              variant: 'destructive',
+            }),
         },
       );
     } else {
       createNote.mutate(
-        { title: formTitle || undefined, content: formContent || undefined, category: formCategory },
         {
-          onSuccess: () => { toast({ title: 'Note created' }); setEditOpen(false); },
-          onError: (err) => toast({ title: 'Failed to create note', description: String(err), variant: 'destructive' }),
+          title: formTitle || undefined,
+          content: formContent || undefined,
+          category: formCategory,
+        },
+        {
+          onSuccess: () => {
+            toast({ title: 'Note created' });
+            setEditOpen(false);
+          },
+          onError: (err) =>
+            toast({
+              title: 'Failed to create note',
+              description: String(err),
+              variant: 'destructive',
+            }),
         },
       );
     }
@@ -85,8 +117,13 @@ export function TripNotes({ tripId }: Props) {
   const handleDelete = () => {
     if (!deleteConfirmId) return;
     deleteNote.mutate(deleteConfirmId, {
-      onSuccess: () => { toast({ title: 'Note deleted' }); setDeleteConfirmId(null); setEditOpen(false); },
-      onError: (err) => toast({ title: 'Failed to delete note', description: String(err), variant: 'destructive' }),
+      onSuccess: () => {
+        toast({ title: 'Note deleted' });
+        setDeleteConfirmId(null);
+        setEditOpen(false);
+      },
+      onError: (err) =>
+        toast({ title: 'Failed to delete note', description: String(err), variant: 'destructive' }),
     });
   };
 
@@ -108,11 +145,22 @@ export function TripNotes({ tripId }: Props) {
         <ScrollReveal>
           <Box className="flex flex-col items-center justify-center py-16 text-center">
             <Box
-              sx={{ width: 56, height: 56, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}
+              sx={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                bgcolor: 'action.hover',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 2,
+              }}
             >
               <StickyNote size={24} style={{ opacity: 0.5 }} />
             </Box>
-            <Typography variant="subtitle2" fontWeight={600}>No notes yet</Typography>
+            <Typography variant="subtitle2" fontWeight={600}>
+              No notes yet
+            </Typography>
             <Typography variant="body2" color="text.secondary">
               Create one to share information with your group
             </Typography>
@@ -201,7 +249,9 @@ export function TripNotes({ tripId }: Props) {
               sx={{ maxWidth: 180 }}
             >
               {CATEGORIES.map((c) => (
-                <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>
+                <MenuItem key={c.value} value={c.value}>
+                  {c.label}
+                </MenuItem>
               ))}
             </TextField>
           </Box>
@@ -212,7 +262,9 @@ export function TripNotes({ tripId }: Props) {
                 <>
                   <IconButton
                     size="small"
-                    onClick={() => togglePin.mutate({ id: editingNote.id, isPinned: editingNote.is_pinned })}
+                    onClick={() =>
+                      togglePin.mutate({ id: editingNote.id, isPinned: editingNote.is_pinned })
+                    }
                     title={editingNote.is_pinned ? 'Unpin' : 'Pin'}
                     sx={{ minWidth: 44, minHeight: 44 }}
                   >
@@ -230,7 +282,9 @@ export function TripNotes({ tripId }: Props) {
               )}
             </Box>
             <DialogFooter>
-              <Button variant="outline" size="sm" onClick={() => setEditOpen(false)}>Cancel</Button>
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(false)}>
+                Cancel
+              </Button>
               <Button
                 size="sm"
                 onClick={handleSave}
@@ -253,8 +307,12 @@ export function TripNotes({ tripId }: Props) {
             Are you sure you want to delete this note? This cannot be undone.
           </Typography>
           <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
-            <Button variant="destructive" size="sm" onClick={handleDelete}>Delete</Button>
+            <Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleDelete}>
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

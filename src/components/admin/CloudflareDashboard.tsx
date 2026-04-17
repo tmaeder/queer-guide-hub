@@ -68,7 +68,7 @@ export function CloudflareDashboard() {
           description: 'Latest statistics have been loaded successfully.',
         });
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error fetching Cloudflare data:', error);
 
       let errorMessage = 'Failed to fetch Cloudflare data.';
@@ -125,7 +125,7 @@ export function CloudflareDashboard() {
             </p>
           </Box>
         </Box>
-        <Button onClick={handleRefresh} disabled={refreshing} sx={{ gap: 1 }}>
+        <Button onClick={handleRefresh} disabled={refreshing}>
           <RefreshCw
             style={{
               height: 16,
@@ -141,7 +141,7 @@ export function CloudflareDashboard() {
       {zoneInfo && (
         <Card>
           <CardHeader>
-            <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CardTitle>
               <Globe style={{ height: 20, width: 20 }} />
               Zone Status
             </CardTitle>
@@ -189,15 +189,15 @@ export function CloudflareDashboard() {
         </Card>
       )}
 
-      <Tabs defaultValue="analytics" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <TabsList sx={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+      <Tabs defaultValue="analytics">
+        <TabsList>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="analytics" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="analytics">
           {analytics ? (
             <Box
               sx={{
@@ -207,9 +207,9 @@ export function CloudflareDashboard() {
               }}
             >
               <Card>
-                <CardHeader sx={{ pb: 1.5 }}>
+                <CardHeader>
                   <CardTitle
-                    sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}
+
                   >
                     <BarChart3 style={{ height: 16, width: 16 }} />
                     Total Requests
@@ -226,9 +226,9 @@ export function CloudflareDashboard() {
               </Card>
 
               <Card>
-                <CardHeader sx={{ pb: 1.5 }}>
+                <CardHeader>
                   <CardTitle
-                    sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}
+
                   >
                     <TrendingUp style={{ height: 16, width: 16 }} />
                     Bandwidth
@@ -254,9 +254,9 @@ export function CloudflareDashboard() {
               </Card>
 
               <Card>
-                <CardHeader sx={{ pb: 1.5 }}>
+                <CardHeader>
                   <CardTitle
-                    sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}
+
                   >
                     <Users style={{ height: 16, width: 16 }} />
                     Unique Visitors
@@ -273,9 +273,9 @@ export function CloudflareDashboard() {
               </Card>
 
               <Card>
-                <CardHeader sx={{ pb: 1.5 }}>
+                <CardHeader>
                   <CardTitle
-                    sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}
+
                   >
                     <Shield style={{ height: 16, width: 16 }} />
                     Threats Blocked
@@ -293,26 +293,26 @@ export function CloudflareDashboard() {
             </Box>
           ) : (
             <Card>
-              <CardContent sx={{ py: 4, textAlign: 'center' }}>
+              <CardContent>
                 <p style={{ color: 'var(--muted-foreground)' }}>Analytics data unavailable</p>
               </CardContent>
             </Card>
           )}
         </TabsContent>
 
-        <TabsContent value="security" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="security">
           {securitySettings ? (
             <Box
               sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}
             >
               <Card>
                 <CardHeader>
-                  <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CardTitle>
                     <Lock style={{ height: 20, width: 20 }} />
                     SSL/TLS Settings
                   </CardTitle>
                 </CardHeader>
-                <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <CardContent>
                   <Box
                     sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                   >
@@ -348,7 +348,7 @@ export function CloudflareDashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CardTitle>
                     <Shield style={{ height: 20, width: 20 }} />
                     Security Level
                   </CardTitle>
@@ -370,26 +370,26 @@ export function CloudflareDashboard() {
             </Box>
           ) : (
             <Card>
-              <CardContent sx={{ py: 4, textAlign: 'center' }}>
+              <CardContent>
                 <p style={{ color: 'var(--muted-foreground)' }}>Security settings unavailable</p>
               </CardContent>
             </Card>
           )}
         </TabsContent>
 
-        <TabsContent value="performance" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="performance">
           {performanceSettings ? (
             <Box
               sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}
             >
               <Card>
                 <CardHeader>
-                  <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CardTitle>
                     <Zap style={{ height: 20, width: 20 }} />
                     Caching Settings
                   </CardTitle>
                 </CardHeader>
-                <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <CardContent>
                   <Box
                     sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                   >
@@ -425,12 +425,12 @@ export function CloudflareDashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CardTitle>
                     <Activity style={{ height: 20, width: 20 }} />
                     Optimization
                   </CardTitle>
                 </CardHeader>
-                <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <CardContent>
                   <Box
                     sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                   >
@@ -478,14 +478,14 @@ export function CloudflareDashboard() {
             </Box>
           ) : (
             <Card>
-              <CardContent sx={{ py: 4, textAlign: 'center' }}>
+              <CardContent>
                 <p style={{ color: 'var(--muted-foreground)' }}>Performance settings unavailable</p>
               </CardContent>
             </Card>
           )}
         </TabsContent>
 
-        <TabsContent value="settings" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="settings">
           <Card>
             <CardHeader>
               <CardTitle>Cloudflare Configuration</CardTitle>

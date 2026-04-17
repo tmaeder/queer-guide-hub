@@ -4,15 +4,7 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { PrivacyGuard } from '@/components/security/PrivacyGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Briefcase,
-  GraduationCap,
-  Heart,
-  MapPin,
-  Globe,
-  Phone,
-  Shield
-} from 'lucide-react';
+import { Briefcase, GraduationCap, Heart, MapPin, Globe, Phone, Shield } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -22,7 +14,7 @@ interface SecureProfileViewerProps {
 }
 
 export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileViewerProps) {
-  const { _user } = useAuth();
+  const {} = useAuth();
   const { isAdmin } = useAdminRoles();
 
   if (!profile) return null;
@@ -36,8 +28,9 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
         </CardHeader>
         <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-
+            <Box
+              sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}
+            >
               {/* Location - Privacy controlled */}
               <PrivacyGuard
                 profileUserId={profile.user_id}
@@ -49,8 +42,12 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <MapPin style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Location</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.location}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Location
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {profile.location}
+                      </Typography>
                     </Box>
                   </Box>
                 )}
@@ -65,8 +62,12 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               >
                 {profile.pronouns && (
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>Pronouns</Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.pronouns}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      Pronouns
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {profile.pronouns}
+                    </Typography>
                   </Box>
                 )}
               </PrivacyGuard>
@@ -80,10 +81,16 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               >
                 {profile.occupation && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Briefcase style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
+                    <Briefcase
+                      style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }}
+                    />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Occupation</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.occupation}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Occupation
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {profile.occupation}
+                      </Typography>
                     </Box>
                   </Box>
                 )}
@@ -98,10 +105,16 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               >
                 {profile.education && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <GraduationCap style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
+                    <GraduationCap
+                      style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }}
+                    />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Education</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.education}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Education
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {profile.education}
+                      </Typography>
                     </Box>
                   </Box>
                 )}
@@ -115,20 +128,24 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               privacySettings={profile.privacy_settings}
               adminJustification="profile_verification"
             >
-              {profile.interests && Array.isArray(profile.interests) && profile.interests.length > 0 && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>Interests</Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {profile.interests.map((interest: string, index: number) => (
-                        <Badge key={index} variant="secondary">
-                          {interest}
-                        </Badge>
-                      ))}
+              {profile.interests &&
+                Array.isArray(profile.interests) &&
+                profile.interests.length > 0 && (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Box>
+                      <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
+                        Interests
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {profile.interests.map((interest: string, index: number) => (
+                          <Badge key={index} variant="secondary">
+                            {interest}
+                          </Badge>
+                        ))}
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              )}
+                )}
             </PrivacyGuard>
           </Box>
         </CardContent>
@@ -151,14 +168,20 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Globe style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>Website</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      Website
+                    </Typography>
                     <a
                       href={profile.website}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: 'var(--primary)', textDecoration: 'none' }}
-                      onMouseOver={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.textDecoration = 'underline'; }}
-                      onMouseOut={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.textDecoration = 'none'; }}
+                      onMouseOver={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                        e.currentTarget.style.textDecoration = 'underline';
+                      }}
+                      onMouseOut={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                        e.currentTarget.style.textDecoration = 'none';
+                      }}
                     >
                       {profile.website}
                     </a>
@@ -177,8 +200,12 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Phone style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Phone</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.phone}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Phone
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {profile.phone}
+                      </Typography>
                     </Box>
                   </Box>
                 )}
@@ -196,16 +223,15 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Shield style={{ height: 20, width: 20 }} />
                 Sensitive Information
-                {!isOwnProfile && (
-                  <Badge variant="destructive">Admin Access</Badge>
-                )}
+                {!isOwnProfile && <Badge variant="destructive">Admin Access</Badge>}
               </Box>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-
+              <Box
+                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}
+              >
                 {/* Gender Identity - Highly sensitive */}
                 <PrivacyGuard
                   profileUserId={profile.user_id}
@@ -215,8 +241,12 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 >
                   {profile.gender_identity && (
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Gender Identity</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.gender_identity}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Gender Identity
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {profile.gender_identity}
+                      </Typography>
                     </Box>
                   )}
                 </PrivacyGuard>
@@ -230,8 +260,12 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 >
                   {profile.sexual_orientation && (
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Sexual Orientation</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.sexual_orientation}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Sexual Orientation
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {profile.sexual_orientation}
+                      </Typography>
                     </Box>
                   )}
                 </PrivacyGuard>
@@ -247,8 +281,12 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Heart style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
                       <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Relationship Status</Typography>
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.relationship_status}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          Relationship Status
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          {profile.relationship_status}
+                        </Typography>
                       </Box>
                     </Box>
                   )}
@@ -263,17 +301,32 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 >
                   {profile.income_range && (
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Income Range</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{profile.income_range}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Income Range
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {profile.income_range}
+                      </Typography>
                     </Box>
                   )}
                 </PrivacyGuard>
               </Box>
 
               {!isOwnProfile && isAdmin && (
-                <Box sx={{ mt: 2, p: 1.5, bgcolor: 'error.main', opacity: 0.1, border: 1, borderColor: 'error.main', borderRadius: 2 }}>
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 1.5,
+                    bgcolor: 'error.main',
+                    opacity: 0.1,
+                    border: 1,
+                    borderColor: 'error.main',
+                    borderRadius: 2,
+                  }}
+                >
                   <Typography variant="body2" sx={{ color: 'error.main', fontWeight: 500 }}>
-                    Admin Access: This sensitive information is logged and monitored for security compliance.
+                    Admin Access: This sensitive information is logged and monitored for security
+                    compliance.
                   </Typography>
                 </Box>
               )}

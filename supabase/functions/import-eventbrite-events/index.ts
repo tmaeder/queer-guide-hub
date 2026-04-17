@@ -200,15 +200,21 @@ serve(async (req) => {
               }
             } catch (e) { console.warn('AI enrichment skipped:', e) }
 
-            console.log('Inserting event:', eventData.title);
+            console.log('Staging event:', eventData.title);
 
-            const { error } = await supabaseClient
-              .from('events')
-              .insert(eventData);
+            // Route through ingestion_staging for the bullet-proof pipeline:
+            // validate → deduplicate → commit (advisory-locked, idempotent).
+            const { error } = await supabaseClient.rpc('stage_event_for_commit', {
+              p_source_type: 'eventbrite',
+              p_source_name: 'eventbrite-api',
+              p_source_entity_id: event.id,
+              p_raw: event as unknown as Record<string, unknown>,
+              p_normalized: eventData,
+              p_source_url: event.url,
+            });
 
             if (error) {
-              console.error('Error inserting event:', error);
-              // Continue with next event instead of failing completely
+              console.error('Error staging event:', error);
             } else {
               importedCount++;
             }

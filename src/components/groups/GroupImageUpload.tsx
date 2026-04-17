@@ -97,7 +97,7 @@ export const GroupImageUpload = ({
             multiple
             onChange={handleFileUpload}
             disabled={isUploading || currentImages.length >= maxImages}
-            sx={{ display: 'none' }}
+
             id="group-image-upload"
           />
           <Label
@@ -154,7 +154,7 @@ export const GroupImageUpload = ({
                 variant="destructive"
                 size="sm"
                 className="remove-btn"
-                sx={{ position: 'absolute', top: 1, right: 1, opacity: 0, transition: 'opacity 0.2s', height: 24, width: 24, p: 0 }}
+
                 onClick={() => removeImage(index)}
               >
                 <X style={{ height: 12, width: 12 }} />

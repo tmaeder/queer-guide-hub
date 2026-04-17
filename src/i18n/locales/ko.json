@@ -47,7 +47,10 @@
     "next": "Next",
     "back": "Back",
     "loadMore": "더 보기",
-    "tryAgain": "다시 시도"
+    "tryAgain": "다시 시도",
+    "allEvents": "모든 이벤트",
+    "browseAll": "전체 보기",
+    "allStories": "모든 기사"
   },
   "navigation": {
     "home": "홈",
@@ -804,6 +807,18 @@
       "communityDesc": "사람들과 연결하고 그룹에 참여하세요",
       "resources": "리소스",
       "resourcesDesc": "권리, 문화, 커뮤니티 지원"
+    },
+    "weekly": {
+      "title": "이번 주",
+      "titleNear": "이번 주 내 주변 이벤트"
+    },
+    "upcoming": {
+      "title": "예정된 이벤트",
+      "titleNear": "내 주변 예정된 이벤트",
+      "empty": "예정된 추가 이벤트가 없습니다."
+    },
+    "news": {
+      "title": "최신 뉴스"
     }
   },
   "header": {

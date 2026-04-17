@@ -318,7 +318,7 @@ export default function QueerVillageDetail() {
 
       {/* Main Content */}
       <Card>
-        <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+        <CardContent>
           <Tabs
             defaultValue="overview"
             style={{ display: 'flex', flexDirection: 'column', gap: 24 }}

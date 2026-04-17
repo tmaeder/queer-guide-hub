@@ -1,292 +1,263 @@
 import React, { useEffect, useMemo } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useEvents } from '@/hooks/useEvents';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
-import { Calendar, MapPin, Clock, ArrowRight, Navigation } from 'lucide-react';
-import { format, startOfWeek, endOfWeek } from 'date-fns';
+  addDays,
+  endOfWeek,
+  format,
+  isSameDay,
+  startOfDay,
+  startOfWeek,
+} from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatEventTime } from '@/lib/event-time';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
+import { container } from '@/lib/sx';
+import { useTranslation } from 'react-i18next';
+
+type Event = {
+  id: string;
+  slug: string;
+  title: string;
+  start_date: string;
+  end_date?: string | null;
+  venue_name?: string | null;
+  city?: string | null;
+};
+
+const Hairline = () => (
+  <Box sx={{ height: '1px', bgcolor: 'currentColor', opacity: 0.12 }} />
+);
 
 const WeeklyEventsSlider = React.memo(() => {
-  const { events, loading, fetchEvents } = useEvents();
+  const { events, loading, fetchEvents } = useEvents(false);
   const isMobile = useIsMobile();
   const { location: userLocation, loading: locationLoading } = useVisitorLocation();
+  const { t } = useTranslation();
 
-  // Fetch events when location is available
   useEffect(() => {
-    if (userLocation) {
-      const now = new Date();
-      const weekStart = startOfWeek(now);
-      const weekEnd = endOfWeek(now);
-      fetchEvents({
-        dateRange: {
-          start: weekStart.toISOString(),
-          end: weekEnd.toISOString(),
-        },
-        nearMe: {
-          lat: userLocation.latitude,
-          lng: userLocation.longitude,
-        },
-      });
-    }
-  }, [userLocation, fetchEvents]);
+    if (locationLoading) return;
+    const now = new Date();
+    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+    fetchEvents({
+      dateRange: { start: now.toISOString(), end: weekEnd.toISOString() },
+      limit: 40,
+    });
+  }, [userLocation, locationLoading, fetchEvents]);
 
-  // Filter and sort events by distance and date
-  const weeklyEvents = useMemo(
-    () =>
-      events
-        .filter((event) => {
-          const eventDate = new Date(event.start_date);
-          const now = new Date();
-          const weekStart = startOfWeek(now);
-          const weekEnd = endOfWeek(now);
-          return eventDate >= weekStart && eventDate <= weekEnd;
-        })
-        .slice(0, 10),
-    [events],
-  ); // Limit to 10 events
+  const { days, today } = useMemo(() => {
+    const now = new Date();
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const daysArr = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    return { days: daysArr, today: startOfDay(now) };
+  }, []);
 
-  if (locationLoading || loading) {
-    return null;
-  }
-  if (!userLocation || weeklyEvents.length === 0) {
-    return null;
-  }
+  const eventsByDay = useMemo(() => {
+    const map = new Map<string, Event[]>();
+    days.forEach((d) => map.set(d.toISOString(), []));
+    (events as Event[]).forEach((ev) => {
+      const start = new Date(ev.start_date);
+      const key = days.find((d) => isSameDay(d, start))?.toISOString();
+      if (key) map.get(key)!.push(ev);
+    });
+    // Sort each day's events by start time
+    map.forEach((list) =>
+      list.sort(
+        (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+      ),
+    );
+    return map;
+  }, [events, days]);
+
+  if (loading) return null;
+  const totalCount = (events as Event[]).length;
+  if (totalCount === 0) return null;
+
+  const headline = userLocation?.city
+    ? t('home.weekly.titleNear', 'This Week Near You')
+    : t('home.weekly.title', 'This Week');
+
   return (
-    <section
-      style={{
-        backgroundColor: 'rgba(var(--muted-rgb), 0.1)',
-        padding: isMobile ? '32px 16px' : '64px 16px',
+    <Box
+      component="section"
+      sx={{
+        ...container,
+        py: { xs: 4, md: 8 },
       }}
     >
-      <Box sx={{ mx: 'auto' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: isMobile ? 24 : 32,
+      {/* Header */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: 2,
+          mb: 2,
+        }}
+      >
+        <Box
+          component="h2"
+          sx={{
+            m: 0,
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontWeight: 800,
+            fontSize: { xs: '1.75rem', md: '2.25rem' },
+            letterSpacing: '-0.01em',
+            lineHeight: 1.1,
           }}
         >
-          <div>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Navigation
-                style={{
-                  height: isMobile ? 20 : 24,
-                  width: isMobile ? 20 : 24,
-                  color: 'hsl(var(--primary))',
-                }}
-              />
-              <h2 style={{ fontWeight: 700, fontSize: isMobile ? '1.25rem' : '1.875rem' }}>
-                This Week Near You
-              </h2>
-            </Box>
-            <p
-              style={{
-                color: 'var(--muted-foreground)',
-                fontSize: isMobile ? '0.875rem' : '1.125rem',
+          {headline}
+        </Box>
+        <Box
+          component={LocalizedLink}
+          to="/events"
+          sx={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: { xs: '0.8125rem', md: '0.875rem' },
+            color: 'text.primary',
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+            transition: 'opacity 0.2s',
+            '&:hover': { opacity: 0.7 },
+          }}
+        >
+          {t('common.allEvents', 'All events')} →
+        </Box>
+      </Box>
+      <Hairline />
+
+      {/* Day columns */}
+      <Box
+        sx={{
+          mt: { xs: 2, md: 4 },
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            md: 'repeat(7, 1fr)',
+          },
+          columnGap: { md: 2 },
+          rowGap: { xs: 3, md: 0 },
+        }}
+      >
+        {days.map((day) => {
+          const items = eventsByDay.get(day.toISOString()) || [];
+          const isToday = isSameDay(day, today);
+          return (
+            <Box
+              key={day.toISOString()}
+              sx={{
+                minWidth: 0,
+                borderLeft: { md: '1px solid' },
+                borderColor: { md: 'currentColor' },
+                opacity: 1,
+                '& .day-border': { opacity: 0.12 },
+                pl: { md: 2 },
+                '&:first-of-type': { borderLeft: { md: 0 }, pl: { md: 0 } },
               }}
             >
-              Events happening in {userLocation.city || 'your area'} this week
-            </p>
-          </div>
-          <Button variant="outline" size={isMobile ? 'sm' : 'default'} asChild>
-            <LocalizedLink to="/events">
-              View All
-              <ArrowRight
-                style={{ marginLeft: 8, height: isMobile ? 12 : 16, width: isMobile ? 12 : 16 }}
-              />
-            </LocalizedLink>
-          </Button>
-        </div>
-
-        <Carousel
-          opts={{
-            align: 'start',
-            loop: false,
-          }}
-          style={{ width: '100%' }}
-        >
-          <CarouselContent style={{ marginLeft: isMobile ? -8 : -16 }}>
-            {weeklyEvents.map((event) => (
-              <CarouselItem
-                key={event.id}
-                style={{
-                  paddingLeft: isMobile ? 8 : 16,
-                  flex: isMobile ? '0 0 100%' : '0 0 33.333%',
+              {/* Column header */}
+              <Box
+                sx={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: 'text.secondary',
                 }}
               >
-                <Card style={{ transition: 'all 0.3s', height: '100%' }}>
-                  <CardContent
-                    style={{
-                      padding: 24,
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
+                {format(day, 'EEE')}
+              </Box>
+              <Box
+                sx={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 300,
+                  fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+                  lineHeight: 1,
+                  mb: { xs: 1, md: 2 },
+                  color: isToday ? 'brand.main' : 'text.primary',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {format(day, 'd')}
+              </Box>
+
+              {/* Events stack */}
+              {items.length === 0 ? (
+                <Box
+                  sx={{
+                    color: 'text.secondary',
+                    opacity: 0.35,
+                    fontSize: '1rem',
+                  }}
+                >
+                  —
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {items.slice(0, isMobile ? 6 : 4).map((ev) => (
                     <Box
+                      key={ev.id}
+                      component={LocalizedLink}
+                      to={`/events/${ev.slug}`}
                       sx={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        justifyContent: 'space-between',
-                        mb: 2,
+                        display: 'block',
+                        textDecoration: 'none',
+                        color: 'text.primary',
+                        transition: 'opacity 0.2s',
+                        '&:hover': { opacity: 0.7 },
                       }}
-                    >
-                      <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
-                        {event.event_type}
-                      </Badge>
-                      {event.is_free ? (
-                        <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
-                          Free
-                        </Badge>
-                      ) : (
-                        event.price_min && (
-                          <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
-                            ${event.price_min}+
-                          </Badge>
-                        )
-                      )}
-                    </Box>
-
-                    <h3
-                      style={{
-                        fontWeight: 600,
-                        marginBottom: 12,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        transition: 'color 0.2s',
-                        fontSize: isMobile ? '1rem' : '1.125rem',
-                      }}
-                    >
-                      {event.title}
-                    </h3>
-
-                    <Box
-                      sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2, flexGrow: 1 }}
                     >
                       <Box
                         sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '0.75rem',
                           color: 'text.secondary',
+                          fontVariantNumeric: 'tabular-nums',
+                          mb: 0.5,
                         }}
                       >
-                        <Calendar style={{ height: 16, width: 16, flexShrink: 0 }} />
-                        <Box component="span" sx={{ fontSize: '0.875rem' }}>
-                          {format(new Date(event.start_date), 'EEE, MMM d')}
-                        </Box>
+                        {formatEventTime(ev.start_date, ev.end_date)}
                       </Box>
-
                       <Box
                         sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          color: 'text.secondary',
-                        }}
-                      >
-                        <Clock style={{ height: 16, width: 16, flexShrink: 0 }} />
-                        <Box component="span" sx={{ fontSize: '0.875rem' }}>
-                          {formatEventTime(event.start_date, event.end_date)}
-                        </Box>
-                      </Box>
-
-                      {(event.city || event.venue_name) && (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            color: 'text.secondary',
-                          }}
-                        >
-                          <MapPin style={{ height: 16, width: 16, flexShrink: 0 }} />
-                          <Box
-                            component="span"
-                            sx={{
-                              fontSize: '0.875rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {event.venue_name || event.city}
-                          </Box>
-                        </Box>
-                      )}
-                    </Box>
-
-                    {event.description && (
-                      <Typography
-                        sx={{
-                          fontSize: '0.875rem',
-                          color: 'text.secondary',
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          fontWeight: 600,
+                          fontSize: { xs: '1rem', md: '0.9375rem' },
+                          lineHeight: 1.3,
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
-                          mb: 2,
+                          mb: 0.5,
                         }}
                       >
-                        {event.description}
-                      </Typography>
-                    )}
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      style={{ marginTop: 'auto', alignSelf: 'flex-start' }}
-                      asChild
-                    >
-                      <LocalizedLink to={`/events/${event.slug}`}>
-                        Learn More
-                        <ArrowRight style={{ marginLeft: 8, height: 12, width: 12 }} />
-                      </LocalizedLink>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-
-          {!isMobile && weeklyEvents.length > 3 && (
-            <>
-              <CarouselPrevious style={{ display: 'flex' }} />
-              <CarouselNext style={{ display: 'flex' }} />
-            </>
-          )}
-        </Carousel>
-
-        {isMobile && weeklyEvents.length > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {weeklyEvents.slice(0, 5).map((_, index) => (
-                <Box
-                  key={index}
-                  sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'action.hover' }}
-                />
-              ))}
+                        {ev.title}
+                      </Box>
+                      {(ev.venue_name || ev.city) && (
+                        <Box
+                          sx={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.75rem',
+                            color: 'text.secondary',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {ev.venue_name || ev.city}
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              )}
             </Box>
-          </Box>
-        )}
+          );
+        })}
       </Box>
-    </section>
+    </Box>
   );
 });
 WeeklyEventsSlider.displayName = 'WeeklyEventsSlider';

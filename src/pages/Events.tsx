@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { TrendingByType } from '@/components/discovery/TrendingByType';
@@ -116,7 +115,6 @@ const Events = () => {
   const { location: visitorLocation } = useVisitorLocation();
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
-  const _sentinelRef = useRef<HTMLDivElement | null>(null);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
   // Get unique cities from events for auto-suggest

@@ -25,12 +25,13 @@ export function LocationPrivacyGuard({
   children,
   locationData,
   showWarning = true,
-  allowPreciseLocation = false
+  allowPreciseLocation = false,
 }: LocationPrivacyGuardProps) {
-  const { _user } = useAuth();
+  const {} = useAuth();
 
   // Check if location data is older than 30 days (anonymization threshold)
-  const isLocationAnonymized = locationData?.created_at &&
+  const isLocationAnonymized =
+    locationData?.created_at &&
     new Date(locationData.created_at) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
   // Privacy-preserving location display
@@ -43,7 +44,7 @@ export function LocationPrivacyGuard({
         ...locationData,
         latitude: undefined,
         longitude: undefined,
-        venue_name: locationData.venue_name ? '[Location anonymized]' : undefined
+        venue_name: locationData.venue_name ? '[Location anonymized]' : undefined,
       };
     }
 
@@ -55,11 +56,19 @@ export function LocationPrivacyGuard({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {showWarning && locationData && (
-        <Alert sx={{ borderColor: 'warning.main' }}>
+        <Alert>
           <Shield style={{ height: 16, width: 16 }} />
-          <AlertDescription sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <AlertDescription>
             <Box component="span">Location data is protected by privacy controls</Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'text.secondary' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                fontSize: '0.875rem',
+                color: 'text.secondary',
+              }}
+            >
               <Clock style={{ height: 12, width: 12 }} />
               <Box component="span">Auto-anonymized after 30 days</Box>
             </Box>
@@ -68,26 +77,34 @@ export function LocationPrivacyGuard({
       )}
 
       {isLocationAnonymized && (
-        <Card sx={{ bgcolor: 'action.hover' }}>
-          <CardHeader sx={{ pb: 1 }}>
-            <CardTitle sx={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Card>
+          <CardHeader>
+            <CardTitle>
               <MapPin style={{ height: 16, width: 16 }} />
               Location Privacy Protection Active
             </CardTitle>
           </CardHeader>
-          <CardContent sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-            This location data has been automatically anonymized for privacy protection.
-            Only general area information is available.
+          <CardContent>
+            This location data has been automatically anonymized for privacy protection. Only
+            general area information is available.
           </CardContent>
         </Card>
       )}
 
       {React.cloneElement(children as React.ReactElement, {
-        locationData: privacyLocation
+        locationData: privacyLocation,
       })}
 
       {locationData && !allowPreciseLocation && (
-        <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box
+          sx={{
+            fontSize: '0.75rem',
+            color: 'text.secondary',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
           <AlertTriangle style={{ height: 12, width: 12 }} />
           Precise location coordinates are hidden for privacy
         </Box>

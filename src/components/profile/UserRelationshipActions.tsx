@@ -48,7 +48,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
         size={compact ? "sm" : "default"}
         onClick={handleRemove}
         disabled={loading}
-        sx={{ gap: 1 }}
+
       >
         <ShieldCheck style={{ height: 16, width: 16 }} />
         Unblock
@@ -64,7 +64,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
         size={compact ? "sm" : "default"}
         onClick={handleRemove}
         disabled={loading}
-        sx={{ gap: 1 }}
+
       >
         <UserMinus style={{ height: 16, width: 16 }} />
         Cancel Request
@@ -103,7 +103,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
           variant="default"
           onClick={handleAccept}
           disabled={loading}
-          sx={{ gap: 1 }}
+
         >
           <Check style={{ height: 16, width: 16 }} />
           Accept
@@ -112,7 +112,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
           variant="outline"
           onClick={handleReject}
           disabled={loading}
-          sx={{ gap: 1 }}
+
         >
           <X style={{ height: 16, width: 16 }} />
           Reject
@@ -130,7 +130,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
             variant="outline"
             size={compact ? "sm" : "default"}
             disabled={loading}
-            sx={{ gap: 1 }}
+
           >
             <UserMinus style={{ height: 16, width: 16 }} />
             Friends
@@ -158,7 +158,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
           variant="default"
           size={compact ? "sm" : "default"}
           disabled={loading}
-          sx={{ gap: 1 }}
+
         >
           <UserPlus style={{ height: 16, width: 16 }} />
           Add Friend

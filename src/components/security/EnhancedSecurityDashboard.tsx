@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -179,7 +179,7 @@ export function EnhancedSecurityDashboard() {
       {/* Security Overview Cards */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
         <Card>
-          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', py: 0, pb: 1 }}>
+          <CardHeader>
             <CardTitle>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Critical Events</Typography>
             </CardTitle>
@@ -192,7 +192,7 @@ export function EnhancedSecurityDashboard() {
         </Card>
 
         <Card>
-          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', py: 0, pb: 1 }}>
+          <CardHeader>
             <CardTitle>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>High Priority</Typography>
             </CardTitle>
@@ -205,7 +205,7 @@ export function EnhancedSecurityDashboard() {
         </Card>
 
         <Card>
-          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', py: 0, pb: 1 }}>
+          <CardHeader>
             <CardTitle>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Privacy Updates</Typography>
             </CardTitle>
@@ -218,7 +218,7 @@ export function EnhancedSecurityDashboard() {
         </Card>
 
         <Card>
-          <CardHeader sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', py: 0, pb: 1 }}>
+          <CardHeader>
             <CardTitle>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Admin Access</Typography>
             </CardTitle>

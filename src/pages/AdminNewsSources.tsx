@@ -85,7 +85,7 @@ const columnHelper = createColumnHelper<NewsSourceRow>();
 
 export default function AdminNewsSources() {
   const navigate = useNavigate();
-  const { _user } = useAuth();
+  const {} = useAuth();
   const { canManageContent, loading } = useAdminRoles();
   const { toast } = useToast();
 
@@ -449,7 +449,9 @@ export default function AdminNewsSources() {
           <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
             News Sources
           </Typography>
-          <p style={{ color: 'hsl(var(--muted-foreground))' }}>Manage RSS feeds and API sources for the news hub</p>
+          <p style={{ color: 'hsl(var(--muted-foreground))' }}>
+            Manage RSS feeds and API sources for the news hub
+          </p>
         </div>
       </Box>
 

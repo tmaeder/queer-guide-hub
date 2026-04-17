@@ -63,12 +63,7 @@ export const ImportStatusBadge = ({ status, showIcon = true, size = 'default' }:
   return (
     <Badge
       variant={config.variant}
-      sx={{
-        ...config.sx,
-        ...(size === 'sm' && { fontSize: '0.75rem', px: 1, py: 0.25 }),
-        ...(size === 'lg' && { fontSize: '0.875rem', px: 1.5, py: 0.5 }),
-        ...(showIcon && { gap: 0.5 }),
-      }}
+
     >
       {showIcon && (
         <IconComponent

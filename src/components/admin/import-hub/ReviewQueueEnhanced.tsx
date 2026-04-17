@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -133,6 +133,18 @@ export function ReviewQueueEnhanced() {
     setCompareItemId(null);
   };
 
+  const handleMerge = (id: string, targetVenueId: string) => {
+    stagingAction.mutate({
+      action: 'merge',
+      stagingId: id,
+      targetVenueId,
+      notes: reviewNotes || undefined,
+    });
+    setReviewNotes('');
+    setExpandedId(null);
+    setCompareItemId(null);
+  };
+
   const handleReject = (id: string) => {
     stagingAction.mutate({ action: 'reject', stagingId: id, notes: reviewNotes || undefined });
     setReviewNotes('');
@@ -194,7 +206,7 @@ export function ReviewQueueEnhanced() {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Filters */}
       <Card>
-        <CardContent sx={{ p: 2 }}>
+        <CardContent>
           <Box
             sx={{
               display: 'flex',
@@ -341,7 +353,7 @@ export function ReviewQueueEnhanced() {
       {/* Empty State */}
       {!isLoading && items.length === 0 && (
         <Card>
-          <CardContent sx={{ p: 6, textAlign: 'center' }}>
+          <CardContent>
             <Box
               sx={{
                 mx: 'auto',
@@ -404,7 +416,7 @@ export function ReviewQueueEnhanced() {
                   transition: 'background-color 0.15s',
                 }}
               >
-                <CardContent sx={{ p: 2 }}>
+                <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                     <input
                       type="checkbox"
@@ -478,18 +490,38 @@ export function ReviewQueueEnhanced() {
                             <Eye style={{ height: 14, width: 14 }} />
                           </Button>
                           {item.dedup_match_id && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setCompareItemId(isComparing ? null : item.id);
-                                setExpandedId(item.id);
-                              }}
-                              style={{ display: 'flex', gap: 4 }}
-                            >
-                              <Merge style={{ height: 14, width: 14 }} />
-                              Compare
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setCompareItemId(isComparing ? null : item.id);
+                                  setExpandedId(item.id);
+                                }}
+                                style={{ display: 'flex', gap: 4 }}
+                              >
+                                <Merge style={{ height: 14, width: 14 }} />
+                                Compare
+                              </Button>
+                              {item.target_table === 'venues' && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleMerge(item.id, item.dedup_match_id as string)}
+                                  disabled={stagingAction.isPending}
+                                  style={{
+                                    backgroundColor: '#ca8a04',
+                                    color: 'white',
+                                    padding: '4px 8px',
+                                    display: 'flex',
+                                    gap: 4,
+                                  }}
+                                  title="Merge this staging item into the matched venue"
+                                >
+                                  <Merge style={{ height: 14, width: 14 }} />
+                                  Merge
+                                </Button>
+                              )}
+                            </>
                           )}
                           <Button
                             size="sm"

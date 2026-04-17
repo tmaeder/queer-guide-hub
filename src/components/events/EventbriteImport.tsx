@@ -91,7 +91,7 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
           Import from Eventbrite
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: 448 }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Import Events from Eventbrite</DialogTitle>
         </DialogHeader>

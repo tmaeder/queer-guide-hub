@@ -39,18 +39,7 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
           <Badge
             key={tag.tag_id}
             variant="outline"
-            sx={{
-              cursor: 'pointer',
-              fontSize: '0.8rem',
-              px: 1.5,
-              py: 0.5,
-              transition: 'all 0.2s',
-              '&:hover': {
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-                borderColor: 'primary.main',
-              },
-            }}
+
             onClick={() => onTagClick({ name: tag.name, id: tag.tag_id })}
           >
             {tag.name}

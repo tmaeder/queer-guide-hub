@@ -157,7 +157,7 @@ export default function Contact() {
             <Typography variant="h6" sx={{ fontWeight: 700 }}>Direct Contact</Typography>
             {categories.filter((c) => c.value !== "other").map((method) => (
               <Card key={method.value}>
-                <CardContent sx={{ p: 2.5 }}>
+                <CardContent>
                   <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
                     <method.icon style={{ width: 20, height: 20, flexShrink: 0, marginTop: 2 }} color="var(--mui-palette-primary-main)" />
                     <Box sx={{ flex: 1 }}>
@@ -176,8 +176,8 @@ export default function Contact() {
               </Card>
             ))}
 
-            <Card sx={{ mt: 1 }}>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.5, p: 2.5 }}>
+            <Card>
+              <CardContent>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                   <Clock style={{ width: 18, height: 18 }} color="var(--mui-palette-primary-main)" />
                   <Typography variant="body2"><strong>Response Time</strong> — within 24 hours</Typography>
@@ -202,7 +202,7 @@ export default function Contact() {
               <Card key={index}>
                 <Collapsible open={openFaq === index} onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}>
                   <CollapsibleTrigger asChild>
-                    <CardHeader sx={{ cursor: "pointer", py: 2, "&:hover": { bgcolor: "action.hover" }, transition: "background-color 0.2s" }}>
+                    <CardHeader>
                       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <Typography sx={{ fontWeight: 600, fontSize: "0.9375rem" }}>{faq.question}</Typography>
                         {openFaq === index ? <ChevronDown style={{ width: 18, height: 18, flexShrink: 0 }} /> : <ChevronRight style={{ width: 18, height: 18, flexShrink: 0 }} />}
@@ -210,7 +210,7 @@ export default function Contact() {
                     </CardHeader>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
-                    <CardContent sx={{ pt: 0, pb: 2 }}>
+                    <CardContent>
                       <Typography variant="body2" color="text.secondary">{faq.answer}</Typography>
                     </CardContent>
                   </CollapsibleContent>

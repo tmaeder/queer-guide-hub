@@ -18,7 +18,7 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
 
   return (
     <LocalizedLink to={`/villages/${village.slug}`} style={{ textDecoration: 'none' }}>
-      <Card hoverable sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Card hoverable>
         <CardImage src={imageUrl} alt={village.name} fallbackIcon={Landmark} height={180}>
           {village.featured && (
             <Badge

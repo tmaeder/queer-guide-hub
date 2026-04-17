@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Play, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,14 +85,6 @@ export function VideoManager() {
       toast.error('Failed to delete video');
     }
   };
-
-  const _formatFileSize = (bytes: number): string => {
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    if (bytes === 0) return '0 Bytes';
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
-  };
-
   const formatDuration = (seconds?: number): string => {
     if (!seconds) return 'Unknown';
     const mins = Math.floor(seconds / 60);
@@ -137,7 +129,7 @@ export function VideoManager() {
             placeholder="Search videos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ pl: 5 }}
+
           />
         </Box>
       </Box>
@@ -145,7 +137,7 @@ export function VideoManager() {
       {/* Video Grid */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
         {filteredVideos.map((video) => (
-          <Card key={video.id} sx={{ overflow: 'hidden' }}>
+          <Card key={video.id}>
             <Box sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
               {video.poster_image_path ? (
                 <Box
@@ -171,7 +163,7 @@ export function VideoManager() {
               )}
             </Box>
 
-            <CardContent sx={{ p: 2 }}>
+            <CardContent>
               <Typography variant="h3" sx={{ fontWeight: 600, mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{video.title}</Typography>
 
               {video.description && (
@@ -197,7 +189,7 @@ export function VideoManager() {
                         <Eye style={{ height: 16, width: 16 }} />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent sx={{ maxWidth: 896 }}>
+                    <DialogContent>
                       <DialogHeader>
                         <DialogTitle>{video.title}</DialogTitle>
                       </DialogHeader>
@@ -232,7 +224,7 @@ export function VideoManager() {
                   variant="outline"
                   size="sm"
                   onClick={() => deleteVideo(video.id)}
-                  sx={{ color: 'error.main', '&:hover': { color: 'error.main' } }}
+
                 >
                   <Trash2 style={{ height: 16, width: 16 }} />
                 </Button>

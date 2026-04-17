@@ -348,7 +348,7 @@ export function useTagUsageCounts() {
       }
 
       const map: Record<string, number> = {};
-      for (const row of (data || []) as Array<Record<string, unknown>>) {
+      for (const row of (data || []) as unknown as Array<Record<string, unknown>>) {
         // Sum all entity-type counts for a true cross-content usage count
         const total = (row.venue_count || 0) + (row.event_count || 0) + (row.group_count || 0);
         map[row.name] = total > 0 ? total : row.usage_count || 0;

@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { Shield, DollarSign, Compass, Home, Users, Accessibility } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -182,7 +181,7 @@ export function TravelPreferencesEditor() {
                 key={interest}
                 variant={prefs.interests.includes(interest) ? 'default' : 'outline'}
                 onClick={() => toggleArrayItem('interests', interest)}
-                sx={{ cursor: 'pointer', textTransform: 'capitalize', minHeight: 36, px: 2 }}
+
               >
                 {interest}
               </Badge>
@@ -208,7 +207,7 @@ export function TravelPreferencesEditor() {
                 key={value}
                 variant={prefs.preferred_accommodation.includes(value) ? 'default' : 'outline'}
                 onClick={() => toggleArrayItem('preferred_accommodation', value)}
-                sx={{ cursor: 'pointer', minHeight: 36, px: 2 }}
+
               >
                 {label}
               </Badge>
@@ -259,7 +258,7 @@ export function TravelPreferencesEditor() {
                 key={need}
                 variant={prefs.accessibility_needs.includes(need) ? 'default' : 'outline'}
                 onClick={() => toggleArrayItem('accessibility_needs', need)}
-                sx={{ cursor: 'pointer', textTransform: 'capitalize', minHeight: 36, px: 2 }}
+
               >
                 {need}
               </Badge>

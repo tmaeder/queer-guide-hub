@@ -1,4 +1,3 @@
-import React from 'react';
 import { formatCurrency } from '@/lib/currency';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -29,8 +28,6 @@ interface MarketplaceCardProps {
 export function MarketplaceCard({
   listing,
   loading = false,
-  _onViewDetails,
-  _onToggleFavorite,
   showFavoriteButton = false,
 }: MarketplaceCardProps) {
   if (loading || !listing) {
@@ -44,19 +41,7 @@ export function MarketplaceCard({
   const averageRating = listing.marketplace_reviews?.length
     ? listing.marketplace_reviews.reduce((sum, review) => sum + review.rating, 0) /
       listing.marketplace_reviews.length
-    : 0;
-
-  const _isFavorited = listing.marketplace_favorites && listing.marketplace_favorites.length > 0;
-
-  const _getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      products: 'bg-muted text-foreground',
-      services: 'bg-muted text-foreground',
-    };
-    return colors[category] || 'bg-muted text-foreground';
-  };
-
-  const formatPrice = () => {
+    : 0;  const formatPrice = () => {
     if (!listing.price) {
       if (listing.price_type === 'free') return 'Free';
       return 'Price varies';
@@ -75,43 +60,11 @@ export function MarketplaceCard({
         return price;
     }
   };
-
-  const _getBusinessTypeIcon = (type: string) => {
-    switch (type) {
-      case 'online':
-        return <Globe style={{ height: 12, width: 12 }} />;
-      case 'physical':
-        return <MapPin style={{ height: 12, width: 12 }} />;
-      case 'both':
-        return (
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Globe style={{ height: 12, width: 12 }} />
-            <MapPin style={{ height: 12, width: 12 }} />
-          </Box>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
-    <Card
-      sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'opacity 0.2s',
-        bgcolor: 'background.paper',
-      }}
-    >
+    <Card>
       {showFavoriteButton && (
         <Box sx={{ position: 'absolute', top: 3, right: 3, zIndex: 10 }}>
-          <FavoriteButton
-            itemId={listing.id}
-            type="marketplace"
-            variant="ghost"
-            size="sm"
-            sx={{ bgcolor: 'background.default' }}
-          />
+          <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="sm" />
         </Box>
       )}
 
@@ -145,9 +98,7 @@ export function MarketplaceCard({
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-              <Badge variant="secondary" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                {listing.category}
-              </Badge>
+              <Badge variant="secondary">{listing.category}</Badge>
               {listing.featured && <Box sx={{ width: 8, height: 8, bgcolor: 'text.primary' }} />}
             </Box>
           </Box>
@@ -199,11 +150,7 @@ export function MarketplaceCard({
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               {formatPrice()}
             </Typography>
-            {listing.shipping_available && (
-              <Badge variant="outline" sx={{ fontSize: '0.75rem' }}>
-                Ships
-              </Badge>
-            )}
+            {listing.shipping_available && <Badge variant="outline">Ships</Badge>}
           </Box>
 
           {averageRating > 0 && (
@@ -220,13 +167,7 @@ export function MarketplaceCard({
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {listing.website && (
-              <Button
-                size="sm"
-                variant="ghost"
-                sx={{ height: 28, width: 28, p: 0 }}
-                aria-label="Visit website"
-                asChild
-              >
+              <Button size="sm" variant="ghost" aria-label="Visit website" asChild>
                 <a
                   href={listing.website}
                   target="_blank"
@@ -241,7 +182,6 @@ export function MarketplaceCard({
               <Button
                 size="sm"
                 variant="ghost"
-                sx={{ height: 28, width: 28, p: 0 }}
                 aria-label={`Call ${listing.contact_phone}`}
                 asChild
               >
@@ -254,7 +194,6 @@ export function MarketplaceCard({
               <Button
                 size="sm"
                 variant="ghost"
-                sx={{ height: 28, width: 28, p: 0 }}
                 aria-label={`Email ${listing.contact_email}`}
                 asChild
               >
@@ -282,9 +221,7 @@ export function MarketplaceCard({
           </Box>
 
           <LocalizedLink to={`/marketplace/${listing.slug}`}>
-            <Button size="sm" sx={{ height: 28, fontSize: '0.75rem' }}>
-              View
-            </Button>
+            <Button size="sm">View</Button>
           </LocalizedLink>
         </Box>
       </Box>

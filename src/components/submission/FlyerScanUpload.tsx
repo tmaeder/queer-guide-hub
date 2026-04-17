@@ -75,8 +75,8 @@ export function FlyerScanUpload({
   // Error state
   if (scanState === 'error') {
     return (
-      <Card sx={{ mb: 2, borderColor: 'error.main', borderWidth: 1 }}>
-        <CardContent sx={{ p: 2.5 }}>
+      <Card>
+        <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
             <AlertCircle
               style={{ width: 20, height: 20, color: '#ef4444', flexShrink: 0, marginTop: 2 }}
@@ -114,8 +114,8 @@ export function FlyerScanUpload({
           : 'Analyzing...';
 
     return (
-      <Card sx={{ mb: 2 }}>
-        <CardContent sx={{ p: 3 }}>
+      <Card>
+        <CardContent>
           <Box
             sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, py: 1 }}
           >
@@ -150,15 +150,7 @@ export function FlyerScanUpload({
   // Idle state — upload zone
   return (
     <Card
-      sx={{
-        mb: 2,
-        border: 2,
-        borderStyle: 'dashed',
-        borderColor: dragOver ? '#ec4899' : 'divider',
-        transition: 'border-color 0.2s',
-        cursor: 'pointer',
-        '&:hover': { borderColor: '#ec489966' },
-      }}
+
       onClick={() => fileInputRef.current?.click()}
       onDragOver={(e: React.DragEvent) => {
         e.preventDefault();
@@ -167,7 +159,7 @@ export function FlyerScanUpload({
       onDragLeave={() => setDragOver(false)}
       onDrop={handleDrop}
     >
-      <CardContent sx={{ p: 2.5 }}>
+      <CardContent>
         <input
           ref={fileInputRef}
           type="file"

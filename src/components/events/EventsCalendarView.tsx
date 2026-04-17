@@ -5,8 +5,26 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Clock, MapPin, Users, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Eye, Star, Ticket } from 'lucide-react';
-import { format, isSameDay, parseISO, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
+import {
+  Clock,
+  MapPin,
+  Users,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Star,
+  Ticket,
+} from 'lucide-react';
+import {
+  format,
+  isSameDay,
+  parseISO,
+  startOfMonth,
+  endOfMonth,
+  addMonths,
+  subMonths,
+} from 'date-fns';
 import { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
 import Box from '@mui/material/Box';
@@ -22,41 +40,42 @@ interface EventsCalendarViewProps {
 export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
   events,
   onEventSelect,
-  onAttendanceUpdate
+  onAttendanceUpdate,
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
   // Memoized calculations for better performance
-  const {
-    eventsForSelectedDate,
-    datesWithEvents,
-    _eventCountByDate
-  } = useMemo(() => {
-    const eventsForDate = events.filter(event => isSameDay(parseISO(event.start_date), selectedDate));
-    const eventDates = events.map(event => parseISO(event.start_date));
-    const eventCounts = events.reduce((acc, event) => {
-      const dateKey = format(parseISO(event.start_date), 'yyyy-MM-dd');
-      acc[dateKey] = (acc[dateKey] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+  const { eventsForSelectedDate, datesWithEvents } = useMemo(() => {
+    const eventsForDate = events.filter((event) =>
+      isSameDay(parseISO(event.start_date), selectedDate),
+    );
+    const eventDates = events.map((event) => parseISO(event.start_date));
+    const eventCounts = events.reduce(
+      (acc, event) => {
+        const dateKey = format(parseISO(event.start_date), 'yyyy-MM-dd');
+        acc[dateKey] = (acc[dateKey] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
     return {
       eventsForSelectedDate: eventsForDate,
       datesWithEvents: eventDates,
-      eventCountByDate: eventCounts
+      eventCountByDate: eventCounts,
     };
   }, [events, selectedDate]);
   const monthlyStats = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
-    const monthEvents = events.filter(event => {
+    const monthEvents = events.filter((event) => {
       const eventDate = parseISO(event.start_date);
       return eventDate >= monthStart && eventDate <= monthEnd;
     });
     return {
       totalEvents: monthEvents.length,
-      eventTypes: [...new Set(monthEvents.map(e => e.event_type))].length,
-      freeEvents: monthEvents.filter(e => e.is_free).length
+      eventTypes: [...new Set(monthEvents.map((e) => e.event_type))].length,
+      freeEvents: monthEvents.filter((e) => e.is_free).length,
     };
   }, [events, currentMonth]);
   const handleDateSelect = (date: Date | undefined) => {
@@ -66,49 +85,71 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
     }
   };
   const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentMonth(prev => direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1));
+    setCurrentMonth((prev) => (direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1)));
   };
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Enhanced Month Stats */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
-        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderColor: 'divider', borderWidth: 1, borderStyle: 'solid' }}>
-          <CardContent sx={{ p: 2 }}>
+      <Box
+        sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}
+      >
+        <Card>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
                 <CalendarIcon style={{ height: 20, width: 20 }} />
               </Box>
               <Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{monthlyStats.totalEvents}</Typography>
-                <Typography variant="body2" color="text.secondary">Total Events</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                  {monthlyStats.totalEvents}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total Events
+                </Typography>
               </Box>
             </Box>
           </CardContent>
         </Card>
 
-        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.1))', borderColor: 'success.main', borderWidth: 1, borderStyle: 'solid', opacity: 0.2 }}>
-          <CardContent sx={{ p: 2 }}>
+        <Card>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ p: 1, bgcolor: 'success.main', borderRadius: 2, opacity: 0.1, position: 'relative' }}>
+              <Box
+                sx={{
+                  p: 1,
+                  bgcolor: 'success.main',
+                  borderRadius: 2,
+                  opacity: 0.1,
+                  position: 'relative',
+                }}
+              >
                 <Ticket style={{ height: 20, width: 20, color: '#16a34a' }} />
               </Box>
               <Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>{monthlyStats.freeEvents}</Typography>
-                <Typography variant="body2" color="text.secondary">Free Events</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                  {monthlyStats.freeEvents}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Free Events
+                </Typography>
               </Box>
             </Box>
           </CardContent>
         </Card>
 
-        <Card sx={{ background: 'linear-gradient(to bottom right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderColor: 'divider', borderWidth: 1, borderStyle: 'solid' }}>
-          <CardContent sx={{ p: 2 }}>
+        <Card>
+          <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover', position: 'relative' }}>
                 <Star style={{ height: 20, width: 20, color: '#555555' }} />
               </Box>
               <Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>{monthlyStats.eventTypes}</Typography>
-                <Typography variant="body2" color="text.secondary">Categories</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+                  {monthlyStats.eventTypes}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Categories
+                </Typography>
               </Box>
             </Box>
           </CardContent>
@@ -119,11 +160,13 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
         {/* Calendar Section */}
         <Box>
-          <Card sx={{ boxShadow: 3 }}>
-            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
+          <Card>
+            <CardHeader>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <CardTitle sx={{ fontSize: '1.25rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
+                <CardTitle>
+                  <Box
+                    sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}
+                  >
                     <CalendarIcon style={{ height: 20, width: 20 }} />
                   </Box>
                   {format(currentMonth, 'MMMM yyyy')}
@@ -148,7 +191,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                 </Box>
               </Box>
             </CardHeader>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent>
               <Calendar
                 mode="single"
                 selected={selectedDate}
@@ -157,14 +200,14 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                 onMonthChange={setCurrentMonth}
                 style={{ borderRadius: 8, border: 'none', width: '100%' }}
                 modifiers={{
-                  hasEvents: datesWithEvents
+                  hasEvents: datesWithEvents,
                 }}
                 modifiersStyles={{
                   hasEvents: {
                     backgroundColor: 'hsl(var(--primary) / 0.1)',
                     color: 'hsl(var(--primary))',
-                    fontWeight: 'bold'
-                  }
+                    fontWeight: 'bold',
+                  },
                 }}
               />
             </CardContent>
@@ -173,35 +216,82 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
 
         {/* Events Section */}
         <Box>
-          <Card sx={{ boxShadow: 3, height: '100%' }}>
-            <CardHeader sx={{ background: 'linear-gradient(to right, rgba(var(--secondary-rgb), 0.05), rgba(var(--secondary-rgb), 0.1))', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
-              <CardTitle sx={{ fontSize: '1.125rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 12, height: 12, bgcolor: 'primary.main', borderRadius: '50%', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    bgcolor: 'primary.main',
+                    borderRadius: '50%',
+                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                  }}
+                />
                 {format(selectedDate, 'MMM d, yyyy')}
               </CardTitle>
               {eventsForSelectedDate.length > 0 && (
                 <Typography variant="body2" color="text.secondary">
-                  {eventsForSelectedDate.length} event{eventsForSelectedDate.length !== 1 ? 's' : ''} found
+                  {eventsForSelectedDate.length} event
+                  {eventsForSelectedDate.length !== 1 ? 's' : ''} found
                 </Typography>
               )}
             </CardHeader>
-            <CardContent sx={{ p: 2 }}>
+            <CardContent>
               {eventsForSelectedDate.length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <Box sx={{ mx: 'auto', width: 48, height: 48, bgcolor: 'action.hover', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-                    <CalendarIcon style={{ height: 24, width: 24, color: 'var(--muted-foreground)' }} />
+                  <Box
+                    sx={{
+                      mx: 'auto',
+                      width: 48,
+                      height: 48,
+                      bgcolor: 'action.hover',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 2,
+                    }}
+                  >
+                    <CalendarIcon
+                      style={{ height: 24, width: 24, color: 'var(--muted-foreground)' }}
+                    />
                   </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>No events scheduled</Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>Select another date to explore</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    No events scheduled
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                    Select another date to explore
+                  </Typography>
                 </Box>
               ) : (
                 <ScrollArea style={{ height: 400, paddingRight: 16 }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {eventsForSelectedDate.map((event) => (
                       <Box key={event.id} sx={{ position: 'relative' }}>
-                        <Paper sx={{ p: 2, transition: 'all 0.2s', border: 2, borderColor: 'transparent', '&:hover': { borderColor: 'primary.main', boxShadow: 3, transform: 'scale(1.02)' } }}>
+                        <Paper
+                          sx={{
+                            p: 2,
+                            transition: 'all 0.2s',
+                            border: 2,
+                            borderColor: 'transparent',
+                            '&:hover': {
+                              borderColor: 'primary.main',
+                              boxShadow: 3,
+                              transform: 'scale(1.02)',
+                            },
+                          }}
+                        >
                           {/* Event Header */}
-                          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5, mb: 1.5 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              justifyContent: 'space-between',
+                              gap: 1.5,
+                              mb: 1.5,
+                            }}
+                          >
                             <Typography
                               variant="body2"
                               sx={{
@@ -212,7 +302,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                                 overflow: 'hidden',
                                 display: '-webkit-box',
                                 WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical'
+                                WebkitBoxOrient: 'vertical',
                               }}
                               onClick={() => onEventSelect?.(event)}
                             >
@@ -220,12 +310,30 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
                               {event.is_free && (
-                                <Badge variant="secondary" style={{ fontSize: '0.75rem', paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4 }}>
+                                <Badge
+                                  variant="secondary"
+                                  style={{
+                                    fontSize: '0.75rem',
+                                    paddingLeft: 8,
+                                    paddingRight: 8,
+                                    paddingTop: 4,
+                                    paddingBottom: 4,
+                                  }}
+                                >
                                   Free
                                 </Badge>
                               )}
                               {event.featured && (
-                                <Badge variant="default" style={{ fontSize: '0.75rem', paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4 }}>
+                                <Badge
+                                  variant="default"
+                                  style={{
+                                    fontSize: '0.75rem',
+                                    paddingLeft: 8,
+                                    paddingRight: 8,
+                                    paddingTop: 4,
+                                    paddingBottom: 4,
+                                  }}
+                                >
                                   <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                                   Featured
                                 </Badge>
@@ -235,15 +343,38 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
 
                           {/* Event Details */}
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                color: 'text.secondary',
+                              }}
+                            >
                               <Clock style={{ height: 12, width: 12, flexShrink: 0 }} />
-                              <Typography variant="caption">{formatEventTime(event.start_date, event.end_date)}</Typography>
+                              <Typography variant="caption">
+                                {formatEventTime(event.start_date, event.end_date)}
+                              </Typography>
                             </Box>
 
                             {(event.venue_name || event.city) && (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1,
+                                  color: 'text.secondary',
+                                }}
+                              >
                                 <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} />
-                                <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
                                   {event.venue_name && `${event.venue_name}, `}
                                   {event.city}
                                 </Typography>
@@ -314,7 +445,19 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                           </Box>
 
                           {/* Hover Indicator */}
-                          <Box sx={{ position: 'absolute', inset: 0, borderRadius: 2, background: 'linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))', opacity: 0, transition: 'opacity 0.2s', pointerEvents: 'none', '.MuiBox-root:hover > &': { opacity: 1 } }} />
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              inset: 0,
+                              borderRadius: 2,
+                              background:
+                                'linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))',
+                              opacity: 0,
+                              transition: 'opacity 0.2s',
+                              pointerEvents: 'none',
+                              '.MuiBox-root:hover > &': { opacity: 1 },
+                            }}
+                          />
                         </Paper>
                       </Box>
                     ))}

@@ -8,8 +8,7 @@ import { Check, Loader2, AlertCircle } from 'lucide-react';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
 
 export const MailboxSettings: React.FC = () => {
-  const { currentAddress, fullEmail, checkAvailability, claimAddress, _loading } =
-    useMailboxAddress();
+  const { currentAddress, fullEmail, checkAvailability, claimAddress } = useMailboxAddress();
 
   const [handle, setHandle] = useState('');
   const [availability, setAvailability] = useState<{

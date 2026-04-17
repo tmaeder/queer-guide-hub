@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
@@ -125,7 +125,7 @@ export function SideBySideComparison({
 
       {/* Comparison Table */}
       <Card>
-        <CardContent sx={{ p: 0 }}>
+        <CardContent>
           {/* Column Headers */}
           <Box sx={{
             display: 'grid',

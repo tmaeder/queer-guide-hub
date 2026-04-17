@@ -273,8 +273,8 @@ export const UmamiAnalyticsDashboard = () => {
           sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}
         >
           {[...Array(3)].map((_, i) => (
-            <Card key={i} sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-              <CardHeader sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Card key={i}>
+              <CardHeader>
                 <Box
                   sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }}
                 ></Box>
@@ -355,7 +355,7 @@ export const UmamiAnalyticsDashboard = () => {
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box></Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Badge variant="outline" sx={{ gap: 1 }}>
+          <Badge variant="outline">
             <Box
               sx={{
                 width: 8,
@@ -372,7 +372,7 @@ export const UmamiAnalyticsDashboard = () => {
             size="sm"
             onClick={handleRefresh}
             disabled={refreshing}
-            sx={{ gap: 1 }}
+
           >
             <RefreshCw
               style={{
@@ -383,7 +383,7 @@ export const UmamiAnalyticsDashboard = () => {
             />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={handleExport} sx={{ gap: 1 }}>
+          <Button variant="outline" size="sm" onClick={handleExport}>
             <Download style={{ height: 12, width: 12 }} />
             Export
           </Button>
@@ -393,7 +393,7 @@ export const UmamiAnalyticsDashboard = () => {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <Filter style={{ height: 16, width: 16 }} />
             Filters & Controls
           </CardTitle>
@@ -408,7 +408,7 @@ export const UmamiAnalyticsDashboard = () => {
                 value={dateRange}
                 onValueChange={(value: '7d' | '30d' | '90d' | 'custom') => setDateRange(value)}
               >
-                <SelectTrigger sx={{ width: 128 }}>
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -430,7 +430,7 @@ export const UmamiAnalyticsDashboard = () => {
                   setDeviceFilter(value)
                 }
               >
-                <SelectTrigger sx={{ width: 128 }}>
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -473,15 +473,9 @@ export const UmamiAnalyticsDashboard = () => {
       >
         <Card>
           <CardHeader
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              pb: 1,
-            }}
+
           >
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Page Views</CardTitle>
+            <CardTitle>Page Views</CardTitle>
             <Eye style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
@@ -496,15 +490,9 @@ export const UmamiAnalyticsDashboard = () => {
 
         <Card>
           <CardHeader
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              pb: 1,
-            }}
+
           >
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Sessions</CardTitle>
+            <CardTitle>Sessions</CardTitle>
             <Users style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
@@ -519,15 +507,9 @@ export const UmamiAnalyticsDashboard = () => {
 
         <Card>
           <CardHeader
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              pb: 1,
-            }}
+
           >
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Unique Visitors</CardTitle>
+            <CardTitle>Unique Visitors</CardTitle>
             <Monitor style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
@@ -542,15 +524,9 @@ export const UmamiAnalyticsDashboard = () => {
 
         <Card>
           <CardHeader
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              pb: 1,
-            }}
+
           >
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Avg. Duration</CardTitle>
+            <CardTitle>Avg. Duration</CardTitle>
             <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
@@ -565,15 +541,9 @@ export const UmamiAnalyticsDashboard = () => {
 
         <Card>
           <CardHeader
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              pb: 1,
-            }}
+
           >
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Bounce Rate</CardTitle>
+            <CardTitle>Bounce Rate</CardTitle>
             <TrendingUp style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
@@ -588,15 +558,9 @@ export const UmamiAnalyticsDashboard = () => {
 
         <Card>
           <CardHeader
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              pb: 1,
-            }}
+
           >
-            <CardTitle sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Conversion</CardTitle>
+            <CardTitle>Conversion</CardTitle>
             <Globe style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
           </CardHeader>
           <CardContent>
@@ -611,7 +575,7 @@ export const UmamiAnalyticsDashboard = () => {
       </Box>
 
       {/* Charts and Analytics */}
-      <Tabs defaultValue="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="pages">Pages</TabsTrigger>
@@ -621,7 +585,7 @@ export const UmamiAnalyticsDashboard = () => {
           <TabsTrigger value="realtime">Real-time</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="overview">
           {/* Traffic Chart */}
           <Card>
             <CardHeader>
@@ -676,7 +640,7 @@ export const UmamiAnalyticsDashboard = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="pages" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="pages">
           <Card>
             <CardHeader>
               <CardTitle>Top Pages</CardTitle>
@@ -692,16 +656,7 @@ export const UmamiAnalyticsDashboard = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
                       <Badge
                         variant="secondary"
-                        sx={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          p: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.75rem',
-                        }}
+
                       >
                         {index + 1}
                       </Badge>
@@ -711,7 +666,7 @@ export const UmamiAnalyticsDashboard = () => {
                         >
                           {page.path}
                         </Typography>
-                        <Progress value={page.percentage} sx={{ height: 8, mt: 0.5 }} />
+                        <Progress value={page.percentage} />
                       </Box>
                     </Box>
                     <Box sx={{ textAlign: 'right' }}>
@@ -729,7 +684,7 @@ export const UmamiAnalyticsDashboard = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="audience" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="audience">
           <Box
             sx={{
               display: 'grid',
@@ -805,7 +760,7 @@ export const UmamiAnalyticsDashboard = () => {
           </Box>
         </TabsContent>
 
-        <TabsContent value="geography" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="geography">
           <UmamiMap countryData={stats.topCountries} loading={loading} />
 
           {/* Country Details Table */}
@@ -832,16 +787,7 @@ export const UmamiAnalyticsDashboard = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Badge
                         variant="outline"
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: '50%',
-                          p: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.75rem',
-                        }}
+
                       >
                         {index + 1}
                       </Badge>
@@ -867,7 +813,7 @@ export const UmamiAnalyticsDashboard = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="technology" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="technology">
           <Box
             sx={{
               display: 'grid',
@@ -895,16 +841,7 @@ export const UmamiAnalyticsDashboard = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                         <Badge
                           variant="secondary"
-                          sx={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: '50%',
-                            p: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.75rem',
-                          }}
+
                         >
                           {index + 1}
                         </Badge>
@@ -1009,7 +946,7 @@ export const UmamiAnalyticsDashboard = () => {
           </Box>
         </TabsContent>
 
-        <TabsContent value="realtime" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <TabsContent value="realtime">
           <Box
             sx={{
               display: 'grid',
@@ -1020,7 +957,7 @@ export const UmamiAnalyticsDashboard = () => {
             {/* Live Activity */}
             <Card>
               <CardHeader>
-                <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CardTitle>
                   <Box
                     sx={{
                       width: 8,
@@ -1077,7 +1014,7 @@ export const UmamiAnalyticsDashboard = () => {
             {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CardTitle>
                   <Activity style={{ height: 16, width: 16 }} />
                   Recent Activity
                 </CardTitle>

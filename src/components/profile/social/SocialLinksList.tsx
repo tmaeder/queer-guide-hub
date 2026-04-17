@@ -21,33 +21,31 @@ interface SocialLinksListProps {
 }
 
 export function SocialLinksList({
-  _socialLinks,
   customLinks,
-  _onSocialLinkChange,
   onCustomLinkChange,
   onRemoveCustomLink,
-  onValidateUrl
+  onValidateUrl,
 }: SocialLinksListProps) {
-  const _validateAndPreview = async (url: string) => {
-    if (onValidateUrl) {
-      const isValid = await onValidateUrl(url);
-      return isValid;
-    }
-    return true;
-  };
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Social Links */}
       {customLinks.length > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 500 }}>Social Links</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 500 }}>
+            Social Links
+          </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {customLinks.map((link, index) => (
               <Box key={index} sx={{ p: 2, bgcolor: 'background.paper' }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
                   <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                        gap: 1.5,
+                      }}
+                    >
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         <Label>Platform</Label>
                         <Input
@@ -63,13 +61,11 @@ export function SocialLinksList({
                             value={link.url}
                             onChange={(e) => onCustomLinkChange(index, 'url', e.target.value)}
                             placeholder="https://platform.com/username"
-                            sx={{ flex: 1 }}
                           />
                           {link.url && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              sx={{ ml: 1 }}
                               onClick={() => window.open(link.url, '_blank')}
                             >
                               <ExternalLink style={{ height: 16, width: 16 }} />
@@ -79,12 +75,7 @@ export function SocialLinksList({
                       </Box>
                     </Box>
                   </Box>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemoveCustomLink(index)}
-                    sx={{ color: 'error.main', '&:hover': { color: 'error.main', bgcolor: 'error.light' } }}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => onRemoveCustomLink(index)}>
                     <Trash2 style={{ height: 16, width: 16 }} />
                   </Button>
                 </Box>

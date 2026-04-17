@@ -99,7 +99,7 @@ Tech Conference,Annual technology conference,conference,Convention Center,456 Co
           Import CSV
         </Button>
       </DialogTrigger>
-      <DialogContent sx={{ maxWidth: 448 }}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Import Events from CSV</DialogTitle>
         </DialogHeader>
@@ -111,7 +111,7 @@ Tech Conference,Annual technology conference,conference,Convention Center,456 Co
               type="file"
               accept=".csv"
               onChange={handleFileChange}
-              sx={{ mt: 0.5 }}
+
             />
           </Box>
 

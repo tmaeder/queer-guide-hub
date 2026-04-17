@@ -1,4 +1,3 @@
-import React from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Shield, AlertTriangle, Info, CheckCircle } from 'lucide-react';
 
@@ -29,7 +28,7 @@ export function SecurityAlert({ level, title, description, sx }: SecurityAlertPr
   };
 
   return (
-    <Alert variant={getVariant()} sx={sx}>
+    <Alert variant={getVariant()}>
       {getIcon()}
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>{description}</AlertDescription>

@@ -73,7 +73,8 @@ Deno.serve(async (req) => {
 
         // Idempotency: compute source_entity_id + payload_hash
         const sourceEntityId = item.source_entity_id
-          ?? (String(raw.id ?? raw.external_id ?? raw.source_id ?? raw.fsq_id ?? raw.place_id ?? '')
+          ?? (String(raw.id ?? raw.external_id ?? raw.source_id ?? raw.fsq_id ?? raw.place_id
+                ?? raw.awin_id ?? raw.product_id ?? raw.listing_id ?? raw.event_id ?? raw.url ?? '')
                 .trim() || null)
 
         const payloadHash = item.payload_hash

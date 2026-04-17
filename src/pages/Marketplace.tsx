@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useState } from 'react';
 import { useMarketplace } from '@/hooks/useMarketplace';
 import { useMeta } from '@/hooks/useMeta';

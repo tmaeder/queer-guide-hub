@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
@@ -40,7 +40,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
 
   return (
     <Card>
-      <CardContent sx={{ p: 2.5 }}>
+      <CardContent>
         {/* Header Row */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
@@ -101,7 +101,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
             ) : entityA && entityB ? (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 <Card>
-                  <CardContent sx={{ p: 2 }}>
+                  <CardContent>
                     <Typography variant="subtitle2" sx={{ mb: 1, color: '#3b82f6', fontWeight: 600 }}>
                       Record A: {entityA[nameField] || 'Unknown'}
                     </Typography>
@@ -109,7 +109,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardContent sx={{ p: 2 }}>
+                  <CardContent>
                     <Typography variant="subtitle2" sx={{ mb: 1, color: brandColors.main, fontWeight: 600 }}>
                       Record B: {entityB[nameField] || 'Unknown'}
                     </Typography>

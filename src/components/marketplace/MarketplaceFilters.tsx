@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import { Input } from '@/components/ui/input';
@@ -43,7 +42,6 @@ const businessTypes = [
   'both'
 ];
 
-
 export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
@@ -71,7 +69,6 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
       tags: selectedTags.length > 0 ? selectedTags : undefined,
     });
   };
-
 
   const clearFilters = () => {
     setSearch('');
@@ -104,10 +101,10 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            sx={{ pl: 4.5 }}
+
           />
         </Box>
-        <Button onClick={handleSearch} sx={{ bgcolor: 'primary.main' }} size="icon" aria-label="Search">
+        <Button onClick={handleSearch} size="icon" aria-label="Search">
           <Search style={{ height: 16, width: 16 }} />
         </Button>
         <Button
@@ -217,17 +214,17 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             placeholder="Select marketplace tags..."
             maxTags={10}
             categories={['business', 'commerce', 'product', 'service', 'identity']}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+
           />
 
           {/* Action Buttons */}
           <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
-            <Button onClick={handleSearch} sx={{ bgcolor: 'primary.main', gap: 1 }}>
+            <Button onClick={handleSearch}>
               <Sliders style={{ height: 16, width: 16 }} />
               Apply Filters
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters} sx={{ gap: 1 }}>
+              <Button variant="outline" onClick={clearFilters}>
                 <X style={{ height: 16, width: 16 }} />
                 Clear All
               </Button>
@@ -241,43 +238,43 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
           <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Active filters:</Box>
           {search && (
-            <Badge variant="secondary" sx={{ gap: 0.5 }}>
+            <Badge variant="secondary">
               Search: {search}
               <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setSearch('')} />
             </Badge>
           )}
           {category && category !== 'all' && (
-            <Badge variant="secondary" sx={{ gap: 0.5 }}>
+            <Badge variant="secondary">
               {category}
               <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setCategory('')} />
             </Badge>
           )}
           {subcategory && subcategory !== 'all' && (
-            <Badge variant="secondary" sx={{ gap: 0.5 }}>
+            <Badge variant="secondary">
               {subcategory}
               <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setSubcategory('')} />
             </Badge>
           )}
           {location && (
-            <Badge variant="secondary" sx={{ gap: 0.5 }}>
+            <Badge variant="secondary">
               Location: {location}
               <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setLocation('')} />
             </Badge>
           )}
           {businessType && businessType !== 'all' && (
-            <Badge variant="secondary" sx={{ gap: 0.5 }}>
+            <Badge variant="secondary">
               {businessType}
               <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setBusinessType('')} />
             </Badge>
           )}
           {(minPrice || maxPrice) && (
-            <Badge variant="secondary" sx={{ gap: 0.5 }}>
+            <Badge variant="secondary">
               Price: ${minPrice || '0'} - ${maxPrice || '∞'}
               <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => { setMinPrice(''); setMaxPrice(''); }} />
             </Badge>
           )}
            {selectedTags.map((tag) => (
-             <Badge key={tag} variant="secondary" sx={{ gap: 0.5 }}>
+             <Badge key={tag} variant="secondary">
                {tag}
                <X
                  style={{ height: 12, width: 12, cursor: 'pointer' }}

@@ -91,7 +91,7 @@ async function fetchTagContent(tagId: string, tagName: string): Promise<TagConte
   }
 
   // The RPC returns a JSON object matching TagContentResult shape
-  return data as TagContentResult;
+  return data as unknown as TagContentResult;
 }
 
 export function useTagContent(tagId: string | undefined, tagName: string | undefined) {

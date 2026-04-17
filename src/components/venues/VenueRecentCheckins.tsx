@@ -30,7 +30,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
     return (
       <Card>
         <CardHeader>
-          <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CardTitle>
             <BarChart3 style={{ width: 20, height: 20 }} />
             Venue Activity
           </CardTitle>
@@ -55,7 +55,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
   return (
     <Card>
       <CardHeader>
-        <CardTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <CardTitle>
           <BarChart3 style={{ width: 20, height: 20 }} />
           Venue Activity
         </CardTitle>

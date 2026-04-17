@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTripBudget, useBudgetMutations, type BudgetItem } from '@/hooks/useTripBudget';
 import type { TripMember } from '@/hooks/useTrips';
 import { AddBudgetDialog } from './AddBudgetDialog';
+import { CostSplitSummary } from './CostSplitSummary';
 import {
   Dialog,
   DialogContent,
@@ -502,6 +503,12 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       <AddBudgetDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
+        tripId={tripId}
+        members={members}
+        defaultCurrency={defaultCurrency}
+      />
+
+      <CostSplitSummary
         tripId={tripId}
         members={members}
         defaultCurrency={defaultCurrency}

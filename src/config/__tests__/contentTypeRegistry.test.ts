@@ -55,11 +55,7 @@ describe('contentTypeRegistry', () => {
   it('each content type should have required name or title field', () => {
     for (const id of getContentTypeIds()) {
       const config = getContentType(id)!;
-      const fields = config.fields;
-      const _hasNameOrTitle = fields.some(f =>
-        (f.name === 'name' || f.name === 'title') && f.required
-      );
-      // Most content types should have a name/title
+      const fields = config.fields;      // Most content types should have a name/title
       expect(config.label).toBeTruthy();
     }
   });

@@ -63,7 +63,7 @@ export function useTripMessages(tripId: string | undefined) {
         .eq('trip_id', tripId!)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return (data || []) as TripMessage[];
+      return (data || []) as unknown as TripMessage[];
     },
     enabled: !!tripId,
     staleTime: 30_000,
@@ -127,7 +127,7 @@ export function useTripNotes(tripId: string | undefined) {
         .order('is_pinned', { ascending: false })
         .order('updated_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as TripNote[];
+      return (data || []) as unknown as TripNote[];
     },
     enabled: !!tripId,
     staleTime: 60_000,
@@ -226,7 +226,7 @@ export function useTripPolls(tripId: string | undefined) {
         .eq('trip_id', tripId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as TripPoll[];
+      return (data || []) as unknown as TripPoll[];
     },
     enabled: !!tripId,
     staleTime: 30_000,
@@ -280,7 +280,7 @@ export function useTripPolls(tripId: string | undefined) {
         .single();
       if (fetchErr) throw fetchErr;
 
-      const options = (poll.options as PollOption[]).map((opt) => {
+      const options = (poll.options as unknown as PollOption[]).map((opt) => {
         if (opt.id === optionId) {
           // Toggle vote
           const hasVoted = opt.votes.includes(user!.id);
@@ -381,7 +381,7 @@ export function useTripRealtime(tripId: string | undefined) {
         const state = presenceChannel.presenceState();
         const members: PresenceMember[] = [];
         for (const [, presences] of Object.entries(state)) {
-          for (const p of presences as Array<{ userId: string; displayName: string }>) {
+          for (const p of presences as unknown as Array<{ userId: string; displayName: string }>) {
             members.push({
               userId: p.userId,
               displayName: p.displayName,

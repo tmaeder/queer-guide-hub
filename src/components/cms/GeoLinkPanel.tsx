@@ -79,7 +79,7 @@ export function GeoLinkPanel({
           </Box>
         </CardTitle>
       </CardHeader>
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <CardContent>
         {/* Current status */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           {isFullyLinked ? (
@@ -165,7 +165,7 @@ export function GeoLinkPanel({
           <Button
             variant="outline"
             size="sm"
-            sx={{ width: '100%' }}
+
             onClick={handleLink}
           >
             {isFullyLinked ? (

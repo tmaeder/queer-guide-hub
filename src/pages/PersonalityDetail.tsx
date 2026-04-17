@@ -446,7 +446,7 @@ export default function PersonalityDetail() {
               contentType="personalities"
               contentId={personality.id}
               contentName={personality.name}
-              currentData={personality as Record<string, unknown>}
+              currentData={personality as unknown as Record<string, unknown>}
               onSaved={() => window.location.reload()}
             />
             <Button variant="outline" size="sm" onClick={handleShare}>
