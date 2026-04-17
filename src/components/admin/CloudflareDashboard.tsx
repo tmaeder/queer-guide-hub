@@ -68,7 +68,7 @@ export function CloudflareDashboard() {
           description: 'Latest statistics have been loaded successfully.',
         });
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error fetching Cloudflare data:', error);
 
       let errorMessage = 'Failed to fetch Cloudflare data.';

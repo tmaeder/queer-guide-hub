@@ -70,7 +70,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error sending friend request:', error);
       toast({
         title: "Error",
@@ -104,7 +104,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error blocking user:', error);
       toast({
         title: "Error",
@@ -132,7 +132,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error accepting friend request:', error);
       toast({
         title: "Error",
@@ -160,7 +160,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error rejecting friend request:', error);
       toast({
         title: "Error",
@@ -191,7 +191,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error removing relationship:', error);
       toast({
         title: "Error",

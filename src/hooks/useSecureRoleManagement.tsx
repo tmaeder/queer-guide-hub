@@ -44,7 +44,7 @@ export function useSecureRoleManagement() {
       });
 
       return { success: true };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error assigning role:', error);
       
       // Log failed role assignment attempt
@@ -94,7 +94,7 @@ export function useSecureRoleManagement() {
       });
 
       return { success: true };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error removing role:', error);
       toast({
         title: "Error",
@@ -121,7 +121,7 @@ export function useSecureRoleManagement() {
 
       if (error) throw error;
       return { data, error: null };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Error fetching audit logs:', error);
       return { data: null, error };
     }
