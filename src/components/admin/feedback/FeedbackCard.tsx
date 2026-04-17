@@ -76,6 +76,12 @@ export function FeedbackCard({
           ? '#f59e0b'
           : null;
 
+  // Only P0 and P1 get visible priority markers. P2 (default) and P3
+  // inherit the neutral card chrome — priority should mean "urgent", not
+  // decorate every card.
+  const isUrgent = item.priority <= 1;
+  const stripeWidth = item.priority === 0 ? 4 : item.priority === 1 ? 2 : 0;
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -88,8 +94,8 @@ export function FeedbackCard({
         onClick={onClick}
         sx={{
           position: 'relative',
-          py: 0.75,
-          pl: 1.25,
+          py: 0.625,
+          pl: stripeWidth ? 1 : 0.875,
           pr: 0.75,
           borderRadius: 1,
           border: 1,
@@ -106,17 +112,19 @@ export function FeedbackCard({
             borderColor: 'primary.main',
             '& .hover-checkbox': { opacity: 1 },
           },
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 3,
-            bgcolor: prio.color,
-            borderTopLeftRadius: 'inherit',
-            borderBottomLeftRadius: 'inherit',
-          },
+          ...(stripeWidth && {
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: stripeWidth,
+              bgcolor: prio.color,
+              borderTopLeftRadius: 'inherit',
+              borderBottomLeftRadius: 'inherit',
+            },
+          }),
           ...(isNew && {
             '&::after': {
               content: '""',
@@ -137,105 +145,58 @@ export function FeedbackCard({
           }),
         }}
       >
-        {/* Top row: category icon · priority · claude chip · labels · select */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-          <Tooltip title={`${cat.label} · ${prio.short} ${prio.label}`}>
-            <Box
-              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4, flexShrink: 0 }}
-            >
-              <CatIcon style={{ width: 11, height: 11, color: cat.color }} />
-              <Typography
-                component="span"
-                sx={{
-                  fontSize: '0.55rem',
-                  fontWeight: 700,
-                  color: prio.color,
-                  letterSpacing: 0.4,
-                }}
-              >
-                {prio.short}
-              </Typography>
-            </Box>
+        {/* Title row — category icon inline, urgent P0/P1 tag, hover checkbox */}
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.625, mb: 0.375 }}>
+          <Tooltip title={cat.label}>
+            <CatIcon
+              style={{
+                width: 12,
+                height: 12,
+                color: cat.color,
+                flexShrink: 0,
+                marginTop: 2,
+              }}
+            />
           </Tooltip>
 
-          {handoffChip ? (
-            <Tooltip
-              title={
-                handoff
-                  ? `Handed off to ${handoff.target} ${timeAgo(handoff.at)} — ${handoffChip.label.toLowerCase()}`
-                  : ''
-              }
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  px: 0.5,
-                  borderRadius: 0.5,
-                  bgcolor: handoffChip.bg,
-                  color: handoffChip.color,
-                  fontSize: '0.55rem',
-                  fontWeight: 700,
-                  flexShrink: 0,
-                }}
-              >
-                {handoffChip.label}
-              </Box>
-            </Tooltip>
-          ) : (
-            isForwarded && (
-              <Tooltip
-                title={
-                  withClaude
-                    ? `Forwarded to GitHub #${item.github_issue_number} (open)`
-                    : `Forwarded to GitHub #${item.github_issue_number}`
-                }
-              >
+          <Typography
+            variant="body2"
+            sx={{
+              flex: 1,
+              fontWeight: 600,
+              fontSize: '0.78rem',
+              lineHeight: 1.3,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              wordBreak: 'break-word',
+              minWidth: 0,
+            }}
+          >
+            {isUrgent && (
+              <Tooltip title={prio.label}>
                 <Box
                   component="span"
                   sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 0.25,
-                    px: 0.5,
-                    borderRadius: 0.5,
-                    color: '#6366f1',
-                    border: 1,
-                    borderColor: '#6366f1',
+                    display: 'inline-block',
+                    mr: 0.5,
+                    px: 0.375,
+                    borderRadius: 0.375,
+                    bgcolor: prio.color,
+                    color: '#fff',
                     fontSize: '0.55rem',
-                    fontWeight: 500,
-                    flexShrink: 0,
+                    fontWeight: 700,
+                    letterSpacing: 0.3,
+                    verticalAlign: '2px',
                   }}
                 >
-                  <Github style={{ width: 9, height: 9 }} />#{item.github_issue_number}
+                  {prio.short}
                 </Box>
               </Tooltip>
-            )
-          )}
-
-          {/* Label chips — truncate hard, show full list on tooltip */}
-          {(item.labels?.length ?? 0) > 0 && (
-            <Tooltip title={(item.labels ?? []).join(', ')}>
-              <Box
-                component="span"
-                sx={{
-                  px: 0.5,
-                  fontSize: '0.55rem',
-                  bgcolor: 'action.hover',
-                  color: 'text.secondary',
-                  borderRadius: 0.5,
-                  flexShrink: 0,
-                }}
-              >
-                {item.labels!.length === 1
-                  ? item.labels![0].slice(0, 8)
-                  : `${item.labels!.length} tags`}
-              </Box>
-            </Tooltip>
-          )}
-
-          <Box sx={{ flex: 1 }} />
+            )}
+            {item.data.title}
+          </Typography>
 
           <Checkbox
             className="hover-checkbox"
@@ -245,39 +206,23 @@ export function FeedbackCard({
             onPointerDown={(e) => e.stopPropagation()}
             sx={{
               p: 0,
+              mt: '1px',
               opacity: selected ? 1 : 0,
               transition: 'opacity 0.15s',
+              flexShrink: 0,
               '& svg': { width: 14, height: 14 },
             }}
           />
         </Box>
 
-        {/* Title — wraps up to 2 lines */}
-        <Typography
-          variant="body2"
-          sx={{
-            fontWeight: 600,
-            fontSize: '0.78rem',
-            lineHeight: 1.3,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            wordBreak: 'break-word',
-            mb: 0.5,
-          }}
-        >
-          {item.data.title}
-        </Typography>
-
-        {/* Footer row: age · screenshot · errors · votes · watchers · assignee */}
+        {/* Footer — single row, icons only, everything tooltipped */}
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 0.5,
-            flexWrap: 'wrap',
+            gap: 0.625,
             color: 'text.secondary',
+            fontSize: '0.6rem',
           }}
         >
           <Tooltip
@@ -287,47 +232,108 @@ export function FeedbackCard({
                 : `Submitted ${timeAgo(item.submitted_at)}`
             }
           >
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25 }}>
-              <Clock
-                style={{ width: 10, height: 10, color: slaColor ?? 'currentColor' }}
-              />
-              <Typography
-                variant="caption"
-                sx={{
-                  fontSize: '0.6rem',
-                  color: slaColor ?? 'inherit',
-                  fontWeight: slaColor ? 700 : 400,
-                }}
-              >
-                {timeAgo(item.submitted_at)}
-              </Typography>
-            </Box>
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: '0.6rem',
+                color: slaColor ?? 'inherit',
+                fontWeight: slaColor ? 700 : 400,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.25,
+                flexShrink: 0,
+              }}
+            >
+              {slaColor && <Clock style={{ width: 10, height: 10 }} />}
+              {timeAgo(item.submitted_at)}
+            </Typography>
           </Tooltip>
 
+          {handoffChip ? (
+            <Tooltip
+              title={
+                handoff
+                  ? `${handoffChip.label} — ${handoff.target} ${timeAgo(handoff.at)}`
+                  : ''
+              }
+            >
+              <Box
+                component="span"
+                sx={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  bgcolor: handoffChip.bg,
+                  flexShrink: 0,
+                }}
+              />
+            </Tooltip>
+          ) : (
+            isForwarded && (
+              <Tooltip title={`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}>
+                <Github style={{ width: 10, height: 10, color: '#6366f1', flexShrink: 0 }} />
+              </Tooltip>
+            )
+          )}
+
           {hasScreenshot && (
-            <Tooltip title="Includes screenshot">
-              <Camera style={{ width: 10, height: 10 }} />
+            <Tooltip title="Screenshot attached">
+              <Camera style={{ width: 10, height: 10, flexShrink: 0 }} />
             </Tooltip>
           )}
 
           {errorCount > 0 && (
             <Tooltip title={`${errorCount} console error${errorCount === 1 ? '' : 's'}`}>
-              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.125, color: '#ef4444' }}>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.125,
+                  color: '#ef4444',
+                  flexShrink: 0,
+                }}
+              >
                 <AlertTriangle style={{ width: 10, height: 10 }} />
-                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'inherit' }}>
-                  {errorCount}
-                </Typography>
+                {errorCount}
+              </Box>
+            </Tooltip>
+          )}
+
+          {(item.labels?.length ?? 0) > 0 && (
+            <Tooltip title={(item.labels ?? []).join(', ')}>
+              <Box
+                component="span"
+                sx={{
+                  px: 0.5,
+                  py: 0.125,
+                  fontSize: '0.55rem',
+                  bgcolor: 'action.hover',
+                  color: 'text.secondary',
+                  borderRadius: 0.5,
+                  flexShrink: 0,
+                  maxWidth: 60,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {item.labels!.length === 1 ? item.labels![0] : `${item.labels!.length}`}
               </Box>
             </Tooltip>
           )}
 
           {voteCount > 0 && (
             <Tooltip title={`${voteCount} vote${voteCount === 1 ? '' : 's'}`}>
-              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.125 }}>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.125,
+                  flexShrink: 0,
+                }}
+              >
                 <ChevronUp style={{ width: 10, height: 10 }} />
-                <Typography variant="caption" sx={{ fontSize: '0.6rem' }}>
-                  {voteCount}
-                </Typography>
+                {voteCount}
               </Box>
             </Tooltip>
           )}
