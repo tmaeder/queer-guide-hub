@@ -153,8 +153,8 @@ export default function ReviewQueueTab() {
                 <tr><td colSpan={3} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
               ) : items.length === 0 ? (
                 <tr><td colSpan={3} className="p-6 text-center">
-                  <CheckCircle className="h-5 w-5 text-green-600 inline mr-1" />
-                  <span className="text-sm text-green-600 font-medium">Nothing to review</span>
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 inline mr-1" />
+                  <span className="text-sm text-green-600 dark:text-green-400 font-medium">Nothing to review</span>
                 </td></tr>
               ) : items.map(it => {
                 const n = it.normalized_data ?? {};
@@ -173,14 +173,14 @@ export default function ReviewQueueTab() {
                   >
                     <td className="px-3 py-2 align-top">
                       {isHotel && (
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200 mb-1">
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900 mb-1">
                           {String(n.accommodation_type)}
                         </Badge>
                       )}
                       <div className="text-[11px] text-muted-foreground font-mono">{it.source_type}</div>
                     </td>
                     <td className="px-3 py-2 font-medium align-top truncate max-w-[200px]" title={name}>{name}</td>
-                    <td className="px-3 py-2 text-[11px] text-amber-700 align-top">{issue}</td>
+                    <td className="px-3 py-2 text-[11px] text-amber-700 dark:text-amber-300 align-top">{issue}</td>
                   </tr>
                 );
               })}
@@ -214,7 +214,7 @@ export default function ReviewQueueTab() {
                   <Label>Warnings</Label>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {selected.ai_validation_result.warnings.map(w => (
-                      <Badge key={w} variant="outline" className="text-[10px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200">
+                      <Badge key={w} variant="outline" className="text-[10px] px-1.5 py-0 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900">
                         {w}
                       </Badge>
                     ))}
@@ -223,7 +223,7 @@ export default function ReviewQueueTab() {
               ) : null}
 
               {selected.dedup_status === 'merge_candidate' && (
-                <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-md p-3">
                   <Label>Possible duplicate</Label>
                   <div className="text-sm mt-0.5">
                     <span className="font-mono">{selected.dedup_details?.match_type}</span>
@@ -231,7 +231,7 @@ export default function ReviewQueueTab() {
                     <span className="font-semibold">{(Number(selected.dedup_match_score ?? 0) * 100).toFixed(0)}%</span>
                   </div>
                   <div className="text-[11px] text-muted-foreground mt-1">
-                    match_id: <code className="bg-amber-100/60 px-1 rounded">{selected.dedup_match_id}</code>
+                    match_id: <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">{selected.dedup_match_id}</code>
                   </div>
                 </div>
               )}
@@ -332,7 +332,7 @@ function MergeTable({ title, rows }: { title: string; rows: Array<{ field: strin
           {rows.map(r => {
             const changed = String(r.staged ?? '') !== String(r.existing ?? '');
             return (
-              <tr key={r.field} className={`border-b border-border/40 ${changed ? 'bg-amber-50/50' : ''}`}>
+              <tr key={r.field} className={`border-b border-border/40 ${changed ? 'bg-amber-50 dark:bg-amber-950/30' : ''}`}>
                 <td className="px-2 py-1 font-mono text-[11px]">{r.field}</td>
                 <td className="px-2 py-1 text-[11px] break-words">{fmt(r.staged)}</td>
                 <td className="px-2 py-1 text-[11px] break-words">{fmt(r.existing)}</td>

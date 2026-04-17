@@ -93,8 +93,8 @@ export default function GeoReviewTab() {
               const matchType = (details.match_type as string) ?? '—';
               const score = row.dedup_match_score;
               const scoreClass = score == null ? 'text-muted-foreground'
-                : score >= 0.9 ? 'text-green-600'
-                : score >= 0.75 ? 'text-amber-600'
+                : score >= 0.9 ? 'text-green-600 dark:text-green-400'
+                : score >= 0.75 ? 'text-amber-600 dark:text-amber-400'
                 : 'text-muted-foreground';
               return (
                 <div key={row.id} className="p-3 hover:bg-muted/30 transition-colors grid grid-cols-[1fr_80px_120px_auto] gap-3 items-center">

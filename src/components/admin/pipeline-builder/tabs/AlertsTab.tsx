@@ -21,9 +21,9 @@ interface Alert {
 type Filter = 'open' | 'all';
 
 const severityClass: Record<string, string> = {
-  info: 'bg-blue-100 text-blue-700',
-  warn: 'bg-yellow-100 text-yellow-700',
-  error: 'bg-red-100 text-red-700',
+  info: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+  warn: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
+  error: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
 };
 
 const KIND_LABEL: Record<string, string> = {
@@ -96,13 +96,13 @@ export default function AlertsTab() {
     <div className="flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center gap-2 flex-wrap">
-        <Bell className="h-4 w-4 text-amber-600" />
+        <Bell className="h-4 w-4 text-amber-600 dark:text-amber-400" />
         <span className="text-sm font-semibold">Data Ops Alerts</span>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span><strong className="text-foreground">{counts.open}</strong> open</span>
-          {counts.error > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-700 border-red-200">{counts.error} error</Badge>}
-          {counts.warn > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">{counts.warn} warn</Badge>}
-          {counts.info > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200">{counts.info} info</Badge>}
+          {counts.error > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{counts.error} error</Badge>}
+          {counts.warn > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-yellow-50 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900">{counts.warn} warn</Badge>}
+          {counts.info > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900">{counts.info} info</Badge>}
         </div>
         <div className="flex-1" />
         <FilterButton value="open" label={`Open (${counts.open})`} />
@@ -134,7 +134,7 @@ export default function AlertsTab() {
             {isLoading ? (
               <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
             ) : alerts.length === 0 ? (
-              <tr><td colSpan={6} className="p-6 text-center text-green-600 text-sm font-medium">
+              <tr><td colSpan={6} className="p-6 text-center text-green-600 dark:text-green-400 text-sm font-medium">
                 <CheckCircle className="h-5 w-5 inline mr-1" />
                 All clear
               </td></tr>
@@ -167,7 +167,7 @@ export default function AlertsTab() {
                 </td>
                 <td className="px-3 py-2.5 align-top">
                   {a.acked_at ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-green-600">
+                    <span className="inline-flex items-center gap-1 text-[11px] text-green-600 dark:text-green-400">
                       <CheckCircle className="h-3 w-3" />
                       acked
                     </span>

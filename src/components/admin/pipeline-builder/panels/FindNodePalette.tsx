@@ -74,9 +74,9 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
                     </div>
                     {d.status && (
                       <span className={`text-[10px] px-1.5 py-0 rounded ${
-                        d.status === 'completed' ? 'bg-green-100 text-green-700'
-                        : d.status === 'failed' ? 'bg-red-100 text-red-700'
-                        : d.status === 'running' ? 'bg-blue-100 text-blue-700'
+                        d.status === 'completed' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+                        : d.status === 'failed' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
+                        : d.status === 'running' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
                         : 'bg-muted text-muted-foreground'
                       }`}>
                         {d.status}

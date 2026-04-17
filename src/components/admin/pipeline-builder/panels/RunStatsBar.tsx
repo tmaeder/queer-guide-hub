@@ -18,11 +18,11 @@ function formatDuration(ms: number | null): string {
 }
 
 const statusStyles: Record<string, string> = {
-  completed: 'bg-green-50 text-green-700 border-green-200',
-  failed: 'bg-red-50 text-red-700 border-red-200',
-  running: 'bg-blue-50 text-blue-700 border-blue-200',
+  completed: 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-900',
+  failed: 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900',
+  running: 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900',
   pending: 'bg-muted text-muted-foreground',
-  cancelled: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  cancelled: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900',
 };
 
 export default function RunStatsBar({ runId, onClose }: RunStatsBarProps) {
@@ -47,7 +47,7 @@ export default function RunStatsBar({ runId, onClose }: RunStatsBarProps) {
   const statusClass = statusStyles[run.status] || statusStyles.pending;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-blue-50/40 text-xs flex-wrap">
+    <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-blue-50 dark:bg-blue-950/30 text-xs flex-wrap">
       <Badge variant="outline" className={`gap-1 ${statusClass}`}>
         {run.status === 'completed' && <CheckCircle2 className="h-3 w-3" />}
         {run.status === 'failed' && <XCircle className="h-3 w-3" />}
@@ -79,11 +79,11 @@ export default function RunStatsBar({ runId, onClose }: RunStatsBarProps) {
       <div className="h-4 w-px bg-border" />
 
       <span className="flex items-center gap-2">
-        <span className="text-green-700 font-semibold">{succeeded}</span>
+        <span className="text-green-700 dark:text-green-300 font-semibold">{succeeded}</span>
         <span className="text-muted-foreground">/ {total}</span>
         {failed > 0 && <span className="text-destructive font-semibold">· {failed} failed</span>}
         {total > 0 && (
-          <span className={`ml-1 font-mono ${successRate >= 95 ? 'text-green-700' : successRate >= 80 ? 'text-yellow-700' : 'text-destructive'}`}>
+          <span className={`ml-1 font-mono ${successRate >= 95 ? 'text-green-700 dark:text-green-300' : successRate >= 80 ? 'text-yellow-700 dark:text-yellow-300' : 'text-destructive'}`}>
             {successRate}%
           </span>
         )}

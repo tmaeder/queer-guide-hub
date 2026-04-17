@@ -48,8 +48,8 @@ function statusFor(s: ScrapeSource): { key: StatusKey; icon: React.ComponentType
   if (s.consecutive_failures >= 3) return { key: 'failing', icon: AlertTriangle, className: 'text-destructive', label: `${s.consecutive_failures} failures` };
   if (!s.last_success_at) return { key: 'never', icon: Clock, className: 'text-muted-foreground', label: 'never run' };
   const hrs = (Date.now() - new Date(s.last_success_at).getTime()) / 3_600_000;
-  if (hrs > 48) return { key: 'stale', icon: AlertTriangle, className: 'text-amber-600', label: `stale ${Math.round(hrs)}h` };
-  return { key: 'healthy', icon: CheckCircle, className: 'text-green-600', label: 'healthy' };
+  if (hrs > 48) return { key: 'stale', icon: AlertTriangle, className: 'text-amber-600 dark:text-amber-400', label: `stale ${Math.round(hrs)}h` };
+  return { key: 'healthy', icon: CheckCircle, className: 'text-green-600 dark:text-green-400', label: 'healthy' };
 }
 
 export default function SourcesTab() {
@@ -175,7 +175,7 @@ export default function SourcesTab() {
             )}
           </div>
 
-          <div className="max-h-[600px] overflow-y-auto">
+          <div className="max-h-[600px] overflow-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0 z-10">
                 <tr className="border-b border-border">

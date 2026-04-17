@@ -12,9 +12,9 @@ import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 const DuplicatesPanel = lazy(() => import('@/components/admin/import-hub/DuplicatesPanel').then(m => ({ default: m.DuplicatesPanel })));
 
 const cbClass: Record<string, string> = {
-  closed: 'bg-green-100 text-green-700',
-  open: 'bg-red-100 text-red-700',
-  half_open: 'bg-yellow-100 text-yellow-700',
+  closed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+  open: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  half_open: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
 };
 
 const dispositionColors: Record<string, string> = {
@@ -184,14 +184,14 @@ export default function HealthTab() {
           <SectionCard title="Enrichment outcomes" extra={<Badge variant="outline" className="text-[10px] px-1.5 py-0">last 24h</Badge>}>
             <div className="grid grid-cols-[1fr_80px_80px_80px] gap-x-3 gap-y-1 text-xs">
               <div className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Stage</div>
-              <div className="font-semibold text-green-700 uppercase tracking-wider text-[10px] text-right">Success</div>
-              <div className="font-semibold text-amber-700 uppercase tracking-wider text-[10px] text-right">Partial</div>
+              <div className="font-semibold text-green-700 dark:text-green-300 uppercase tracking-wider text-[10px] text-right">Success</div>
+              <div className="font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider text-[10px] text-right">Partial</div>
               <div className="font-semibold text-destructive uppercase tracking-wider text-[10px] text-right">Failed</div>
               {enrichSummary.map((s, i) => (
                 <div key={i} className="contents">
                   <div className="font-mono py-1 border-t border-border/40">{s.stage}</div>
                   <div className="py-1 border-t border-border/40 text-right tabular-nums">{s.success}</div>
-                  <div className={`py-1 border-t border-border/40 text-right tabular-nums ${s.partial > 0 ? 'text-amber-700' : ''}`}>{s.partial}</div>
+                  <div className={`py-1 border-t border-border/40 text-right tabular-nums ${s.partial > 0 ? 'text-amber-700 dark:text-amber-300' : ''}`}>{s.partial}</div>
                   <div className={`py-1 border-t border-border/40 text-right tabular-nums ${s.failed > 0 ? 'text-destructive font-semibold' : ''}`}>{s.failed}</div>
                 </div>
               ))}
@@ -205,7 +205,7 @@ export default function HealthTab() {
             <Shield className="h-4 w-4" />
             <span className="text-sm font-semibold">API Circuit Breakers</span>
             {openCircuits > 0 && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-700 border-red-200">{openCircuits} open</Badge>
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{openCircuits} open</Badge>
             )}
           </div>
           {circuitBreakers.length === 0 ? (
@@ -255,7 +255,7 @@ export default function HealthTab() {
               { label: 'Merge candidates',       value: geoHealth?.geo_merge_candidates },
             ].map(({ label, value }) => (
               <div key={label} className="border border-border rounded-md p-3">
-                <div className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-green-600'}`}>
+                <div className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-green-600 dark:text-green-400'}`}>
                   {value ?? '–'}
                 </div>
                 <div className="text-[10px] text-muted-foreground mt-1">{label}</div>
@@ -277,7 +277,7 @@ export default function HealthTab() {
                     <div className="flex gap-3 text-xs text-muted-foreground">
                       <span>
                         Depth:{' '}
-                        <strong className={(q.queue_length as number) > 0 ? 'text-amber-600' : 'text-green-600'}>
+                        <strong className={(q.queue_length as number) > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}>
                           {q.queue_length as number}
                         </strong>
                       </span>
@@ -337,7 +337,7 @@ export default function HealthTab() {
               <Zap className="h-3.5 w-3.5 mr-1.5" /> Open Builder
             </Button>
           </div>
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="max-h-[400px] overflow-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
@@ -358,7 +358,7 @@ export default function HealthTab() {
                     <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
                     <td className="px-3 py-2">
                       <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        def.is_enabled ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'
+                        def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-muted text-muted-foreground'
                       }`}>
                         {def.is_enabled ? 'ON' : 'OFF'}
                       </span>
@@ -376,7 +376,7 @@ export default function HealthTab() {
                     <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
                     <td className="px-3 py-2">
                       <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        def.is_enabled ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'
+                        def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-muted text-muted-foreground'
                       }`}>
                         {def.is_enabled ? 'ON' : 'OFF'}
                       </span>

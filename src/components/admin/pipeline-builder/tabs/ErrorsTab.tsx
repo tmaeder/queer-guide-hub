@@ -30,10 +30,10 @@ interface SummaryRow {
 type Severity = 'fatal' | 'error' | 'warn' | 'info';
 
 const sevConfig: Record<Severity, { icon: React.ComponentType<{ className?: string }>; className: string; badgeClass: string }> = {
-  fatal: { icon: AlertCircle,    className: 'text-red-700',    badgeClass: 'bg-red-100 text-red-700 border-red-200' },
-  error: { icon: AlertTriangle,  className: 'text-orange-600', badgeClass: 'bg-orange-100 text-orange-700 border-orange-200' },
-  warn:  { icon: Bug,            className: 'text-yellow-600', badgeClass: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-  info:  { icon: Info,           className: 'text-blue-600',   badgeClass: 'bg-blue-100 text-blue-700 border-blue-200' },
+  fatal: { icon: AlertCircle,    className: 'text-red-700 dark:text-red-300',    badgeClass: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900' },
+  error: { icon: AlertTriangle,  className: 'text-orange-600 dark:text-orange-400', badgeClass: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200' },
+  warn:  { icon: Bug,            className: 'text-yellow-600 dark:text-yellow-400', badgeClass: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900' },
+  info:  { icon: Info,           className: 'text-blue-600 dark:text-blue-400',   badgeClass: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900' },
 };
 
 export default function ErrorsTab() {
@@ -89,8 +89,8 @@ export default function ErrorsTab() {
         <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
           {summary.length === 0 ? (
             <div className="col-span-full border border-border rounded-md bg-background p-6 text-center text-sm">
-              <CheckCircle2 className="h-5 w-5 text-green-600 inline mr-1" />
-              <span className="text-green-600 font-medium">No errors in the last 7 days</span>
+              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 inline mr-1" />
+              <span className="text-green-600 dark:text-green-400 font-medium">No errors in the last 7 days</span>
             </div>
           ) : summary.map(s => {
             const sc = sevConfig[s.severity as Severity] ?? sevConfig.info;
@@ -153,7 +153,7 @@ export default function ErrorsTab() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] min-h-[300px]">
-          <div className="max-h-[480px] overflow-y-auto border-r border-border">
+          <div className="max-h-[480px] overflow-auto border-r border-border">
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">

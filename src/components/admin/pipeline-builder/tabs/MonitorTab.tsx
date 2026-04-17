@@ -12,17 +12,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import RunCompareDialog from '../panels/RunCompareDialog';
 
 type StatusFilter = 'all' | 'running' | 'completed' | 'failed';
 type TypeFilter = 'all' | 'pipeline' | 'workflow';
 
 const statusClass: Record<string, string> = {
-  running: 'bg-blue-100 text-blue-700',
-  completed: 'bg-green-100 text-green-700',
-  failed: 'bg-red-100 text-red-700',
-  dead_letter: 'bg-red-100 text-red-700',
+  running: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+  completed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+  failed: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  dead_letter: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
   queued: 'bg-muted text-muted-foreground',
-  cancelled: 'bg-yellow-100 text-yellow-700',
+  cancelled: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
 };
 
 const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -98,9 +99,9 @@ function IngestTable({ label, sources, totals }: { label: string; sources: Array
         <div className="text-xs text-muted-foreground flex items-center gap-3">
           <span>staged <span className="font-semibold text-foreground">{totals.staged}</span></span>
           <span>·</span>
-          <span>committed <span className="font-semibold text-green-700">{totals.inserted}</span></span>
+          <span>committed <span className="font-semibold text-green-700 dark:text-green-300">{totals.inserted}</span></span>
           <span>·</span>
-          <span>review <span className="font-semibold text-amber-700">{totals.pending_review}</span></span>
+          <span>review <span className="font-semibold text-amber-700 dark:text-amber-300">{totals.pending_review}</span></span>
           <span>·</span>
           <span>rejected <span className="font-semibold text-destructive">{totals.rejected}</span></span>
           <span className="ml-2 text-[10px]">last 14d</span>
@@ -124,11 +125,11 @@ function IngestTable({ label, sources, totals }: { label: string; sources: Array
                 <td className="px-3 py-2 tabular-nums">{v.staged}</td>
                 <td className="px-3 py-2 tabular-nums">{v.validated}</td>
                 <td className="px-3 py-2 tabular-nums">{v.unique_items}</td>
-                <td className={`px-3 py-2 tabular-nums ${v.duplicates ? 'text-amber-700' : 'text-muted-foreground'}`}>{v.duplicates}</td>
-                <td className={`px-3 py-2 tabular-nums ${v.merge_candidates ? 'text-amber-700' : 'text-muted-foreground'}`}>{v.merge_candidates}</td>
-                <td className={`px-3 py-2 tabular-nums ${v.inserted ? 'text-green-700 font-semibold' : 'text-muted-foreground'}`}>{v.inserted}</td>
+                <td className={`px-3 py-2 tabular-nums ${v.duplicates ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>{v.duplicates}</td>
+                <td className={`px-3 py-2 tabular-nums ${v.merge_candidates ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>{v.merge_candidates}</td>
+                <td className={`px-3 py-2 tabular-nums ${v.inserted ? 'text-green-700 dark:text-green-300 font-semibold' : 'text-muted-foreground'}`}>{v.inserted}</td>
                 <td className="px-3 py-2 tabular-nums">{v.updated}</td>
-                <td className={`px-3 py-2 tabular-nums ${v.pending_review ? 'text-amber-700' : 'text-muted-foreground'}`}>{v.pending_review}</td>
+                <td className={`px-3 py-2 tabular-nums ${v.pending_review ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>{v.pending_review}</td>
                 <td className={`px-3 py-2 tabular-nums ${v.rejected ? 'text-destructive' : 'text-muted-foreground'}`}>{v.rejected}</td>
               </tr>
             ))}
@@ -215,11 +216,11 @@ export default function MonitorTab() {
       <div className="flex flex-col gap-5">
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <StatCard icon={Play} color="text-blue-600" value={stats.running} label="Running" />
-          <StatCard icon={CheckCircle} color="text-green-600" value={stats.completed} label="Completed" />
+          <StatCard icon={Play} color="text-blue-600 dark:text-blue-400" value={stats.running} label="Running" />
+          <StatCard icon={CheckCircle} color="text-green-600 dark:text-green-400" value={stats.completed} label="Completed" />
           <StatCard icon={XCircle} color="text-destructive" value={stats.failed} label="Failed" />
           <StatCard icon={Database} color="text-indigo-600" value={totalStaging} label="Staging Items" />
-          <StatCard icon={BarChart3} color="text-amber-600" value={stats.total} label="Total Runs" />
+          <StatCard icon={BarChart3} color="text-amber-600 dark:text-amber-400" value={stats.total} label="Total Runs" />
         </div>
 
         {/* Charts */}
@@ -278,6 +279,7 @@ export default function MonitorTab() {
           <div className="lg:col-span-2 border border-border rounded-md bg-background overflow-hidden flex flex-col">
             <div className="px-4 py-2.5 border-b border-border flex items-center gap-2">
               <div className="font-semibold text-sm mr-2">Recent Runs</div>
+              <RunCompareDialog />
               <div className="relative flex-1 max-w-xs">
                 <Search className="h-3 w-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <Input
@@ -315,7 +317,7 @@ export default function MonitorTab() {
                 ))}
               </div>
             </div>
-            <div className="max-h-[500px] overflow-y-auto">
+            <div className="max-h-[500px] overflow-auto">
               <table className="w-full text-sm">
                 <thead className="bg-muted/40 sticky top-0">
                   <tr className="border-b border-border">
@@ -354,7 +356,7 @@ export default function MonitorTab() {
                           </span>
                         </td>
                         <td className="px-3 py-2 tabular-nums text-xs">
-                          <span className="text-green-700 font-semibold">{run.items_succeeded}</span>
+                          <span className="text-green-700 dark:text-green-300 font-semibold">{run.items_succeeded}</span>
                           <span className="text-muted-foreground">/{run.items_processed}</span>
                           {run.items_failed > 0 && <span className="text-destructive ml-1">·{run.items_failed}</span>}
                         </td>

@@ -41,6 +41,7 @@ import FindNodePalette from './panels/FindNodePalette';
 import PipelineDiffDialog from './panels/PipelineDiffDialog';
 import VersionHistoryDialog from './panels/VersionHistoryDialog';
 import ScheduleDialog from './panels/ScheduleDialog';
+import OnboardingTour from './panels/OnboardingTour';
 import { autoLayout } from './utils/autoLayout';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useDraftAutosave } from './hooks/useDraftAutosave';
@@ -892,7 +893,7 @@ function PipelineBuilderInner() {
                   variant={isDirty ? 'default' : 'outline'}
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={showSavedPulse ? 'bg-green-50 text-green-700 border-green-200' : ''}
+                  className={showSavedPulse ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-900' : ''}
                 >
                   {isSaving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> :
                    showSavedPulse ? <Check className="h-3.5 w-3.5 mr-1.5" /> :
@@ -1047,7 +1048,7 @@ function PipelineBuilderInner() {
             />
 
             {activeRunId && runStatus && (
-              <Badge variant="outline" className={`text-xs ${runStatus === 'running' ? 'bg-blue-100 text-blue-700 animate-pulse' : runStatus === 'completed' ? 'bg-green-100 text-green-700' : runStatus === 'failed' ? 'bg-red-100 text-red-700' : ''}`}>
+              <Badge variant="outline" className={`text-xs ${runStatus === 'running' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 animate-pulse' : runStatus === 'completed' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : runStatus === 'failed' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300' : ''}`}>
                 {runStatus}
               </Badge>
             )}
@@ -1059,7 +1060,7 @@ function PipelineBuilderInner() {
 
             <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
               {viewingRunId && (
-                <Badge variant="outline" className="text-xs gap-1 bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline" className="text-xs gap-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900">
                   <Clock className="h-3 w-3" />
                   viewing historical
                   <button className="ml-1 hover:underline" onClick={() => setViewingRunId(null)}>×</button>
@@ -1069,9 +1070,9 @@ function PipelineBuilderInner() {
                 <Badge
                   variant="outline"
                   className={`text-xs gap-1 ${
-                    latestRun.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' :
-                    latestRun.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200' :
-                    latestRun.status === 'running' ? 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse' :
+                    latestRun.status === 'completed' ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-900' :
+                    latestRun.status === 'failed' ? 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900' :
+                    latestRun.status === 'running' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900 animate-pulse' :
                     'bg-muted text-muted-foreground'
                   }`}
                   title={`Run ${latestRun.id.slice(0, 8)} • ${latestRun.items_succeeded ?? 0}/${latestRun.items_total ?? 0} succeeded${latestRun.error_message ? ` • ${latestRun.error_message}` : ''}`}
@@ -1085,7 +1086,7 @@ function PipelineBuilderInner() {
               {validationIssues.count > 0 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Badge variant="outline" className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200 cursor-help">
+                    <Badge variant="outline" className="text-xs gap-1 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900 cursor-help">
                       <AlertCircle className="h-3 w-3" />
                       {validationIssues.count} incomplete
                     </Badge>
@@ -1095,13 +1096,13 @@ function PipelineBuilderInner() {
                   </TooltipContent>
                 </Tooltip>
               )}
-              {isDirty && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">unsaved</Badge>}
+              {isDirty && <Badge variant="outline" className="text-xs bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900">unsaved</Badge>}
               {(() => {
                 const def = pipelineList?.find(p => p.id === selectedPipelineId);
                 if (!def || !latestRun?.pipeline_version) return null;
                 if (latestRun.pipeline_version === def.version) return null;
                 return (
-                  <Badge variant="outline" className="text-xs gap-1 bg-amber-50 text-amber-700 border-amber-200">
+                  <Badge variant="outline" className="text-xs gap-1 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900">
                     v{latestRun.pipeline_version}→v{def.version}
                   </Badge>
                 );
@@ -1281,6 +1282,9 @@ function PipelineBuilderInner() {
             onClose={() => setQuickAddOpen(false)}
           />
         )}
+
+        {/* First-visit onboarding tour */}
+        <OnboardingTour />
       </div>
     </TooltipProvider>
   );

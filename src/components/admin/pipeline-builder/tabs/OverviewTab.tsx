@@ -17,10 +17,10 @@ type Filter = 'all' | 'pipelines' | 'workflows' | 'failing' | 'disabled';
 
 const statusClass: Record<string, string> = {
   queued: 'bg-muted text-muted-foreground',
-  running: 'bg-blue-100 text-blue-700',
-  completed: 'bg-green-100 text-green-700',
-  failed: 'bg-red-100 text-red-700',
-  cancelled: 'bg-yellow-100 text-yellow-700',
+  running: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+  completed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+  failed: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  cancelled: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
   paused: 'bg-purple-100 text-purple-700',
 };
 
@@ -162,7 +162,7 @@ export default function OverviewTab() {
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard icon={Activity} color="text-primary" value={activeCount} label="Active definitions" />
-          <StatCard icon={CheckCircle} color="text-green-600" value={counts24h?.total ?? '—'} label="Runs in last 24h" />
+          <StatCard icon={CheckCircle} color="text-green-600 dark:text-green-400" value={counts24h?.total ?? '—'} label="Runs in last 24h" />
           <StatCard
             icon={AlertTriangle}
             color={failingCount > 0 ? 'text-destructive' : 'text-muted-foreground'}
@@ -172,7 +172,7 @@ export default function OverviewTab() {
           />
           <StatCard
             icon={AlertTriangle}
-            color={openCircuits > 0 ? 'text-destructive' : 'text-green-600'}
+            color={openCircuits > 0 ? 'text-destructive' : 'text-green-600 dark:text-green-400'}
             value={openCircuits}
             label="Open circuits"
             alert={openCircuits > 0}
@@ -263,7 +263,7 @@ export default function OverviewTab() {
                   </td>
                   <td className="px-3 py-2.5 align-top text-xs tabular-nums">
                     {row.last_items_total != null && row.last_items_total > 0
-                      ? <><span className="text-green-700 font-semibold">{row.last_items_succeeded ?? 0}</span><span className="text-muted-foreground">/{row.last_items_total}</span></>
+                      ? <><span className="text-green-700 dark:text-green-300 font-semibold">{row.last_items_succeeded ?? 0}</span><span className="text-muted-foreground">/{row.last_items_total}</span></>
                       : <span className="text-muted-foreground">—</span>}
                   </td>
                   <td className="px-3 py-2.5 align-top">

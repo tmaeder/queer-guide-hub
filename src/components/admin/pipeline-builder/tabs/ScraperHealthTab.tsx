@@ -40,8 +40,8 @@ interface QualityRow {
 function PctCell({ v }: { v: number | null }) {
   if (v == null) return <span className="text-muted-foreground">—</span>;
   const colorClass =
-    v >= 80 ? 'text-green-600'
-    : v >= 50 ? 'text-amber-600'
+    v >= 80 ? 'text-green-600 dark:text-green-400'
+    : v >= 50 ? 'text-amber-600 dark:text-amber-400'
     : 'text-destructive';
   return <span className={`font-mono tabular-nums ${colorClass}`}>{v.toFixed(1)}%</span>;
 }
@@ -114,14 +114,14 @@ export default function ScraperHealthTab() {
           title="Orphan mappings"
           badge={
             totalOrphans > 0
-              ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-700 border-red-200">{totalOrphans} total</Badge>
+              ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{totalOrphans} total</Badge>
               : undefined
           }
         />
         {totalOrphans === 0 ? (
           <div className="p-6 text-center">
-            <CheckCircle className="h-5 w-5 text-green-600 inline mr-1" />
-            <span className="text-sm text-green-600 font-medium">No orphans — entity_map is clean</span>
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 inline mr-1" />
+            <span className="text-sm text-green-600 dark:text-green-400 font-medium">No orphans — entity_map is clean</span>
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -169,7 +169,7 @@ export default function ScraperHealthTab() {
       {/* Field coverage */}
       <div className="border border-border rounded-md bg-background overflow-hidden">
         <SectionHeader icon={Activity} title="Field coverage per recent run" />
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="max-h-[400px] overflow-auto">
           {covLoading ? (
             <div className="p-6 text-center text-muted-foreground text-xs">Loading…</div>
           ) : coverage.length === 0 ? (
@@ -211,7 +211,7 @@ export default function ScraperHealthTab() {
       {/* Quality score distribution */}
       <div className="border border-border rounded-md bg-background overflow-hidden">
         <SectionHeader icon={BarChart3} title="Quality score distribution" badge={<Badge variant="outline" className="text-[10px] px-1.5 py-0">30-day · per source × type</Badge>} />
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="max-h-[400px] overflow-auto">
           {quality.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground text-xs">No scored items yet</div>
           ) : (
