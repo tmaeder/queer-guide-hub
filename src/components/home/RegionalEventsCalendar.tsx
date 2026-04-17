@@ -5,6 +5,7 @@ import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
 import { container } from '@/lib/sx';
+import { useTranslation } from 'react-i18next';
 
 type Event = {
   id: string;
@@ -25,6 +26,7 @@ const Hairline = () => (
 const RegionalEventsCalendar: React.FC = () => {
   const { events, loading, fetchEvents } = useEvents(false);
   const { location: userLocation, loading: locationLoading } = useVisitorLocation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (locationLoading) return;
@@ -56,8 +58,8 @@ const RegionalEventsCalendar: React.FC = () => {
   const monthLabel = format(new Date(), 'MMMM yyyy').toUpperCase();
   const heroHref = `/events/${hero.slug}`;
   const headline = userLocation?.city
-    ? `UPCOMING · NEAR YOU`
-    : `UPCOMING`;
+    ? t('home.upcoming.titleNear', 'Upcoming Events Near You')
+    : t('home.upcoming.title', 'Upcoming Events');
 
   return (
     <Box component="section" sx={{ ...container, py: { xs: 4, md: 8 } }}>
@@ -79,9 +81,8 @@ const RegionalEventsCalendar: React.FC = () => {
               m: 0,
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontWeight: 800,
-              textTransform: 'uppercase',
-              letterSpacing: '0.02em',
-              fontSize: 'clamp(1.5rem, 3vw, 2.25rem)',
+              fontSize: { xs: '1.75rem', md: '2.25rem' },
+              letterSpacing: '-0.01em',
               lineHeight: 1.1,
             }}
           >
@@ -112,7 +113,7 @@ const RegionalEventsCalendar: React.FC = () => {
             '&:hover': { opacity: 0.7 },
           }}
         >
-          Browse all →
+          {t('common.browseAll', 'Browse all')} →
         </Box>
       </Box>
       <Hairline />
@@ -169,7 +170,7 @@ const RegionalEventsCalendar: React.FC = () => {
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
               fontSize: { xs: '0.875rem', md: '1rem' },
-              color: 'hsl(var(--accent-warm))',
+              color: 'brand.main',
               fontVariantNumeric: 'tabular-nums',
               mb: 1,
             }}
@@ -216,7 +217,7 @@ const RegionalEventsCalendar: React.FC = () => {
         >
           {list.length === 0 ? (
             <Box sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
-              No further events scheduled.
+              {t('home.upcoming.empty', 'No further events scheduled.')}
             </Box>
           ) : (
             list.map((ev, idx) => (

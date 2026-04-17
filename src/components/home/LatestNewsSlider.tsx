@@ -5,6 +5,7 @@ import { useNews } from '@/hooks/useNews';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import { container } from '@/lib/sx';
+import { useTranslation } from 'react-i18next';
 
 type Article = {
   id: string;
@@ -49,6 +50,7 @@ const pulse = {
 const LatestNewsSlider = React.memo(() => {
   const { articles, loading, error, getFeaturedArticles } = useNews();
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
   const [featuredArticles, setFeaturedArticles] = useState<Record<string, unknown>[]>([]);
 
   useEffect(() => {
@@ -120,13 +122,12 @@ const LatestNewsSlider = React.memo(() => {
             m: 0,
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.02em',
-            fontSize: 'clamp(1.5rem, 3vw, 2.25rem)',
+            fontSize: { xs: '1.75rem', md: '2.25rem' },
+            letterSpacing: '-0.01em',
             lineHeight: 1.1,
           }}
         >
-          LATEST NEWS
+          {t('home.news.title', 'Latest News')}
         </Box>
         <Box
           component={LocalizedLink}
@@ -141,7 +142,7 @@ const LatestNewsSlider = React.memo(() => {
             '&:hover': { opacity: 0.7 },
           }}
         >
-          All stories →
+          {t('common.allStories', 'All stories')} →
         </Box>
       </Box>
       <Hairline />
@@ -267,7 +268,7 @@ const LatestNewsSlider = React.memo(() => {
                   textDecoration: 'none',
                   color: 'text.primary',
                   '&:hover .qg-news-title': {
-                    color: 'hsl(var(--accent-warm))',
+                    color: 'brand.main',
                   },
                 }}
               >

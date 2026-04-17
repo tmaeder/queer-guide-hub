@@ -14,6 +14,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatEventTime } from '@/lib/event-time';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { container } from '@/lib/sx';
+import { useTranslation } from 'react-i18next';
 
 type Event = {
   id: string;
@@ -33,6 +34,7 @@ const WeeklyEventsSlider = React.memo(() => {
   const { events, loading, fetchEvents } = useEvents(false);
   const isMobile = useIsMobile();
   const { location: userLocation, loading: locationLoading } = useVisitorLocation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (locationLoading) return;
@@ -72,7 +74,9 @@ const WeeklyEventsSlider = React.memo(() => {
   const totalCount = (events as Event[]).length;
   if (totalCount === 0) return null;
 
-  const headline = userLocation?.city ? `THIS WEEK · NEAR YOU` : `THIS WEEK`;
+  const headline = userLocation?.city
+    ? t('home.weekly.titleNear', 'This Week Near You')
+    : t('home.weekly.title', 'This Week');
 
   return (
     <Box
@@ -98,9 +102,8 @@ const WeeklyEventsSlider = React.memo(() => {
             m: 0,
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.02em',
-            fontSize: 'clamp(1.5rem, 3vw, 2.25rem)',
+            fontSize: { xs: '1.75rem', md: '2.25rem' },
+            letterSpacing: '-0.01em',
             lineHeight: 1.1,
           }}
         >
@@ -119,7 +122,7 @@ const WeeklyEventsSlider = React.memo(() => {
             '&:hover': { opacity: 0.7 },
           }}
         >
-          All events →
+          {t('common.allEvents', 'All events')} →
         </Box>
       </Box>
       <Hairline />
@@ -173,7 +176,7 @@ const WeeklyEventsSlider = React.memo(() => {
                   fontSize: 'clamp(2.5rem, 5vw, 4rem)',
                   lineHeight: 1,
                   mb: { xs: 1, md: 2 },
-                  color: isToday ? 'hsl(var(--accent-warm))' : 'text.primary',
+                  color: isToday ? 'brand.main' : 'text.primary',
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
