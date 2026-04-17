@@ -225,47 +225,6 @@ export default function AdminFeedback() {
     return map;
   }, [apiErrors]);
 
-  const handleCreateStoryFromSelection = useCallback(
-    (title: string) => {
-      const ids = Array.from(selectedIds);
-      if (ids.length === 0) return;
-      createStory.mutate(
-        { title, submissionIds: ids },
-        {
-          onSuccess: (storyId) => {
-            toast({ title: 'Story created', description: `${ids.length} items bundled` });
-            setSelectedIds(new Set());
-            setLastSelectedId(null);
-            update({ tab: 'stories', story: storyId });
-          },
-          onError: (e: Error) =>
-            toast({ title: 'Create story failed', description: e.message, variant: 'destructive' }),
-        },
-      );
-    },
-    [selectedIds, createStory, toast, update],
-  );
-
-  const handleAddSelectionToStory = useCallback(
-    (storyId: string) => {
-      const ids = Array.from(selectedIds);
-      if (ids.length === 0) return;
-      addStoryMembers.mutate(
-        { storyId, submissionIds: ids },
-        {
-          onSuccess: () => {
-            toast({ title: 'Added to story', description: `${ids.length} item(s)` });
-            setSelectedIds(new Set());
-            setLastSelectedId(null);
-          },
-          onError: (e: Error) =>
-            toast({ title: 'Add to story failed', description: e.message, variant: 'destructive' }),
-        },
-      );
-    },
-    [selectedIds, addStoryMembers, toast],
-  );
-
   // ── API error filtering ───────────────────────────────────────
   // Derive source + severity from the existing row shape so we can narrow
   // 100s of rows to the one the admin wants to triage without adding new
