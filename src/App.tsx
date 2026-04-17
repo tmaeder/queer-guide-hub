@@ -30,7 +30,6 @@ import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
 import { CurrencyProvider } from '@/hooks/useCurrency';
 import Box from '@mui/material/Box';
-const Aurora = lazy(() => import('@/components/ui/Aurora'));
 
 const Index = lazyRetry(() => import('./pages/Index'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
@@ -84,7 +83,6 @@ const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
 const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
-const AdminImportHub = lazy(() => import('./pages/AdminImportHub'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
@@ -106,9 +104,6 @@ const AdminCMS = lazy(() => import('./pages/AdminCMS'));
 const ContentListPanel = lazy(() =>
   import('./components/cms/ContentListPanel').then((m) => ({ default: m.ContentListPanel })),
 );
-const _CMSOverview = lazy(() =>
-  import('./components/cms/CMSOverview').then((m) => ({ default: m.CMSOverview })),
-);
 // ReviewQueue (CMS) is now loaded inside AdminReview page
 const MediaLibrary = lazy(() =>
   import('./components/cms/MediaLibrary').then((m) => ({ default: m.MediaLibrary })),
@@ -118,30 +113,12 @@ const AuditLog = lazy(() =>
 );
 
 // Import Hub components rendered as admin views
-const _ImportJobCreator = lazy(() =>
-  import('./components/admin/ImportJobCreator').then((m) => ({ default: m.ImportJobCreator })),
-);
-const _EnrichmentDashboard = lazy(() =>
-  import('./components/admin/EnrichmentDashboard').then((m) => ({
-    default: m.EnrichmentDashboard,
-  })),
-);
-const VenueImportQuickActions = lazy(() =>
-  import('./components/admin/VenueImportQuickActions').then((m) => ({
-    default: m.VenueImportQuickActions,
-  })),
-);
 const ApiKeysManager = lazy(() =>
   import('./components/admin/ApiKeysManager').then((m) => ({ default: m.ApiKeysManager })),
 );
 const AffiliatePartnersManager = lazy(() =>
   import('./components/admin/AffiliatePartnersManager').then((m) => ({
     default: m.AffiliatePartnersManager,
-  })),
-);
-const _LinkHealthDashboard = lazy(() =>
-  import('./components/admin/LinkHealthDashboard').then((m) => ({
-    default: m.LinkHealthDashboard,
   })),
 );
 
@@ -154,11 +131,6 @@ const SecurityMonitoringDashboard = lazy(() =>
 const CloudflareDashboard = lazy(() =>
   import('./components/admin/CloudflareDashboard').then((m) => ({
     default: m.CloudflareDashboard,
-  })),
-);
-const _UmamiAnalyticsDashboard = lazy(() =>
-  import('./components/analytics/UmamiAnalyticsDashboard').then((m) => ({
-    default: m.UmamiAnalyticsDashboard,
   })),
 );
 const ProfessionDetail = lazyRetry(() => import('./pages/ProfessionDetail'));

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Play, Pause, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Hls from 'hls.js';

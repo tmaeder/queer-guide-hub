@@ -2,7 +2,7 @@
  * RunHistoryTable — Displays automation_run_log entries.
  */
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
