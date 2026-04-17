@@ -463,9 +463,9 @@
       "collaborate": "Совместная работа"
     },
     "today": {
-      "offlineBanner": "You're offline — showing your last-saved itinerary.",
-      "pushPrompt": "Get a reminder 30 min before each reservation.",
-      "pushEnable": "Enable"
+      "offlineBanner": "Вы не в сети — показан последний сохранённый маршрут.",
+      "pushPrompt": "Напоминание за 30 минут до каждого бронирования.",
+      "pushEnable": "Включить"
     }
   },
   "auth": {
@@ -896,7 +896,7 @@
       "myGroups": "Мои группы",
       "accessibility": "Доступность",
       "bookings": "Бронирования",
-      "tripInbox": "Trip inbox"
+      "tripInbox": "Входящие поездок"
     },
     "modes": {
       "dating": "Ищу отношения",
@@ -1187,10 +1187,10 @@
   },
   "settings": {
     "push": {
-      "title": "Travel reminders",
-      "body": "Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.",
-      "turnOn": "Turn on",
-      "turnOff": "Turn off"
+      "title": "Напоминания о поездках",
+      "body": "Получайте уведомление в браузере за 30 минут до каждого бронирования и при приближении срока окончания паспорта или визы.",
+      "turnOn": "Включить",
+      "turnOff": "Выключить"
     }
   }
 }

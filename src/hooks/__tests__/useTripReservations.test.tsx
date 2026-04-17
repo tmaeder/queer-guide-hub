@@ -11,6 +11,10 @@ vi.mock('@/integrations/supabase/client', () => {
   return { supabase: { from: () => new Proxy(() => {}, handler) } };
 });
 
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 'test-user' } }),
+}));
+
 import { useTripReservations, useReservationMutations } from '../useTripReservations';
 
 const w = () => {

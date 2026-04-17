@@ -435,9 +435,9 @@
       "collaborate": "التعاون"
     },
     "today": {
-      "offlineBanner": "You're offline — showing your last-saved itinerary.",
-      "pushPrompt": "Get a reminder 30 min before each reservation.",
-      "pushEnable": "Enable"
+      "offlineBanner": "أنت غير متصل — نعرض آخر خط سير محفوظ.",
+      "pushPrompt": "تذكير قبل 30 دقيقة من كل حجز.",
+      "pushEnable": "تفعيل"
     }
   },
   "auth": {
@@ -868,7 +868,7 @@
       "myGroups": "مجموعاتي",
       "accessibility": "إمكانية الوصول",
       "bookings": "الحجوزات",
-      "tripInbox": "Trip inbox"
+      "tripInbox": "بريد الرحلة"
     },
     "modes": {
       "dating": "أبحث عن الحب",
@@ -1159,10 +1159,10 @@
   },
   "settings": {
     "push": {
-      "title": "Travel reminders",
-      "body": "Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.",
-      "turnOn": "Turn on",
-      "turnOff": "Turn off"
+      "title": "تذكيرات السفر",
+      "body": "تلقَّ إشعارًا في المتصفح قبل 30 دقيقة من كل حجز، وعند اقتراب انتهاء صلاحية جواز السفر أو التأشيرة.",
+      "turnOn": "تشغيل",
+      "turnOff": "إيقاف"
     }
   }
 }

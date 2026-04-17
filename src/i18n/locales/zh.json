@@ -435,9 +435,9 @@
       "collaborate": "协作"
     },
     "today": {
-      "offlineBanner": "You're offline — showing your last-saved itinerary.",
-      "pushPrompt": "Get a reminder 30 min before each reservation.",
-      "pushEnable": "Enable"
+      "offlineBanner": "您处于离线状态 — 显示上次保存的行程。",
+      "pushPrompt": "每次预订前 30 分钟收到提醒。",
+      "pushEnable": "启用"
     }
   },
   "auth": {
@@ -868,7 +868,7 @@
       "myGroups": "我的群组",
       "accessibility": "无障碍",
       "bookings": "预订",
-      "tripInbox": "Trip inbox"
+      "tripInbox": "旅行收件箱"
     },
     "modes": {
       "dating": "寻找爱情",
@@ -1159,10 +1159,10 @@
   },
   "settings": {
     "push": {
-      "title": "Travel reminders",
-      "body": "Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.",
-      "turnOn": "Turn on",
-      "turnOff": "Turn off"
+      "title": "旅行提醒",
+      "body": "在每次预订前 30 分钟收到浏览器通知，以及护照或签证即将到期时再次提醒。",
+      "turnOn": "开启",
+      "turnOff": "关闭"
     }
   }
 }

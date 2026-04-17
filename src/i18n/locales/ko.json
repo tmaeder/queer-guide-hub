@@ -435,9 +435,9 @@
       "collaborate": "협업"
     },
     "today": {
-      "offlineBanner": "You're offline — showing your last-saved itinerary.",
-      "pushPrompt": "Get a reminder 30 min before each reservation.",
-      "pushEnable": "Enable"
+      "offlineBanner": "오프라인 상태 — 마지막으로 저장된 일정을 표시합니다.",
+      "pushPrompt": "각 예약 30분 전에 알림을 받으세요.",
+      "pushEnable": "사용"
     }
   },
   "auth": {
@@ -868,7 +868,7 @@
       "myGroups": "내 그룹",
       "accessibility": "접근성",
       "bookings": "예약",
-      "tripInbox": "Trip inbox"
+      "tripInbox": "여행 수신함"
     },
     "modes": {
       "dating": "사랑을 찾아서",
@@ -1159,10 +1159,10 @@
   },
   "settings": {
     "push": {
-      "title": "Travel reminders",
-      "body": "Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.",
-      "turnOn": "Turn on",
-      "turnOff": "Turn off"
+      "title": "여행 알림",
+      "body": "각 예약 30분 전과 여권 또는 비자 만료일이 다가올 때 브라우저 알림을 받습니다.",
+      "turnOn": "켜기",
+      "turnOff": "끄기"
     }
   }
 }
