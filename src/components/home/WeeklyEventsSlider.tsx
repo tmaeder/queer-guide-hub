@@ -20,50 +20,43 @@ import { formatEventTime } from '@/lib/event-time';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 
 const WeeklyEventsSlider = React.memo(() => {
-  const { events, loading, fetchEvents } = useEvents();
+  const { events, loading, fetchEvents } = useEvents(false);
   const isMobile = useIsMobile();
   const { location: userLocation, loading: locationLoading } = useVisitorLocation();
 
-  // Fetch events when location is available
+  // Fetch upcoming-week events. Include nearMe only if we have coords AND
+  // the event inventory is geocoded enough to return results; otherwise
+  // fall back to a global week query so the section always shows something.
   useEffect(() => {
-    if (userLocation) {
-      const now = new Date();
-      const weekStart = startOfWeek(now);
-      const weekEnd = endOfWeek(now);
-      fetchEvents({
-        dateRange: {
-          start: weekStart.toISOString(),
-          end: weekEnd.toISOString(),
-        },
-        nearMe: {
-          lat: userLocation.latitude,
-          lng: userLocation.longitude,
-        },
-      });
-    }
-  }, [userLocation, fetchEvents]);
+    if (locationLoading) return;
+    const now = new Date();
+    const weekStart = startOfWeek(now);
+    const weekEnd = endOfWeek(now);
+    fetchEvents({
+      dateRange: {
+        start: now.toISOString(),
+        end: weekEnd.toISOString(),
+      },
+      limit: 10,
+      ...(userLocation && {
+        nearMe: { lat: userLocation.latitude, lng: userLocation.longitude },
+      }),
+    }).then((res) => {
+      // Fallback: if nearMe filter produced zero (events lack coords),
+      // re-query without it so the slider isn't empty.
+      if (userLocation && res.fetched === 0) {
+        fetchEvents({
+          dateRange: { start: now.toISOString(), end: weekEnd.toISOString() },
+          limit: 10,
+        });
+      }
+    });
+  }, [userLocation, locationLoading, fetchEvents]);
 
-  // Filter and sort events by distance and date
-  const weeklyEvents = useMemo(
-    () =>
-      events
-        .filter((event) => {
-          const eventDate = new Date(event.start_date);
-          const now = new Date();
-          const weekStart = startOfWeek(now);
-          const weekEnd = endOfWeek(now);
-          return eventDate >= weekStart && eventDate <= weekEnd;
-        })
-        .slice(0, 10),
-    [events],
-  ); // Limit to 10 events
+  const weeklyEvents = useMemo(() => events.slice(0, 10), [events]);
 
-  if (locationLoading || loading) {
-    return null;
-  }
-  if (!userLocation || weeklyEvents.length === 0) {
-    return null;
-  }
+  if (loading) return null;
+  if (weeklyEvents.length === 0) return null;
   return (
     <section
       style={{
@@ -90,7 +83,7 @@ const WeeklyEventsSlider = React.memo(() => {
                 }}
               />
               <h2 style={{ fontWeight: 700, fontSize: isMobile ? '1.25rem' : '1.875rem' }}>
-                This Week Near You
+                {userLocation ? 'This Week Near You' : 'This Week'}
               </h2>
             </Box>
             <p
@@ -99,7 +92,9 @@ const WeeklyEventsSlider = React.memo(() => {
                 fontSize: isMobile ? '0.875rem' : '1.125rem',
               }}
             >
-              Events happening in {userLocation.city || 'your area'} this week
+              {userLocation
+                ? `Events happening in ${userLocation.city || 'your area'} this week`
+                : 'Upcoming events this week'}
             </p>
           </div>
           <Button variant="outline" size={isMobile ? 'sm' : 'default'} asChild>

@@ -11,35 +11,33 @@ import Container from '@mui/material/Container';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 
 const RegionalEventsCalendar: React.FC = () => {
-  const { events, loading, fetchEvents, updateAttendance } = useEvents();
+  const { events, loading, fetchEvents, updateAttendance } = useEvents(false);
   const isMobile = useIsMobile();
   const { location: userLocation, loading: locationLoading } = useVisitorLocation();
   const navigate = useLocalizedNavigate();
 
-  // Fetch upcoming events for the user's city when location is available
+  // Fetch next-30d upcoming events. Prefer visitor's city when available,
+  // fall back to global upcoming list so the calendar always has content.
   useEffect(() => {
-    if (userLocation?.city) {
-      const now = new Date();
-      const end = new Date();
-      end.setDate(now.getDate() + 30);
-      fetchEvents({
-        city: userLocation.city,
-        dateRange: { start: now.toISOString(), end: end.toISOString() },
+    if (locationLoading) return;
+    const now = new Date();
+    const end = new Date();
+    end.setDate(now.getDate() + 30);
+    const range = { start: now.toISOString(), end: end.toISOString() };
+    const city = userLocation?.city;
+    if (city) {
+      fetchEvents({ city, dateRange: range }).then((res) => {
+        if (res.fetched === 0) {
+          fetchEvents({ dateRange: range });
+        }
       });
+    } else {
+      fetchEvents({ dateRange: range });
     }
-  }, [userLocation?.city, fetchEvents]);
+  }, [userLocation?.city, locationLoading, fetchEvents]);
 
-  if (locationLoading || loading) {
-    return null;
-  }
-
-  // Only render if we have a city and at least one upcoming event in that region
-  if (!userLocation?.city) {
-    return null;
-  }
-  if (events.length === 0) {
-    return null;
-  }
+  if (loading) return null;
+  if (events.length === 0) return null;
 
   return (
     <Box component="section" sx={{ bgcolor: 'action.hover', py: isMobile ? 3 : 6, px: 2 }}>
@@ -59,11 +57,13 @@ const RegionalEventsCalendar: React.FC = () => {
                 color="var(--mui-palette-primary-main)"
               />
               <Typography variant={isMobile ? 'subtitle1' : 'h5'} sx={{ fontWeight: 700 }}>
-                Upcoming Events Near You
+                {userLocation?.city ? 'Upcoming Events Near You' : 'Upcoming Events'}
               </Typography>
             </Box>
             <Typography variant={isMobile ? 'caption' : 'body1'} color="text.secondary">
-              Calendar for {userLocation?.city || userLocation?.region || 'your region'}
+              {userLocation?.city || userLocation?.region
+                ? `Calendar for ${userLocation.city || userLocation.region}`
+                : 'Next 30 days'}
             </Typography>
           </Box>
           <Button
