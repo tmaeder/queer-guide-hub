@@ -59,6 +59,7 @@ import {
   useResolveStory,
   useAcceptStorySuggestion,
   useDismissStorySuggestion,
+  useSuggestStoryFromIds,
   useGroupedStories,
 } from '@/hooks/useFeedbackStories';
 import type { StoryStatus } from '@/components/admin/feedback/types';
@@ -74,24 +75,6 @@ import {
   formatErrorClaudePrompt,
   type ApiErrorSubmission,
 } from '@/components/admin/feedback/claudePrompts';
-import { StoriesKanban } from '@/components/admin/feedback/StoriesKanban';
-import { StoryDetailDrawer } from '@/components/admin/feedback/StoryDetailDrawer';
-import { StorySuggestionsPanel } from '@/components/admin/feedback/StorySuggestionsPanel';
-import {
-  useStories,
-  useStory,
-  useSubmissionStoryMap,
-  useStorySuggestions,
-  useCreateStory,
-  useAddStoryMembers,
-  useRemoveStoryMembers,
-  useUpdateStory,
-  useResolveStory,
-  useAcceptStorySuggestion,
-  useDismissStorySuggestion,
-  useGroupedStories,
-} from '@/hooks/useFeedbackStories';
-import type { StoryStatus } from '@/components/admin/feedback/types';
 
 const FEEDBACK_COLUMNS =
   'id,data,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at,priority,labels,assignee_id,duplicate_of,is_spam,resolution,resolved_at,notify_submitter';
@@ -213,6 +196,7 @@ export default function AdminFeedback() {
   const resolveStory = useResolveStory();
   const acceptStorySuggestion = useAcceptStorySuggestion();
   const dismissStorySuggestion = useDismissStorySuggestion();
+  const suggestStoryFromIds = useSuggestStoryFromIds();
 
   const feedbackById = useMemo(() => {
     const map: Record<string, FeedbackSubmission> = {};
@@ -921,6 +905,12 @@ export default function AdminFeedback() {
             }}
             onCreateStory={handleCreateStoryFromSelection}
             onAddToStory={handleAddSelectionToStory}
+            onAutoTitle={async () => {
+              const ids = Array.from(selectedIds);
+              if (ids.length < 2) return null;
+              const res = await suggestStoryFromIds.mutateAsync(ids).catch(() => null);
+              return res?.proposed_title ?? null;
+            }}
             stories={stories}
             admins={admins}
             loading={

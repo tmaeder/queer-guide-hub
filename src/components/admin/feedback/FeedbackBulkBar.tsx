@@ -26,6 +26,10 @@ interface Props {
   onForward: () => void;
   onCreateStory?: (title: string) => void;
   onAddToStory?: (storyId: string) => void;
+  /** Runs when the admin opens the Create-Story dialog — returns a seed
+   *  title the model proposes for the current selection. Rejections and
+   *  nulls just leave the input empty. */
+  onAutoTitle?: () => Promise<string | null>;
   stories?: StoryWithCounts[];
   admins: AdminProfile[];
   loading?: boolean;
@@ -43,6 +47,7 @@ export function FeedbackBulkBar({
   onForward,
   onCreateStory,
   onAddToStory,
+  onAutoTitle,
   stories,
   admins,
   loading,
@@ -55,9 +60,26 @@ export function FeedbackBulkBar({
   const [labelInput, setLabelInput] = useState('');
   const [storyOpen, setStoryOpen] = useState(false);
   const [storyTitle, setStoryTitle] = useState('');
+  const [storyTitleLoading, setStoryTitleLoading] = useState(false);
   const openStories = (stories ?? []).filter(
     (s) => s.status !== 'resolved' && s.status !== 'archived',
   );
+
+  const openCreateStoryDialog = async () => {
+    setStoryTitle('');
+    setStoryOpen(true);
+    if (!onAutoTitle) return;
+    setStoryTitleLoading(true);
+    try {
+      const suggested = await onAutoTitle();
+      // Only fill if the admin hasn't already typed something in the interim.
+      setStoryTitle((prev) => (prev ? prev : suggested ?? ''));
+    } catch {
+      /* leave empty on failure */
+    } finally {
+      setStoryTitleLoading(false);
+    }
+  };
 
   if (selectedCount === 0) return null;
 
@@ -169,8 +191,7 @@ export function FeedbackBulkBar({
           <MenuItem
             onClick={() => {
               setStoryAnchor(null);
-              setStoryTitle('');
-              setStoryOpen(true);
+              void openCreateStoryDialog();
             }}
           >
             Create story from selection…
@@ -204,7 +225,14 @@ export function FeedbackBulkBar({
             autoFocus
             fullWidth
             size="small"
-            placeholder="Short title for this story"
+            placeholder={
+              storyTitleLoading ? 'Suggesting a title…' : 'Short title for this story'
+            }
+            helperText={
+              storyTitleLoading
+                ? 'Cloudflare Llama is summarising the selection'
+                : 'Edit the auto-suggested title or write your own'
+            }
             value={storyTitle}
             onChange={(e) => setStoryTitle(e.target.value)}
             onKeyDown={(e) => {
