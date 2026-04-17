@@ -307,73 +307,57 @@ const RegionalEventsCalendar: React.FC = () => {
         </Box>
       </Box>
 
-      {/* 14-day schedule strip */}
-      <Box
-        sx={{
-          mt: { xs: 4, md: 6 },
-          pt: { xs: 3, md: 4 },
-          borderTop: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <Box
-          sx={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: '0.75rem',
-            fontWeight: 500,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: 'text.secondary',
-            mb: { xs: 2, md: 3 },
-          }}
-        >
-          {t('home.upcoming.next14', 'Next 14 days')}
-        </Box>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(7, 1fr)', md: 'repeat(14, 1fr)' },
-            columnGap: { xs: 1, md: 1.5 },
-            rowGap: 3,
-          }}
-        >
-          {days.map((day) => {
-            const items = eventsByDay.get(day.toISOString()) || [];
-            const isToday = isSameDay(day, today);
-            const top = items[0];
-            return (
-              <Box key={day.toISOString()} sx={{ minWidth: 0 }}>
-                <Box
-                  sx={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: '0.6875rem',
-                    fontWeight: 500,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: 'text.secondary',
-                  }}
-                >
-                  {format(day, 'EEE')}
-                </Box>
-                <Box
-                  sx={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontWeight: 300,
-                    fontSize: { xs: '1.5rem', md: '1.75rem' },
-                    lineHeight: 1,
-                    mb: 1,
-                    color: isToday ? 'brand.main' : 'text.primary',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {format(day, 'd')}
-                </Box>
-                {top ? (
+      {/* Upcoming-dates strip: only days that have events in the next 14 days */}
+      {(() => {
+        const activeDays = days.filter(
+          (d) => (eventsByDay.get(d.toISOString()) || []).length > 0,
+        );
+        if (activeDays.length === 0) return null;
+        return (
+          <Box
+            sx={{
+              mt: { xs: 4, md: 6 },
+              pt: { xs: 3, md: 4 },
+              borderTop: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Box
+              sx={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.75rem',
+                fontWeight: 500,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'text.secondary',
+                mb: { xs: 2, md: 3 },
+              }}
+            >
+              {t('home.upcoming.next14', 'Next 14 days')}
+            </Box>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'repeat(auto-fit, minmax(96px, 1fr))',
+                  md: 'repeat(auto-fit, minmax(120px, 1fr))',
+                },
+                columnGap: { xs: 1.5, md: 2 },
+                rowGap: 3,
+              }}
+            >
+              {activeDays.map((day) => {
+                const items = eventsByDay.get(day.toISOString()) || [];
+                const isToday = isSameDay(day, today);
+                const top = items[0];
+                return (
                   <Box
+                    key={day.toISOString()}
                     component={LocalizedLink}
                     to={`/events/${top.slug}`}
                     sx={{
                       display: 'block',
+                      minWidth: 0,
                       textDecoration: 'none',
                       color: 'text.primary',
                       transition: 'opacity 0.2s',
@@ -382,9 +366,34 @@ const RegionalEventsCalendar: React.FC = () => {
                   >
                     <Box
                       sx={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: '0.6875rem',
+                        fontWeight: 500,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: 'text.secondary',
+                      }}
+                    >
+                      {format(day, 'EEE')}
+                    </Box>
+                    <Box
+                      sx={{
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontWeight: 300,
+                        fontSize: { xs: '1.5rem', md: '1.75rem' },
+                        lineHeight: 1,
+                        mb: 1,
+                        color: isToday ? 'brand.main' : 'text.primary',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {format(day, 'd')}
+                    </Box>
+                    <Box
+                      sx={{
                         fontFamily: "'Plus Jakarta Sans', sans-serif",
                         fontWeight: 600,
-                        fontSize: '0.75rem',
+                        fontSize: '0.8125rem',
                         lineHeight: 1.3,
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -398,31 +407,21 @@ const RegionalEventsCalendar: React.FC = () => {
                       <Box
                         sx={{
                           fontFamily: "'Inter', sans-serif",
-                          fontSize: '0.625rem',
+                          fontSize: '0.6875rem',
                           color: 'text.secondary',
-                          mt: 0.25,
+                          mt: 0.5,
                         }}
                       >
                         +{items.length - 1}
                       </Box>
                     )}
                   </Box>
-                ) : (
-                  <Box
-                    sx={{
-                      fontSize: '0.875rem',
-                      color: 'text.secondary',
-                      opacity: 0.35,
-                    }}
-                  >
-                    —
-                  </Box>
-                )}
-              </Box>
-            );
-          })}
-        </Box>
-      </Box>
+                );
+              })}
+            </Box>
+          </Box>
+        );
+      })()}
     </Box>
   );
 };
