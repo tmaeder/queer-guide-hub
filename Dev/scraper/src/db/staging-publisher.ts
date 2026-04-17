@@ -113,7 +113,9 @@ export async function publishToStaging(
               'pending', 'pending', 'pending', now(), now()
        FROM unnest($5::text[], $6::text[], $7::text[], $8::text[])
             AS r(raw, sid, hash, etype)
-       ON CONFLICT (source_type, source_entity_id, payload_hash) DO NOTHING
+       ON CONFLICT (source_type, source_entity_id, payload_hash)
+         WHERE source_entity_id IS NOT NULL AND payload_hash IS NOT NULL
+         DO NOTHING
        RETURNING id`,
       [
         opts.sourceType,
