@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { AlertTriangle, AlertCircle, Info, Bug } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, Bug, Search, CheckCircle2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
 interface ErrorRow {
   id: number;
@@ -24,18 +27,21 @@ interface SummaryRow {
   last_seen_at: string | null;
 }
 
-const sevColor: Record<string, { bg: string; fg: string; Icon: typeof AlertTriangle }> = {
-  fatal: { bg: '#fee2e2', fg: '#b91c1c', Icon: AlertCircle },
-  error: { bg: '#fed7aa', fg: '#c2410c', Icon: AlertTriangle },
-  warn:  { bg: '#fef9c3', fg: '#a16207', Icon: Bug },
-  info:  { bg: '#dbeafe', fg: '#1d4ed8', Icon: Info },
+type Severity = 'fatal' | 'error' | 'warn' | 'info';
+
+const sevConfig: Record<Severity, { icon: React.ComponentType<{ className?: string }>; className: string; badgeClass: string }> = {
+  fatal: { icon: AlertCircle,    className: 'text-red-700',    badgeClass: 'bg-red-100 text-red-700 border-red-200' },
+  error: { icon: AlertTriangle,  className: 'text-orange-600', badgeClass: 'bg-orange-100 text-orange-700 border-orange-200' },
+  warn:  { icon: Bug,            className: 'text-yellow-600', badgeClass: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+  info:  { icon: Info,           className: 'text-blue-600',   badgeClass: 'bg-blue-100 text-blue-700 border-blue-200' },
 };
 
 export default function ErrorsTab() {
   const [selected, setSelected] = useState<ErrorRow | null>(null);
   const [minSeverity, setMinSeverity] = useState<'warn' | 'error' | 'fatal'>('error');
+  const [search, setSearch] = useState('');
 
-  const { data: summary } = useQuery({
+  const { data: summary = [] } = useQuery({
     queryKey: ['pipeline-error-summary'],
     queryFn: async () => {
       const { data, error } = await untypedFrom('pipeline_error_summary')
@@ -47,12 +53,12 @@ export default function ErrorsTab() {
     refetchInterval: 30_000,
   });
 
-  const { data: errors, isLoading } = useQuery({
+  const { data: errors = [], isLoading } = useQuery({
     queryKey: ['pipeline-errors', minSeverity],
     queryFn: async () => {
       const sevs = minSeverity === 'fatal' ? ['fatal']
-                 : minSeverity === 'error' ? ['error','fatal']
-                 : ['warn','error','fatal'];
+                 : minSeverity === 'error' ? ['error', 'fatal']
+                 : ['warn', 'error', 'fatal'];
       const { data, error } = await untypedFrom('pipeline_errors')
         .select('*')
         .in('severity', sevs)
@@ -64,133 +70,178 @@ export default function ErrorsTab() {
     refetchInterval: 30_000,
   });
 
-  const cardStyle: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px 14px', background: '#fff' };
-  const th: React.CSSProperties = { textAlign: 'left', padding: '8px 12px', fontWeight: 500, color: '#6b7280', fontSize: 12 };
-  const td: React.CSSProperties = { padding: '8px 12px', verticalAlign: 'top', fontSize: 13 };
+  const filtered = useMemo(() => {
+    if (!search) return errors;
+    const q = search.toLowerCase();
+    return errors.filter(e =>
+      e.message.toLowerCase().includes(q)
+      || e.function_name.toLowerCase().includes(q)
+    );
+  }, [errors, search]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col gap-4">
       {/* Summary cards grouped by function */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
-        {(summary || []).map(s => {
-          const sc = sevColor[s.severity] ?? sevColor.info;
-          const SIcon = sc.Icon;
-          return (
-            <div key={`${s.function_name}-${s.severity}`} style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <SIcon style={{ width: 14, height: 14, color: sc.fg }} />
-                <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#374151' }}>{s.function_name}</span>
-                <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: sc.bg, color: sc.fg, marginLeft: 'auto' }}>
-                  {s.severity}
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: 10, fontSize: 12 }}>
-                <div><strong>{s.last_1h}</strong> <span style={{ color: '#9ca3af' }}>/ 1h</span></div>
-                <div><strong>{s.last_24h}</strong> <span style={{ color: '#9ca3af' }}>/ 24h</span></div>
-                <div><strong>{s.last_7d}</strong> <span style={{ color: '#9ca3af' }}>/ 7d</span></div>
-              </div>
-              <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>
-                last: {s.last_seen_at ? new Date(s.last_seen_at).toLocaleString() : '—'}
-              </div>
+      <div>
+        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          Error rate by function (last 7 days)
+        </div>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
+          {summary.length === 0 ? (
+            <div className="col-span-full border border-border rounded-md bg-background p-6 text-center text-sm">
+              <CheckCircle2 className="h-5 w-5 text-green-600 inline mr-1" />
+              <span className="text-green-600 font-medium">No errors in the last 7 days</span>
             </div>
-          );
-        })}
-        {(!summary || summary.length === 0) && (
-          <div style={{ ...cardStyle, gridColumn: '1 / -1', color: '#9ca3af', textAlign: 'center' }}>
-            No errors in the last 7 days
-          </div>
-        )}
+          ) : summary.map(s => {
+            const sc = sevConfig[s.severity as Severity] ?? sevConfig.info;
+            const SIcon = sc.icon;
+            return (
+              <div key={`${s.function_name}-${s.severity}`} className="border border-border rounded-md bg-background px-3 py-2.5 hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <SIcon className={`h-3.5 w-3.5 ${sc.className}`} />
+                  <span className="text-[11px] font-mono truncate flex-1" title={s.function_name}>
+                    {s.function_name}
+                  </span>
+                  <Badge variant="outline" className={`text-[9px] px-1 py-0 ${sc.badgeClass}`}>
+                    {s.severity}
+                  </Badge>
+                </div>
+                <div className="flex gap-3 text-xs tabular-nums">
+                  <div><strong>{s.last_1h}</strong> <span className="text-muted-foreground">/ 1h</span></div>
+                  <div><strong>{s.last_24h}</strong> <span className="text-muted-foreground">/ 24h</span></div>
+                  <div><strong>{s.last_7d}</strong> <span className="text-muted-foreground">/ 7d</span></div>
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-1">
+                  last: {s.last_seen_at ? formatDistanceToNow(new Date(s.last_seen_at), { addSuffix: true }) : '—'}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Filter + recent error table */}
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', overflow: 'hidden' }}>
-        <div style={{ padding: '10px 14px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontWeight: 600, fontSize: 14 }}>Recent errors</span>
-          <div style={{ flex: 1 }} />
-          {(['fatal','error','warn'] as const).map(s => (
-            <button
-              key={s}
-              onClick={() => setMinSeverity(s)}
-              style={{
-                padding: '4px 10px', fontSize: 12,
-                background: minSeverity === s ? '#6366f1' : '#fff',
-                color: minSeverity === s ? '#fff' : '#374151',
-                border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer',
-              }}
-            >{s}+</button>
-          ))}
+      <div className="border border-border rounded-md bg-background overflow-hidden">
+        <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-sm">Recent errors</span>
+
+          <div className="relative flex-1 max-w-xs ml-2">
+            <Search className="h-3 w-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search messages..."
+              className="h-7 pl-6 text-xs"
+            />
+          </div>
+
+          <div className="flex-1" />
+
+          <div className="flex gap-1">
+            {(['fatal', 'error', 'warn'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setMinSeverity(s)}
+                className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
+                  minSeverity === s
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background text-muted-foreground border-border hover:bg-accent'
+                }`}
+              >{s}+</button>
+            ))}
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', minHeight: 300 }}>
-          <div style={{ maxHeight: 480, overflowY: 'auto', borderRight: '1px solid #f3f4f6' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead style={{ background: '#fafafa', position: 'sticky', top: 0 }}>
-                <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <th style={th}>When</th>
-                  <th style={th}>Function</th>
-                  <th style={th}>Severity</th>
-                  <th style={th}>Message</th>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] min-h-[300px]">
+          <div className="max-h-[480px] overflow-y-auto border-r border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 sticky top-0">
+                <tr className="border-b border-border">
+                  {['When', 'Function', 'Severity', 'Message'].map(h => (
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr><td colSpan={4} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>Loading...</td></tr>
-                ) : !errors?.length ? (
-                  <tr><td colSpan={4} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>No errors</td></tr>
-                ) : errors.map(e => {
-                  const sc = sevColor[e.severity] ?? sevColor.info;
+                  <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
+                ) : filtered.length === 0 ? (
+                  <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-xs">
+                    {errors.length === 0 ? 'No errors' : 'No errors match search'}
+                  </td></tr>
+                ) : filtered.map(e => {
+                  const sc = sevConfig[e.severity as Severity] ?? sevConfig.info;
                   return (
                     <tr
                       key={e.id}
                       onClick={() => setSelected(e)}
-                      style={{ cursor: 'pointer', borderBottom: '1px solid #f9fafb', background: selected?.id === e.id ? '#f3f4f6' : 'transparent' }}
+                      className={`border-b border-border/40 cursor-pointer transition-colors ${
+                        selected?.id === e.id ? 'bg-primary/10' : 'hover:bg-muted/30'
+                      }`}
                     >
-                      <td style={{ ...td, color: '#6b7280', fontSize: 11, whiteSpace: 'nowrap' }}>
-                        {new Date(e.created_at).toLocaleString()}
+                      <td className="px-3 py-2 text-muted-foreground text-[11px] whitespace-nowrap align-top"
+                          title={new Date(e.created_at).toISOString()}>
+                        {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
                       </td>
-                      <td style={{ ...td, fontFamily: 'monospace', fontSize: 11 }}>{e.function_name}</td>
-                      <td style={td}>
-                        <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: sc.bg, color: sc.fg }}>{e.severity}</span>
+                      <td className="px-3 py-2 font-mono text-[11px] align-top truncate max-w-[160px]"
+                          title={e.function_name}>
+                        {e.function_name}
                       </td>
-                      <td style={{ ...td, maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.message}</td>
+                      <td className="px-3 py-2 align-top">
+                        <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${sc.badgeClass}`}>
+                          {e.severity}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2 align-top max-w-[400px] truncate text-xs">
+                        {e.message}
+                      </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
-          <div style={{ padding: 14, maxHeight: 480, overflowY: 'auto' }}>
+
+          {/* Detail pane */}
+          <div className="p-4 max-h-[480px] overflow-y-auto">
             {!selected ? (
-              <div style={{ color: '#9ca3af', textAlign: 'center', padding: 40, fontSize: 13 }}>Click a row to inspect</div>
+              <div className="text-muted-foreground text-center py-10 text-sm">
+                Click a row to inspect
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="flex flex-col gap-3">
                 <div>
-                  <div style={{ fontSize: 11, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.4 }}>Message</div>
-                  <div style={{ fontSize: 13, wordBreak: 'break-word' }}>{selected.message}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Message</div>
+                  <div className="text-sm break-words font-mono">{selected.message}</div>
                 </div>
                 {selected.context && (
                   <div>
-                    <div style={{ fontSize: 11, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.4 }}>Context</div>
-                    <pre style={{ fontSize: 11, background: '#f9fafb', padding: 8, borderRadius: 4, overflow: 'auto' }}>
-{JSON.stringify(selected.context, null, 2)}
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Context</div>
+                    <pre className="text-[11px] bg-muted/40 p-2 rounded-md overflow-auto">
+                      {JSON.stringify(selected.context, null, 2)}
                     </pre>
                   </div>
                 )}
                 {selected.stack && (
                   <div>
-                    <div style={{ fontSize: 11, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.4 }}>Stack</div>
-                    <pre style={{ fontSize: 10, background: '#f9fafb', padding: 8, borderRadius: 4, overflow: 'auto', maxHeight: 240 }}>
-{selected.stack}
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Stack</div>
+                    <pre className="text-[10px] bg-muted/40 p-2 rounded-md overflow-auto max-h-60 whitespace-pre-wrap">
+                      {selected.stack}
                     </pre>
                   </div>
                 )}
-                {selected.pipeline_run_id && (
-                  <div style={{ fontSize: 11, color: '#6b7280' }}>
-                    pipeline_run: <code>{selected.pipeline_run_id}</code>
-                  </div>
-                )}
-                {selected.staging_id && (
-                  <div style={{ fontSize: 11, color: '#6b7280' }}>
-                    staging: <code>{selected.staging_id}</code>
+                {(selected.pipeline_run_id || selected.staging_id) && (
+                  <div className="border-t border-border pt-2 space-y-1 text-[11px] text-muted-foreground">
+                    {selected.pipeline_run_id && (
+                      <div>
+                        pipeline_run: <code className="bg-muted/60 px-1 rounded">{selected.pipeline_run_id}</code>
+                      </div>
+                    )}
+                    {selected.staging_id && (
+                      <div>
+                        staging: <code className="bg-muted/60 px-1 rounded">{selected.staging_id}</code>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

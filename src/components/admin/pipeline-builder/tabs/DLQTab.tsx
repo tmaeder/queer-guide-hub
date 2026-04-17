@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, RefreshCw, Trash2, Play } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Trash2, Play, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { untypedFrom } from '@/integrations/supabase/untyped';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 interface DlqRow {
   id: number;
@@ -29,30 +32,31 @@ interface SummaryRow {
   last_attempt: string | null;
 }
 
-const cellStyle: React.CSSProperties = { padding: '8px 12px', fontSize: 13, verticalAlign: 'top' };
-const statusColor: Record<string, [string, string]> = {
-  pending:          ['#fef9c3', '#a16207'],
-  retrying:         ['#dbeafe', '#1d4ed8'],
-  permanent_failed: ['#fee2e2', '#b91c1c'],
-  resolved:         ['#dcfce7', '#15803d'],
+type StatusFilter = 'pending' | 'permanent_failed' | 'all';
+
+const statusClass: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-700',
+  retrying: 'bg-blue-100 text-blue-700',
+  permanent_failed: 'bg-red-100 text-red-700',
+  resolved: 'bg-green-100 text-green-700',
 };
 
 export default function DLQTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const [filter, setFilter] = useState<'pending' | 'permanent_failed' | 'all'>('pending');
+  const [filter, setFilter] = useState<StatusFilter>('pending');
 
   const { data: summary = [] } = useQuery<SummaryRow[]>({
     queryKey: ['dlq-summary'],
     queryFn: async () => {
       const { data, error } = await untypedFrom('dlq_summary').select('*');
       if (error) {
-        console.warn('dlq_summary view unavailable, falling back to empty:', error.message);
+        console.warn('dlq_summary view unavailable:', error.message);
         return [];
       }
       return (data ?? []) as SummaryRow[];
     },
-    refetchInterval: 15000,
+    refetchInterval: 15_000,
   });
 
   const { data: rows = [], isLoading } = useQuery<DlqRow[]>({
@@ -64,7 +68,7 @@ export default function DLQTab() {
       if (error) throw error;
       return (data ?? []) as DlqRow[];
     },
-    refetchInterval: 15000,
+    refetchInterval: 15_000,
   });
 
   const triggerConsumer = useMutation({
@@ -72,7 +76,10 @@ export default function DLQTab() {
       const { error } = await supabase.functions.invoke('pipeline-dlq-consumer', { body: { limit: 50 } });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['dlq-rows'] }),
+    onSuccess: () => {
+      toast({ title: 'DLQ consumer triggered', description: 'Processing up to 50 items' });
+      qc.invalidateQueries({ queryKey: ['dlq-rows'] });
+    },
     onError: (e: Error) => toast({ title: 'DLQ consumer failed', description: e.message, variant: 'destructive' }),
   });
 
@@ -96,125 +103,171 @@ export default function DLQTab() {
     onError: (e: Error) => toast({ title: 'Resolve failed', description: e.message, variant: 'destructive' }),
   });
 
-  const totals = summary.reduce(
+  const totals = useMemo(() => summary.reduce(
     (acc, r) => {
       acc.total += r.items;
-      if (r.status === 'pending')          acc.pending += r.items;
-      if (r.status === 'permanent_failed') acc.failed  += r.items;
+      if (r.status === 'pending') acc.pending += r.items;
+      if (r.status === 'permanent_failed') acc.failed += r.items;
       return acc;
-    }, { total: 0, pending: 0, failed: 0 },
-  );
+    }, { total: 0, pending: 0, failed: 0 }
+  ), [summary]);
 
-  const filterBtn = (key: typeof filter, label: string) => (
+  const FilterButton = ({ value, label }: { value: StatusFilter; label: string }) => (
     <button
-      key={key}
-      onClick={() => setFilter(key)}
-      style={{
-        padding: '6px 12px', fontSize: 12, fontWeight: filter === key ? 600 : 400,
-        background: filter === key ? '#6366f1' : '#fff', color: filter === key ? '#fff' : '#374151',
-        border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer',
-      }}
+      onClick={() => setFilter(value)}
+      className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
+        filter === value
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-background text-muted-foreground border-border hover:bg-accent'
+      }`}
     >{label}</button>
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <AlertTriangle style={{ width: 16, height: 16, color: '#f59e0b' }} />
-        <span style={{ fontSize: 14, fontWeight: 600 }}>Dead Letter Queue</span>
-        <span style={{ fontSize: 12, color: '#9ca3af' }}>
-          {totals.total} total · {totals.pending} pending · {totals.failed} permanent
-        </span>
-        <div style={{ flex: 1 }} />
-        {filterBtn('pending', 'Pending')}
-        {filterBtn('permanent_failed', 'Permanent fail')}
-        {filterBtn('all', 'All')}
-        <button
-          disabled={triggerConsumer.isPending}
-          onClick={() => triggerConsumer.mutate()}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '6px 12px', fontSize: 12, fontWeight: 500,
-            background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer',
-          }}
-        ><Play style={{ width: 14, height: 14 }} /> Run consumer now</button>
-      </div>
-
-      {/* Summary by source × stage */}
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', overflow: 'hidden' }}>
-        <div style={{ padding: '10px 14px', borderBottom: '1px solid #e5e7eb', fontSize: 12, fontWeight: 600, color: '#374151' }}>
-          By source × stage
+    <TooltipProvider delayDuration={200}>
+      <div className="flex flex-col gap-4">
+        {/* Header + controls */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <span className="text-sm font-semibold">Dead Letter Queue</span>
+          <span className="text-xs text-muted-foreground">
+            <strong className="text-foreground">{totals.total}</strong> total · <strong className="text-yellow-700">{totals.pending}</strong> pending · <strong className="text-destructive">{totals.failed}</strong> permanent
+          </span>
+          <div className="flex-1" />
+          <FilterButton value="pending" label="Pending" />
+          <FilterButton value="permanent_failed" label="Permanent fail" />
+          <FilterButton value="all" label="All" />
+          <Button
+            size="sm"
+            onClick={() => triggerConsumer.mutate()}
+            disabled={triggerConsumer.isPending}
+            className="h-8 text-xs"
+          >
+            {triggerConsumer.isPending
+              ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              : <Play className="h-3.5 w-3.5 mr-1.5" />}
+            Run consumer now
+          </Button>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-          <thead style={{ background: '#f9fafb' }}>
-            <tr>
-              {['Source', 'Stage', 'Status', 'Items', 'Next retry'].map(h => (
-                <th key={h} style={{ ...cellStyle, fontWeight: 500, color: '#6b7280' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {summary.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>DLQ is empty</td></tr>
-            ) : summary.map((r, i) => {
-              const [bg, fg] = statusColor[r.status] ?? ['#f3f4f6', '#374151'];
-              return (
-                <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={cellStyle}>{r.source_slug ?? '—'}</td>
-                  <td style={cellStyle}>{r.stage}</td>
-                  <td style={cellStyle}><span style={{ background: bg, color: fg, padding: '2px 8px', borderRadius: 999, fontSize: 11 }}>{r.status}</span></td>
-                  <td style={cellStyle}>{r.items}</td>
-                  <td style={{ ...cellStyle, color: '#6b7280', fontSize: 12 }}>{r.next_retry ? new Date(r.next_retry).toLocaleString() : '—'}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
 
-      {/* Item drilldown */}
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', overflow: 'hidden', maxHeight: 500, overflowY: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-          <thead style={{ background: '#f9fafb', position: 'sticky', top: 0 }}>
-            <tr>
-              {['Stage', 'Source', 'Error', 'Attempts', 'Status', 'Actions'].map(h => (
-                <th key={h} style={{ ...cellStyle, fontWeight: 500, color: '#6b7280', textAlign: 'left' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr><td colSpan={6} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>Loading…</td></tr>
-            ) : rows.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>Nothing in queue</td></tr>
-            ) : rows.map(r => {
-              const [bg, fg] = statusColor[r.status] ?? ['#f3f4f6', '#374151'];
-              return (
-                <tr key={r.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={cellStyle}>{r.stage}</td>
-                  <td style={cellStyle}>{r.source_slug ?? '—'}</td>
-                  <td style={{ ...cellStyle, fontFamily: 'ui-monospace, monospace', fontSize: 11, color: '#b91c1c', maxWidth: 360, wordBreak: 'break-word' }}>
-                    {r.error_code ? <strong>{r.error_code}: </strong> : null}
-                    {r.error_message?.slice(0, 220) ?? '—'}
+        {/* Summary by source × stage */}
+        <div className="border border-border rounded-md bg-background overflow-hidden">
+          <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground">
+            By source × stage
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40">
+              <tr className="border-b border-border">
+                {['Source', 'Stage', 'Status', 'Items', 'Next retry'].map(h => (
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {summary.length === 0 ? (
+                <tr><td colSpan={5} className="p-6 text-center text-muted-foreground text-xs">DLQ is empty</td></tr>
+              ) : summary.map((r, i) => (
+                <tr key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                  <td className="px-3 py-2 font-mono text-xs">{r.source_slug ?? '—'}</td>
+                  <td className="px-3 py-2 font-mono text-xs">{r.stage}</td>
+                  <td className="px-3 py-2">
+                    <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
+                      {r.status}
+                    </span>
                   </td>
-                  <td style={cellStyle}>{r.attempts}/{r.max_attempts}</td>
-                  <td style={cellStyle}><span style={{ background: bg, color: fg, padding: '2px 8px', borderRadius: 999, fontSize: 11 }}>{r.status}</span></td>
-                  <td style={cellStyle}>
-                    <button onClick={() => retryNow.mutate(r.id)} title="Retry now"
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#6366f1', padding: 4 }}>
-                      <RefreshCw style={{ width: 14, height: 14 }} />
-                    </button>
-                    <button onClick={() => resolveItem.mutate(r.id)} title="Mark resolved"
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 4 }}>
-                      <Trash2 style={{ width: 14, height: 14 }} />
-                    </button>
+                  <td className="px-3 py-2 tabular-nums font-semibold">{r.items}</td>
+                  <td className="px-3 py-2 text-muted-foreground text-xs"
+                      title={r.next_retry ? new Date(r.next_retry).toISOString() : ''}>
+                    {r.next_retry ? formatDistanceToNow(new Date(r.next_retry), { addSuffix: true }) : '—'}
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Item drilldown */}
+        <div className="border border-border rounded-md bg-background overflow-hidden max-h-[500px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 sticky top-0">
+              <tr className="border-b border-border">
+                {['Stage', 'Source', 'Error', 'Attempts', 'Status', 'Actions'].map(h => (
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
+              ) : rows.length === 0 ? (
+                <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Nothing in queue</td></tr>
+              ) : rows.map(r => (
+                <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
+                  <td className="px-3 py-2 font-mono text-xs align-top">{r.stage}</td>
+                  <td className="px-3 py-2 font-mono text-xs align-top">{r.source_slug ?? '—'}</td>
+                  <td className="px-3 py-2 align-top max-w-[360px]">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="font-mono text-[11px] text-destructive truncate cursor-help">
+                          {r.error_code && <strong>{r.error_code}: </strong>}
+                          {r.error_message ?? '—'}
+                        </div>
+                      </TooltipTrigger>
+                      {r.error_message && (
+                        <TooltipContent className="text-xs max-w-[480px] whitespace-pre-wrap">
+                          {r.error_message}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </td>
+                  <td className="px-3 py-2 tabular-nums text-xs align-top">
+                    {r.attempts}/{r.max_attempts}
+                  </td>
+                  <td className="px-3 py-2 align-top">
+                    <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 align-top flex gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0 text-primary"
+                          onClick={() => retryNow.mutate(r.id)}
+                          disabled={retryNow.isPending}
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-xs">Retry now</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => {
+                            if (window.confirm('Mark this DLQ item as resolved? It will no longer retry.')) {
+                              resolveItem.mutate(r.id);
+                            }
+                          }}
+                          disabled={resolveItem.isPending}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-xs">Mark resolved</TooltipContent>
+                    </Tooltip>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

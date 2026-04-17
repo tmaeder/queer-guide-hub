@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, CheckCircle, Play } from 'lucide-react';
+import { Bell, CheckCircle, Play, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface Alert {
   id: number;
@@ -15,23 +18,24 @@ interface Alert {
   created_at: string;
 }
 
-const cellStyle: React.CSSProperties = { padding: '8px 12px', fontSize: 13, verticalAlign: 'top' };
-const sevColor: Record<string, [string, string]> = {
-  info:  ['#dbeafe', '#1d4ed8'],
-  warn:  ['#fef9c3', '#a16207'],
-  error: ['#fee2e2', '#b91c1c'],
+type Filter = 'open' | 'all';
+
+const severityClass: Record<string, string> = {
+  info: 'bg-blue-100 text-blue-700',
+  warn: 'bg-yellow-100 text-yellow-700',
+  error: 'bg-red-100 text-red-700',
 };
 
 const KIND_LABEL: Record<string, string> = {
-  coverage_gap:          'Coverage gap',
+  coverage_gap: 'Coverage gap',
   dedup_precision_drift: 'Dedup precision drift',
-  dlq_backlog:           'DLQ backlog',
+  dlq_backlog: 'DLQ backlog',
 };
 
 export default function AlertsTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const [filter, setFilter] = useState<'open' | 'all'>('open');
+  const [filter, setFilter] = useState<Filter>('open');
 
   const { data: alerts = [], isLoading } = useQuery<Alert[]>({
     queryKey: ['data-ops-alerts', filter],
@@ -42,7 +46,7 @@ export default function AlertsTab() {
       if (error) throw error;
       return (data ?? []) as Alert[];
     },
-    refetchInterval: 30000,
+    refetchInterval: 30_000,
   });
 
   const ack = useMutation({
@@ -63,90 +67,125 @@ export default function AlertsTab() {
       const { error } = await supabase.rpc('generate_data_ops_alerts');
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['data-ops-alerts'] }),
+    onSuccess: () => {
+      toast({ title: 'Alert scan complete' });
+      qc.invalidateQueries({ queryKey: ['data-ops-alerts'] });
+    },
     onError: (e: Error) => toast({ title: 'Alert scan failed', description: e.message, variant: 'destructive' }),
   });
 
-  const counts = {
-    open:  alerts.filter(a => !a.acked_at).length,
+  const counts = useMemo(() => ({
+    open: alerts.filter(a => !a.acked_at).length,
     error: alerts.filter(a => !a.acked_at && a.severity === 'error').length,
-    warn:  alerts.filter(a => !a.acked_at && a.severity === 'warn').length,
-  };
+    warn: alerts.filter(a => !a.acked_at && a.severity === 'warn').length,
+    info: alerts.filter(a => !a.acked_at && a.severity === 'info').length,
+  }), [alerts]);
 
-  const filterBtn = (key: typeof filter, label: string, n?: number) => (
+  const FilterButton = ({ value, label }: { value: Filter; label: string }) => (
     <button
-      key={key}
-      onClick={() => setFilter(key)}
-      style={{
-        padding: '6px 12px', fontSize: 12, fontWeight: filter === key ? 600 : 400,
-        background: filter === key ? '#6366f1' : '#fff', color: filter === key ? '#fff' : '#374151',
-        border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer',
-      }}
-    >{label}{n != null ? ` (${n})` : ''}</button>
+      onClick={() => setFilter(value)}
+      className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
+        filter === value
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-background text-muted-foreground border-border hover:bg-accent'
+      }`}
+    >{label}</button>
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Bell style={{ width: 16, height: 16, color: '#f59e0b' }} />
-        <span style={{ fontSize: 14, fontWeight: 600 }}>Data Ops Alerts</span>
-        <span style={{ fontSize: 12, color: '#9ca3af' }}>
-          {counts.open} open ({counts.error} error · {counts.warn} warn)
-        </span>
-        <div style={{ flex: 1 }} />
-        {filterBtn('open', 'Open', counts.open)}
-        {filterBtn('all',  'All')}
-        <button
-          disabled={generateNow.isPending}
+    <div className="flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Bell className="h-4 w-4 text-amber-600" />
+        <span className="text-sm font-semibold">Data Ops Alerts</span>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span><strong className="text-foreground">{counts.open}</strong> open</span>
+          {counts.error > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-700 border-red-200">{counts.error} error</Badge>}
+          {counts.warn > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">{counts.warn} warn</Badge>}
+          {counts.info > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200">{counts.info} info</Badge>}
+        </div>
+        <div className="flex-1" />
+        <FilterButton value="open" label={`Open (${counts.open})`} />
+        <FilterButton value="all" label="All" />
+        <Button
+          size="sm"
           onClick={() => generateNow.mutate()}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '6px 12px', fontSize: 12, fontWeight: 500,
-            background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer',
-          }}
-        ><Play style={{ width: 14, height: 14 }} /> Re-scan</button>
+          disabled={generateNow.isPending}
+          className="h-8 text-xs"
+        >
+          {generateNow.isPending
+            ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+            : <Play className="h-3.5 w-3.5 mr-1.5" />}
+          Re-scan
+        </Button>
       </div>
 
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', overflow: 'hidden', maxHeight: 600, overflowY: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-          <thead style={{ background: '#f9fafb', position: 'sticky', top: 0 }}>
-            <tr>
+      {/* Alerts table */}
+      <div className="border border-border rounded-md bg-background overflow-hidden max-h-[600px] overflow-y-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/40 sticky top-0">
+            <tr className="border-b border-border">
               {['Kind', 'Severity', 'Source', 'Detail', 'Created', 'Action'].map(h => (
-                <th key={h} style={{ ...cellStyle, fontWeight: 500, color: '#6b7280', textAlign: 'left' }}>{h}</th>
+                <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={6} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>Loading…</td></tr>
+              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
             ) : alerts.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: 24, textAlign: 'center', color: '#22c55e' }}>All clear ✓</td></tr>
-            ) : alerts.map(a => {
-              const [bg, fg] = sevColor[a.severity] ?? ['#f3f4f6', '#374151'];
-              return (
-                <tr key={a.id} style={{ borderBottom: '1px solid #f3f4f6', opacity: a.acked_at ? 0.55 : 1 }}>
-                  <td style={cellStyle}>{KIND_LABEL[a.alert_kind] ?? a.alert_kind}</td>
-                  <td style={cellStyle}><span style={{ background: bg, color: fg, padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 500 }}>{a.severity}</span></td>
-                  <td style={cellStyle}>{a.source_slug ?? '—'}</td>
-                  <td style={{ ...cellStyle, fontFamily: 'ui-monospace, monospace', fontSize: 11, color: '#374151', maxWidth: 380, wordBreak: 'break-word' }}>
-                    {Object.entries(a.detail).map(([k, v]) =>
-                      <span key={k} style={{ marginRight: 10 }}><b>{k}:</b> {String(v)}</span>
-                    )}
-                  </td>
-                  <td style={{ ...cellStyle, color: '#6b7280', fontSize: 12 }}>{new Date(a.created_at).toLocaleString()}</td>
-                  <td style={cellStyle}>
-                    {a.acked_at
-                      ? <span style={{ color: '#22c55e', fontSize: 11 }}>acked</span>
-                      : (
-                        <button onClick={() => ack.mutate(a.id)} title="Acknowledge"
-                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#6366f1', padding: 4 }}>
-                          <CheckCircle style={{ width: 14, height: 14 }} />
-                        </button>
-                      )}
-                  </td>
-                </tr>
-              );
-            })}
+              <tr><td colSpan={6} className="p-6 text-center text-green-600 text-sm font-medium">
+                <CheckCircle className="h-5 w-5 inline mr-1" />
+                All clear
+              </td></tr>
+            ) : alerts.map(a => (
+              <tr key={a.id} className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${a.acked_at ? 'opacity-60' : ''}`}>
+                <td className="px-3 py-2.5 align-top font-medium">
+                  {KIND_LABEL[a.alert_kind] ?? a.alert_kind}
+                </td>
+                <td className="px-3 py-2.5 align-top">
+                  <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${severityClass[a.severity] || 'bg-muted'}`}>
+                    {a.severity}
+                  </span>
+                </td>
+                <td className="px-3 py-2.5 align-top font-mono text-xs">
+                  {a.source_slug ?? <span className="text-muted-foreground">—</span>}
+                </td>
+                <td className="px-3 py-2.5 align-top max-w-[380px]">
+                  <div className="text-[11px] font-mono space-x-3 break-words">
+                    {Object.entries(a.detail).map(([k, v]) => (
+                      <span key={k}>
+                        <span className="text-muted-foreground">{k}:</span>{' '}
+                        <span className="text-foreground">{String(v)}</span>
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td className="px-3 py-2.5 align-top text-xs text-muted-foreground"
+                    title={new Date(a.created_at).toISOString()}>
+                  {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                </td>
+                <td className="px-3 py-2.5 align-top">
+                  {a.acked_at ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] text-green-600">
+                      <CheckCircle className="h-3 w-3" />
+                      acked
+                    </span>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-xs text-primary"
+                      onClick={() => ack.mutate(a.id)}
+                      disabled={ack.isPending}
+                    >
+                      <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                      Ack
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
