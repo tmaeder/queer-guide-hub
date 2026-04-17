@@ -1,15 +1,13 @@
 /**
  * Unified reservations layer.
  *
- * Now reads from the unified `reservations` table (migration
- * 20260417160000_reservations_unified), which is kept in sync with the
- * legacy `bookings` and `trip_reservations` tables by the dual-write
- * triggers in 20260417170000_reservations_dual_write.
+ * Reads + writes the `reservations` table directly. The legacy
+ * `bookings` / `trip_reservations` tables and dual-write triggers were
+ * dropped in 20260417200000_drop_legacy_reservations.
  *
- * Writes still target the legacy tables — they are the source of truth
- * during the parity window. Triggers mirror legacy writes into
- * `reservations`. Once the parity window closes, the follow-up PR will
- * flip writes over and drop the legacy tables.
+ * `Reservation.origin` is still derived from `source` for backward
+ * compatibility with the few UI surfaces that branched on it; new code
+ * should branch on `source` instead.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -75,13 +73,6 @@ export interface Reservation {
 
   notes: string | null;
   created_at: string;
-
-  /**
-   * Legacy row FKs. Mutations that mutate the legacy source of truth
-   * (e.g. attach/detach writes `bookings.trip_id`) use these.
-   */
-  legacy_booking_id: string | null;
-  legacy_trip_reservation_id: string | null;
 }
 
 const RESERVATION_QUERY_KEY = (userId: string | undefined) =>
@@ -132,8 +123,6 @@ interface ReservationRow {
   trip_id: string | null;
   trip_day_id: string | null;
   source: string;
-  legacy_booking_id: string | null;
-  legacy_trip_reservation_id: string | null;
   type: string;
   title: string;
   status: string;
@@ -177,8 +166,6 @@ const project = (r: ReservationRow): Reservation => {
     country_id: r.country_id,
     notes: r.notes,
     created_at: r.created_at,
-    legacy_booking_id: r.legacy_booking_id,
-    legacy_trip_reservation_id: r.legacy_trip_reservation_id,
   };
 };
 
@@ -231,15 +218,9 @@ export function useOrphanReservations() {
 }
 
 /**
- * Attach an external booking row to a trip.
- *
- * Writes to the legacy `bookings` table — the source of truth during the
- * dual-write parity window. The trigger mirrors the change into
- * `reservations`, which is what every reader consumes.
- *
- * Only valid when `origin === 'booking'` (i.e. the row has a
- * `legacy_booking_id`). Moving a manual `trip_reservation` between trips
- * is a separate future flow.
+ * Attach a reservation to a trip — writes `reservations.trip_id`
+ * directly. Used by the Inbox to move orphan reservations into a trip
+ * (manually or as part of accepting a grouping suggestion).
  */
 export function useAttachBookingToTrip() {
   const queryClient = useQueryClient();
@@ -247,16 +228,16 @@ export function useAttachBookingToTrip() {
 
   return useMutation({
     mutationFn: async ({
-      legacyBookingId,
+      reservationId,
       tripId,
     }: {
-      legacyBookingId: string;
+      reservationId: string;
       tripId: string;
     }) => {
       const { error } = await supabase
-        .from('bookings')
+        .from('reservations')
         .update({ trip_id: tripId })
-        .eq('id', legacyBookingId);
+        .eq('id', reservationId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -266,17 +247,17 @@ export function useAttachBookingToTrip() {
   });
 }
 
-/** Detach a booking from its trip — moves it back to the Inbox. */
+/** Detach a reservation from its trip — moves it back to the Inbox. */
 export function useDetachBooking() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (legacyBookingId: string) => {
+    mutationFn: async (reservationId: string) => {
       const { error } = await supabase
-        .from('bookings')
+        .from('reservations')
         .update({ trip_id: null })
-        .eq('id', legacyBookingId);
+        .eq('id', reservationId);
       if (error) throw error;
     },
     onSuccess: () => {

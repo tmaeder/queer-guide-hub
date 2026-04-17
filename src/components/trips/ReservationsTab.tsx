@@ -12,8 +12,6 @@ import {
   Package,
   ExternalLink,
   CalendarClock,
-  Unlink,
-  Inbox as InboxIcon,
 } from 'lucide-react';
 import { format, isAfter, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -35,11 +33,6 @@ import {
   useReservationMutations,
   type Reservation,
 } from '@/hooks/useTripReservations';
-import {
-  useReservations,
-  useDetachBooking,
-  type Reservation as UnifiedReservation,
-} from '@/hooks/useReservations';
 import { AddReservationDialog } from './AddReservationDialog';
 
 const TYPE_ICONS: Record<string, typeof Plane> = {
@@ -68,20 +61,8 @@ export function ReservationsTab({ tripId }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { data: reservations, isLoading } = useTripReservations(tripId);
-  const { data: allUserReservations } = useReservations();
   const { deleteReservation } = useReservationMutations(tripId);
-  const detachBooking = useDetachBooking();
 
-  // External bookings (origin = 'booking') that have been attached to this trip.
-  // Render-only — these can be detached or opened in the provider, but the
-  // edit-in-place flow stays scoped to the legacy `trip_reservations` rows.
-  const attachedBookings: UnifiedReservation[] = useMemo(
-    () =>
-      (allUserReservations ?? []).filter(
-        (r) => r.origin === 'booking' && r.trip_id === tripId,
-      ),
-    [allUserReservations, tripId],
-  );
   const [addOpen, setAddOpen] = useState(false);
   const [editItem, setEditItem] = useState<Reservation | undefined>(undefined);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -159,7 +140,7 @@ export function ReservationsTab({ tripId }: Props) {
     );
   };
 
-  if (items.length === 0 && attachedBookings.length === 0) {
+  if (items.length === 0) {
     return (
       <>
         <Box
@@ -280,146 +261,6 @@ export function ReservationsTab({ tripId }: Props) {
         </Box>
       )}
 
-      {/* Imported bookings — external provider rows attached to this trip */}
-      {attachedBookings.length > 0 && (
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.25 }}>
-            <Box
-              sx={{
-                width: 28,
-                height: 28,
-                borderRadius: 1.25,
-                bgcolor: 'action.hover',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <InboxIcon size={14} />
-            </Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 700,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-              }}
-            >
-              {t('trips.reservations.importedBookings', 'Imported bookings')}
-            </Typography>
-            <Badge variant="secondary">{attachedBookings.length}</Badge>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-              gap: 1.5,
-            }}
-          >
-            {attachedBookings.map((b) => {
-              const Icon = TYPE_ICONS[b.type] || Package;
-              return (
-                <Card key={b.key} className="mb-1">
-                  <CardContent>
-                    <Box className="flex items-center gap-2">
-                      <Box
-                        className="rounded-full flex items-center justify-center shrink-0"
-                        sx={{ width: 32, height: 32, bgcolor: 'action.hover' }}
-                      >
-                        <Icon size={15} />
-                      </Box>
-                      <div className="flex-1 min-w-0">
-                        <Box className="flex items-center gap-1.5">
-                          <Typography variant="body2" fontWeight={600} noWrap>
-                            {b.title}
-                          </Typography>
-                          {statusBadge(b.status)}
-                        </Box>
-                        <Box className="flex items-center gap-2 mt-0.5">
-                          {b.start_at && (
-                            <Typography variant="caption" color="text.secondary">
-                              {format(new Date(b.start_at), 'MMM d, HH:mm')}
-                            </Typography>
-                          )}
-                          {b.start_at && b.end_at && (
-                            <Typography variant="caption" color="text.secondary">
-                              -
-                            </Typography>
-                          )}
-                          {b.end_at && (
-                            <Typography variant="caption" color="text.secondary">
-                              {format(new Date(b.end_at), 'MMM d, HH:mm')}
-                            </Typography>
-                          )}
-                          {b.provider && (
-                            <Typography variant="caption" color="text.secondary">
-                              {b.provider}
-                            </Typography>
-                          )}
-                          {b.provider_booking_id && (
-                            <Badge variant="outline">
-                              <Box
-                                component="span"
-                                sx={{ fontFamily: 'monospace', fontSize: 10 }}
-                              >
-                                {b.provider_booking_id}
-                              </Box>
-                            </Badge>
-                          )}
-                        </Box>
-                      </div>
-                      <Box className="flex items-center gap-1 shrink-0">
-                        {b.total_amount != null && b.currency && (
-                          <Typography variant="body2" fontWeight={700}>
-                            {formatAmount(Number(b.total_amount), b.currency)}
-                          </Typography>
-                        )}
-                        <IconButton
-                          size="small"
-                          aria-label={t(
-                            'trips.reservations.detach',
-                            'Detach from trip',
-                          )}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!b.legacy_booking_id) return;
-                            detachBooking.mutate(b.legacy_booking_id, {
-                              onSuccess: () =>
-                                toast({
-                                  title: t(
-                                    'trips.reservations.detached',
-                                    'Booking moved to inbox',
-                                  ),
-                                }),
-                              onError: (err) =>
-                                toast({
-                                  title: t(
-                                    'trips.reservations.detachFailed',
-                                    'Could not detach booking',
-                                  ),
-                                  description: String(err),
-                                  variant: 'destructive',
-                                }),
-                            });
-                          }}
-                          sx={{
-                            opacity: 0.5,
-                            '&:hover': { opacity: 1 },
-                            minWidth: 44,
-                            minHeight: 44,
-                          }}
-                        >
-                          <Unlink size={14} />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </Box>
-        </Box>
-      )}
 
       {TYPE_ORDER.map((type) => {
         const typeItems = grouped[type];

@@ -205,17 +205,13 @@ export default function TripsInboxPage() {
                     end_date: s.end_at.slice(0, 10),
                     currency: s.currency ?? 'EUR',
                   });
-                  // Attach each member booking. Trip-reservation members already
-                  // have a trip_id (their own); only external bookings need moving.
+                  // Attach orphan reservations to the new trip. Manual rows
+                  // already on a trip won't appear here (they're filtered out
+                  // upstream as standalone-orphans only).
                   await Promise.all(
-                    s.reservations
-                      .filter((r) => r.origin === 'booking' && r.legacy_booking_id)
-                      .map((r) =>
-                        attach.mutateAsync({
-                          legacyBookingId: r.legacy_booking_id as string,
-                          tripId: trip.id,
-                        }),
-                      ),
+                    s.reservations.map((r) =>
+                      attach.mutateAsync({ reservationId: r.id, tripId: trip.id }),
+                    ),
                   );
                   navigate(`/trips/${trip.id}`);
                 }}
@@ -239,13 +235,9 @@ export default function TripsInboxPage() {
                 reservation={r}
                 trips={trips ?? []}
                 onAttach={async (tripId) => {
-                  if (r.origin !== 'booking' || !r.legacy_booking_id) return;
-                  await attach.mutateAsync({
-                    legacyBookingId: r.legacy_booking_id,
-                    tripId,
-                  });
+                  await attach.mutateAsync({ reservationId: r.id, tripId });
                 }}
-                canAttach={r.origin === 'booking' && !!r.legacy_booking_id}
+                canAttach={true}
               />
             ))}
           </Box>

@@ -64,46 +64,43 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
         setBookingId(data.bookingId);
 
         if (tripId) {
-          await supabase.from('trip_reservations').insert({
+          await supabase.from('reservations').insert({
+            user_id: user.id,
             trip_id: tripId,
+            source: 'provider_api',
             type: 'hotel',
             title: hotel.title,
             provider: hotel.provider,
             booking_url: hotel.bookingUrl,
-            booking_id: data.bookingId,
-            auto_created: true,
+            provider_booking_id: data.bookingId,
             status: 'confirmed',
           });
         }
 
         onBooked?.(data.bookingId);
       } else {
-        // Affiliate flow: create reservation record then redirect
-        if (tripId) {
-          await supabase.from('trip_reservations').insert({
-            trip_id: tripId,
+        // Affiliate flow: track in reservations and open the affiliate URL.
+        // Single insert replaces the legacy split between trip_reservations
+        // (per-trip line item) and bookings (user-wide tracking).
+        const { data: booking } = await supabase
+          .from('reservations')
+          .insert({
+            user_id: user.id,
+            trip_id: tripId || null,
+            source: 'provider_api',
             type: 'hotel',
             title: hotel.title,
+            status: 'pending',
             provider: hotel.provider,
             booking_url: hotel.bookingUrl,
-            auto_created: true,
-            status: 'pending',
-          });
-        }
-
-        // Create booking record for tracking
-        const { data: booking } = await supabase.from('bookings').insert({
-          user_id: user.id,
-          trip_id: tripId || null,
-          provider: hotel.provider,
-          booking_type: 'hotel',
-          status: 'pending',
-          guest_name: guestName,
-          total_amount: hotel.price,
-          currency: hotel.currency,
-          city_id: null,
-          provider_data: hotel.providerData || {},
-        }).select('id').single();
+            total_amount: hotel.price,
+            currency: hotel.currency,
+            // guest_name folded into the provider blob since the unified
+            // table doesn't reserve a column for it.
+            raw_provider_data: { ...(hotel.providerData || {}), guest_name: guestName },
+          })
+          .select('id')
+          .single();
 
         if (booking) setBookingId(booking.id);
 
