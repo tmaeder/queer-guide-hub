@@ -16,13 +16,22 @@ import {
   ArrowRight,
   ShieldAlert,
   Skull,
+  WifiOff,
+  Bell,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useTrip, type TripPlace, type TripDay } from '@/hooks/useTrips';
+import { useTrip, type TripPlace, type TripDay, type TripWithDetails } from '@/hooks/useTrips';
 import { useReservations, type Reservation } from '@/hooks/useReservations';
 import { useTripSafety } from '@/hooks/useTripSafety';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { computeTripSegments, findActiveSegment } from '@/utils/tripSegments';
+import {
+  cacheTripSnapshot,
+  readTripSnapshot,
+  pruneStaleSnapshots,
+} from '@/utils/offlineTripPack';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorState } from '@/components/ui/EmptyState';
@@ -98,6 +107,15 @@ export default function TodayModePage() {
   const { tripId } = useParams<{ tripId: string }>();
   const { data: trip, isLoading, error } = useTrip(tripId);
   const { data: reservations } = useReservations();
+  const online = useOnlineStatus();
+  const push = usePushSubscription();
+
+  // Offline-snapshot rehydration — used only when the live query failed or
+  // returned nothing (airplane mode / dead signal). When online with fresh
+  // data we write a new snapshot on every successful render.
+  const [snapshotTrip, setSnapshotTrip] = useState<TripWithDetails | null>(null);
+  const [snapshotReservations, setSnapshotReservations] = useState<Reservation[] | null>(null);
+  const [snapshotSavedAt, setSnapshotSavedAt] = useState<string | null>(null);
 
   // Tick so "next in N min" stays fresh without a heavy interval.
   const [now, setNow] = useState<Date>(() => new Date());
@@ -106,18 +124,47 @@ export default function TodayModePage() {
     return () => clearInterval(i);
   }, []);
 
+  // Load any existing snapshot at mount — so we can render immediately if
+  // the network is down. Also prune stale snapshots opportunistically.
+  useEffect(() => {
+    if (!tripId) return;
+    void pruneStaleSnapshots();
+    void readTripSnapshot(tripId).then((snap) => {
+      if (!snap) return;
+      setSnapshotTrip(snap.trip);
+      setSnapshotReservations(snap.reservations);
+      setSnapshotSavedAt(snap.savedAt);
+    });
+  }, [tripId]);
+
+  // Write a fresh snapshot whenever the live data lands — overwrites the
+  // prior blob so the next offline visit sees current-ish state.
+  const tripReservationsForSnapshot = useMemo(
+    () => (reservations ?? []).filter((r) => r.trip_id === trip?.id),
+    [reservations, trip?.id],
+  );
+  useEffect(() => {
+    if (!tripId || !trip) return;
+    void cacheTripSnapshot(tripId, trip, tripReservationsForSnapshot);
+  }, [tripId, trip, tripReservationsForSnapshot]);
+
+  // Pick the source of truth: live data when we have it, snapshot otherwise.
+  const effectiveTrip = trip ?? snapshotTrip;
+  const effectiveReservations = reservations ?? snapshotReservations ?? undefined;
+  const servingFromSnapshot = !trip && !!snapshotTrip;
+
   const timeline = useMemo<TimelineItem[]>(() => {
-    if (!trip) return [];
+    if (!effectiveTrip) return [];
     const todayStart = startOfLocalDay(now);
     const todayEnd = endOfLocalDay(now);
     const todayISO = todayStart.toISOString().slice(0, 10);
 
     // Places scheduled on today's trip_day.
     const todaysDayIds = new Set<string>(
-      trip.trip_days.filter((d: TripDay) => d.date === todayISO).map((d) => d.id),
+      effectiveTrip.trip_days.filter((d: TripDay) => d.date === todayISO).map((d) => d.id),
     );
 
-    const placeItems: TimelineItem[] = trip.trip_places
+    const placeItems: TimelineItem[] = effectiveTrip.trip_places
       .filter((p: TripPlace) => !!p.day_id && todaysDayIds.has(p.day_id))
       .map((p: TripPlace) => {
         const name =
@@ -145,9 +192,9 @@ export default function TodayModePage() {
       });
 
     // Reservations that touch today (start or end intersects [todayStart,todayEnd]).
-    const reservationItems: TimelineItem[] = (reservations ?? [])
+    const reservationItems: TimelineItem[] = (effectiveReservations ?? [])
       .filter((r) => {
-        if (r.trip_id !== trip.id) return false;
+        if (r.trip_id !== effectiveTrip.id) return false;
         const start = r.start_at ? new Date(r.start_at) : null;
         const end = r.end_at ? new Date(r.end_at) : null;
         if (!start && !end) return false;
@@ -173,7 +220,7 @@ export default function TodayModePage() {
       return ax - bx;
     });
     return combined;
-  }, [trip, reservations, now, t]);
+  }, [effectiveTrip, effectiveReservations, now, t]);
 
   const nextUp = useMemo<TimelineItem | null>(() => {
     return timeline.find((i) => i.start && i.start.getTime() > now.getTime()) ?? null;
@@ -181,15 +228,15 @@ export default function TodayModePage() {
 
   // Per-leg safety: which country is the user in *today*?
   const tripReservations = useMemo(
-    () => (reservations ?? []).filter((r) => r.trip_id === trip?.id),
-    [reservations, trip?.id],
+    () => (effectiveReservations ?? []).filter((r) => r.trip_id === effectiveTrip?.id),
+    [effectiveReservations, effectiveTrip?.id],
   );
   const segments = useMemo(
     () =>
-      trip
-        ? computeTripSegments(trip.trip_places, trip.trip_days, tripReservations)
+      effectiveTrip
+        ? computeTripSegments(effectiveTrip.trip_places, effectiveTrip.trip_days, tripReservations)
         : [],
-    [trip, tripReservations],
+    [effectiveTrip, tripReservations],
   );
   const activeSegment = useMemo(() => findActiveSegment(segments, now), [segments, now]);
   const activeCountryIds = useMemo(
@@ -209,7 +256,7 @@ export default function TodayModePage() {
     );
   }, [timeline, now]);
 
-  if (isLoading) {
+  if (isLoading && !effectiveTrip) {
     return (
       <Container sx={{ py: 8, textAlign: 'center' }}>
         <CircularProgress />
@@ -217,7 +264,7 @@ export default function TodayModePage() {
     );
   }
 
-  if (error || !trip) {
+  if ((error && !effectiveTrip) || !effectiveTrip) {
     return (
       <Container sx={{ py: 8 }}>
         <ErrorState message={t('trips.today.notFound', "Couldn't load this trip.")} />
@@ -225,7 +272,7 @@ export default function TodayModePage() {
     );
   }
 
-  if (!isTripActiveToday(trip.start_date, trip.end_date, now)) {
+  if (!isTripActiveToday(effectiveTrip.start_date, effectiveTrip.end_date, now)) {
     return (
       <Container sx={{ py: 8 }}>
         <Box sx={{ textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
@@ -238,7 +285,7 @@ export default function TodayModePage() {
               "Today-mode only shows content while you're on the trip. Head back to the planner.",
             )}
           </Typography>
-          <LocalizedLink to={`/trips/${trip.id}`}>
+          <LocalizedLink to={`/trips/${effectiveTrip.id}`}>
             <Button variant="outline">
               <ArrowLeft style={{ width: 16, height: 16, marginRight: 6 }} />
               {t('trips.today.backToPlanner', 'Back to planner')}
@@ -251,13 +298,46 @@ export default function TodayModePage() {
 
   return (
     <Container sx={{ py: { xs: 4, md: 6 } }}>
+      {/* Offline banner — visible when we're serving a cached snapshot. */}
+      {(!online || servingFromSnapshot) && (
+        <Box
+          sx={{
+            mb: 2,
+            p: 1.5,
+            bgcolor: 'action.hover',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            fontSize: '0.875rem',
+            color: 'text.secondary',
+          }}
+          role="status"
+        >
+          <WifiOff size={16} />
+          <Typography sx={{ fontSize: '0.875rem' }}>
+            {t(
+              'trips.today.offlineBanner',
+              "You're offline — showing your last-saved itinerary.",
+            )}
+            {snapshotSavedAt && (
+              <>
+                {' '}
+                <span style={{ opacity: 0.7 }}>
+                  ({new Date(snapshotSavedAt).toLocaleString()})
+                </span>
+              </>
+            )}
+          </Typography>
+        </Box>
+      )}
+
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <LocalizedLink
-          to={`/trips/${trip.id}`}
+          to={`/trips/${effectiveTrip.id}`}
           style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem' }}
         >
-          ← {trip.title}
+          ← {effectiveTrip.title}
         </LocalizedLink>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
           <Typography variant="h3" sx={{ fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
@@ -317,7 +397,7 @@ export default function TodayModePage() {
                 )}
               </Typography>
               <LocalizedLink
-                to={`/trips/${trip.id}`}
+                to={`/trips/${effectiveTrip.id}`}
                 style={{ color: 'inherit', textDecoration: 'underline', fontSize: '0.8125rem' }}
               >
                 {t('trips.today.viewBriefing', 'View full safety briefing →')}

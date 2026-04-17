@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Inbox, Eye, Calendar, Activity, CheckCircle2 } from 'lucide-react';
 import { FeedbackCard } from './FeedbackCard';
 import { kanbanColumns, type KanbanStatus } from './constants';
-import type { AdminProfile, FeedbackSubmission } from './types';
+import type { AdminProfile, FeedbackSubmission, SubmissionStoryRef } from './types';
 
 const COLUMN_EMPTY: Record<KanbanStatus, { icon: typeof Inbox; copy: string }> = {
   new: { icon: Inbox, copy: 'Nothing new to triage' },
@@ -33,6 +33,8 @@ interface Props {
   focusedId: string | null;
   watchersByItem: Record<string, AdminProfile[]>;
   adminById: Record<string, AdminProfile>;
+  storyByItem?: Record<string, SubmissionStoryRef>;
+  onStoryClick?: (storyId: string) => void;
   isNew: (id: string, submittedAt: string) => boolean;
   onCardClick: (item: FeedbackSubmission) => void;
   onToggleSelect: (id: string, shift: boolean) => void;
@@ -46,6 +48,8 @@ export function FeedbackKanban({
   focusedId,
   watchersByItem,
   adminById,
+  storyByItem,
+  onStoryClick,
   isNew,
   onCardClick,
   onToggleSelect,
@@ -122,6 +126,8 @@ export function FeedbackKanban({
             focusedId={focusedId}
             watchersByItem={watchersByItem}
             adminById={adminById}
+            storyByItem={storyByItem}
+            onStoryClick={onStoryClick}
             isNew={isNew}
             onCardClick={onCardClick}
             onToggleSelect={onToggleSelect}
@@ -142,6 +148,8 @@ interface ColumnProps {
   focusedId: string | null;
   watchersByItem: Record<string, AdminProfile[]>;
   adminById: Record<string, AdminProfile>;
+  storyByItem?: Record<string, SubmissionStoryRef>;
+  onStoryClick?: (storyId: string) => void;
   isNew: (id: string, submittedAt: string) => boolean;
   onCardClick: (item: FeedbackSubmission) => void;
   onToggleSelect: (id: string, shift: boolean) => void;
@@ -157,6 +165,8 @@ function Column({
   focusedId,
   watchersByItem,
   adminById,
+  storyByItem,
+  onStoryClick,
   isNew,
   onCardClick,
   onToggleSelect,
@@ -240,6 +250,8 @@ function Column({
               focused={focusedId === item.id}
               watchers={watchersByItem[item.id] ?? []}
               assignee={item.assignee_id ? adminById[item.assignee_id] ?? null : null}
+              story={storyByItem?.[item.id] ?? null}
+              onStoryClick={onStoryClick}
               isNew={isNew(item.id, item.submitted_at)}
               onClick={() => onCardClick(item)}
               onToggleSelect={(e) => {

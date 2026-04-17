@@ -4,14 +4,11 @@
  * Reads + writes the `reservations` table directly. The legacy
  * `bookings` / `trip_reservations` tables and dual-write triggers were
  * dropped in 20260417200000_drop_legacy_reservations.
- *
- * `Reservation.origin` is still derived from `source` for backward
- * compatibility with the few UI surfaces that branched on it; new code
- * should branch on `source` instead.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 
 export type ReservationType =
@@ -41,12 +38,6 @@ export interface Reservation {
   key: string;
   /** Underlying `reservations.id`. */
   id: string;
-  /**
-   * Which legacy table this row originated from, derived from `source`.
-   * Kept for backward compatibility with Inbox / planner consumers —
-   * will be removed once the legacy tables are dropped.
-   */
-  origin: 'booking' | 'trip_reservation';
   source: ReservationSource;
 
   user_id: string | null;
@@ -117,57 +108,33 @@ const normalizeSource = (s: string | null | undefined): ReservationSource => {
   }
 };
 
-interface ReservationRow {
-  id: string;
-  user_id: string;
-  trip_id: string | null;
-  trip_day_id: string | null;
-  source: string;
-  type: string;
-  title: string;
-  status: string;
-  start_at: string | null;
-  end_at: string | null;
-  provider: string | null;
-  provider_booking_id: string | null;
-  confirmation_code: string | null;
-  booking_url: string | null;
-  total_amount: number | null;
-  currency: string | null;
-  city_id: string | null;
-  country_id: string | null;
-  notes: string | null;
-  created_at: string;
+type ReservationRow = Tables<'reservations'> & {
   trips?: { title: string | null } | null;
-}
-
-const project = (r: ReservationRow): Reservation => {
-  const source = normalizeSource(r.source);
-  return {
-    key: `res:${r.id}`,
-    id: r.id,
-    origin: source === 'provider_api' ? 'booking' : 'trip_reservation',
-    source,
-    user_id: r.user_id,
-    trip_id: r.trip_id,
-    trip_title: r.trips?.title ?? null,
-    type: normalizeType(r.type),
-    title: r.title,
-    status: normalizeStatus(r.status),
-    start_at: r.start_at,
-    end_at: r.end_at,
-    provider: r.provider,
-    provider_booking_id: r.provider_booking_id,
-    confirmation_code: r.confirmation_code,
-    booking_url: r.booking_url,
-    total_amount: r.total_amount,
-    currency: r.currency,
-    city_id: r.city_id,
-    country_id: r.country_id,
-    notes: r.notes,
-    created_at: r.created_at,
-  };
 };
+
+const project = (r: ReservationRow): Reservation => ({
+  key: `res:${r.id}`,
+  id: r.id,
+  source: normalizeSource(r.source),
+  user_id: r.user_id,
+  trip_id: r.trip_id,
+  trip_title: r.trips?.title ?? null,
+  type: normalizeType(r.type),
+  title: r.title,
+  status: normalizeStatus(r.status),
+  start_at: r.start_at,
+  end_at: r.end_at,
+  provider: r.provider,
+  provider_booking_id: r.provider_booking_id,
+  confirmation_code: r.confirmation_code,
+  booking_url: r.booking_url,
+  total_amount: r.total_amount,
+  currency: r.currency,
+  city_id: r.city_id,
+  country_id: r.country_id,
+  notes: r.notes,
+  created_at: r.created_at,
+});
 
 /**
  * Returns every reservation the current user can see: rows they own plus

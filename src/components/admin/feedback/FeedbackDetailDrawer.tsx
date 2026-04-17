@@ -40,6 +40,7 @@ import type {
   FeedbackResolution,
   HandoffStatus,
   HandoffTarget,
+  SubmissionStoryRef,
 } from './types';
 import { DuplicateBanner } from './DuplicateBanner';
 import { ReplyThread } from './ReplyThread';
@@ -58,6 +59,8 @@ interface Props {
   duplicateSuggestions: Array<{ partnerId: string; suggestionId: string; similarity: number }>;
   itemsById: Record<string, FeedbackSubmission>;
   canonical: FeedbackSubmission | null;
+  parentStory?: SubmissionStoryRef | null;
+  onOpenStory?: (storyId: string) => void;
   onOpenPartner: (id: string) => void;
   onMergeDuplicate: (args: { duplicateId: string; canonicalId: string; suggestionId: string }) => void;
   onDismissDuplicate: (suggestionId: string) => void;
@@ -93,6 +96,8 @@ export function FeedbackDetailDrawer({
   duplicateSuggestions,
   itemsById,
   canonical,
+  parentStory,
+  onOpenStory,
   onOpenPartner,
   onMergeDuplicate,
   onDismissDuplicate,
@@ -205,7 +210,9 @@ export function FeedbackDetailDrawer({
         current={item}
         suggestions={duplicateSuggestions}
         itemsById={itemsById}
+        parentStory={parentStory}
         onOpenPartner={onOpenPartner}
+        onOpenStory={onOpenStory}
         onMerge={onMergeDuplicate}
         onDismiss={onDismissDuplicate}
       />

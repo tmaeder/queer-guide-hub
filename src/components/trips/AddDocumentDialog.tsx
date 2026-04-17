@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
-import { Upload, FileText } from 'lucide-react';
+import { Upload, FileText, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -20,6 +20,7 @@ import {
   useUploadDocument,
   type DocType,
 } from '@/hooks/useTripDocuments';
+import { supabase } from '@/integrations/supabase/client';
 
 const MAX_FILE_BYTES = 25 * 1024 * 1024; // 25 MB — enough for a passport scan, generous for PDFs.
 
@@ -65,6 +66,7 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
   );
   const [expiry, setExpiry] = useState('');
   const [notes, setNotes] = useState('');
+  const [extracting, setExtracting] = useState(false);
 
   const reset = () => {
     setFile(null);
@@ -72,6 +74,7 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
     setDocType(defaultType ?? (tripId === null ? 'passport' : 'visa'));
     setExpiry('');
     setNotes('');
+    setExtracting(false);
     if (fileRef.current) fileRef.current.value = '';
   };
 
@@ -104,6 +107,69 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
     }
     setFile(f);
     if (!title) setTitle(f.name.replace(/\.[^.]+$/, ''));
+  };
+
+  /**
+   * Auto-fill the form by sending the picked image to the
+   * `extract-document-fields` edge function. Only valid for image
+   * mime types — PDFs aren't supported by Claude vision today, so we
+   * just gate the button on `image/*` files.
+   */
+  const autoFill = async () => {
+    if (!file || extracting) return;
+    if (!file.type.startsWith('image/')) return;
+    setExtracting(true);
+    try {
+      const buf = await file.arrayBuffer();
+      // Chunked encode to avoid Maximum-call-stack on big base64 strings.
+      let binary = '';
+      const bytes = new Uint8Array(buf);
+      const CHUNK = 0x8000;
+      for (let i = 0; i < bytes.length; i += CHUNK) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+      }
+      const image_b64 = btoa(binary);
+
+      const { data, error } = await supabase.functions.invoke('extract-document-fields', {
+        body: { image_b64, mime_type: file.type, hint_doc_type: docType },
+      });
+      if (error) throw error;
+      const out = data as {
+        title?: string;
+        doc_type?: DocType;
+        expiry_date?: string;
+        country_code?: string;
+        confidence: number;
+      };
+      if (!out || (!out.title && !out.expiry_date && !out.doc_type)) {
+        toast({
+          title: t('docs.upload.extractEmpty', "Couldn't read this document"),
+          description: t(
+            'docs.upload.extractEmptyHint',
+            'Try a clearer photo, or fill the fields manually.',
+          ),
+        });
+        return;
+      }
+      // Only overwrite empty fields so a user's manual edits aren't clobbered.
+      if (out.title && !title) setTitle(out.title);
+      if (out.doc_type && docType === (defaultType ?? (tripId === null ? 'passport' : 'visa'))) {
+        setDocType(out.doc_type);
+      }
+      if (out.expiry_date && !expiry) setExpiry(out.expiry_date);
+      toast({
+        title: t('docs.upload.extractApplied', 'Auto-filled fields'),
+        description: t('docs.upload.extractAppliedHint', 'Review before saving.'),
+      });
+    } catch (err) {
+      toast({
+        title: t('docs.upload.extractFailed', 'Auto-fill failed'),
+        description: String(err),
+        variant: 'destructive',
+      });
+    } finally {
+      setExtracting(false);
+    }
   };
 
   const submit = () => {
@@ -167,12 +233,26 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
                 : t('docs.upload.pick', 'Choose file')}
             </Button>
             {file && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, flexWrap: 'wrap' }}>
                 <FileText size={14} />
                 <Typography sx={{ fontSize: '0.875rem' }}>{file.name}</Typography>
                 <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                   {(file.size / 1024 / 1024).toFixed(2)} MB
                 </Typography>
+                {file.type.startsWith('image/') && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void autoFill()}
+                    disabled={extracting || upload.isPending}
+                    aria-label={t('docs.upload.autoFill', 'Auto-fill from photo')}
+                  >
+                    <Sparkles style={{ width: 14, height: 14, marginRight: 4 }} />
+                    {extracting
+                      ? t('docs.upload.autoFilling', 'Reading…')
+                      : t('docs.upload.autoFill', 'Auto-fill from photo')}
+                  </Button>
+                )}
               </Box>
             )}
           </Box>

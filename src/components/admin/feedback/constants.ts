@@ -35,3 +35,17 @@ export const priorityMap: Record<number, PriorityMeta> = Object.fromEntries(
 export function priorityFor(v: number | null | undefined): PriorityMeta {
   return priorityMap[v ?? 2] ?? priorityMap[2];
 }
+
+// Story-level kanban columns. Story is a tag, not a cascade — its status
+// tracks the admin's progress on the root-cause fix independently of the
+// individual submission statuses.
+export const storyColumns = [
+  { id: 'open', label: 'Open', color: '#f59e0b' },
+  { id: 'planned', label: 'Planned', color: '#8b5cf6' },
+  { id: 'in_progress', label: 'In Progress', color: '#f97316' },
+  { id: 'resolved', label: 'Resolved', color: '#22c55e' },
+] as const;
+
+export type StoryKanbanStatus = (typeof storyColumns)[number]['id'];
+
+export const storyStatusSet = new Set<string>(storyColumns.map((c) => c.id));

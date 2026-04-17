@@ -12,6 +12,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface Reservation {
@@ -33,22 +34,23 @@ export interface Reservation {
   created_at: string;
 }
 
-interface ReservationRow {
-  id: string;
-  trip_id: string | null;
-  type: string;
-  title: string;
-  confirmation_code: string | null;
-  start_at: string | null;
-  end_at: string | null;
-  provider: string | null;
-  booking_url: string | null;
-  total_amount: number | string | null;
-  currency: string | null;
-  notes: string | null;
-  status: string;
-  created_at: string;
-}
+type ReservationRow = Pick<
+  Tables<'reservations'>,
+  | 'id'
+  | 'trip_id'
+  | 'type'
+  | 'title'
+  | 'confirmation_code'
+  | 'start_at'
+  | 'end_at'
+  | 'provider'
+  | 'booking_url'
+  | 'total_amount'
+  | 'currency'
+  | 'notes'
+  | 'status'
+  | 'created_at'
+>;
 
 const project = (r: ReservationRow): Reservation => ({
   id: r.id,
@@ -74,7 +76,7 @@ type UpdateReservationInput = Partial<Omit<Reservation, 'id' | 'created_at' | 't
   id: string;
 };
 
-const toRow = (input: CreateReservationInput, userId: string): Record<string, unknown> => ({
+const toRow = (input: CreateReservationInput, userId: string): TablesInsert<'reservations'> => ({
   user_id: userId,
   trip_id: input.trip_id,
   source: 'manual',
@@ -91,8 +93,8 @@ const toRow = (input: CreateReservationInput, userId: string): Record<string, un
   notes: input.notes,
 });
 
-const toUpdateRow = (input: Omit<UpdateReservationInput, 'id'>): Record<string, unknown> => {
-  const out: Record<string, unknown> = {};
+const toUpdateRow = (input: Omit<UpdateReservationInput, 'id'>): TablesUpdate<'reservations'> => {
+  const out: TablesUpdate<'reservations'> = {};
   if (input.type !== undefined) out.type = input.type;
   if (input.title !== undefined) out.title = input.title;
   if (input.status !== undefined) out.status = input.status;

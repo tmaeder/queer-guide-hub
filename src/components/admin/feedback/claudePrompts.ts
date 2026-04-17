@@ -1,4 +1,4 @@
-import type { FeedbackSubmission } from './types';
+import type { FeedbackStory, FeedbackSubmission } from './types';
 
 export interface ApiErrorSubmission {
   id: string;
@@ -157,5 +157,73 @@ export function formatErrorClaudePrompt(item: ApiErrorSubmission): string {
     `This error has occurred ${item.occurrence_count} time(s). Find the root cause, fix it, and ensure the fix handles edge cases. Check error handling in the relevant service.`,
   );
 
+  return lines.join('\n');
+}
+
+// Individual item prompts can run long; cap the per-item section so the
+// combined prompt fits a sensible context window even with 10+ members.
+const PER_ITEM_CAP = 2400;
+
+/**
+ * Combined prompt for a Story that bundles N items. Concatenates each
+ * member's prompt under a shared story header so Claude can attack the
+ * root cause in one go.
+ */
+export function formatCombinedStoryPrompt(
+  story: FeedbackStory,
+  feedbackMembers: FeedbackSubmission[],
+  errorMembers: ApiErrorSubmission[],
+): string {
+  const lines: string[] = [];
+  const total = feedbackMembers.length + errorMembers.length;
+
+  lines.push(`# Story: ${story.title}`);
+  lines.push('');
+  lines.push(
+    `This story bundles ${total} related item(s) (${feedbackMembers.length} feedback, ${errorMembers.length} API error). Please investigate the shared root cause and propose a single coordinated fix that addresses all members below.`,
+  );
+  lines.push('');
+  if (story.summary) {
+    lines.push('## Summary');
+    lines.push(story.summary);
+    lines.push('');
+  }
+
+  feedbackMembers.forEach((item, idx) => {
+    lines.push(`---`);
+    lines.push(`## Item ${idx + 1} / ${total} — feedback`);
+    const body = formatClaudePrompt(item);
+    lines.push(body.length > PER_ITEM_CAP ? body.slice(0, PER_ITEM_CAP) + '\n…[truncated]' : body);
+    lines.push('');
+  });
+
+  errorMembers.forEach((item, idx) => {
+    const n = feedbackMembers.length + idx + 1;
+    lines.push(`---`);
+    lines.push(`## Item ${n} / ${total} — api_error`);
+    const body = formatErrorClaudePrompt(item);
+    lines.push(body.length > PER_ITEM_CAP ? body.slice(0, PER_ITEM_CAP) + '\n…[truncated]' : body);
+    lines.push('');
+  });
+
+  lines.push('---');
+  lines.push(
+    'Please diagnose the common root cause across these items, propose one coordinated fix, and call out any items that actually belong in a separate story.',
+  );
+  return lines.join('\n');
+}
+
+/**
+ * Prompt used by the clusterer to ask Claude Haiku for a short title that
+ * captures what a cluster has in common.
+ */
+export function formatStoryClusterPrompt(titles: string[]): string {
+  const capped = titles.slice(0, 12);
+  const lines: string[] = [];
+  lines.push(
+    'Summarize the common theme of the following user-feedback titles in 6 words or fewer. Return only the summary, no quotes or punctuation.',
+  );
+  lines.push('');
+  capped.forEach((t, i) => lines.push(`${i + 1}. ${t}`));
   return lines.join('\n');
 }

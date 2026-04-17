@@ -5,7 +5,6 @@ import type { Reservation } from '@/hooks/useReservations';
 const make = (overrides: Partial<Reservation>): Reservation => ({
   key: overrides.key ?? `booking:${Math.random()}`,
   id: overrides.id ?? 'x',
-  origin: 'booking',
   source: 'provider_api',
   user_id: 'u',
   trip_id: null,

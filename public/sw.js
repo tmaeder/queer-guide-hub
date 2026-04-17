@@ -1,7 +1,12 @@
 // Service Worker for Queer Guide — optimized for Cloudflare Pages
-const STATIC_CACHE = 'static-v7';
-const DYNAMIC_CACHE = 'dynamic-v7';
+const STATIC_CACHE = 'static-v8';
+const DYNAMIC_CACHE = 'dynamic-v8';
 const DYNAMIC_CACHE_LIMIT = 50;
+
+// Cache name prefix used by Today-mode for per-trip offline snapshots.
+// Populated from the page via the Cache API directly (see offlineTripPack.ts).
+// Kept distinct from STATIC/DYNAMIC so activate-cleanup doesn't wipe it.
+const TRIP_SNAPSHOT_PREFIX = 'trip-snapshot-';
 
 // Detect if running on a .onion domain (Tor hidden service)
 const IS_ONION = self.location.hostname.endsWith('.onion');
@@ -53,11 +58,17 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     Promise.all([
-      // Clean old caches
+      // Clean old caches — preserve current STATIC/DYNAMIC and any
+      // trip-snapshot-* cache (those belong to Today-mode and have their
+      // own TTL managed from the app).
       caches.keys().then(cacheNames =>
         Promise.all(
           cacheNames
-            .filter(name => name !== STATIC_CACHE && name !== DYNAMIC_CACHE)
+            .filter(name =>
+              name !== STATIC_CACHE &&
+              name !== DYNAMIC_CACHE &&
+              !name.startsWith(TRIP_SNAPSHOT_PREFIX)
+            )
             .map(name => caches.delete(name))
         )
       ),

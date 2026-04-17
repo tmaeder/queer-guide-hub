@@ -14,8 +14,9 @@ export interface FeedbackFiltersState {
 }
 
 export interface FeedbackUrlState extends FeedbackFiltersState {
-  tab: 'community' | 'errors' | 'spam' | 'analytics';
+  tab: 'community' | 'errors' | 'stories' | 'spam' | 'analytics';
   sel: string | null;
+  story: string | null;
   showSpam: boolean;
   showDuplicates: boolean;
 }
@@ -32,6 +33,7 @@ const defaults: FeedbackUrlState = {
   hasErrors: false,
   withClaude: false,
   sel: null,
+  story: null,
   showSpam: false,
   showDuplicates: false,
 };
@@ -54,11 +56,13 @@ export function useFeedbackUrlState() {
     const parsedTab: FeedbackUrlState['tab'] =
       tab === 'errors'
         ? 'errors'
-        : tab === 'spam'
-          ? 'spam'
-          : tab === 'analytics'
-            ? 'analytics'
-            : 'community';
+        : tab === 'stories'
+          ? 'stories'
+          : tab === 'spam'
+            ? 'spam'
+            : tab === 'analytics'
+              ? 'analytics'
+              : 'community';
     return {
       tab: parsedTab,
       q: params.get('q') ?? '',
@@ -71,6 +75,7 @@ export function useFeedbackUrlState() {
       hasErrors: params.get('hasErrors') === '1',
       withClaude: params.get('withClaude') === '1',
       sel: params.get('sel'),
+      story: params.get('story'),
       showSpam: params.get('showSpam') === '1',
       showDuplicates: params.get('showDuplicates') === '1',
     };
