@@ -13,9 +13,18 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Badge } from '@/components/ui/badge';
+import { Inbox, Eye, Calendar, Activity, CheckCircle2 } from 'lucide-react';
 import { FeedbackCard } from './FeedbackCard';
 import { kanbanColumns, type KanbanStatus } from './constants';
 import type { AdminProfile, FeedbackSubmission } from './types';
+
+const COLUMN_EMPTY: Record<KanbanStatus, { icon: typeof Inbox; copy: string }> = {
+  new: { icon: Inbox, copy: 'Nothing new to triage' },
+  under_review: { icon: Eye, copy: 'Nothing under review' },
+  planned: { icon: Calendar, copy: 'Nothing planned yet' },
+  in_progress: { icon: Activity, copy: 'Nothing in progress' },
+  done: { icon: CheckCircle2, copy: 'Nothing resolved recently' },
+};
 
 interface Props {
   grouped: Record<KanbanStatus, FeedbackSubmission[]>;
@@ -24,6 +33,7 @@ interface Props {
   focusedId: string | null;
   watchersByItem: Record<string, AdminProfile[]>;
   adminById: Record<string, AdminProfile>;
+  isNew: (id: string, submittedAt: string) => boolean;
   onCardClick: (item: FeedbackSubmission) => void;
   onToggleSelect: (id: string, shift: boolean) => void;
   onStatusDrop: (id: string, status: KanbanStatus) => void;
@@ -36,6 +46,7 @@ export function FeedbackKanban({
   focusedId,
   watchersByItem,
   adminById,
+  isNew,
   onCardClick,
   onToggleSelect,
   onStatusDrop,
@@ -111,6 +122,7 @@ export function FeedbackKanban({
             focusedId={focusedId}
             watchersByItem={watchersByItem}
             adminById={adminById}
+            isNew={isNew}
             onCardClick={onCardClick}
             onToggleSelect={onToggleSelect}
           />
@@ -130,6 +142,7 @@ interface ColumnProps {
   focusedId: string | null;
   watchersByItem: Record<string, AdminProfile[]>;
   adminById: Record<string, AdminProfile>;
+  isNew: (id: string, submittedAt: string) => boolean;
   onCardClick: (item: FeedbackSubmission) => void;
   onToggleSelect: (id: string, shift: boolean) => void;
 }
@@ -144,6 +157,7 @@ function Column({
   focusedId,
   watchersByItem,
   adminById,
+  isNew,
   onCardClick,
   onToggleSelect,
 }: ColumnProps) {
@@ -197,15 +211,26 @@ function Column({
         }}
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          {items.length === 0 && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ py: 3, textAlign: 'center' }}
-            >
-              No items
-            </Typography>
-          )}
+          {items.length === 0 && (() => {
+            const { icon: EmptyIcon, copy } = COLUMN_EMPTY[col.id];
+            return (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  py: 4,
+                  opacity: 0.55,
+                }}
+              >
+                <EmptyIcon size={22} color={col.color} strokeWidth={1.5} />
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  {copy}
+                </Typography>
+              </Box>
+            );
+          })()}
           {items.map((item) => (
             <FeedbackCard
               key={item.id}
@@ -215,6 +240,7 @@ function Column({
               focused={focusedId === item.id}
               watchers={watchersByItem[item.id] ?? []}
               assignee={item.assignee_id ? adminById[item.assignee_id] ?? null : null}
+              isNew={isNew(item.id, item.submitted_at)}
               onClick={() => onCardClick(item)}
               onToggleSelect={(e) => {
                 e.stopPropagation();

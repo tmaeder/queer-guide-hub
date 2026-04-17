@@ -70,6 +70,11 @@ export default function AdminFeedback() {
   const [forwardingIds, setForwardingIds] = useState<Set<string>>(new Set());
   const drawerOpen = !!state.sel;
 
+  // Tickets submitted after page-load count as "new since session start"
+  // (pulse indicator on the card). Opening the drawer marks them seen.
+  const sessionStartRef = useRef<string>(new Date().toISOString());
+  const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
+
   // ── Queries ─────────────────────────────────────────────────
   const { data: items = [], isLoading } = useQuery<FeedbackSubmission[]>({
     queryKey: ['admin-feedback-board'],
@@ -642,10 +647,19 @@ export default function AdminFeedback() {
               focusedId={focusedId}
               watchersByItem={watchersByItem}
               adminById={adminMap}
+              isNew={(id, submittedAt) =>
+                submittedAt > sessionStartRef.current && !seenIds.has(id)
+              }
               onCardClick={(item) => {
                 setFocusedId(item.id);
                 const colIdx = kanbanColumns.findIndex((c) => c.id === (item.feedback_status as KanbanStatus));
                 if (colIdx >= 0) setFocusedColumnIdx(colIdx);
+                setSeenIds((prev) => {
+                  if (prev.has(item.id)) return prev;
+                  const next = new Set(prev);
+                  next.add(item.id);
+                  return next;
+                });
                 update({ sel: item.id });
               }}
               onToggleSelect={toggleSelect}

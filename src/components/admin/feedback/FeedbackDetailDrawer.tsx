@@ -812,7 +812,7 @@ export function FeedbackDetailDrawer({
               alignItems: 'center',
               gap: 6,
               flex: 1,
-              backgroundColor: '#DB2777',
+              backgroundColor: 'hsl(var(--accent-warm))',
               color: '#fff',
             }}
           >

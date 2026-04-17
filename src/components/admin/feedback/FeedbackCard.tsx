@@ -20,6 +20,7 @@ interface Props {
   focused: boolean;
   watchers: AdminProfile[];
   assignee: AdminProfile | null;
+  isNew?: boolean;
   onClick: () => void;
   onToggleSelect: (e: React.MouseEvent) => void;
 }
@@ -31,6 +32,7 @@ export function FeedbackCard({
   focused,
   watchers,
   assignee,
+  isNew = false,
   onClick,
   onToggleSelect,
 }: Props) {
@@ -104,6 +106,27 @@ export function FeedbackCard({
             borderTopLeftRadius: 'inherit',
             borderBottomLeftRadius: 'inherit',
           },
+          // "New since session start" pulse — draws attention to realtime arrivals
+          // until the admin opens the drawer once.
+          ...(isNew && {
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: 6,
+              right: 6,
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              bgcolor: 'hsl(var(--accent-warm))',
+              boxShadow: '0 0 0 0 hsl(var(--accent-warm) / 0.7)',
+              animation: 'feedback-pulse 1.8s infinite',
+            },
+            '@keyframes feedback-pulse': {
+              '0%': { boxShadow: '0 0 0 0 hsl(var(--accent-warm) / 0.6)' },
+              '70%': { boxShadow: '0 0 0 6px hsl(var(--accent-warm) / 0)' },
+              '100%': { boxShadow: '0 0 0 0 hsl(var(--accent-warm) / 0)' },
+            },
+          }),
         }}
       >
         <Box

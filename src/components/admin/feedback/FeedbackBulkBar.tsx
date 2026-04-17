@@ -131,7 +131,7 @@ export function FeedbackBulkBar({
           startIcon={<Github size={14} />}
           onClick={onForward}
           disabled={loading}
-          sx={{ bgcolor: '#DB2777', '&:hover': { bgcolor: '#be185d' } }}
+          sx={{ bgcolor: 'hsl(var(--accent-warm))', '&:hover': { bgcolor: 'hsl(var(--accent-warm))' } }}
         >
           Forward
         </Button>
