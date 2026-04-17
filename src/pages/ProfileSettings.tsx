@@ -26,6 +26,7 @@ import OptimizedErrorBoundary, {
   DataErrorFallback,
 } from '@/components/error/OptimizedErrorBoundary';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
+import { EmailForwardingSettings } from '@/components/profile/EmailForwardingSettings';
 import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
 import { IdentityTab } from '@/components/profile/settings/IdentityTab';
 import { RelationshipsTab } from '@/components/profile/settings/RelationshipsTab';
@@ -284,6 +285,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
 
           <TabsContent value="travel">
             <TravelPreferencesEditor />
+            <EmailForwardingSettings />
           </TabsContent>
 
           <TabsContent value="relationships">

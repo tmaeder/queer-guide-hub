@@ -70,6 +70,16 @@ export function TripCard({ trip }: Props) {
   const dayCount = trip.day_count ?? 0;
   const safetyLevel = safetyLevelFromScore(trip.min_equality_score);
 
+  const isActiveToday = (() => {
+    if (!trip.start_date || !trip.end_date) return false;
+    const now = new Date();
+    const start = new Date(trip.start_date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(trip.end_date);
+    end.setHours(23, 59, 59, 999);
+    return now >= start && now <= end;
+  })();
+
   const handleNavigate = () => navigate(`/trips/${trip.id}`);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -242,6 +252,45 @@ export function TripCard({ trip }: Props) {
                 {dateRange}
               </Typography>
             </Box>
+            {isActiveToday && (
+              <Box
+                component="button"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/trips/${trip.id}/today`);
+                }}
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  px: 0.75,
+                  py: 0.25,
+                  bgcolor: 'brand.main',
+                  color: 'brand.contrastText',
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+                aria-label={t('trips.card.viewToday', 'View today')}
+              >
+                <Box
+                  component="span"
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    bgcolor: 'currentColor',
+                    opacity: 0.9,
+                  }}
+                />
+                {t('trips.card.activeToday', 'Active · Today')}
+              </Box>
+            )}
             {(placeCount > 0 || dayCount > 0) && (
               <Box
                 sx={{
