@@ -1,3 +1,8 @@
+-- pg_cron + pg_net are referenced below; ensure they exist so fresh
+-- Supabase preview branches don't fail on the cron.schedule() call.
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+CREATE EXTENSION IF NOT EXISTS pg_net;
+
 -- Idempotently ensure url is UNIQUE so the ON CONFLICT (url) clause below resolves.
 -- Without this guard the raw CREATE TABLE in an earlier legacy migration leaves
 -- url unconstrained, and fresh-provisioned Supabase preview branches fail here.
