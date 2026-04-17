@@ -1,11 +1,18 @@
 /**
  * Header badge count for the /trips/inbox entry.
  *
- * Reads `inbox_orphan_count_v` for the current user. Poll every 60 s as
- * a safety net, but the main freshness signal is Supabase Realtime —
+ * Counts rows in `reservations` that are orphan (no trip_id) and still
+ * open (not cancelled/completed) for the current user. Poll every 60 s
+ * as a safety net, but the main freshness signal is Supabase Realtime —
  * any INSERT / UPDATE on `reservations` for the user invalidates the
  * query, so a new imported_email arrival or an attach-to-trip flip
  * shows up without waiting for the next poll.
+ *
+ * Previously this read `inbox_orphan_count_v`, which made the badge brittle
+ * to a deploy race between the frontend bundle and the migration that
+ * creates the view — during that window every authenticated user logged
+ * 404s on `/rest/v1/inbox_orphan_count_v`. A direct count on `reservations`
+ * is cheap (index on user_id + trip_id filter) and never 404s.
  */
 
 import { useEffect } from 'react';
@@ -24,15 +31,23 @@ export function useInboxBadge(): number {
     enabled: !!user,
     refetchInterval: 60_000,
     staleTime: 30_000,
+    // Never retry — the badge is decorative. A 404/timeout just means
+    // "no number shown this tick"; React Query's default 3-retry loop
+    // would amplify the problem in any outage.
+    retry: false,
     queryFn: async (): Promise<number> => {
       if (!user) return 0;
-      const { data, error } = await supabase
-        .from('inbox_orphan_count_v')
-        .select('orphan_count')
+      const { count, error } = await supabase
+        .from('reservations')
+        .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .maybeSingle();
-      if (error) throw error;
-      return (data as { orphan_count: number } | null)?.orphan_count ?? 0;
+        .is('trip_id', null)
+        .not('status', 'in', '("cancelled","completed")');
+      // Swallow any transient error (schema cache miss, 5xx, etc.) —
+      // badge shows 0 until the next poll. No thrown error means no
+      // network-failure entry in the feedback capture.
+      if (error) return 0;
+      return count ?? 0;
     },
   });
 
