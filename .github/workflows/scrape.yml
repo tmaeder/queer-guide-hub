@@ -110,7 +110,7 @@ jobs:
           SOURCE="${INPUT_SOURCE:-all}"
           TYPE="${INPUT_TYPE:-venue,event,stay,place}"
           MAX="${INPUT_MAX_PAGES:-500}"
-          npm run scrape -- "--source=${SOURCE}" "--type=${TYPE}" "--max-pages=${MAX}"
+          npm run scrape -- scrape --source "${SOURCE}" --type "${TYPE}" --max-pages "${MAX}"
 
       - name: Upload logs on failure
         if: failure()
@@ -171,7 +171,7 @@ jobs:
           SNAPSHOT_RETENTION: '3'
           LOG_LEVEL: info
           DISABLE_SOURCE_MISTERBANDB: 'true'
-        run: npm run scrape -- --source=all --type=event --max-pages=100
+        run: npm run scrape -- scrape --source all --type event --max-pages 100
 
       - name: Upload logs on failure
         if: failure()
