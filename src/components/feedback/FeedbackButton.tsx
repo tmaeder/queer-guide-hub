@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { MessageSquarePlus, Check, Camera } from 'lucide-react';
 import Box from '@mui/material/Box';
@@ -31,23 +31,26 @@ export function FeedbackButton() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ category: '', title: '', description: '', email: '', honeypot: '' });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
-  const [includeScreenshot, setIncludeScreenshot] = useState(false);
+  const [includeScreenshot, setIncludeScreenshot] = useState(true);
+  const [capturing, setCapturing] = useState(false);
   const [pageUrl, setPageUrl] = useState('');
+  const screenshotBlobRef = useRef<Blob | null>(null);
+  const screenshotUrlRef = useRef<string | null>(null);
 
   // Capture current URL when dialog opens so user sees what will be sent
   useEffect(() => {
     if (open) setPageUrl(window.location.href);
   }, [open]);
 
-  // Default screenshot toggle to ON when category is 'bug'
-  useEffect(() => {
-    if (form.category === 'bug') setIncludeScreenshot(true);
-  }, [form.category]);
-
   const reset = useCallback(() => {
     setForm({ category: '', title: '', description: '', email: '', honeypot: '' });
     setStatus('idle');
-    setIncludeScreenshot(false);
+    setIncludeScreenshot(true);
+    if (screenshotUrlRef.current) {
+      URL.revokeObjectURL(screenshotUrlRef.current);
+      screenshotUrlRef.current = null;
+    }
+    screenshotBlobRef.current = null;
   }, []);
 
   const handleClose = useCallback(() => {
@@ -55,6 +58,27 @@ export function FeedbackButton() {
     // Reset after close animation
     setTimeout(reset, 200);
   }, [reset]);
+
+  // Capture screenshot BEFORE the dialog mounts so the feedback window isn't
+  // in the shot. The FAB is briefly hidden via `capturing` state.
+  const handleOpenClick = useCallback(async () => {
+    setCapturing(true);
+    // Wait two animation frames so React commits the FAB hide before html2canvas reads the DOM.
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+    try {
+      const blob = await captureScreenshot();
+      if (blob) {
+        screenshotBlobRef.current = blob;
+        if (screenshotUrlRef.current) URL.revokeObjectURL(screenshotUrlRef.current);
+        screenshotUrlRef.current = URL.createObjectURL(blob);
+      }
+    } finally {
+      setCapturing(false);
+      setOpen(true);
+    }
+  }, []);
 
   const handleSubmit = useCallback(async () => {
     if (form.honeypot) return;
@@ -68,19 +92,19 @@ export function FeedbackButton() {
       const context = captureContext();
 
       let screenshotUrl: string | null = null;
-      if (includeScreenshot) {
-        const blob = await captureScreenshot();
-        if (blob) {
-          const fileName = `${crypto.randomUUID()}.jpg`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
+      // Use the blob captured when the dialog was opened — not a new shot —
+      // so the feedback window doesn't end up in the image.
+      const blob = includeScreenshot ? screenshotBlobRef.current : null;
+      if (blob) {
+        const fileName = `${crypto.randomUUID()}.jpg`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('feedback-screenshots')
+          .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
+        if (!uploadError && uploadData) {
+          const { data: publicUrl } = supabase.storage
             .from('feedback-screenshots')
-            .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
-          if (!uploadError && uploadData) {
-            const { data: publicUrl } = supabase.storage
-              .from('feedback-screenshots')
-              .getPublicUrl(uploadData.path);
-            screenshotUrl = publicUrl.publicUrl;
-          }
+            .getPublicUrl(uploadData.path);
+          screenshotUrl = publicUrl.publicUrl;
         }
       }
 
@@ -116,15 +140,19 @@ export function FeedbackButton() {
         <Fab
           size="medium"
           aria-label="Share feedback"
-          onClick={() => setOpen(true)}
+          onClick={handleOpenClick}
+          disabled={capturing}
           sx={{
             position: 'fixed',
             bottom: 24,
             right: 24,
             zIndex: 1200,
-            bgcolor: '#DB2777',
+            bgcolor: 'hsl(var(--accent-warm))',
             color: '#fff',
-            '&:hover': { bgcolor: '#be185d' },
+            '&:hover': { bgcolor: 'hsl(var(--accent-warm))', filter: 'brightness(0.92)' },
+            // Hide the FAB itself during capture so it doesn't show up in the
+            // screenshot, but reserve the space so layout doesn't shift.
+            visibility: capturing ? 'hidden' : 'visible',
           }}
         >
           <MessageSquarePlus style={{ width: 22, height: 22 }} />
@@ -253,20 +281,41 @@ export function FeedbackButton() {
                 </Box>
               )}
 
-              {/* Screenshot toggle */}
-              <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Checkbox
-                  id="feedback-screenshot"
-                  checked={includeScreenshot}
-                  onCheckedChange={(checked) => setIncludeScreenshot(checked === true)}
-                />
-                <Label
-                  htmlFor="feedback-screenshot"
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
-                >
-                  <Camera style={{ width: 14, height: 14 }} />
-                  Include screenshot of this page
-                </Label>
+              {/* Screenshot toggle + thumbnail preview */}
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Checkbox
+                    id="feedback-screenshot"
+                    checked={includeScreenshot}
+                    onCheckedChange={(checked) => setIncludeScreenshot(checked === true)}
+                  />
+                  <Label
+                    htmlFor="feedback-screenshot"
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+                  >
+                    <Camera style={{ width: 14, height: 14 }} />
+                    Include screenshot of this page
+                  </Label>
+                </Box>
+                {includeScreenshot && screenshotUrlRef.current && (
+                  <Box
+                    sx={{
+                      mt: 1,
+                      ml: 3.5,
+                      border: 1,
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                      overflow: 'hidden',
+                      maxWidth: 220,
+                    }}
+                  >
+                    <img
+                      src={screenshotUrlRef.current}
+                      alt="Screenshot preview"
+                      style={{ display: 'block', width: '100%', height: 'auto' }}
+                    />
+                  </Box>
+                )}
               </Box>
 
               {/* Context preview */}
