@@ -135,12 +135,6 @@ export default function AdminRedirects() {
       doRefresh();
     }
   };
-
-  const _handleToggle = async (row: RedirectRow) => {
-    const ok = await toggleEnabled(row.id, !row.is_enabled);
-    if (ok) doRefresh();
-  };
-
   const columns = useMemo(
     () => [
       columnHelper.accessor('type', {

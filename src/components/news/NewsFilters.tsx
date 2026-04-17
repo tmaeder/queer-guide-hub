@@ -81,10 +81,6 @@ export const NewsFilters = ({
     };
     fetchData();
   }, []);
-
-  // Use a ref to track latest filter state and emit changes
-  const _filtersRef = useRef<Record<string, unknown>>({});
-
   const emitFilters = useCallback(
     (overrides: Record<string, unknown> = {}) => {
       const current = {

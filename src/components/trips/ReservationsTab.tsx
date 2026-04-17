@@ -382,7 +382,8 @@ export function ReservationsTab({ tripId }: Props) {
                           )}
                           onClick={(e) => {
                             e.stopPropagation();
-                            detachBooking.mutate(b.id, {
+                            if (!b.legacy_booking_id) return;
+                            detachBooking.mutate(b.legacy_booking_id, {
                               onSuccess: () =>
                                 toast({
                                   title: t(

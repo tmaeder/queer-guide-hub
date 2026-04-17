@@ -202,8 +202,13 @@ export default function TripsInboxPage() {
                   // have a trip_id (their own); only external bookings need moving.
                   await Promise.all(
                     s.reservations
-                      .filter((r) => r.origin === 'booking')
-                      .map((r) => attach.mutateAsync({ bookingId: r.id, tripId: trip.id })),
+                      .filter((r) => r.origin === 'booking' && r.legacy_booking_id)
+                      .map((r) =>
+                        attach.mutateAsync({
+                          legacyBookingId: r.legacy_booking_id as string,
+                          tripId: trip.id,
+                        }),
+                      ),
                   );
                   navigate(`/trips/${trip.id}`);
                 }}
@@ -227,10 +232,13 @@ export default function TripsInboxPage() {
                 reservation={r}
                 trips={trips ?? []}
                 onAttach={async (tripId) => {
-                  if (r.origin !== 'booking') return;
-                  await attach.mutateAsync({ bookingId: r.id, tripId });
+                  if (r.origin !== 'booking' || !r.legacy_booking_id) return;
+                  await attach.mutateAsync({
+                    legacyBookingId: r.legacy_booking_id,
+                    tripId,
+                  });
                 }}
-                canAttach={r.origin === 'booking'}
+                canAttach={r.origin === 'booking' && !!r.legacy_booking_id}
               />
             ))}
           </Box>

@@ -120,9 +120,6 @@ function ProtectionRow({
 
   // Determine overall status
   const yesCount = [status.so, status.gi, status.ge, status.sc].filter((s) => s === 'Yes').length;
-  const _overallValue =
-    yesCount >= 3 ? 'Yes' : yesCount >= 1 ? 'Partial' : status.so === 'No data' ? null : 'No';
-
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
       <Icon style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
