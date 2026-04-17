@@ -46,7 +46,16 @@ interface CityInfo {
 
 const NIGHTLIFE_CATEGORIES = ['bar', 'club', 'nightclub', 'pub', 'lounge', 'nightlife'];
 const DINING_CATEGORIES = ['restaurant', 'cafe', 'coffee', 'food', 'bakery', 'dining'];
-const CULTURE_CATEGORIES = ['museum', 'gallery', 'theater', 'theatre', 'landmark', 'monument', 'culture', 'art'];
+const CULTURE_CATEGORIES = [
+  'museum',
+  'gallery',
+  'theater',
+  'theatre',
+  'landmark',
+  'monument',
+  'culture',
+  'art',
+];
 
 function matchesFilter(category: string | null, filter: string): boolean {
   if (filter === 'all') return true;
@@ -65,7 +74,7 @@ interface Props {
   endDate?: string;
 }
 
-export function TripSuggestions({ tripId, places, _days, startDate, endDate }: Props) {
+export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
   const theme = useTheme();
   const { toast } = useToast();
   const { addPlace } = useTripMutations();
@@ -104,7 +113,9 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
       if (cityIds.length === 0) return [];
       const { data, error } = await supabase
         .from('venues')
-        .select('id, name, category, address, foursquare_rating, featured, latitude, longitude, city_id, country_id')
+        .select(
+          'id, name, category, address, foursquare_rating, featured, latitude, longitude, city_id, country_id',
+        )
         .in('city_id', cityIds)
         .order('foursquare_rating', { ascending: false, nullsFirst: false })
         .limit(30);
@@ -121,7 +132,9 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
       if (cityIds.length === 0) return [];
       let query = supabase
         .from('events')
-        .select('id, title, event_type, start_date, end_date, latitude, longitude, city_id, country_id')
+        .select(
+          'id, title, event_type, start_date, end_date, latitude, longitude, city_id, country_id',
+        )
         .in('city_id', cityIds);
       if (startDate) query = query.gte('start_date', startDate);
       if (endDate) query = query.lte('start_date', endDate);
@@ -231,11 +244,17 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
       {unsafeCities.map((city) => (
         <Card key={city.id} className="mb-2">
           <CardContent>
-            <Box className="flex items-start gap-2" sx={{ bgcolor: 'warning.light', mx: -2, mt: -1, mb: -1, p: 2, borderRadius: 1 }}>
-              <Shield size={16} style={{ color: theme.palette.warning?.main, flexShrink: 0, marginTop: 2 }} />
+            <Box
+              className="flex items-start gap-2"
+              sx={{ bgcolor: 'warning.light', mx: -2, mt: -1, mb: -1, p: 2, borderRadius: 1 }}
+            >
+              <Shield
+                size={16}
+                style={{ color: theme.palette.warning?.main, flexShrink: 0, marginTop: 2 }}
+              />
               <Typography variant="body2">
-                <strong>{city.name}</strong> ({city.countries?.name}) has a lower equality score
-                ({city.countries?.equality_score}). Check the Safety tab for local tips.
+                <strong>{city.name}</strong> ({city.countries?.name}) has a lower equality score (
+                {city.countries?.equality_score}). Check the Safety tab for local tips.
               </Typography>
             </Box>
           </CardContent>
@@ -249,7 +268,6 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
             key={label}
             variant={filter === filterKeys[i] ? 'default' : 'outline'}
             onClick={() => setFilter(filterKeys[i])}
-
           >
             {label}
           </Badge>
@@ -273,7 +291,12 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
 
           return (
             <Box key={cityId} sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 0.5, display: 'block' }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                sx={{ mb: 0.5, display: 'block' }}
+              >
                 Suggested for {city?.name || 'Unknown City'}
               </Typography>
 
@@ -283,7 +306,10 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
                   className="flex items-center gap-2 py-1.5"
                   sx={{ borderBottom: '1px solid', borderColor: 'divider', minHeight: 44 }}
                 >
-                  <MapPin size={13} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
+                  <MapPin
+                    size={13}
+                    style={{ color: theme.palette.text.secondary, flexShrink: 0 }}
+                  />
                   <div className="flex-1 min-w-0">
                     <Typography variant="body2" noWrap fontWeight={500}>
                       {venue.name}
@@ -293,7 +319,9 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
                       {venue.foursquare_rating && (
                         <Box className="flex items-center gap-0.5">
                           <Star size={10} style={{ color: theme.palette.warning?.main }} />
-                          <Typography variant="caption" sx={{ fontSize: 11 }}>{venue.foursquare_rating}</Typography>
+                          <Typography variant="caption" sx={{ fontSize: 11 }}>
+                            {venue.foursquare_rating}
+                          </Typography>
                         </Box>
                       )}
                     </Box>
@@ -316,7 +344,10 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
                   className="flex items-center gap-2 py-1.5"
                   sx={{ borderBottom: '1px solid', borderColor: 'divider', minHeight: 44 }}
                 >
-                  <Calendar size={13} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
+                  <Calendar
+                    size={13}
+                    style={{ color: theme.palette.text.secondary, flexShrink: 0 }}
+                  />
                   <div className="flex-1 min-w-0">
                     <Typography variant="body2" noWrap fontWeight={500}>
                       {event.title}
@@ -325,7 +356,10 @@ export function TripSuggestions({ tripId, places, _days, startDate, endDate }: P
                       {event.event_type && <Badge variant="outline">{event.event_type}</Badge>}
                       {event.start_date && (
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
-                          {new Date(event.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          {new Date(event.start_date).toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
                         </Typography>
                       )}
                     </Box>

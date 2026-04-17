@@ -1,14 +1,14 @@
-import * as React from "react"
-import MuiCard from "@mui/material/Card"
-import MuiCardContent from "@mui/material/CardContent"
-import MuiCardHeader from "@mui/material/CardHeader"
-import MuiCardActions from "@mui/material/CardActions"
-import Typography from "@mui/material/Typography"
-import Box from "@mui/material/Box"
-import { useTheme } from "@mui/material/styles"
-import { motion, useReducedMotion } from "motion/react"
-import type { LucideIcon } from "lucide-react"
-import { springs } from "@/lib/motion"
+import * as React from 'react';
+import MuiCard from '@mui/material/Card';
+import MuiCardContent from '@mui/material/CardContent';
+import MuiCardHeader from '@mui/material/CardHeader';
+import MuiCardActions from '@mui/material/CardActions';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
+import { motion, useReducedMotion } from 'motion/react';
+import type { LucideIcon } from 'lucide-react';
+import { springs } from '@/lib/motion';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean;
@@ -41,23 +41,23 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     >
       {children}
     </MuiCard>
-  )
-)
-Card.displayName = "Card"
+  ),
+);
+Card.displayName = 'Card';
 
 /* ── MotionCard — opt-in hover-lift card powered by motion ────────── */
 
-const MotionMuiCardBase = motion.create(MuiCard)
+const MotionMuiCardBase = motion.create(MuiCard);
 
 const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, children, style, ...props }, ref) => {
-    const reduced = useReducedMotion()
+    const reduced = useReducedMotion();
     const hover = reduced
       ? {}
       : {
           whileHover: { opacity: 0.85 },
           transition: springs.soft,
-        }
+        };
     return (
       <MotionMuiCardBase
         ref={ref as React.Ref<HTMLDivElement>}
@@ -72,10 +72,10 @@ const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
       >
         {children}
       </MotionMuiCardBase>
-    )
-  }
-)
-MotionCard.displayName = "MotionCard"
+    );
+  },
+);
+MotionCard.displayName = 'MotionCard';
 
 /* ── CardImage ──────────────────────────────────────────────────────── */
 
@@ -137,77 +137,75 @@ const CardImage: React.FC<CardImageProps> = ({
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+          transition:
+            'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       />
       {children}
     </Box>
   );
 };
-CardImage.displayName = "CardImage"
+CardImage.displayName = 'CardImage';
 
 /* ── Other card sub-components ─────────────────────────────────────── */
 
-const _CardHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, _children, style, ...props }, ref) => (
-  <MuiCardHeader
-    ref={ref as React.Ref<HTMLDivElement>}
-    className={className}
-    style={style}
-    title={undefined}
-    sx={{ pb: 0 }}
-    component="div"
-    {...(props as Record<string, unknown>)}
-  >
-    {/* MuiCardHeader doesn't render children the same way; use a wrapper */}
-  </MuiCardHeader>
-))
+const _CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, style, ...props }, ref) => (
+    <MuiCardHeader
+      ref={ref as React.Ref<HTMLDivElement>}
+      className={className}
+      style={style}
+      title={undefined}
+      sx={{ pb: 0 }}
+      component="div"
+      {...(props as Record<string, unknown>)}
+    >
+      {/* MuiCardHeader doesn't render children the same way; use a wrapper */}
+    </MuiCardHeader>
+  ),
+);
 // Actually, MUI CardHeader uses title/subheader/action props, not children.
 // We need to keep rendering children like shadcn does. Use a plain div with sx.
-const CardHeaderCompat = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, style, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={className}
-    style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 6,
-      padding: 24,
-      ...style,
-    }}
-    {...props}
-  >
-    {children}
-  </div>
-))
-CardHeaderCompat.displayName = "CardHeader"
+const CardHeaderCompat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, children, style, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        padding: 24,
+        ...style,
+      }}
+      {...props}
+    >
+      {children}
+    </div>
+  ),
+);
+CardHeaderCompat.displayName = 'CardHeader';
 
-const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, children, style, ...props }, ref) => (
-  <Typography
-    ref={ref}
-    variant="h6"
-    component="h3"
-    className={className}
-    style={style}
-    sx={{
-      fontWeight: 600,
-      lineHeight: 1,
-      letterSpacing: '-0.015em',
-    }}
-    {...(props as Record<string, unknown>)}
-  >
-    {children}
-  </Typography>
-))
-CardTitle.displayName = "CardTitle"
+const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, children, style, ...props }, ref) => (
+    <Typography
+      ref={ref}
+      variant="h6"
+      component="h3"
+      className={className}
+      style={style}
+      sx={{
+        fontWeight: 600,
+        lineHeight: 1,
+        letterSpacing: '-0.015em',
+      }}
+      {...(props as Record<string, unknown>)}
+    >
+      {children}
+    </Typography>
+  ),
+);
+CardTitle.displayName = 'CardTitle';
 
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
@@ -223,39 +221,46 @@ const CardDescription = React.forwardRef<
   >
     {children}
   </Typography>
-))
-CardDescription.displayName = "CardDescription"
+));
+CardDescription.displayName = 'CardDescription';
 
-const CardContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, style, ...props }, ref) => (
-  <MuiCardContent
-    ref={ref as React.Ref<HTMLDivElement>}
-    className={className}
-    style={style}
-    sx={{ pt: 0, '&:last-child': { pb: 3 } }}
-    {...(props as Record<string, unknown>)}
-  >
-    {children}
-  </MuiCardContent>
-))
-CardContent.displayName = "CardContent"
+const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, children, style, ...props }, ref) => (
+    <MuiCardContent
+      ref={ref as React.Ref<HTMLDivElement>}
+      className={className}
+      style={style}
+      sx={{ pt: 0, '&:last-child': { pb: 3 } }}
+      {...(props as Record<string, unknown>)}
+    >
+      {children}
+    </MuiCardContent>
+  ),
+);
+CardContent.displayName = 'CardContent';
 
-const CardFooter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, style, ...props }, ref) => (
-  <MuiCardActions
-    ref={ref as React.Ref<HTMLDivElement>}
-    className={className}
-    style={style}
-    sx={{ px: 3, pt: 0 }}
-    {...(props as Record<string, unknown>)}
-  >
-    {children}
-  </MuiCardActions>
-))
-CardFooter.displayName = "CardFooter"
+const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, children, style, ...props }, ref) => (
+    <MuiCardActions
+      ref={ref as React.Ref<HTMLDivElement>}
+      className={className}
+      style={style}
+      sx={{ px: 3, pt: 0 }}
+      {...(props as Record<string, unknown>)}
+    >
+      {children}
+    </MuiCardActions>
+  ),
+);
+CardFooter.displayName = 'CardFooter';
 
-export { Card, MotionCard, CardImage, CardHeaderCompat as CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export {
+  Card,
+  MotionCard,
+  CardImage,
+  CardHeaderCompat as CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+};

@@ -39,7 +39,6 @@ export function AutomationDashboard() {
 
   const {
     modules,
-    _pendingChanges,
     runHistory,
     stats,
     activeRun,
@@ -249,7 +248,6 @@ function OverviewTab({
 
 function SettingsTab({
   modules,
-  _onToggle,
   onSettings,
 }: {
   modules: AutomationModule[];

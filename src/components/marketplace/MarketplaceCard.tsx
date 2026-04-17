@@ -29,8 +29,6 @@ interface MarketplaceCardProps {
 export function MarketplaceCard({
   listing,
   loading = false,
-  _onViewDetails,
-  _onToggleFavorite,
   showFavoriteButton = false,
 }: MarketplaceCardProps) {
   if (loading || !listing) {
@@ -95,18 +93,10 @@ export function MarketplaceCard({
   };
 
   return (
-    <Card
-
-    >
+    <Card>
       {showFavoriteButton && (
         <Box sx={{ position: 'absolute', top: 3, right: 3, zIndex: 10 }}>
-          <FavoriteButton
-            itemId={listing.id}
-            type="marketplace"
-            variant="ghost"
-            size="sm"
-
-          />
+          <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="sm" />
         </Box>
       )}
 
@@ -140,9 +130,7 @@ export function MarketplaceCard({
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-              <Badge variant="secondary">
-                {listing.category}
-              </Badge>
+              <Badge variant="secondary">{listing.category}</Badge>
               {listing.featured && <Box sx={{ width: 8, height: 8, bgcolor: 'text.primary' }} />}
             </Box>
           </Box>
@@ -194,11 +182,7 @@ export function MarketplaceCard({
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               {formatPrice()}
             </Typography>
-            {listing.shipping_available && (
-              <Badge variant="outline">
-                Ships
-              </Badge>
-            )}
+            {listing.shipping_available && <Badge variant="outline">Ships</Badge>}
           </Box>
 
           {averageRating > 0 && (
@@ -215,13 +199,7 @@ export function MarketplaceCard({
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {listing.website && (
-              <Button
-                size="sm"
-                variant="ghost"
-
-                aria-label="Visit website"
-                asChild
-              >
+              <Button size="sm" variant="ghost" aria-label="Visit website" asChild>
                 <a
                   href={listing.website}
                   target="_blank"
@@ -236,7 +214,6 @@ export function MarketplaceCard({
               <Button
                 size="sm"
                 variant="ghost"
-
                 aria-label={`Call ${listing.contact_phone}`}
                 asChild
               >
@@ -249,7 +226,6 @@ export function MarketplaceCard({
               <Button
                 size="sm"
                 variant="ghost"
-
                 aria-label={`Email ${listing.contact_email}`}
                 asChild
               >
@@ -277,9 +253,7 @@ export function MarketplaceCard({
           </Box>
 
           <LocalizedLink to={`/marketplace/${listing.slug}`}>
-            <Button size="sm">
-              View
-            </Button>
+            <Button size="sm">View</Button>
           </LocalizedLink>
         </Box>
       </Box>

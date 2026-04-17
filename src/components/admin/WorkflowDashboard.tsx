@@ -60,7 +60,11 @@ import { brandColors } from '@/theme/muiTheme';
 
 const STATUS_CONFIG: Record<
   WorkflowRunStatus,
-  { label: string; color: 'success' | 'error' | 'warning' | 'info' | 'default'; icon: React.ElementType }
+  {
+    label: string;
+    color: 'success' | 'error' | 'warning' | 'info' | 'default';
+    icon: React.ElementType;
+  }
 > = {
   completed: { label: 'Completed', color: 'success', icon: CheckCircle2 },
   running: { label: 'Running', color: 'info', icon: Loader2 },
@@ -121,7 +125,6 @@ export function WorkflowDashboard() {
     retryRun,
     cancelRun,
     dispatchNow,
-    _healthCheck,
     refetchMetrics,
     isEnqueuing,
     isDispatching,
@@ -143,7 +146,15 @@ export function WorkflowDashboard() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
         <Box>
           <Typography variant="h5" fontWeight={700}>
             Workflow Orchestration
@@ -203,7 +214,12 @@ export function WorkflowDashboard() {
             <Icon size={16} />
             {label}
             {key === 'dead_letter' && deadLetterRuns.length > 0 && (
-              <Chip size="small" label={deadLetterRuns.length} color="error" sx={{ ml: 0.5, height: 20, fontSize: '0.7rem' }} />
+              <Chip
+                size="small"
+                label={deadLetterRuns.length}
+                color="error"
+                sx={{ ml: 0.5, height: 20, fontSize: '0.7rem' }}
+              />
             )}
           </Box>
         ))}
@@ -211,7 +227,12 @@ export function WorkflowDashboard() {
 
       {/* Tab Content */}
       {activeTab === 'overview' && (
-        <OverviewTab stats={stats} activeRuns={activeRuns} metrics={metrics} definitions={definitions} />
+        <OverviewTab
+          stats={stats}
+          activeRuns={activeRuns}
+          metrics={metrics}
+          definitions={definitions}
+        />
       )}
       {activeTab === 'runs' && (
         <RunsTab
@@ -223,11 +244,13 @@ export function WorkflowDashboard() {
         />
       )}
       {activeTab === 'definitions' && (
-        <DefinitionsTab definitions={definitions} onEnqueue={enqueueWorkflow} isEnqueuing={isEnqueuing} />
+        <DefinitionsTab
+          definitions={definitions}
+          onEnqueue={enqueueWorkflow}
+          isEnqueuing={isEnqueuing}
+        />
       )}
-      {activeTab === 'dead_letter' && (
-        <DeadLetterTab runs={deadLetterRuns} onRetry={retryRun} />
-      )}
+      {activeTab === 'dead_letter' && <DeadLetterTab runs={deadLetterRuns} onRetry={retryRun} />}
 
       {/* Enqueue Dialog */}
       <EnqueueDialog
@@ -302,13 +325,35 @@ function OverviewTab({
 
       {/* Active runs */}
       {activeRuns.length > 0 && (
-        <Box sx={{ bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider', p: 2 }}>
+        <Box
+          sx={{
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            border: 1,
+            borderColor: 'divider',
+            p: 2,
+          }}
+        >
           <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5 }}>
-            <Loader2 size={14} className="animate-spin" style={{ display: 'inline', marginRight: 6 }} />
+            <Loader2
+              size={14}
+              className="animate-spin"
+              style={{ display: 'inline', marginRight: 6 }}
+            />
             Active Runs ({activeRuns.length})
           </Typography>
           {activeRuns.map((run) => (
-            <Box key={run.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1, borderTop: 1, borderColor: 'divider' }}>
+            <Box
+              key={run.id}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                py: 1,
+                borderTop: 1,
+                borderColor: 'divider',
+              }}
+            >
               <StatusChip status={run.status} />
               <Typography variant="body2" fontWeight={600} sx={{ minWidth: 180 }}>
                 {run.workflow_name}
@@ -336,15 +381,36 @@ function OverviewTab({
 
       {/* Queue metrics */}
       {metrics?.queues && metrics.queues.length > 0 && (
-        <Box sx={{ bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider', p: 2 }}>
+        <Box
+          sx={{
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            border: 1,
+            borderColor: 'divider',
+            p: 2,
+          }}
+        >
           <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5 }}>
             Queue Depths
           </Typography>
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' } }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 2,
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            }}
+          >
             {metrics.queues.map((q) => (
-              <Box key={q.queue_name} sx={{ p: 1.5, borderRadius: 1, border: 1, borderColor: 'divider' }}>
-                <Typography variant="caption" color="text.secondary">{q.queue_name}</Typography>
-                <Typography variant="h6" fontWeight={700}>{q.queue_length}</Typography>
+              <Box
+                key={q.queue_name}
+                sx={{ p: 1.5, borderRadius: 1, border: 1, borderColor: 'divider' }}
+              >
+                <Typography variant="caption" color="text.secondary">
+                  {q.queue_name}
+                </Typography>
+                <Typography variant="h6" fontWeight={700}>
+                  {q.queue_length}
+                </Typography>
                 {q.oldest_msg_age_sec != null && (
                   <Typography variant="caption" color="text.secondary">
                     Oldest: {formatDuration(q.oldest_msg_age_sec * 1000)}
@@ -402,7 +468,9 @@ function RunsTab({
       </Box>
 
       {/* Table */}
-      <TableContainer sx={{ bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+      <TableContainer
+        sx={{ bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}
+      >
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -422,27 +490,43 @@ function RunsTab({
               <React.Fragment key={run.id}>
                 <TableRow
                   hover
-                  sx={{ cursor: 'pointer', '& > *': { borderBottom: expandedRow === run.id ? 'none' : undefined } }}
+                  sx={{
+                    cursor: 'pointer',
+                    '& > *': { borderBottom: expandedRow === run.id ? 'none' : undefined },
+                  }}
                   onClick={() => setExpandedRow(expandedRow === run.id ? null : run.id)}
                 >
                   <TableCell sx={{ width: 32, p: 0.5 }}>
                     {expandedRow === run.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" fontWeight={600}>{run.workflow_name}</Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {run.workflow_name}
+                    </Typography>
                   </TableCell>
-                  <TableCell><StatusChip status={run.status} /></TableCell>
                   <TableCell>
-                    <Chip size="small" label={run.queue_name} variant="outlined" sx={{ fontSize: '0.7rem' }} />
+                    <StatusChip status={run.status} />
                   </TableCell>
-                  <TableCell>{run.attempt}/{run.max_attempts}</TableCell>
+                  <TableCell>
+                    <Chip
+                      size="small"
+                      label={run.queue_name}
+                      variant="outlined"
+                      sx={{ fontSize: '0.7rem' }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {run.attempt}/{run.max_attempts}
+                  </TableCell>
                   <TableCell>
                     {run.items_total > 0 ? (
                       <Typography variant="caption">
                         {run.items_processed}/{run.items_total} ({run.progress_pct}%)
                       </Typography>
                     ) : (
-                      <Typography variant="caption" color="text.secondary">—</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        —
+                      </Typography>
                     )}
                   </TableCell>
                   <TableCell>{formatDuration(run.duration_ms)}</TableCell>
@@ -482,7 +566,9 @@ function RunsTab({
             {runs.length === 0 && (
               <TableRow>
                 <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant="body2" color="text.secondary">No runs found</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    No runs found
+                  </Typography>
                 </TableCell>
               </TableRow>
             )}
@@ -497,26 +583,51 @@ function RunsTab({
 
 function RunDetail({ run }: { run: WorkflowRun }) {
   return (
-    <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, fontSize: '0.8rem' }}>
+    <Box
+      sx={{
+        display: 'grid',
+        gap: 2,
+        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+        fontSize: '0.8rem',
+      }}
+    >
       <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700}>ID</Typography>
-        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>{run.id}</Typography>
+        <Typography variant="caption" color="text.secondary" fontWeight={700}>
+          ID
+        </Typography>
+        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
+          {run.id}
+        </Typography>
       </Box>
       <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700}>Triggered By</Typography>
+        <Typography variant="caption" color="text.secondary" fontWeight={700}>
+          Triggered By
+        </Typography>
         <Typography variant="body2">{run.triggered_by}</Typography>
       </Box>
       {run.error_message && (
         <Box sx={{ gridColumn: '1 / -1' }}>
-          <Typography variant="caption" color="error" fontWeight={700}>Error</Typography>
-          <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'error.main', whiteSpace: 'pre-wrap' }}>
+          <Typography variant="caption" color="error" fontWeight={700}>
+            Error
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontFamily: 'monospace',
+              fontSize: '0.75rem',
+              color: 'error.main',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
             {run.error_message}
           </Typography>
         </Box>
       )}
       {run.output_result && (
         <Box sx={{ gridColumn: '1 / -1' }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={700}>Output</Typography>
+          <Typography variant="caption" color="text.secondary" fontWeight={700}>
+            Output
+          </Typography>
           <Box
             component="pre"
             sx={{
@@ -535,7 +646,9 @@ function RunDetail({ run }: { run: WorkflowRun }) {
       )}
       {run.input_payload && Object.keys(run.input_payload).length > 0 && (
         <Box sx={{ gridColumn: '1 / -1' }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={700}>Input Payload</Typography>
+          <Typography variant="caption" color="text.secondary" fontWeight={700}>
+            Input Payload
+          </Typography>
           <Box
             component="pre"
             sx={{
@@ -553,7 +666,9 @@ function RunDetail({ run }: { run: WorkflowRun }) {
         </Box>
       )}
       <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700}>Timing</Typography>
+        <Typography variant="caption" color="text.secondary" fontWeight={700}>
+          Timing
+        </Typography>
         <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
           Queued: {format(new Date(run.queued_at), 'HH:mm:ss')}
           {run.started_at && ` · Started: ${format(new Date(run.started_at), 'HH:mm:ss')}`}
@@ -561,9 +676,12 @@ function RunDetail({ run }: { run: WorkflowRun }) {
         </Typography>
       </Box>
       <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700}>Items</Typography>
+        <Typography variant="caption" color="text.secondary" fontWeight={700}>
+          Items
+        </Typography>
         <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
-          Total: {run.items_total} · Processed: {run.items_processed} · Succeeded: {run.items_succeeded} · Failed: {run.items_failed}
+          Total: {run.items_total} · Processed: {run.items_processed} · Succeeded:{' '}
+          {run.items_succeeded} · Failed: {run.items_failed}
         </Typography>
       </Box>
     </Box>
@@ -582,7 +700,9 @@ function DefinitionsTab({
   isEnqueuing: boolean;
 }) {
   return (
-    <TableContainer sx={{ bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+    <TableContainer
+      sx={{ bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}
+    >
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -601,19 +721,30 @@ function DefinitionsTab({
           {definitions.map((def) => (
             <TableRow key={def.id} hover>
               <TableCell>
-                <Typography variant="body2" fontWeight={600}>{def.name}</Typography>
+                <Typography variant="body2" fontWeight={600}>
+                  {def.name}
+                </Typography>
               </TableCell>
               <TableCell>
-                <Chip size="small" label={def.edge_function} variant="outlined" sx={{ fontFamily: 'monospace', fontSize: '0.7rem' }} />
+                <Chip
+                  size="small"
+                  label={def.edge_function}
+                  variant="outlined"
+                  sx={{ fontFamily: 'monospace', fontSize: '0.7rem' }}
+                />
               </TableCell>
               <TableCell>
                 <Chip size="small" label={def.queue_name} sx={{ fontSize: '0.7rem' }} />
               </TableCell>
               <TableCell>
                 {def.schedule ? (
-                  <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>{def.schedule}</Typography>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
+                    {def.schedule}
+                  </Typography>
                 ) : (
-                  <Typography variant="caption" color="text.secondary">Manual</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Manual
+                  </Typography>
                 )}
               </TableCell>
               <TableCell>{def.priority}</TableCell>
@@ -659,28 +790,53 @@ function DeadLetterTab({
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
         <Heart size={48} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
-        <Typography variant="h6" color="text.secondary">No dead letter messages</Typography>
-        <Typography variant="body2" color="text.secondary">All workflows are completing successfully.</Typography>
+        <Typography variant="h6" color="text.secondary">
+          No dead letter messages
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          All workflows are completing successfully.
+        </Typography>
       </Box>
     );
   }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, bgcolor: 'error.main', borderRadius: 2, color: 'error.contrastText' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          p: 2,
+          bgcolor: 'error.main',
+          borderRadius: 2,
+          color: 'error.contrastText',
+        }}
+      >
         <AlertTriangle size={18} />
         <Typography variant="body2" fontWeight={600}>
-          {runs.length} workflow{runs.length !== 1 ? 's' : ''} in dead letter queue — review and retry or discard.
+          {runs.length} workflow{runs.length !== 1 ? 's' : ''} in dead letter queue — review and
+          retry or discard.
         </Typography>
       </Box>
       {runs.map((run) => (
         <Box
           key={run.id}
-          sx={{ bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'error.light', p: 2 }}
+          sx={{
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            border: 1,
+            borderColor: 'error.light',
+            p: 2,
+          }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="subtitle2" fontWeight={700}>{run.workflow_name}</Typography>
+              <Typography variant="subtitle2" fontWeight={700}>
+                {run.workflow_name}
+              </Typography>
               <StatusChip status={run.status} />
             </Box>
             <Button variant="outline" size="sm" onClick={() => onRetry(run.id)}>
@@ -689,12 +845,17 @@ function DeadLetterTab({
             </Button>
           </Box>
           {run.error_message && (
-            <Typography variant="body2" color="error.main" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', mb: 1 }}>
+            <Typography
+              variant="body2"
+              color="error.main"
+              sx={{ fontFamily: 'monospace', fontSize: '0.75rem', mb: 1 }}
+            >
               {run.error_message}
             </Typography>
           )}
           <Typography variant="caption" color="text.secondary">
-            Attempt {run.attempt}/{run.max_attempts} · {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
+            Attempt {run.attempt}/{run.max_attempts} ·{' '}
+            {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
           </Typography>
         </Box>
       ))}
@@ -740,7 +901,9 @@ function EnqueueDialog({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Enqueue Workflow</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
+      <DialogContent
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}
+      >
         <FormControl fullWidth>
           <InputLabel>Workflow</InputLabel>
           <Select
@@ -772,7 +935,9 @@ function EnqueueDialog({
         />
       </DialogContent>
       <DialogActions>
-        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
         <Button onClick={handleEnqueue} disabled={!selectedWorkflow || isEnqueuing}>
           {isEnqueuing ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
           Enqueue

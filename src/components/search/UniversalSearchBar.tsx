@@ -112,7 +112,7 @@ export const UniversalSearchBar = () => {
     }
   }, [location.pathname]);
 
-  const { _results, suggestions: searchResults, loading } = useSearch(query, filters);
+  const { suggestions: searchResults, loading } = useSearch(query, filters);
 
   const { suggestions, loading: suggestionsLoading } = useSearchSuggestions(query);
 
@@ -217,7 +217,9 @@ export const UniversalSearchBar = () => {
     setQuery(displayName);
     // Feed bias vector with the click signal.
     if (suggestion.id && suggestion.type) {
-      trackClickFromSearch({ type: suggestion.type, id: suggestion.id }, 'autocomplete', { query: displayName });
+      trackClickFromSearch({ type: suggestion.type, id: suggestion.id }, 'autocomplete', {
+        query: displayName,
+      });
     }
     switch (suggestion.type) {
       case 'venue':
@@ -422,12 +424,7 @@ export const UniversalSearchBar = () => {
                   style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }}
                 />
                 {activeFiltersCount > 0 && (
-                  <Badge
-                    variant="destructive"
-
-                  >
-                    {activeFiltersCount}
-                  </Badge>
+                  <Badge variant="destructive">{activeFiltersCount}</Badge>
                 )}
               </Button>
             </Box>
@@ -559,12 +556,7 @@ export const UniversalSearchBar = () => {
                               </Box>
                             )}
                           </Box>
-                          <Badge
-                            variant="outline"
-
-                          >
-                            {suggestion.type}
-                          </Badge>
+                          <Badge variant="outline">{suggestion.type}</Badge>
                         </CommandItem>
                       );
                     })}
@@ -593,7 +585,11 @@ export const UniversalSearchBar = () => {
                       key={`${result.type}-${result.objectID}`}
                       onSelect={() => handleSelectResult(result)}
                       className="slide-up-in"
-                      style={{ cursor: 'pointer', padding: '8px 12px', animationDelay: `${idx * 0.04}s` }}
+                      style={{
+                        cursor: 'pointer',
+                        padding: '8px 12px',
+                        animationDelay: `${idx * 0.04}s`,
+                      }}
                     >
                       <Box
                         sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, width: '100%' }}

@@ -28,13 +28,7 @@ export default function UserProfile() {
   const { toast } = useToast();
 
   // Use the new secure profile hook
-  const {
-    profile,
-    loading: isLoading,
-    error,
-    isOwnProfile,
-    _canViewSensitiveField,
-  } = useSecurePublicProfile(userId);
+  const { profile, loading: isLoading, error, isOwnProfile } = useSecurePublicProfile(userId);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -220,7 +214,10 @@ export default function UserProfile() {
                       {profile.display_name || 'Anonymous User'}
                     </Typography>
                     {(profile as Record<string, unknown>)?.user_mode && (
-                      <UserModeBadge mode={(profile as Record<string, unknown>).user_mode} size="lg" />
+                      <UserModeBadge
+                        mode={(profile as Record<string, unknown>).user_mode}
+                        size="lg"
+                      />
                     )}
                   </Box>
 
@@ -239,7 +236,9 @@ export default function UserProfile() {
                     {(profile as Record<string, unknown>)?.age_range && (
                       <>
                         {profile.pronouns && <Typography variant="body2">&#8226;</Typography>}
-                        <Typography variant="body2">{(profile as Record<string, unknown>).age_range}</Typography>
+                        <Typography variant="body2">
+                          {(profile as Record<string, unknown>).age_range}
+                        </Typography>
                       </>
                     )}
                     {profile.location && (

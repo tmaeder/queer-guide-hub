@@ -1,5 +1,5 @@
-import * as React from "react"
-import MuiAvatar from "@mui/material/Avatar"
+import * as React from 'react';
+import MuiAvatar from '@mui/material/Avatar';
 
 type ImageLoadingStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -8,29 +8,30 @@ const AvatarContext = React.createContext<{
   setStatus: (status: ImageLoadingStatus) => void;
 }>({ status: 'idle', setStatus: () => {} });
 
-const Avatar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & { className?: string }>(
-  ({ className, children, style, ...props }, ref) => {
-    const [status, setStatus] = React.useState<ImageLoadingStatus>('idle');
-    return (
-      <AvatarContext.Provider value={{ status, setStatus }}>
-        <MuiAvatar
-          ref={ref}
-          className={className}
-          style={style}
-          sx={{ position: 'relative', borderRadius: 0 }}
-          {...(props as Record<string, unknown>)}
-        >
-          {children}
-        </MuiAvatar>
-      </AvatarContext.Provider>
-    );
-  }
-);
-Avatar.displayName = "Avatar"
+const Avatar = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { className?: string }
+>(({ className, children, style, ...props }, ref) => {
+  const [status, setStatus] = React.useState<ImageLoadingStatus>('idle');
+  return (
+    <AvatarContext.Provider value={{ status, setStatus }}>
+      <MuiAvatar
+        ref={ref}
+        className={className}
+        style={style}
+        sx={{ position: 'relative', borderRadius: 0 }}
+        {...(props as Record<string, unknown>)}
+      >
+        {children}
+      </MuiAvatar>
+    </AvatarContext.Provider>
+  );
+});
+Avatar.displayName = 'Avatar';
 
 const AvatarImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   ({ className, src, alt, style, onLoad, onError, ...props }, ref) => {
-    const { _status, setStatus } = React.useContext(AvatarContext);
+    const { setStatus } = React.useContext(AvatarContext);
     const [hasError, setHasError] = React.useState(false);
 
     React.useEffect(() => {
@@ -48,10 +49,17 @@ const AvatarImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<H
       <img
         ref={ref}
         src={src}
-        alt={alt || ""}
+        alt={alt || ''}
         role="presentation"
         className={className}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', ...style }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          ...style,
+        }}
         onLoad={(e) => {
           setStatus('loaded');
           onLoad?.(e);
@@ -64,9 +72,9 @@ const AvatarImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<H
         {...props}
       />
     );
-  }
+  },
 );
-AvatarImage.displayName = "AvatarImage"
+AvatarImage.displayName = 'AvatarImage';
 
 const AvatarFallback = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
   ({ className, children, style, ...props }, ref) => {
@@ -93,8 +101,8 @@ const AvatarFallback = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HT
         {children}
       </span>
     );
-  }
+  },
 );
-AvatarFallback.displayName = "AvatarFallback"
+AvatarFallback.displayName = 'AvatarFallback';
 
-export { Avatar, AvatarImage, AvatarFallback }
+export { Avatar, AvatarImage, AvatarFallback };

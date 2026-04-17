@@ -11,6 +11,7 @@ interface Handlers {
   onSetPriority: (v: number) => void;
   onAssignPicker: () => void;
   onForwardFocused: () => void;
+  onCopyHandoff: () => void;
   onToggleSelectFocused: (shift: boolean) => void;
 }
 
@@ -108,6 +109,9 @@ export function useFeedbackShortcuts(enabled: boolean, handlers: Handlers) {
         case 'f':
           handlers.onForwardFocused();
           break;
+        case 'c':
+          handlers.onCopyHandoff();
+          break;
         case 'x':
           handlers.onToggleSelectFocused(e.shiftKey);
           break;
@@ -126,6 +130,7 @@ export const shortcutHelp: Array<{ key: string; label: string }> = [
   { key: 'p then 0–3', label: 'Set priority' },
   { key: 'a', label: 'Assignee picker' },
   { key: 'f', label: 'Forward focused card to GitHub' },
+  { key: 'c', label: 'Copy prompt + record Claude handoff' },
   { key: 'e', label: 'Open drawer on focused card' },
   { key: 'x / shift+x', label: 'Toggle / range-select focused card' },
   { key: '/', label: 'Focus search' },

@@ -21,7 +21,7 @@ interface SecurityEvent {
 }
 
 export function SecurityMonitoringDashboard() {
-  const { _user } = useAuth();
+  const {} = useAuth();
   const { isAdmin } = useAdminRoles();
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,24 +54,35 @@ export function SecurityMonitoringDashboard() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return { backgroundColor: 'var(--destructive)', color: 'var(--destructive-foreground)' };
-      case 'high': return { backgroundColor: 'var(--warning)', color: 'var(--warning-foreground)' };
-      case 'medium': return { backgroundColor: 'var(--secondary)', color: 'var(--secondary-foreground)' };
-      default: return { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' };
+      case 'critical':
+        return { backgroundColor: 'var(--destructive)', color: 'var(--destructive-foreground)' };
+      case 'high':
+        return { backgroundColor: 'var(--warning)', color: 'var(--warning-foreground)' };
+      case 'medium':
+        return { backgroundColor: 'var(--secondary)', color: 'var(--secondary-foreground)' };
+      default:
+        return { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' };
     }
   };
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return AlertTriangle;
-      case 'high': return Shield;
-      case 'medium': return Eye;
-      default: return Lock;
+      case 'critical':
+        return AlertTriangle;
+      case 'high':
+        return Shield;
+      case 'medium':
+        return Eye;
+      default:
+        return Lock;
     }
   };
 
   const formatEventType = (type: string) => {
-    return type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    return type
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   if (!isAdmin) {
@@ -98,7 +109,14 @@ export function SecurityMonitoringDashboard() {
         </CardHeader>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
-            <Box sx={{ height: 32, width: 32, bgcolor: 'primary.main', animation: 'spin 1s linear infinite' }} />
+            <Box
+              sx={{
+                height: 32,
+                width: 32,
+                bgcolor: 'primary.main',
+                animation: 'spin 1s linear infinite',
+              }}
+            />
           </Box>
         </CardContent>
       </Card>
@@ -108,7 +126,14 @@ export function SecurityMonitoringDashboard() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Card>
-        <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <CardHeader
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <CardTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Shield style={{ height: 20, width: 20 }} />
@@ -138,11 +163,24 @@ export function SecurityMonitoringDashboard() {
                 return (
                   <Card key={event.id} style={{ borderLeft: '4px solid var(--primary)' }}>
                     <CardContent style={{ padding: 16 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          justifyContent: 'space-between',
+                        }}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, flex: 1 }}>
                           <SeverityIcon style={{ height: 20, width: 20, marginTop: 2 }} />
                           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                flexWrap: 'wrap',
+                              }}
+                            >
                               <Typography component="span" sx={{ fontWeight: 500 }}>
                                 {formatEventType(event.event_type)}
                               </Typography>
@@ -151,18 +189,34 @@ export function SecurityMonitoringDashboard() {
                               </Badge>
                             </Box>
 
-                            <Box sx={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                            <Box
+                              sx={{
+                                fontSize: '0.875rem',
+                                color: 'var(--muted-foreground)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 0.5,
+                              }}
+                            >
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Clock style={{ height: 12, width: 12 }} />
                                 {new Date(event.created_at).toLocaleString()}
                               </Box>
 
                               {event.user_id && (
-                                <Box>User ID: <code style={{ fontSize: '0.75rem' }}>{event.user_id}</code></Box>
+                                <Box>
+                                  User ID:{' '}
+                                  <code style={{ fontSize: '0.75rem' }}>{event.user_id}</code>
+                                </Box>
                               )}
 
                               {event.target_user_id && (
-                                <Box>Target User: <code style={{ fontSize: '0.75rem' }}>{event.target_user_id}</code></Box>
+                                <Box>
+                                  Target User:{' '}
+                                  <code style={{ fontSize: '0.75rem' }}>
+                                    {event.target_user_id}
+                                  </code>
+                                </Box>
                               )}
 
                               {event.metadata && Object.keys(event.metadata).length > 0 && (
@@ -170,7 +224,16 @@ export function SecurityMonitoringDashboard() {
                                   <summary style={{ cursor: 'pointer', color: 'var(--primary)' }}>
                                     View Details
                                   </summary>
-                                  <pre style={{ fontSize: '0.75rem', backgroundColor: 'var(--muted)', padding: 8, borderRadius: 4, marginTop: 4, overflow: 'auto' }}>
+                                  <pre
+                                    style={{
+                                      fontSize: '0.75rem',
+                                      backgroundColor: 'var(--muted)',
+                                      padding: 8,
+                                      borderRadius: 4,
+                                      marginTop: 4,
+                                      overflow: 'auto',
+                                    }}
+                                  >
                                     {JSON.stringify(event.metadata, null, 2)}
                                   </pre>
                                 </details>

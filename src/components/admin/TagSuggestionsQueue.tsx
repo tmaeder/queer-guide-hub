@@ -55,7 +55,7 @@ export function TagSuggestionsQueue() {
   const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const { data, isLoading, _refetch } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['tag-suggestions-pending'],
     queryFn: fetchPendingSuggestions,
     staleTime: 30_000,
@@ -79,7 +79,8 @@ export function TagSuggestionsQueue() {
       queryClient.invalidateQueries({ queryKey: ['review-counts'] });
       setSelectedIds(new Set());
     },
-    onError: (err: unknown) => toast.error(err instanceof Error ? err.message : 'Failed to approve'),
+    onError: (err: unknown) =>
+      toast.error(err instanceof Error ? err.message : 'Failed to approve'),
   });
 
   const rejectMutation = useMutation({

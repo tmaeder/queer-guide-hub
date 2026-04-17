@@ -3,16 +3,52 @@ import { Box, Typography } from '@mui/material';
 import { useUniversalCMS, type ContentFilters } from '@/hooks/useUniversalCMS';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Search, Filter, Plus, Edit, Trash2, Eye, RefreshCw, BarChart3, Database } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+  Search,
+  Filter,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  RefreshCw,
+  BarChart3,
+  Database,
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export function UniversalContentDashboard() {
@@ -23,9 +59,8 @@ export function UniversalContentDashboard() {
     error,
     totalCount,
     currentPage,
-    _hasNextPage,
     fetchAllContent,
-    deleteUniversalContent
+    deleteUniversalContent,
   } = useUniversalCMS();
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -39,7 +74,7 @@ export function UniversalContentDashboard() {
     search: '',
     status: '',
     page: 1,
-    limit: 50
+    limit: 50,
   });
 
   const [searchInput, setSearchInput] = useState('');
@@ -47,7 +82,7 @@ export function UniversalContentDashboard() {
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      setFilters(prev => ({ ...prev, search: searchInput, page: 1 }));
+      setFilters((prev) => ({ ...prev, search: searchInput, page: 1 }));
     }, 500);
     return () => clearTimeout(timeoutId);
   }, [searchInput]);
@@ -59,11 +94,11 @@ export function UniversalContentDashboard() {
   }, [filters]);
 
   const handleFilterChange = (key: keyof ContentFilters, value: unknown) => {
-    setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
   };
 
   const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...prev, page }));
+    setFilters((prev) => ({ ...prev, page }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -77,10 +112,14 @@ export function UniversalContentDashboard() {
   const getStatusColor = (status: string, contentType: string) => {
     if (contentType === 'cms_content') {
       switch (status) {
-        case 'published': return 'bg-green-500';
-        case 'draft': return 'bg-yellow-500';
-        case 'archived': return 'bg-gray-500';
-        default: return 'bg-blue-500';
+        case 'published':
+          return 'bg-green-500';
+        case 'draft':
+          return 'bg-yellow-500';
+        case 'archived':
+          return 'bg-gray-500';
+        default:
+          return 'bg-blue-500';
       }
     }
     return status === 'active' ? 'bg-green-500' : 'bg-gray-500';
@@ -100,7 +139,13 @@ export function UniversalContentDashboard() {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <Skeleton />
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+          }}
+        >
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} />
           ))}
@@ -131,8 +176,12 @@ export function UniversalContentDashboard() {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box>
-          <Typography variant="h3" sx={{ fontWeight: 'bold' }}>Universal Content Management</Typography>
-          <Typography sx={{ color: 'text.secondary' }}>Manage all content across the platform</Typography>
+          <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+            Universal Content Management
+          </Typography>
+          <Typography sx={{ color: 'text.secondary' }}>
+            Manage all content across the platform
+          </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button onClick={() => setIsCreatorOpen(true)}>
@@ -159,20 +208,25 @@ export function UniversalContentDashboard() {
         </TabsList>
 
         <TabsContent value="overview">
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' } }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 2,
+              gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+            }}
+          >
             {contentStats.map((stat) => (
               <Card
                 key={stat.content_type}
-
                 onClick={() => handleContentTypeFilter(stat.content_type)}
               >
                 <CardHeader>
-                  <CardTitle>
-                    {stat.content_type.replace('_', ' ')}
-                  </CardTitle>
+                  <CardTitle>{stat.content_type.replace('_', ' ')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{stat.count.toLocaleString()}</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                    {stat.count.toLocaleString()}
+                  </Typography>
                   <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
                     Click to view all
                   </Typography>
@@ -198,12 +252,14 @@ export function UniversalContentDashboard() {
                     placeholder="Search content..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-
                   />
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Select value={filters.contentType} onValueChange={(value) => handleFilterChange('contentType', value)}>
+                  <Select
+                    value={filters.contentType}
+                    onValueChange={(value) => handleFilterChange('contentType', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Content Type" />
                     </SelectTrigger>
@@ -223,7 +279,10 @@ export function UniversalContentDashboard() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+                  <Select
+                    value={filters.status}
+                    onValueChange={(value) => handleFilterChange('status', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -266,23 +325,25 @@ export function UniversalContentDashboard() {
                           <Box>
                             <Typography sx={{ fontWeight: 'medium' }}>{content.title}</Typography>
                             {content.description && (
-                              <Typography sx={{ fontSize: 14, color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 300 }}>
+                              <Typography
+                                sx={{
+                                  fontSize: 14,
+                                  color: 'text.secondary',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  maxWidth: 300,
+                                }}
+                              >
                                 {content.description}
                               </Typography>
                             )}
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">
-                            {content.content_type.replace('_', ' ')}
-                          </Badge>
+                          <Badge variant="outline">{content.content_type.replace('_', ' ')}</Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge
-
-                          >
-                            {content.status || 'unknown'}
-                          </Badge>
+                          <Badge>{content.status || 'unknown'}</Badge>
                         </TableCell>
                         <TableCell>
                           {formatDistanceToNow(new Date(content.updated_at), { addSuffix: true })}
@@ -305,38 +366,72 @@ export function UniversalContentDashboard() {
                                 </DialogHeader>
                                 <ScrollArea>
                                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+                                    <Box
+                                      sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(2, 1fr)',
+                                        gap: 2,
+                                      }}
+                                    >
                                       <Box>
-                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Content Type</Typography>
-                                        <Typography sx={{ textTransform: 'capitalize' }}>{content.content_type.replace('_', ' ')}</Typography>
+                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                          Content Type
+                                        </Typography>
+                                        <Typography sx={{ textTransform: 'capitalize' }}>
+                                          {content.content_type.replace('_', ' ')}
+                                        </Typography>
                                       </Box>
                                       <Box>
-                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Status</Typography>
-                                        <Badge>
-                                          {content.status || 'unknown'}
-                                        </Badge>
+                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                          Status
+                                        </Typography>
+                                        <Badge>{content.status || 'unknown'}</Badge>
                                       </Box>
                                     </Box>
 
                                     {content.description && (
                                       <Box>
-                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Description</Typography>
+                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                          Description
+                                        </Typography>
                                         <Typography>{content.description}</Typography>
                                       </Box>
                                     )}
 
                                     {content.metadata && (
                                       <Box>
-                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Metadata</Typography>
-                                        <Box component="pre" sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, fontSize: 14, overflow: 'auto' }}>
+                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                          Metadata
+                                        </Typography>
+                                        <Box
+                                          component="pre"
+                                          sx={{
+                                            bgcolor: 'background.paper',
+                                            p: 2,
+                                            borderRadius: 1,
+                                            fontSize: 14,
+                                            overflow: 'auto',
+                                          }}
+                                        >
                                           {JSON.stringify(content.metadata, null, 2)}
                                         </Box>
                                       </Box>
                                     )}
 
                                     <Box>
-                                      <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>Raw Data</Typography>
-                                      <Box component="pre" sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, fontSize: 14, overflow: 'auto' }}>
+                                      <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                        Raw Data
+                                      </Typography>
+                                      <Box
+                                        component="pre"
+                                        sx={{
+                                          bgcolor: 'background.paper',
+                                          p: 2,
+                                          borderRadius: 1,
+                                          fontSize: 14,
+                                          overflow: 'auto',
+                                        }}
+                                      >
                                         {JSON.stringify(content.raw_data, null, 2)}
                                       </Box>
                                     </Box>
@@ -356,7 +451,8 @@ export function UniversalContentDashboard() {
                               <Edit />
                             </Button>
 
-                            {(content.content_type === 'cms_content' || content.content_type === 'community_posts') && (
+                            {(content.content_type === 'cms_content' ||
+                              content.content_type === 'community_posts') && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -439,20 +535,66 @@ export function UniversalContentDashboard() {
 
       {/* Simple modals - removing for now to fix build errors */}
       {isCreatorOpen && (
-        <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 2, maxWidth: 448, width: '100%', mx: 2 }}>
-            <Typography variant="h3" sx={{ fontWeight: 'semibold', mb: 2 }}>Create Content</Typography>
-            <Typography sx={{ color: 'text.secondary', mb: 2 }}>Content creation will be implemented in the next iteration.</Typography>
+        <Box
+          sx={{
+            position: 'fixed',
+            inset: 0,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50,
+          }}
+        >
+          <Box
+            sx={{
+              bgcolor: 'background.paper',
+              p: 3,
+              borderRadius: 2,
+              maxWidth: 448,
+              width: '100%',
+              mx: 2,
+            }}
+          >
+            <Typography variant="h3" sx={{ fontWeight: 'semibold', mb: 2 }}>
+              Create Content
+            </Typography>
+            <Typography sx={{ color: 'text.secondary', mb: 2 }}>
+              Content creation will be implemented in the next iteration.
+            </Typography>
             <Button onClick={() => setIsCreatorOpen(false)}>Close</Button>
           </Box>
         </Box>
       )}
 
       {isEditorOpen && (
-        <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <Box sx={{ bgcolor: 'background.paper', p: 3, borderRadius: 2, maxWidth: 448, width: '100%', mx: 2 }}>
-            <Typography variant="h3" sx={{ fontWeight: 'semibold', mb: 2 }}>Edit Content</Typography>
-            <Typography sx={{ color: 'text.secondary', mb: 2 }}>Content editing will be implemented in the next iteration.</Typography>
+        <Box
+          sx={{
+            position: 'fixed',
+            inset: 0,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50,
+          }}
+        >
+          <Box
+            sx={{
+              bgcolor: 'background.paper',
+              p: 3,
+              borderRadius: 2,
+              maxWidth: 448,
+              width: '100%',
+              mx: 2,
+            }}
+          >
+            <Typography variant="h3" sx={{ fontWeight: 'semibold', mb: 2 }}>
+              Edit Content
+            </Typography>
+            <Typography sx={{ color: 'text.secondary', mb: 2 }}>
+              Content editing will be implemented in the next iteration.
+            </Typography>
             <Button onClick={() => setIsEditorOpen(false)}>Close</Button>
           </Box>
         </Box>

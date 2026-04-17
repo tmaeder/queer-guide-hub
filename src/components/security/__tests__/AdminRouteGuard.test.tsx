@@ -47,7 +47,9 @@ describe('AdminRouteGuard', () => {
   it('should render children when user is admin', () => {
     render(
       <MemoryRouter>
-        <AdminRouteGuard><div>Admin Content</div></AdminRouteGuard>
+        <AdminRouteGuard>
+          <div>Admin Content</div>
+        </AdminRouteGuard>
       </MemoryRouter>,
     );
     expect(screen.getByText('Admin Content')).toBeInTheDocument();
@@ -57,7 +59,9 @@ describe('AdminRouteGuard', () => {
     mockUser = null;
     render(
       <MemoryRouter>
-        <AdminRouteGuard><div>Secret</div></AdminRouteGuard>
+        <AdminRouteGuard>
+          <div>Secret</div>
+        </AdminRouteGuard>
       </MemoryRouter>,
     );
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/auth'));
@@ -68,7 +72,9 @@ describe('AdminRouteGuard', () => {
     mockIsModerator = false;
     render(
       <MemoryRouter>
-        <AdminRouteGuard requiredRole="admin"><div>Secret</div></AdminRouteGuard>
+        <AdminRouteGuard requiredRole="admin">
+          <div>Secret</div>
+        </AdminRouteGuard>
       </MemoryRouter>,
     );
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'));
@@ -79,7 +85,9 @@ describe('AdminRouteGuard', () => {
     mockIsModerator = true;
     render(
       <MemoryRouter>
-        <AdminRouteGuard requiredRole="moderator"><div>Mod Content</div></AdminRouteGuard>
+        <AdminRouteGuard requiredRole="moderator">
+          <div>Mod Content</div>
+        </AdminRouteGuard>
       </MemoryRouter>,
     );
     expect(screen.getByText('Mod Content')).toBeInTheDocument();
@@ -87,9 +95,11 @@ describe('AdminRouteGuard', () => {
 
   it('should show loading state while checking permissions', () => {
     mockRolesLoading = true;
-    const { _container } = render(
+    const {} = render(
       <MemoryRouter>
-        <AdminRouteGuard><div>Content</div></AdminRouteGuard>
+        <AdminRouteGuard>
+          <div>Content</div>
+        </AdminRouteGuard>
       </MemoryRouter>,
     );
     expect(screen.queryByText('Content')).not.toBeInTheDocument();

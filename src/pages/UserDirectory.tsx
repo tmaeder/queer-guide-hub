@@ -215,12 +215,7 @@ const UserDirectory = () => {
     }
   };
 
-  const {
-    data: profiles,
-    isLoading,
-    _error,
-    _refetch,
-  } = useQuery({
+  const { data: profiles, isLoading } = useQuery({
     queryKey: ['user-directory', filters, nearMe, userLocation],
     enabled: !!user,
     queryFn: async () => {
@@ -960,7 +955,10 @@ const UserDirectory = () => {
                         <Select
                           value={filters.sortBy}
                           onValueChange={(value) =>
-                            setFilters((prev) => ({ ...prev, sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active' }))
+                            setFilters((prev) => ({
+                              ...prev,
+                              sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active',
+                            }))
                           }
                         >
                           <SelectTrigger style={{ width: 200, border: '2px solid' }}>
@@ -1095,7 +1093,12 @@ const UserDirectory = () => {
               </Box>
               <Select
                 value={filters.sortBy}
-                onValueChange={(value) => setFilters((prev) => ({ ...prev, sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active' }))}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active',
+                  }))
+                }
               >
                 <SelectTrigger style={{ width: 'auto', border: 0 }}>
                   <SelectValue />
@@ -1223,7 +1226,10 @@ const UserDirectory = () => {
                       )}
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {(profile as Record<string, unknown>)?.user_mode && (
-                          <UserModeBadge mode={(profile as Record<string, unknown>).user_mode} size="sm" />
+                          <UserModeBadge
+                            mode={(profile as Record<string, unknown>).user_mode}
+                            size="sm"
+                          />
                         )}
                         {profile.is_business && (
                           <Badge

@@ -201,8 +201,14 @@ export default function AdminFeedback() {
       if (state.hasScreenshot && !d.screenshot_url) return false;
       if (state.hasErrors && !(d.context?.errors && d.context.errors.length > 0)) return false;
       if (state.withClaude) {
-        const claudeActive = !!it.github_issue_url && it.feedback_status !== 'done';
-        if (!claudeActive) return false;
+        // Matches either path: an open Claude handoff (copy/paste workflow)
+        // or a forwarded GitHub issue still being worked on.
+        const handoffs = it.data.handoffs ?? [];
+        const hasOpenHandoff = handoffs.some(
+          (h) => h.status === 'sent' || h.status === 'in_progress',
+        );
+        const forwardedOpen = !!it.github_issue_url && it.feedback_status !== 'done';
+        if (!hasOpenHandoff && !forwardedOpen) return false;
       }
       return true;
     });
@@ -541,6 +547,19 @@ export default function AdminFeedback() {
     onForwardFocused: () => {
       if (focusedId) forwardMutation.mutate(focusedId);
     },
+    onCopyHandoff: () => {
+      if (!focusedId) return;
+      const item = items.find((i) => i.id === focusedId);
+      if (!item) return;
+      const prompt = formatClaudePrompt(item);
+      navigator.clipboard.writeText(prompt).catch(() => {});
+      recordHandoff.mutate({
+        submissionId: focusedId,
+        target: 'claude-code',
+        promptPreview: prompt.slice(0, 160),
+      });
+      toast({ title: 'Prompt copied + handoff recorded' });
+    },
     onToggleSelectFocused: (shift) => {
       if (focusedId) toggleSelect(focusedId, shift);
     },
@@ -805,6 +824,15 @@ export default function AdminFeedback() {
         onUpdateHandoff={(handoffId, status) => {
           if (!selected) return;
           updateHandoff.mutate({ submissionId: selected.id, handoffId, status });
+          // Auto-close ticket when the handoff is marked resolved, unless it's
+          // already closed. Saves the admin a second click and keeps the kanban
+          // aligned with Claude's outcome.
+          if (status === 'resolved' && selected.feedback_status !== 'done') {
+            statusMutation.mutate({ ids: [selected.id], status: 'done' });
+            if (!selected.resolution) {
+              resolutionMutation.mutate({ id: selected.id, resolution: 'fixed' });
+            }
+          }
         }}
         isRecordingHandoff={recordHandoff.isPending}
       />

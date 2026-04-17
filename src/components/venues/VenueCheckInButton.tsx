@@ -1,8 +1,20 @@
 import { useState } from 'react';
 import { MapPin, Loader2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useVenueCheckins } from '@/hooks/useVenueCheckins';
@@ -21,15 +33,16 @@ interface VenueCheckInButtonProps {
 
 export function VenueCheckInButton({
   venueId,
-  _venueName,
   venueLatitude,
   venueLongitude,
-  onCheckInSuccess
+  onCheckInSuccess,
 }: VenueCheckInButtonProps) {
   const { checkInAtVenue, loading, _MAX_CHECKIN_DISTANCE_METERS } = useVenueCheckins();
   const { user } = useAuth();
   const [isPublic, setIsPublic] = useState(false);
-  const [locationVisibility, setLocationVisibility] = useState<'private' | 'friends' | 'public'>('private');
+  const [locationVisibility, setLocationVisibility] = useState<'private' | 'friends' | 'public'>(
+    'private',
+  );
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
 
   if (!user) {
@@ -43,7 +56,7 @@ export function VenueCheckInButton({
   const handleCheckIn = async () => {
     const result = await checkInAtVenue(venueId, venueLatitude, venueLongitude, {
       isPublic,
-      locationVisibility
+      locationVisibility,
     });
     if (result.success && onCheckInSuccess) {
       onCheckInSuccess();
@@ -54,12 +67,7 @@ export function VenueCheckInButton({
   return (
     <Dialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog}>
       <DialogTrigger asChild>
-        <Button
-          onClick={() => setShowPrivacyDialog(true)}
-          disabled={loading}
-
-          variant="default"
-        >
+        <Button onClick={() => setShowPrivacyDialog(true)} disabled={loading} variant="default">
           <Shield style={{ width: 16, height: 16 }} />
           Check In Securely
         </Button>
@@ -76,9 +84,12 @@ export function VenueCheckInButton({
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
               <Shield style={{ width: 20, height: 20, marginTop: 2 }} />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Enhanced Privacy Protection</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  Enhanced Privacy Protection
+                </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Your location is automatically anonymized after 24 hours. Choose your privacy settings below.
+                  Your location is automatically anonymized after 24 hours. Choose your privacy
+                  settings below.
                 </Typography>
               </Box>
             </Box>
@@ -89,17 +100,18 @@ export function VenueCheckInButton({
               <Label htmlFor="public-check-in" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
                 Make check-in visible to others
               </Label>
-              <Switch
-                id="public-check-in"
-                checked={isPublic}
-                onCheckedChange={setIsPublic}
-              />
+              <Switch id="public-check-in" checked={isPublic} onCheckedChange={setIsPublic} />
             </Box>
 
             {isPublic && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Location visibility</Label>
-                <Select value={locationVisibility} onValueChange={(value: 'private' | 'friends' | 'public') => setLocationVisibility(value)}>
+                <Select
+                  value={locationVisibility}
+                  onValueChange={(value: 'private' | 'friends' | 'public') =>
+                    setLocationVisibility(value)
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -113,9 +125,8 @@ export function VenueCheckInButton({
                   {locationVisibility === 'friends'
                     ? 'Friends see your location within ~100m accuracy'
                     : locationVisibility === 'public'
-                    ? 'Public users see your location within ~1km accuracy'
-                    : 'Only you can see your exact location'
-                  }
+                      ? 'Public users see your location within ~1km accuracy'
+                      : 'Only you can see your exact location'}
                 </Typography>
               </Box>
             )}
