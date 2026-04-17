@@ -91,10 +91,44 @@ export function AiPlanTab({ trip }: Props) {
     if (!draft || !user) return;
     setApplying(true);
     try {
+      // Batch-resolve city_id / country_id for referenced venues & events
+      // so safety / cross-border features work on AI-planned trips.
+      const venueIds = Array.from(
+        new Set(
+          draft.days.flatMap((d) => d.places.map((p) => p.venue_id).filter(Boolean) as string[]),
+        ),
+      );
+      const eventIds = Array.from(
+        new Set(
+          draft.days.flatMap((d) => d.places.map((p) => p.event_id).filter(Boolean) as string[]),
+        ),
+      );
+      const geoByVenue = new Map<string, { city_id: string | null; country_id: string | null }>();
+      const geoByEvent = new Map<string, { city_id: string | null; country_id: string | null }>();
+      if (venueIds.length) {
+        const { data } = await supabase
+          .from('venues')
+          .select('id, city_id, country_id')
+          .in('id', venueIds);
+        for (const v of data ?? []) geoByVenue.set(v.id, { city_id: v.city_id, country_id: v.country_id });
+      }
+      if (eventIds.length) {
+        const { data } = await supabase
+          .from('events')
+          .select('id, city_id, country_id')
+          .in('id', eventIds);
+        for (const e of data ?? []) geoByEvent.set(e.id, { city_id: e.city_id, country_id: e.country_id });
+      }
+
       for (const day of draft.days) {
         const dayId = tripDayByDate.get(day.date) ?? null;
         let sortOrder = 1000;
         for (const p of day.places) {
+          const geo = p.venue_id
+            ? geoByVenue.get(p.venue_id)
+            : p.event_id
+              ? geoByEvent.get(p.event_id)
+              : undefined;
           await addPlace.mutateAsync({
             trip_id: trip.id,
             day_id: dayId,
@@ -105,8 +139,8 @@ export function AiPlanTab({ trip }: Props) {
             custom_address: null,
             latitude: null,
             longitude: null,
-            city_id: null,
-            country_id: null,
+            city_id: geo?.city_id ?? null,
+            country_id: geo?.country_id ?? null,
             start_time: null,
             end_time: null,
             duration_minutes: null,
