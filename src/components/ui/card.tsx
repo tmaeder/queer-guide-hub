@@ -145,26 +145,7 @@ const CardImage: React.FC<CardImageProps> = ({
     </Box>
   );
 };
-CardImage.displayName = 'CardImage';
-
-/* ── Other card sub-components ─────────────────────────────────────── */
-
-const _CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, style, ...props }, ref) => (
-    <MuiCardHeader
-      ref={ref as React.Ref<HTMLDivElement>}
-      className={className}
-      style={style}
-      title={undefined}
-      sx={{ pb: 0 }}
-      component="div"
-      {...(props as Record<string, unknown>)}
-    >
-      {/* MuiCardHeader doesn't render children the same way; use a wrapper */}
-    </MuiCardHeader>
-  ),
-);
-// Actually, MUI CardHeader uses title/subheader/action props, not children.
+CardImage.displayName = 'CardImage';// Actually, MUI CardHeader uses title/subheader/action props, not children.
 // We need to keep rendering children like shadcn does. Use a plain div with sx.
 const CardHeaderCompat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, children, style, ...props }, ref) => (

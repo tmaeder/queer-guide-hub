@@ -62,4 +62,5 @@ INSERT INTO public.tags (name, category, description) VALUES
 ('Wand Teasing', 'sexual_activities', 'Sexual activity tag'),
 ('Yoni Massage', 'sexual_activities', 'Sexual activity tag'),
 ('Frotting', 'sexual_activities', 'Sexual activity tag'),
-('Tit Fucking', 'sexual_activities', 'Sexual activity tag');
+('Tit Fucking', 'sexual_activities', 'Sexual activity tag')
+ON CONFLICT (name) DO NOTHING;

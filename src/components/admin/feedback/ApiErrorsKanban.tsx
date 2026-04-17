@@ -28,22 +28,8 @@ import {
   MessageSquarePlus,
   Check,
   ShieldAlert,
-  Inbox,
-  Eye,
-  Calendar,
-  Activity,
-  CheckCircle2,
+  GripVertical,
 } from 'lucide-react';
-
-// Mirror FeedbackKanban's per-column empty state so switching tabs feels
-// like one product instead of two.
-const COLUMN_EMPTY: Record<KanbanStatus, { icon: typeof Inbox; copy: string }> = {
-  new: { icon: Inbox, copy: 'No new errors' },
-  under_review: { icon: Eye, copy: 'Nothing under review' },
-  planned: { icon: Calendar, copy: 'Nothing planned' },
-  in_progress: { icon: Activity, copy: 'Nothing in progress' },
-  done: { icon: CheckCircle2, copy: 'Nothing resolved recently' },
-};
 import { timeAgo } from '@/utils/timezone';
 import { kanbanColumns, type KanbanStatus } from './constants';
 import { SERVICE_COLORS, type ApiErrorSubmission } from './claudePrompts';
@@ -57,6 +43,25 @@ interface Props {
   onForward: (id: string) => void;
   onStatusChange: (id: string, status: KanbanStatus) => void;
   forwardingIds: Set<string>;
+}
+
+// Strip log prefixes / classify subject for readable card titles.
+function extractTitle(item: ApiErrorSubmission): string {
+  const msg = item.data.message ?? '';
+  const meta = item.data.metadata as
+    | { source?: string; advisor_type?: string }
+    | undefined;
+  if (meta?.source === 'supabase-advisor') {
+    const m = msg.match(
+      /Table\s+\\?[`"]?([\w.]+)\\?[`"]?.*role\s+\\?[`"]?([\w_]+)\\?[`"]?/,
+    );
+    if (m) return `${meta.advisor_type}: ${m[1]} · ${m[2]}`;
+    return meta.advisor_type ?? msg;
+  }
+  if (item.data.service === 'github-actions') {
+    return msg.replace(/^Run failure:\s*/, '');
+  }
+  return msg.replace(/^\[[^\]]+\]\s*/, '');
 }
 
 // Chronic errors float above one-off spikes.
@@ -117,8 +122,13 @@ export function ApiErrorsKanban({
     return out;
   }, [grouped]);
 
-  // Per-column empty states cover the zero-error case now — no need for a
-  // separate all-empty message.
+  if (errors.length === 0) {
+    return (
+      <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+        No API errors recorded
+      </Typography>
+    );
+  }
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
@@ -153,7 +163,12 @@ export function ApiErrorsKanban({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: `repeat(${kanbanColumns.length}, 1fr)` },
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            lg: 'repeat(3, 1fr)',
+            xl: `repeat(${kanbanColumns.length}, 1fr)`,
+          },
           gap: 2,
         }}
       >
@@ -212,21 +227,15 @@ function Column({
           alignItems: 'center',
           gap: 1,
           mb: 1.5,
-          px: 1,
-          py: 0.75,
-          borderTop: 3,
+          pb: 1,
+          borderBottom: 2,
           borderColor: col.color,
-          bgcolor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
-          borderRadius: '0 0 4px 4px',
         }}
       >
-        <Typography
-          variant="subtitle2"
-          sx={{ fontWeight: 700, color: col.color, letterSpacing: 0.3 }}
-        >
+        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
           {col.label}
         </Typography>
-        <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>
+        <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
           {items.length}
         </Badge>
       </Box>
@@ -241,33 +250,27 @@ function Column({
           overflowY: 'auto',
           pr: 0.5,
           p: 0.5,
-          bgcolor: isOver
-            ? `color-mix(in srgb, ${col.color} 14%, transparent)`
-            : 'transparent',
+          borderRadius: 1,
+          bgcolor: isOver ? 'action.hover' : 'transparent',
           transition: 'background-color 0.15s',
         }}
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          {items.length === 0 && (() => {
-            const { icon: EmptyIcon, copy } = COLUMN_EMPTY[col.id];
-            return (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 0.75,
-                  py: 4,
-                  opacity: 0.55,
-                }}
-              >
-                <EmptyIcon size={22} color={col.color} strokeWidth={1.5} />
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                  {copy}
-                </Typography>
-              </Box>
-            );
-          })()}
+          {items.length === 0 && (
+            <Box
+              sx={{
+                py: 4,
+                textAlign: 'center',
+                border: '1px dashed',
+                borderColor: 'divider',
+                borderRadius: 1,
+                color: 'text.disabled',
+                fontSize: '0.75rem',
+              }}
+            >
+              Drop here
+            </Box>
+          )}
           {items.map((item) => (
             <SortableErrorCard
               key={item.id}
@@ -323,9 +326,6 @@ function SortableErrorCard({
   };
   const color = SERVICE_COLORS[item.data.service] || '#888';
   const withClaude = !!item.github_issue_url && item.feedback_status !== 'done';
-  // Supabase-advisor rows carry type + severity in metadata; render a
-  // Shield icon + severity-tinted chip so they visually separate from
-  // runtime errors even at a glance.
   const advisorMeta = item.data.metadata as
     | { source?: string; advisor_type?: string; severity?: string }
     | undefined;
@@ -338,153 +338,241 @@ function SortableErrorCard({
         : '#6b7280';
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style}>
       <Box
-        onClick={onToggle}
         sx={{
-          position: 'relative',
-          py: 0.625,
-          pl: isAdvisor ? 1 : 0.875,
-          pr: 0.75,
+          p: 1.25,
           border: 1,
           borderColor: 'divider',
           bgcolor: 'background.paper',
-          cursor: 'pointer',
-          transition: 'border-color 0.15s',
+          borderRadius: 1,
+          display: 'flex',
+          gap: 0.75,
           '&:hover': { borderColor: 'primary.main' },
-          // Left color stripe mirrors the FeedbackCard priority-stripe
-          // pattern: ERROR/WARN advisors and runtime errors get a tinted
-          // stripe keyed to severity, so eye-scans of the column read
-          // urgency without reading the chips.
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: isAdvisor && advisorMeta?.severity === 'ERROR' ? 3 : 2,
-            bgcolor: isAdvisor
-              ? severityColor
-              : item.feedback_status === 'done'
-                ? 'transparent'
-                : color,
-          },
         }}
       >
         <Box
+          {...attributes}
+          {...listeners}
           sx={{
+            cursor: 'grab',
+            color: 'text.disabled',
             display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-            mb: 0.5,
-            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            pt: 0.5,
+            '&:active': { cursor: 'grabbing' },
+            '&:hover': { color: 'text.secondary' },
           }}
+          aria-label="Drag to reorder"
         >
-          <Badge
-            variant="outline"
-            style={{
-              borderColor: color,
-              color,
-              fontSize: '0.55rem',
-              padding: '1px 4px',
-              display: 'inline-flex',
+          <GripVertical style={{ width: 14, height: 14 }} />
+        </Box>
+
+        <Box sx={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={onToggle}>
+          <Box
+            sx={{
+              display: 'flex',
               alignItems: 'center',
-              gap: 2,
+              gap: 0.5,
+              mb: 0.5,
+              flexWrap: 'wrap',
             }}
           >
-            {isAdvisor ? (
-              <ShieldAlert style={{ width: 8, height: 8 }} />
-            ) : (
-              <Server style={{ width: 8, height: 8 }} />
-            )}
-            {isAdvisor ? `advisor · ${advisorMeta?.advisor_type}` : item.data.service}
-          </Badge>
-          {isAdvisor && advisorMeta?.severity && (
             <Badge
               variant="outline"
               style={{
-                borderColor: severityColor,
-                backgroundColor: severityColor,
-                color: '#fff',
-                fontSize: '0.55rem',
-                padding: '1px 4px',
-                fontWeight: 700,
-              }}
-            >
-              {advisorMeta.severity}
-            </Badge>
-          )}
-          <Badge
-            variant="outline"
-            style={{
-              fontSize: '0.55rem',
-              padding: '1px 4px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 2,
-            }}
-          >
-            <Zap style={{ width: 8, height: 8 }} />
-            {item.data.function_name}
-          </Badge>
-          {withClaude && (
-            <Badge
-              variant="outline"
-              style={{
-                borderColor: '#8b5cf6',
-                backgroundColor: '#8b5cf6',
-                color: '#fff',
-                fontSize: '0.55rem',
-                padding: '1px 4px',
+                borderColor: color,
+                color,
+                fontSize: '0.7rem',
+                padding: '2px 6px',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 2,
-                fontWeight: 700,
+                gap: 4,
               }}
             >
-              <Github style={{ width: 8, height: 8 }} />
-              Claude · #{item.github_issue_number}
+              {isAdvisor ? (
+                <ShieldAlert style={{ width: 11, height: 11 }} />
+              ) : (
+                <Server style={{ width: 11, height: 11 }} />
+              )}
+              {isAdvisor ? `advisor · ${advisorMeta?.advisor_type}` : item.data.service}
             </Badge>
-          )}
-          <Box sx={{ flex: 1 }} />
-          <Box sx={{ opacity: 0.8 }}>
-            <SparklineCell data={toDailySeries(series, 14)} color={color} width={60} height={18} />
+            {isAdvisor && advisorMeta?.severity && (
+              <Badge
+                variant="outline"
+                style={{
+                  borderColor: severityColor,
+                  backgroundColor: severityColor,
+                  color: '#fff',
+                  fontSize: '0.7rem',
+                  padding: '2px 6px',
+                  fontWeight: 700,
+                }}
+              >
+                {advisorMeta.severity}
+              </Badge>
+            )}
+            {withClaude && (
+              <Badge
+                variant="outline"
+                style={{
+                  borderColor: '#8b5cf6',
+                  backgroundColor: '#8b5cf6',
+                  color: '#fff',
+                  fontSize: '0.7rem',
+                  padding: '2px 6px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontWeight: 700,
+                }}
+              >
+                <Github style={{ width: 11, height: 11 }} />#{item.github_issue_number}
+              </Badge>
+            )}
+            <Box sx={{ flex: 1 }} />
+            <Box sx={{ opacity: 0.8 }}>
+              <SparklineCell
+                data={toDailySeries(series, 14)}
+                color={color}
+                width={56}
+                height={16}
+              />
+            </Box>
+            <Badge
+              variant="secondary"
+              style={{
+                fontSize: '0.7rem',
+                padding: '2px 6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <Hash style={{ width: 11, height: 11 }} />
+              {item.occurrence_count}×
+            </Badge>
           </Box>
-          <Badge
-            variant="secondary"
-            style={{
-              fontSize: '0.55rem',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 2,
+
+          <Typography
+            sx={{
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              lineHeight: 1.35,
+              mb: 0.25,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              wordBreak: 'break-word',
             }}
           >
-            <Hash style={{ width: 8, height: 8 }} />
-            {item.occurrence_count}x
-          </Badge>
-        </Box>
-        <Typography
-          variant="body2"
-          sx={{
-            fontWeight: 600,
-            fontFamily: 'monospace',
-            fontSize: '0.7rem',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {item.data.message}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
-          Last seen {timeAgo(item.last_seen_at)}
-          {item.data.status_code ? ` · ${item.data.status_code}` : ''}
-        </Typography>
+            {extractTitle(item)}
+          </Typography>
 
-        <Collapse in={expanded}>
-          <Box sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontSize: '0.72rem', display: 'block' }}
+          >
+            <Zap
+              style={{
+                width: 11,
+                height: 11,
+                display: 'inline',
+                verticalAlign: -2,
+                marginRight: 3,
+              }}
+            />
+            {item.data.function_name}
+            {item.data.status_code ? ` · ${item.data.status_code}` : ''}
+            {' · '}last seen {timeAgo(item.last_seen_at)}
+          </Typography>
+
+          <Box sx={{ display: 'flex', gap: 0.75, mt: 1, flexWrap: 'wrap' }}>
+            {item.github_issue_url ? (
+              <Button
+                variant="outline"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  window.open(item.github_issue_url!, '_blank');
+                }}
+                style={{
+                  fontSize: '0.72rem',
+                  padding: '4px 8px',
+                  height: 'auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                <Github style={{ width: 12, height: 12 }} /> #{item.github_issue_number}
+              </Button>
+            ) : (
+              <Button
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  onForward(item.id);
+                }}
+                disabled={isForwarding}
+                style={{
+                  fontSize: '0.72rem',
+                  padding: '4px 8px',
+                  height: 'auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  backgroundColor: 'hsl(var(--accent-warm))',
+                  color: '#fff',
+                }}
+              >
+                <MessageSquarePlus style={{ width: 12, height: 12 }} />
+                {isForwarding ? 'Forwarding…' : 'Fix with Claude'}
+              </Button>
+            )}
+            {item.feedback_status !== 'done' && (
+              <Button
+                variant="outline"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  onStatusChange(item.id, 'done');
+                }}
+                style={{
+                  fontSize: '0.72rem',
+                  padding: '4px 8px',
+                  height: 'auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+                title="Mark resolved (auto-reopens if it recurs)"
+              >
+                <Check style={{ width: 12, height: 12 }} /> Resolve
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onCopyPrompt(item);
+              }}
+              style={{
+                fontSize: '0.72rem',
+                padding: '4px 8px',
+                height: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+              title="Copy Claude prompt"
+            >
+              <Copy style={{ width: 12, height: 12 }} />
+            </Button>
+          </Box>
+
+          <Collapse in={expanded}>
             {item.data.stack && (
-              <Box sx={{ mb: 1 }}>
+              <Box sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
                 <Typography
                   variant="caption"
                   sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}
@@ -496,8 +584,8 @@ function SortableErrorCard({
                     p: 1,
                     bgcolor: 'action.hover',
                     fontFamily: 'monospace',
-                    fontSize: '0.6rem',
-                    maxHeight: 160,
+                    fontSize: '0.7rem',
+                    maxHeight: 200,
                     overflowY: 'auto',
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-all',
@@ -507,63 +595,8 @@ function SortableErrorCard({
                 </Box>
               </Box>
             )}
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Button
-                variant="outline"
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  onCopyPrompt(item);
-                }}
-                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-              >
-                <Copy style={{ width: 12, height: 12 }} /> Copy Prompt
-              </Button>
-              {item.feedback_status !== 'done' && (
-                <Button
-                  variant="outline"
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    onStatusChange(item.id, 'done');
-                  }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                  title="Mark resolved (auto-reopens if it recurs)"
-                >
-                  <Check style={{ width: 12, height: 12 }} /> Resolve
-                </Button>
-              )}
-              {item.github_issue_url ? (
-                <Button
-                  variant="outline"
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    window.open(item.github_issue_url!, '_blank');
-                  }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                >
-                  <Github style={{ width: 12, height: 12 }} /> #{item.github_issue_number}
-                </Button>
-              ) : (
-                <Button
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    onForward(item.id);
-                  }}
-                  disabled={isForwarding}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    backgroundColor: 'hsl(var(--accent-warm))',
-                    color: '#fff',
-                  }}
-                >
-                  <MessageSquarePlus style={{ width: 12, height: 12 }} />
-                  {isForwarding ? 'Forwarding…' : 'Fix with Claude'}
-                </Button>
-              )}
-            </Box>
-          </Box>
-        </Collapse>
+          </Collapse>
+        </Box>
       </Box>
     </div>
   );

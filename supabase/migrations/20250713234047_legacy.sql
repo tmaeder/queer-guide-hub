@@ -60,4 +60,5 @@ INSERT INTO public.tags (name, category, description) VALUES
 ('Trysexual', 'sexual-orientation', 'Willing to try various sexual experiences'),
 ('Unlabeled', 'sexual-orientation', 'Choosing not to use specific labels'),
 ('Unsure', 'sexual-orientation', 'Uncertain about sexual orientation'),
-('Vulvosexual', 'sexual-orientation', 'Attraction to people with vulvas');
+('Vulvosexual', 'sexual-orientation', 'Attraction to people with vulvas')
+ON CONFLICT (name) DO NOTHING;

@@ -1,3 +1,16 @@
+-- Idempotently ensure url is UNIQUE so the ON CONFLICT (url) clause below resolves.
+-- Without this guard the raw CREATE TABLE in an earlier legacy migration leaves
+-- url unconstrained, and fresh-provisioned Supabase preview branches fail here.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'news_sources_url_key'
+  ) THEN
+    ALTER TABLE public.news_sources
+      ADD CONSTRAINT news_sources_url_key UNIQUE (url);
+  END IF;
+END $$;
+
 -- Insert RSS feed sources for daily news import
 INSERT INTO public.news_sources (name, url, source_type, category, is_active, fetch_frequency) VALUES
 ('The Guardian - LGBT Rights', 'https://www.theguardian.com/world/lgbt-rights/rss', 'rss', 'rights', true, 1440),

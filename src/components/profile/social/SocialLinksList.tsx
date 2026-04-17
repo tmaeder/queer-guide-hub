@@ -26,14 +26,6 @@ export function SocialLinksList({
   onRemoveCustomLink,
   onValidateUrl,
 }: SocialLinksListProps) {
-  const _validateAndPreview = async (url: string) => {
-    if (onValidateUrl) {
-      const isValid = await onValidateUrl(url);
-      return isValid;
-    }
-    return true;
-  };
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Social Links */}

@@ -108,23 +108,6 @@ export function UniversalContentDashboard() {
   };
 
   const totalPages = Math.ceil(totalCount / (filters.limit || 50));
-
-  const getStatusColor = (status: string, contentType: string) => {
-    if (contentType === 'cms_content') {
-      switch (status) {
-        case 'published':
-          return 'bg-green-500';
-        case 'draft':
-          return 'bg-yellow-500';
-        case 'archived':
-          return 'bg-gray-500';
-        default:
-          return 'bg-blue-500';
-      }
-    }
-    return status === 'active' ? 'bg-green-500' : 'bg-gray-500';
-  };
-
   const handleRefresh = () => {
     fetchAllContent(filters);
   };

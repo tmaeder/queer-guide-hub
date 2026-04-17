@@ -41,19 +41,7 @@ export function MarketplaceCard({
   const averageRating = listing.marketplace_reviews?.length
     ? listing.marketplace_reviews.reduce((sum, review) => sum + review.rating, 0) /
       listing.marketplace_reviews.length
-    : 0;
-
-  const _isFavorited = listing.marketplace_favorites && listing.marketplace_favorites.length > 0;
-
-  const _getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      products: 'bg-muted text-foreground',
-      services: 'bg-muted text-foreground',
-    };
-    return colors[category] || 'bg-muted text-foreground';
-  };
-
-  const formatPrice = () => {
+    : 0;  const formatPrice = () => {
     if (!listing.price) {
       if (listing.price_type === 'free') return 'Free';
       return 'Price varies';
@@ -72,25 +60,6 @@ export function MarketplaceCard({
         return price;
     }
   };
-
-  const _getBusinessTypeIcon = (type: string) => {
-    switch (type) {
-      case 'online':
-        return <Globe style={{ height: 12, width: 12 }} />;
-      case 'physical':
-        return <MapPin style={{ height: 12, width: 12 }} />;
-      case 'both':
-        return (
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Globe style={{ height: 12, width: 12 }} />
-            <MapPin style={{ height: 12, width: 12 }} />
-          </Box>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <Card>
       {showFavoriteButton && (

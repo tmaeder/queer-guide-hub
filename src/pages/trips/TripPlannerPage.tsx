@@ -21,6 +21,8 @@ import {
   ArrowLeft,
   Plus,
   Hotel,
+  Sparkles,
+  MessagesSquare,
 } from 'lucide-react';
 import MuiDrawer from '@mui/material/Drawer';
 import { format, differenceInDays } from 'date-fns';
@@ -54,6 +56,12 @@ const CollaborationTab = lazy(() =>
   import('@/components/trips/CollaborationTab').then((m) => ({
     default: m.CollaborationTab,
   })),
+);
+const AiPlanTab = lazy(() =>
+  import('@/components/trips/AiPlanTab').then((m) => ({ default: m.AiPlanTab })),
+);
+const TripChatTab = lazy(() =>
+  import('@/components/trips/TripChatTab').then((m) => ({ default: m.TripChatTab })),
 );
 
 /**
@@ -287,6 +295,16 @@ export default function TripPlannerPage() {
             iconPosition="start"
             label={t('trips.tabs.collaborate')}
           />
+          <Tab
+            icon={<Sparkles size={16} />}
+            iconPosition="start"
+            label={t('trips.tabs.ai', 'AI plan')}
+          />
+          <Tab
+            icon={<MessagesSquare size={16} />}
+            iconPosition="start"
+            label={t('trips.tabs.chat', 'Chat')}
+          />
         </Tabs>
       </Box>
 
@@ -387,6 +405,18 @@ export default function TripPlannerPage() {
       {tab === 6 && (
         <Suspense fallback={<CircularProgress sx={{ display: 'block', mx: 'auto', my: 4 }} />}>
           <CollaborationTab tripId={trip.id} />
+        </Suspense>
+      )}
+
+      {tab === 7 && (
+        <Suspense fallback={<CircularProgress sx={{ display: 'block', mx: 'auto', my: 4 }} />}>
+          <AiPlanTab trip={trip} />
+        </Suspense>
+      )}
+
+      {tab === 8 && (
+        <Suspense fallback={<CircularProgress sx={{ display: 'block', mx: 'auto', my: 4 }} />}>
+          <TripChatTab tripId={trip.id} />
         </Suspense>
       )}
 

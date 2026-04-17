@@ -55,13 +55,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     onOpenChange(false);
     navigate('/auth');
   };
-
-  const _resetForm = () => {
-    setEmail('');
-    setPassword('');
-    setShowPassword(false);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>

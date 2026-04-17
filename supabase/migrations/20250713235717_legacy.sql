@@ -23,4 +23,5 @@ INSERT INTO public.tags (name, category, description) VALUES
 ('Teratophilia', 'philia', 'Philia tag'),
 ('Xenophilia', 'philia', 'Philia tag'),
 ('Zoophilia', 'philia', 'Philia tag'),
-('Uniform Fetish', 'philia', 'Philia tag');
+('Uniform Fetish', 'philia', 'Philia tag')
+ON CONFLICT (name) DO NOTHING;

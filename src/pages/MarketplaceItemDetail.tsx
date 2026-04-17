@@ -199,17 +199,6 @@ export default function MarketplaceItemDetail() {
   const averageRating = reviews.length
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
-
-  const _getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      products: 'bg-primary/10 text-primary',
-      services: 'bg-accent/10 text-accent',
-      classes: 'bg-secondary/10 text-secondary',
-      events: 'bg-destructive/10 text-destructive',
-    };
-    return colors[category] || 'bg-muted/10 text-muted-foreground';
-  };
-
   const formatPrice = () => {
     if (!listing.price) {
       if (listing.price_type === 'free') return 'Free';

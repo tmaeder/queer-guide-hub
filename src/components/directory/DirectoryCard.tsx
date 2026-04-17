@@ -117,11 +117,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     fetchCityImage,
     data?.countries?.name,
     data?.country_name,
-  ]);
-  const _refreshImage = () => {
-    setImageKey((prev) => prev + 1);
-  };
-  const formatPopulation = (population?: number | null) => {
+  ]);  const formatPopulation = (population?: number | null) => {
     if (!population) return null;
     if (population >= 1000000) {
       return `${(population / 1000000).toFixed(1)}M`;

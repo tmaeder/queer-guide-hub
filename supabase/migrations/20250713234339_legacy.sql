@@ -93,4 +93,5 @@ INSERT INTO public.tags (name, category, description) VALUES
 ('Uncollared', 'relationship-style', 'BDSM submissive without collar'),
 ('Under Protection', 'relationship-style', 'Being protected by dominant partner'),
 ('Widow(er)', 'relationship-style', 'Person whose spouse has died'),
-('puddle', 'relationship-style', 'Emotional state after intense scene or experience');
+('puddle', 'relationship-style', 'Emotional state after intense scene or experience')
+ON CONFLICT (name) DO NOTHING;

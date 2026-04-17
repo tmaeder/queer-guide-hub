@@ -183,12 +183,6 @@ export function AdminDataTable<TData extends { id: string }>({
     refetch();
     onBulkEditSuccess?.();
   };
-
-  const _handleDeleteSuccess = () => {
-    refetch();
-    onBulkDeleteSuccess?.();
-  };
-
   return (
     <Paper
       elevation={0}
