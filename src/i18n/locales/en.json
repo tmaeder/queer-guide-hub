@@ -811,7 +811,6 @@
     "upcoming": {
       "title": "Upcoming Events",
       "titleNear": "Upcoming Events Near You",
-      "empty": "No further events scheduled.",
       "next14": "Next 14 days"
     },
     "news": {

@@ -820,7 +820,6 @@
     "upcoming": {
       "title": "Próximos eventos",
       "titleNear": "Próximos eventos cerca de ti",
-      "empty": "No hay más eventos programados.",
       "next14": "Próximos 14 días"
     },
     "news": {
