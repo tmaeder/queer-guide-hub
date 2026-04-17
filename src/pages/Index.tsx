@@ -25,7 +25,6 @@ import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
-const WeeklyEventsSlider = React.lazy(() => import('@/components/home/WeeklyEventsSlider'));
 const RegionalEventsCalendar = React.lazy(
   () => import('@/components/home/RegionalEventsCalendar'),
 );
@@ -316,14 +315,7 @@ const Index = React.memo(() => {
         </StaggerGrid>
       </Box>
 
-      {/* ── Weekly Events Near You ────────────────────────────────────── */}
-      <ErrorBoundary section="weekly-events" fallback={null}>
-        <React.Suspense fallback={null}>
-          <WeeklyEventsSlider />
-        </React.Suspense>
-      </ErrorBoundary>
-
-      {/* ── Regional Events Calendar ─────────────────────────────────── */}
+      {/* ── Upcoming Events Near You (hero + index + 14-day strip) ───── */}
       <ErrorBoundary section="regional-calendar" fallback={null}>
         <React.Suspense fallback={null}>
           <RegionalEventsCalendar />

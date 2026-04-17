@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import { useEvents } from '@/hooks/useEvents';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { format } from 'date-fns';
+import { addDays, format, isSameDay, startOfDay } from 'date-fns';
 import { container } from '@/lib/sx';
 import { useTranslation } from 'react-i18next';
 
@@ -44,12 +44,33 @@ const RegionalEventsCalendar: React.FC = () => {
     }
   }, [userLocation?.city, locationLoading, fetchEvents]);
 
-  const { hero, list } = useMemo(() => {
+  const { hero, list, days, eventsByDay, today } = useMemo(() => {
     const all = events as Event[];
     const featured = all.find((e) => e.featured);
     const heroEvent = featured ?? all[0] ?? null;
     const rest = all.filter((e) => e.id !== heroEvent?.id).slice(0, 6);
-    return { hero: heroEvent, list: rest };
+
+    const now = new Date();
+    const start = startOfDay(now);
+    const daysArr = Array.from({ length: 14 }, (_, i) => addDays(start, i));
+    const map = new Map<string, Event[]>();
+    daysArr.forEach((d) => map.set(d.toISOString(), []));
+    all.forEach((ev) => {
+      const d = new Date(ev.start_date);
+      const key = daysArr.find((x) => isSameDay(x, d))?.toISOString();
+      if (key) map.get(key)!.push(ev);
+    });
+    map.forEach((lst) =>
+      lst.sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()),
+    );
+
+    return {
+      hero: heroEvent,
+      list: rest,
+      days: daysArr,
+      eventsByDay: map,
+      today: start,
+    };
   }, [events]);
 
   if (loading) return null;
@@ -286,6 +307,122 @@ const RegionalEventsCalendar: React.FC = () => {
         </Box>
       </Box>
 
+      {/* 14-day schedule strip */}
+      <Box
+        sx={{
+          mt: { xs: 4, md: 6 },
+          pt: { xs: 3, md: 4 },
+          borderTop: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
+        <Box
+          sx={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.75rem',
+            fontWeight: 500,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: 'text.secondary',
+            mb: { xs: 2, md: 3 },
+          }}
+        >
+          {t('home.upcoming.next14', 'Next 14 days')}
+        </Box>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(7, 1fr)', md: 'repeat(14, 1fr)' },
+            columnGap: { xs: 1, md: 1.5 },
+            rowGap: 3,
+          }}
+        >
+          {days.map((day) => {
+            const items = eventsByDay.get(day.toISOString()) || [];
+            const isToday = isSameDay(day, today);
+            const top = items[0];
+            return (
+              <Box key={day.toISOString()} sx={{ minWidth: 0 }}>
+                <Box
+                  sx={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: '0.6875rem',
+                    fontWeight: 500,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'text.secondary',
+                  }}
+                >
+                  {format(day, 'EEE')}
+                </Box>
+                <Box
+                  sx={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontWeight: 300,
+                    fontSize: { xs: '1.5rem', md: '1.75rem' },
+                    lineHeight: 1,
+                    mb: 1,
+                    color: isToday ? 'brand.main' : 'text.primary',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {format(day, 'd')}
+                </Box>
+                {top ? (
+                  <Box
+                    component={LocalizedLink}
+                    to={`/events/${top.slug}`}
+                    sx={{
+                      display: 'block',
+                      textDecoration: 'none',
+                      color: 'text.primary',
+                      transition: 'opacity 0.2s',
+                      '&:hover': { opacity: 0.7 },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        lineHeight: 1.3,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {top.title}
+                    </Box>
+                    {items.length > 1 && (
+                      <Box
+                        sx={{
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '0.625rem',
+                          color: 'text.secondary',
+                          mt: 0.25,
+                        }}
+                      >
+                        +{items.length - 1}
+                      </Box>
+                    )}
+                  </Box>
+                ) : (
+                  <Box
+                    sx={{
+                      fontSize: '0.875rem',
+                      color: 'text.secondary',
+                      opacity: 0.35,
+                    }}
+                  >
+                    —
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
+        </Box>
+      </Box>
     </Box>
   );
 };

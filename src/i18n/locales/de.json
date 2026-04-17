@@ -819,7 +819,8 @@
     "upcoming": {
       "title": "Kommende Veranstaltungen",
       "titleNear": "Kommende Veranstaltungen in deiner Nähe",
-      "empty": "Keine weiteren Veranstaltungen geplant."
+      "empty": "Keine weiteren Veranstaltungen geplant.",
+      "next14": "Nächste 14 Tage"
     },
     "news": {
       "title": "Aktuelle Nachrichten"
