@@ -405,7 +405,12 @@ export async function getEntitiesForDedupe(
   cities?: string[],
 ): Promise<Array<{ id: string; name: string; city: string | null; country: string | null; address: string | null; website: string | null; lat: number | null; lng: number | null }>> {
   const table = TABLE_MAP[entityType];
-  const selectWebsite = entityType === 'event' ? 'website' : 'website';
+  // scraper_places has neither `address` nor `website` columns — select NULL
+  // in their place so the caller's row shape stays uniform across types.
+  const hasAddress = entityType !== 'place';
+  const hasWebsite = entityType !== 'place';
+  const addressExpr = hasAddress ? 'address' : 'NULL::text';
+  const websiteExpr = hasWebsite ? 'website' : 'NULL::text';
   const conditions: string[] = [];
   const params: unknown[] = [];
 
@@ -422,7 +427,7 @@ export async function getEntitiesForDedupe(
     id: string; name: string; city: string | null; country: string | null;
     address: string | null; website: string | null; lat: number | null; lng: number | null;
   }>(
-    `SELECT id, name, city, country, address, ${selectWebsite} AS website, lat, lng
+    `SELECT id, name, city, country, ${addressExpr} AS address, ${websiteExpr} AS website, lat, lng
      FROM ${table}
      ${whereSql}`,
     params,
