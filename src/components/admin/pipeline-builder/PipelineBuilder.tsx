@@ -16,7 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check, LayoutGrid, Undo2, Redo2, Search, AlertCircle, Command, StickyNote, Folder } from 'lucide-react';
+import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check, LayoutGrid, Undo2, Redo2, Search, AlertCircle, Command, StickyNote, Folder, Terminal } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router';
@@ -42,6 +42,7 @@ import PipelineDiffDialog from './panels/PipelineDiffDialog';
 import VersionHistoryDialog from './panels/VersionHistoryDialog';
 import ScheduleDialog from './panels/ScheduleDialog';
 import OnboardingTour from './panels/OnboardingTour';
+import LogStreamDrawer from './panels/LogStreamDrawer';
 import { autoLayout } from './utils/autoLayout';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useDraftAutosave } from './hooks/useDraftAutosave';
@@ -80,6 +81,7 @@ function PipelineBuilderInner() {
   const [editingEdge, setEditingEdge] = useState<{ edge: Edge; x: number; y: number } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [logDrawerOpen, setLogDrawerOpen] = useState(false);
   const configClipboardRef = useRef<Record<string, unknown> | null>(null);
 
   useEffect(() => {
@@ -453,6 +455,7 @@ function PipelineBuilderInner() {
         if (data?.pipeline_run_id) {
           setActiveRunId(data.pipeline_run_id as string);
           setViewingRunId(null);
+          setLogDrawerOpen(true); // Auto-open logs on new run
         }
       },
     } as Record<string, unknown>);
@@ -1057,6 +1060,21 @@ function PipelineBuilderInner() {
                 Clear
               </Button>
             )}
+            {activeRunId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant={logDrawerOpen ? 'default' : 'ghost'}
+                    className="h-8 w-8 p-0"
+                    onClick={() => setLogDrawerOpen(o => !o)}
+                  >
+                    <Terminal className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="text-xs">Toggle log stream</TooltipContent>
+              </Tooltip>
+            )}
 
             <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
               {viewingRunId && (
@@ -1285,6 +1303,14 @@ function PipelineBuilderInner() {
 
         {/* First-visit onboarding tour */}
         <OnboardingTour />
+
+        {/* Live log stream drawer (auto-opens on run) */}
+        {logDrawerOpen && activeRunId && (
+          <LogStreamDrawer
+            pipelineRunId={activeRunId}
+            onClose={() => setLogDrawerOpen(false)}
+          />
+        )}
       </div>
     </TooltipProvider>
   );
