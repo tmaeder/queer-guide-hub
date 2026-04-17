@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, Component, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug, Bug, Bell } from 'lucide-react';
+import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug, Bug, Bell, Merge, Activity } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
@@ -16,22 +16,29 @@ const GeoReviewTab = lazy(() => import('./tabs/GeoReviewTab'));
 const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 const ErrorsTab = lazy(() => import('./tabs/ErrorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
+const DedupDecisionsTab = lazy(() => import('./tabs/DedupDecisionsTab'));
+const ScraperHealthTab  = lazy(() => import('./tabs/ScraperHealthTab'));
 
-type Tab = 'overview' | 'builder' | 'monitor' | 'sources' | 'review' | 'dlq' | 'errors' | 'alerts' | 'coverage' | 'news' | 'health' | 'geo-review';
+type Tab =
+  | 'overview' | 'builder' | 'monitor' | 'sources' | 'review' | 'dlq'
+  | 'errors' | 'alerts' | 'coverage' | 'news' | 'health' | 'geo-review'
+  | 'dedup' | 'scraper-health';
 
 const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { key: 'overview',   label: 'Overview',   icon: LayoutDashboard },
-  { key: 'builder',    label: 'Builder',    icon: Workflow },
-  { key: 'monitor',    label: 'Monitor',    icon: BarChart3 },
-  { key: 'sources',    label: 'Sources',    icon: Plug },
-  { key: 'review',     label: 'Review',     icon: ClipboardCheck },
-  { key: 'geo-review', label: 'Geo Review', icon: GitMerge },
-  { key: 'dlq',        label: 'DLQ',        icon: AlertTriangle },
-  { key: 'errors',     label: 'Errors',     icon: Bug },
-  { key: 'alerts',     label: 'Alerts',     icon: Bell },
-  { key: 'coverage',   label: 'Coverage',   icon: Map },
-  { key: 'news',       label: 'News',       icon: Newspaper },
-  { key: 'health',     label: 'Health',     icon: Shield },
+  { key: 'overview',       label: 'Overview',   icon: LayoutDashboard },
+  { key: 'builder',        label: 'Builder',    icon: Workflow },
+  { key: 'monitor',        label: 'Monitor',    icon: BarChart3 },
+  { key: 'sources',        label: 'Sources',    icon: Plug },
+  { key: 'review',         label: 'Review',     icon: ClipboardCheck },
+  { key: 'dedup',          label: 'Dedup',      icon: Merge },
+  { key: 'geo-review',     label: 'Geo Review', icon: GitMerge },
+  { key: 'dlq',            label: 'DLQ',        icon: AlertTriangle },
+  { key: 'errors',         label: 'Errors',     icon: Bug },
+  { key: 'alerts',         label: 'Alerts',     icon: Bell },
+  { key: 'coverage',       label: 'Coverage',   icon: Map },
+  { key: 'news',           label: 'News',       icon: Newspaper },
+  { key: 'health',         label: 'Health',     icon: Shield },
+  { key: 'scraper-health', label: 'Scraper',    icon: Activity },
 ];
 
 const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>> = {
@@ -40,6 +47,7 @@ const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>
   monitor: MonitorTab,
   sources: SourcesTab,
   review: ReviewQueueTab,
+  dedup: DedupDecisionsTab,
   'geo-review': GeoReviewTab,
   dlq: DLQTab,
   errors: ErrorsTab,
@@ -47,6 +55,7 @@ const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>
   coverage: CoverageTab,
   news: NewsTab,
   health: HealthTab,
+  'scraper-health': ScraperHealthTab,
 };
 
 function TabSkeleton() {
