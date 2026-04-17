@@ -144,7 +144,10 @@ const RegionalEventsCalendar: React.FC = () => {
         sx={{
           mt: { xs: 3, md: 4 },
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' },
+          gridTemplateColumns: {
+            xs: '1fr',
+            md: list.length > 0 ? '3fr 2fr' : '1fr',
+          },
           columnGap: { md: 4 },
           rowGap: { xs: 3, md: 0 },
         }}
@@ -228,20 +231,16 @@ const RegionalEventsCalendar: React.FC = () => {
           )}
         </Box>
 
-        {/* Index list */}
-        <Box
-          sx={{
-            bgcolor: { md: 'action.hover' },
-            p: { xs: 0, md: 3 },
-            alignSelf: 'start',
-          }}
-        >
-          {list.length === 0 ? (
-            <Box sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
-              {t('home.upcoming.empty', 'No further events scheduled.')}
-            </Box>
-          ) : (
-            list.map((ev, idx) => (
+        {/* Index list (only when there are further events) */}
+        {list.length > 0 && (
+          <Box
+            sx={{
+              bgcolor: { md: 'action.hover' },
+              p: { xs: 0, md: 3 },
+              alignSelf: 'start',
+            }}
+          >
+            {list.map((ev, idx) => (
               <React.Fragment key={ev.id}>
                 {idx > 0 && <Hairline />}
                 <Box
@@ -302,9 +301,9 @@ const RegionalEventsCalendar: React.FC = () => {
                   </Box>
                 </Box>
               </React.Fragment>
-            ))
-          )}
-        </Box>
+            ))}
+          </Box>
+        )}
       </Box>
 
       {/* Upcoming-dates strip: only days that have events in the next 14 days */}
