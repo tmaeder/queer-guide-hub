@@ -47,6 +47,9 @@ jobs:
     concurrency:
       group: scraper-full
       cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: scraper
 
     steps:
       - name: Checkout
@@ -57,6 +60,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -65,7 +69,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('scraper/package-lock.json') }}
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
@@ -113,7 +117,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scrape-logs-${{ github.run_id }}
-          path: '*.log'
+          path: 'scraper/*.log'
           retention-days: 7
 
   # -----------------------------------------------------------------------
@@ -128,6 +132,9 @@ jobs:
     concurrency:
       group: scraper-events
       cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: scraper
 
     steps:
       - name: Checkout
@@ -138,6 +145,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -146,7 +154,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('scraper/package-lock.json') }}
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
@@ -170,5 +178,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: events-logs-${{ github.run_id }}
-          path: '*.log'
+          path: 'scraper/*.log'
           retention-days: 7
