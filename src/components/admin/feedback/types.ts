@@ -25,6 +25,24 @@ export interface FeedbackReply {
   complained_at?: string | null;
 }
 
+export type HandoffTarget = 'claude-code' | 'claude-chat' | 'github' | 'other';
+export type HandoffStatus = 'sent' | 'in_progress' | 'resolved' | 'failed';
+
+export interface FeedbackHandoff {
+  id: string;
+  at: string;
+  by: string | null;
+  by_name: string;
+  target: HandoffTarget;
+  /** First ~120 chars of the prompt for audit so admins can tell what they sent. */
+  prompt_preview?: string | null;
+  status: HandoffStatus;
+  /** Free-text note (e.g. "Claude landed fix in PR #42"). */
+  note?: string | null;
+  /** Timestamp of the last status transition, for 'waiting X days' hints. */
+  status_at?: string;
+}
+
 export interface FeedbackData {
   title: string;
   description: string;
@@ -33,6 +51,7 @@ export interface FeedbackData {
   context?: FeedbackContext;
   screenshot_url?: string | null;
   replies?: FeedbackReply[];
+  handoffs?: FeedbackHandoff[];
 }
 
 export interface FeedbackAuditEntry {

@@ -10,7 +10,15 @@ import { ChevronUp, Clock, Github, Camera, AlertTriangle } from 'lucide-react';
 import { feedbackCategoryMap } from '@/config/feedbackCategories';
 import { timeAgo } from '@/utils/timezone';
 import { priorityFor } from './constants';
+import { latestHandoff } from '@/hooks/useFeedbackHandoff';
 import type { AdminProfile, FeedbackSubmission } from './types';
+
+const HANDOFF_CHIP: Record<string, { label: string; color: string; bg: string }> = {
+  sent: { label: 'Sent', color: '#fff', bg: '#3b82f6' },
+  in_progress: { label: 'Working', color: '#fff', bg: '#f59e0b' },
+  resolved: { label: 'Resolved', color: '#fff', bg: '#22c55e' },
+  failed: { label: 'Failed', color: '#fff', bg: '#ef4444' },
+};
 
 interface Props {
   item: FeedbackSubmission;
@@ -50,6 +58,10 @@ export function FeedbackCard({
   const withClaude = isForwarded && item.feedback_status !== 'done';
   const errorCount = item.data.context?.errors?.length ?? 0;
   const hasScreenshot = !!item.data.screenshot_url;
+  // Handoff chip beats GitHub chip when both are set — handoffs are the
+  // primary signal for "this has been passed to someone".
+  const handoff = latestHandoff(item);
+  const handoffChip = handoff ? HANDOFF_CHIP[handoff.status] : null;
 
   const ageMs = Date.now() - new Date(item.submitted_at).getTime();
   const ageDays = ageMs / 86400_000;
@@ -146,12 +158,12 @@ export function FeedbackCard({
             </Box>
           </Tooltip>
 
-          {isForwarded && (
+          {handoffChip ? (
             <Tooltip
               title={
-                withClaude
-                  ? `Claude on it — #${item.github_issue_number}`
-                  : `Forwarded to #${item.github_issue_number}`
+                handoff
+                  ? `Handed off to ${handoff.target} ${timeAgo(handoff.at)} — ${handoffChip.label.toLowerCase()}`
+                  : ''
               }
             >
               <Box
@@ -159,22 +171,47 @@ export function FeedbackCard({
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 0.25,
                   px: 0.5,
                   borderRadius: 0.5,
-                  bgcolor: withClaude ? '#8b5cf6' : 'transparent',
-                  color: withClaude ? '#fff' : '#6366f1',
-                  border: withClaude ? 0 : 1,
-                  borderColor: '#6366f1',
+                  bgcolor: handoffChip.bg,
+                  color: handoffChip.color,
                   fontSize: '0.55rem',
-                  fontWeight: withClaude ? 700 : 500,
+                  fontWeight: 700,
                   flexShrink: 0,
                 }}
               >
-                <Github style={{ width: 9, height: 9 }} />
-                {withClaude ? 'Claude' : `#${item.github_issue_number}`}
+                {handoffChip.label}
               </Box>
             </Tooltip>
+          ) : (
+            isForwarded && (
+              <Tooltip
+                title={
+                  withClaude
+                    ? `Forwarded to GitHub #${item.github_issue_number} (open)`
+                    : `Forwarded to GitHub #${item.github_issue_number}`
+                }
+              >
+                <Box
+                  component="span"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.25,
+                    px: 0.5,
+                    borderRadius: 0.5,
+                    color: '#6366f1',
+                    border: 1,
+                    borderColor: '#6366f1',
+                    fontSize: '0.55rem',
+                    fontWeight: 500,
+                    flexShrink: 0,
+                  }}
+                >
+                  <Github style={{ width: 9, height: 9 }} />#{item.github_issue_number}
+                </Box>
+              </Tooltip>
+            )
           )}
 
           {/* Label chips — truncate hard, show full list on tooltip */}

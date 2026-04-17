@@ -21,7 +21,6 @@ import {
   AlertTriangle,
   Wifi,
   Camera,
-  MessageSquarePlus,
   Copy,
   Plus,
   Link2,
@@ -39,10 +38,14 @@ import type {
   FeedbackSubmission,
   FeedbackAuditEntry,
   FeedbackResolution,
+  HandoffStatus,
+  HandoffTarget,
 } from './types';
 import { DuplicateBanner } from './DuplicateBanner';
 import { ReplyThread } from './ReplyThread';
 import { ActivityLog } from './ActivityLog';
+import { HandoffSection } from './HandoffSection';
+import { formatClaudePrompt } from './claudePrompts';
 
 interface Props {
   open: boolean;
@@ -74,6 +77,9 @@ interface Props {
   onSaveNotes: (notes: string) => void;
   onForward: () => void;
   onCopyPrompt: () => void;
+  onRecordHandoff: (target: HandoffTarget) => void;
+  onUpdateHandoff: (handoffId: string, status: HandoffStatus) => void;
+  isRecordingHandoff: boolean;
 }
 
 export function FeedbackDetailDrawer({
@@ -106,6 +112,9 @@ export function FeedbackDetailDrawer({
   onSaveNotes,
   onForward,
   onCopyPrompt,
+  onRecordHandoff,
+  onUpdateHandoff,
+  isRecordingHandoff,
 }: Props) {
   const [errorsExpanded, setErrorsExpanded] = useState(false);
   const [networkExpanded, setNetworkExpanded] = useState(false);
@@ -737,6 +746,14 @@ export function FeedbackDetailDrawer({
         </label>
       </Box>
 
+      <HandoffSection
+        handoffs={item.data.handoffs ?? []}
+        prompt={formatClaudePrompt(item)}
+        onRecord={onRecordHandoff}
+        onUpdateStatus={onUpdateHandoff}
+        isRecording={isRecordingHandoff}
+      />
+
       <ReplyThread
         replies={item.data.replies ?? []}
         contactEmail={item.data.contact_email}
@@ -772,15 +789,17 @@ export function FeedbackDetailDrawer({
         </Box>
       )}
 
-      <Box sx={{ display: 'flex', gap: 1, mt: 'auto', pt: 2, borderTop: 1, borderColor: 'divider' }}>
-        <Button
-          variant="outline"
-          onClick={onCopyPrompt}
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-        >
-          <Copy style={{ width: 14, height: 14 }} />
-          Copy Prompt
-        </Button>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          mt: 'auto',
+          pt: 2,
+          borderTop: 1,
+          borderColor: 'divider',
+          flexWrap: 'wrap',
+        }}
+      >
         {!item.is_spam && (
           <Button
             variant="outline"
@@ -792,32 +811,40 @@ export function FeedbackDetailDrawer({
             Spam
           </Button>
         )}
+        {/* Copy-prompt lives in the HandoffSection above — this fallback is for
+             admins who want the prompt without recording a handoff. */}
+        <Button
+          variant="outline"
+          onClick={onCopyPrompt}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem' }}
+          title="Copy prompt only (no handoff entry)"
+        >
+          <Copy style={{ width: 13, height: 13 }} />
+          Copy only
+        </Button>
+        {/* Auto-forward to GitHub issue with @claude mention. Kept as a tertiary
+             option — primary workflow is the copy/paste handoff above. */}
         {isForwarded ? (
           <Button
             variant="outline"
             onClick={() =>
               window.open(item.github_issue_url!, '_blank', 'noopener,noreferrer')
             }
-            style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem' }}
           >
-            <Github style={{ width: 14, height: 14 }} />
-            View issue #{item.github_issue_number}
+            <Github style={{ width: 13, height: 13 }} />
+            #{item.github_issue_number}
           </Button>
         ) : (
           <Button
+            variant="outline"
             onClick={onForward}
             disabled={isForwarding}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              flex: 1,
-              backgroundColor: 'hsl(var(--accent-warm))',
-              color: '#fff',
-            }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem' }}
+            title="Also open a GitHub issue with @claude mention"
           >
-            <MessageSquarePlus style={{ width: 14, height: 14 }} />
-            {isForwarding ? 'Forwarding…' : 'Fix with Claude'}
+            <Github style={{ width: 13, height: 13 }} />
+            {isForwarding ? 'Forwarding…' : 'GitHub'}
           </Button>
         )}
       </Box>

@@ -23,6 +23,7 @@ import {
 import { useFeedbackAudit } from '@/hooks/useFeedbackAudit';
 import { useReplyToFeedback } from '@/hooks/useFeedbackReply';
 import { useNotifyFeedbackStatus } from '@/hooks/useFeedbackNotify';
+import { useRecordHandoff, useUpdateHandoff } from '@/hooks/useFeedbackHandoff';
 import { useApiErrorDailySeries } from '@/hooks/useFeedbackAnalytics';
 import { AnalyticsTab } from '@/components/admin/feedback/analytics/AnalyticsTab';
 import type { FeedbackResolution } from '@/components/admin/feedback/types';
@@ -149,6 +150,8 @@ export default function AdminFeedback() {
   const { data: auditEntries = [] } = useFeedbackAudit(state.sel);
   const replyMutation = useReplyToFeedback();
   const notifyStatus = useNotifyFeedbackStatus();
+  const recordHandoff = useRecordHandoff();
+  const updateHandoff = useUpdateHandoff();
   const { data: apiErrorDaily = [] } = useApiErrorDailySeries();
 
   const fireStatusNotification = useCallback(
@@ -791,6 +794,19 @@ export default function AdminFeedback() {
         onSaveNotes={(notes) => selected && notesMutation.mutate({ id: selected.id, notes })}
         onForward={() => selected && forwardMutation.mutate(selected.id)}
         onCopyPrompt={() => selected && handleCopyPrompt(selected)}
+        onRecordHandoff={(target) => {
+          if (!selected) return;
+          recordHandoff.mutate({
+            submissionId: selected.id,
+            target,
+            promptPreview: formatClaudePrompt(selected).slice(0, 160),
+          });
+        }}
+        onUpdateHandoff={(handoffId, status) => {
+          if (!selected) return;
+          updateHandoff.mutate({ submissionId: selected.id, handoffId, status });
+        }}
+        isRecordingHandoff={recordHandoff.isPending}
       />
 
       <FeedbackCommandPalette
