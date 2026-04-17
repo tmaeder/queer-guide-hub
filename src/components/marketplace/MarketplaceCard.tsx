@@ -1,4 +1,3 @@
-import React from 'react';
 import { formatCurrency } from '@/lib/currency';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';

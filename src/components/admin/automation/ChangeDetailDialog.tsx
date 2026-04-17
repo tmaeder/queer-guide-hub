@@ -2,7 +2,6 @@
  * ChangeDetailDialog — Shows old vs new diff for a proposed content change.
  */
 
-import React from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';

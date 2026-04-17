@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Activity, AlertTriangle, CheckCircle, Play, Workflow, GitBranch, Search, Zap, Loader2 } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle, Play, Workflow, GitBranch, Search, Loader2 } from 'lucide-react';
 import { useUnifiedPipelineOverview, usePipelineRunCounts24h, useCircuitBreakers, type UnifiedPipelineRow } from '../hooks/usePipelineHistory';
 
 type Filter = 'all' | 'pipelines' | 'workflows' | 'failing' | 'disabled';

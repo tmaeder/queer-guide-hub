@@ -127,7 +127,6 @@ export const IngestionSourcesManager = () => {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {sources.map((source) => {
           const hasError = !!source.last_error;
-          const _needsKey = source.requires_api_key && !source.is_enabled;
           const isTriggering = triggeringId === source.id;
 
           return (

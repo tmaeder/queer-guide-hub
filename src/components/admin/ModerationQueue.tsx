@@ -152,7 +152,6 @@ export function ModerationQueue() {
     setSelectedIds([]);
   };
 
-  const _openCounts = flags.filter((f) => f.status === 'OPEN').length;
 
   if (!canManageContent()) {
     return (

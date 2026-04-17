@@ -138,7 +138,6 @@ describe('useModeration (unit)', () => {
       mockFrom.mockReturnValue(mockQuery);
 
       const { supabase } = await import('@/integrations/supabase/client');
-      const _query = supabase.from('moderation_flags');
 
       expect(mockFrom).toHaveBeenCalledWith('moderation_flags');
     });

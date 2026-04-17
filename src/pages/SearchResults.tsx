@@ -544,7 +544,6 @@ export default function SearchResults() {
     {} as Record<string, SearchResult[]>,
   );
 
-  const _availableTabs = ['all', ...Object.keys(resultsByType)];
 
   return (
     <Container sx={{ px: 2, py: 4 }}>

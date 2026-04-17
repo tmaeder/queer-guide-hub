@@ -1,4 +1,3 @@
-import React from 'react';
 import { formatCurrency } from '@/lib/currency';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

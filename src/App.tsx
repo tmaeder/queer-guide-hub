@@ -99,7 +99,6 @@ const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'))
 const AdminHotels = lazy(() => import('./pages/AdminHotels'));
 const AdminQueerVillages = lazy(() => import('./pages/AdminQueerVillages'));
 const AdminReview = lazy(() => import('./pages/AdminReview'));
-const _AdminSubmissions = lazy(() => import('./pages/AdminSubmissions'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
 
 // CMS components rendered as admin views

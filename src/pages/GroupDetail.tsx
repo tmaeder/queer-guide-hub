@@ -155,7 +155,6 @@ export default function GroupDetail() {
   }
 
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
-  const _isOwner = group.user_role === 'admin';
 
   return (
     <Box

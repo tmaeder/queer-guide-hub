@@ -624,7 +624,6 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           { label: 'New Event', icon: Calendar, color: '#ec4899', onClick: () => onEdit('events', null) },
           { label: 'New Article', icon: Newspaper, color: '#3b82f6', onClick: () => onEdit('news_articles', null) },
         ].map((action) => {
-          const _ActionIcon = action.icon;
           return (
             <Grid key={action.label} size={{ xs: 6, sm: 3 }}>
               <Paper

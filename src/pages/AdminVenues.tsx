@@ -119,7 +119,6 @@ const commonAmenities = [
 ];
 
 export default function AdminVenues() {
-  const _navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, canManageContent } = useAdminRoles();
   const { createVenue, updateVenue, deleteVenue, refetch } = useVenues(false);
