@@ -178,8 +178,18 @@ export default function FeedbackBoard() {
                 }}
               >
                 {colItems.length === 0 && (
-                  <Typography variant="caption" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
-                    No items yet
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      py: 2.5,
+                      textAlign: 'center',
+                      fontSize: '0.7rem',
+                      fontStyle: 'italic',
+                      opacity: 0.6,
+                    }}
+                  >
+                    —
                   </Typography>
                 )}
                 {colItems.map((item) => (
@@ -252,7 +262,7 @@ export default function FeedbackBoard() {
                     alignItems: 'center',
                     gap: 6,
                     ...(votesMap[selectedItem.id]?.hasVoted
-                      ? { backgroundColor: '#DB2777', color: '#fff' }
+                      ? { backgroundColor: 'hsl(var(--accent-warm))', color: '#fff' }
                       : {}),
                   }}
                 >
