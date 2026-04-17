@@ -272,6 +272,51 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_integrations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          id: string
+          kind: string
+          last_error: string | null
+          last_triggered_at: string | null
+          min_severity: string
+          name: string
+          total_sent: number
+          updated_at: string
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          kind: string
+          last_error?: string | null
+          last_triggered_at?: string | null
+          min_severity?: string
+          name: string
+          total_sent?: number
+          updated_at?: string
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          kind?: string
+          last_error?: string | null
+          last_triggered_at?: string | null
+          min_severity?: string
+          name?: string
+          total_sent?: number
+          updated_at?: string
+          webhook_url?: string
+        }
+        Relationships: []
+      }
       amenities: {
         Row: {
           icon_name: string | null
@@ -2282,13 +2327,13 @@ export type Database = {
           is_spam: boolean
           labels: string[]
           last_seen_at: string | null
+          notify_submitter: boolean
           occurrence_count: number
           priority: number
           promoted_to_id: string | null
+          promoted_to_table: string | null
           resolution: string | null
           resolved_at: string | null
-          notify_submitter: boolean
-          promoted_to_table: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           reviewer_notes: string | null
@@ -2313,13 +2358,13 @@ export type Database = {
           is_spam?: boolean
           labels?: string[]
           last_seen_at?: string | null
+          notify_submitter?: boolean
           occurrence_count?: number
           priority?: number
           promoted_to_id?: string | null
+          promoted_to_table?: string | null
           resolution?: string | null
           resolved_at?: string | null
-          notify_submitter?: boolean
-          promoted_to_table?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           reviewer_notes?: string | null
@@ -2344,13 +2389,13 @@ export type Database = {
           is_spam?: boolean
           labels?: string[]
           last_seen_at?: string | null
+          notify_submitter?: boolean
           occurrence_count?: number
           priority?: number
           promoted_to_id?: string | null
+          promoted_to_table?: string | null
           resolution?: string | null
           resolved_at?: string | null
-          notify_submitter?: boolean
-          promoted_to_table?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           reviewer_notes?: string | null
@@ -2361,6 +2406,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "community_submissions_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_submissions_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
+          },
+          {
             foreignKeyName: "community_submissions_flyer_scan_id_fkey"
             columns: ["flyer_scan_id"]
             isOneToOne: false
@@ -2368,39 +2427,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      feedback_duplicate_suggestions: {
-        Row: {
-          a_id: string
-          b_id: string
-          created_at: string
-          dismissed: boolean
-          dismissed_at: string | null
-          dismissed_by: string | null
-          id: string
-          similarity: number
-        }
-        Insert: {
-          a_id: string
-          b_id: string
-          created_at?: string
-          dismissed?: boolean
-          dismissed_at?: string | null
-          dismissed_by?: string | null
-          id?: string
-          similarity: number
-        }
-        Update: {
-          a_id?: string
-          b_id?: string
-          created_at?: string
-          dismissed?: boolean
-          dismissed_at?: string | null
-          dismissed_by?: string | null
-          id?: string
-          similarity?: number
-        }
-        Relationships: []
       }
       community_submissions_audit: {
         Row: {
@@ -2430,28 +2456,22 @@ export type Database = {
           old_value?: Json | null
           submission_id?: string
         }
-        Relationships: []
-      }
-      webhook_deliveries: {
-        Row: {
-          delivery_id: string
-          payload_digest: string | null
-          received_at: string
-          source: string
-        }
-        Insert: {
-          delivery_id: string
-          payload_digest?: string | null
-          received_at?: string
-          source: string
-        }
-        Update: {
-          delivery_id?: string
-          payload_digest?: string | null
-          received_at?: string
-          source?: string
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "community_submissions_audit_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_submissions_audit_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
+          },
+        ]
       }
       contact_submissions: {
         Row: {
@@ -4316,6 +4336,68 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_duplicate_suggestions: {
+        Row: {
+          a_id: string
+          b_id: string
+          created_at: string
+          dismissed: boolean
+          dismissed_at: string | null
+          dismissed_by: string | null
+          id: string
+          similarity: number
+        }
+        Insert: {
+          a_id: string
+          b_id: string
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          id?: string
+          similarity: number
+        }
+        Update: {
+          a_id?: string
+          b_id?: string
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          id?: string
+          similarity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_duplicate_suggestions_a_id_fkey"
+            columns: ["a_id"]
+            isOneToOne: false
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_duplicate_suggestions_a_id_fkey"
+            columns: ["a_id"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
+          },
+          {
+            foreignKeyName: "feedback_duplicate_suggestions_b_id_fkey"
+            columns: ["b_id"]
+            isOneToOne: false
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_duplicate_suggestions_b_id_fkey"
+            columns: ["b_id"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
+          },
+        ]
+      }
       feedback_votes: {
         Row: {
           created_at: string
@@ -4342,6 +4424,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "community_submissions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_votes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
           },
         ]
       }
@@ -7426,6 +7515,59 @@ export type Database = {
           },
         ]
       }
+      pipeline_definition_versions: {
+        Row: {
+          default_context: Json
+          description: string | null
+          display_name: string | null
+          edges: Json
+          id: string
+          name: string
+          nodes: Json
+          pipeline_id: string
+          saved_at: string
+          saved_by: string | null
+          schedule: string | null
+          version: number
+        }
+        Insert: {
+          default_context?: Json
+          description?: string | null
+          display_name?: string | null
+          edges?: Json
+          id?: string
+          name: string
+          nodes?: Json
+          pipeline_id: string
+          saved_at?: string
+          saved_by?: string | null
+          schedule?: string | null
+          version: number
+        }
+        Update: {
+          default_context?: Json
+          description?: string | null
+          display_name?: string | null
+          edges?: Json
+          id?: string
+          name?: string
+          nodes?: Json
+          pipeline_id?: string
+          saved_at?: string
+          saved_by?: string | null
+          schedule?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_definition_versions_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pipeline_definitions: {
         Row: {
           created_at: string | null
@@ -7519,6 +7661,45 @@ export type Database = {
         }
         Relationships: []
       }
+      pipeline_node_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          edges: Json
+          id: string
+          name: string
+          nodes: Json
+          updated_at: string
+          use_count: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          edges?: Json
+          id?: string
+          name: string
+          nodes?: Json
+          updated_at?: string
+          use_count?: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          edges?: Json
+          id?: string
+          name?: string
+          nodes?: Json
+          updated_at?: string
+          use_count?: number
+        }
+        Relationships: []
+      }
       pipeline_node_types: {
         Row: {
           category: string
@@ -7569,6 +7750,41 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      pipeline_permissions: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          permission: string
+          pipeline_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission: string
+          pipeline_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission?: string
+          pipeline_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_permissions_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pipeline_runs: {
         Row: {
@@ -8854,6 +9070,8 @@ export type Database = {
           entity_b_id: string | null
           entity_type: string
           id: string
+          incoming_source_id: string | null
+          incoming_source_name: string | null
           match_method: string
           pipeline_run_id: string | null
           rules_fired: Json | null
@@ -8869,6 +9087,8 @@ export type Database = {
           entity_b_id?: string | null
           entity_type: string
           id?: string
+          incoming_source_id?: string | null
+          incoming_source_name?: string | null
           match_method: string
           pipeline_run_id?: string | null
           rules_fired?: Json | null
@@ -8884,6 +9104,8 @@ export type Database = {
           entity_b_id?: string | null
           entity_type?: string
           id?: string
+          incoming_source_id?: string | null
+          incoming_source_name?: string | null
           match_method?: string
           pipeline_run_id?: string | null
           rules_fired?: Json | null
@@ -8965,6 +9187,7 @@ export type Database = {
           first_seen_at: string | null
           id: string
           images: string[] | null
+          language: string | null
           last_seen_at: string | null
           lat: number | null
           lng: number | null
@@ -8991,6 +9214,7 @@ export type Database = {
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -9017,6 +9241,7 @@ export type Database = {
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -9037,6 +9262,13 @@ export type Database = {
       scraper_ingest_runs: {
         Row: {
           blocked_by_robots: number | null
+          coverage_address: number | null
+          coverage_description: number | null
+          coverage_geo: number | null
+          coverage_images: number | null
+          coverage_phone: number | null
+          coverage_tags: number | null
+          coverage_website: number | null
           entities_deduped: number | null
           entities_inserted: number | null
           entities_parsed: number | null
@@ -9053,6 +9285,13 @@ export type Database = {
         }
         Insert: {
           blocked_by_robots?: number | null
+          coverage_address?: number | null
+          coverage_description?: number | null
+          coverage_geo?: number | null
+          coverage_images?: number | null
+          coverage_phone?: number | null
+          coverage_tags?: number | null
+          coverage_website?: number | null
           entities_deduped?: number | null
           entities_inserted?: number | null
           entities_parsed?: number | null
@@ -9069,6 +9308,13 @@ export type Database = {
         }
         Update: {
           blocked_by_robots?: number | null
+          coverage_address?: number | null
+          coverage_description?: number | null
+          coverage_geo?: number | null
+          coverage_images?: number | null
+          coverage_phone?: number | null
+          coverage_tags?: number | null
+          coverage_website?: number | null
           entities_deduped?: number | null
           entities_inserted?: number | null
           entities_parsed?: number | null
@@ -9085,6 +9331,54 @@ export type Database = {
         }
         Relationships: []
       }
+      scraper_migrations: {
+        Row: {
+          applied_at: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          applied_at?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          applied_at?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      scraper_normalize_rejections: {
+        Row: {
+          entity_type: string
+          id: string
+          raw_sample: Json | null
+          reject_reason: string
+          rejected_at: string | null
+          source_id: string
+          source_name: string
+        }
+        Insert: {
+          entity_type: string
+          id?: string
+          raw_sample?: Json | null
+          reject_reason: string
+          rejected_at?: string | null
+          source_id: string
+          source_name: string
+        }
+        Update: {
+          entity_type?: string
+          id?: string
+          raw_sample?: Json | null
+          reject_reason?: string
+          rejected_at?: string | null
+          source_id?: string
+          source_name?: string
+        }
+        Relationships: []
+      }
       scraper_places: {
         Row: {
           city: string
@@ -9094,6 +9388,7 @@ export type Database = {
           first_seen_at: string | null
           id: string
           images: string[] | null
+          language: string | null
           last_seen_at: string | null
           lat: number | null
           lng: number | null
@@ -9112,6 +9407,7 @@ export type Database = {
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -9130,6 +9426,7 @@ export type Database = {
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -9144,29 +9441,41 @@ export type Database = {
       }
       scraper_snapshots: {
         Row: {
-          content: string
+          archived_at: string | null
+          content: string | null
+          content_encoding: string | null
+          content_gz: string | null
           content_hash: string
           content_type: string
           fetched_at: string | null
           id: string
+          r2_key: string | null
           source_name: string
           url: string
         }
         Insert: {
-          content: string
+          archived_at?: string | null
+          content?: string | null
+          content_encoding?: string | null
+          content_gz?: string | null
           content_hash: string
           content_type: string
           fetched_at?: string | null
           id?: string
+          r2_key?: string | null
           source_name: string
           url: string
         }
         Update: {
-          content?: string
+          archived_at?: string | null
+          content?: string | null
+          content_encoding?: string | null
+          content_gz?: string | null
           content_hash?: string
           content_type?: string
           fetched_at?: string | null
           id?: string
+          r2_key?: string | null
           source_name?: string
           url?: string
         }
@@ -9177,12 +9486,13 @@ export type Database = {
           address: string | null
           category: string | null
           city: string
-          country: string
+          country: string | null
           created_at: string | null
           description: string | null
           first_seen_at: string | null
           id: string
           images: string[] | null
+          language: string | null
           last_seen_at: string | null
           lat: number | null
           lng: number | null
@@ -9199,12 +9509,13 @@ export type Database = {
           address?: string | null
           category?: string | null
           city: string
-          country: string
+          country?: string | null
           created_at?: string | null
           description?: string | null
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -9221,12 +9532,13 @@ export type Database = {
           address?: string | null
           category?: string | null
           city?: string
-          country?: string
+          country?: string | null
           created_at?: string | null
           description?: string | null
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -9246,12 +9558,13 @@ export type Database = {
           address: string | null
           category: string | null
           city: string
-          country: string
+          country: string | null
           created_at: string | null
           description: string | null
           first_seen_at: string | null
           id: string
           images: string[] | null
+          language: string | null
           last_seen_at: string | null
           lat: number | null
           lng: number | null
@@ -9269,12 +9582,13 @@ export type Database = {
           address?: string | null
           category?: string | null
           city: string
-          country: string
+          country?: string | null
           created_at?: string | null
           description?: string | null
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -9292,12 +9606,13 @@ export type Database = {
           address?: string | null
           category?: string | null
           city?: string
-          country?: string
+          country?: string | null
           created_at?: string | null
           description?: string | null
           first_seen_at?: string | null
           id?: string
           images?: string[] | null
+          language?: string | null
           last_seen_at?: string | null
           lat?: number | null
           lng?: number | null
@@ -11939,6 +12254,27 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_deliveries: {
+        Row: {
+          delivery_id: string
+          payload_digest: string | null
+          received_at: string
+          source: string
+        }
+        Insert: {
+          delivery_id: string
+          payload_digest?: string | null
+          received_at?: string
+          source: string
+        }
+        Update: {
+          delivery_id?: string
+          payload_digest?: string | null
+          received_at?: string
+          source?: string
+        }
+        Relationships: []
+      }
       workflow_definitions: {
         Row: {
           created_at: string | null
@@ -12332,6 +12668,31 @@ export type Database = {
         }
         Relationships: []
       }
+      pipeline_quality_daily: {
+        Row: {
+          day: string | null
+          entity_type: string | null
+          n: number | null
+          score_avg: number | null
+          score_p50: number | null
+          source_name: string | null
+        }
+        Relationships: []
+      }
+      pipeline_quality_distribution: {
+        Row: {
+          entity_type: string | null
+          n: number | null
+          score_avg: number | null
+          score_max: number | null
+          score_min: number | null
+          score_p25: number | null
+          score_p50: number | null
+          score_p75: number | null
+          source_name: string | null
+        }
+        Relationships: []
+      }
       pipeline_stuck_items: {
         Row: {
           ai_validation_status: string | null
@@ -12437,6 +12798,60 @@ export type Database = {
           display_name?: string | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      scraper_ingest_coverage: {
+        Row: {
+          entities_parsed: number | null
+          entity_type: string | null
+          pct_address: number | null
+          pct_description: number | null
+          pct_geo: number | null
+          pct_images: number | null
+          pct_phone: number | null
+          pct_tags: number | null
+          pct_website: number | null
+          source_name: string | null
+          started_at: string | null
+        }
+        Insert: {
+          entities_parsed?: number | null
+          entity_type?: string | null
+          pct_address?: never
+          pct_description?: never
+          pct_geo?: never
+          pct_images?: never
+          pct_phone?: never
+          pct_tags?: never
+          pct_website?: never
+          source_name?: string | null
+          started_at?: string | null
+        }
+        Update: {
+          entities_parsed?: number | null
+          entity_type?: string | null
+          pct_address?: never
+          pct_description?: never
+          pct_geo?: never
+          pct_images?: never
+          pct_phone?: never
+          pct_tags?: never
+          pct_website?: never
+          source_name?: string | null
+          started_at?: string | null
+        }
+        Relationships: []
+      }
+      scraper_snapshots_archive_candidates: {
+        Row: {
+          content_hash: string | null
+          content_type: string | null
+          fetched_at: string | null
+          gz_bytes: number | null
+          id: string | null
+          source_name: string | null
+          url: string | null
         }
         Relationships: []
       }
@@ -12632,6 +13047,26 @@ export type Database = {
           },
         ]
       }
+      v_api_error_daily: {
+        Row: {
+          day: string | null
+          fingerprint: string | null
+          n: number | null
+          submission_id: string | null
+        }
+        Relationships: []
+      }
+      v_feedback_analytics_daily: {
+        Row: {
+          category: string | null
+          content_type: string | null
+          day: string | null
+          feedback_status: string | null
+          n: number | null
+          priority: number | null
+        }
+        Relationships: []
+      }
       v_popular_entities: {
         Row: {
           content_id: string | null
@@ -12776,6 +13211,7 @@ export type Database = {
         Args: { dry_run?: boolean; near_dupe_threshold?: number }
         Returns: Json
       }
+      auto_escalate_stale_feedback: { Args: never; Returns: number }
       auto_remove_broken_link: { Args: { link_id: string }; Returns: undefined }
       basic_rate_limit: {
         Args: { identifier: string; max_attempts?: number }
@@ -12976,6 +13412,10 @@ export type Database = {
         Returns: undefined
       }
       decrement_post_likes: { Args: { post_id: string }; Returns: undefined }
+      detect_feedback_duplicates: {
+        Args: { p_days_window?: number; p_threshold?: number }
+        Returns: number
+      }
       detect_near_duplicate_tags: {
         Args: { min_sim?: number }
         Returns: {
@@ -13049,6 +13489,16 @@ export type Database = {
         }[]
       }
       extract_website_domain: { Args: { url: string }; Returns: string }
+      feedback_sla_stats: {
+        Args: { p_days_window?: number }
+        Returns: {
+          category: string
+          median_seconds: number
+          p95_seconds: number
+          priority: number
+          resolved_n: number
+        }[]
+      }
       find_city_duplicate_candidates: {
         Args: {
           p_country_id?: string
@@ -13737,6 +14187,10 @@ export type Database = {
         Args: { required_roles: Database["public"]["Enums"]["app_role"][] }
         Returns: boolean
       }
+      has_pipeline_permission: {
+        Args: { p_permission: string; p_pipeline_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -13784,7 +14238,12 @@ export type Database = {
       }
       increment_post_comments: { Args: { post_id: string }; Returns: undefined }
       increment_post_likes: { Args: { post_id: string }; Returns: undefined }
+      increment_template_use_count: {
+        Args: { p_template_id: string }
+        Returns: undefined
+      }
       is_admin: { Args: { user_id: string }; Returns: boolean }
+      is_feedback_spam: { Args: { p_data: Json }; Returns: boolean }
       is_group_admin: {
         Args: { group_id: string; user_id: string }
         Returns: boolean
@@ -14161,6 +14620,26 @@ export type Database = {
             Returns: Json
           }
       schedule_location_anonymization: { Args: never; Returns: undefined }
+      scraper_mark_snapshot_archived: {
+        Args: { p_id: string; p_r2_key: string }
+        Returns: undefined
+      }
+      scraper_prune_orphan_mappings: {
+        Args: { p_entity_type: string }
+        Returns: number
+      }
+      scraper_reconcile_orphans: {
+        Args: never
+        Returns: {
+          entity_type: string
+          orphan_count: number
+        }[]
+      }
+      scraper_resolve_pending: {
+        Args: { p_confidence_floor?: number; p_older_than_days?: number }
+        Returns: number
+      }
+      scraper_snapshot_body: { Args: { p_id: string }; Returns: string }
       secure_passkey_access: {
         Args: { p_operation: string; p_user_id: string }
         Returns: boolean
@@ -14456,4 +14935,3 @@ export const Constants = {
     },
   },
 } as const
-
