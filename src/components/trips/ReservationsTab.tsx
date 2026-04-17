@@ -12,6 +12,8 @@ import {
   Package,
   ExternalLink,
   CalendarClock,
+  Unlink,
+  Inbox as InboxIcon,
 } from 'lucide-react';
 import { format, isAfter, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -33,6 +35,11 @@ import {
   useReservationMutations,
   type Reservation,
 } from '@/hooks/useTripReservations';
+import {
+  useReservations,
+  useDetachBooking,
+  type Reservation as UnifiedReservation,
+} from '@/hooks/useReservations';
 import { AddReservationDialog } from './AddReservationDialog';
 
 const TYPE_ICONS: Record<string, typeof Plane> = {
@@ -61,6 +68,7 @@ export function ReservationsTab({ tripId }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { data: reservations, isLoading } = useTripReservations(tripId);
+  const { data: allUserReservations } = useReservations();
   const { deleteReservation } = useReservationMutations(tripId);
 
   const [addOpen, setAddOpen] = useState(false);
@@ -140,7 +148,7 @@ export function ReservationsTab({ tripId }: Props) {
     );
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && attachedBookings.length === 0) {
     return (
       <>
         <Box

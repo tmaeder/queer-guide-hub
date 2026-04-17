@@ -37,7 +37,8 @@ INSERT INTO public.news_sources (name, url, source_type, category, is_active, fe
 ('EU LGBT Legislation 2', 'https://eur-lex.europa.eu/EN/display-feed.rss?myRssId=zqe48Zw8qk8wdPml3HdVP8VkV%2BT%2FTkIbnBV4%2Bqh95eo%3D', 'rss', 'legislation', true, 1440),
 ('EU LGBT Legislation 3', 'https://eur-lex.europa.eu/EN/display-feed.rss?myRssId=zqe48Zw8qk8wdPml3HdUMiISbCssu1uJrid8cUH2nLk%3D', 'rss', 'legislation', true, 1440),
 ('Queerty', 'https://www.queerty.com/feed', 'rss', 'lifestyle', true, 1440),
-('Out Magazine', 'https://www.out.com/customfeeds/js/feed/rss', 'rss', 'lifestyle', true, 1440);
+('Out Magazine', 'https://www.out.com/customfeeds/js/feed/rss', 'rss', 'lifestyle', true, 1440)
+ON CONFLICT (url) DO NOTHING;
 
 -- Set up daily cron job to fetch news from all active sources
 SELECT cron.schedule(

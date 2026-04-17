@@ -86,6 +86,7 @@ Deno.serve(async (req) => {
     let q = supabase.from('ingestion_staging')
       .select('id, raw_data, normalized_data, enriched_data')
       .eq('target_table', 'personalities')
+      .eq('ai_validation_status', 'pending')
       .neq('enrichment_status', 'completed')
       .is('processed_at', null)
       .order('created_at', { ascending: true })
