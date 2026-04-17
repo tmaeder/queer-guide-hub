@@ -53,6 +53,21 @@ export function FeedbackCard({
   const errorCount = item.data.context?.errors?.length ?? 0;
   const hasScreenshot = !!item.data.screenshot_url;
 
+  // SLA severity: warn at 3d, alert at 7d, critical at 14d. Only computed for
+  // open, non-spam, non-duplicate rows so closed tickets don't glow red.
+  const ageMs = Date.now() - new Date(item.submitted_at).getTime();
+  const ageDays = ageMs / 86400_000;
+  const slaOpen =
+    item.feedback_status !== 'done' && !item.is_spam && !item.duplicate_of;
+  const slaColor =
+    slaOpen && ageDays >= 14
+      ? '#dc2626'
+      : slaOpen && ageDays >= 7
+        ? '#f97316'
+        : slaOpen && ageDays >= 3
+          ? '#f59e0b'
+          : null;
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -212,10 +227,36 @@ export function FeedbackCard({
               flexWrap: 'wrap',
             }}
           >
-            <Clock style={{ width: 10, height: 10, color: 'var(--muted-foreground)' }} />
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
-              {timeAgo(item.submitted_at)}
-            </Typography>
+            <Tooltip
+              title={
+                slaColor
+                  ? `Overdue: open ${Math.floor(ageDays)}d — auto-escalates nightly`
+                  : `Submitted ${timeAgo(item.submitted_at)}`
+              }
+            >
+              <Box
+                component="span"
+                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+              >
+                <Clock
+                  style={{
+                    width: 10,
+                    height: 10,
+                    color: slaColor ?? 'var(--muted-foreground)',
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.6rem',
+                    color: slaColor ?? 'text.secondary',
+                    fontWeight: slaColor ? 700 : 400,
+                  }}
+                >
+                  {timeAgo(item.submitted_at)}
+                </Typography>
+              </Box>
+            </Tooltip>
             {hasScreenshot && (
               <Camera style={{ width: 10, height: 10, color: 'var(--muted-foreground)' }} />
             )}
