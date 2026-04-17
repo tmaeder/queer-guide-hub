@@ -32,6 +32,7 @@ import {
   useAcceptStorySuggestion,
   useDismissStorySuggestion,
   useUpdateStory,
+  useSuggestStoryFromIds,
 } from '../useFeedbackStories';
 
 function wrapper() {
@@ -148,5 +149,22 @@ describe('useFeedbackStories mutations', () => {
     });
     expect(updateCalls[0].table).toBe('feedback_stories');
     expect(updateCalls[0].patch).toEqual({ title: 'New title', priority: 1 });
+  });
+
+  it('useSuggestStoryFromIds unwraps the RPC row', async () => {
+    rpcResult = [
+      { proposed_title: 'Map pins drift', member_ids: ['a', 'b'], avg_similarity: 0.72 },
+    ];
+    const { result } = renderHook(() => useSuggestStoryFromIds(), { wrapper: wrapper() });
+    let res: Awaited<ReturnType<typeof result.current.mutateAsync>> | undefined;
+    await act(async () => {
+      res = await result.current.mutateAsync(['a', 'b']);
+    });
+    expect(rpcCalls[0]).toEqual({
+      name: 'suggest_story_from_ids',
+      args: { p_submission_ids: ['a', 'b'] },
+    });
+    expect(res?.proposed_title).toBe('Map pins drift');
+    expect(res?.avg_similarity).toBeCloseTo(0.72);
   });
 });
