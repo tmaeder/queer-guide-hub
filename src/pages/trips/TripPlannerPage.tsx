@@ -387,7 +387,13 @@ export default function TripPlannerPage() {
         </Box>
       )}
 
-      {tab === 2 && <TripSafetyBriefing tripPlaces={trip.trip_places} />}
+      {tab === 2 && (
+        <TripSafetyBriefing
+          tripPlaces={trip.trip_places}
+          tripDays={trip.trip_days}
+          tripId={trip.id}
+        />
+      )}
 
       {tab === 3 && (
         <Suspense fallback={<CircularProgress sx={{ display: 'block', mx: 'auto', my: 4 }} />}>

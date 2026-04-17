@@ -27,7 +27,8 @@ import {
   parseSsuSummary,
   getProtectionStatus,
 } from '@/utils/equalityScore';
-import type { TripPlace } from '@/hooks/useTrips';
+import type { TripPlace, TripDay } from '@/hooks/useTrips';
+import { PerLegSafety } from './PerLegSafety';
 
 type OverallRisk = TripSafetyReport['overallRisk'];
 
@@ -68,9 +69,13 @@ function useRiskVisual(risk: OverallRisk) {
 
 interface Props {
   tripPlaces: TripPlace[];
+  /** Required for the per-leg breakdown — chronological segmentation. */
+  tripDays?: TripDay[];
+  /** When provided alongside tripDays, the per-leg section appears. */
+  tripId?: string;
 }
 
-export function TripSafetyBriefing({ tripPlaces }: Props) {
+export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
   const { t } = useTranslation();
 
   const countryIds = useMemo(
@@ -151,11 +156,16 @@ export function TripSafetyBriefing({ tripPlaces }: Props) {
         </Box>
       )}
 
+      {tripId && tripDays && (
+        <PerLegSafety tripId={tripId} tripPlaces={tripPlaces} tripDays={tripDays} />
+      )}
+
       <Typography
         variant="subtitle2"
         sx={{
           fontWeight: 700,
           mb: 1.5,
+          mt: tripId && tripDays ? 4 : 0,
           textTransform: 'uppercase',
           letterSpacing: '0.04em',
           fontSize: '0.7rem',

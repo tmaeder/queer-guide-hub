@@ -14,11 +14,15 @@ import {
   Ticket,
   ArrowLeft,
   ArrowRight,
+  ShieldAlert,
+  Skull,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useTrip, type TripPlace, type TripDay } from '@/hooks/useTrips';
 import { useReservations, type Reservation } from '@/hooks/useReservations';
+import { useTripSafety } from '@/hooks/useTripSafety';
+import { computeTripSegments, findActiveSegment } from '@/utils/tripSegments';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorState } from '@/components/ui/EmptyState';
@@ -175,6 +179,26 @@ export default function TodayModePage() {
     return timeline.find((i) => i.start && i.start.getTime() > now.getTime()) ?? null;
   }, [timeline, now]);
 
+  // Per-leg safety: which country is the user in *today*?
+  const tripReservations = useMemo(
+    () => (reservations ?? []).filter((r) => r.trip_id === trip?.id),
+    [reservations, trip?.id],
+  );
+  const segments = useMemo(
+    () =>
+      trip
+        ? computeTripSegments(trip.trip_places, trip.trip_days, tripReservations)
+        : [],
+    [trip, tripReservations],
+  );
+  const activeSegment = useMemo(() => findActiveSegment(segments, now), [segments, now]);
+  const activeCountryIds = useMemo(
+    () => (activeSegment ? [activeSegment.country_id] : []),
+    [activeSegment],
+  );
+  const activeSafety = useTripSafety(activeCountryIds);
+  const activeCountrySafety = activeSafety.countries[0] ?? null;
+
   const activeNow = useMemo<TimelineItem | null>(() => {
     return (
       timeline.find((i) => {
@@ -251,6 +275,56 @@ export default function TodayModePage() {
           </Typography>
         </Box>
       </Box>
+
+      {/* Per-leg safety alert — only shown when today lands in a country
+          with limited rights (score < 50) or active criminalization. */}
+      {activeCountrySafety &&
+        (activeCountrySafety.criminalized ||
+          activeCountrySafety.deathPenalty ||
+          (activeCountrySafety.equality_score != null &&
+            activeCountrySafety.equality_score < 50)) && (
+          <Box
+            sx={{
+              mb: 3,
+              p: 2,
+              bgcolor: activeCountrySafety.deathPenalty ? 'error.main' : 'warning.main',
+              color: activeCountrySafety.deathPenalty ? 'error.contrastText' : 'warning.contrastText',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 1.5,
+            }}
+            role="alert"
+          >
+            <Box sx={{ pt: 0.25, flexShrink: 0 }}>
+              {activeCountrySafety.deathPenalty ? (
+                <Skull size={20} />
+              ) : (
+                <ShieldAlert size={20} />
+              )}
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontWeight: 700, mb: 0.25 }}>
+                {activeCountrySafety.deathPenalty
+                  ? t('trips.today.safetyDeathTitle', "You're in a country with the death penalty for same-sex acts")
+                  : activeCountrySafety.criminalized
+                    ? t('trips.today.safetyCriminalTitle', "You're in a country where same-sex acts are criminalized")
+                    : t('trips.today.safetyLimitedTitle', "You're in a country with limited LGBTQ+ rights")}
+              </Typography>
+              <Typography sx={{ fontSize: '0.875rem', opacity: 0.9 }}>
+                {activeCountrySafety.name}
+                {activeCountrySafety.equality_score != null && (
+                  <> · {t('trips.today.scoreLabel', 'Equality score')} {activeCountrySafety.equality_score}/100</>
+                )}
+              </Typography>
+              <LocalizedLink
+                to={`/trips/${trip.id}`}
+                style={{ color: 'inherit', textDecoration: 'underline', fontSize: '0.8125rem' }}
+              >
+                {t('trips.today.viewBriefing', 'View full safety briefing →')}
+              </LocalizedLink>
+            </Box>
+          </Box>
+        )}
 
       {/* Next-up / active-now card */}
       {(activeNow || nextUp) && (
