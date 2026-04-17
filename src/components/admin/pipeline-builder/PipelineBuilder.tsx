@@ -16,13 +16,15 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check, LayoutGrid, Undo2, Redo2, Search, AlertCircle, Command } from 'lucide-react';
+import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check, LayoutGrid, Undo2, Redo2, Search, AlertCircle, Command, StickyNote, Folder } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router';
 import { useToast } from '@/hooks/use-toast';
 
 import BaseNode from './nodes/BaseNode';
+import CommentNode from './nodes/CommentNode';
+import GroupNode from './nodes/GroupNode';
 import NodeConfigPanel from './panels/NodeConfigPanel';
 import RunHistorySidebar from './panels/RunHistorySidebar';
 import ImportExportMenu, { type PipelineExport } from './panels/ImportExportMenu';
@@ -38,6 +40,7 @@ import CanvasControls from './panels/CanvasControls';
 import FindNodePalette from './panels/FindNodePalette';
 import PipelineDiffDialog from './panels/PipelineDiffDialog';
 import VersionHistoryDialog from './panels/VersionHistoryDialog';
+import ScheduleDialog from './panels/ScheduleDialog';
 import { autoLayout } from './utils/autoLayout';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useDraftAutosave } from './hooks/useDraftAutosave';
@@ -46,7 +49,7 @@ import { usePipelineExecution } from './hooks/usePipelineExecution';
 import { useLatestPipelineRun, usePipelineRun } from './hooks/usePipelineHistory';
 import { useSearchParams } from 'react-router';
 
-const nodeTypes = { baseNode: BaseNode };
+const nodeTypes = { baseNode: BaseNode, commentNode: CommentNode, groupNode: GroupNode };
 
 const categoryLabels: Record<string, string> = {
   source: 'Sources',
@@ -220,6 +223,83 @@ function PipelineBuilderInner() {
     setContextMenu({ nodeId: node.id, x: event.clientX, y: event.clientY });
   }, []);
 
+  // Add a sticky-note comment node at canvas center
+  const handleAddComment = useCallback(() => {
+    const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+    const position = bounds
+      ? { x: bounds.width / 2 - 100, y: bounds.height / 2 - 50 }
+      : { x: 300, y: 200 };
+    undoRedo.commitNow();
+    const id = `comment-${Date.now()}`;
+    setNodes(nds => [
+      ...nds,
+      {
+        id,
+        type: 'commentNode',
+        position,
+        data: { text: '', color: 'yellow' },
+        width: 220,
+        height: 120,
+      } as Node,
+    ]);
+    setIsDirty(true);
+    setSelectedNodeId(id);
+  }, [setNodes, setSelectedNodeId, undoRedo]);
+
+  // Wrap selected nodes in a group bounding box
+  const handleAddGroup = useCallback(() => {
+    const selected = nodes.filter(n => n.selected);
+    if (selected.length < 1) {
+      toast({ title: 'Select nodes first', description: 'Shift-click to multi-select, then add group' });
+      return;
+    }
+    // Compute bounding box with padding
+    const PADDING = 40;
+    const xs = selected.map(n => n.position?.x || 0);
+    const ys = selected.map(n => n.position?.y || 0);
+    const maxXs = selected.map(n => (n.position?.x || 0) + (n.width || 220));
+    const maxYs = selected.map(n => (n.position?.y || 0) + (n.height || 100));
+    const minX = Math.min(...xs) - PADDING;
+    const minY = Math.min(...ys) - PADDING * 1.5;
+    const maxX = Math.max(...maxXs) + PADDING;
+    const maxY = Math.max(...maxYs) + PADDING;
+
+    undoRedo.commitNow();
+    const id = `group-${Date.now()}`;
+    const groupNode: Node = {
+      id,
+      type: 'groupNode',
+      position: { x: minX, y: minY },
+      data: { label: 'Group', color: 'indigo' },
+      width: maxX - minX,
+      height: maxY - minY,
+      selectable: true,
+      draggable: true,
+      zIndex: -1, // behind other nodes
+    } as Node;
+    // Insert at beginning so it renders behind
+    setNodes(nds => [groupNode, ...nds.map(n => ({ ...n, selected: false }))]);
+    setIsDirty(true);
+  }, [nodes, setNodes, undoRedo, toast]);
+
+  // Listen for comment/group inline edits
+  useEffect(() => {
+    const onCommentUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { nodeId: string; updates: Record<string, unknown> };
+      setNodes(nds => nds.map(n => n.id === detail.nodeId
+        ? { ...n, data: { ...n.data, ...detail.updates } }
+        : n
+      ));
+      setIsDirty(true);
+    };
+    window.addEventListener('pipeline-comment-update', onCommentUpdate);
+    window.addEventListener('pipeline-group-update', onCommentUpdate);
+    return () => {
+      window.removeEventListener('pipeline-comment-update', onCommentUpdate);
+      window.removeEventListener('pipeline-group-update', onCommentUpdate);
+    };
+  }, [setNodes]);
+
   // Bulk operations on multi-selection
   const handleBulkDelete = useCallback(() => {
     const selectedIds = new Set(nodes.filter(n => n.selected).map(n => n.id));
@@ -319,6 +399,23 @@ function PipelineBuilderInner() {
 
   const handleSave = useCallback(() => {
     if (isSaving) return;
+
+    // Pipeline name uniqueness check: slug must not collide with another pipeline
+    const slug = (pipelineName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    if (!slug || slug.length < 2) {
+      toast({ title: 'Invalid name', description: 'Pipeline name must be at least 2 characters', variant: 'destructive' });
+      return;
+    }
+    const conflict = pipelineList?.find(p => p.name === slug && p.id !== selectedPipelineId);
+    if (conflict) {
+      const override = window.confirm(
+        `A pipeline named "${slug}" already exists (${conflict.display_name || conflict.name}).\n\n` +
+        `Saving here would create a second pipeline with the same slug, which may cause routing confusion.\n\n` +
+        `Continue anyway?`
+      );
+      if (!override) return;
+    }
+
     save(undefined, {
       onSuccess: () => {
         setIsDirty(false);
@@ -328,9 +425,28 @@ function PipelineBuilderInner() {
       },
       onError: (e: Error) => toast({ title: 'Save failed', description: e.message, variant: 'destructive' }),
     } as Record<string, unknown>);
-  }, [isSaving, save, toast, nodes.length, edges.length, draftAutosave]);
+  }, [isSaving, save, toast, nodes.length, edges.length, draftAutosave, pipelineName, pipelineList, selectedPipelineId]);
 
   const handleRun = useCallback((opts?: { dryRun?: boolean }) => {
+    // Production safety: if not a dry-run AND pipeline has commit node or is enabled, confirm
+    if (!opts?.dryRun) {
+      const hasCommitNode = nodes.some(n => {
+        const slug = (n.data as { nodeTypeSlug?: string })?.nodeTypeSlug || '';
+        return slug.includes('commit');
+      });
+      const def = pipelineList?.find(p => p.id === selectedPipelineId);
+      const nameLooksProd = /\b(prod|production|hotels?|events?|marketplace|news|personalities|cities|countries|venues?)\b/i.test(
+        `${def?.name || ''} ${pipelineName}`
+      );
+      if ((hasCommitNode || nameLooksProd) && def?.is_enabled) {
+        const confirmed = window.confirm(
+          `⚠ This pipeline writes to production tables (commit node detected).\n\n` +
+          `Run "${def?.display_name || def?.name || pipelineName}" now?\n\n` +
+          `Click Cancel to abort, or use Dry Run to test without committing.`
+        );
+        if (!confirmed) return;
+      }
+    }
     run(opts, {
       onSuccess: (data: Record<string, unknown>) => {
         if (data?.pipeline_run_id) {
@@ -339,7 +455,7 @@ function PipelineBuilderInner() {
         }
       },
     } as Record<string, unknown>);
-  }, [run]);
+  }, [run, nodes, pipelineList, selectedPipelineId, pipelineName]);
 
   const handleImport = useCallback((data: PipelineExport) => {
     if (isDirty && !window.confirm('Unsaved changes will be lost. Continue with import?')) return;
@@ -866,6 +982,22 @@ function PipelineBuilderInner() {
               </TooltipTrigger>
               <TooltipContent className="text-xs">Quick-add node <span className="ml-1 text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}</span></TooltipContent>
             </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleAddComment}>
+                  <StickyNote className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">Add sticky note</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleAddGroup}>
+                  <Folder className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">Wrap selection in group</TooltipContent>
+            </Tooltip>
             <PipelineDiffDialog
               currentNodes={nodes}
               currentEdges={edges}
@@ -874,6 +1006,10 @@ function PipelineBuilderInner() {
                 if (!def) return null;
                 return { nodes: (def.nodes as Node[]) || [], edges: (def.edges as Edge[]) || [] };
               })()}
+            />
+            <ScheduleDialog
+              pipelineId={selectedPipelineId}
+              currentSchedule={pipelineList?.find(p => p.id === selectedPipelineId)?.schedule}
             />
             <VersionHistoryDialog
               pipelineId={selectedPipelineId}
