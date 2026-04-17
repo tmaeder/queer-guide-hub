@@ -191,9 +191,9 @@ export function useFlyerScan() {
       if (!item) return {};
 
       const { fields, detected_type, matches } = item;
-      const getVal = (key: string) => {
+      const getVal = (key: string, minConfidence = 0.1) => {
         const f = fields[key];
-        return f && f.confidence > 0.2 ? f.value : undefined;
+        return f && f.confidence >= minConfidence ? f.value : undefined;
       };
 
       const formData: Record<string, unknown> = {};
@@ -231,18 +231,36 @@ export function useFlyerScan() {
         if (getVal('ticket_url')) formData.ticket_url = getVal('ticket_url');
         if (getVal('website')) formData.website = getVal('website');
         if (getVal('is_free') !== undefined) formData.is_free = getVal('is_free');
-        if (getVal('price_text')) {
-          const priceText = getVal('price_text') as string;
-          const prices = [...priceText.matchAll(/(\d+(?:[.,]\d{1,2})?)/g)]
-            .map(m => parseFloat(m[1].replace(',', '.')))
-            .filter(n => !isNaN(n) && n > 0 && n < 10000);
-          if (prices.length > 0) {
-            formData.price_min = Math.min(...prices);
-            if (prices.length > 1) {
-              formData.price_max = Math.max(...prices);
-            }
+
+        // Smart pricing: if presale exists, use it; otherwise use box office
+        const presalePrice = getVal('price_presale');
+        const boxOfficePrice = getVal('price_box_office');
+        const primaryPrice = presalePrice || boxOfficePrice;
+
+        if (primaryPrice) {
+          const priceNum = typeof primaryPrice === 'number'
+            ? primaryPrice
+            : parseFloat((primaryPrice as string).replace(',', '.'));
+          if (!isNaN(priceNum) && priceNum > 0 && priceNum < 10000) {
+            formData.price_min = priceNum;
           }
         }
+
+        // If both presale and box office exist and differ, use as price range
+        if (presalePrice && boxOfficePrice) {
+          const presaleNum = typeof presalePrice === 'number'
+            ? presalePrice
+            : parseFloat((presalePrice as string).replace(',', '.'));
+          const boxOfficeNum = typeof boxOfficePrice === 'number'
+            ? boxOfficePrice
+            : parseFloat((boxOfficePrice as string).replace(',', '.'));
+
+          if (!isNaN(presaleNum) && !isNaN(boxOfficeNum)) {
+            formData.price_min = Math.min(presaleNum, boxOfficeNum);
+            formData.price_max = Math.max(presaleNum, boxOfficeNum);
+          }
+        }
+
         if (getVal('age_restriction')) formData.age_restriction = getVal('age_restriction');
       } else {
         if (!selectedVenueId && getVal('name')) formData.name = getVal('name');

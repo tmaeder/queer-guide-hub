@@ -60,8 +60,12 @@ export function useSubmission(config: SubmissionTypeConfig) {
         }
 
         if (fieldConfig.type === 'url' && typeof value === 'string' && value.trim()) {
-          try { new URL(value); } catch {
-            newErrors[fieldName] = `${fieldConfig.label} must be a valid URL`;
+          try {
+            // Try as-is first, then with https:// if it doesn't have a protocol
+            const testUrl = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+            new URL(testUrl);
+          } catch {
+            newErrors[fieldName] = `Enter a valid website (e.g., example.com or https://example.com)`;
           }
         }
       }
