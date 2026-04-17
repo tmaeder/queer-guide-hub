@@ -56,10 +56,27 @@ interface GhIssue {
   user?: { login: string };
 }
 
+interface GhWorkflowRun {
+  id: number;
+  name: string;
+  head_branch: string;
+  head_sha: string;
+  status: string;
+  conclusion: 'success' | 'failure' | 'cancelled' | 'skipped' | 'timed_out' | null;
+  html_url: string;
+  event: string;
+  run_number: number;
+  run_attempt: number;
+  created_at: string;
+  updated_at: string;
+}
+
 interface GhPayload {
   action: string;
   issue?: GhIssue;
   comment?: { body: string; user: { login: string }; html_url: string };
+  workflow_run?: GhWorkflowRun;
+  repository?: { full_name: string };
   sender?: { login: string };
 }
 
@@ -104,6 +121,68 @@ serve(async (req) => {
 
   if (event === 'ping') {
     return json({ success: true, pong: true });
+  }
+
+  // workflow_run.completed → create/bump api_error row for a failed CI run,
+  // or resolve it when the workflow eventually succeeds. So admins see the
+  // same kanban signal they see for runtime API errors.
+  if (event === 'workflow_run' && payload.action === 'completed' && payload.workflow_run) {
+    const wr = payload.workflow_run;
+    const repo = payload.repository?.full_name ?? 'unknown';
+    const fingerprint = `gh-actions:${repo}:${wr.name}:${wr.head_branch}`;
+
+    if (wr.conclusion === 'failure' || wr.conclusion === 'timed_out') {
+      const { error } = await svc.rpc('upsert_api_error', {
+        p_fingerprint: fingerprint,
+        p_data: {
+          service: 'github-actions',
+          function_name: wr.name,
+          message: `Run ${wr.conclusion}: ${wr.name} on ${wr.head_branch}`,
+          status_code: null,
+          endpoint: `${repo}@${wr.head_branch}`,
+          metadata: {
+            repo,
+            workflow: wr.name,
+            branch: wr.head_branch,
+            sha: wr.head_sha,
+            run_number: wr.run_number,
+            run_attempt: wr.run_attempt,
+            run_url: wr.html_url,
+            triggered_by: wr.event,
+            conclusion: wr.conclusion,
+            updated_at: wr.updated_at,
+          },
+          reported_at: new Date().toISOString(),
+        },
+        p_source: 'github-webhook',
+      });
+      if (error) return json({ error: error.message }, 500);
+      return json({ success: true, action: 'workflow_failure_logged', fingerprint });
+    }
+
+    // On success: if there's an open api_error row for this fingerprint, auto-resolve it.
+    if (wr.conclusion === 'success') {
+      const { data: existing } = await svc
+        .from('community_submissions')
+        .select('id,feedback_status')
+        .eq('content_type', 'api_error')
+        .eq('fingerprint', fingerprint)
+        .maybeSingle();
+      if (existing && existing.feedback_status !== 'done') {
+        await svc
+          .from('community_submissions')
+          .update({
+            feedback_status: 'done',
+            resolution: 'fixed',
+            resolved_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id);
+        return json({ success: true, action: 'workflow_recovered', submission_id: existing.id });
+      }
+      return json({ success: true, skipped: 'workflow_success_no_open_row' });
+    }
+
+    return json({ success: true, skipped: `workflow_conclusion_${wr.conclusion}` });
   }
 
   // Find the submission by issue number (feedback or api_error).
