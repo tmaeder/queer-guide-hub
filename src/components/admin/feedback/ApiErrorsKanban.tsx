@@ -28,7 +28,22 @@ import {
   MessageSquarePlus,
   Check,
   ShieldAlert,
+  Inbox,
+  Eye,
+  Calendar,
+  Activity,
+  CheckCircle2,
 } from 'lucide-react';
+
+// Mirror FeedbackKanban's per-column empty state so switching tabs feels
+// like one product instead of two.
+const COLUMN_EMPTY: Record<KanbanStatus, { icon: typeof Inbox; copy: string }> = {
+  new: { icon: Inbox, copy: 'No new errors' },
+  under_review: { icon: Eye, copy: 'Nothing under review' },
+  planned: { icon: Calendar, copy: 'Nothing planned' },
+  in_progress: { icon: Activity, copy: 'Nothing in progress' },
+  done: { icon: CheckCircle2, copy: 'Nothing resolved recently' },
+};
 import { timeAgo } from '@/utils/timezone';
 import { kanbanColumns, type KanbanStatus } from './constants';
 import { SERVICE_COLORS, type ApiErrorSubmission } from './claudePrompts';
@@ -102,13 +117,8 @@ export function ApiErrorsKanban({
     return out;
   }, [grouped]);
 
-  if (errors.length === 0) {
-    return (
-      <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-        No API errors recorded
-      </Typography>
-    );
-  }
+  // Per-column empty states cover the zero-error case now — no need for a
+  // separate all-empty message.
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
@@ -202,12 +212,18 @@ function Column({
           alignItems: 'center',
           gap: 1,
           mb: 1.5,
-          pb: 1,
-          borderBottom: 2,
+          px: 1,
+          py: 0.75,
+          borderTop: 3,
           borderColor: col.color,
+          bgcolor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
+          borderRadius: '0 0 4px 4px',
         }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+        <Typography
+          variant="subtitle2"
+          sx={{ fontWeight: 700, color: col.color, letterSpacing: 0.3 }}
+        >
           {col.label}
         </Typography>
         <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>
@@ -225,21 +241,33 @@ function Column({
           overflowY: 'auto',
           pr: 0.5,
           p: 0.5,
-          borderRadius: 1,
-          bgcolor: isOver ? 'action.hover' : 'transparent',
+          bgcolor: isOver
+            ? `color-mix(in srgb, ${col.color} 14%, transparent)`
+            : 'transparent',
           transition: 'background-color 0.15s',
         }}
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          {items.length === 0 && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ py: 3, textAlign: 'center' }}
-            >
-              No items
-            </Typography>
-          )}
+          {items.length === 0 && (() => {
+            const { icon: EmptyIcon, copy } = COLUMN_EMPTY[col.id];
+            return (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  py: 4,
+                  opacity: 0.55,
+                }}
+              >
+                <EmptyIcon size={22} color={col.color} strokeWidth={1.5} />
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  {copy}
+                </Typography>
+              </Box>
+            );
+          })()}
           {items.map((item) => (
             <SortableErrorCard
               key={item.id}
@@ -314,13 +342,33 @@ function SortableErrorCard({
       <Box
         onClick={onToggle}
         sx={{
-          p: 1,
+          position: 'relative',
+          py: 0.625,
+          pl: isAdvisor ? 1 : 0.875,
+          pr: 0.75,
           border: 1,
           borderColor: 'divider',
           bgcolor: 'background.paper',
-          borderRadius: 1,
           cursor: 'pointer',
+          transition: 'border-color 0.15s',
           '&:hover': { borderColor: 'primary.main' },
+          // Left color stripe mirrors the FeedbackCard priority-stripe
+          // pattern: ERROR/WARN advisors and runtime errors get a tinted
+          // stripe keyed to severity, so eye-scans of the column read
+          // urgency without reading the chips.
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: isAdvisor && advisorMeta?.severity === 'ERROR' ? 3 : 2,
+            bgcolor: isAdvisor
+              ? severityColor
+              : item.feedback_status === 'done'
+                ? 'transparent'
+                : color,
+          },
         }}
       >
         <Box

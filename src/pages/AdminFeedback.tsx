@@ -45,6 +45,13 @@ import { FeedbackDetailDrawer } from '@/components/admin/feedback/FeedbackDetail
 import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDialog';
 import { ApiErrorsKanban } from '@/components/admin/feedback/ApiErrorsKanban';
 import {
+  ApiErrorFilters,
+  DEFAULT_ERROR_FILTERS,
+  type ApiErrorFilterState,
+  type ErrorSource,
+  type ErrorSeverity,
+} from '@/components/admin/feedback/ApiErrorFilters';
+import {
   formatClaudePrompt,
   formatErrorClaudePrompt,
   type ApiErrorSubmission,
@@ -69,6 +76,8 @@ export default function AdminFeedback() {
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [focusedColumnIdx, setFocusedColumnIdx] = useState(0);
   const [forwardingIds, setForwardingIds] = useState<Set<string>>(new Set());
+  const [errorFilters, setErrorFilters] =
+    useState<ApiErrorFilterState>(DEFAULT_ERROR_FILTERS);
   const drawerOpen = !!state.sel;
 
   // Tickets submitted after page-load count as "new since session start"
@@ -153,6 +162,78 @@ export default function AdminFeedback() {
   const recordHandoff = useRecordHandoff();
   const updateHandoff = useUpdateHandoff();
   const { data: apiErrorDaily = [] } = useApiErrorDailySeries();
+
+  // ── API error filtering ───────────────────────────────────────
+  // Derive source + severity from the existing row shape so we can narrow
+  // 100s of rows to the one the admin wants to triage without adding new
+  // columns.
+  const errorFacets = useMemo(() => {
+    const bySource: Record<ErrorSource, number> = {
+      runtime: 0,
+      advisor: 0,
+      'github-actions': 0,
+    };
+    const bySeverity: Record<ErrorSeverity, number> = {
+      ERROR: 0,
+      WARN: 0,
+      INFO: 0,
+    };
+    let resolved = 0;
+    for (const e of apiErrors) {
+      const meta = (e.data.metadata ?? {}) as {
+        source?: string;
+        severity?: string;
+      };
+      const src: ErrorSource =
+        meta.source === 'supabase-advisor'
+          ? 'advisor'
+          : e.data.service === 'github-actions'
+            ? 'github-actions'
+            : 'runtime';
+      bySource[src] += 1;
+      if (meta.severity === 'ERROR' || meta.severity === 'WARN' || meta.severity === 'INFO') {
+        bySeverity[meta.severity] += 1;
+      }
+      if (e.feedback_status === 'done') resolved += 1;
+    }
+    return { bySource, bySeverity, resolved };
+  }, [apiErrors]);
+
+  const visibleApiErrors = useMemo(() => {
+    const q = errorFilters.q.trim().toLowerCase();
+    return apiErrors.filter((e) => {
+      if (errorFilters.hideResolved && e.feedback_status === 'done') return false;
+      const meta = (e.data.metadata ?? {}) as {
+        source?: string;
+        severity?: string;
+      };
+      const src: ErrorSource =
+        meta.source === 'supabase-advisor'
+          ? 'advisor'
+          : e.data.service === 'github-actions'
+            ? 'github-actions'
+            : 'runtime';
+      if (errorFilters.sources.length > 0 && !errorFilters.sources.includes(src)) {
+        return false;
+      }
+      if (errorFilters.severities.length > 0) {
+        if (!meta.severity) return false;
+        if (!errorFilters.severities.includes(meta.severity as ErrorSeverity)) return false;
+      }
+      if (q) {
+        const hay = [
+          e.data.message ?? '',
+          e.data.service ?? '',
+          e.data.function_name ?? '',
+          (meta as { rule?: string }).rule ?? '',
+        ]
+          .join(' ')
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [apiErrors, errorFilters]);
 
   const fireStatusNotification = useCallback(
     (ids: string[], status: KanbanStatus) => {
@@ -600,24 +681,26 @@ export default function AdminFeedback() {
           aria-label="Keyboard shortcuts"
           title="Keyboard shortcuts (?)"
           sx={{
-            border: 1,
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-            borderRadius: 1,
-            px: 1,
-            py: 0.5,
+            // Flat inline hint matching the project design system
+            // (0 radius / 0 borders / 0 shadows) — the "?" is a scanable
+            // cue, not a chrome-heavy button.
+            border: 0,
+            bgcolor: 'transparent',
+            p: 0,
             cursor: 'pointer',
-            fontSize: '0.7rem',
+            fontSize: '0.75rem',
             color: 'text.secondary',
             display: 'inline-flex',
             alignItems: 'center',
             gap: 0.5,
-            fontFamily: 'monospace',
-            mt: 1,
-            '&:hover': { borderColor: 'primary.main', color: 'primary.main' },
+            mt: 1.25,
+            letterSpacing: 0.3,
+            transition: 'color 0.15s, opacity 0.15s',
+            '&:hover': { color: 'primary.main' },
+            '&:active': { opacity: 0.7 },
           }}
         >
-          ?
+          press <strong style={{ fontWeight: 700 }}>?</strong> for shortcuts
         </Box>
       </Box>
 
@@ -723,9 +806,15 @@ export default function AdminFeedback() {
       )}
 
       {tabValue === 'errors' && (
-        <ApiErrorsKanban
-          errors={apiErrors}
-          dailySeries={apiErrorDaily}
+        <>
+          <ApiErrorFilters
+            state={errorFilters}
+            update={(patch) => setErrorFilters((prev) => ({ ...prev, ...patch }))}
+            counts={errorFacets}
+          />
+          <ApiErrorsKanban
+            errors={visibleApiErrors}
+            dailySeries={apiErrorDaily}
           forwardingIds={forwardingIds}
           onCopyPrompt={async (item) => {
             try {
@@ -737,7 +826,8 @@ export default function AdminFeedback() {
           }}
           onForward={(id) => forwardMutation.mutate(id)}
           onStatusChange={(id, status) => statusMutation.mutate({ ids: [id], status })}
-        />
+          />
+        </>
       )}
 
       {tabValue === 'analytics' && (
