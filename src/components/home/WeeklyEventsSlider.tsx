@@ -25,10 +25,6 @@ const WeeklyEventsSlider = React.memo(() => {
   const { location: userLocation, loading: locationLoading } = useVisitorLocation();
 
   // Fetch upcoming-week events once location-loading settles.
-  // Only rerun when visitor coords actually change — fetchEvents is not
-  // memoized in the hook, so including it in deps causes an infinite loop.
-  const lat = userLocation?.latitude;
-  const lng = userLocation?.longitude;
   useEffect(() => {
     if (locationLoading) return;
     const now = new Date();
@@ -37,8 +33,7 @@ const WeeklyEventsSlider = React.memo(() => {
       dateRange: { start: now.toISOString(), end: weekEnd.toISOString() },
       limit: 10,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, locationLoading]);
+  }, [userLocation, locationLoading, fetchEvents]);
 
   const weeklyEvents = useMemo(() => events.slice(0, 10), [events]);
 

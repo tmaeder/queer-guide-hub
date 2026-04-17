@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
@@ -23,7 +23,7 @@ export function useEvents(autoFetch: boolean = true) {
     return () => clearTimeout(timer);
   }, [loading]);
 
-  const fetchEvents = async (
+  const fetchEvents = useCallback(async (
     filters?: {
       city?: string;
       eventType?: string;
@@ -169,7 +169,7 @@ export function useEvents(autoFetch: boolean = true) {
       setLoading(false);
     }
     return { fetched: fetchedCount, total: totalCount } as { fetched: number; total: number | null };
-  };
+  }, []);
 
   const createEvent = async (event: EventInsert) => {
     try {

@@ -17,15 +17,14 @@ const RegionalEventsCalendar: React.FC = () => {
   const navigate = useLocalizedNavigate();
 
   // Fetch next-30d upcoming events. Prefer visitor's city when available,
-  // else show global upcoming list. fetchEvents is intentionally omitted
-  // from deps: it's recreated on every hook render, so including it loops.
-  const city = userLocation?.city;
+  // else show global upcoming list so the calendar always has content.
   useEffect(() => {
     if (locationLoading) return;
     const now = new Date();
     const end = new Date();
     end.setDate(now.getDate() + 30);
     const range = { start: now.toISOString(), end: end.toISOString() };
+    const city = userLocation?.city;
     if (city) {
       fetchEvents({ city, dateRange: range }).then((res) => {
         if (res.fetched === 0) fetchEvents({ dateRange: range });
@@ -33,8 +32,7 @@ const RegionalEventsCalendar: React.FC = () => {
     } else {
       fetchEvents({ dateRange: range });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city, locationLoading]);
+  }, [userLocation?.city, locationLoading, fetchEvents]);
 
   if (loading) return null;
   if (events.length === 0) return null;
