@@ -433,6 +433,11 @@
       "reservations": "预订",
       "packing": "行李",
       "collaborate": "协作"
+    },
+    "today": {
+      "offlineBanner": "您处于离线状态 — 显示上次保存的行程。",
+      "pushPrompt": "每次预订前 30 分钟收到提醒。",
+      "pushEnable": "启用"
     }
   },
   "auth": {
@@ -862,7 +867,8 @@
       "friends": "朋友",
       "myGroups": "我的群组",
       "accessibility": "无障碍",
-      "bookings": "预订"
+      "bookings": "预订",
+      "tripInbox": "旅行收件箱"
     },
     "modes": {
       "dating": "寻找爱情",
@@ -1149,6 +1155,14 @@
     },
     "sitemap": {
       "searchPlaceholder": "搜索站点地图..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "旅行提醒",
+      "body": "在每次预订前 30 分钟收到浏览器通知，以及护照或签证即将到期时再次提醒。",
+      "turnOn": "开启",
+      "turnOff": "关闭"
     }
   }
 }

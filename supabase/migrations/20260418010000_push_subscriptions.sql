@@ -29,20 +29,25 @@ CREATE INDEX IF NOT EXISTS push_subscriptions_user_idx
 
 ALTER TABLE public.push_subscriptions ENABLE ROW LEVEL SECURITY;
 
--- Users CRUD their own rows.
+-- Users CRUD their own rows. DROP-before-CREATE keeps the migration
+-- idempotent against an earlier branch that may have seeded policies.
+DROP POLICY IF EXISTS "push_subscriptions_select_own" ON public.push_subscriptions;
 CREATE POLICY "push_subscriptions_select_own"
   ON public.push_subscriptions FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "push_subscriptions_insert_own" ON public.push_subscriptions;
 CREATE POLICY "push_subscriptions_insert_own"
   ON public.push_subscriptions FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "push_subscriptions_update_own" ON public.push_subscriptions;
 CREATE POLICY "push_subscriptions_update_own"
   ON public.push_subscriptions FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "push_subscriptions_delete_own" ON public.push_subscriptions;
 CREATE POLICY "push_subscriptions_delete_own"
   ON public.push_subscriptions FOR DELETE
   USING (auth.uid() = user_id);
@@ -68,6 +73,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS push_sent_uniq
 
 ALTER TABLE public.push_sent ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "push_sent_select_own" ON public.push_sent;
 CREATE POLICY "push_sent_select_own"
   ON public.push_sent FOR SELECT
   USING (auth.uid() = user_id);

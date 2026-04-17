@@ -433,6 +433,11 @@
       "reservations": "予約",
       "packing": "荷造り",
       "collaborate": "コラボ"
+    },
+    "today": {
+      "offlineBanner": "オフラインです — 最後に保存した旅程を表示しています。",
+      "pushPrompt": "各予約の30分前に通知を受け取ります。",
+      "pushEnable": "有効にする"
     }
   },
   "auth": {
@@ -862,7 +867,8 @@
       "friends": "友だち",
       "myGroups": "マイグループ",
       "accessibility": "アクセシビリティ",
-      "bookings": "予約"
+      "bookings": "予約",
+      "tripInbox": "旅行の受信箱"
     },
     "modes": {
       "dating": "恋人を探す",
@@ -1149,6 +1155,14 @@
     },
     "sitemap": {
       "searchPlaceholder": "サイトマップを検索..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "旅行のリマインダー",
+      "body": "各予約の30分前、およびパスポートやビザの期限が近づいたときにブラウザ通知を受け取ります。",
+      "turnOn": "オン",
+      "turnOff": "オフ"
     }
   }
 }

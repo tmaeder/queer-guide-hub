@@ -433,6 +433,11 @@
       "reservations": "Prenotazioni",
       "packing": "Valigia",
       "collaborate": "Collabora"
+    },
+    "today": {
+      "offlineBanner": "Offline — mostro l’ultimo itinerario salvato.",
+      "pushPrompt": "Ricevi un promemoria 30 min prima di ogni prenotazione.",
+      "pushEnable": "Attiva"
     }
   },
   "auth": {
@@ -862,7 +867,8 @@
       "friends": "Amici",
       "myGroups": "I miei gruppi",
       "accessibility": "Accessibilità",
-      "bookings": "Prenotazioni"
+      "bookings": "Prenotazioni",
+      "tripInbox": "Posta viaggi"
     },
     "modes": {
       "dating": "In cerca d'amore",
@@ -1149,6 +1155,14 @@
     },
     "sitemap": {
       "searchPlaceholder": "Cerca nella mappa del sito..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "Promemoria di viaggio",
+      "body": "Ricevi una notifica 30 minuti prima di ogni prenotazione e quando passaporto o visto stanno per scadere.",
+      "turnOn": "Attiva",
+      "turnOff": "Disattiva"
     }
   }
 }

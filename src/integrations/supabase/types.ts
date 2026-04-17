@@ -2184,6 +2184,7 @@ export type Database = {
           content_type: string
           data: Json
           duplicate_of: string | null
+          embedding: string | null
           feedback_status: string
           fingerprint: string | null
           flyer_scan_id: string | null
@@ -2215,6 +2216,7 @@ export type Database = {
           content_type: string
           data?: Json
           duplicate_of?: string | null
+          embedding?: string | null
           feedback_status?: string
           fingerprint?: string | null
           flyer_scan_id?: string | null
@@ -2246,6 +2248,7 @@ export type Database = {
           content_type?: string
           data?: Json
           duplicate_of?: string | null
+          embedding?: string | null
           feedback_status?: string
           fingerprint?: string | null
           flyer_scan_id?: string | null
@@ -4265,6 +4268,136 @@ export type Database = {
             referencedColumns: ["submission_id"]
           },
         ]
+      }
+      feedback_stories: {
+        Row: {
+          assignee_id: string | null
+          created_at: string
+          created_by: string | null
+          handoffs: Json
+          id: string
+          labels: string[]
+          origin: string
+          priority: number
+          resolved_at: string | null
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          handoffs?: Json
+          id?: string
+          labels?: string[]
+          origin?: string
+          priority?: number
+          resolved_at?: string | null
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          handoffs?: Json
+          id?: string
+          labels?: string[]
+          origin?: string
+          priority?: number
+          resolved_at?: string | null
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      feedback_story_members: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          confidence: number | null
+          story_id: string
+          submission_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          confidence?: number | null
+          story_id: string
+          submission_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          confidence?: number | null
+          story_id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_story_members_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_story_members_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "community_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_story_members_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "v_api_error_daily"
+            referencedColumns: ["submission_id"]
+          },
+        ]
+      }
+      feedback_story_suggestions: {
+        Row: {
+          avg_similarity: number
+          created_at: string
+          dismissed: boolean
+          dismissed_at: string | null
+          dismissed_by: string | null
+          id: string
+          member_ids: string[]
+          method: string
+          proposed_title: string
+        }
+        Insert: {
+          avg_similarity: number
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          id?: string
+          member_ids: string[]
+          method: string
+          proposed_title: string
+        }
+        Update: {
+          avg_similarity?: number
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          id?: string
+          member_ids?: string[]
+          method?: string
+          proposed_title?: string
+        }
+        Relationships: []
       }
       feedback_votes: {
         Row: {
@@ -8425,6 +8558,66 @@ export type Database = {
           sent_at?: string | null
           status?: string
           title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_sent: {
+        Row: {
+          day_bucket: string
+          id: string
+          kind: string
+          ref_id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          day_bucket: string
+          id?: string
+          kind: string
+          ref_id: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          day_bucket?: string
+          id?: string
+          kind?: string
+          ref_id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_success_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_success_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_success_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
@@ -12619,6 +12812,13 @@ export type Database = {
         }
         Relationships: []
       }
+      inbox_orphan_count_v: {
+        Row: {
+          orphan_count: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       personality_data_health: {
         Row: {
           avg_quality: number | null
@@ -13108,6 +13308,14 @@ export type Database = {
       }
     }
     Functions: {
+      accept_story_suggestion: {
+        Args: { p_override_title?: string; p_suggestion_id: string }
+        Returns: string
+      }
+      add_story_members: {
+        Args: { p_story_id: string; p_submission_ids: string[] }
+        Returns: number
+      }
       add_tag_to_category: {
         Args: {
           p_category_id: string
@@ -13382,6 +13590,15 @@ export type Database = {
         Args: { data?: Json; message: string; type: string; user_id: string }
         Returns: string
       }
+      create_story: {
+        Args: {
+          p_origin?: string
+          p_submission_ids: string[]
+          p_summary?: string
+          p_title: string
+        }
+        Returns: string
+      }
       create_tag_relationships_table_if_not_exists: {
         Args: never
         Returns: undefined
@@ -13392,6 +13609,15 @@ export type Database = {
         Returns: undefined
       }
       decrement_post_likes: { Args: { post_id: string }; Returns: undefined }
+      detect_feedback_clusters: {
+        Args: {
+          p_days_window?: number
+          p_embedding_threshold?: number
+          p_min_cluster_size?: number
+          p_trigram_threshold?: number
+        }
+        Returns: number
+      }
       detect_feedback_duplicates: {
         Args: { p_days_window?: number; p_threshold?: number }
         Returns: number
@@ -14457,6 +14683,27 @@ export type Database = {
           total: number
         }[]
       }
+      push_doc_expiry_candidates: {
+        Args: never
+        Returns: {
+          days_out: number
+          doc_type: string
+          document_id: string
+          expiry_date: string
+          title: string
+          user_id: string
+        }[]
+      }
+      push_next_item_candidates: {
+        Args: never
+        Returns: {
+          reservation_id: string
+          start_at: string
+          title: string
+          trip_id: string
+          user_id: string
+        }[]
+      }
       recompute_marketplace_price_usd: { Args: never; Returns: number }
       record_dedup_decision: {
         Args: {
@@ -14496,6 +14743,10 @@ export type Database = {
           p_threshold?: number
         }
         Returns: string
+      }
+      remove_story_members: {
+        Args: { p_story_id: string; p_submission_ids: string[] }
+        Returns: number
       }
       remove_tag_from_category: {
         Args: { p_category_id: string; p_tag_id: string }
@@ -14568,6 +14819,10 @@ export type Database = {
           target: string
           utm_defaults: Json
         }[]
+      }
+      resolve_story: {
+        Args: { p_close_items?: boolean; p_story_id: string }
+        Returns: number
       }
       resolve_tag: {
         Args: { input_slug: string }
@@ -14919,4 +15174,3 @@ export const Constants = {
     },
   },
 } as const
-

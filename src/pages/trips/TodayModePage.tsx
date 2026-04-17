@@ -331,6 +331,35 @@ export default function TodayModePage() {
         </Box>
       )}
 
+      {/* Push opt-in — shown on Today mode because this is where the
+          reminders (next-item, doc-expiry) are most useful. Discreet. */}
+      {online && push.supported && !push.subscribed && (
+        <Box
+          sx={{
+            mb: 2,
+            p: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1,
+            bgcolor: 'action.hover',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Bell size={16} />
+            <Typography sx={{ fontSize: '0.875rem' }}>
+              {t(
+                'trips.today.pushPrompt',
+                'Get a reminder 30 min before each reservation.',
+              )}
+            </Typography>
+          </Box>
+          <Button size="sm" onClick={push.subscribe} disabled={push.pending}>
+            {t('trips.today.pushEnable', 'Enable')}
+          </Button>
+        </Box>
+      )}
+
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <LocalizedLink

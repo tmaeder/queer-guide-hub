@@ -433,6 +433,11 @@
       "reservations": "Reservas",
       "packing": "Equipaje",
       "collaborate": "Colaborar"
+    },
+    "today": {
+      "offlineBanner": "Sin conexión — mostrando tu itinerario guardado.",
+      "pushPrompt": "Recibe un aviso 30 min antes de cada reserva.",
+      "pushEnable": "Activar"
     }
   },
   "auth": {
@@ -862,7 +867,8 @@
       "friends": "Amistades",
       "myGroups": "Mis grupos",
       "accessibility": "Accesibilidad",
-      "bookings": "Reservas"
+      "bookings": "Reservas",
+      "tripInbox": "Bandeja de viajes"
     },
     "modes": {
       "dating": "Buscando el amor",
@@ -1149,6 +1155,14 @@
     },
     "sitemap": {
       "searchPlaceholder": "Buscar en el mapa del sitio..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "Recordatorios de viaje",
+      "body": "Recibe una notificación 30 minutos antes de cada reserva y cuando el pasaporte o visado esté por vencer.",
+      "turnOn": "Activar",
+      "turnOff": "Desactivar"
     }
   }
 }

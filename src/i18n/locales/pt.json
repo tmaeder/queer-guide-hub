@@ -433,6 +433,11 @@
       "reservations": "Reservas",
       "packing": "Mala",
       "collaborate": "Colaborar"
+    },
+    "today": {
+      "offlineBanner": "Sem conexão — mostrando o último itinerário salvo.",
+      "pushPrompt": "Receba um aviso 30 min antes de cada reserva.",
+      "pushEnable": "Ativar"
     }
   },
   "auth": {
@@ -862,7 +867,8 @@
       "friends": "Amigos",
       "myGroups": "Meus Grupos",
       "accessibility": "Acessibilidade",
-      "bookings": "Reservas"
+      "bookings": "Reservas",
+      "tripInbox": "Caixa de viagens"
     },
     "modes": {
       "dating": "Procurando Amor",
@@ -1149,6 +1155,14 @@
     },
     "sitemap": {
       "searchPlaceholder": "Buscar no mapa do site..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "Lembretes de viagem",
+      "body": "Receba uma notificação 30 minutos antes de cada reserva e quando o passaporte ou visto estiver próximo do vencimento.",
+      "turnOn": "Ativar",
+      "turnOff": "Desativar"
     }
   }
 }

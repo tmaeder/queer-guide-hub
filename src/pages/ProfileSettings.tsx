@@ -27,6 +27,7 @@ import OptimizedErrorBoundary, {
 } from '@/components/error/OptimizedErrorBoundary';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { EmailForwardingSettings } from '@/components/profile/EmailForwardingSettings';
+import { PushNotificationSettings } from '@/components/profile/PushNotificationSettings';
 import { DocumentsList } from '@/components/trips/DocumentsList';
 import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
 import { IdentityTab } from '@/components/profile/settings/IdentityTab';
@@ -287,6 +288,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
           <TabsContent value="travel">
             <TravelPreferencesEditor />
             <EmailForwardingSettings />
+            <PushNotificationSettings />
             <Box sx={{ mt: 4 }}>
               <DocumentsList tripId={null} />
             </Box>
