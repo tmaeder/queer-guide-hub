@@ -552,7 +552,7 @@ export function MediaLibrary() {
   };
 
   const getImageUrl = (item: MediaItem) => {
-    const bucket = (item as Record<string, unknown>).bucket as string || 'cms-media';
+    const bucket = (item as unknown as Record<string, unknown>).bucket as string || 'cms-media';
 
     const { data } = supabase.storage
       .from(bucket)

@@ -116,7 +116,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
       if (error) throw error;
 
-      const metaItems = (data || []) as CMSContentMetadata[];
+      const metaItems = (data || []) as unknown as CMSContentMetadata[];
 
       // Enrich with title from source tables
       const enriched: ReviewQueueItem[] = [];

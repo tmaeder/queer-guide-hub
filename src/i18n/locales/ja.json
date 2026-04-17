@@ -47,7 +47,10 @@
     "next": "Next",
     "back": "Back",
     "loadMore": "もっと見る",
-    "tryAgain": "再試行"
+    "tryAgain": "再試行",
+    "allEvents": "すべてのイベント",
+    "browseAll": "すべて見る",
+    "allStories": "すべての記事"
   },
   "navigation": {
     "home": "ホーム",
@@ -804,6 +807,18 @@
       "communityDesc": "人々とつながり、グループに参加",
       "resources": "リソース",
       "resourcesDesc": "権利・文化・コミュニティサポート"
+    },
+    "weekly": {
+      "title": "今週",
+      "titleNear": "お近くで今週開催"
+    },
+    "upcoming": {
+      "title": "今後のイベント",
+      "titleNear": "お近くの今後のイベント",
+      "empty": "予定されているイベントはありません。"
+    },
+    "news": {
+      "title": "最新ニュース"
     }
   },
   "header": {

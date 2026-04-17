@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 const footerLinks = [
   { href: '/about', labelKey: 'footer.about' },
   { href: '/legal', labelKey: 'footer.legalLink' },
+  { href: '/accessibility', labelKey: 'header.legal.accessibility' },
   { href: '/privacy', labelKey: 'footer.privacy' },
   { href: '/terms', labelKey: 'footer.terms' },
   { href: '/contact', labelKey: 'footer.contact' },

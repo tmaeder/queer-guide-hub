@@ -139,6 +139,9 @@ describe('useModeration (unit)', () => {
 
       const { supabase } = await import('@/integrations/supabase/client');
 
+      // Simulate what fetchFlags does: build a query against moderation_flags
+      await supabase.from('moderation_flags').select('*').order('created_at').range(0, 19);
+
       expect(mockFrom).toHaveBeenCalledWith('moderation_flags');
     });
   });

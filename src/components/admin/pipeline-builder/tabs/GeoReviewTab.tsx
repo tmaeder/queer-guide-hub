@@ -34,7 +34,7 @@ export default function GeoReviewTab() {
         .eq('review_status', 'pending_review')
         .order('created_at', { ascending: false })
         .limit(50);
-      return (data ?? []) as StagingRow[];
+      return (data ?? []) as unknown as StagingRow[];
     },
   });
 

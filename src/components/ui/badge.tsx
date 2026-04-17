@@ -45,6 +45,6 @@ function Badge({ className, variant = "default", children, ...props }: BadgeProp
 }
 
 // Keep badgeVariants export for compatibility
-const badgeVariants = (() => "") as Record<string, unknown>;
+const badgeVariants = (() => "") as unknown as Record<string, unknown>;
 
 export { Badge, badgeVariants }

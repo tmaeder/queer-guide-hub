@@ -68,7 +68,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return (data || []) as LogEvent[];
+      return (data || []) as unknown as LogEvent[];
     },
     enabled: !!pipelineRunId && !paused,
     refetchInterval: paused ? false : 2_000,

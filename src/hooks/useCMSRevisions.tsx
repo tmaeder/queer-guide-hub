@@ -82,7 +82,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
         .single();
 
       if (fetchError) throw fetchError;
-      return data as CMSRevision;
+      return data as unknown as CMSRevision;
     } catch (err) {
       console.error('Error fetching revision:', err);
       return null;

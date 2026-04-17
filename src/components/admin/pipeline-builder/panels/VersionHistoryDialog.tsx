@@ -42,7 +42,7 @@ export default function VersionHistoryDialog({ pipelineId, currentVersion, onRev
         .order('version', { ascending: false })
         .limit(50);
       if (error) throw error;
-      return (data || []) as VersionRow[];
+      return (data || []) as unknown as VersionRow[];
     },
     enabled: open && !!pipelineId,
   });

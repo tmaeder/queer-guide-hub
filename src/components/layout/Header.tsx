@@ -102,13 +102,11 @@ const navigationSections = [
 
 const userMenuItems = [
   { to: '/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
-  { to: '/bookings', icon: Receipt, labelKey: 'header.userMenu.bookings' },
   { to: '/favorites', icon: Heart, labelKey: 'header.userMenu.favorites' },
   { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
   { to: '/inbox', icon: Mail, labelKey: 'header.userMenu.inbox' },
   { to: '/friends', icon: Users, labelKey: 'header.userMenu.friends' },
   { to: '/my-groups', icon: UsersRound, labelKey: 'header.userMenu.myGroups' },
-  { to: '/accessibility', icon: Accessibility, labelKey: 'header.userMenu.accessibility' },
 ];
 
 const userModes = [

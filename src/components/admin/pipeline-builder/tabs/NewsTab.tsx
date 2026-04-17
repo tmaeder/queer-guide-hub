@@ -31,7 +31,7 @@ export default function NewsTab() {
         .order('status', { ascending: false })
         .order('consecutive_failures', { ascending: false })
         .limit(100);
-      return (data ?? []) as Array<Record<string, unknown>>;
+      return (data ?? []) as unknown as Array<Record<string, unknown>>;
     },
   });
 
@@ -61,7 +61,7 @@ export default function NewsTab() {
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .limit(5000);
       const counts: Record<string, number> = {};
-      for (const r of (data ?? []) as Array<{ match_strategy: string; match_decision: string }>) {
+      for (const r of (data ?? []) as unknown as Array<{ match_strategy: string; match_decision: string }>) {
         const k = `${r.match_strategy}:${r.match_decision}`;
         counts[k] = (counts[k] || 0) + 1;
       }

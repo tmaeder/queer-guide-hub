@@ -63,7 +63,7 @@ export function useGranularRoles(): GranularRolesReturn {
           .select('*')
           .eq('user_id', user!.id);
 
-        setPermissions((data ?? []) as RolePermission[]);
+        setPermissions((data ?? []) as unknown as RolePermission[]);
       } catch {
         // Table might not exist yet — fall back to base roles
         setPermissions([]);

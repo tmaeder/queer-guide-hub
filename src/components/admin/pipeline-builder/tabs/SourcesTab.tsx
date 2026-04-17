@@ -66,7 +66,7 @@ export default function SourcesTab() {
         .order('priority', { ascending: false })
         .order('name', { ascending: true });
       if (error) throw error;
-      return (data || []) as ScrapeSource[];
+      return (data || []) as unknown as ScrapeSource[];
     },
     refetchInterval: 30_000,
   });

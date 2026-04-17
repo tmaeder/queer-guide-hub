@@ -48,7 +48,7 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
         .eq('pipeline_id', pipelineId)
         .order('granted_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as Grant[];
+      return (data || []) as unknown as Grant[];
     },
     enabled: open && !!pipelineId,
   });
@@ -69,7 +69,7 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
       const { data: u } = await supabase.auth.getUser();
       const { error } = await untypedFrom('pipeline_permissions').insert({
         pipeline_id: pipelineId,
-        user_id: (profile as { id: string }).id,
+        user_id: (profile as unknown as { id: string }).id,
         permission: perm,
         granted_by: u.user?.id ?? null,
       });

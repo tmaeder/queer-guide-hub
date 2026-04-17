@@ -111,7 +111,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];
-    return (rawEvents as Record<string, unknown>[])
+    return (rawEvents as unknown as Record<string, unknown>[])
       .map((e) => {
         // Try event's own coords, then venue's coords, then city coords
         let lat: number | null = null;

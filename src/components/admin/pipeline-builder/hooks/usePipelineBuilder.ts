@@ -53,7 +53,7 @@ export function usePipelineNodeTypes() {
         .eq('is_enabled', true)
         .order('category', { ascending: true });
       if (error) throw error;
-      return data as PipelineNodeType[];
+      return data as unknown as PipelineNodeType[];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -68,7 +68,7 @@ export function usePipelineDefinitions() {
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as PipelineDefinition[];
+      return data as unknown as PipelineDefinition[];
     },
   });
 }
@@ -84,7 +84,7 @@ export function usePipelineDefinition(id: string | undefined) {
         .eq('id', id)
         .single();
       if (error) throw error;
-      return data as PipelineDefinition;
+      return data as unknown as PipelineDefinition;
     },
     enabled: !!id,
   });

@@ -86,12 +86,12 @@ function SelectFilter({ config, value, onChange }: SelectFilterProps) {
       const seen = new Set<string>();
       const options: { value: string; label: string }[] = [];
       for (const row of data || []) {
-        const val = (row as Record<string, string>)[column];
+        const val = (row as unknown as Record<string, string>)[column];
         if (val && !seen.has(val)) {
           seen.add(val);
           options.push({
             value: val,
-            label: labelColumn ? (row as Record<string, string>)[labelColumn] || val : val,
+            label: labelColumn ? (row as unknown as Record<string, string>)[labelColumn] || val : val,
           });
         }
       }

@@ -353,7 +353,7 @@ function PersonalityMergePreview({ staging, existingId }: { staging: Record<stri
         .select('id, name, description, bio, birth_date, death_date, profession, nationality, birth_place, image_url, website_url, wikidata_qid, lgbti_connection')
         .eq('id', existingId).single();
       if (error) throw error;
-      return data as Record<string, unknown>;
+      return data as unknown as Record<string, unknown>;
     },
   });
 
@@ -387,7 +387,7 @@ function EventMergePreview({ staging, existingId }: { staging: Record<string, un
         .select('id, title, description, event_type, start_date, end_date, venue_name, city, latitude, longitude, website, ticket_url, edition, data_source, external_id')
         .eq('id', existingId).single();
       if (error) throw error;
-      return data as Record<string, unknown>;
+      return data as unknown as Record<string, unknown>;
     },
   });
 

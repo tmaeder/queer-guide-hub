@@ -47,7 +47,10 @@
     "next": "Próximo",
     "back": "Voltar",
     "loadMore": "Carregar mais",
-    "tryAgain": "Tentar novamente"
+    "tryAgain": "Tentar novamente",
+    "allEvents": "Todos os eventos",
+    "browseAll": "Ver tudo",
+    "allStories": "Todos os artigos"
   },
   "navigation": {
     "home": "Início",
@@ -804,6 +807,18 @@
       "communityDesc": "Conecte-se com pessoas e participe de grupos",
       "resources": "Recursos",
       "resourcesDesc": "Direitos, cultura e apoio comunitário"
+    },
+    "weekly": {
+      "title": "Esta semana",
+      "titleNear": "Esta semana perto de si"
+    },
+    "upcoming": {
+      "title": "Próximos eventos",
+      "titleNear": "Próximos eventos perto de si",
+      "empty": "Não há mais eventos agendados."
+    },
+    "news": {
+      "title": "Últimas notícias"
     }
   },
   "header": {

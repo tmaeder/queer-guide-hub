@@ -131,6 +131,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button"
 
 // Keep buttonVariants export for compatibility (some files import it)
-const buttonVariants = (() => "") as Record<string, unknown>;
+const buttonVariants = (() => "") as unknown as Record<string, unknown>;
 
 export { Button, buttonVariants }

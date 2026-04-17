@@ -266,7 +266,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       // Collect unique actor IDs
       const actorIds = [
         ...new Set(
-          (entries as AuditEntry[])
+          (entries as unknown as AuditEntry[])
             .map((e) => e.actor_id)
             .filter(Boolean) as string[]
         ),
@@ -288,7 +288,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       }
 
       setRecentActivity(
-        (entries as AuditEntry[]).map((e) => ({
+        (entries as unknown as AuditEntry[]).map((e) => ({
           ...e,
           actorEmail: e.actor_id ? actorMap[e.actor_id] : undefined,
         })),

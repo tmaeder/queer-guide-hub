@@ -29,7 +29,7 @@ Alert.displayName = "Alert"
 
 const AlertTitleComponent = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, children, style, ...props }, ref) => (
-    <AlertTitle ref={ref as Record<string, unknown>} className={className} style={style} sx={{ fontWeight: 600, mb: 0.5 }} {...(props as Record<string, unknown>)}>
+    <AlertTitle ref={ref as unknown as Record<string, unknown>} className={className} style={style} sx={{ fontWeight: 600, mb: 0.5 }} {...(props as Record<string, unknown>)}>
       {children}
     </AlertTitle>
   )

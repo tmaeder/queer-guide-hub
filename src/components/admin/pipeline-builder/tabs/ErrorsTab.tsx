@@ -65,7 +65,7 @@ export default function ErrorsTab() {
         .order('created_at', { ascending: false })
         .limit(200);
       if (error) throw error;
-      return (data || []) as ErrorRow[];
+      return (data || []) as unknown as ErrorRow[];
     },
     refetchInterval: 30_000,
   });

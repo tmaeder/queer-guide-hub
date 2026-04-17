@@ -191,7 +191,7 @@ export default function UserProfile() {
                     {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                {(profile as Record<string, unknown>)?.verified_identity && (
+                {(profile as unknown as Record<string, unknown>)?.verified_identity && (
                   <Badge variant="secondary">
                     <Check style={{ width: 12, height: 12, marginRight: 4 }} />
                     Verified
@@ -213,9 +213,9 @@ export default function UserProfile() {
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {profile.display_name || 'Anonymous User'}
                     </Typography>
-                    {(profile as Record<string, unknown>)?.user_mode && (
+                    {(profile as unknown as Record<string, unknown>)?.user_mode && (
                       <UserModeBadge
-                        mode={(profile as Record<string, unknown>).user_mode}
+                        mode={(profile as unknown as Record<string, unknown>).user_mode}
                         size="lg"
                       />
                     )}
@@ -233,11 +233,11 @@ export default function UserProfile() {
                     {profile.pronouns && (
                       <Typography variant="body2">{profile.pronouns}</Typography>
                     )}
-                    {(profile as Record<string, unknown>)?.age_range && (
+                    {(profile as unknown as Record<string, unknown>)?.age_range && (
                       <>
                         {profile.pronouns && <Typography variant="body2">&#8226;</Typography>}
                         <Typography variant="body2">
-                          {(profile as Record<string, unknown>).age_range}
+                          {(profile as unknown as Record<string, unknown>).age_range}
                         </Typography>
                       </>
                     )}

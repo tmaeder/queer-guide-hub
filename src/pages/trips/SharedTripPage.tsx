@@ -120,7 +120,7 @@ function SharedTripPage() {
     queryFn: async (): Promise<SharedTripData> => {
       const { data, error } = await supabase.rpc('get_shared_trip', { p_token: token! });
       if (error) throw error;
-      return data as SharedTripData;
+      return data as unknown as SharedTripData;
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,

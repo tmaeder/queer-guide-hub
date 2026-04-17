@@ -429,8 +429,8 @@ export function pickPrimary(
     'country_id',
   ] as const;
 
-  const countA = MERGE_FIELDS.filter((f) => (a as Record<string, unknown>)[f] != null).length;
-  const countB = MERGE_FIELDS.filter((f) => (b as Record<string, unknown>)[f] != null).length;
+  const countA = MERGE_FIELDS.filter((f) => (a as unknown as Record<string, unknown>)[f] != null).length;
+  const countB = MERGE_FIELDS.filter((f) => (b as unknown as Record<string, unknown>)[f] != null).length;
 
   if (countA > countB) return { primary: a, secondary: b };
   if (countB > countA) return { primary: b, secondary: a };
@@ -455,8 +455,8 @@ export function computeMergeChanges(
   ] as const;
 
   const changes: { field: string; old_value: unknown; new_value: unknown }[] = [];
-  const pObj = primary as Record<string, unknown>;
-  const sObj = secondary as Record<string, unknown>;
+  const pObj = primary as unknown as Record<string, unknown>;
+  const sObj = secondary as unknown as Record<string, unknown>;
 
   for (const field of MERGE_FIELDS) {
     if (pObj[field] == null && sObj[field] != null) {

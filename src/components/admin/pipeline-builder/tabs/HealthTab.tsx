@@ -114,7 +114,7 @@ export default function HealthTab() {
         .gte('created_at', since)
         .limit(2000);
       const groups: Record<string, { stage: string; errorClass: string; count: number; sample: string }> = {};
-      for (const r of (data ?? []) as Array<{ stage: string; new_status: string; payload: Record<string, unknown> | null }>) {
+      for (const r of (data ?? []) as unknown as Array<{ stage: string; new_status: string; payload: Record<string, unknown> | null }>) {
         const errMsg = String((r.payload as Record<string, unknown>)?.error ?? (r.payload as Record<string, unknown>)?.crash ?? r.new_status);
         const errorClass = errMsg.split(':')[0].slice(0, 60);
         const k = `${r.stage}::${errorClass}`;
@@ -133,7 +133,7 @@ export default function HealthTab() {
       const { data } = await untypedFrom('enrichment_audit')
         .select('stage, status').gte('created_at', since).limit(5000);
       const counts: Record<string, { success: number; partial: number; failed: number }> = {};
-      for (const r of (data ?? []) as Array<{ stage: string; status: string }>) {
+      for (const r of (data ?? []) as unknown as Array<{ stage: string; status: string }>) {
         if (!counts[r.stage]) counts[r.stage] = { success: 0, partial: 0, failed: 0 };
         const k = r.status as 'success' | 'partial' | 'failed';
         if (k in counts[r.stage]) counts[r.stage][k]++;

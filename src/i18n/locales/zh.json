@@ -47,7 +47,10 @@
     "next": "Next",
     "back": "Back",
     "loadMore": "加载更多",
-    "tryAgain": "重试"
+    "tryAgain": "重试",
+    "allEvents": "所有活动",
+    "browseAll": "查看全部",
+    "allStories": "所有文章"
   },
   "navigation": {
     "home": "首页",
@@ -804,6 +807,18 @@
       "communityDesc": "认识朋友，加入群组",
       "resources": "资源",
       "resourcesDesc": "权利、文化与社群支持"
+    },
+    "weekly": {
+      "title": "本周",
+      "titleNear": "本周您附近的活动"
+    },
+    "upcoming": {
+      "title": "即将举行的活动",
+      "titleNear": "您附近即将举行的活动",
+      "empty": "没有其他安排的活动。"
+    },
+    "news": {
+      "title": "最新资讯"
     }
   },
   "header": {

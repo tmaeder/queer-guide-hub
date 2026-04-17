@@ -32,20 +32,12 @@
     "descending": "Z to A"
   },
   "common": {
-    "loading": "Loading...",
+    "loadMore": "Load More",
+    "tryAgain": "Try Again",
     "error": "Error",
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "edit": "Edit",
-    "view": "View",
-    "close": "Close",
-    "search": "Search",
-    "filter": "Filter",
-    "sort": "Sort",
-    "language": "Language",
-    "next": "Next",
-    "back": "Back"
+    "allEvents": "All events",
+    "browseAll": "Browse all",
+    "allStories": "All stories"
   },
   "navigation": {
     "home": "Home",
@@ -806,6 +798,18 @@
       "communityDesc": "Connect with people and join groups",
       "resources": "Resources",
       "resourcesDesc": "Rights, culture, and community support"
+    },
+    "weekly": {
+      "title": "This Week",
+      "titleNear": "This Week Near You"
+    },
+    "upcoming": {
+      "title": "Upcoming Events",
+      "titleNear": "Upcoming Events Near You",
+      "empty": "No further events scheduled."
+    },
+    "news": {
+      "title": "Latest News"
     }
   },
   "header": {
@@ -1137,10 +1141,5 @@
     "sitemap": {
       "searchPlaceholder": "Search sitemap..."
     }
-  },
-  "common": {
-    "loadMore": "Load More",
-    "tryAgain": "Try Again",
-    "error": "Error"
   }
 }

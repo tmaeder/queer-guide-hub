@@ -51,7 +51,7 @@ export function useFeedbackRealtime(viewingId: string | null) {
           const state = presenceChannel!.presenceState();
           const members: AdminPresence[] = [];
           for (const presences of Object.values(state)) {
-            for (const p of presences as Array<AdminPresence>) {
+            for (const p of presences as unknown as Array<AdminPresence>) {
               members.push(p);
             }
           }

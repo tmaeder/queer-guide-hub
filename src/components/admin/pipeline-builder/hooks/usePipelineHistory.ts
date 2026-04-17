@@ -48,7 +48,7 @@ export function usePipelineRuns(limit = 20) {
         .order('created_at', { ascending: false })
         .limit(limit);
       if (error) throw error;
-      return data as PipelineRun[];
+      return data as unknown as PipelineRun[];
     },
     refetchInterval: 10_000,
   });
@@ -66,7 +66,7 @@ export function usePipelineRunsForPipeline(pipelineId: string | undefined, limit
         .order('created_at', { ascending: false })
         .limit(limit);
       if (error) throw error;
-      return (data || []) as PipelineRun[];
+      return (data || []) as unknown as PipelineRun[];
     },
     enabled: !!pipelineId,
     refetchInterval: 10_000,
@@ -104,7 +104,7 @@ export function usePipelineRun(runId: string | undefined) {
         .eq('id', runId)
         .single();
       if (error) throw error;
-      return data as PipelineRun;
+      return data as unknown as PipelineRun;
     },
     enabled: !!runId,
     refetchInterval: 5_000,
@@ -120,7 +120,7 @@ export function useCircuitBreakers() {
         .select('*')
         .order('api_name', { ascending: true });
       if (error) throw error;
-      return data as CircuitBreaker[];
+      return data as unknown as CircuitBreaker[];
     },
     refetchInterval: 30_000,
   });
@@ -346,7 +346,7 @@ export function usePipelineRunCounts24h() {
         untypedFrom('pipeline_runs').select('status').gte('created_at', cutoff).limit(2000),
         untypedFrom('workflow_runs').select('status').gte('created_at', cutoff).limit(2000),
       ]);
-      const all = [...(pipeRes.data || []), ...(wfRes.data || [])] as Array<{ status: string }>;
+      const all = [...(pipeRes.data || []), ...(wfRes.data || [])] as unknown as Array<{ status: string }>;
       return {
         total: all.length,
         completed: all.filter(r => r.status === 'completed').length,

@@ -155,7 +155,7 @@ export default function RunCompareDialog() {
         .order('started_at', { ascending: false })
         .limit(100);
       if (error) throw error;
-      return (data || []) as RunOption[];
+      return (data || []) as unknown as RunOption[];
     },
     enabled: open,
   });

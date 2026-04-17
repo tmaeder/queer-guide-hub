@@ -85,7 +85,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
       const { data, error: fetchError, count } = await query;
       if (fetchError) throw fetchError;
 
-      setMedia((data || []) as CMSMedia[]);
+      setMedia((data || []) as unknown as CMSMedia[]);
       setTotalCount(count ?? 0);
     } catch (err) {
       console.error('Error fetching media:', err);
@@ -150,7 +150,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
 
       if (insertError) throw insertError;
 
-      return data as CMSMedia;
+      return data as unknown as CMSMedia;
     } catch (err) {
       console.error('Error uploading media:', err);
       setError((err as Error).message);
@@ -246,7 +246,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
         .order('sort_order', { ascending: true });
 
       if (fetchError) throw fetchError;
-      return (data || []) as CMSMediaAttachment[];
+      return (data || []) as unknown as CMSMediaAttachment[];
     } catch (err) {
       console.error('Error fetching attachments:', err);
       return [];
@@ -308,7 +308,7 @@ export function useCMSMedia(): UseCMSMediaReturn {
         .single();
 
       if (insertError) throw insertError;
-      return data as CMSMedia;
+      return data as unknown as CMSMedia;
     } catch (err) {
       console.error('Error importing external media:', err);
       setError((err as Error).message);
