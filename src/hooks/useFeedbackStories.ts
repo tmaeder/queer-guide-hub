@@ -143,6 +143,28 @@ export function useCreateStory() {
   });
 }
 
+/**
+ * On-demand cluster suggestion for an arbitrary selection. Returns the
+ * admin's selection filtered to eligible items + a seed title the admin can
+ * keep or edit. Used by the bulk bar to pre-fill "Create story" title.
+ */
+export function useSuggestStoryFromIds() {
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { data, error } = await supabase.rpc('suggest_story_from_ids', {
+        p_submission_ids: ids,
+      });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      return (row ?? null) as {
+        proposed_title: string | null;
+        member_ids: string[];
+        avg_similarity: number;
+      } | null;
+    },
+  });
+}
+
 export function useAddStoryMembers() {
   const qc = useQueryClient();
   return useMutation({
