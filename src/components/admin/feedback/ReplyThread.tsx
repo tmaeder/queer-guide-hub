@@ -61,7 +61,31 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                     {timeAgo(r.at)}
                   </Typography>
                   {r.emailed && (
-                    <Mail size={11} style={{ color: '#22c55e' }} aria-label="emailed" />
+                    <span
+                      title={
+                        r.bounced_at
+                          ? `Bounced: ${r.bounce_reason ?? 'unknown'}`
+                          : r.opened_at
+                            ? `Opened ${timeAgo(r.opened_at)}`
+                            : r.delivered_at
+                              ? `Delivered ${timeAgo(r.delivered_at)}`
+                              : 'Sent, waiting for delivery callback'
+                      }
+                    >
+                      <Mail
+                        size={11}
+                        style={{
+                          color: r.bounced_at
+                            ? '#ef4444'
+                            : r.opened_at
+                              ? '#22c55e'
+                              : r.delivered_at
+                                ? '#3b82f6'
+                                : '#9ca3af',
+                        }}
+                        aria-label={r.bounced_at ? 'bounced' : r.opened_at ? 'opened' : r.delivered_at ? 'delivered' : 'sent'}
+                      />
+                    </span>
                   )}
                   {r.email_error && (
                     <span title={r.email_error}>
