@@ -17,6 +17,9 @@ import {
   Plus,
   Sparkles,
   ArrowRight,
+  Mail,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -29,6 +32,7 @@ import {
   type Reservation,
 } from '@/hooks/useReservations';
 import { suggestTripGroupings, type TripSuggestion } from '@/utils/tripGrouping';
+import { useEmailForwardingAddress } from '@/hooks/useEmailForwardingAddress';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { Button } from '@/components/ui/button';
@@ -167,14 +171,17 @@ export default function TripsInboxPage() {
 
       {/* Empty */}
       {!isLoading && !error && orphanReservations.length === 0 && (
-        <EmptyState
-          icon={InboxIcon}
-          title={t('pages.inbox.empty.title', 'Inbox zero')}
-          description={t(
-            'pages.inbox.empty.description',
-            'Every booking is attached to a trip. New bookings will appear here when they arrive.',
-          )}
-        />
+        <Box>
+          <EmptyState
+            icon={InboxIcon}
+            title={t('pages.inbox.empty.title', 'Inbox zero')}
+            description={t(
+              'pages.inbox.empty.description',
+              'Every booking is attached to a trip. New bookings will appear here when they arrive.',
+            )}
+          />
+          <ForwardingAddressCard />
+        </Box>
       )}
 
       {/* Grouping suggestions */}
@@ -409,6 +416,69 @@ function OrphanRow({
             </Menu>
           </>
         )}
+      </Box>
+    </Box>
+  );
+}
+
+// ── Forwarding address card ─────────────────────────────────────
+
+function ForwardingAddressCard() {
+  const { t } = useTranslation();
+  const { data, isLoading } = useEmailForwardingAddress();
+  const [copied, setCopied] = useState(false);
+
+  if (isLoading || !data) return null;
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(data.address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API blocked — silently no-op; the address is visible.
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 4, p: 3, bgcolor: 'action.hover' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <Mail style={{ width: 18, height: 18, color: 'var(--primary)' }} />
+        <Typography sx={{ fontWeight: 700 }}>
+          {t('pages.inbox.forwarding.title', 'Forward bookings here')}
+        </Typography>
+      </Box>
+      <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
+        {t(
+          'pages.inbox.forwarding.description',
+          'Forward any confirmation email to this address and it will appear in your Inbox. Booking.com, Airbnb, and Lufthansa are recognized today.',
+        )}
+      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          p: 1.5,
+          bgcolor: 'background.paper',
+          fontFamily: 'monospace',
+          fontSize: '0.95rem',
+          wordBreak: 'break-all',
+        }}
+      >
+        <Box sx={{ flex: 1, minWidth: 0 }}>{data.address}</Box>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => void copy()}
+          aria-label={t('pages.inbox.forwarding.copy', 'Copy address')}
+        >
+          {copied ? (
+            <Check style={{ width: 16, height: 16 }} />
+          ) : (
+            <Copy style={{ width: 16, height: 16 }} />
+          )}
+        </Button>
       </Box>
     </Box>
   );
