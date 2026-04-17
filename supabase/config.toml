@@ -266,3 +266,16 @@ verify_jwt = false
 
 [functions.source-tomtom]
 verify_jwt = false
+
+# Admin feedback P3/P5/P6 edge functions
+[functions.reply-to-feedback]
+verify_jwt = true
+
+[functions.notify-feedback-status]
+verify_jwt = true
+
+[functions.github-webhook]
+verify_jwt = false
+
+[functions.resend-webhook]
+verify_jwt = false
