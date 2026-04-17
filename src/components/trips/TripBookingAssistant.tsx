@@ -76,7 +76,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
     queryKey: ['trip-reservations', tripId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('trip_reservations')
+        .from('reservations')
         .select('id, type, title, provider, status')
         .eq('trip_id', tripId);
       if (error) throw error;

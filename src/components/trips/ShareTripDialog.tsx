@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
-import { Copy, Trash2, Check, Link2, Lock } from 'lucide-react';
+import { Copy, Trash2, Check, Link2, Lock, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -130,19 +130,36 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   const shareUrl = (token: string) =>
     `${window.location.origin}/trips/shared/${token}`;
 
-  const copyToClipboard = async (token: string) => {
+  /**
+   * iCal subscription URL — `webcal://` is the well-known scheme that
+   * triggers Apple/Google Calendar to subscribe (with periodic refresh)
+   * rather than one-shot import.
+   */
+  const icalSubscriptionUrl = (token: string) => {
+    const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '');
+    if (!supabaseUrl) return '';
+    const httpUrl = `${supabaseUrl}/functions/v1/trip-ical?token=${encodeURIComponent(token)}`;
+    return httpUrl.replace(/^https?:\/\//, 'webcal://');
+  };
+
+  const copyToClipboard = async (text: string, kind: 'share' | 'ical' = 'share') => {
     try {
-      await navigator.clipboard.writeText(shareUrl(token));
+      await navigator.clipboard.writeText(text);
     } catch {
       const input = document.createElement('input');
-      input.value = shareUrl(token);
+      input.value = text;
       document.body.appendChild(input);
       input.select();
       document.execCommand('copy');
       document.body.removeChild(input);
     }
-    setCopied(token);
-    toast({ title: t('trips.share.copied') });
+    setCopied(text);
+    toast({
+      title:
+        kind === 'ical'
+          ? t('trips.share.icalCopied', 'Calendar URL copied')
+          : t('trips.share.copied'),
+    });
     setTimeout(() => setCopied(null), 2000);
   };
 
@@ -242,21 +259,47 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                           </Box>
                           <IconButton
                             size="small"
-                            onClick={() => copyToClipboard(share.token)}
+                            onClick={() => copyToClipboard(shareUrl(share.token))}
                             aria-label={t('trips.share.copyAria')}
                             sx={{
                               minWidth: 40,
                               minHeight: 40,
                               color:
-                                copied === share.token ? 'success.main' : undefined,
+                                copied === shareUrl(share.token) ? 'success.main' : undefined,
                             }}
                           >
-                            {copied === share.token ? (
+                            {copied === shareUrl(share.token) ? (
                               <Check size={14} />
                             ) : (
                               <Copy size={14} />
                             )}
                           </IconButton>
+                          {icalSubscriptionUrl(share.token) && (
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                copyToClipboard(icalSubscriptionUrl(share.token), 'ical')
+                              }
+                              aria-label={t(
+                                'trips.share.icalAria',
+                                'Copy calendar subscription URL',
+                              )}
+                              sx={{
+                                minWidth: 40,
+                                minHeight: 40,
+                                color:
+                                  copied === icalSubscriptionUrl(share.token)
+                                    ? 'success.main'
+                                    : undefined,
+                              }}
+                            >
+                              {copied === icalSubscriptionUrl(share.token) ? (
+                                <Check size={14} />
+                              ) : (
+                                <Calendar size={14} />
+                              )}
+                            </IconButton>
+                          )}
                           <IconButton
                             size="small"
                             onClick={() => setDeleteConfirmId(share.id)}

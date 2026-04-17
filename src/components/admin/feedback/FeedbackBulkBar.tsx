@@ -10,9 +10,9 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import { CheckCheck, Github, Tag, UserPlus, Zap, X } from 'lucide-react';
+import { CheckCheck, Github, Tag, UserPlus, Zap, X, Layers } from 'lucide-react';
 import { kanbanColumns, priorities, type KanbanStatus } from './constants';
-import type { AdminProfile } from './types';
+import type { AdminProfile, StoryWithCounts } from './types';
 
 interface Props {
   selectedCount: number;
@@ -24,6 +24,9 @@ interface Props {
   onAssign: (assigneeId: string | null) => void;
   onAddLabel: (label: string) => void;
   onForward: () => void;
+  onCreateStory?: (title: string) => void;
+  onAddToStory?: (storyId: string) => void;
+  stories?: StoryWithCounts[];
   admins: AdminProfile[];
   loading?: boolean;
 }
@@ -38,14 +41,23 @@ export function FeedbackBulkBar({
   onAssign,
   onAddLabel,
   onForward,
+  onCreateStory,
+  onAddToStory,
+  stories,
   admins,
   loading,
 }: Props) {
   const [statusAnchor, setStatusAnchor] = useState<HTMLElement | null>(null);
   const [prioAnchor, setPrioAnchor] = useState<HTMLElement | null>(null);
   const [assignAnchor, setAssignAnchor] = useState<HTMLElement | null>(null);
+  const [storyAnchor, setStoryAnchor] = useState<HTMLElement | null>(null);
   const [labelOpen, setLabelOpen] = useState(false);
   const [labelInput, setLabelInput] = useState('');
+  const [storyOpen, setStoryOpen] = useState(false);
+  const [storyTitle, setStoryTitle] = useState('');
+  const openStories = (stories ?? []).filter(
+    (s) => s.status !== 'resolved' && s.status !== 'archived',
+  );
 
   if (selectedCount === 0) return null;
 
@@ -125,6 +137,17 @@ export function FeedbackBulkBar({
         >
           Label
         </Button>
+        {(onCreateStory || onAddToStory) && (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<Layers size={14} />}
+            onClick={(e) => setStoryAnchor(e.currentTarget)}
+            disabled={loading}
+          >
+            Story
+          </Button>
+        )}
         <Button
           size="small"
           variant="contained"
@@ -136,6 +159,76 @@ export function FeedbackBulkBar({
           Forward
         </Button>
       </Paper>
+
+      <Menu
+        anchorEl={storyAnchor}
+        open={!!storyAnchor}
+        onClose={() => setStoryAnchor(null)}
+      >
+        {onCreateStory && (
+          <MenuItem
+            onClick={() => {
+              setStoryAnchor(null);
+              setStoryTitle('');
+              setStoryOpen(true);
+            }}
+          >
+            Create story from selection…
+          </MenuItem>
+        )}
+        {onAddToStory && openStories.length > 0 && [
+          <MenuItem key="__header" disabled>
+            Add to story…
+          </MenuItem>,
+          ...openStories.map((s) => (
+            <MenuItem
+              key={s.id}
+              onClick={() => {
+                onAddToStory(s.id);
+                setStoryAnchor(null);
+              }}
+            >
+              {s.title} ({s.member_count})
+            </MenuItem>
+          )),
+        ]}
+        {onAddToStory && openStories.length === 0 && (
+          <MenuItem disabled>No open stories yet</MenuItem>
+        )}
+      </Menu>
+
+      <Dialog open={storyOpen} onClose={() => setStoryOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Create story from {selectedCount} selected</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            placeholder="Short title for this story"
+            value={storyTitle}
+            onChange={(e) => setStoryTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && storyTitle.trim() && onCreateStory) {
+                onCreateStory(storyTitle.trim());
+                setStoryOpen(false);
+              }
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setStoryOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            disabled={!storyTitle.trim()}
+            onClick={() => {
+              if (onCreateStory) onCreateStory(storyTitle.trim());
+              setStoryOpen(false);
+            }}
+          >
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Menu anchorEl={statusAnchor} open={!!statusAnchor} onClose={() => setStatusAnchor(null)}>
         {kanbanColumns.map((c) => (

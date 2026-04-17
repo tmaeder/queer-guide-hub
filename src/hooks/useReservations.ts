@@ -1,19 +1,14 @@
 /**
  * Unified reservations layer.
  *
- * Now reads from the unified `reservations` table (migration
- * 20260417160000_reservations_unified), which is kept in sync with the
- * legacy `bookings` and `trip_reservations` tables by the dual-write
- * triggers in 20260417170000_reservations_dual_write.
- *
- * Writes still target the legacy tables — they are the source of truth
- * during the parity window. Triggers mirror legacy writes into
- * `reservations`. Once the parity window closes, the follow-up PR will
- * flip writes over and drop the legacy tables.
+ * Reads + writes the `reservations` table directly. The legacy
+ * `bookings` / `trip_reservations` tables and dual-write triggers were
+ * dropped in 20260417200000_drop_legacy_reservations.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 
 export type ReservationType =
@@ -43,12 +38,6 @@ export interface Reservation {
   key: string;
   /** Underlying `reservations.id`. */
   id: string;
-  /**
-   * Which legacy table this row originated from, derived from `source`.
-   * Kept for backward compatibility with Inbox / planner consumers —
-   * will be removed once the legacy tables are dropped.
-   */
-  origin: 'booking' | 'trip_reservation';
   source: ReservationSource;
 
   user_id: string | null;
@@ -75,13 +64,6 @@ export interface Reservation {
 
   notes: string | null;
   created_at: string;
-
-  /**
-   * Legacy row FKs. Mutations that mutate the legacy source of truth
-   * (e.g. attach/detach writes `bookings.trip_id`) use these.
-   */
-  legacy_booking_id: string | null;
-  legacy_trip_reservation_id: string | null;
 }
 
 const RESERVATION_QUERY_KEY = (userId: string | undefined) =>
@@ -126,61 +108,33 @@ const normalizeSource = (s: string | null | undefined): ReservationSource => {
   }
 };
 
-interface ReservationRow {
-  id: string;
-  user_id: string;
-  trip_id: string | null;
-  trip_day_id: string | null;
-  source: string;
-  legacy_booking_id: string | null;
-  legacy_trip_reservation_id: string | null;
-  type: string;
-  title: string;
-  status: string;
-  start_at: string | null;
-  end_at: string | null;
-  provider: string | null;
-  provider_booking_id: string | null;
-  confirmation_code: string | null;
-  booking_url: string | null;
-  total_amount: number | null;
-  currency: string | null;
-  city_id: string | null;
-  country_id: string | null;
-  notes: string | null;
-  created_at: string;
+type ReservationRow = Tables<'reservations'> & {
   trips?: { title: string | null } | null;
-}
-
-const project = (r: ReservationRow): Reservation => {
-  const source = normalizeSource(r.source);
-  return {
-    key: `res:${r.id}`,
-    id: r.id,
-    origin: source === 'provider_api' ? 'booking' : 'trip_reservation',
-    source,
-    user_id: r.user_id,
-    trip_id: r.trip_id,
-    trip_title: r.trips?.title ?? null,
-    type: normalizeType(r.type),
-    title: r.title,
-    status: normalizeStatus(r.status),
-    start_at: r.start_at,
-    end_at: r.end_at,
-    provider: r.provider,
-    provider_booking_id: r.provider_booking_id,
-    confirmation_code: r.confirmation_code,
-    booking_url: r.booking_url,
-    total_amount: r.total_amount,
-    currency: r.currency,
-    city_id: r.city_id,
-    country_id: r.country_id,
-    notes: r.notes,
-    created_at: r.created_at,
-    legacy_booking_id: r.legacy_booking_id,
-    legacy_trip_reservation_id: r.legacy_trip_reservation_id,
-  };
 };
+
+const project = (r: ReservationRow): Reservation => ({
+  key: `res:${r.id}`,
+  id: r.id,
+  source: normalizeSource(r.source),
+  user_id: r.user_id,
+  trip_id: r.trip_id,
+  trip_title: r.trips?.title ?? null,
+  type: normalizeType(r.type),
+  title: r.title,
+  status: normalizeStatus(r.status),
+  start_at: r.start_at,
+  end_at: r.end_at,
+  provider: r.provider,
+  provider_booking_id: r.provider_booking_id,
+  confirmation_code: r.confirmation_code,
+  booking_url: r.booking_url,
+  total_amount: r.total_amount,
+  currency: r.currency,
+  city_id: r.city_id,
+  country_id: r.country_id,
+  notes: r.notes,
+  created_at: r.created_at,
+});
 
 /**
  * Returns every reservation the current user can see: rows they own plus
@@ -231,15 +185,9 @@ export function useOrphanReservations() {
 }
 
 /**
- * Attach an external booking row to a trip.
- *
- * Writes to the legacy `bookings` table — the source of truth during the
- * dual-write parity window. The trigger mirrors the change into
- * `reservations`, which is what every reader consumes.
- *
- * Only valid when `origin === 'booking'` (i.e. the row has a
- * `legacy_booking_id`). Moving a manual `trip_reservation` between trips
- * is a separate future flow.
+ * Attach a reservation to a trip — writes `reservations.trip_id`
+ * directly. Used by the Inbox to move orphan reservations into a trip
+ * (manually or as part of accepting a grouping suggestion).
  */
 export function useAttachBookingToTrip() {
   const queryClient = useQueryClient();
@@ -247,16 +195,16 @@ export function useAttachBookingToTrip() {
 
   return useMutation({
     mutationFn: async ({
-      legacyBookingId,
+      reservationId,
       tripId,
     }: {
-      legacyBookingId: string;
+      reservationId: string;
       tripId: string;
     }) => {
       const { error } = await supabase
-        .from('bookings')
+        .from('reservations')
         .update({ trip_id: tripId })
-        .eq('id', legacyBookingId);
+        .eq('id', reservationId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -266,17 +214,17 @@ export function useAttachBookingToTrip() {
   });
 }
 
-/** Detach a booking from its trip — moves it back to the Inbox. */
+/** Detach a reservation from its trip — moves it back to the Inbox. */
 export function useDetachBooking() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (legacyBookingId: string) => {
+    mutationFn: async (reservationId: string) => {
       const { error } = await supabase
-        .from('bookings')
+        .from('reservations')
         .update({ trip_id: null })
-        .eq('id', legacyBookingId);
+        .eq('id', reservationId);
       if (error) throw error;
     },
     onSuccess: () => {

@@ -154,6 +154,7 @@ const Favorites = lazyRetry(() => import('./pages/Favorites'));
 const TripsPage = lazyRetry(() => import('./pages/trips/TripsPage'));
 const TripsInboxPage = lazyRetry(() => import('./pages/trips/TripsInboxPage'));
 const TripPlannerPage = lazyRetry(() => import('./pages/trips/TripPlannerPage'));
+const TodayModePage = lazyRetry(() => import('./pages/trips/TodayModePage'));
 const SharedTripPage = lazyRetry(() => import('./pages/trips/SharedTripPage'));
 const Donate = lazyRetry(() => import('./pages/Donate'));
 const Sitemap = lazyRetry(() => import('./pages/Sitemap'));
@@ -467,6 +468,7 @@ const AppRoutes = () => {
                 <Route path="trips" element={<TripsPage />} />
                 <Route path="trips/inbox" element={<TripsInboxPage />} />
                 <Route path="trips/shared/:token" element={<SharedTripPage />} />
+                <Route path="trips/:tripId/today" element={<TodayModePage />} />
                 <Route path="trips/:tripId" element={<TripPlannerPage />} />
                 <Route path="bookings" element={<Navigate to="/trips/inbox" replace />} />
                 <Route path="map" element={<MapPage />} />

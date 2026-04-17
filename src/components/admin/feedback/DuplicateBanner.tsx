@@ -1,8 +1,8 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { Copy, ArrowRightLeft } from 'lucide-react';
-import type { FeedbackSubmission } from './types';
+import { Copy, ArrowRightLeft, Layers } from 'lucide-react';
+import type { FeedbackSubmission, SubmissionStoryRef } from './types';
 
 interface Suggestion {
   partnerId: string;
@@ -14,7 +14,9 @@ interface Props {
   current: FeedbackSubmission;
   suggestions: Suggestion[];
   itemsById: Record<string, FeedbackSubmission>;
+  parentStory?: SubmissionStoryRef | null;
   onOpenPartner: (partnerId: string) => void;
+  onOpenStory?: (storyId: string) => void;
   onMerge: (args: { duplicateId: string; canonicalId: string; suggestionId: string }) => void;
   onDismiss: (suggestionId: string) => void;
 }
@@ -28,11 +30,13 @@ export function DuplicateBanner({
   current,
   suggestions,
   itemsById,
+  parentStory,
   onOpenPartner,
+  onOpenStory,
   onMerge,
   onDismiss,
 }: Props) {
-  if (suggestions.length === 0) return null;
+  if (suggestions.length === 0 && !parentStory) return null;
 
   return (
     <Box
@@ -45,12 +49,34 @@ export function DuplicateBanner({
         borderRadius: 1,
       }}
     >
-      <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.75 }}>
-        <Copy size={11} style={{ marginRight: 4, verticalAlign: '-1px' }} />
-        {suggestions.length === 1
-          ? 'Possible duplicate'
-          : `${suggestions.length} possible duplicates`}
-      </Typography>
+      {parentStory && (
+        <Box
+          onClick={() => onOpenStory?.(parentStory.story_id)}
+          sx={{
+            mb: suggestions.length > 0 ? 1 : 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            cursor: onOpenStory ? 'pointer' : 'default',
+            '&:hover': onOpenStory ? { opacity: 0.8 } : undefined,
+          }}
+        >
+          <Layers size={11} />
+          <Typography variant="caption" sx={{ fontWeight: 600 }}>
+            Part of story: {parentStory.title}
+            {parentStory.status === 'resolved' && ' (resolved)'}
+          </Typography>
+        </Box>
+      )}
+
+      {suggestions.length > 0 && (
+        <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.75 }}>
+          <Copy size={11} style={{ marginRight: 4, verticalAlign: '-1px' }} />
+          {suggestions.length === 1
+            ? 'Possible duplicate'
+            : `${suggestions.length} possible duplicates`}
+        </Typography>
+      )}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {suggestions.map((s) => {

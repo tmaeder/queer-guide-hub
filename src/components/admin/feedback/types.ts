@@ -98,3 +98,57 @@ export interface AdminProfile {
   display_name: string | null;
   avatar_url: string | null;
 }
+
+// ── Stories ────────────────────────────────────────────────────
+// A Story bundles N related feedback items and/or api_error rows so
+// admins can triage and hand them off in one go. The Story is a tag:
+// member items keep their own independent statuses.
+
+export type StoryStatus = 'open' | 'planned' | 'in_progress' | 'resolved' | 'archived';
+export type StoryOrigin = 'manual' | 'ai_suggested';
+
+export interface FeedbackStory {
+  id: string;
+  title: string;
+  summary: string | null;
+  status: StoryStatus;
+  priority: number;
+  labels: string[];
+  assignee_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  resolved_at: string | null;
+  origin: StoryOrigin;
+  handoffs: FeedbackHandoff[];
+}
+
+export interface StoryMember {
+  story_id: string;
+  submission_id: string;
+  added_at: string;
+  added_by: string | null;
+  confidence: number | null;
+}
+
+export interface StorySuggestion {
+  id: string;
+  proposed_title: string;
+  member_ids: string[];
+  avg_similarity: number;
+  method: 'trigram' | 'embedding' | 'hybrid';
+  dismissed: boolean;
+  created_at: string;
+}
+
+export interface StoryWithCounts extends FeedbackStory {
+  member_count: number;
+  feedback_count: number;
+  error_count: number;
+}
+
+export interface SubmissionStoryRef {
+  story_id: string;
+  title: string;
+  status: StoryStatus;
+}

@@ -29,6 +29,30 @@ export interface Settlement {
   amount: number;
 }
 
+/**
+ * Convert an amount from one currency to another using `rate_to_usd` quotes
+ * (the shape of the `fx_rates` table).
+ *
+ * Returns `null` when either currency is missing from the rate map — the
+ * caller decides whether to drop, warn, or fall back. We never silently
+ * use `1.0` as a "fallback rate" because that would lie about the value.
+ *
+ * `from === to` is a fast-path that skips the rate lookup entirely so a
+ * single-currency trip works even before fx_rates is loaded.
+ */
+export function convertAmount(
+  amount: number,
+  from: string,
+  to: string,
+  ratesToUsd: Map<string, number>,
+): number | null {
+  if (from === to) return amount;
+  const fromRate = ratesToUsd.get(from);
+  const toRate = ratesToUsd.get(to);
+  if (fromRate == null || toRate == null || toRate === 0) return null;
+  return amount * (fromRate / toRate);
+}
+
 /** In a given currency. Mixing currencies is the caller's problem. */
 export function computeBalances(items: ExpenseItem[]): Balance[] {
   const net = new Map<string, number>();

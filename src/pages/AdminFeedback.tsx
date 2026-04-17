@@ -44,6 +44,24 @@ import { FeedbackCommandPalette } from '@/components/admin/feedback/FeedbackComm
 import { FeedbackDetailDrawer } from '@/components/admin/feedback/FeedbackDetailDrawer';
 import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDialog';
 import { ApiErrorsKanban } from '@/components/admin/feedback/ApiErrorsKanban';
+import { StoriesKanban } from '@/components/admin/feedback/StoriesKanban';
+import { StoryDetailDrawer } from '@/components/admin/feedback/StoryDetailDrawer';
+import { StorySuggestionsPanel } from '@/components/admin/feedback/StorySuggestionsPanel';
+import {
+  useStories,
+  useStory,
+  useSubmissionStoryMap,
+  useStorySuggestions,
+  useCreateStory,
+  useAddStoryMembers,
+  useRemoveStoryMembers,
+  useUpdateStory,
+  useResolveStory,
+  useAcceptStorySuggestion,
+  useDismissStorySuggestion,
+  useGroupedStories,
+} from '@/hooks/useFeedbackStories';
+import type { StoryStatus } from '@/components/admin/feedback/types';
 import {
   ApiErrorFilters,
   DEFAULT_ERROR_FILTERS,
@@ -56,6 +74,24 @@ import {
   formatErrorClaudePrompt,
   type ApiErrorSubmission,
 } from '@/components/admin/feedback/claudePrompts';
+import { StoriesKanban } from '@/components/admin/feedback/StoriesKanban';
+import { StoryDetailDrawer } from '@/components/admin/feedback/StoryDetailDrawer';
+import { StorySuggestionsPanel } from '@/components/admin/feedback/StorySuggestionsPanel';
+import {
+  useStories,
+  useStory,
+  useSubmissionStoryMap,
+  useStorySuggestions,
+  useCreateStory,
+  useAddStoryMembers,
+  useRemoveStoryMembers,
+  useUpdateStory,
+  useResolveStory,
+  useAcceptStorySuggestion,
+  useDismissStorySuggestion,
+  useGroupedStories,
+} from '@/hooks/useFeedbackStories';
+import type { StoryStatus } from '@/components/admin/feedback/types';
 
 const FEEDBACK_COLUMNS =
   'id,data,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at,priority,labels,assignee_id,duplicate_of,is_spam,resolution,resolved_at,notify_submitter';
@@ -162,6 +198,73 @@ export default function AdminFeedback() {
   const recordHandoff = useRecordHandoff();
   const updateHandoff = useUpdateHandoff();
   const { data: apiErrorDaily = [] } = useApiErrorDailySeries();
+
+  // Stories — loaded on all tabs so the story chip on individual cards can
+  // render without a second round trip when the admin switches tabs.
+  const { data: stories = [] } = useStories();
+  const groupedStories = useGroupedStories(stories);
+  const { data: storySuggestions = [] } = useStorySuggestions();
+  const { data: submissionStoryMap = {} } = useSubmissionStoryMap();
+  const { data: activeStoryBundle } = useStory(state.story);
+  const createStory = useCreateStory();
+  const addStoryMembers = useAddStoryMembers();
+  const removeStoryMembers = useRemoveStoryMembers();
+  const updateStory = useUpdateStory();
+  const resolveStory = useResolveStory();
+  const acceptStorySuggestion = useAcceptStorySuggestion();
+  const dismissStorySuggestion = useDismissStorySuggestion();
+
+  const feedbackById = useMemo(() => {
+    const map: Record<string, FeedbackSubmission> = {};
+    for (const it of items) map[it.id] = it;
+    return map;
+  }, [items]);
+  const errorsById = useMemo(() => {
+    const map: Record<string, ApiErrorSubmission> = {};
+    for (const e of apiErrors) map[e.id] = e;
+    return map;
+  }, [apiErrors]);
+
+  const handleCreateStoryFromSelection = useCallback(
+    (title: string) => {
+      const ids = Array.from(selectedIds);
+      if (ids.length === 0) return;
+      createStory.mutate(
+        { title, submissionIds: ids },
+        {
+          onSuccess: (storyId) => {
+            toast({ title: 'Story created', description: `${ids.length} items bundled` });
+            setSelectedIds(new Set());
+            setLastSelectedId(null);
+            update({ tab: 'stories', story: storyId });
+          },
+          onError: (e: Error) =>
+            toast({ title: 'Create story failed', description: e.message, variant: 'destructive' }),
+        },
+      );
+    },
+    [selectedIds, createStory, toast, update],
+  );
+
+  const handleAddSelectionToStory = useCallback(
+    (storyId: string) => {
+      const ids = Array.from(selectedIds);
+      if (ids.length === 0) return;
+      addStoryMembers.mutate(
+        { storyId, submissionIds: ids },
+        {
+          onSuccess: () => {
+            toast({ title: 'Added to story', description: `${ids.length} item(s)` });
+            setSelectedIds(new Set());
+            setLastSelectedId(null);
+          },
+          onError: (e: Error) =>
+            toast({ title: 'Add to story failed', description: e.message, variant: 'destructive' }),
+        },
+      );
+    },
+    [selectedIds, addStoryMembers, toast],
+  );
 
   // ── API error filtering ───────────────────────────────────────
   // Derive source + severity from the existing row shape so we can narrow
@@ -646,6 +749,45 @@ export default function AdminFeedback() {
     },
   });
 
+  const handleCreateStoryFromSelection = useCallback(
+    (title: string) => {
+      const ids = Array.from(selectedIds);
+      if (ids.length === 0) return;
+      createStory.mutate(
+        { title, submissionIds: ids },
+        {
+          onSuccess: (storyId) => {
+            toast({ title: 'Story created', description: `${ids.length} items bundled` });
+            clearSelection();
+            update({ tab: 'stories', story: storyId });
+          },
+          onError: (e: Error) =>
+            toast({ title: 'Create story failed', description: e.message, variant: 'destructive' }),
+        },
+      );
+    },
+    [selectedIds, createStory, toast, clearSelection, update],
+  );
+
+  const handleAddSelectionToStory = useCallback(
+    (storyId: string) => {
+      const ids = Array.from(selectedIds);
+      if (ids.length === 0) return;
+      addStoryMembers.mutate(
+        { storyId, submissionIds: ids },
+        {
+          onSuccess: () => {
+            toast({ title: 'Added to story', description: `${ids.length} item(s)` });
+            clearSelection();
+          },
+          onError: (e: Error) =>
+            toast({ title: 'Add to story failed', description: e.message, variant: 'destructive' }),
+        },
+      );
+    },
+    [selectedIds, addStoryMembers, toast, clearSelection],
+  );
+
   // ── Render ──────────────────────────────────────────────────
   if (isLoading || errorsLoading) {
     return (
@@ -658,13 +800,23 @@ export default function AdminFeedback() {
   const tabIdx =
     state.tab === 'errors'
       ? 1
-      : state.tab === 'spam'
+      : state.tab === 'stories'
         ? 2
-        : state.tab === 'analytics'
+        : state.tab === 'spam'
           ? 3
-          : 0;
-  const tabValue: 'community' | 'errors' | 'spam' | 'analytics' =
-    tabIdx === 1 ? 'errors' : tabIdx === 2 ? 'spam' : tabIdx === 3 ? 'analytics' : 'community';
+          : state.tab === 'analytics'
+            ? 4
+            : 0;
+  const tabValue: 'community' | 'errors' | 'stories' | 'spam' | 'analytics' =
+    tabIdx === 1
+      ? 'errors'
+      : tabIdx === 2
+        ? 'stories'
+        : tabIdx === 3
+          ? 'spam'
+          : tabIdx === 4
+            ? 'analytics'
+            : 'community';
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
@@ -709,13 +861,22 @@ export default function AdminFeedback() {
         onChange={(_, v) =>
           update({
             tab:
-              v === 1 ? 'errors' : v === 2 ? 'spam' : v === 3 ? 'analytics' : 'community',
+              v === 1
+                ? 'errors'
+                : v === 2
+                  ? 'stories'
+                  : v === 3
+                    ? 'spam'
+                    : v === 4
+                      ? 'analytics'
+                      : 'community',
           })
         }
         sx={{ mb: 2 }}
       >
         <Tab label={`Community (${communityCount})`} />
         <Tab label={`API Errors (${apiErrors.length})`} />
+        <Tab label={`Stories (${stories.length})`} />
         <Tab label={`Spam (${spamCount})`} />
         <Tab label="Analytics" />
       </Tabs>
@@ -752,6 +913,8 @@ export default function AdminFeedback() {
               focusedId={focusedId}
               watchersByItem={watchersByItem}
               adminById={adminMap}
+              storyByItem={submissionStoryMap}
+              onStoryClick={(storyId) => update({ tab: 'stories', story: storyId })}
               isNew={(id, submittedAt) =>
                 submittedAt > sessionStartRef.current && !seenIds.has(id)
               }
@@ -797,6 +960,9 @@ export default function AdminFeedback() {
             onForward={() => {
               for (const id of selectedIds) forwardMutation.mutate(id);
             }}
+            onCreateStory={handleCreateStoryFromSelection}
+            onAddToStory={handleAddSelectionToStory}
+            stories={stories}
             admins={admins}
             loading={
               statusMutation.isPending || priorityMutation.isPending || assignMutation.isPending
@@ -830,9 +996,99 @@ export default function AdminFeedback() {
         </>
       )}
 
+      {tabValue === 'stories' && (
+        <>
+          <StorySuggestionsPanel
+            suggestions={storySuggestions}
+            onAccept={(id, overrideTitle) =>
+              acceptStorySuggestion.mutate(
+                { suggestionId: id, overrideTitle },
+                {
+                  onSuccess: (storyId) => {
+                    toast({ title: 'Story created from suggestion' });
+                    update({ story: storyId });
+                  },
+                  onError: (e: Error) =>
+                    toast({ title: 'Accept failed', description: e.message, variant: 'destructive' }),
+                },
+              )
+            }
+            onDismiss={(id) => dismissStorySuggestion.mutate(id)}
+          />
+          <StoriesKanban
+            grouped={groupedStories}
+            adminById={adminMap}
+            onStoryClick={(s) => update({ story: s.id })}
+          />
+        </>
+      )}
+
       {tabValue === 'analytics' && (
         <AnalyticsTab items={items} voteCounts={votesMap} />
       )}
+
+      <StoryDetailDrawer
+        open={!!state.story}
+        story={activeStoryBundle?.story ?? null}
+        members={activeStoryBundle?.members ?? []}
+        feedbackById={feedbackById}
+        errorsById={errorsById}
+        admins={admins}
+        adminById={adminMap}
+        onClose={() => update({ story: null })}
+        onRename={(title, summary) =>
+          state.story &&
+          updateStory.mutate({ storyId: state.story, patch: { title, summary: summary || null } })
+        }
+        onStatusChange={(status, closeItems) => {
+          if (!state.story) return;
+          if (status === 'resolved') {
+            resolveStory.mutate(
+              { storyId: state.story, closeItems: !!closeItems },
+              {
+                onSuccess: (n) =>
+                  toast({
+                    title: 'Story resolved',
+                    description: closeItems ? `${n} item(s) marked done` : 'Items left untouched',
+                  }),
+              },
+            );
+          } else {
+            updateStory.mutate({
+              storyId: state.story,
+              patch: { status: status as StoryStatus },
+            });
+          }
+        }}
+        onPriorityChange={(priority) =>
+          state.story && updateStory.mutate({ storyId: state.story, patch: { priority } })
+        }
+        onAssign={(assigneeId) =>
+          state.story &&
+          updateStory.mutate({ storyId: state.story, patch: { assignee_id: assigneeId } })
+        }
+        onAddLabel={(label) => {
+          if (!state.story || !activeStoryBundle) return;
+          const next = Array.from(new Set([...(activeStoryBundle.story.labels ?? []), label]));
+          updateStory.mutate({ storyId: state.story, patch: { labels: next } });
+        }}
+        onRemoveLabel={(label) => {
+          if (!state.story || !activeStoryBundle) return;
+          const next = (activeStoryBundle.story.labels ?? []).filter((l) => l !== label);
+          updateStory.mutate({ storyId: state.story, patch: { labels: next } });
+        }}
+        onRemoveMember={(submissionId) =>
+          state.story &&
+          removeStoryMembers.mutate({ storyId: state.story, submissionIds: [submissionId] })
+        }
+        onOpenMember={(id, ctype) => {
+          if (ctype === 'feedback') {
+            update({ tab: 'community', story: null, sel: id });
+          } else {
+            update({ tab: 'errors', story: null });
+          }
+        }}
+      />
 
       <FeedbackDetailDrawer
         open={drawerOpen && tabValue !== 'errors'}
@@ -847,6 +1103,8 @@ export default function AdminFeedback() {
         canonical={
           selected?.duplicate_of ? itemsById[selected.duplicate_of] ?? null : null
         }
+        parentStory={selected ? submissionStoryMap[selected.id] ?? null : null}
+        onOpenStory={(storyId) => update({ tab: 'stories', story: storyId, sel: null })}
         onOpenPartner={(id) => update({ sel: id })}
         onMergeDuplicate={(args) => mergeDuplicate.mutate(args)}
         onDismissDuplicate={(id) => dismissSuggestion.mutate(id)}

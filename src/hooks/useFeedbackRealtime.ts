@@ -32,12 +32,36 @@ export function useFeedbackRealtime(viewingId: string | null) {
       }, 500);
     };
 
+    const invalidateStories = () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['admin-feedback-stories'] });
+        queryClient.invalidateQueries({ queryKey: ['admin-feedback-story-map'] });
+        queryClient.invalidateQueries({ queryKey: ['admin-feedback-story-suggestions'] });
+      }, 500);
+    };
+
     const dbChannel = supabase
       .channel('admin-feedback-db')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'community_submissions' },
         invalidateDebounced,
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'feedback_stories' },
+        invalidateStories,
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'feedback_story_members' },
+        invalidateStories,
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'feedback_story_suggestions' },
+        invalidateStories,
       )
       .subscribe();
 

@@ -8,9 +8,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
   computeBalances,
+  convertAmount,
   suggestSettlements,
   type ExpenseItem,
 } from '@/utils/settleUp';
+import { useFxRates } from '@/hooks/useFxRates';
 import type { TripMember } from '@/hooks/useTrips';
 
 interface Props {
@@ -51,24 +53,42 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
     },
   });
 
+  const { data: fxRates } = useFxRates();
+
   const memberLookup = useMemo(() => {
     const m = new Map<string, TripMember>();
     for (const member of members) m.set(member.user_id, member);
     return m;
   }, [members]);
 
+  // Convert every item into the trip's default currency before balancing.
+  // Items in unknown currencies (or when fx_rates hasn't loaded) are
+  // skipped and counted so the UI can disclose them.
   const { balances, settlements, skippedCount } = useMemo(() => {
-    const eligible = (items ?? []).filter((i) => i.currency === defaultCurrency);
-    const skipped = (items ?? []).length - eligible.length;
-    const expenses: ExpenseItem[] = eligible.map((i) => ({
-      paid_by: i.paid_by,
-      split_among: i.split_among ?? [],
-      amount: Number(i.amount),
-    }));
+    let skipped = 0;
+    const expenses: ExpenseItem[] = [];
+    const rates = fxRates ?? new Map<string, number>();
+    for (const i of items ?? []) {
+      const converted = convertAmount(
+        Number(i.amount),
+        i.currency,
+        defaultCurrency,
+        rates,
+      );
+      if (converted == null) {
+        skipped += 1;
+        continue;
+      }
+      expenses.push({
+        paid_by: i.paid_by,
+        split_among: i.split_among ?? [],
+        amount: converted,
+      });
+    }
     const b = computeBalances(expenses);
     const s = suggestSettlements(b);
     return { balances: b, settlements: s, skippedCount: skipped };
-  }, [items, defaultCurrency]);
+  }, [items, defaultCurrency, fxRates]);
 
   if (isLoading) return null;
 

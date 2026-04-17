@@ -6,12 +6,12 @@ import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
-import { ChevronUp, Clock, Github, Camera, AlertTriangle } from 'lucide-react';
+import { ChevronUp, Clock, Github, Camera, AlertTriangle, Layers } from 'lucide-react';
 import { feedbackCategoryMap } from '@/config/feedbackCategories';
 import { timeAgo } from '@/utils/timezone';
 import { priorityFor } from './constants';
 import { latestHandoff } from '@/hooks/useFeedbackHandoff';
-import type { AdminProfile, FeedbackSubmission } from './types';
+import type { AdminProfile, FeedbackSubmission, SubmissionStoryRef } from './types';
 
 const HANDOFF_CHIP: Record<string, { label: string; color: string; bg: string }> = {
   sent: { label: 'Sent', color: '#fff', bg: '#3b82f6' },
@@ -27,6 +27,8 @@ interface Props {
   focused: boolean;
   watchers: AdminProfile[];
   assignee: AdminProfile | null;
+  story?: SubmissionStoryRef | null;
+  onStoryClick?: (storyId: string) => void;
   isNew?: boolean;
   onClick: () => void;
   onToggleSelect: (e: React.MouseEvent) => void;
@@ -44,6 +46,8 @@ export function FeedbackCard({
   focused,
   watchers,
   assignee,
+  story,
+  onStoryClick,
   isNew = false,
   onClick,
   onToggleSelect,
@@ -295,6 +299,45 @@ export function FeedbackCard({
               >
                 <AlertTriangle style={{ width: 10, height: 10 }} />
                 {errorCount}
+              </Box>
+            </Tooltip>
+          )}
+
+          {story && (
+            <Tooltip title={`Part of story: ${story.title}`}>
+              <Box
+                component="span"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStoryClick?.(story.story_id);
+                }}
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.25,
+                  px: 0.5,
+                  py: 0.125,
+                  fontSize: '0.55rem',
+                  bgcolor:
+                    story.status === 'resolved'
+                      ? 'action.selected'
+                      : 'hsl(var(--accent-warm) / 0.15)',
+                  color:
+                    story.status === 'resolved'
+                      ? 'text.secondary'
+                      : 'hsl(var(--accent-warm))',
+                  borderRadius: 0.5,
+                  flexShrink: 0,
+                  maxWidth: 90,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  cursor: onStoryClick ? 'pointer' : 'default',
+                  '&:hover': onStoryClick ? { opacity: 0.8 } : undefined,
+                }}
+              >
+                <Layers style={{ width: 9, height: 9 }} />
+                {story.title}
               </Box>
             </Tooltip>
           )}
