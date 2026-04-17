@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import {
-  Play, CheckCircle, XCircle, BarChart3, Database, Search, Clock, Loader2, SkipForward,
+  Play, CheckCircle, XCircle, BarChart3, Database, Search, Clock, Loader2, SkipForward, TrendingUp,
 } from 'lucide-react';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip as ChartTooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useUnifiedMonitor, type UnifiedRun } from '../hooks/useUnifiedMonitor';
 import {
   useStagingStats, useEventIngestStats,
@@ -151,6 +152,45 @@ export default function MonitorTab() {
 
   const totalStaging = stagingStats?.reduce((sum, s) => sum + s.count, 0) || 0;
 
+  // Duration histogram: bucket completed runs by duration
+  const durationHistogram = useMemo(() => {
+    const buckets = [
+      { range: '<1s', min: 0, max: 1000, count: 0 },
+      { range: '1–5s', min: 1000, max: 5000, count: 0 },
+      { range: '5–15s', min: 5000, max: 15_000, count: 0 },
+      { range: '15–60s', min: 15_000, max: 60_000, count: 0 },
+      { range: '1–5m', min: 60_000, max: 5 * 60_000, count: 0 },
+      { range: '>5m', min: 5 * 60_000, max: Infinity, count: 0 },
+    ];
+    for (const r of allRuns) {
+      if (r.status !== 'completed' || !r.duration_ms || r.duration_ms <= 0) continue;
+      for (const b of buckets) {
+        if (r.duration_ms >= b.min && r.duration_ms < b.max) { b.count++; break; }
+      }
+    }
+    return buckets;
+  }, [allRuns]);
+
+  // Throughput over time: runs per hour for last 24h
+  const throughputData = useMemo(() => {
+    const now = Date.now();
+    const hours: Array<{ hour: string; completed: number; failed: number }> = [];
+    for (let i = 23; i >= 0; i--) {
+      const start = now - (i + 1) * 60 * 60 * 1000;
+      const end = now - i * 60 * 60 * 1000;
+      const hour = new Date(end).getHours();
+      let completed = 0, failed = 0;
+      for (const r of allRuns) {
+        const t = r.started_at ? new Date(r.started_at).getTime() : 0;
+        if (t < start || t > end) continue;
+        if (r.status === 'completed') completed++;
+        else if (r.status === 'failed' || r.status === 'dead_letter') failed++;
+      }
+      hours.push({ hour: `${hour}h`, completed, failed });
+    }
+    return hours;
+  }, [allRuns]);
+
   const filteredRuns = useMemo(() => {
     return allRuns.filter(r => {
       if (typeFilter !== 'all' && r.type !== typeFilter) return false;
@@ -180,6 +220,51 @@ export default function MonitorTab() {
           <StatCard icon={XCircle} color="text-destructive" value={stats.failed} label="Failed" />
           <StatCard icon={Database} color="text-indigo-600" value={totalStaging} label="Staging Items" />
           <StatCard icon={BarChart3} color="text-amber-600" value={stats.total} label="Total Runs" />
+        </div>
+
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="border border-border rounded-md bg-background overflow-hidden">
+            <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <BarChart3 className="h-3.5 w-3.5" />
+              Run duration distribution
+            </div>
+            <div className="p-3" style={{ height: 180 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={durationHistogram} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
+                  <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="range" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <ChartTooltip
+                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 6, fontSize: 11 }}
+                    cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
+                  />
+                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="border border-border rounded-md bg-background overflow-hidden">
+            <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5" />
+              Throughput (last 24h)
+            </div>
+            <div className="p-3" style={{ height: 180 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={throughputData} margin={{ top: 8, right: 8, bottom: 8, left: -16 }}>
+                  <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="hour" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={2} />
+                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <ChartTooltip
+                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 6, fontSize: 11 }}
+                  />
+                  <Line type="monotone" dataKey="completed" stroke="rgb(22 163 74)" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="failed" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
         {/* Per-entity ingest tables */}

@@ -20,19 +20,21 @@ const SHORTCUTS: { category: string; items: { keys: string[]; desc: string }[] }
   {
     category: 'Canvas',
     items: [
+      { keys: [MOD, 'Z'], desc: 'Undo' },
+      { keys: [MOD, 'Shift', 'Z'], desc: 'Redo' },
+      { keys: [MOD, 'D'], desc: 'Duplicate selected node' },
+      { keys: [MOD, 'L'], desc: 'Auto-layout' },
+      { keys: [MOD, 'F'], desc: 'Find node on canvas' },
       { keys: ['Delete'], desc: 'Remove selected node' },
-      { keys: ['Backspace'], desc: 'Remove selected node' },
       { keys: ['Esc'], desc: 'Deselect / close config panel' },
       { keys: [MOD, 'Scroll'], desc: 'Zoom in/out' },
-      { keys: ['Drag'], desc: 'Pan canvas' },
     ],
   },
   {
-    category: 'Templates & Import',
+    category: 'Add',
     items: [
-      { keys: [MOD, 'K'], desc: 'Open template library' },
-      { keys: [MOD, 'E'], desc: 'Export pipeline' },
-      { keys: [MOD, 'I'], desc: 'Import pipeline' },
+      { keys: [MOD, 'K'], desc: 'Quick-add node' },
+      { keys: ['Drag'], desc: 'Drag node from palette' },
     ],
   },
   {

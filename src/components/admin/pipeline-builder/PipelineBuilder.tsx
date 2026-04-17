@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check, LayoutGrid, Undo2, Redo2, Search, AlertCircle, Command } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -34,6 +35,9 @@ import RunStatsBar from './panels/RunStatsBar';
 import CanvasEmptyState from './panels/CanvasEmptyState';
 import MultiSelectActionBar from './panels/MultiSelectActionBar';
 import CanvasControls from './panels/CanvasControls';
+import FindNodePalette from './panels/FindNodePalette';
+import PipelineDiffDialog from './panels/PipelineDiffDialog';
+import VersionHistoryDialog from './panels/VersionHistoryDialog';
 import { autoLayout } from './utils/autoLayout';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useDraftAutosave } from './hooks/useDraftAutosave';
@@ -711,11 +715,11 @@ function PipelineBuilderInner() {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Toolbar */}
           <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-background shrink-0 z-10">
-            <select
-              value={selectedPipelineId ?? ''}
-              onChange={(e) => {
+            <Select
+              value={selectedPipelineId ?? '__new__'}
+              onValueChange={(value) => {
                 if (isDirty && !window.confirm('Unsaved changes will be lost. Continue?')) return;
-                const id = e.target.value || undefined;
+                const id = value === '__new__' ? undefined : value;
                 setSelectedPipelineId(id);
                 setViewingRunId(null);
                 if (id) {
@@ -725,15 +729,23 @@ function PipelineBuilderInner() {
                   setParams(prev => { const next = new URLSearchParams(prev); next.delete('pipeline'); return next; });
                 }
               }}
-              className="h-8 px-2 border border-border rounded-md text-xs min-w-[220px] bg-background"
             >
-              <option value="">-- New pipeline --</option>
-              {pipelineList?.map(p => (
-                <option key={p.id} value={p.id}>
-                  {p.is_enabled ? '' : '(off) '}{p.display_name || p.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-8 text-xs min-w-[240px] max-w-[280px]">
+                <SelectValue placeholder="Select pipeline..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__new__" className="text-xs italic text-muted-foreground">— New pipeline —</SelectItem>
+                {pipelineList?.map(p => (
+                  <SelectItem key={p.id} value={p.id} className="text-xs">
+                    <span className="flex items-center gap-1.5">
+                      {!p.is_enabled && <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground" title="disabled" />}
+                      {p.is_enabled && <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500" title="enabled" />}
+                      {p.display_name || p.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               size="sm"
               variant="ghost"
@@ -777,6 +789,33 @@ function PipelineBuilderInner() {
                 <span className="ml-1 text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘S' : 'Ctrl+S'}</span>
               </TooltipContent>
             </Tooltip>
+            {isDirty && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 text-xs text-muted-foreground hover:text-destructive"
+                    onClick={() => {
+                      if (!window.confirm('Discard all unsaved changes and reload from saved version?')) return;
+                      if (selectedPipelineId && pipelineList && nodeTypeList) {
+                        const def = pipelineList.find(p => p.id === selectedPipelineId);
+                        if (def) {
+                          loadPipeline(def, nodeTypeList);
+                          setIsDirty(false);
+                          undoRedo.reset();
+                          toast({ title: 'Changes discarded' });
+                        }
+                      }
+                    }}
+                  >
+                    <Undo2 className="h-3.5 w-3.5 mr-1" />
+                    Discard
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="text-xs">Discard unsaved changes</TooltipContent>
+              </Tooltip>
+            )}
             <Button size="sm" variant="outline" onClick={() => handleRun({ dryRun: true })} disabled={isRunning}>
               <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
               Dry Run
@@ -827,6 +866,38 @@ function PipelineBuilderInner() {
               </TooltipTrigger>
               <TooltipContent className="text-xs">Quick-add node <span className="ml-1 text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}</span></TooltipContent>
             </Tooltip>
+            <PipelineDiffDialog
+              currentNodes={nodes}
+              currentEdges={edges}
+              savedDef={(() => {
+                const def = pipelineList?.find(p => p.id === selectedPipelineId);
+                if (!def) return null;
+                return { nodes: (def.nodes as Node[]) || [], edges: (def.edges as Edge[]) || [] };
+              })()}
+            />
+            <VersionHistoryDialog
+              pipelineId={selectedPipelineId}
+              currentVersion={pipelineList?.find(p => p.id === selectedPipelineId)?.version}
+              onRevert={(v) => {
+                if (!nodeTypeList) return;
+                undoRedo.commitNow();
+                // Hydrate into canvas shape via loadPipeline using the versioned snapshot
+                loadPipeline({
+                  id: v.pipeline_id,
+                  name: v.name,
+                  display_name: v.display_name,
+                  description: v.description,
+                  nodes: v.nodes,
+                  edges: v.edges,
+                  schedule: v.schedule,
+                  is_enabled: true,
+                  is_template: false,
+                  version: v.version,
+                } as Parameters<typeof loadPipeline>[0], nodeTypeList);
+                setIsDirty(true);
+                toast({ title: `Reverted to v${v.version}`, description: 'Click Save to persist' });
+              }}
+            />
             <TemplateLibrary
               selectedNodes={selectedForTemplate.nodes}
               selectedEdges={selectedForTemplate.edges}
@@ -1056,6 +1127,14 @@ function PipelineBuilderInner() {
           <QuickAddPalette
             nodeTypes={nodeTypeList}
             onAdd={handleQuickAdd}
+          />
+        )}
+
+        {/* Find node on canvas (Cmd+F) */}
+        {nodes.length > 0 && (
+          <FindNodePalette
+            nodes={nodes}
+            onSelect={setSelectedNodeId}
           />
         )}
         {/* Render a hidden trigger to listen for Cmd+K from CanvasEmptyState and toolbar */}
