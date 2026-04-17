@@ -63,6 +63,27 @@ interface UseExploreMapDataOptions {
 }
 
 export function useExploreMapData({ enabledLayers, viewport, filters }: UseExploreMapDataOptions) {
+  // ── Calculate viewport bounds for geographic filtering ────────────────────
+  // At zoom level 5+, restrict queries to visible map bounds
+  // Below zoom 5, fetch globally to show broader context
+  const shouldUseBounds = viewport.zoom >= 5;
+  const viewportBounds = useMemo(() => {
+    if (!shouldUseBounds) return undefined;
+
+    // Calculate bounds from viewport center and zoom
+    // Simplified: at zoom level 5, roughly ±40 degrees; adjust accordingly
+    const zoomFactor = Math.pow(2, 5 - Math.max(viewport.zoom, 1));
+    const latDelta = 80 / zoomFactor;
+    const lngDelta = 180 / zoomFactor;
+
+    return {
+      minLat: Math.max(-90, viewport.center[1] - latDelta),
+      maxLat: Math.min(90, viewport.center[1] + latDelta),
+      minLng: viewport.center[0] - lngDelta,
+      maxLng: viewport.center[0] + lngDelta,
+    };
+  }, [shouldUseBounds, viewport.center[0], viewport.center[1], viewport.zoom]);
+
   // ── Venues ─────────────────────────────────────────────────────────────────
   const venuesEnabled = enabledLayers.includes('venues');
   const { venues: rawVenues = [], isFetching: venuesFetching, fetchVenues } = useVenues(false);
@@ -70,13 +91,14 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   useEffect(() => {
     if (!venuesEnabled) return;
     fetchVenues({
-      limit: 500,
+      limit: shouldUseBounds ? 200 : 500, // Reduce limit when using bounds
       ...(filters?.search ? { search: filters.search } : {}),
       ...(filters?.category ? { category: filters.category } : {}),
       ...(filters?.tags?.length ? { tags: filters.tags } : {}),
+      ...(viewportBounds ? { bounds: viewportBounds } : {}),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [venuesEnabled, filters?.search, filters?.category, JSON.stringify(filters?.tags)]);
+  }, [venuesEnabled, filters?.search, filters?.category, JSON.stringify(filters?.tags), shouldUseBounds, viewportBounds];
 
   const venueMarkers = useMemo<MapMarker[]>(() => {
     if (!venuesEnabled) return [];
@@ -102,12 +124,13 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   useEffect(() => {
     if (!eventsEnabled) return;
     fetchEvents({
-      limit: 300,
+      limit: shouldUseBounds ? 150 : 300,
       ...(filters?.search ? { search: filters.search } : {}),
       ...(filters?.dateRange ? { dateRange: filters.dateRange } : {}),
+      ...(viewportBounds ? { bounds: viewportBounds } : {}),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventsEnabled, filters?.search, JSON.stringify(filters?.dateRange)]);
+  }, [eventsEnabled, filters?.search, JSON.stringify(filters?.dateRange), shouldUseBounds, viewportBounds];
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];
