@@ -9,6 +9,14 @@
  *
  * URL: GET https://<project>.functions.supabase.co/trip-ical?token=<token>
  *
+ * Optional query params:
+ *   category=places|reservations|events|all  (default: all)
+ *     Filters which VEVENTs are emitted so users can subscribe to a single
+ *     category in their calendar app instead of one giant feed.
+ *     - places: itinerary stops (venues + custom places)
+ *     - events: trip_places that resolve to an `events` row (concerts, parties, etc.)
+ *     - reservations: hotel/flight/etc. reservations
+ *
  * Output: text/calendar; charset=utf-8 with one VEVENT per trip_place
  * and one per reservation. CALDAV name + description are set from
  * trip.title + trip.description.
@@ -117,6 +125,13 @@ serve(async (req) => {
     return new Response('token query parameter required', { status: 400, headers: cors });
   }
 
+  const categoryParam = (url.searchParams.get('category') ?? 'all').toLowerCase();
+  const validCategories = new Set(['all', 'places', 'events', 'reservations']);
+  if (!validCategories.has(categoryParam)) {
+    return new Response('invalid category', { status: 400, headers: cors });
+  }
+  const category = categoryParam as 'all' | 'places' | 'events' | 'reservations';
+
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
   // Resolve the share token to a trip_id. trip_shares has RLS but service
@@ -173,7 +188,11 @@ serve(async (req) => {
     'PRODID:-//queer.guide//Trip iCal//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    fold(`X-WR-CALNAME:${escapeICS(trip.title)}`),
+    fold(
+      `X-WR-CALNAME:${escapeICS(
+        category === 'all' ? trip.title : `${trip.title} — ${category}`,
+      )}`,
+    ),
     'X-WR-TIMEZONE:UTC',
   ];
   if (trip.description) {
@@ -183,7 +202,13 @@ serve(async (req) => {
   const now = toICSDateTime(new Date().toISOString());
 
   // Places. If no start_time, anchor as an all-day event on the day's date.
+  // Filter by category: 'places' excludes places that are events,
+  // 'events' includes only places resolving to events. 'all' includes both.
   for (const p of trip.trip_places ?? []) {
+    const isEvent = !!p.events;
+    if (category === 'reservations') break;
+    if (category === 'places' && isEvent) continue;
+    if (category === 'events' && !isEvent) continue;
     const name = placeName(p);
     const date = (p.day_id && dayDate.get(p.day_id)) || null;
 
@@ -216,8 +241,9 @@ serve(async (req) => {
     lines.push('END:VEVENT');
   }
 
-  // Reservations.
-  for (const r of reservations) {
+  // Reservations. Skipped entirely if caller asked for places/events only.
+  const includeReservations = category === 'all' || category === 'reservations';
+  for (const r of includeReservations ? reservations : []) {
     if (!r.start_at && !r.end_at) continue;
 
     lines.push('BEGIN:VEVENT');
@@ -249,7 +275,7 @@ serve(async (req) => {
       ...cors,
       'Content-Type': 'text/calendar; charset=utf-8',
       'Cache-Control': 'public, max-age=300', // 5 min — subscriptions poll periodically
-      'Content-Disposition': `inline; filename="trip-${tripId}.ics"`,
+      'Content-Disposition': `inline; filename="trip-${tripId}-${category}.ics"`,
     },
   });
 });
