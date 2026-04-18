@@ -15,7 +15,7 @@ describe('useFeedbackUrlState', () => {
     const { result } = renderHook(() => useFeedbackUrlState(), {
       wrapper: wrapper('/admin/feedback'),
     });
-    expect(result.current.state.tab).toBe('community');
+    expect(result.current.state.tab).toBe('stories');
     expect(result.current.state.q).toBe('');
     expect(result.current.state.priority).toBe(null);
     expect(result.current.state.hasScreenshot).toBe(false);
@@ -25,10 +25,10 @@ describe('useFeedbackUrlState', () => {
   it('parses a full URL round-trip', () => {
     const { result } = renderHook(() => useFeedbackUrlState(), {
       wrapper: wrapper(
-        '/admin/feedback?tab=errors&q=crash&category=bug&status=new&priority=0&hasScreenshot=1&hasErrors=1&sel=abc123',
+        '/admin/feedback?tab=spam&q=crash&category=bug&status=new&priority=0&hasScreenshot=1&hasErrors=1&sel=abc123',
       ),
     });
-    expect(result.current.state.tab).toBe('errors');
+    expect(result.current.state.tab).toBe('spam');
     expect(result.current.state.q).toBe('crash');
     expect(result.current.state.category).toBe('bug');
     expect(result.current.state.status).toBe('new');
@@ -53,13 +53,13 @@ describe('useFeedbackUrlState', () => {
   it('clearFilters() wipes filters but keeps tab/sel', () => {
     const { result } = renderHook(() => useFeedbackUrlState(), {
       wrapper: wrapper(
-        '/admin/feedback?tab=errors&q=x&category=bug&sel=abc',
+        '/admin/feedback?tab=spam&q=x&category=bug&sel=abc',
       ),
     });
     act(() => result.current.clearFilters());
     expect(result.current.state.q).toBe('');
     expect(result.current.state.category).toBe(null);
-    expect(result.current.state.tab).toBe('errors');
+    expect(result.current.state.tab).toBe('spam');
     expect(result.current.state.sel).toBe('abc');
   });
 
