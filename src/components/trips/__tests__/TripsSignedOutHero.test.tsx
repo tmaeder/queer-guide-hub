@@ -21,6 +21,49 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+// Stub the templates hook so the hero has deterministic preview cards
+// without hitting Supabase.
+vi.mock('@/hooks/useTripTemplates', () => ({
+  useTripTemplates: () => ({
+    data: [
+      {
+        id: 'seasonal:berlin-pride',
+        title: 'Pride Week Berlin',
+        cities: 'Berlin',
+        cityIds: [],
+        days: 7,
+        currency: 'EUR',
+        coverImageUrl: null,
+        gradient: 'linear-gradient(135deg, #7C3AED 0%, #DB2777 100%)',
+        source: 'seasonal',
+      },
+      {
+        id: 'seasonal:barcelona',
+        title: 'Barcelona Beach & Nightlife',
+        cities: 'Barcelona',
+        cityIds: [],
+        days: 4,
+        currency: 'EUR',
+        coverImageUrl: null,
+        gradient: 'linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)',
+        source: 'seasonal',
+      },
+      {
+        id: 'seasonal:bangkok-phuket',
+        title: 'Bangkok & Phuket LGBTQ+ Explorer',
+        cities: 'Bangkok, Phuket',
+        cityIds: [],
+        days: 10,
+        currency: 'THB',
+        coverImageUrl: null,
+        gradient: 'linear-gradient(135deg, #10B981 0%, #6366F1 100%)',
+        source: 'seasonal',
+      },
+    ],
+    isLoading: false,
+  }),
+}));
+
 import { TripsSignedOutHero } from '../TripsSignedOutHero';
 
 describe('TripsSignedOutHero', () => {
@@ -50,16 +93,12 @@ describe('TripsSignedOutHero', () => {
       ).toBeInTheDocument();
     });
 
-    it('renders all 3 sample trip cards with their keys', () => {
+    it('renders all 3 sample trip cards from the templates hook', () => {
       renderWithProviders(<TripsSignedOutHero />);
+      expect(screen.getByText('Pride Week Berlin')).toBeInTheDocument();
+      expect(screen.getByText('Barcelona Beach & Nightlife')).toBeInTheDocument();
       expect(
-        screen.getByText('trips.signedOut.samples.berlin'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText('trips.signedOut.samples.barcelona'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText('trips.signedOut.samples.bangkok'),
+        screen.getByText('Bangkok & Phuket LGBTQ+ Explorer'),
       ).toBeInTheDocument();
     });
   });
