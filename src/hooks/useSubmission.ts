@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { SubmissionTypeConfig } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
+import { ensureProtocol } from '@/utils/ensureProtocol';
 
 export function useSubmission(config: SubmissionTypeConfig) {
   const { user } = useAuth();
@@ -60,10 +61,14 @@ export function useSubmission(config: SubmissionTypeConfig) {
         }
 
         if (fieldConfig.type === 'url' && typeof value === 'string' && value.trim()) {
+          const normalized = ensureProtocol(value) as string;
           try {
-            // Try as-is first, then with https:// if it doesn't have a protocol
-            const testUrl = /^https?:\/\//i.test(value) ? value : `https://${value}`;
-            new URL(testUrl);
+            new URL(normalized);
+            // Persist the protocol-prefixed value so downstream consumers
+            // (anchors, admin review, RSS) see a real URL.
+            if (normalized !== value) {
+              setData((prev) => ({ ...prev, [fieldName]: normalized }));
+            }
           } catch {
             newErrors[fieldName] = `Enter a valid website (e.g., example.com or https://example.com)`;
           }

@@ -50,13 +50,16 @@ export const useProfile = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .update({
-          ...sanitized,
-          updated_at: new Date().toISOString()
-        })
-        .eq("user_id", user.id)
+        .upsert(
+          {
+            user_id: user.id,
+            ...sanitized,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" },
+        )
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       setProfile(data);

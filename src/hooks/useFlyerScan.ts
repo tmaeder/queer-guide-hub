@@ -7,6 +7,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { extractFileContent, isAcceptedFile } from '@/lib/fileExtractors';
+import { ensureProtocol } from '@/utils/ensureProtocol';
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -228,8 +229,8 @@ export function useFlyerScan() {
         if (!selectedVenueId && getVal('country')) formData.country = getVal('country');
         if (getVal('organizer_name')) formData.organizer_name = getVal('organizer_name');
         if (getVal('organizer_contact')) formData.organizer_contact = getVal('organizer_contact');
-        if (getVal('ticket_url')) formData.ticket_url = getVal('ticket_url');
-        if (getVal('website')) formData.website = getVal('website');
+        if (getVal('ticket_url')) formData.ticket_url = ensureProtocol(getVal('ticket_url'));
+        if (getVal('website')) formData.website = ensureProtocol(getVal('website'));
         if (getVal('is_free') !== undefined) formData.is_free = getVal('is_free');
 
         // Smart pricing: if presale exists, use it; otherwise use box office
@@ -237,10 +238,11 @@ export function useFlyerScan() {
         const boxOfficePrice = getVal('price_box_office');
         const primaryPrice = presalePrice || boxOfficePrice;
 
+        const toNum = (v: unknown) =>
+          typeof v === 'number' ? v : parseFloat((v as string).replace(',', '.'));
+
         if (primaryPrice) {
-          const priceNum = typeof primaryPrice === 'number'
-            ? primaryPrice
-            : parseFloat((primaryPrice as string).replace(',', '.'));
+          const priceNum = toNum(primaryPrice);
           if (!isNaN(priceNum) && priceNum > 0 && priceNum < 10000) {
             formData.price_min = priceNum;
           }
@@ -248,16 +250,33 @@ export function useFlyerScan() {
 
         // If both presale and box office exist and differ, use as price range
         if (presalePrice && boxOfficePrice) {
-          const presaleNum = typeof presalePrice === 'number'
-            ? presalePrice
-            : parseFloat((presalePrice as string).replace(',', '.'));
-          const boxOfficeNum = typeof boxOfficePrice === 'number'
-            ? boxOfficePrice
-            : parseFloat((boxOfficePrice as string).replace(',', '.'));
+          const presaleNum = toNum(presalePrice);
+          const boxOfficeNum = toNum(boxOfficePrice);
 
           if (!isNaN(presaleNum) && !isNaN(boxOfficeNum)) {
             formData.price_min = Math.min(presaleNum, boxOfficeNum);
             formData.price_max = Math.max(presaleNum, boxOfficeNum);
+          }
+        }
+
+        // Preserve the labelled presale/door breakdown — the form has no
+        // dedicated fields, so append to description instead of dropping it.
+        if (presalePrice || boxOfficePrice) {
+          const parts: string[] = [];
+          if (presalePrice) {
+            const n = toNum(presalePrice);
+            if (!isNaN(n)) parts.push(`Vorverkauf €${n}`);
+          }
+          if (boxOfficePrice) {
+            const n = toNum(boxOfficePrice);
+            if (!isNaN(n)) parts.push(`Abendkasse €${n}`);
+          }
+          if (parts.length) {
+            const note = parts.join(' / ');
+            const existing = (formData.description as string | undefined) ?? '';
+            if (!existing.includes(note)) {
+              formData.description = existing ? `${existing}\n\n${note}` : note;
+            }
           }
         }
 
@@ -272,7 +291,7 @@ export function useFlyerScan() {
         if (getVal('postal_code')) formData.postal_code = getVal('postal_code');
         if (getVal('phone')) formData.phone = getVal('phone');
         if (getVal('email')) formData.email = getVal('email');
-        if (getVal('website')) formData.website = getVal('website');
+        if (getVal('website')) formData.website = ensureProtocol(getVal('website'));
         if (getVal('instagram')) formData.instagram = getVal('instagram');
       }
 

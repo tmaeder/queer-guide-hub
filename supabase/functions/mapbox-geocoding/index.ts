@@ -114,11 +114,30 @@ serve(async (req) => {
       nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`;
     }
 
+    const acceptLanguage = req.headers.get('Accept-Language') || 'en';
+    const emptyResult = {
+      type: 'FeatureCollection',
+      features: [] as unknown[],
+    };
+
     const nominatimResponse = await fetch(nominatimUrl, {
-      headers: { 'User-Agent': 'queer.guide geocoding service' },
+      headers: {
+        'User-Agent': 'queer.guide geocoding service',
+        'Accept-Language': acceptLanguage,
+      },
     });
+
+    // Degrade gracefully on 3rd-party hiccup: return an empty feature collection
+    // so the autocomplete UI shows "no match" instead of "save failed".
     if (!nominatimResponse.ok) {
-      throw new Error(`Nominatim API error: ${nominatimResponse.status}`);
+      console.warn(`Nominatim API non-OK: ${nominatimResponse.status} for query "${query}"`);
+      return new Response(JSON.stringify(emptyResult), {
+        headers: {
+          ...buildCors(origin),
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=60',
+        },
+      });
     }
 
     const nominatimData = await nominatimResponse.json();
@@ -134,13 +153,18 @@ serve(async (req) => {
     };
 
     return new Response(JSON.stringify(response), {
-      headers: { ...buildCors(origin), 'Content-Type': 'application/json' },
+      headers: {
+        ...buildCors(origin),
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=86400',
+      },
     });
   } catch (error) {
     console.error('Error in geocoding function:', error);
+    // Same graceful degradation for parse/network errors.
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
+      JSON.stringify({ type: 'FeatureCollection', features: [] }),
+      { status: 200, headers: { ...buildCors(origin), 'Content-Type': 'application/json' } }
     );
   }
 });

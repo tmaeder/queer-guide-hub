@@ -109,7 +109,7 @@ async function fetchVenuesInBbox(
       name: v.name ?? 'Venue',
       subtitle: v.category ?? '',
       color: LAYER_COLORS.venues,
-      linkTo: `/venues/${v.slug}`,
+      linkTo: v.slug ? `/venues/${v.slug}` : '',
       meta: JSON.stringify({
         city: v.city,
         country: v.country,
@@ -167,7 +167,7 @@ async function fetchEventsInBbox(
           name: e.title ?? 'Event',
           subtitle: dateStr,
           color: LAYER_COLORS.events,
-          linkTo: `/events/${e.slug}`,
+          linkTo: e.slug ? `/events/${e.slug}` : '',
           meta: JSON.stringify({
             startDate: e.start_date,
             eventType: e.event_type,
