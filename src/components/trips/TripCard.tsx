@@ -7,12 +7,14 @@ import AvatarGroup from '@mui/material/AvatarGroup';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { MoreVertical, Calendar, Luggage, MapPin, ShieldCheck, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { MoreVertical, Calendar, Luggage, MapPin, ShieldCheck, ShieldAlert, AlertTriangle, Pin, PinOff } from 'lucide-react';
 import Tooltip from '@mui/material/Tooltip';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Card, CardImage, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useActiveTrip } from '@/hooks/useActiveTrip';
+import { phaseStatusText, getTripPhase } from './tripPhase';
 import {
   Dialog,
   DialogContent,
@@ -51,8 +53,25 @@ export function TripCard({ trip }: Props) {
   const navigate = useLocalizedNavigate();
   const { deleteTrip } = useTripMutations();
   const { toast } = useToast();
+  const { activeTrip, setActiveTripId } = useActiveTrip();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const isActive = activeTrip?.id === trip.id;
+  const phase = getTripPhase(trip);
+  const phaseStatus = phaseStatusText(trip);
+
+  const handleTogglePin = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAnchorEl(null);
+    setActiveTripId(isActive ? null : trip.id);
+    toast({
+      title: isActive ? t('trips.toast.unpinned', 'Trip unpinned') : t('trips.toast.pinned', 'Trip pinned'),
+      description: isActive
+        ? t('trips.toast.unpinnedDescription', 'No longer your active trip context.')
+        : t('trips.toast.pinnedDescription', '{{title}} is now your active trip context.', { title: trip.title }),
+    });
+  };
 
   const dateRange =
     trip.start_date && trip.end_date
@@ -252,6 +271,15 @@ export function TripCard({ trip }: Props) {
                 {dateRange}
               </Typography>
             </Box>
+            {phase !== 'live' && phase !== 'memory' && (
+              <Typography
+                variant="caption"
+                sx={{ fontSize: '0.75rem', opacity: 0.7 }}
+                aria-label={t('trips.card.phaseStatus', 'Phase status')}
+              >
+                · {phaseStatus}
+              </Typography>
+            )}
             {isActiveToday && (
               <Box
                 component="button"
@@ -382,6 +410,16 @@ export function TripCard({ trip }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <MenuItem onClick={handleEdit}>{t('trips.card.edit')}</MenuItem>
+        <MenuItem onClick={handleTogglePin} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {isActive ? (
+            <PinOff style={{ width: 14, height: 14 }} aria-hidden />
+          ) : (
+            <Pin style={{ width: 14, height: 14 }} aria-hidden />
+          )}
+          {isActive
+            ? t('trips.card.unpin', 'Unpin from active')
+            : t('trips.card.pin', 'Set as active trip')}
+        </MenuItem>
         <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
           {t('trips.card.delete')}
         </MenuItem>

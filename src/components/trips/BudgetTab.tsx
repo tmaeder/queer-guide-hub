@@ -6,7 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
-import { Plus, Trash2, ArrowRight, Utensils, Car, Home, Ticket, ShoppingBag, Package, Wallet } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, Utensils, Car, Home, Ticket, ShoppingBag, Package, Wallet, Sparkles } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,6 +18,10 @@ import { useTripBudget, useBudgetMutations, type BudgetItem } from '@/hooks/useT
 import type { TripMember } from '@/hooks/useTrips';
 import { AddBudgetDialog } from './AddBudgetDialog';
 import { CostSplitSummary } from './CostSplitSummary';
+import { EstimateCostsDialog } from './EstimateCostsDialog';
+import { BookingActivitySection } from './BookingActivitySection';
+import { BundledCheckoutDialog } from './BundledCheckoutDialog';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Dialog,
   DialogContent,
@@ -54,10 +58,13 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const { toast } = useToast();
-  const { items, summary, isLoading } = useTripBudget(tripId);
+  const { items, summary, isLoading } = useTripBudget(tripId, defaultCurrency);
   const { deleteBudgetItem } = useBudgetMutations(tripId);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [estimateOpen, setEstimateOpen] = useState(false);
+  const [bundleOpen, setBundleOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const { user } = useAuth();
 
   // Brand-aligned palette (magenta first, then amber, plus a handful of
   // derived hues). No `warning`/`info`/`success` defaults — they clash with
@@ -156,10 +163,16 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
           >
             {t('trips.budget.emptyDescription')}
           </Typography>
-          <Button variant="brand" onClick={() => setDialogOpen(true)}>
-            <Plus size={16} style={{ marginRight: 6 }} />
-            {t('trips.budget.addExpense')}
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Button variant="brand" onClick={() => setDialogOpen(true)}>
+              <Plus size={16} style={{ marginRight: 6 }} />
+              {t('trips.budget.addExpense')}
+            </Button>
+            <Button variant="outline" onClick={() => setEstimateOpen(true)}>
+              <Sparkles size={16} style={{ marginRight: 6 }} />
+              {t('trips.budget.estimateCosts', { defaultValue: 'Estimate costs' })}
+            </Button>
+          </Box>
         </Box>
         <AddBudgetDialog
           open={dialogOpen}
@@ -167,6 +180,13 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
           tripId={tripId}
           members={members}
           defaultCurrency={defaultCurrency}
+        />
+        <EstimateCostsDialog
+          open={estimateOpen}
+          onClose={() => setEstimateOpen(false)}
+          tripId={tripId}
+          members={members}
+          currentUserId={user?.id}
         />
       </>
     );
@@ -209,20 +229,45 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               flexWrap: 'wrap',
             }}
           >
-            {Object.entries(summary.totalByCurrency).map(([cur, total]) => (
-              <Typography
-                key={cur}
-                sx={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: { xs: '1.5rem', md: '1.75rem' },
-                  fontWeight: 800,
-                  letterSpacing: '-0.02em',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {formatAmount(total, cur)}
-              </Typography>
-            ))}
+            {Object.keys(summary.totalByCurrency).length > 1 && summary.totalConverted != null ? (
+              <>
+                <Typography
+                  sx={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: { xs: '1.5rem', md: '1.75rem' },
+                    fontWeight: 800,
+                    letterSpacing: '-0.02em',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {formatAmount(summary.totalConverted, defaultCurrency)}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontVariantNumeric: 'tabular-nums' }}
+                >
+                  ({Object.entries(summary.totalByCurrency)
+                    .map(([cur, total]) => formatAmount(total, cur))
+                    .join(' + ')})
+                </Typography>
+              </>
+            ) : (
+              Object.entries(summary.totalByCurrency).map(([cur, total]) => (
+                <Typography
+                  key={cur}
+                  sx={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: { xs: '1.5rem', md: '1.75rem' },
+                    fontWeight: 800,
+                    letterSpacing: '-0.02em',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {formatAmount(total, cur)}
+                </Typography>
+              ))
+            )}
           </Box>
           <Typography
             variant="caption"
@@ -230,6 +275,8 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
             sx={{ display: 'block', mt: 0.5 }}
           >
             {t('trips.budget.itemsCount', { count: items.length })}
+            {summary.unconvertedCount > 0 &&
+              ` · ${t('trips.budget.unconvertedItems', { count: summary.unconvertedCount, defaultValue: '{{count}} item(s) skipped (unknown currency)' })}`}
           </Typography>
         </CardContent>
       </Card>
@@ -484,7 +531,24 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         </Box>
       )}
 
-      {/* FAB */}
+      {/* FABs */}
+      <Fab
+        size="small"
+        onClick={() => setEstimateOpen(true)}
+        sx={{
+          position: 'fixed',
+          bottom: 84,
+          right: 28,
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          border: '1px solid',
+          borderColor: 'divider',
+          '&:hover': { bgcolor: 'action.hover' },
+        }}
+        aria-label={t('trips.budget.estimateCosts', { defaultValue: 'Estimate costs' })}
+      >
+        <Sparkles size={18} />
+      </Fab>
       <Fab
         size="medium"
         onClick={() => setDialogOpen(true)}
@@ -508,10 +572,33 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         defaultCurrency={defaultCurrency}
       />
 
+      <EstimateCostsDialog
+        open={estimateOpen}
+        onClose={() => setEstimateOpen(false)}
+        tripId={tripId}
+        members={members}
+        currentUserId={user?.id}
+      />
+
       <CostSplitSummary
         tripId={tripId}
         members={members}
         defaultCurrency={defaultCurrency}
+      />
+
+      <Box sx={{ mt: 4 }}>
+        <Button variant="outline" size="sm" onClick={() => setBundleOpen(true)}>
+          <Wallet style={{ width: 14, height: 14, marginRight: 6 }} />
+          Bundle bookings
+        </Button>
+      </Box>
+
+      <BookingActivitySection tripId={tripId} />
+
+      <BundledCheckoutDialog
+        open={bundleOpen}
+        onOpenChange={setBundleOpen}
+        tripId={tripId}
       />
 
       {/* Delete confirmation */}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrips, useTrip, useTripMutations } from '@/hooks/useTrips';
+import { useActiveTrip } from '@/hooks/useActiveTrip';
 
 export interface AddToTripDialogProps {
   open: boolean;
@@ -38,8 +39,16 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
   const { toast } = useToast();
   const { data: trips, isLoading: tripsLoading } = useTrips();
   const { addPlace, createTrip } = useTripMutations();
+  const { activeTrip } = useActiveTrip();
 
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+
+  // Pre-select active trip when dialog opens
+  useEffect(() => {
+    if (open && activeTrip && !selectedTripId) {
+      setSelectedTripId(activeTrip.id);
+    }
+  }, [open, activeTrip, selectedTripId]);
   const [selectedDayId, setSelectedDayId] = useState<string>('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newTripTitle, setNewTripTitle] = useState('');

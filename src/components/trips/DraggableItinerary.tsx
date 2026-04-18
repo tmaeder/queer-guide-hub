@@ -260,6 +260,8 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
                 key={place.id}
                 place={place}
                 onDelete={handleDelete}
+                tripStartDate={trip.start_date}
+                tripEndDate={trip.end_date}
               />
             ))}
           </SortableContext>
@@ -505,6 +507,8 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
                       key={place.id}
                       place={place}
                       onDelete={handleDelete}
+                      tripStartDate={trip.start_date}
+                      tripEndDate={trip.end_date}
                     />
                   ))
                 )}

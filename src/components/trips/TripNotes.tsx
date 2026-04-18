@@ -35,7 +35,6 @@ interface Props {
 }
 
 export function TripNotes({ tripId }: Props) {
-  const {} = useAuth();
   const { toast } = useToast();
   const {
     data: notes,
