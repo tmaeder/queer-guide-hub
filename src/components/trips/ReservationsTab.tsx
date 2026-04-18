@@ -34,6 +34,7 @@ import {
   type Reservation,
 } from '@/hooks/useTripReservations';
 import { AddReservationDialog } from './AddReservationDialog';
+import { ReservationSuggestionsPanel } from './reservations/ReservationSuggestionsPanel';
 
 const TYPE_ICONS: Record<string, typeof Plane> = {
   flight: Plane,
@@ -143,6 +144,9 @@ export function ReservationsTab({ tripId }: Props) {
   if (items.length === 0) {
     return (
       <>
+        <Box sx={{ mb: 3 }}>
+          <ReservationSuggestionsPanel tripId={tripId} />
+        </Box>
         <Box
           sx={{
             textAlign: 'center',
@@ -385,6 +389,8 @@ export function ReservationsTab({ tripId }: Props) {
           </Box>
         );
       })}
+
+      <ReservationSuggestionsPanel tripId={tripId} />
 
       <Button
         variant="outline"

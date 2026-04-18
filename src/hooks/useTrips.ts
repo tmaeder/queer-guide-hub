@@ -16,6 +16,12 @@ export interface Trip {
   is_public: boolean;
   created_at: string;
   updated_at: string;
+  // Geo anchor (required for new trips via app-level validation; legacy rows may be null pre-backfill)
+  primary_city_id: string | null;
+  primary_country_id: string | null;
+  primary_city_name: string | null;
+  primary_country_code: string | null;
+  timezone: string | null;
 }
 
 export interface TripMember {
@@ -79,6 +85,12 @@ type CreateTripInput = {
   end_date?: string;
   currency?: string;
   cover_image_url?: string;
+  // Geo anchor — required for new trips (enforced client-side in CreateTripDialog)
+  primary_city_id: string;
+  primary_country_id: string;
+  primary_city_name?: string;
+  primary_country_code?: string;
+  timezone?: string;
 };
 
 type UpdateTripInput = Partial<CreateTripInput> & {

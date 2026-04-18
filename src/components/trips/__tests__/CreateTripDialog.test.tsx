@@ -38,7 +38,49 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: toastSpy }),
 }));
 
+// Stub the geo autocomplete — exposes a button that picks a fixed city/country
+// so tests can bypass the Supabase-backed search and focus on dialog logic.
+vi.mock('@/components/trips/create/CityCountryAutocomplete', () => ({
+  CityCountryAutocomplete: ({
+    onChange,
+  }: {
+    onChange: (v: {
+      cityId: string;
+      cityName: string;
+      countryId: string;
+      countryCode: string | null;
+      countryName: string;
+      timezone: string | null;
+    }) => void;
+  }) => (
+    <button
+      type="button"
+      data-testid="pick-geo"
+      onClick={() =>
+        onChange({
+          cityId: 'city-1',
+          cityName: 'Berlin',
+          countryId: 'country-1',
+          countryCode: 'DE',
+          countryName: 'Germany',
+          timezone: 'Europe/Berlin',
+        })
+      }
+    >
+      pick geo
+    </button>
+  ),
+}));
+
+vi.mock('@/utils/tripTracking', () => ({
+  trackTripEvent: vi.fn(),
+}));
+
 import { CreateTripDialog } from '../CreateTripDialog';
+
+const pickGeo = () => {
+  fireEvent.click(screen.getByTestId('pick-geo'));
+};
 
 describe('CreateTripDialog', () => {
   beforeEach(() => {
@@ -100,14 +142,11 @@ describe('CreateTripDialog', () => {
       expect(submit).toBeDisabled();
     });
 
-    it('enables submit once a title is entered', () => {
+    it('enables submit once a city/country is picked', () => {
       renderWithProviders(
         <CreateTripDialog open={true} onClose={vi.fn()} />,
       );
-      fireEvent.change(
-        screen.getByLabelText(/trips\.dialog\.create\.titleField/),
-        { target: { value: 'Pride Berlin 2026' } },
-      );
+      pickGeo();
       const submit = screen.getByRole('button', {
         name: 'trips.dialog.create.submit',
       });
@@ -174,6 +213,7 @@ describe('CreateTripDialog', () => {
       renderWithProviders(
         <CreateTripDialog open={true} onClose={onClose} />,
       );
+      pickGeo();
       fireEvent.change(
         screen.getByLabelText(/trips\.dialog\.create\.titleField/),
         { target: { value: '  Berlin Pride  ' } },
@@ -194,6 +234,10 @@ describe('CreateTripDialog', () => {
           title: 'Berlin Pride', // trimmed
           description: 'A fun week',
           currency: 'EUR',
+          primary_city_id: 'city-1',
+          primary_country_id: 'country-1',
+          primary_city_name: 'Berlin',
+          primary_country_code: 'DE',
         }),
       );
       await waitFor(() => {
@@ -210,10 +254,7 @@ describe('CreateTripDialog', () => {
       renderWithProviders(
         <CreateTripDialog open={true} onClose={vi.fn()} />,
       );
-      fireEvent.change(
-        screen.getByLabelText(/trips\.dialog\.create\.titleField/),
-        { target: { value: 'Berlin' } },
-      );
+      pickGeo();
       fireEvent.click(
         screen.getByRole('button', { name: 'trips.dialog.create.submit' }),
       );

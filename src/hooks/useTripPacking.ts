@@ -23,6 +23,9 @@ type CreatePackingInput = {
   name: string;
   category?: string;
   quantity?: number;
+  marketplace_listing_id?: string | null;
+  suggested_by?: 'user' | 'template' | 'marketplace_suggestion' | 'llm';
+  suggestion_reason?: string | null;
 };
 
 type UpdatePackingInput = Partial<Pick<PackingItem, 'name' | 'category' | 'quantity' | 'is_checked' | 'sort_order'>> & { id: string };
@@ -146,6 +149,9 @@ export function usePackingMutations(tripId: string) {
           name: input.name,
           category: input.category || 'other',
           quantity: input.quantity || 1,
+          marketplace_listing_id: input.marketplace_listing_id ?? null,
+          suggested_by: input.suggested_by ?? 'user',
+          suggestion_reason: input.suggestion_reason ?? null,
         })
         .select()
         .single();

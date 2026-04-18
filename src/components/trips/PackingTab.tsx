@@ -18,6 +18,7 @@ import {
   usePackingMutations,
   type PackingGroup,
 } from '@/hooks/useTripPacking';
+import { PackingMarketplaceSuggestions } from './packing/PackingMarketplaceSuggestions';
 
 const CATEGORY_ORDER = [
   'clothing',
@@ -435,6 +436,18 @@ export function PackingTab({ tripId }: Props) {
             </Card>
           );
         })}
+      </Box>
+
+      <Box
+        sx={{
+          mt: 4,
+          pt: 3,
+          borderTop: '1px solid',
+          borderColor: 'divider',
+          opacity: 0.95,
+        }}
+      >
+        <PackingMarketplaceSuggestions tripId={tripId} />
       </Box>
     </div>
   );
