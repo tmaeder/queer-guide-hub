@@ -1,7 +1,7 @@
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
+import Skeleton from '@mui/material/Skeleton';
 import { Clock, ArrowRight } from 'lucide-react';
 import { addMonths, startOfDay, addDays, format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,57 +10,16 @@ import { Button } from '@/components/ui/button';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations } from '@/hooks/useTrips';
-
-interface TripTemplate {
-  title: string;
-  cities: string;
-  days: number;
-  currency: string;
-  gradient: string;
-}
-
-const templates: TripTemplate[] = [
-  {
-    title: 'Pride Week Berlin',
-    cities: 'Berlin',
-    days: 7,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #7C3AED 0%, #DB2777 100%)',
-  },
-  {
-    title: 'Amsterdam & Cologne Pride Circuit',
-    cities: 'Amsterdam, Cologne',
-    days: 5,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
-  },
-  {
-    title: 'Barcelona Beach & Nightlife',
-    cities: 'Barcelona',
-    days: 4,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)',
-  },
-  {
-    title: 'Bangkok & Phuket LGBTQ+ Explorer',
-    cities: 'Bangkok, Phuket',
-    days: 10,
-    currency: 'THB',
-    gradient: 'linear-gradient(135deg, #10B981 0%, #6366F1 100%)',
-  },
-  {
-    title: 'NYC Pride & Beyond',
-    cities: 'New York City',
-    days: 5,
-    currency: 'USD',
-    gradient: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)',
-  },
-];
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
 
 export function TripTemplates() {
   const navigate = useLocalizedNavigate();
+  const { user } = useAuth();
   const { createTrip } = useTripMutations();
   const { toast } = useToast();
+  const { data: templates, isLoading } = useTripTemplates();
 
   const handleUseTemplate = (template: TripTemplate) => {
     const startDate = startOfDay(addMonths(new Date(), 1));
@@ -74,7 +33,21 @@ export function TripTemplates() {
         currency: template.currency,
       },
       {
-        onSuccess: (trip) => {
+        onSuccess: async (trip) => {
+          // Best-effort pre-population with the template's cities so the
+          // newly created trip already has anchor places on the map.
+          if (template.cityIds.length && user) {
+            const rows = template.cityIds.map((cityId, idx) => ({
+              trip_id: trip.id,
+              city_id: cityId,
+              sort_order: idx,
+              created_by: user.id,
+            }));
+            const { error } = await supabase.from('trip_places').insert(rows);
+            if (error) {
+              console.warn('[TripTemplates] trip_places seed failed', error);
+            }
+          }
           toast({ title: 'Trip created!', description: 'Start adding destinations.' });
           navigate(`/trips/${trip.id}`);
         },
@@ -109,79 +82,93 @@ export function TripTemplates() {
           gap: 2.5,
         }}
       >
-        {templates.map((template) => (
-          <ScrollReveal key={template.title} direction="up">
-            <Card
-              hoverable
-              onClick={() => handleUseTemplate(template)}
-              style={{ overflow: 'hidden' }}
-            >
-              <Box
-                sx={{
-                  background: template.gradient,
-                  px: 3,
-                  pt: 3,
-                  pb: 2.5,
-                  position: 'relative',
-                  minHeight: 120,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Box>
-                  <Typography
-                    variant="subtitle1"
+        {isLoading && !templates
+          ? Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton
+                key={i}
+                variant="rectangular"
+                sx={{ height: 220, borderRadius: 0 }}
+              />
+            ))
+          : (templates ?? []).map((template) => (
+              <ScrollReveal key={template.id} direction="up">
+                <Card
+                  hoverable
+                  onClick={() => handleUseTemplate(template)}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <Box
                     sx={{
-                      fontWeight: 700,
-                      color: 'common.white',
-                      lineHeight: 1.3,
-                      mb: 0.5,
+                      // Dark overlay over photo for text legibility, photo
+                      // over gradient fallback for missing/failed loads.
+                      backgroundImage: template.coverImageUrl
+                        ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${template.coverImageUrl}"), ${template.gradient}`
+                        : template.gradient,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      px: 3,
+                      pt: 3,
+                      pb: 2.5,
+                      position: 'relative',
+                      minHeight: 140,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
                     }}
                   >
-                    {template.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'rgba(255,255,255,0.8)' }}
-                  >
-                    {template.cities}
-                  </Typography>
-                </Box>
-                <Box sx={{ mt: 1.5 }}>
-                  <Badge
-                    variant="secondary"
-
-                  >
-                    <Box
-                      component="span"
-                      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-                    >
-                      <Clock style={{ width: 12, height: 12 }} />
-                      {template.days} days
+                    <Box>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          fontWeight: 700,
+                          color: 'common.white',
+                          lineHeight: 1.3,
+                          mb: 0.5,
+                          textShadow: template.coverImageUrl
+                            ? '0 1px 2px rgba(0,0,0,0.5)'
+                            : 'none',
+                        }}
+                      >
+                        {template.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: 'rgba(255,255,255,0.85)' }}
+                      >
+                        {template.cities}
+                      </Typography>
                     </Box>
-                  </Badge>
-                </Box>
-              </Box>
+                    <Box sx={{ mt: 1.5 }}>
+                      <Badge variant="secondary">
+                        <Box
+                          component="span"
+                          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+                        >
+                          <Clock style={{ width: 12, height: 12 }} />
+                          {template.days} days
+                        </Box>
+                      </Badge>
+                    </Box>
+                  </Box>
 
-              <CardContent>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-between"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUseTemplate(template);
-                  }}
-                  disabled={createTrip.isPending}
-                >
-                  Use Template
-                  <ArrowRight style={{ width: 16, height: 16 }} />
-                </Button>
-              </CardContent>
-            </Card>
-          </ScrollReveal>
-        ))}
+                  <CardContent>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-between"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUseTemplate(template);
+                      }}
+                      disabled={createTrip.isPending}
+                    >
+                      Use Template
+                      <ArrowRight style={{ width: 16, height: 16 }} />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
+            ))}
       </Box>
     </Box>
   );

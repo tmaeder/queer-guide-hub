@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
 import { ShieldCheck, Map as MapIcon, Users, Luggage, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AuthDialog } from '@/components/auth/AuthDialog';
+import { useTripTemplates } from '@/hooks/useTripTemplates';
 
 interface ValueBullet {
   icon: typeof ShieldCheck;
@@ -34,40 +36,14 @@ const bullets: ValueBullet[] = [
   },
 ];
 
-interface SampleTrip {
-  titleKey: string;
-  cities: string;
-  days: number;
-  gradient: string;
-}
-
-const sampleTrips: SampleTrip[] = [
-  {
-    titleKey: 'trips.signedOut.samples.berlin',
-    cities: 'Berlin',
-    days: 7,
-    gradient: 'linear-gradient(135deg, #7C3AED 0%, #DB2777 100%)',
-  },
-  {
-    titleKey: 'trips.signedOut.samples.barcelona',
-    cities: 'Barcelona',
-    days: 4,
-    gradient: 'linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)',
-  },
-  {
-    titleKey: 'trips.signedOut.samples.bangkok',
-    cities: 'Bangkok, Phuket',
-    days: 10,
-    gradient: 'linear-gradient(135deg, #10B981 0%, #6366F1 100%)',
-  },
-];
-
 export function TripsSignedOutHero() {
   const { t } = useTranslation();
   const theme = useTheme();
   const [authOpen, setAuthOpen] = useState(false);
   const brand = theme.palette.brand?.main || '#DB2777';
   const accent = theme.palette.accent?.main || '#F59E0B';
+  const { data: templates, isLoading } = useTripTemplates();
+  const previewTemplates = (templates ?? []).slice(0, 3);
 
   return (
     <Container sx={{ py: { xs: 4, md: 8 } }}>
@@ -200,83 +176,102 @@ export function TripsSignedOutHero() {
               position: 'relative',
             }}
           >
-            {sampleTrips.map((sample, i) => (
-              <Card
-                key={sample.titleKey}
-                style={{
-                  overflow: 'hidden',
-                  transform: `translateX(${i * 12}px) rotate(${(i - 1) * 0.8}deg)`,
-                  transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-                }}
-              >
-                <Box
-                  sx={{
-                    background: sample.gradient,
-                    p: 2.5,
-                    minHeight: 96,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        fontWeight: 700,
-                        color: 'common.white',
-                        lineHeight: 1.25,
-                      }}
-                    >
-                      {t(sample.titleKey)}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: 'rgba(255,255,255,0.85)' }}
-                    >
-                      {sample.cities}
-                    </Typography>
-                  </Box>
-                  <Box
+            {isLoading && previewTemplates.length === 0
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    variant="rectangular"
                     sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      alignSelf: 'flex-start',
-                      bgcolor: 'rgba(255,255,255,0.2)',
-                      color: 'common.white',
-                      px: 1,
-                      py: 0.25,
-                      borderRadius: 1,
-                      fontSize: '0.7rem',
-                      fontWeight: 600,
+                      height: 160,
+                      borderRadius: 0,
+                      transform: `translateX(${i * 12}px) rotate(${(i - 1) * 0.8}deg)`,
+                    }}
+                  />
+                ))
+              : previewTemplates.map((template, i) => (
+                  <Card
+                    key={template.id}
+                    style={{
+                      overflow: 'hidden',
+                      transform: `translateX(${i * 12}px) rotate(${(i - 1) * 0.8}deg)`,
+                      transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
                     }}
                   >
-                    <ShieldCheck style={{ width: 11, height: 11 }} />
-                    {t('trips.signedOut.safeLabel')}
-                  </Box>
-                </Box>
-                <CardContent>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                  >
                     <Box
-                      component="span"
                       sx={{
-                        display: 'inline-block',
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        bgcolor: accent,
+                        backgroundImage: template.coverImageUrl
+                          ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${template.coverImageUrl}"), ${template.gradient}`
+                          : template.gradient,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        p: 2.5,
+                        minHeight: 96,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
                       }}
-                    />
-                    {t('trips.signedOut.daysLabel', { count: sample.days })}
-                  </Typography>
-                </CardContent>
-              </Card>
-            ))}
+                    >
+                      <Box>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            fontWeight: 700,
+                            color: 'common.white',
+                            lineHeight: 1.25,
+                            textShadow: template.coverImageUrl
+                              ? '0 1px 2px rgba(0,0,0,0.5)'
+                              : 'none',
+                          }}
+                        >
+                          {template.title}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: 'rgba(255,255,255,0.85)' }}
+                        >
+                          {template.cities}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          alignSelf: 'flex-start',
+                          bgcolor: 'rgba(255,255,255,0.2)',
+                          color: 'common.white',
+                          px: 1,
+                          py: 0.25,
+                          borderRadius: 1,
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        <ShieldCheck style={{ width: 11, height: 11 }} />
+                        {t('trips.signedOut.safeLabel')}
+                      </Box>
+                    </Box>
+                    <CardContent>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: 'inline-block',
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            bgcolor: accent,
+                          }}
+                        />
+                        {t('trips.signedOut.daysLabel', { count: template.days })}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                ))}
           </Box>
         </Box>
       </Box>
