@@ -98,7 +98,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
       ...(viewportBounds ? { bounds: viewportBounds } : {}),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [venuesEnabled, filters?.search, filters?.category, JSON.stringify(filters?.tags), shouldUseBounds, viewportBounds];
+  }, [venuesEnabled, filters?.search, filters?.category, JSON.stringify(filters?.tags), shouldUseBounds, viewportBounds]);
 
   const venueMarkers = useMemo<MapMarker[]>(() => {
     if (!venuesEnabled) return [];
@@ -130,7 +130,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
       ...(viewportBounds ? { bounds: viewportBounds } : {}),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventsEnabled, filters?.search, JSON.stringify(filters?.dateRange), shouldUseBounds, viewportBounds];
+  }, [eventsEnabled, filters?.search, JSON.stringify(filters?.dateRange), shouldUseBounds, viewportBounds]);
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];

@@ -3,8 +3,9 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
-import { Plus, Map } from 'lucide-react';
+import { Plus, Map, Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTrips } from '@/hooks/useTrips';
 import { useAuth } from '@/hooks/useAuth';
 import { TripCard } from '@/components/trips/TripCard';
@@ -26,6 +27,7 @@ import { Button } from '@/components/ui/button';
 export default function TripsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useLocalizedNavigate();
   const { data: trips, isLoading, error, refetch } = useTrips();
   const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -82,15 +84,27 @@ export default function TripsPage() {
           </Typography>
           <Typography color="text.secondary">{t('trips.subtitle')}</Typography>
         </Box>
-        <Button
-          variant="brand"
-          size="lg"
-          onClick={() => setCreateOpen(true)}
-          style={{ paddingLeft: 20, paddingRight: 20 }}
-        >
-          <Plus style={{ width: 18, height: 18, marginRight: 6 }} />
-          {t('trips.create')}
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/trips/discover')}
+            style={{ paddingLeft: 16, paddingRight: 16 }}
+            aria-label={t('trips.discover.aria', 'Discover public trips')}
+          >
+            <Compass style={{ width: 18, height: 18, marginRight: 6 }} />
+            {t('trips.discover.button', 'Discover')}
+          </Button>
+          <Button
+            variant="brand"
+            size="lg"
+            onClick={() => setCreateOpen(true)}
+            style={{ paddingLeft: 20, paddingRight: 20 }}
+          >
+            <Plus style={{ width: 18, height: 18, marginRight: 6 }} />
+            {t('trips.create')}
+          </Button>
+        </Box>
       </Box>
 
       {/* Toolbar — hide while loading or completely empty */}

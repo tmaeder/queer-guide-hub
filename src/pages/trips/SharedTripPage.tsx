@@ -15,6 +15,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { TripMap } from '@/components/trips/TripMap';
 import { AuthDialog } from '@/components/auth/AuthDialog';
+import { PlaceReactionBar } from '@/components/trips/PlaceReactionBar';
+import { useTripReactions } from '@/hooks/useTripReactions';
+import { PlaceCommentThread } from '@/components/trips/PlaceCommentThread';
+import { useTripComments } from '@/hooks/useTripComments';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SharedTripData {
   trip: {
@@ -126,6 +131,34 @@ function SharedTripPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Reactions from all viewers on this shared trip — bucketed per place_id.
+  // Called unconditionally (before early returns) so hook order stays stable.
+  const { data: reactionsByPlace } = useTripReactions(data?.trip?.id);
+  const { data: commentsByPlace } = useTripComments(data?.trip?.id);
+  const { user: viewer } = useAuth();
+
+  // Log a view hit so the trip owner sees social proof. Fire-and-forget —
+  // a failed track call must not block render. Once per token per session
+  // (sessionStorage) so refreshes within a tab don't inflate the count.
+  useEffect(() => {
+    if (!token || !data?.trip) return;
+    const sessionKey = `share-view-${token}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, '1');
+
+    let refererHost: string | null = null;
+    try {
+      if (document.referrer) refererHost = new URL(document.referrer).host;
+    } catch {
+      // ignore — malformed referrer
+    }
+
+    void supabase.rpc(
+      'track_share_view' as never,
+      { p_token: token, p_referer_host: refererHost } as never,
+    );
+  }, [token, data?.trip]);
+
   // Set document title + OG-style meta for social previews. Client-side only
   // (we don't have SSR); search crawlers that execute JS will still pick it up.
   useEffect(() => {
@@ -147,6 +180,13 @@ function SharedTripPage() {
     setMeta('og:title', title, true);
     setMeta('og:description', desc, true);
     setMeta('og:type', 'article', true);
+    // Per-trip OG card rendered by the trip-og-image edge function.
+    // Crawlers that execute JS will pick this up; for full server-side
+    // injection we'd need prerender/SSR which is out of scope here.
+    const ogImage = `https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/trip-og-image?trip_id=${data.trip.id}`;
+    setMeta('og:image', ogImage, true);
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:image', ogImage);
   }, [data?.trip, t]);
 
   if (isLoading) return <PageLoadingState count={4} />;
@@ -383,17 +423,29 @@ function SharedTripPage() {
                       return (
                         <Box
                           key={place.id}
-                          className="flex items-center gap-2 py-1.5"
-                          sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
+                          sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 1 }}
                         >
-                          <MapPin size={14} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
-                          <div className="flex-1 min-w-0">
-                            <Typography variant="body2" fontWeight={500}>{name}</Typography>
-                            {place.custom_address && (
-                              <Typography variant="caption" color="text.secondary">{place.custom_address}</Typography>
-                            )}
-                          </div>
-                          {place.category && <Badge variant="outline">{place.category}</Badge>}
+                          <Box className="flex items-center gap-2">
+                            <MapPin size={14} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
+                            <div className="flex-1 min-w-0">
+                              <Typography variant="body2" fontWeight={500}>{name}</Typography>
+                              {place.custom_address && (
+                                <Typography variant="caption" color="text.secondary">{place.custom_address}</Typography>
+                              )}
+                            </div>
+                            {place.category && <Badge variant="outline">{place.category}</Badge>}
+                          </Box>
+                          <PlaceReactionBar
+                            tripId={trip.id}
+                            placeId={place.id}
+                            summary={reactionsByPlace?.get(place.id)}
+                          />
+                          <PlaceCommentThread
+                            tripId={trip.id}
+                            placeId={place.id}
+                            comments={commentsByPlace?.get(place.id)}
+                            isOwner={!!viewer && permissions?.canEdit}
+                          />
                         </Box>
                       );
                     })}

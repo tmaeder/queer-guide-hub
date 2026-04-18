@@ -46,6 +46,17 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: toastSpy }),
 }));
 
+vi.mock('@/hooks/useActiveTrip', () => ({
+  useActiveTrip: () => ({
+    activeTrip: null,
+    setActiveTripId: vi.fn(),
+    dismiss: vi.fn(),
+    undismiss: vi.fn(),
+    isDismissed: false,
+    candidateTrips: [],
+  }),
+}));
+
 import { TripCard } from '../TripCard';
 
 type TripProp = Parameters<typeof TripCard>[0]['trip'];

@@ -14,7 +14,6 @@ interface SecureProfileViewerProps {
 }
 
 export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileViewerProps) {
-  const {} = useAuth();
   const { isAdmin } = useAdminRoles();
 
   if (!profile) return null;

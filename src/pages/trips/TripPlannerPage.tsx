@@ -24,19 +24,29 @@ import {
   Sparkles,
   MessagesSquare,
   FileText,
+  Download,
+  Check,
 } from 'lucide-react';
 import MuiDrawer from '@mui/material/Drawer';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, type TripWithDetails } from '@/hooks/useTrips';
+import { useTripReservations } from '@/hooks/useTripReservations';
+import { cacheTripSnapshot } from '@/utils/offlineTripPack';
+import { useToast } from '@/hooks/use-toast';
 import { DraggableItinerary } from '@/components/trips/DraggableItinerary';
 import { TripMap } from '@/components/trips/TripMap';
 import { TripSafetyBriefing } from '@/components/trips/TripSafetyBriefing';
+import { TripNudgesBanner } from '@/components/trips/TripNudgesBanner';
 import { AddPlaceDialog } from '@/components/trips/AddPlaceDialog';
 import { ShareTripDialog } from '@/components/trips/ShareTripDialog';
 import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
 import { TripCoverBand } from '@/components/trips/TripCoverBand';
 import { TripProgressRing } from '@/components/trips/TripProgressRing';
+import { TripDocExpiryBanner } from '@/components/trips/TripDocExpiryBanner';
+import { MemoryRecapCard } from '@/components/trips/MemoryRecapCard';
+import { TripLocalContext } from '@/components/trips/TripLocalContext';
+import { getTripPhase } from '@/components/trips/tripPhase';
 import { Button } from '@/components/ui/button';
 import { ErrorState } from '@/components/ui/EmptyState';
 
@@ -92,6 +102,23 @@ export default function TripPlannerPage() {
   const [addPlaceOpen, setAddPlaceOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [mobileBookingOpen, setMobileBookingOpen] = useState(false);
+  const [offlineSaved, setOfflineSaved] = useState(false);
+  const { data: reservations } = useTripReservations(tripId);
+  const { toast } = useToast();
+
+  const handleSaveOffline = async () => {
+    if (!tripId || !trip) return;
+    await cacheTripSnapshot(tripId, trip, reservations ?? []);
+    setOfflineSaved(true);
+    toast({
+      title: t('trips.planner.savedOffline', 'Saved for offline use'),
+      description: t(
+        'trips.planner.savedOfflineDescription',
+        'Itinerary + reservations available without connectivity in Today mode.',
+      ),
+    });
+    setTimeout(() => setOfflineSaved(false), 2500);
+  };
 
   const safetyAlert = useMemo(
     () => (trip ? hasSafetyWarnings(trip) : false),
@@ -154,19 +181,57 @@ export default function TripPlannerPage() {
         dateRange={dateRange}
         statusLabel={statusLabel}
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShareOpen(true)}
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.12)',
-              borderColor: 'rgba(255,255,255,0.3)',
-              color: '#ffffff',
-            }}
-          >
-            <Share2 style={{ width: 16, height: 16, marginRight: 6 }} />
-            {t('trips.share.title')}
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSaveOffline}
+              disabled={!trip}
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                borderColor: 'rgba(255,255,255,0.3)',
+                color: '#ffffff',
+              }}
+              aria-label={t('trips.planner.saveOfflineAria', 'Save trip for offline use')}
+            >
+              {offlineSaved ? (
+                <Check style={{ width: 16, height: 16, marginRight: 6 }} />
+              ) : (
+                <Download style={{ width: 16, height: 16, marginRight: 6 }} />
+              )}
+              {offlineSaved
+                ? t('trips.planner.offlineSaved', 'Saved')
+                : t('trips.planner.saveOffline', 'Offline')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open(`/trips/${tripId}/booklet`, '_blank')}
+              disabled={!trip}
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                borderColor: 'rgba(255,255,255,0.3)',
+                color: '#ffffff',
+              }}
+              aria-label={t('trips.planner.bookletAria', 'Download trip booklet (PDF)')}
+            >
+              <FileText style={{ width: 16, height: 16, marginRight: 6 }} />
+              {t('trips.planner.booklet', 'Booklet')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShareOpen(true)}
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                borderColor: 'rgba(255,255,255,0.3)',
+                color: '#ffffff',
+              }}
+            >
+              <Share2 style={{ width: 16, height: 16, marginRight: 6 }} />
+              {t('trips.share.title')}
+            </Button>
+          </Box>
         }
       >
         <Tooltip title={t('trips.planner.progressTooltip')} arrow>
@@ -181,6 +246,10 @@ export default function TripPlannerPage() {
           </Box>
         </Tooltip>
       </TripCoverBand>
+
+      <TripDocExpiryBanner trip={trip} />
+
+      <TripNudgesBanner tripId={trip.id} />
 
       {/* Quick action row */}
       <Box
@@ -319,6 +388,11 @@ export default function TripPlannerPage() {
 
       {tab === 0 && (
         <>
+        {getTripPhase(trip) === 'memory' && (
+          <Box sx={{ mb: 3 }}>
+            <MemoryRecapCard tripId={trip.id} />
+          </Box>
+        )}
         <Box sx={{ display: 'flex', gap: 3 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <DraggableItinerary
@@ -373,6 +447,8 @@ export default function TripPlannerPage() {
             endDate={trip.end_date ?? undefined}
           />
         </MuiDrawer>
+
+        {getTripPhase(trip) !== 'memory' && <TripLocalContext trip={trip} />}
         </>
       )}
 

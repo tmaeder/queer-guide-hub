@@ -8,7 +8,9 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
-import { Copy, Trash2, Check, Link2, Lock, Calendar } from 'lucide-react';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { Copy, Trash2, Check, Link2, Lock, Calendar, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +55,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [icalMenu, setIcalMenu] = useState<{ anchor: HTMLElement; token: string } | null>(null);
 
   const [showBudget, setShowBudget] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
@@ -69,6 +72,34 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
         .order('created_at', { ascending: false });
       if (error) throw error;
       return (data || []) as TripShare[];
+    },
+    enabled: open && !!tripId,
+  });
+
+  // Aggregated view counts per share. Cheap server aggregate, refetched
+  // every dialog open. Empty result = no views logged yet.
+  const { data: viewStats } = useQuery({
+    queryKey: ['trip-share-view-stats', tripId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc(
+        'get_share_view_stats' as never,
+        { p_trip_id: tripId } as never,
+      );
+      if (error) throw error;
+      const map = new Map<string, { total: number; views7d: number; lastAt: string | null }>();
+      for (const row of (data ?? []) as Array<{
+        share_id: string;
+        total_views: number;
+        views_7d: number;
+        last_viewed_at: string | null;
+      }>) {
+        map.set(row.share_id, {
+          total: Number(row.total_views),
+          views7d: Number(row.views_7d),
+          lastAt: row.last_viewed_at,
+        });
+      }
+      return map;
     },
     enabled: open && !!tripId,
   });
@@ -135,10 +166,14 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
    * triggers Apple/Google Calendar to subscribe (with periodic refresh)
    * rather than one-shot import.
    */
-  const icalSubscriptionUrl = (token: string) => {
+  type IcalCategory = 'all' | 'places' | 'events' | 'reservations';
+
+  const icalSubscriptionUrl = (token: string, category: IcalCategory = 'all') => {
     const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '');
     if (!supabaseUrl) return '';
-    const httpUrl = `${supabaseUrl}/functions/v1/trip-ical?token=${encodeURIComponent(token)}`;
+    const params = new URLSearchParams({ token });
+    if (category !== 'all') params.set('category', category);
+    const httpUrl = `${supabaseUrl}/functions/v1/trip-ical?${params.toString()}`;
     return httpUrl.replace(/^https?:\/\//, 'webcal://');
   };
 
@@ -196,6 +231,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                 {(shares || []).map((share) => {
                   const isExpired =
                     share.expires_at && new Date(share.expires_at) < new Date();
+                  const stats = viewStats?.get(share.id);
                   return (
                     <Card
                       key={share.id}
@@ -255,6 +291,41 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                                       })}
                                 </Typography>
                               )}
+                              {stats && stats.total > 0 && (
+                                <Box
+                                  sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                    color: 'text.secondary',
+                                    fontSize: 11,
+                                  }}
+                                  title={
+                                    stats.lastAt
+                                      ? t('trips.share.lastViewedAt', {
+                                          defaultValue: 'Last viewed {{date}}',
+                                          date: new Date(stats.lastAt).toLocaleString(),
+                                        })
+                                      : undefined
+                                  }
+                                >
+                                  <Eye size={11} />
+                                  {t('trips.share.viewCount', {
+                                    defaultValue: '{{count}} views',
+                                    count: stats.total,
+                                  })}
+                                  {stats.views7d > 0 && stats.views7d !== stats.total && (
+                                    <span style={{ opacity: 0.7 }}>
+                                      {' '}
+                                      ·{' '}
+                                      {t('trips.share.views7d', {
+                                        defaultValue: '{{count}} this week',
+                                        count: stats.views7d,
+                                      })}
+                                    </span>
+                                  )}
+                                </Box>
+                              )}
                             </Box>
                           </Box>
                           <IconButton
@@ -277,27 +348,16 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                           {icalSubscriptionUrl(share.token) && (
                             <IconButton
                               size="small"
-                              onClick={() =>
-                                copyToClipboard(icalSubscriptionUrl(share.token), 'ical')
+                              onClick={(e) =>
+                                setIcalMenu({ anchor: e.currentTarget, token: share.token })
                               }
                               aria-label={t(
                                 'trips.share.icalAria',
                                 'Copy calendar subscription URL',
                               )}
-                              sx={{
-                                minWidth: 40,
-                                minHeight: 40,
-                                color:
-                                  copied === icalSubscriptionUrl(share.token)
-                                    ? 'success.main'
-                                    : undefined,
-                              }}
+                              sx={{ minWidth: 40, minHeight: 40 }}
                             >
-                              {copied === icalSubscriptionUrl(share.token) ? (
-                                <Check size={14} />
-                              ) : (
-                                <Calendar size={14} />
-                              )}
+                              <Calendar size={14} />
                             </IconButton>
                           )}
                           <IconButton
@@ -413,6 +473,34 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Calendar category menu */}
+      <Menu
+        anchorEl={icalMenu?.anchor ?? null}
+        open={!!icalMenu}
+        onClose={() => setIcalMenu(null)}
+      >
+        {(['all', 'places', 'events', 'reservations'] as const).map((cat) => (
+          <MenuItem
+            key={cat}
+            onClick={() => {
+              if (icalMenu) {
+                copyToClipboard(icalSubscriptionUrl(icalMenu.token, cat), 'ical');
+              }
+              setIcalMenu(null);
+            }}
+          >
+            {t(`trips.share.icalCategory.${cat}`, {
+              defaultValue: {
+                all: 'Subscribe to everything',
+                places: 'Itinerary stops only',
+                events: 'Events only',
+                reservations: 'Reservations only',
+              }[cat],
+            })}
+          </MenuItem>
+        ))}
+      </Menu>
 
       {/* Delete confirmation */}
       <Dialog

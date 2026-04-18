@@ -29,6 +29,8 @@ import { PWAProvider } from '@/components/pwa/PWAProvider';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
 import { CurrencyProvider } from '@/hooks/useCurrency';
+import { ActiveTripProvider } from '@/hooks/useActiveTrip';
+import { TripContextBar } from '@/components/trips/TripContextBar';
 import Box from '@mui/material/Box';
 
 const Index = lazyRetry(() => import('./pages/Index'));
@@ -154,6 +156,8 @@ const Favorites = lazyRetry(() => import('./pages/Favorites'));
 const TripsPage = lazyRetry(() => import('./pages/trips/TripsPage'));
 const TripsInboxPage = lazyRetry(() => import('./pages/trips/TripsInboxPage'));
 const TripPlannerPage = lazyRetry(() => import('./pages/trips/TripPlannerPage'));
+const TripBookletPage = lazyRetry(() => import('./pages/trips/TripBookletPage'));
+const TripsDiscoverPage = lazyRetry(() => import('./pages/trips/TripsDiscoverPage'));
 const TodayModePage = lazyRetry(() => import('./pages/trips/TodayModePage'));
 const SharedTripPage = lazyRetry(() => import('./pages/trips/SharedTripPage'));
 const Donate = lazyRetry(() => import('./pages/Donate'));
@@ -292,6 +296,7 @@ const AppRoutes = () => {
       <AnalyticsTracker />
       <Box sx={{ position: 'relative', zIndex: 1 }}>
         <Header />
+        <TripContextBar />
       </Box>
       <Box
         component="main"
@@ -467,8 +472,10 @@ const AppRoutes = () => {
                 <Route path="travel" element={<Travel />} />
                 <Route path="trips" element={<TripsPage />} />
                 <Route path="trips/inbox" element={<TripsInboxPage />} />
+                <Route path="trips/discover" element={<TripsDiscoverPage />} />
                 <Route path="trips/shared/:token" element={<SharedTripPage />} />
                 <Route path="trips/:tripId/today" element={<TodayModePage />} />
+                <Route path="trips/:tripId/booklet" element={<TripBookletPage />} />
                 <Route path="trips/:tripId" element={<TripPlannerPage />} />
                 <Route path="bookings" element={<Navigate to="/trips/inbox" replace />} />
                 <Route path="map" element={<MapPage />} />
@@ -552,7 +559,9 @@ const App = () => {
                     <Toaster />
                     <Sonner />
                     <BrowserRouter>
-                      <AppRoutes />
+                      <ActiveTripProvider>
+                        <AppRoutes />
+                      </ActiveTripProvider>
                     </BrowserRouter>
                   </TooltipProvider>
                 </CurrencyProvider>

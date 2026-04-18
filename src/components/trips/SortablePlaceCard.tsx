@@ -7,6 +7,8 @@ import { GripVertical, MapPin, Hotel, CalendarDays, Star, Clock, X } from 'lucid
 import { useTranslation } from 'react-i18next';
 import type { TripPlace } from '@/hooks/useTrips';
 import { getScoreRingColor } from '@/utils/equalityScore';
+import { PlaceBookableLinks } from './PlaceBookableLinks';
+import { PlaceBookableLinks } from './PlaceBookableLinks';
 
 const categoryIcons: Record<string, typeof MapPin> = {
   venue: MapPin,
@@ -31,9 +33,16 @@ export function getPlaceCategory(place: TripPlace): string {
 interface SortablePlaceCardProps {
   place: TripPlace;
   onDelete: (placeId: string) => void;
+  tripStartDate?: string | null;
+  tripEndDate?: string | null;
 }
 
-export function SortablePlaceCard({ place, onDelete }: SortablePlaceCardProps) {
+export function SortablePlaceCard({
+  place,
+  onDelete,
+  tripStartDate,
+  tripEndDate,
+}: SortablePlaceCardProps) {
   const { t } = useTranslation();
   const {
     attributes,
@@ -148,6 +157,17 @@ export function SortablePlaceCard({ place, onDelete }: SortablePlaceCardProps) {
             </Box>
           )}
         </Box>
+
+        {/* Inline affiliate booking shortcuts */}
+        <PlaceBookableLinks
+          tripId={place.trip_id}
+          tripPlaceId={place.id}
+          category={cat as 'venue' | 'event' | 'hotel' | 'custom'}
+          name={getPlaceName(place)}
+          cityName={place.cities?.name ?? null}
+          startDate={tripStartDate ?? null}
+          endDate={tripEndDate ?? null}
+        />
 
         {/* Delete button */}
         <IconButton

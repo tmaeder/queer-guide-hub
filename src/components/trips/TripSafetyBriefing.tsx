@@ -22,6 +22,8 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { useTripSafety, type TripSafetyReport } from '@/hooks/useTripSafety';
+import { TripNewsSection } from './TripNewsSection';
+import { AiSafetyNarrativeCard } from './AiSafetyNarrativeCard';
 import {
   getScoreLabel,
   parseSsuSummary,
@@ -135,6 +137,8 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
     <Box>
       <RiskSnapshot report={report} />
 
+      {tripId && <AiSafetyNarrativeCard tripId={tripId} canGenerate />}
+
       {report.crossBorderWarnings.length > 0 && (
         <Box sx={{ mb: 3 }}>
           <Typography
@@ -184,6 +188,8 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
           />
         ))}
       </Box>
+
+      <TripNewsSection countryIds={countryIds} />
 
       <Box
         sx={{

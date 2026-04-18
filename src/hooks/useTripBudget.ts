@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useFxRates } from '@/hooks/useFxRates';
+import { convertAmount } from '@/utils/settleUp';
 
 export interface BudgetItem {
   id: string;
@@ -20,6 +22,12 @@ export interface BudgetSummary {
   totalByCategory: Record<string, Record<string, number>>;
   totalByCurrency: Record<string, number>;
   perPersonBalance: Record<string, PersonBalance[]>;
+  /** Single converted total in the requested display currency (when provided). */
+  totalConverted: number | null;
+  /** Per-category converted totals in the display currency (when provided). */
+  totalByCategoryConverted: Record<string, number>;
+  /** Number of items skipped during conversion (unknown currency). */
+  unconvertedCount: number;
 }
 
 export interface PersonBalance {
@@ -31,20 +39,38 @@ export interface PersonBalance {
 type CreateBudgetInput = Omit<BudgetItem, 'id' | 'created_at'>;
 type UpdateBudgetInput = Partial<Omit<BudgetItem, 'id' | 'created_at' | 'trip_id'>> & { id: string };
 
-function computeSummary(items: BudgetItem[]): BudgetSummary {
+function computeSummary(
+  items: BudgetItem[],
+  displayCurrency?: string,
+  fxRates?: Map<string, number>,
+): BudgetSummary {
   const totalByCategory: Record<string, Record<string, number>> = {};
   const totalByCurrency: Record<string, number> = {};
+  const totalByCategoryConverted: Record<string, number> = {};
+  let totalConverted: number | null = displayCurrency ? 0 : null;
+  let unconvertedCount = 0;
   // netBalance[currency][userId] = net amount (positive = owed money, negative = owes money)
   const netBalance: Record<string, Record<string, number>> = {};
 
   for (const item of items) {
     const cat = item.category || 'other';
     const cur = item.currency;
+    const amt = Number(item.amount);
 
     if (!totalByCategory[cat]) totalByCategory[cat] = {};
-    totalByCategory[cat][cur] = (totalByCategory[cat][cur] || 0) + Number(item.amount);
+    totalByCategory[cat][cur] = (totalByCategory[cat][cur] || 0) + amt;
 
-    totalByCurrency[cur] = (totalByCurrency[cur] || 0) + Number(item.amount);
+    totalByCurrency[cur] = (totalByCurrency[cur] || 0) + amt;
+
+    if (displayCurrency && fxRates) {
+      const converted = convertAmount(amt, cur, displayCurrency, fxRates);
+      if (converted == null) {
+        unconvertedCount += 1;
+      } else {
+        totalConverted = (totalConverted ?? 0) + converted;
+        totalByCategoryConverted[cat] = (totalByCategoryConverted[cat] || 0) + converted;
+      }
+    }
 
     if (!netBalance[cur]) netBalance[cur] = {};
     const splitCount = item.split_among.length || 1;
@@ -101,10 +127,17 @@ function computeSummary(items: BudgetItem[]): BudgetSummary {
     }
   }
 
-  return { totalByCategory, totalByCurrency, perPersonBalance };
+  return {
+    totalByCategory,
+    totalByCurrency,
+    perPersonBalance,
+    totalConverted,
+    totalByCategoryConverted,
+    unconvertedCount,
+  };
 }
 
-export function useTripBudget(tripId: string | undefined) {
+export function useTripBudget(tripId: string | undefined, displayCurrency?: string) {
   const query = useQuery({
     queryKey: ['trip-budget', tripId],
     queryFn: async () => {
@@ -120,7 +153,18 @@ export function useTripBudget(tripId: string | undefined) {
     staleTime: 2 * 60 * 1000,
   });
 
-  const summary = query.data ? computeSummary(query.data) : { totalByCategory: {}, totalByCurrency: {}, perPersonBalance: {} };
+  const { data: fxRates } = useFxRates();
+
+  const summary: BudgetSummary = query.data
+    ? computeSummary(query.data, displayCurrency, fxRates ?? undefined)
+    : {
+        totalByCategory: {},
+        totalByCurrency: {},
+        perPersonBalance: {},
+        totalConverted: displayCurrency ? 0 : null,
+        totalByCategoryConverted: {},
+        unconvertedCount: 0,
+      };
 
   return { ...query, items: query.data || [], summary };
 }

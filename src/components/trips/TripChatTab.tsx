@@ -3,11 +3,14 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Avatar from '@mui/material/Avatar';
+import AvatarGroup from '@mui/material/AvatarGroup';
+import Tooltip from '@mui/material/Tooltip';
 import { format } from 'date-fns';
 import { Send, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useTripChat, useSendTripMessage } from '@/hooks/useTripChat';
+import { useTripPresence } from '@/hooks/useTripPresence';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -27,6 +30,7 @@ export function TripChatTab({ tripId }: Props) {
   const { user } = useAuth();
   const { data: messages, isLoading } = useTripChat(tripId);
   const send = useSendTripMessage(tripId);
+  const presentMembers = useTripPresence(tripId);
 
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -66,6 +70,54 @@ export function TripChatTab({ tripId }: Props) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: { xs: 480, md: 600 } }}>
+      {presentMembers.length > 0 && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 1,
+            py: 0.75,
+            mb: 1,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Box
+            sx={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              bgcolor: 'success.main',
+              flexShrink: 0,
+            }}
+            aria-hidden
+          />
+          <AvatarGroup
+            max={4}
+            sx={{
+              '& .MuiAvatar-root': { width: 22, height: 22, fontSize: 11, borderWidth: 1 },
+            }}
+          >
+            {presentMembers.map((m) => (
+              <Tooltip
+                key={m.user_id}
+                title={m.display_name ?? t('trips.chat.anonymous', 'Someone')}
+              >
+                <Avatar src={m.avatar_url ?? undefined} alt={m.display_name ?? ''}>
+                  {(m.display_name ?? '?').slice(0, 1).toUpperCase()}
+                </Avatar>
+              </Tooltip>
+            ))}
+          </AvatarGroup>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+            {t('trips.chat.viewing', {
+              defaultValue: '{{count}} viewing now',
+              count: presentMembers.length,
+            })}
+          </Typography>
+        </Box>
+      )}
       <Box
         ref={scrollRef}
         sx={{

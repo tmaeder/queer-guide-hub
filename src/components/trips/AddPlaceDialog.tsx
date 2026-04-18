@@ -23,6 +23,8 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useTripMutations, type TripDay } from '@/hooks/useTrips';
+import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
+import { SocialSignalBadges } from './SocialSignalBadges';
 
 interface SearchResult {
   id: string;
@@ -184,6 +186,9 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
   const filteredResults = typeFilter === 'all' ? results : results.filter((r) => r.type === typeFilter);
   const countFor = (t: TypeFilter) => (t === 'all' ? results.length : results.filter((r) => r.type === t).length);
 
+  const venueIdsInResults = filteredResults.filter((r) => r.type === 'venue').map((r) => r.id);
+  const { data: socialSignals } = useVenueSocialSignals(venueIdsInResults);
+
   const handleSubmit = async () => {
     try {
       if (mode === 'search' && selected) {
@@ -343,9 +348,12 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                   >
                     <ListItemText
                       primary={
-                        <Box className="flex items-center gap-1.5">
+                        <Box className="flex items-center gap-1.5 flex-wrap">
                           <span>{r.name}</span>
                           <Badge variant="outline">{r.type}</Badge>
+                          {r.type === 'venue' && (
+                            <SocialSignalBadges signal={socialSignals?.get(r.id)} />
+                          )}
                         </Box>
                       }
                       secondary={

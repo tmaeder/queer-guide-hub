@@ -21,7 +21,6 @@ interface SecurityEvent {
 }
 
 export function SecurityMonitoringDashboard() {
-  const {} = useAuth();
   const { isAdmin } = useAdminRoles();
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [loading, setLoading] = useState(true);
