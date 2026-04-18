@@ -111,6 +111,9 @@ export interface FeedbackStory {
   id: string;
   title: string;
   summary: string | null;
+  brief_title: string | null;
+  narrative: string | null;
+  narrative_edited: boolean;
   status: StoryStatus;
   priority: number;
   labels: string[];

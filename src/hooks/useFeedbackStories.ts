@@ -11,7 +11,7 @@ import type {
 } from '@/components/admin/feedback/types';
 
 const STORY_COLUMNS =
-  'id,title,summary,status,priority,labels,assignee_id,created_by,created_at,updated_at,resolved_at,origin,handoffs';
+  'id,title,summary,brief_title,narrative,narrative_edited,status,priority,labels,assignee_id,created_by,created_at,updated_at,resolved_at,origin,handoffs';
 
 export function useStories() {
   return useQuery<StoryWithCounts[]>({
@@ -263,6 +263,106 @@ export function useDismissStorySuggestion() {
     },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ['admin-feedback-story-suggestions'] }),
+  });
+}
+
+/**
+ * Story-wins-on-conflict sync: when admin edits the story status / priority /
+ * assignee / resolution, the same values cascade to every member item so the
+ * two surfaces don't drift. The drawer calls this after a save.
+ */
+export function useCascadeStoryToMembers() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: {
+      storyId: string;
+      status?: string;
+      priority?: number;
+      assigneeId?: string | null;
+      resolution?: string;
+    }) => {
+      const { data, error } = await supabase.rpc('cascade_story_to_members', {
+        p_story_id: args.storyId,
+        p_status: args.status ?? null,
+        p_priority: args.priority ?? null,
+        p_assignee_id: args.assigneeId ?? null,
+        p_resolution: args.resolution ?? null,
+      });
+      if (error) throw error;
+      return data as number;
+    },
+    onSuccess: (_d, args) => {
+      invalidateAll(qc);
+      qc.invalidateQueries({ queryKey: ['admin-feedback-story', args.storyId] });
+      qc.invalidateQueries({ queryKey: ['admin-feedback-board'] });
+      qc.invalidateQueries({ queryKey: ['admin-api-errors'] });
+    },
+  });
+}
+
+/** Count of members whose current fields don't match the story — used by the
+ *  drawer to warn "N members will be overridden if you save". */
+export function useStoryDivergence(storyId: string | null) {
+  return useQuery<{ status_diff: number; priority_diff: number; assignee_diff: number } | null>({
+    queryKey: ['admin-feedback-story-divergence', storyId],
+    enabled: !!storyId,
+    queryFn: async () => {
+      if (!storyId) return null;
+      const { data, error } = await supabase.rpc('story_member_divergence', {
+        p_story_id: storyId,
+      });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      return (row ?? null) as {
+        status_diff: number;
+        priority_diff: number;
+        assignee_diff: number;
+      } | null;
+    },
+    staleTime: 5_000,
+  });
+}
+
+/** Persist the admin's hand-edited brief title + narrative. Subsequent
+ *  auto-narrate calls skip this story. */
+export function useSetStoryNarrative() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: {
+      storyId: string;
+      briefTitle?: string | null;
+      narrative?: string | null;
+    }) => {
+      const { error } = await supabase.rpc('set_story_narrative', {
+        p_story_id: args.storyId,
+        p_brief_title: args.briefTitle ?? null,
+        p_narrative: args.narrative ?? null,
+        p_mark_edited: true,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_d, args) => {
+      invalidateAll(qc);
+      qc.invalidateQueries({ queryKey: ['admin-feedback-story', args.storyId] });
+    },
+  });
+}
+
+/** Ask the story-narrate edge function to (re)generate title + narrative. */
+export function useRenarrateStory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { storyId: string; force?: boolean }) => {
+      const { data, error } = await supabase.functions.invoke('story-narrate', {
+        body: { story_id: args.storyId, force: args.force ?? false },
+      });
+      if (error) throw error;
+      return data as { brief_title?: string; narrative?: string; skipped?: string };
+    },
+    onSuccess: (_d, args) => {
+      invalidateAll(qc);
+      qc.invalidateQueries({ queryKey: ['admin-feedback-story', args.storyId] });
+    },
   });
 }
 

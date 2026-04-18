@@ -61,6 +61,10 @@ import {
   useDismissStorySuggestion,
   useSuggestStoryFromIds,
   useGroupedStories,
+  useCascadeStoryToMembers,
+  useStoryDivergence,
+  useSetStoryNarrative,
+  useRenarrateStory,
 } from '@/hooks/useFeedbackStories';
 import type { StoryStatus } from '@/components/admin/feedback/types';
 import {
@@ -194,6 +198,10 @@ export default function AdminFeedback() {
   const removeStoryMembers = useRemoveStoryMembers();
   const updateStory = useUpdateStory();
   const resolveStory = useResolveStory();
+  const cascadeToMembers = useCascadeStoryToMembers();
+  const setStoryNarrative = useSetStoryNarrative();
+  const renarrateStory = useRenarrateStory();
+  const { data: storyDivergence } = useStoryDivergence(state.story);
   const acceptStorySuggestion = useAcceptStorySuggestion();
   const dismissStorySuggestion = useDismissStorySuggestion();
   const suggestStoryFromIds = useSuggestStoryFromIds();
@@ -740,26 +748,13 @@ export default function AdminFeedback() {
     );
   }
 
+  // Stories is the primary surface. Spam + Analytics are the only escape
+  // hatches; Community + API Errors tabs folded into Stories (1-member solo
+  // stories auto-created for every item).
   const tabIdx =
-    state.tab === 'errors'
-      ? 1
-      : state.tab === 'stories'
-        ? 2
-        : state.tab === 'spam'
-          ? 3
-          : state.tab === 'analytics'
-            ? 4
-            : 0;
-  const tabValue: 'community' | 'errors' | 'stories' | 'spam' | 'analytics' =
-    tabIdx === 1
-      ? 'errors'
-      : tabIdx === 2
-        ? 'stories'
-        : tabIdx === 3
-          ? 'spam'
-          : tabIdx === 4
-            ? 'analytics'
-            : 'community';
+    state.tab === 'spam' ? 1 : state.tab === 'analytics' ? 2 : 0;
+  const tabValue: 'stories' | 'spam' | 'analytics' =
+    tabIdx === 1 ? 'spam' : tabIdx === 2 ? 'analytics' : 'stories';
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
@@ -803,28 +798,17 @@ export default function AdminFeedback() {
         value={tabIdx}
         onChange={(_, v) =>
           update({
-            tab:
-              v === 1
-                ? 'errors'
-                : v === 2
-                  ? 'stories'
-                  : v === 3
-                    ? 'spam'
-                    : v === 4
-                      ? 'analytics'
-                      : 'community',
+            tab: v === 1 ? 'spam' : v === 2 ? 'analytics' : 'stories',
           })
         }
         sx={{ mb: 2 }}
       >
-        <Tab label={`Community (${communityCount})`} />
-        <Tab label={`API Errors (${apiErrors.length})`} />
         <Tab label={`Stories (${stories.length})`} />
         <Tab label={`Spam (${spamCount})`} />
         <Tab label="Analytics" />
       </Tabs>
 
-      {(tabValue === 'community' || tabValue === 'spam') && (
+      {tabValue === 'spam' && (
         <>
           <FeedbackPresets
             state={state}
@@ -920,31 +904,6 @@ export default function AdminFeedback() {
         </>
       )}
 
-      {tabValue === 'errors' && (
-        <>
-          <ApiErrorFilters
-            state={errorFilters}
-            update={(patch) => setErrorFilters((prev) => ({ ...prev, ...patch }))}
-            counts={errorFacets}
-          />
-          <ApiErrorsKanban
-            errors={visibleApiErrors}
-            dailySeries={apiErrorDaily}
-          forwardingIds={forwardingIds}
-          onCopyPrompt={async (item) => {
-            try {
-              await navigator.clipboard.writeText(formatErrorClaudePrompt(item));
-              toast({ title: 'Prompt copied' });
-            } catch {
-              toast({ title: 'Copy failed', variant: 'destructive' });
-            }
-          }}
-          onForward={(id) => forwardMutation.mutate(id)}
-          onStatusChange={(id, status) => statusMutation.mutate({ ids: [id], status })}
-          />
-        </>
-      )}
-
       {tabValue === 'stories' && (
         <>
           <StorySuggestionsPanel
@@ -1007,15 +966,44 @@ export default function AdminFeedback() {
               storyId: state.story,
               patch: { status: status as StoryStatus },
             });
+            // Story wins on conflict — cascade to members automatically.
+            cascadeToMembers.mutate({ storyId: state.story, status });
           }
         }}
-        onPriorityChange={(priority) =>
-          state.story && updateStory.mutate({ storyId: state.story, patch: { priority } })
-        }
-        onAssign={(assigneeId) =>
+        onPriorityChange={(priority) => {
+          if (!state.story) return;
+          updateStory.mutate({ storyId: state.story, patch: { priority } });
+          cascadeToMembers.mutate({ storyId: state.story, priority });
+        }}
+        onAssign={(assigneeId) => {
+          if (!state.story) return;
+          updateStory.mutate({ storyId: state.story, patch: { assignee_id: assigneeId } });
+          cascadeToMembers.mutate({ storyId: state.story, assigneeId });
+        }}
+        onSaveNarrative={(briefTitle, narrative) =>
           state.story &&
-          updateStory.mutate({ storyId: state.story, patch: { assignee_id: assigneeId } })
+          setStoryNarrative.mutate({
+            storyId: state.story,
+            briefTitle: briefTitle || null,
+            narrative: narrative || null,
+          })
         }
+        onRenarrate={() =>
+          state.story &&
+          renarrateStory.mutate(
+            { storyId: state.story, force: true },
+            {
+              onSuccess: (r) =>
+                toast({
+                  title: r?.skipped ? 'Skipped (edited)' : 'Narrative refreshed',
+                }),
+              onError: (e: Error) =>
+                toast({ title: 'Re-narrate failed', description: e.message, variant: 'destructive' }),
+            },
+          )
+        }
+        divergence={storyDivergence ?? null}
+        renarrating={renarrateStory.isPending}
         onAddLabel={(label) => {
           if (!state.story || !activeStoryBundle) return;
           const next = Array.from(new Set([...(activeStoryBundle.story.labels ?? []), label]));
@@ -1031,16 +1019,17 @@ export default function AdminFeedback() {
           removeStoryMembers.mutate({ storyId: state.story, submissionIds: [submissionId] })
         }
         onOpenMember={(id, ctype) => {
+          // Feedback members open in the feedback drawer on top of the story
+          // drawer. api_error members have no dedicated item viewer under
+          // the Stories-first model; they live inside their parent story.
           if (ctype === 'feedback') {
-            update({ tab: 'community', story: null, sel: id });
-          } else {
-            update({ tab: 'errors', story: null });
+            update({ sel: id });
           }
         }}
       />
 
       <FeedbackDetailDrawer
-        open={drawerOpen && tabValue !== 'errors'}
+        open={drawerOpen}
         item={selected}
         voteCount={selected ? votesMap[selected.id]?.count ?? 0 : 0}
         admins={admins}

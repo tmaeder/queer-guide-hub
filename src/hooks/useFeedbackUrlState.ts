@@ -14,7 +14,7 @@ export interface FeedbackFiltersState {
 }
 
 export interface FeedbackUrlState extends FeedbackFiltersState {
-  tab: 'community' | 'errors' | 'stories' | 'spam' | 'analytics';
+  tab: 'stories' | 'spam' | 'analytics';
   sel: string | null;
   story: string | null;
   showSpam: boolean;
@@ -22,7 +22,7 @@ export interface FeedbackUrlState extends FeedbackFiltersState {
 }
 
 const defaults: FeedbackUrlState = {
-  tab: 'community',
+  tab: 'stories',
   q: '',
   category: null,
   status: null,
@@ -54,15 +54,7 @@ export function useFeedbackUrlState() {
   const state = useMemo<FeedbackUrlState>(() => {
     const tab = params.get('tab');
     const parsedTab: FeedbackUrlState['tab'] =
-      tab === 'errors'
-        ? 'errors'
-        : tab === 'stories'
-          ? 'stories'
-          : tab === 'spam'
-            ? 'spam'
-            : tab === 'analytics'
-              ? 'analytics'
-              : 'community';
+      tab === 'spam' ? 'spam' : tab === 'analytics' ? 'analytics' : 'stories';
     return {
       tab: parsedTab,
       q: params.get('q') ?? '',

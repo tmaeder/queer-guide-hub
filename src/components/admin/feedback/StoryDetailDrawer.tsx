@@ -15,7 +15,16 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import { X, Trash2, Copy, ExternalLink, MessageSquare, AlertTriangle } from 'lucide-react';
+import {
+  X,
+  Trash2,
+  Copy,
+  ExternalLink,
+  MessageSquare,
+  AlertTriangle,
+  Sparkles,
+  AlertCircle,
+} from 'lucide-react';
 import { storyColumns, priorities, priorityFor } from './constants';
 import type {
   AdminProfile,
@@ -48,6 +57,10 @@ interface Props {
   onRemoveLabel: (label: string) => void;
   onRemoveMember: (submissionId: string) => void;
   onOpenMember: (submissionId: string, contentType: 'feedback' | 'api_error') => void;
+  onSaveNarrative?: (briefTitle: string, narrative: string) => void;
+  onRenarrate?: () => void;
+  divergence?: { status_diff: number; priority_diff: number; assignee_diff: number } | null;
+  renarrating?: boolean;
 }
 
 export function StoryDetailDrawer({
@@ -67,9 +80,15 @@ export function StoryDetailDrawer({
   onRemoveLabel,
   onRemoveMember,
   onOpenMember,
+  onSaveNarrative,
+  onRenarrate,
+  divergence,
+  renarrating = false,
 }: Props) {
   const [titleDraft, setTitleDraft] = useState('');
   const [summaryDraft, setSummaryDraft] = useState('');
+  const [briefDraft, setBriefDraft] = useState('');
+  const [narrativeDraft, setNarrativeDraft] = useState('');
   const [labelInput, setLabelInput] = useState('');
   const [resolveModalOpen, setResolveModalOpen] = useState(false);
   const [resolveCloseItems, setResolveCloseItems] = useState(true);
@@ -80,8 +99,10 @@ export function StoryDetailDrawer({
     if (story) {
       setTitleDraft(story.title);
       setSummaryDraft(story.summary ?? '');
+      setBriefDraft(story.brief_title ?? '');
+      setNarrativeDraft(story.narrative ?? '');
     }
-  }, [story?.id, story?.title, story?.summary]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [story?.id, story?.title, story?.summary, story?.brief_title, story?.narrative]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!story) return null;
 
@@ -177,6 +198,119 @@ export function StoryDetailDrawer({
             }
           }}
         />
+
+        {/* Narrative — brief title + "As a X, I want Y, so that Z." */}
+        {onSaveNarrative && (
+          <Box
+            sx={{
+              p: 1.5,
+              bgcolor: 'action.hover',
+              borderLeft: 3,
+              borderColor: 'hsl(var(--accent-warm))',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                color: 'hsl(var(--accent-warm))',
+                fontSize: '0.65rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              <Sparkles size={12} />
+              Story {story.narrative_edited ? '· edited' : ''}
+              <Box sx={{ flex: 1 }} />
+              {onRenarrate && (
+                <Button
+                  size="small"
+                  variant="text"
+                  disabled={renarrating}
+                  onClick={onRenarrate}
+                  sx={{ fontSize: '0.65rem', minWidth: 0, py: 0, px: 0.5 }}
+                >
+                  {renarrating ? 'Generating…' : story.narrative_edited ? 'Re-generate' : 'Refresh'}
+                </Button>
+              )}
+            </Box>
+            <TextField
+              fullWidth
+              size="small"
+              variant="standard"
+              placeholder="Brief title"
+              value={briefDraft}
+              onChange={(e) => setBriefDraft(e.target.value)}
+              onBlur={() => {
+                if (briefDraft !== (story.brief_title ?? '') || narrativeDraft !== (story.narrative ?? '')) {
+                  onSaveNarrative(briefDraft.trim(), narrativeDraft.trim());
+                }
+              }}
+              InputProps={{ style: { fontWeight: 600, fontSize: '0.85rem' } }}
+            />
+            <TextField
+              fullWidth
+              multiline
+              minRows={2}
+              size="small"
+              placeholder="As a [persona], I [want to …], so that [value]."
+              value={narrativeDraft}
+              onChange={(e) => setNarrativeDraft(e.target.value)}
+              onBlur={() => {
+                if (briefDraft !== (story.brief_title ?? '') || narrativeDraft !== (story.narrative ?? '')) {
+                  onSaveNarrative(briefDraft.trim(), narrativeDraft.trim());
+                }
+              }}
+              InputProps={{ style: { fontStyle: 'italic', fontSize: '0.8rem', lineHeight: 1.4 } }}
+            />
+          </Box>
+        )}
+
+        {/* Divergence warning — story wins on conflict, surface the fact */}
+        {divergence &&
+          (divergence.status_diff > 0 ||
+            divergence.priority_diff > 0 ||
+            divergence.assignee_diff > 0) && (
+            <Box
+              sx={{
+                p: 1.25,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 1,
+                bgcolor: 'color-mix(in srgb, #f59e0b 10%, transparent)',
+                borderLeft: 3,
+                borderColor: '#f59e0b',
+              }}
+            >
+              <AlertCircle size={14} color="#f59e0b" style={{ marginTop: 2, flexShrink: 0 }} />
+              <Typography variant="caption" sx={{ fontSize: '0.72rem', lineHeight: 1.45 }}>
+                {divergence.status_diff > 0 && (
+                  <>
+                    <strong>{divergence.status_diff}</strong> member
+                    {divergence.status_diff === 1 ? '' : 's'} differ on status
+                  </>
+                )}
+                {divergence.priority_diff > 0 && (
+                  <>
+                    {divergence.status_diff > 0 && ', '}
+                    <strong>{divergence.priority_diff}</strong> on priority
+                  </>
+                )}
+                {divergence.assignee_diff > 0 && (
+                  <>
+                    {(divergence.status_diff > 0 || divergence.priority_diff > 0) && ', '}
+                    <strong>{divergence.assignee_diff}</strong> on assignee
+                  </>
+                )}
+                . Saving the story overrides member values.
+              </Typography>
+            </Box>
+          )}
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Select
