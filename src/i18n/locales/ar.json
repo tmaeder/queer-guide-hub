@@ -184,6 +184,12 @@
       "create": {
         "title": "إنشاء رحلة",
         "description": "إلى أين أنت ذاهب؟ يمكنك إضافة الوجهات ومعلومات الأمان لاحقًا.",
+        "cityCountryLabel": "المدينة والبلد",
+        "cityCountryPlaceholder": "ابحث عن مدينة…",
+        "noCityMatch": "لم يتم العثور على مدينة مطابقة.",
+        "addNewPlace": "إضافة «{{query}}» كمكان جديد",
+        "datesUnlockHint": "إضافة التواريخ تفتح اقتراحات الإقامة والطيران والسلامة.",
+        "defaultTitle": "رحلة إلى {{city}}",
         "titleField": "عنوان الرحلة",
         "titlePlaceholder": "مثل: أسبوع الفخر برلين 2026",
         "descriptionField": "الوصف",

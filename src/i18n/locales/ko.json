@@ -184,6 +184,12 @@
       "create": {
         "title": "여행 만들기",
         "description": "어디로 가세요? 목적지와 안전 정보는 나중에 추가할 수 있습니다.",
+        "cityCountryLabel": "도시와 국가",
+        "cityCountryPlaceholder": "도시 검색…",
+        "noCityMatch": "일치하는 도시가 없습니다.",
+        "addNewPlace": "'{{query}}'을(를) 새 장소로 추가",
+        "datesUnlockHint": "날짜를 추가하면 숙소·항공편·안전 정보 제안이 활성화됩니다.",
+        "defaultTitle": "{{city}} 여행",
         "titleField": "여행 제목",
         "titlePlaceholder": "예: 베를린 프라이드 위크 2026",
         "descriptionField": "설명",

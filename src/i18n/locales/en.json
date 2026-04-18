@@ -450,6 +450,12 @@
       "create": {
         "title": "Create a trip",
         "description": "Where are you going? You can add destinations and safety info after.",
+        "cityCountryLabel": "City and country",
+        "cityCountryPlaceholder": "Search a city…",
+        "noCityMatch": "No matching city found.",
+        "addNewPlace": "Add \"{{query}}\" as a new place",
+        "datesUnlockHint": "Adding dates unlocks accommodation, flight & safety suggestions.",
+        "defaultTitle": "Trip to {{city}}",
         "titleField": "Trip title",
         "titlePlaceholder": "e.g. Pride Week Berlin 2026",
         "descriptionField": "Description",

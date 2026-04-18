@@ -115,7 +115,7 @@ describe('CityCountryAutocomplete', () => {
     fireEvent.change(input, { target: { value: 'Nowhereville' } });
 
     const cta = await waitFor(() =>
-      screen.getByText(/trips\.create\.addNewPlace/),
+      screen.getByText(/trips\.dialog\.create\.addNewPlace/),
     );
     fireEvent.click(cta);
     expect(onFallback).toHaveBeenCalledWith('Nowhereville');

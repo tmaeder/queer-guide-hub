@@ -184,6 +184,12 @@
       "create": {
         "title": "Crear un viaje",
         "description": "¿A dónde vas? Puedes añadir destinos e información de seguridad después.",
+        "cityCountryLabel": "Ciudad y país",
+        "cityCountryPlaceholder": "Buscar una ciudad…",
+        "noCityMatch": "No se encontró ninguna ciudad.",
+        "addNewPlace": "Añadir «{{query}}» como nuevo lugar",
+        "datesUnlockHint": "Añadir fechas desbloquea sugerencias de alojamiento, vuelo y seguridad.",
+        "defaultTitle": "Viaje a {{city}}",
         "titleField": "Título del viaje",
         "titlePlaceholder": "Ej.: Pride Week Berlín 2026",
         "descriptionField": "Descripción",

@@ -184,6 +184,12 @@
       "create": {
         "title": "创建行程",
         "description": "你要去哪里？目的地和安全信息可以之后再添加。",
+        "cityCountryLabel": "城市和国家",
+        "cityCountryPlaceholder": "搜索城市…",
+        "noCityMatch": "未找到匹配的城市。",
+        "addNewPlace": "将「{{query}}」添加为新地点",
+        "datesUnlockHint": "添加日期可解锁住宿、航班和安全建议。",
+        "defaultTitle": "前往{{city}}的行程",
         "titleField": "行程标题",
         "titlePlaceholder": "例如：柏林骄傲周 2026",
         "descriptionField": "描述",

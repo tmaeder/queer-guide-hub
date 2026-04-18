@@ -184,6 +184,12 @@
       "create": {
         "title": "旅を作成",
         "description": "どこへ行きますか？目的地と安全情報は後から追加できます。",
+        "cityCountryLabel": "都市と国",
+        "cityCountryPlaceholder": "都市を検索…",
+        "noCityMatch": "一致する都市が見つかりません。",
+        "addNewPlace": "「{{query}}」を新しい場所として追加",
+        "datesUnlockHint": "日付を追加すると、宿泊・フライト・安全情報の提案が表示されます。",
+        "defaultTitle": "{{city}}への旅",
         "titleField": "旅のタイトル",
         "titlePlaceholder": "例：ベルリン・プライドウィーク 2026",
         "descriptionField": "説明",

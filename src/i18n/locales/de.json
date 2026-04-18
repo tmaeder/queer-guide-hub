@@ -184,6 +184,12 @@
       "create": {
         "title": "Reise erstellen",
         "description": "Wohin geht's? Reiseziele und Sicherheitsinfos kannst du später ergänzen.",
+        "cityCountryLabel": "Stadt und Land",
+        "cityCountryPlaceholder": "Stadt suchen…",
+        "noCityMatch": "Keine passende Stadt gefunden.",
+        "addNewPlace": "„{{query}}“ als neuen Ort hinzufügen",
+        "datesUnlockHint": "Mit Datum erhältst du Vorschläge für Unterkunft, Flug und Sicherheit.",
+        "defaultTitle": "Reise nach {{city}}",
         "titleField": "Titel der Reise",
         "titlePlaceholder": "z. B. Pride Week Berlin 2026",
         "descriptionField": "Beschreibung",

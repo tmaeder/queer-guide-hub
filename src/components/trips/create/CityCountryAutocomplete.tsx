@@ -148,10 +148,10 @@ export function CityCountryAutocomplete({
       <TextField
         id={id}
         fullWidth
-        label={label ?? t('trips.create.cityCountryLabel')}
+        label={label ?? t('trips.dialog.create.cityCountryLabel')}
         required={required}
         autoFocus={autoFocus}
-        placeholder={t('trips.create.cityCountryPlaceholder')}
+        placeholder={t('trips.dialog.create.cityCountryPlaceholder')}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
@@ -194,7 +194,7 @@ export function CityCountryAutocomplete({
           {options.length === 0 && !loading && (
             <Box sx={{ p: 2 }}>
               <Box sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
-                {t('trips.create.noCityMatch')}
+                {t('trips.dialog.create.noCityMatch')}
               </Box>
               {onFallbackRequested && (
                 <Box
@@ -215,7 +215,7 @@ export function CityCountryAutocomplete({
                     p: 0,
                   }}
                 >
-                  {t('trips.create.addNewPlace', { query: debounced })}
+                  {t('trips.dialog.create.addNewPlace', { query: debounced })}
                 </Box>
               )}
             </Box>

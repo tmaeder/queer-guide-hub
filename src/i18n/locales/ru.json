@@ -192,6 +192,12 @@
       "create": {
         "title": "Создать поездку",
         "description": "Куда вы едете? Направления и информацию о безопасности можно добавить позже.",
+        "cityCountryLabel": "Город и страна",
+        "cityCountryPlaceholder": "Поиск города…",
+        "noCityMatch": "Совпадений не найдено.",
+        "addNewPlace": "Добавить «{{query}}» как новое место",
+        "datesUnlockHint": "Добавление дат откроет предложения по жилью, перелётам и безопасности.",
+        "defaultTitle": "Поездка в {{city}}",
         "titleField": "Название поездки",
         "titlePlaceholder": "Например, Pride Week Берлин 2026",
         "descriptionField": "Описание",
