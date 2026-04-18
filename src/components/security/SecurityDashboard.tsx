@@ -28,7 +28,6 @@ interface SecurityMetrics {
 }
 
 export function SecurityDashboard() {
-  const {} = useAuth();
   const { isAdmin } = useAdminRoles();
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [metrics, setMetrics] = useState<SecurityMetrics>({

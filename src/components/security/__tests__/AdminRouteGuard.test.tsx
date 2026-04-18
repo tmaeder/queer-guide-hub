@@ -95,7 +95,7 @@ describe('AdminRouteGuard', () => {
 
   it('should show loading state while checking permissions', () => {
     mockRolesLoading = true;
-    const {} = render(
+    render(
       <MemoryRouter>
         <AdminRouteGuard>
           <div>Content</div>

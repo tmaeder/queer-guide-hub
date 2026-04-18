@@ -45,6 +45,8 @@ import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Chip from '@mui/material/Chip';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
+import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
+import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import { useTranslation } from 'react-i18next';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -73,6 +75,7 @@ export default function VenueDetail() {
   const [checkinRefresh, setCheckinRefresh] = useState(0);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
+  const { data: socialSignals } = useVenueSocialSignals(venue?.id ? [venue.id] : []);
   const { events } = useEvents();
   const { track } = useTrackEvent();
 
@@ -440,6 +443,7 @@ export default function VenueDetail() {
               In {tripStatus.count} trip{tripStatus.count !== 1 ? 's' : ''}
             </Badge>
           )}
+          <SocialSignalBadges signal={socialSignals?.get(venue.id)} tripUsageThreshold={1} />
           <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
           <AdminEditButton
             contentType="venues"

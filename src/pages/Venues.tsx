@@ -30,7 +30,6 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 const Venues = () => {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
-  const {} = useAuth();
   const { venues, loading, error, hasMore, fetchVenues, loadingTimedOut } = useVenues(false);
 
   useMeta({

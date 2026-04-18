@@ -34,6 +34,8 @@ import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { AddToTripMenuItem } from '@/components/trips/AddToTripMenuItem';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
+import { useActiveTrip } from '@/hooks/useActiveTrip';
+import { rangesOverlap } from '@/components/trips/tripOverlap';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -137,6 +139,14 @@ export const EventCard = memo(function EventCard({
 }: EventCardProps) {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
+  const { activeTrip } = useActiveTrip();
+  const overlapsActiveTrip =
+    !!activeTrip &&
+    !tripStatus?.isInTrip &&
+    rangesOverlap(
+      { start_date: event?.start_date, end_date: event?.end_date },
+      { start_date: activeTrip.start_date, end_date: activeTrip.end_date },
+    );
   const attendeeCount = event?.event_attendees?.filter((a) => a.status === 'going').length || 0;
   const firstImage = event?.images?.[0];
   const imageUrlValid = !!(
@@ -253,6 +263,28 @@ export const EventCard = memo(function EventCard({
                         In trip
                       </Box>
                     )}
+                    {overlapsActiveTrip && (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          bgcolor: 'background.paper',
+                          color: 'primary.main',
+                          border: 1,
+                          borderColor: 'primary.main',
+                          borderRadius: 4,
+                          px: 1,
+                          py: 0.25,
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                        }}
+                        title={`Happens during ${activeTrip?.title}`}
+                      >
+                        <Calendar style={{ width: 12, height: 12 }} />
+                        During your trip
+                      </Box>
+                    )}
                     {event.featured && (
                       <Badge>
                         <Star style={{ height: 12, width: 12, marginRight: 4 }} />
@@ -314,6 +346,18 @@ export const EventCard = memo(function EventCard({
               {/* Inline badges for no-image cards */}
               {!hasImage && (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+                  {tripStatus?.isInTrip && (
+                    <Badge>
+                      <Luggage style={{ height: 12, width: 12, marginRight: 4 }} />
+                      In trip
+                    </Badge>
+                  )}
+                  {overlapsActiveTrip && (
+                    <Badge variant="outline">
+                      <Calendar style={{ height: 12, width: 12, marginRight: 4 }} />
+                      During your trip
+                    </Badge>
+                  )}
                   {event.featured && (
                     <Badge>
                       <Star style={{ height: 12, width: 12, marginRight: 4 }} />

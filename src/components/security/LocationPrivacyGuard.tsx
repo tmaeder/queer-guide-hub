@@ -27,8 +27,6 @@ export function LocationPrivacyGuard({
   showWarning = true,
   allowPreciseLocation = false,
 }: LocationPrivacyGuardProps) {
-  const {} = useAuth();
-
   // Check if location data is older than 30 days (anonymization threshold)
   const isLocationAnonymized =
     locationData?.created_at &&

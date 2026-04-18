@@ -85,7 +85,6 @@ const columnHelper = createColumnHelper<NewsSourceRow>();
 
 export default function AdminNewsSources() {
   const navigate = useNavigate();
-  const {} = useAuth();
   const { canManageContent, loading } = useAdminRoles();
   const { toast } = useToast();
 
