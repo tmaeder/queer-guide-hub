@@ -1,6 +1,6 @@
 // Service Worker for Queer Guide — optimized for Cloudflare Pages
-const STATIC_CACHE = 'static-v8';
-const DYNAMIC_CACHE = 'dynamic-v8';
+const STATIC_CACHE = 'static-v9';
+const DYNAMIC_CACHE = 'dynamic-v9';
 const DYNAMIC_CACHE_LIMIT = 50;
 
 // Cache name prefix used by Today-mode for per-trip offline snapshots.
