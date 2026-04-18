@@ -25,8 +25,8 @@ CREATE TABLE IF NOT EXISTS public.trip_suggestion_impressions (
 CREATE INDEX IF NOT EXISTS idx_trip_suggestion_impressions_trip
   ON public.trip_suggestion_impressions(trip_id, shown_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_trip_suggestion_impressions_user_day
-  ON public.trip_suggestion_impressions(user_id, (date_trunc('day', shown_at)));
+CREATE INDEX IF NOT EXISTS idx_trip_suggestion_impressions_user_shown
+  ON public.trip_suggestion_impressions(user_id, shown_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_trip_suggestion_impressions_partner
   ON public.trip_suggestion_impressions(partner_id, shown_at DESC)
@@ -52,9 +52,9 @@ CREATE POLICY trip_suggestion_impressions_admin_select
   FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = (SELECT auth.uid())
-        AND profiles.role = 'admin'
+      SELECT 1 FROM public.user_roles
+      WHERE user_roles.user_id = (SELECT auth.uid())
+        AND user_roles.role = 'admin'
     )
   );
 

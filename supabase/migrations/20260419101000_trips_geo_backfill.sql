@@ -33,9 +33,9 @@ ALTER TABLE public.trip_geo_review_queue ENABLE ROW LEVEL SECURITY;
 CREATE POLICY trip_geo_review_queue_admin_all ON public.trip_geo_review_queue
   FOR ALL USING (
     EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = (SELECT auth.uid())
-        AND profiles.role = 'admin'
+      SELECT 1 FROM public.user_roles
+      WHERE user_roles.user_id = (SELECT auth.uid())
+        AND user_roles.role = 'admin'
     )
   );
 
@@ -117,8 +117,8 @@ DECLARE
 BEGIN
   -- Admin check
   IF NOT EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.user_roles
+    WHERE user_id = auth.uid() AND role = 'admin'
   ) THEN
     RAISE EXCEPTION 'not authorized';
   END IF;
