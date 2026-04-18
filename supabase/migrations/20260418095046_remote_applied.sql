@@ -1,0 +1,1 @@
+-- Migration applied directly on remote; stub added to sync local history.
