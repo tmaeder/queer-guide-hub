@@ -50,6 +50,12 @@ i18n
     fallbackLng: DEFAULT_LOCALE,
     debug: process.env.NODE_ENV === 'development',
 
+    // Resources are bundled synchronously above, so init can run sync too.
+    // Default `initImmediate: true` defers init via setTimeout, leaving a
+    // microtask window where `t()` returns raw keys — which showed up as
+    // flashes in dialogs that mounted during that window.
+    initImmediate: false,
+
     interpolation: {
       escapeValue: false,
     },
@@ -58,6 +64,12 @@ i18n
       order: ['path', 'localStorage', 'navigator', 'htmlTag'],
       lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage'],
+    },
+
+    // Keep `useTranslation().ready` authoritative without requiring every
+    // caller to sit inside a Suspense boundary.
+    react: {
+      useSuspense: false,
     },
   });
 

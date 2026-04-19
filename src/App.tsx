@@ -115,9 +115,6 @@ const AuditLog = lazy(() =>
 );
 
 // Import Hub components rendered as admin views
-const ApiKeysManager = lazy(() =>
-  import('./components/admin/ApiKeysManager').then((m) => ({ default: m.ApiKeysManager })),
-);
 const AffiliatePartnersManager = lazy(() =>
   import('./components/admin/AffiliatePartnersManager').then((m) => ({
     default: m.AffiliatePartnersManager,
@@ -390,7 +387,6 @@ const AppRoutes = () => {
 
                 {/* System section */}
                 <Route path="users" element={<AdminUsers />} />
-                <Route path="api-keys" element={<ApiKeysManager />} />
                 <Route path="redirects" element={<AdminRedirects />} />
                 <Route path="email-templates" element={<EmailTemplates />} />
 

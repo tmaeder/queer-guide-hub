@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export function TripPolls({ tripId }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -53,8 +55,8 @@ export function TripPolls({ tripId }: Props) {
     createPoll.mutate(
       { question: question.trim(), options: validOptions, isMultipleChoice: isMultiple, deadline: deadline || undefined },
       {
-        onSuccess: () => { toast({ title: 'Poll created' }); setCreateOpen(false); resetForm(); },
-        onError: (err) => toast({ title: 'Failed to create poll', description: String(err), variant: 'destructive' }),
+        onSuccess: () => { toast({ title: t('trips.polls.createdToast', 'Poll created') }); setCreateOpen(false); resetForm(); },
+        onError: (err) => toast({ title: t('trips.polls.createFailedToast', 'Failed to create poll'), description: String(err), variant: 'destructive' }),
       },
     );
   };
@@ -63,7 +65,7 @@ export function TripPolls({ tripId }: Props) {
     vote.mutate(
       { pollId, optionId },
       {
-        onError: (err) => toast({ title: 'Failed to vote', description: String(err), variant: 'destructive' }),
+        onError: (err) => toast({ title: t('trips.polls.voteFailedToast', 'Failed to vote'), description: String(err), variant: 'destructive' }),
       },
     );
   };
@@ -88,11 +90,11 @@ export function TripPolls({ tripId }: Props) {
     <Box>
       <Box className="flex items-center justify-between mb-3">
         <Typography variant="subtitle2" color="text.secondary">
-          {polls?.length || 0} {(polls?.length || 0) === 1 ? 'poll' : 'polls'}
+          {polls?.length || 0} {(polls?.length || 0) === 1 ? t('trips.polls.poll', 'poll') : t('trips.polls.polls', 'polls')}
         </Typography>
         <Button size="sm" onClick={() => setCreateOpen(true)}>
           <Plus size={14} />
-          Create Poll
+          {t('trips.polls.create', 'Create Poll')}
         </Button>
       </Box>
 
@@ -104,9 +106,9 @@ export function TripPolls({ tripId }: Props) {
             >
               <BarChart3 size={24} style={{ opacity: 0.5 }} />
             </Box>
-            <Typography variant="subtitle2" fontWeight={600}>No polls yet</Typography>
+            <Typography variant="subtitle2" fontWeight={600}>{t('trips.polls.noPolls', 'No polls yet')}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Create one to help your group make decisions
+              {t('trips.polls.noPollsHint', 'Create one to help your group make decisions')}
             </Typography>
           </Box>
         </ScrollReveal>
@@ -127,8 +129,8 @@ export function TripPolls({ tripId }: Props) {
                     {poll.question}
                   </Typography>
                   <Box className="flex items-center gap-1 shrink-0">
-                    {isClosed && <Badge variant="outline"><Lock size={10} style={{ marginRight: 4 }} />Closed</Badge>}
-                    {poll.is_multiple_choice && <Badge variant="outline">Multiple</Badge>}
+                    {isClosed && <Badge variant="outline"><Lock size={10} style={{ marginRight: 4 }} />{t('trips.polls.closed', 'Closed')}</Badge>}
+                    {poll.is_multiple_choice && <Badge variant="outline">{t('trips.polls.multiple', 'Multiple')}</Badge>}
                   </Box>
                 </Box>
 
@@ -189,7 +191,7 @@ export function TripPolls({ tripId }: Props) {
                 <Box className="flex items-center justify-between mt-2">
                   <Box className="flex items-center gap-2">
                     <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10 }}>
-                      {totalVotes} total {totalVotes === 1 ? 'vote' : 'votes'}
+                      {totalVotes} {totalVotes === 1 ? t('trips.polls.totalVote', 'total vote') : t('trips.polls.totalVotes', 'total votes')}
                     </Typography>
                     {poll.deadline && !isClosed && (
                       <Box className="flex items-center gap-0.5">
@@ -202,7 +204,7 @@ export function TripPolls({ tripId }: Props) {
                   </Box>
                   {isAuthor && !poll.is_closed && (
                     <Button variant="ghost" size="sm" onClick={() => closePoll.mutate(poll.id)}>
-                      Close Poll
+                      {t('trips.polls.closePoll', 'Close Poll')}
                     </Button>
                   )}
                 </Box>
@@ -216,27 +218,27 @@ export function TripPolls({ tripId }: Props) {
       <Dialog open={createOpen} onOpenChange={(o) => { if (!o) { setCreateOpen(false); resetForm(); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Poll</DialogTitle>
+            <DialogTitle>{t('trips.polls.create', 'Create Poll')}</DialogTitle>
           </DialogHeader>
 
           <Box className="flex flex-col gap-3 mt-2">
             <TextField
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="What would you like to ask?"
+              placeholder={t('trips.polls.questionPlaceholder', 'What would you like to ask?')}
               fullWidth
               size="small"
             />
 
             <Typography variant="caption" fontWeight={600} sx={{ display: 'block' }}>
-              Options
+              {t('trips.polls.options', 'Options')}
             </Typography>
             {options.map((opt, idx) => (
               <Box key={idx} className="flex items-center gap-1">
                 <TextField
                   value={opt}
                   onChange={(e) => updateOption(idx, e.target.value)}
-                  placeholder={`Option ${idx + 1}`}
+                  placeholder={t('trips.polls.optionPlaceholder', 'Option {{n}}', { n: idx + 1 })}
                   fullWidth
                   size="small"
                 />
@@ -248,21 +250,21 @@ export function TripPolls({ tripId }: Props) {
               </Box>
             ))}
             {options.length < 6 && (
-              <Button variant="ghost" size="sm" onClick={addOption}>+ Add Option</Button>
+              <Button variant="ghost" size="sm" onClick={addOption}>{t('trips.polls.addOption', '+ Add Option')}</Button>
             )}
 
             <FormControlLabel
               control={
                 <Switch checked={isMultiple} onChange={(e) => setIsMultiple(e.target.checked)} size="small" />
               }
-              label={<Typography variant="body2" sx={{ fontSize: 13 }}>Allow multiple choices</Typography>}
+              label={<Typography variant="body2" sx={{ fontSize: 13 }}>{t('trips.polls.allowMultiple', 'Allow multiple choices')}</Typography>}
             />
 
             <TextField
               type="datetime-local"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              label="Deadline (optional)"
+              label={t('trips.polls.deadline', 'Deadline (optional)')}
               size="small"
               InputLabelProps={{ shrink: true }}
               sx={{ maxWidth: 260 }}
@@ -271,14 +273,14 @@ export function TripPolls({ tripId }: Props) {
 
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => { setCreateOpen(false); resetForm(); }}>
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               size="sm"
               onClick={handleCreate}
               disabled={!question.trim() || options.filter((o) => o.trim()).length < 2 || createPoll.isPending}
             >
-              Create
+              {t('common.create', 'Create')}
             </Button>
           </DialogFooter>
         </DialogContent>

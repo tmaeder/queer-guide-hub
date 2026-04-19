@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CreateTripDialog on mobile > matches the mobile layout snapshot 1`] = `"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperScrollPaper MuiDialog-paperWidthSm MuiDialog-paperFullWidth MuiDialog-paperFullScreen css-1vl37k0-MuiPaper-root-MuiDialog-paper"`;

@@ -36,67 +36,92 @@ export function useTripPackingSuggestions(tripId: string | undefined) {
       trip?.start_date,
       trip?.end_date,
     ],
-    enabled: !!tripId && !!trip?.primary_country_id,
+    enabled: !!tripId,
     staleTime: 15 * 60 * 1000,
     queryFn: async (): Promise<PackingProductSuggestion[]> => {
       if (!trip) return [];
 
-      // Activities from trip_places categories
-      const { data: places } = await supabase
-        .from('trip_places')
-        .select('category')
-        .eq('trip_id', trip.id);
-      const activityWords = new Set(
-        (places ?? [])
-          .map((p: { category: string | null }) => (p.category || '').toLowerCase())
-          .filter(Boolean),
-      );
-      const activities = deriveActivities(activityWords);
+      // Activities from trip_places categories (safe when no places yet)
+      let activities: ReturnType<typeof deriveActivities> = [];
+      try {
+        const { data: places } = await supabase
+          .from('trip_places')
+          .select('category')
+          .eq('trip_id', trip.id);
+        const activityWords = new Set(
+          (places ?? [])
+            .map((p: { category: string | null }) => (p?.category || '').toLowerCase())
+            .filter(Boolean),
+        );
+        activities = deriveActivities(activityWords);
+      } catch {
+        activities = [];
+      }
 
-      // Country climate + equality score
-      const { data: country } = await supabase
-        .from('countries')
-        .select('equality_score')
-        .eq('id', trip.primary_country_id!)
-        .maybeSingle();
+      // Country climate + equality score (skip if no country set)
+      let equalityScore: number | null = null;
+      if (trip.primary_country_id) {
+        try {
+          const { data: country } = await supabase
+            .from('countries')
+            .select('equality_score')
+            .eq('id', trip.primary_country_id)
+            .maybeSingle();
+          equalityScore =
+            (country as { equality_score: number | null } | null)?.equality_score ?? null;
+        } catch {
+          equalityScore = null;
+        }
+      }
 
       const queries = generatePackingSuggestions({
-        countryCode: trip.primary_country_code,
-        startDate: trip.start_date,
-        endDate: trip.end_date,
+        countryCode: trip.primary_country_code ?? null,
+        startDate: trip.start_date ?? null,
+        endDate: trip.end_date ?? null,
         activities,
-        equalityScore: (country as { equality_score: number | null } | null)?.equality_score ?? null,
+        equalityScore,
       });
 
-      // Fan-out Meilisearch-via-Supabase queries; each returns top 1 match
+      // Fan-out Meilisearch-via-Supabase queries; each returns top 1 match.
+      // Each query is isolated so a single failure can't crash the panel.
       const results = await Promise.all(
         queries.map(async (q, idx): Promise<PackingProductSuggestion | null> => {
-          const { data, error } = await supabase
-            .from('marketplace_listings')
-            .select('id, title, description, price, currency, images, external_url, business_name')
-            .eq('status', 'active')
-            .textSearch('title', q.query.split(' ').slice(0, 3).join(' | '), {
-              type: 'websearch',
-              config: 'english',
-            })
-            .order('featured', { ascending: false })
-            .limit(1);
-          if (error || !data || data.length === 0) return null;
-          const row = data[0] as Record<string, unknown>;
-          return {
-            id: `pack:${q.category}:${idx}`,
-            listingId: row.id as string,
-            title: (row.title as string) ?? q.query,
-            description: (row.description as string | null) ?? null,
-            imageUrl: (row.images as string[] | null)?.[0] ?? null,
-            price: (row.price as number | null) ?? null,
-            currency: (row.currency as string | null) ?? null,
-            externalUrl: (row.external_url as string | null) ?? null,
-            provider: (row.business_name as string | null) ?? 'Marketplace',
-            category: q.category,
-            reason: q.reason,
-            rank: idx,
-          };
+          try {
+            const terms = (q.query || '')
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, 3)
+              .join(' OR ');
+            if (!terms) return null;
+            const { data, error } = await supabase
+              .from('marketplace_listings')
+              .select('id, title, description, price, currency, images, external_url, business_name')
+              .eq('status', 'active')
+              .textSearch('title', terms, {
+                type: 'websearch',
+                config: 'english',
+              })
+              .order('featured', { ascending: false })
+              .limit(1);
+            if (error || !data || data.length === 0) return null;
+            const row = data[0] as Record<string, unknown>;
+            return {
+              id: `pack:${q.category}:${idx}`,
+              listingId: row.id as string,
+              title: (row.title as string) ?? q.query,
+              description: (row.description as string | null) ?? null,
+              imageUrl: (row.images as string[] | null)?.[0] ?? null,
+              price: (row.price as number | null) ?? null,
+              currency: (row.currency as string | null) ?? null,
+              externalUrl: (row.external_url as string | null) ?? null,
+              provider: (row.business_name as string | null) ?? 'Marketplace',
+              category: q.category,
+              reason: q.reason,
+              rank: idx,
+            };
+          } catch {
+            return null;
+          }
         }),
       );
 

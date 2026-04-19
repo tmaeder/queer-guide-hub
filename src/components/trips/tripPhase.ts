@@ -59,18 +59,25 @@ export function getTripPhase(
   return 'plan';
 }
 
-export function phaseLabel(phase: TripPhase): string {
+type TFn = (key: string, options?: Record<string, unknown> | string, fallback?: string) => string;
+
+function tr(t: TFn | undefined, key: string, fallback: string, options?: Record<string, unknown>): string {
+  if (!t) return options ? fallback.replace(/\{\{(\w+)\}\}/g, (_, k) => String(options[k] ?? '')) : fallback;
+  return options ? t(key, { defaultValue: fallback, ...options }) : t(key, fallback);
+}
+
+export function phaseLabel(phase: TripPhase, t?: TFn): string {
   switch (phase) {
     case 'seed':
-      return 'Inspiration';
+      return tr(t, 'trips.phase.label.seed', 'Inspiration');
     case 'plan':
-      return 'Planning';
+      return tr(t, 'trips.phase.label.plan', 'Planning');
     case 'countdown':
-      return 'Countdown';
+      return tr(t, 'trips.phase.label.countdown', 'Countdown');
     case 'live':
-      return 'Live';
+      return tr(t, 'trips.phase.label.live', 'Live');
     case 'memory':
-      return 'Memory';
+      return tr(t, 'trips.phase.label.memory', 'Memory');
   }
 }
 
@@ -81,6 +88,7 @@ export function phaseLabel(phase: TripPhase): string {
 export function phaseStatusText(
   trip: Pick<Trip, 'status' | 'start_date' | 'end_date'>,
   now: Date = new Date(),
+  t?: TFn,
 ): string {
   const phase = getTripPhase(trip, now);
   const daysToStart = daysFromToday(trip.start_date, now);
@@ -88,24 +96,30 @@ export function phaseStatusText(
 
   switch (phase) {
     case 'seed':
-      return 'Dates not set';
+      return tr(t, 'trips.phase.status.datesNotSet', 'Dates not set');
     case 'plan':
-      return daysToStart !== null ? `in ${daysToStart} days` : 'Planning';
+      return daysToStart !== null
+        ? tr(t, 'trips.phase.status.inDays', 'in {{count}} days', { count: daysToStart })
+        : tr(t, 'trips.phase.label.plan', 'Planning');
     case 'countdown':
-      if (daysToStart === 1) return 'Tomorrow';
-      return daysToStart !== null ? `in ${daysToStart} days` : 'Soon';
+      if (daysToStart === 1) return tr(t, 'trips.phase.status.tomorrow', 'Tomorrow');
+      return daysToStart !== null
+        ? tr(t, 'trips.phase.status.inDays', 'in {{count}} days', { count: daysToStart })
+        : tr(t, 'trips.phase.status.soon', 'Soon');
     case 'live': {
-      if (daysToStart === null) return 'Live';
+      if (daysToStart === null) return tr(t, 'trips.phase.label.live', 'Live');
       const tripLength = daysToEnd !== null ? Math.abs(daysToEnd - daysToStart) + 1 : null;
       const dayNum = Math.abs(daysToStart) + 1;
-      return tripLength ? `Day ${dayNum} of ${tripLength}` : `Day ${dayNum}`;
+      return tripLength
+        ? tr(t, 'trips.phase.status.dayOf', 'Day {{day}} of {{total}}', { day: dayNum, total: tripLength })
+        : tr(t, 'trips.phase.status.day', 'Day {{day}}', { day: dayNum });
     }
     case 'memory': {
-      if (daysToEnd === null) return 'Past trip';
+      if (daysToEnd === null) return tr(t, 'trips.phase.status.pastTrip', 'Past trip');
       const ago = Math.abs(daysToEnd);
-      if (ago === 0) return 'Just ended';
-      if (ago === 1) return 'Yesterday';
-      return `${ago} days ago`;
+      if (ago === 0) return tr(t, 'trips.phase.status.justEnded', 'Just ended');
+      if (ago === 1) return tr(t, 'trips.phase.status.yesterday', 'Yesterday');
+      return tr(t, 'trips.phase.status.daysAgo', '{{count}} days ago', { count: ago });
     }
   }
 }

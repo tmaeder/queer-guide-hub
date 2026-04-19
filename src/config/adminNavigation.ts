@@ -25,7 +25,6 @@ import {
   Download,
   ClipboardCheck,
   Settings,
-  Key,
   Mail,
   Link2,
   Handshake,
@@ -299,14 +298,6 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/affiliates',
         adminOnly: true,
         color: '#10b981',
-      },
-      {
-        id: 'api-keys',
-        label: 'API Keys',
-        icon: Key,
-        route: '/admin/api-keys',
-        adminOnly: true,
-        color: '#64748b',
       },
       {
         id: 'redirects',

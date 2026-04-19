@@ -188,5 +188,104 @@ describe('packingSuggestions', () => {
       expect(out.length).toBeGreaterThan(0);
       expect(out.some((q) => q.category === 'electronics')).toBe(true);
     });
+
+    // ── Empty-trip / null-safety regression suite ───────────────────
+    describe('empty / null-safety regressions', () => {
+      it('does not throw when every input is null/undefined (fresh trip)', () => {
+        expect(() =>
+          generatePackingSuggestions({
+            countryCode: null,
+            startDate: null,
+            endDate: null,
+          }),
+        ).not.toThrow();
+      });
+
+      it('returns universal adapter when no country (no places)', () => {
+        const out = generatePackingSuggestions({
+          countryCode: null,
+          startDate: null,
+          endDate: null,
+        });
+        expect(out.some((q) => q.query === 'universal travel adapter')).toBe(
+          true,
+        );
+      });
+
+      it('returns a sensible baseline without climate data', () => {
+        const out = generatePackingSuggestions({
+          countryCode: 'DE',
+          startDate: '2026-07-01',
+          endDate: '2026-07-05',
+          // climate omitted
+        });
+        expect(out.some((q) => q.category === 'clothing')).toBe(true);
+        expect(out.some((q) => q.category === 'toiletries')).toBe(true);
+      });
+
+      it('handles an empty activities array without adding activity items', () => {
+        const out = generatePackingSuggestions({
+          countryCode: 'DE',
+          startDate: '2026-07-01',
+          endDate: '2026-07-05',
+          activities: [],
+        });
+        expect(out.some((q) => q.query.includes('hiking boots'))).toBe(false);
+        expect(out.some((q) => q.query.includes('sunscreen'))).toBe(false);
+      });
+
+      it('short trip (1 day) skips power bank but still returns essentials', () => {
+        const out = generatePackingSuggestions({
+          countryCode: 'DE',
+          startDate: '2026-06-15',
+          endDate: '2026-06-15',
+        });
+        expect(out.some((q) => q.query.includes('power bank'))).toBe(false);
+        expect(out.some((q) => q.category === 'toiletries')).toBe(true);
+        expect(out.some((q) => q.category === 'electronics')).toBe(true);
+      });
+
+      it('arctic / polar climate forces cold-weather gear even in summer month', () => {
+        const out = generatePackingSuggestions({
+          countryCode: 'IS',
+          climate: 'polar',
+          startDate: '2026-07-15',
+          endDate: '2026-07-22',
+        });
+        expect(out.some((q) => q.query.includes('thermal'))).toBe(true);
+        expect(out.some((q) => q.query.includes('down jacket'))).toBe(true);
+        expect(out.some((q) => q.query.includes('beanie'))).toBe(true);
+      });
+
+      it('desert / arid hot trip keeps sun protection', () => {
+        const out = generatePackingSuggestions({
+          countryCode: 'AE',
+          climate: 'arid',
+          startDate: '2026-07-15',
+          endDate: '2026-07-22',
+        });
+        expect(out.some((q) => q.query.includes('linen'))).toBe(true);
+        expect(out.some((q) => q.query.includes('sun hat'))).toBe(true);
+      });
+
+      it('equatorial rainy season suggests a rain jacket', () => {
+        const out = generatePackingSuggestions({
+          countryCode: 'KE',
+          startDate: '2026-07-15',
+          endDate: '2026-07-22',
+        });
+        expect(out.some((q) => q.query.includes('rain jacket'))).toBe(true);
+      });
+
+      it('returns at least the baseline set (non-empty) for a fresh trip', () => {
+        const out = generatePackingSuggestions({
+          countryCode: null,
+          startDate: null,
+          endDate: null,
+        });
+        // baseline: one clothing, one adapter, one toiletries bag at minimum
+        expect(out.length).toBeGreaterThanOrEqual(3);
+      });
+    });
   });
 });

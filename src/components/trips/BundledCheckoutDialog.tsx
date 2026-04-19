@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { CheckCircle2, Circle, Hotel, Ticket, ExternalLink, ArrowRight } from 'lucide-react';
@@ -63,6 +64,7 @@ export function BundledCheckoutDialog({
   tripStartDate,
   tripEndDate,
 }: Props) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [steps, setSteps] = useState<Step[]>([]);
   const [bookedKeys, setBookedKeys] = useState<Set<string>>(new Set());
@@ -105,8 +107,8 @@ export function BundledCheckoutDialog({
           key: `hotel-${cityId}`,
           kind: 'hotel',
           cityName,
-          title: `Stay in ${cityName}`,
-          subtitle: 'Compare hotels for your dates',
+          title: t('trips.bundledCheckout.stayIn', 'Stay in {{city}}', { city: cityName }),
+          subtitle: t('trips.bundledCheckout.compareHotels', 'Compare hotels for your dates'),
           provider: 'booking',
           vertical: 'hotel',
           url: bookingUrl(cityName, checkIn, checkOut),
@@ -115,8 +117,8 @@ export function BundledCheckoutDialog({
           key: `activity-${cityId}`,
           kind: 'activity',
           cityName,
-          title: `Things to do in ${cityName}`,
-          subtitle: 'Tours, tickets, day trips',
+          title: t('trips.bundledCheckout.thingsToDoIn', 'Things to do in {{city}}', { city: cityName }),
+          subtitle: t('trips.bundledCheckout.toursTicketsDayTrips', 'Tours, tickets, day trips'),
           provider: 'getyourguide',
           vertical: 'activity',
           url: gygUrl(cityName, checkIn),
@@ -128,7 +130,7 @@ export function BundledCheckoutDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, tripId, tripStartDate, tripEndDate]);
+  }, [open, tripId, tripStartDate, tripEndDate, t]);
 
   const total = steps.length;
   const current = steps[index];
@@ -168,32 +170,32 @@ export function BundledCheckoutDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Bundle your bookings</DialogTitle>
+          <DialogTitle>{t('trips.bundledCheckout.title', 'Bundle your bookings')}</DialogTitle>
           <DialogDescription>
-            Step through hotels and activities for each city on your trip.
+            {t('trips.bundledCheckout.description', 'Step through hotels and activities for each city on your trip.')}
           </DialogDescription>
         </DialogHeader>
 
         {loading ? (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <Typography variant="caption" color="text.secondary">
-              Loading…
+              {t('common.loading', 'Loading…')}
             </Typography>
           </Box>
         ) : total === 0 ? (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">
-              Add places to your trip first — we'll generate bookable links per city.
+              {t('trips.bundledCheckout.emptyHint', "Add places to your trip first — we'll generate bookable links per city.")}
             </Typography>
           </Box>
         ) : isDone ? (
           <Box sx={{ py: 3, textAlign: 'center' }}>
             <CheckCircle2 size={40} style={{ color: '#059669', margin: '0 auto 12px' }} />
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-              {bookedCount > 0 ? `${bookedCount} of ${total} opened` : 'All steps skipped'}
+              {bookedCount > 0 ? t('trips.bundledCheckout.openedOf', '{{booked}} of {{total}} opened', { booked: bookedCount, total }) : t('trips.bundledCheckout.allSkipped', 'All steps skipped')}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              You can revisit this anytime from the Budget tab.
+              {t('trips.bundledCheckout.revisitHint', 'You can revisit this anytime from the Budget tab.')}
             </Typography>
           </Box>
         ) : (
@@ -218,7 +220,7 @@ export function BundledCheckoutDialog({
               ))}
             </Box>
             <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: 'block' }}>
-              Step {index + 1} of {total} · {bookedCount} opened
+              {t('trips.bundledCheckout.stepOf', 'Step {{current}} of {{total}} · {{booked}} opened', { current: index + 1, total, booked: bookedCount })}
             </Typography>
 
             {/* Current card */}
@@ -245,7 +247,7 @@ export function BundledCheckoutDialog({
                   {current?.subtitle}
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.6 }}>
-                  via {current?.provider === 'booking' ? 'Booking.com' : 'GetYourGuide'}
+                  {t('trips.bundledCheckout.via', 'via')} {current?.provider === 'booking' ? 'Booking.com' : 'GetYourGuide'}
                 </Typography>
               </Box>
             </Box>
@@ -256,7 +258,7 @@ export function BundledCheckoutDialog({
           {!isDone && total > 0 && (
             <>
               <Button variant="outline" onClick={advance} disabled={loading}>
-                Skip
+                {t('common.skip', 'Skip')}
               </Button>
               <Button asChild disabled={loading}>
                 <a
@@ -266,14 +268,14 @@ export function BundledCheckoutDialog({
                   onClick={markBooked}
                 >
                   <ExternalLink style={{ width: 14, height: 14, marginRight: 6 }} />
-                  Open & mark booked
+                  {t('trips.bundledCheckout.openAndMarkBooked', 'Open & mark booked')}
                   <ArrowRight style={{ width: 14, height: 14, marginLeft: 6 }} />
                 </a>
               </Button>
             </>
           )}
           {isDone && (
-            <Button onClick={() => onOpenChange(false)}>Done</Button>
+            <Button onClick={() => onOpenChange(false)}>{t('common.done', 'Done')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

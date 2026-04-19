@@ -1,15 +1,20 @@
-import { useMemo, useState } from 'react';
+import { forwardRef, useMemo, useState } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import { CalendarDays, Sparkles } from 'lucide-react';
+import MuiDialog from '@mui/material/Dialog';
+import MuiDialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import Slide from '@mui/material/Slide';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import type { TransitionProps } from '@mui/material/transitions';
+import { useTheme } from '@mui/material/styles';
+import { CalendarDays, Sparkles, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
-  Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -35,13 +40,77 @@ const currencies = [
   { value: 'THB', label: 'THB – Thai Baht' },
 ];
 
+const SlideUp = forwardRef<
+  unknown,
+  TransitionProps & { children: React.ReactElement<unknown, string> }
+>(function SlideUp(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
 interface Props {
   open: boolean;
   onClose: () => void;
 }
 
+function ResponsiveDialogShell({
+  open,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  return (
+    <MuiDialog
+      open={open}
+      onClose={onClose}
+      fullScreen={isMobile}
+      maxWidth="sm"
+      fullWidth
+      TransitionComponent={isMobile ? SlideUp : undefined}
+      PaperProps={{
+        sx: isMobile
+          ? {
+              borderRadius: 0,
+              m: 0,
+              width: '100%',
+              maxHeight: '100dvh',
+              height: '100dvh',
+              display: 'flex',
+              flexDirection: 'column',
+            }
+          : { borderRadius: 0 },
+      }}
+      data-testid="create-trip-dialog"
+      data-mobile={isMobile ? 'true' : 'false'}
+    >
+      <MuiDialogContent
+        sx={{
+          p: { xs: 2, sm: 3 },
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          flex: isMobile ? 1 : 'initial',
+        }}
+      >
+        {children}
+      </MuiDialogContent>
+      <IconButton
+        aria-label="Close"
+        onClick={onClose}
+        sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
+        size="small"
+      >
+        <X style={{ width: 16, height: 16 }} />
+      </IconButton>
+    </MuiDialog>
+  );
+}
+
 export function CreateTripDialog({ open, onClose }: Props) {
-  const { t } = useTranslation();
+  const { t, ready } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { createTrip } = useTripMutations();
   const { toast } = useToast();
@@ -73,10 +142,6 @@ export function CreateTripDialog({ open, onClose }: Props) {
   const handleClose = () => {
     resetForm();
     onClose();
-  };
-
-  const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) handleClose();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,9 +195,29 @@ export function CreateTripDialog({ open, onClose }: Props) {
 
   const hasDates = Boolean(startDate && endDate);
 
+  // Guard against raw i18n key flashes: don't render the form until
+  // translations are ready. Resources are bundled sync so this normally
+  // resolves on the very first render, but the ready-check protects against
+  // any late-initializing language detection / namespace load.
+  if (open && !ready) {
+    return (
+      <ResponsiveDialogShell open={open} onClose={handleClose}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 320,
+          }}
+        >
+          <CircularProgress size={24} />
+        </Box>
+      </ResponsiveDialogShell>
+    );
+  }
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
+    <ResponsiveDialogShell open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t('trips.dialog.create.title')}</DialogTitle>
@@ -263,7 +348,6 @@ export function CreateTripDialog({ open, onClose }: Props) {
             </Button>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialogShell>
   );
 }

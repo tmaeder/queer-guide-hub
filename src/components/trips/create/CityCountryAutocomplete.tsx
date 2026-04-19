@@ -53,7 +53,7 @@ export function CityCountryAutocomplete({
   autoFocus,
   id = 'trip-city-country',
 }: Props) {
-  const { t } = useTranslation();
+  const { t, ready } = useTranslation();
   const [query, setQuery] = useState(
     value ? `${value.cityName}, ${value.countryName}` : '',
   );

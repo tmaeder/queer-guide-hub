@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/lib/currency';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { useLocation } from 'react-router';
@@ -94,6 +95,7 @@ export const UniversalSearchBar = () => {
   const navigate = useLocalizedNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
 
   // Reset search state when navigating away from search results
   const prevPathRef = useRef(location.pathname);
@@ -340,19 +342,19 @@ export const UniversalSearchBar = () => {
               <Box sx={{ flex: 1, position: 'relative' }}>
                 <SearchInputTyped
                   ref={inputRef}
-                  aria-label="Search Queer Guide"
+                  aria-label={t('search.ariaLabel', 'Search Queer Guide')}
                   role="searchbox"
                   placeholders={
                     isMobile
-                      ? ['Search...']
+                      ? [t('search.placeholders.generic', 'Search...')]
                       : [
-                          'Search venues...',
-                          'Find events...',
-                          'Browse marketplace...',
-                          'Discover people...',
-                          'Read news...',
-                          'Explore resources...',
-                          'Meet personalities...',
+                          t('search.placeholders.venues', 'Search venues...'),
+                          t('search.placeholders.events', 'Find events...'),
+                          t('search.placeholders.marketplace', 'Browse marketplace...'),
+                          t('search.placeholders.people', 'Discover people...'),
+                          t('search.placeholders.news', 'Read news...'),
+                          t('search.placeholders.resources', 'Explore resources...'),
+                          t('search.placeholders.personalities', 'Meet personalities...'),
                         ]
                   }
                   typingSpeed={75}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrency = 'EUR' }: Props) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { addBudgetItem } = useBudgetMutations(tripId);
 
@@ -72,10 +74,10 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
         place_id: null,
         receipt_url: null,
       });
-      toast({ title: 'Expense added' });
+      toast({ title: t('trips.budget.expenseAdded', 'Expense added') });
       resetAndClose();
     } catch (err) {
-      toast({ title: 'Failed to add expense', description: String(err), variant: 'destructive' });
+      toast({ title: t('trips.budget.addFailed', 'Failed to add expense'), description: String(err), variant: 'destructive' });
     }
   };
 
@@ -85,23 +87,23 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
     <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Expense</DialogTitle>
+          <DialogTitle>{t('trips.budget.addExpense', 'Add Expense')}</DialogTitle>
         </DialogHeader>
 
         <Box className="flex flex-col gap-2.5 mt-2">
           <TextField
-            label="Title"
+            label={t('trips.budget.titleLabel', 'Title')}
             required
             fullWidth
             size="small"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Dinner at Rainbow Cafe"
+            placeholder={t('trips.budget.titlePlaceholder', 'e.g. Dinner at Rainbow Cafe')}
           />
 
           <Box className="grid grid-cols-2 gap-3">
             <TextField
-              label="Amount"
+              label={t('trips.budget.amount', 'Amount')}
               required
               type="number"
               fullWidth
@@ -111,7 +113,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
               inputProps={{ min: 0, step: '0.01' }}
             />
             <TextField
-              label="Currency"
+              label={t('trips.budget.currency', 'Currency')}
               select
               fullWidth
               size="small"
@@ -126,7 +128,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
 
           <Box className="grid grid-cols-2 gap-3">
             <TextField
-              label="Category"
+              label={t('trips.budget.category', 'Category')}
               select
               fullWidth
               size="small"
@@ -135,12 +137,12 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
             >
               {CATEGORIES.map((c) => (
                 <MenuItem key={c} value={c}>
-                  {c.charAt(0).toUpperCase() + c.slice(1)}
+                  {t(`trips.budget.categories.${c}`, c.charAt(0).toUpperCase() + c.slice(1))}
                 </MenuItem>
               ))}
             </TextField>
             <TextField
-              label="Date"
+              label={t('trips.budget.date', 'Date')}
               type="date"
               fullWidth
               size="small"
@@ -151,7 +153,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
           </Box>
 
           <TextField
-            label="Paid by"
+            label={t('trips.budget.paidBy', 'Paid by')}
             select
             required
             fullWidth
@@ -168,7 +170,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
                   >
                     {(m.profiles?.display_name || 'U')[0].toUpperCase()}
                   </Avatar>
-                  {m.profiles?.display_name || 'Unknown'}
+                  {m.profiles?.display_name || t('common.unknown', 'Unknown')}
                 </Box>
               </MenuItem>
             ))}
@@ -176,7 +178,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
 
           <div>
             <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 1, display: 'block' }}>
-              Split among
+              {t('trips.budget.splitAmong', 'Split among')}
             </Typography>
             <Box className="flex flex-wrap gap-1">
               {members.map((m) => {
@@ -202,13 +204,13 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
         </Box>
 
         <DialogFooter className="mt-3">
-          <Button variant="outline" onClick={resetAndClose}>Cancel</Button>
+          <Button variant="outline" onClick={resetAndClose}>{t('common.cancel', 'Cancel')}</Button>
           <Button
             onClick={handleSubmit}
             disabled={!canSubmit || addBudgetItem.isPending}
           >
             {addBudgetItem.isPending && <CircularProgress size={16} sx={{ mr: 1 }} />}
-            Add Expense
+            {t('trips.budget.addExpense', 'Add Expense')}
           </Button>
         </DialogFooter>
       </DialogContent>

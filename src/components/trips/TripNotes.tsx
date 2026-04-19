@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
@@ -21,7 +22,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useTripNotes, type TripNote } from '@/hooks/useTripCollaboration';
-import { useAuth } from '@/hooks/useAuth';
 
 const CATEGORIES = [
   { value: 'general', label: 'General' },
@@ -35,6 +35,7 @@ interface Props {
 }
 
 export function TripNotes({ tripId }: Props) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const {
     data: notes,
@@ -79,12 +80,12 @@ export function TripNotes({ tripId }: Props) {
         },
         {
           onSuccess: () => {
-            toast({ title: 'Note updated' });
+            toast({ title: t('trips.notes.updatedToast', 'Note updated') });
             setEditOpen(false);
           },
           onError: (err) =>
             toast({
-              title: 'Failed to save note',
+              title: t('trips.notes.saveFailedToast', 'Failed to save note'),
               description: String(err),
               variant: 'destructive',
             }),
@@ -99,12 +100,12 @@ export function TripNotes({ tripId }: Props) {
         },
         {
           onSuccess: () => {
-            toast({ title: 'Note created' });
+            toast({ title: t('trips.notes.createdToast', 'Note created') });
             setEditOpen(false);
           },
           onError: (err) =>
             toast({
-              title: 'Failed to create note',
+              title: t('trips.notes.createFailedToast', 'Failed to create note'),
               description: String(err),
               variant: 'destructive',
             }),
@@ -117,12 +118,12 @@ export function TripNotes({ tripId }: Props) {
     if (!deleteConfirmId) return;
     deleteNote.mutate(deleteConfirmId, {
       onSuccess: () => {
-        toast({ title: 'Note deleted' });
+        toast({ title: t('trips.notes.deletedToast', 'Note deleted') });
         setDeleteConfirmId(null);
         setEditOpen(false);
       },
       onError: (err) =>
-        toast({ title: 'Failed to delete note', description: String(err), variant: 'destructive' }),
+        toast({ title: t('trips.notes.deleteFailedToast', 'Failed to delete note'), description: String(err), variant: 'destructive' }),
     });
   };
 
@@ -132,11 +133,11 @@ export function TripNotes({ tripId }: Props) {
     <Box>
       <Box className="flex items-center justify-between mb-3">
         <Typography variant="subtitle2" color="text.secondary">
-          {notes?.length || 0} {(notes?.length || 0) === 1 ? 'note' : 'notes'}
+          {notes?.length || 0} {(notes?.length || 0) === 1 ? t('trips.notes.note', 'note') : t('trips.notes.notes', 'notes')}
         </Typography>
         <Button size="sm" onClick={openNew}>
           <Plus size={14} />
-          New Note
+          {t('trips.notes.newNote', 'New Note')}
         </Button>
       </Box>
 
@@ -158,10 +159,10 @@ export function TripNotes({ tripId }: Props) {
               <StickyNote size={24} style={{ opacity: 0.5 }} />
             </Box>
             <Typography variant="subtitle2" fontWeight={600}>
-              No notes yet
+              {t('trips.notes.noNotes', 'No notes yet')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Create one to share information with your group
+              {t('trips.notes.noNotesHint', 'Create one to share information with your group')}
             </Typography>
           </Box>
         </ScrollReveal>
@@ -175,10 +176,10 @@ export function TripNotes({ tripId }: Props) {
                 <Box className="flex items-center gap-1.5 min-w-0">
                   {note.is_pinned && <Pin size={12} style={{ flexShrink: 0 }} />}
                   <Typography variant="subtitle2" fontWeight={600} noWrap>
-                    {note.title || 'Untitled'}
+                    {note.title || t('trips.notes.untitled', 'Untitled')}
                   </Typography>
                 </Box>
-                <Badge variant="outline">{note.category || 'general'}</Badge>
+                <Badge variant="outline">{t(`trips.notes.category.${note.category || 'general'}`, note.category || 'general')}</Badge>
               </Box>
 
               {note.content && (
@@ -218,21 +219,21 @@ export function TripNotes({ tripId }: Props) {
       <Dialog open={editOpen} onOpenChange={(o) => !o && setEditOpen(false)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingNote ? 'Edit Note' : 'New Note'}</DialogTitle>
+            <DialogTitle>{editingNote ? t('trips.notes.editNote', 'Edit Note') : t('trips.notes.newNote', 'New Note')}</DialogTitle>
           </DialogHeader>
 
           <Box className="flex flex-col gap-3 mt-2">
             <TextField
               value={formTitle}
               onChange={(e) => setFormTitle(e.target.value)}
-              placeholder="Note title"
+              placeholder={t('trips.notes.titlePlaceholder', 'Note title')}
               fullWidth
               size="small"
             />
             <TextField
               value={formContent}
               onChange={(e) => setFormContent(e.target.value)}
-              placeholder="Write your note..."
+              placeholder={t('trips.notes.contentPlaceholder', 'Write your note...')}
               fullWidth
               multiline
               minRows={4}
@@ -240,7 +241,7 @@ export function TripNotes({ tripId }: Props) {
               size="small"
             />
             <TextField
-              label="Category"
+              label={t('trips.notes.categoryLabel', 'Category')}
               select
               size="small"
               value={formCategory}
@@ -249,7 +250,7 @@ export function TripNotes({ tripId }: Props) {
             >
               {CATEGORIES.map((c) => (
                 <MenuItem key={c.value} value={c.value}>
-                  {c.label}
+                  {t(`trips.notes.category.${c.value}`, c.label)}
                 </MenuItem>
               ))}
             </TextField>
@@ -264,7 +265,7 @@ export function TripNotes({ tripId }: Props) {
                     onClick={() =>
                       togglePin.mutate({ id: editingNote.id, isPinned: editingNote.is_pinned })
                     }
-                    title={editingNote.is_pinned ? 'Unpin' : 'Pin'}
+                    title={editingNote.is_pinned ? t('trips.notes.unpin', 'Unpin') : t('trips.notes.pin', 'Pin')}
                     sx={{ minWidth: 44, minHeight: 44 }}
                   >
                     {editingNote.is_pinned ? <PinOff size={16} /> : <Pin size={16} />}
@@ -282,14 +283,14 @@ export function TripNotes({ tripId }: Props) {
             </Box>
             <DialogFooter>
               <Button variant="outline" size="sm" onClick={() => setEditOpen(false)}>
-                Cancel
+                {t('common.cancel', 'Cancel')}
               </Button>
               <Button
                 size="sm"
                 onClick={handleSave}
                 disabled={createNote.isPending || updateNote.isPending}
               >
-                {editingNote ? 'Save' : 'Create'}
+                {editingNote ? t('common.save', 'Save') : t('common.create', 'Create')}
               </Button>
             </DialogFooter>
           </Box>
@@ -300,17 +301,17 @@ export function TripNotes({ tripId }: Props) {
       <Dialog open={!!deleteConfirmId} onOpenChange={(o) => !o && setDeleteConfirmId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Note</DialogTitle>
+            <DialogTitle>{t('trips.notes.deleteTitle', 'Delete Note')}</DialogTitle>
           </DialogHeader>
           <Typography variant="body2" sx={{ mt: 1 }}>
-            Are you sure you want to delete this note? This cannot be undone.
+            {t('trips.notes.deleteConfirm', 'Are you sure you want to delete this note? This cannot be undone.')}
           </Typography>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(null)}>
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button variant="destructive" size="sm" onClick={handleDelete}>
-              Delete
+              {t('common.delete', 'Delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

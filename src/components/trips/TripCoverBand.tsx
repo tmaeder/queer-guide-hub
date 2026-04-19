@@ -5,7 +5,9 @@ import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import { Calendar } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 import type { TripWithDetails } from '@/hooks/useTrips';
+import { resolveTripTitle } from './tripTitle';
 
 interface Props {
   trip: TripWithDetails;
@@ -45,6 +47,8 @@ export function TripCoverBand({
 }: Props) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const { t } = useTranslation();
+  const displayTitle = resolveTripTitle(trip, t);
 
   const coverImage = trip.cover_image_url;
   const fallbackGradient = gradientForTrip(trip.id);
@@ -136,7 +140,7 @@ export function TripCoverBand({
               textShadow: '0 2px 16px rgba(0,0,0,0.35)',
             }}
           >
-            {trip.title}
+            {displayTitle}
           </Typography>
 
           {dateRange && (

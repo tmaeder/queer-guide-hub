@@ -3,8 +3,10 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Luggage, X, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { getTripPhase, phaseLabel, phaseStatusText } from './tripPhase';
+import { resolveTripTitle } from './tripTitle';
 
 /**
  * Routes where the bar is suppressed — already inside trip context, admin shell,
@@ -22,17 +24,20 @@ const HIDDEN_PREFIXES = ['/trips', '/admin', '/auth', '/onboarding'];
 export function TripContextBar() {
   const { pathname } = useLocation();
   const { activeTrip, isDismissed, dismiss } = useActiveTrip();
+  const { t } = useTranslation();
 
   if (!activeTrip || isDismissed) return null;
   if (HIDDEN_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
 
+  const displayTitle = resolveTripTitle(activeTrip, t);
+
   const phase = getTripPhase(activeTrip);
-  const status = phaseStatusText(activeTrip);
+  const status = phaseStatusText(activeTrip, undefined, t);
 
   return (
     <Box
       role="region"
-      aria-label="Active trip context"
+      aria-label={t('trips.contextBar.ariaLabel', 'Active trip context')}
       sx={(theme) => ({
         position: 'sticky',
         top: 0,
@@ -58,7 +63,7 @@ export function TripContextBar() {
           variant="body2"
           sx={{ fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         >
-          {activeTrip.title}
+          {displayTitle}
         </Typography>
         <Typography
           variant="caption"
@@ -68,7 +73,7 @@ export function TripContextBar() {
             flexShrink: 0,
           }}
         >
-          · {phaseLabel(phase)} · {status}
+          · {phaseLabel(phase, t)} · {status}
         </Typography>
         <Box sx={{ flex: 1 }} />
         <Typography
@@ -88,11 +93,11 @@ export function TripContextBar() {
             flexShrink: 0,
           }}
         >
-          Open trip
+          {t('trips.contextBar.openTrip', 'Open trip')}
           <ChevronRight style={{ width: 14, height: 14 }} aria-hidden />
         </Typography>
         <IconButton
-          aria-label="Dismiss trip context bar"
+          aria-label={t('trips.contextBar.dismissAria', 'Dismiss trip context bar')}
           size="small"
           onClick={dismiss}
           sx={{ p: 0.25, ml: 0.5 }}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
@@ -80,6 +81,7 @@ interface Props {
 }
 
 export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }: Props) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { addPlace } = useTripMutations();
   const [mode, setMode] = useState('search');
@@ -215,10 +217,10 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
           category: customCategory, sort_order: 0, created_by: null,
         });
       }
-      toast({ title: 'Place added to trip' });
+      toast({ title: t('trips.addPlace.addedToast', 'Place added to trip') });
       resetAndClose();
     } catch (err) {
-      toast({ title: 'Failed to add place', description: String(err), variant: 'destructive' });
+      toast({ title: t('trips.addPlace.addFailedToast', 'Failed to add place'), description: String(err), variant: 'destructive' });
     }
   };
 
@@ -229,19 +231,19 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
     <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Place</DialogTitle>
+          <DialogTitle>{t('trips.addPlace.title', 'Add Place')}</DialogTitle>
         </DialogHeader>
 
         <Box sx={{ mt: 1, mb: 1 }}>
           <TextField
-            label="Assign to Day"
+            label={t('trips.addPlace.assignToDay', 'Assign to Day')}
             select
             fullWidth
             size="small"
             value={dayId}
             onChange={(e) => setDayId(e.target.value)}
           >
-            <MenuItem value="">Unassigned</MenuItem>
+            <MenuItem value="">{t('trips.addPlace.unassigned', 'Unassigned')}</MenuItem>
             {days.map((d) => (
               <MenuItem key={d.id} value={d.id}>
                 {new Date(d.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
@@ -253,13 +255,13 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
         <Tabs value={mode} onValueChange={setMode}>
           <TabsList>
-            <TabsTrigger value="search">Search queer.guide</TabsTrigger>
-            <TabsTrigger value="custom">Custom Place</TabsTrigger>
+            <TabsTrigger value="search">{t('trips.addPlace.searchTab', 'Search queer.guide')}</TabsTrigger>
+            <TabsTrigger value="custom">{t('trips.addPlace.customTab', 'Custom Place')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="search">
             <TextField
-              placeholder="Search venues, events, hotels..."
+              placeholder={t('trips.addPlace.searchPlaceholder', 'Search venues, events, hotels...')}
               fullWidth
               size="small"
               value={searchQuery}
@@ -279,17 +281,17 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
               }}
             />
             <Button variant="ghost" size="sm" onClick={handleSearch} disabled={!searchQuery.trim()} className="mt-1">
-              Search
+              {t('common.search', 'Search')}
             </Button>
 
             {results.length === 0 && !searching && recentSearches.length > 0 && (
               <Box sx={{ mt: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.75 }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <Clock size={12} /> Recent
+                    <Clock size={12} /> {t('trips.addPlace.recent', 'Recent')}
                   </Typography>
                   <Button variant="ghost" size="sm" onClick={clearRecent} className="h-6 px-2 text-xs">
-                    Clear
+                    {t('common.clear', 'Clear')}
                   </Button>
                 </Box>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
@@ -319,17 +321,18 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
             {results.length > 0 && (
               <Box sx={{ mt: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                {(['all', 'venue', 'event', 'hotel'] as TypeFilter[]).map((t) => {
-                  const count = countFor(t);
-                  if (t !== 'all' && count === 0) return null;
+                {(['all', 'venue', 'event', 'hotel'] as TypeFilter[]).map((tf) => {
+                  const count = countFor(tf);
+                  if (tf !== 'all' && count === 0) return null;
+                  const labelFallback = tf === 'all' ? 'All' : tf.charAt(0).toUpperCase() + tf.slice(1);
                   return (
                     <Chip
-                      key={t}
-                      label={`${t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)} (${count})`}
+                      key={tf}
+                      label={`${t(`trips.addPlace.filter.${tf}`, labelFallback)} (${count})`}
                       size="small"
-                      color={typeFilter === t ? 'primary' : 'default'}
-                      variant={typeFilter === t ? 'filled' : 'outlined'}
-                      onClick={() => setTypeFilter(t)}
+                      color={typeFilter === tf ? 'primary' : 'default'}
+                      variant={typeFilter === tf ? 'filled' : 'outlined'}
+                      onClick={() => setTypeFilter(tf)}
                       sx={{ cursor: 'pointer' }}
                     />
                   );
@@ -378,7 +381,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
             {!searching && results.length === 0 && searchQuery.trim() && (
               <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
-                No results found. Try a different search or add a custom place.
+                {t('trips.addPlace.noResults', 'No results found. Try a different search or add a custom place.')}
               </Typography>
             )}
           </TabsContent>
@@ -386,16 +389,16 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
           <TabsContent value="custom">
             <Box className="flex flex-col gap-3">
               <TextField
-                label="Place Name"
+                label={t('trips.addPlace.placeName', 'Place Name')}
                 required
                 fullWidth
                 size="small"
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
-                placeholder="e.g. Rainbow Cafe"
+                placeholder={t('trips.addPlace.placeNamePlaceholder', 'e.g. Rainbow Cafe')}
               />
               <TextField
-                label="Address"
+                label={t('trips.addPlace.address', 'Address')}
                 fullWidth
                 size="small"
                 value={customAddress}
@@ -403,7 +406,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
               />
               <Box className="grid grid-cols-2 gap-3">
                 <TextField
-                  label="Latitude"
+                  label={t('trips.addPlace.latitude', 'Latitude')}
                   type="number"
                   fullWidth
                   size="small"
@@ -412,7 +415,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                   inputProps={{ step: 'any' }}
                 />
                 <TextField
-                  label="Longitude"
+                  label={t('trips.addPlace.longitude', 'Longitude')}
                   type="number"
                   fullWidth
                   size="small"
@@ -422,7 +425,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                 />
               </Box>
               <TextField
-                label="Category"
+                label={t('trips.addPlace.category', 'Category')}
                 select
                 fullWidth
                 size="small"
@@ -431,7 +434,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
               >
                 {customCategories.map((c) => (
                   <MenuItem key={c} value={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                    {t(`trips.addPlace.customCategories.${c}`, c.charAt(0).toUpperCase() + c.slice(1))}
                   </MenuItem>
                 ))}
               </TextField>
@@ -440,10 +443,10 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
         </Tabs>
 
         <DialogFooter className="mt-3">
-          <Button variant="outline" onClick={resetAndClose}>Cancel</Button>
+          <Button variant="outline" onClick={resetAndClose}>{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || addPlace.isPending}>
             {addPlace.isPending && <CircularProgress size={16} sx={{ mr: 1 }} />}
-            Add Place
+            {t('trips.addPlace.title', 'Add Place')}
           </Button>
         </DialogFooter>
       </DialogContent>

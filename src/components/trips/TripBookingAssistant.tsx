@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -35,6 +36,7 @@ interface CityInfo {
 }
 
 export function TripBookingAssistant({ tripId, places, days, startDate, endDate }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { toast } = useToast();
   const { addPlace } = useTripMutations();
@@ -44,9 +46,9 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
   const [addingId, setAddingId] = useState<string | null>(null);
 
   const tabs = [
-    { key: 'suggestions', label: 'Suggestions', icon: MapPin },
-    { key: 'booking', label: 'Book', icon: Hotel },
-  ] as const;
+    { key: 'suggestions' as const, label: t('trips.bookingAssistant.tabs.suggestions', 'Suggestions'), icon: MapPin },
+    { key: 'booking' as const, label: t('trips.bookingAssistant.tabs.book', 'Book'), icon: Hotel },
+  ];
 
   const cityIds = useMemo(() => {
     const ids = new Set<string>();
@@ -153,9 +155,9 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
         sort_order: 0,
         created_by: null,
       });
-      toast({ title: 'Added to trip' });
+      toast({ title: t('trips.bookingAssistant.addedToast', 'Added to trip') });
     } catch (err) {
-      toast({ title: 'Failed to add', description: String(err), variant: 'destructive' });
+      toast({ title: t('trips.bookingAssistant.addFailedToast', 'Failed to add'), description: String(err), variant: 'destructive' });
     } finally {
       setAddingId(null);
     }
@@ -166,7 +168,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
       <Card>
         <CardContent>
           <Typography variant="body2" color="text.secondary" className="text-center">
-            Add places to see suggestions and booking options
+            {t('trips.bookingAssistant.emptyHint', 'Add places to see suggestions and booking options')}
           </Typography>
         </CardContent>
       </Card>
@@ -197,7 +199,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
             <Box className="flex items-start gap-2" sx={{ bgcolor: 'warning.light', mx: -2, mt: -1, mb: -1, p: 2, borderRadius: 1 }}>
               <Shield size={16} style={{ color: theme.palette.warning?.main, flexShrink: 0, marginTop: 2 }} />
               <Typography variant="body2">
-                <strong>{city.name}</strong> has a lower equality score ({city.countries?.equality_score}).
+                <strong>{city.name}</strong> {t('trips.bookingAssistant.lowerEquality', 'has a lower equality score')} ({city.countries?.equality_score}).
               </Typography>
             </Box>
           </CardContent>
@@ -223,7 +225,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
               return (
                 <Box key={cityId} sx={{ mb: 2 }}>
                   <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 0.5, display: 'block' }}>
-                    Suggested for {city?.name || 'Unknown'}
+                    {t('trips.bookingAssistant.suggestedFor', 'Suggested for {{city}}', { city: city?.name || t('trips.bookingAssistant.unknownCity', 'Unknown') })}
                   </Typography>
                   {cityVenues.map((venue) => (
                     <Box
@@ -238,7 +240,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
                       </div>
                       <Button variant="ghost" size="sm" onClick={() => handleAddVenue(venue)} disabled={addingId === venue.id}>
                         {addingId === venue.id ? <CircularProgress size={12} /> : <Plus size={12} />}
-                        Add
+                        {t('trips.bookingAssistant.add', 'Add')}
                       </Button>
                     </Box>
                   ))}
@@ -254,38 +256,42 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Still need section */}
           <Typography variant="caption" color="text.secondary" fontWeight={600}>
-            Still need
+            {t('trips.bookingAssistant.stillNeed', 'Still need')}
           </Typography>
 
           {!hasFlightBooked && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
               <Plane size={16} style={{ color: theme.palette.text.secondary }} />
-              <Typography variant="body2" sx={{ flex: 1 }}>Flights</Typography>
+              <Typography variant="body2" sx={{ flex: 1 }}>{t('trips.bookingAssistant.flights', 'Flights')}</Typography>
               <LocalizedLink to="/travel?tab=flights">
-                <Button variant="outline" size="sm">Search</Button>
+                <Button variant="outline" size="sm">{t('trips.bookingAssistant.search', 'Search')}</Button>
               </LocalizedLink>
             </Box>
           )}
           {hasFlightBooked && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, opacity: 0.6 }}>
               <Check size={16} style={{ color: theme.palette.success.main }} />
-              <Typography variant="body2">Flights booked</Typography>
+              <Typography variant="body2">{t('trips.bookingAssistant.flightsBooked', 'Flights booked')}</Typography>
             </Box>
           )}
 
           {!hasHotelBooked && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
               <Hotel size={16} style={{ color: theme.palette.text.secondary }} />
-              <Typography variant="body2" sx={{ flex: 1 }}>Hotel{firstCity ? ` in ${firstCity.name}` : ''}</Typography>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                {firstCity
+                  ? t('trips.bookingAssistant.hotelIn', 'Hotel in {{city}}', { city: firstCity.name })
+                  : t('trips.bookingAssistant.hotel', 'Hotel')}
+              </Typography>
               <LocalizedLink to={`/travel?tab=hotels${firstCity ? `&city=${encodeURIComponent(firstCity.name)}` : ''}`}>
-                <Button variant="outline" size="sm">Search</Button>
+                <Button variant="outline" size="sm">{t('trips.bookingAssistant.search', 'Search')}</Button>
               </LocalizedLink>
             </Box>
           )}
           {hasHotelBooked && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, opacity: 0.6 }}>
               <Check size={16} style={{ color: theme.palette.success.main }} />
-              <Typography variant="body2">Hotel booked</Typography>
+              <Typography variant="body2">{t('trips.bookingAssistant.hotelBooked', 'Hotel booked')}</Typography>
             </Box>
           )}
 
@@ -293,7 +299,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
           {!hasHotelBooked && firstCity && (
             <Box>
               <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 1, display: 'block' }}>
-                Hotels in {firstCity.name}
+                {t('trips.bookingAssistant.hotelsIn', 'Hotels in {{city}}', { city: firstCity.name })}
               </Typography>
               {hotelsLoading ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -326,7 +332,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
                   ))}
                 </Box>
               ) : (
-                <Typography variant="body2" color="text.secondary">No hotels found</Typography>
+                <Typography variant="body2" color="text.secondary">{t('trips.bookingAssistant.noHotelsFound', 'No hotels found')}</Typography>
               )}
             </Box>
           )}

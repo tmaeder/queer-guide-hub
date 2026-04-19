@@ -40,7 +40,11 @@ export function PackingTab({ tripId }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const { toast } = useToast();
-  const { grouped, checkedCount, totalCount, isLoading } = useTripPacking(tripId);
+  const packing = useTripPacking(tripId);
+  const grouped = packing.grouped ?? [];
+  const checkedCount = packing.checkedCount ?? 0;
+  const totalCount = packing.totalCount ?? 0;
+  const isLoading = packing.isLoading;
   const {
     addPackingItem,
     toggleChecked,
@@ -56,7 +60,7 @@ export function PackingTab({ tripId }: Props) {
   const percentage =
     totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
-  const sortedGroups = [...grouped].sort(
+  const sortedGroups = [...(grouped || [])].sort(
     (a, b) =>
       CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
   );
@@ -128,7 +132,7 @@ export function PackingTab({ tripId }: Props) {
   };
 
   if (totalCount === 0) {
-    const brand = theme.palette.brand?.main || '#DB2777';
+    const brand = theme?.palette?.brand?.main || '#DB2777';
     return (
       <Box
         sx={{

@@ -15,6 +15,7 @@ import { Card, CardImage, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { phaseStatusText, getTripPhase } from './tripPhase';
+import { resolveTripTitle } from './tripTitle';
 import {
   Dialog,
   DialogContent,
@@ -58,8 +59,9 @@ export function TripCard({ trip }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const isActive = activeTrip?.id === trip.id;
+  const displayTitle = resolveTripTitle(trip, t);
   const phase = getTripPhase(trip);
-  const phaseStatus = phaseStatusText(trip);
+  const phaseStatus = phaseStatusText(trip, undefined, t);
 
   const handleTogglePin = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -69,7 +71,7 @@ export function TripCard({ trip }: Props) {
       title: isActive ? t('trips.toast.unpinned', 'Trip unpinned') : t('trips.toast.pinned', 'Trip pinned'),
       description: isActive
         ? t('trips.toast.unpinnedDescription', 'No longer your active trip context.')
-        : t('trips.toast.pinnedDescription', '{{title}} is now your active trip context.', { title: trip.title }),
+        : t('trips.toast.pinnedDescription', '{{title}} is now your active trip context.', { title: displayTitle }),
     });
   };
 
@@ -130,7 +132,7 @@ export function TripCard({ trip }: Props) {
       onSuccess: () => {
         toast({
           title: t('trips.toast.deleted'),
-          description: t('trips.toast.deletedDescription', { title: trip.title }),
+          description: t('trips.toast.deletedDescription', { title: displayTitle }),
         });
         setDeleteOpen(false);
       },
@@ -165,14 +167,14 @@ export function TripCard({ trip }: Props) {
         hoverable
         role="link"
         tabIndex={0}
-        aria-label={t('trips.card.ariaLabel', { title: trip.title })}
+        aria-label={t('trips.card.ariaLabel', { title: displayTitle })}
         onClick={handleNavigate}
         onKeyDown={handleKeyDown}
 
       >
         <CardImage
           src={trip.cover_image_url}
-          alt={trip.title}
+          alt={displayTitle}
           height={180}
           fallbackIcon={Luggage}
         >
@@ -250,7 +252,7 @@ export function TripCard({ trip }: Props) {
               letterSpacing: '-0.01em',
             }}
           >
-            {trip.title}
+            {displayTitle}
           </Typography>
 
           <Box
@@ -430,7 +432,7 @@ export function TripCard({ trip }: Props) {
           <DialogHeader>
             <DialogTitle>{t('trips.card.deleteTitle')}</DialogTitle>
             <DialogDescription>
-              {t('trips.card.deleteConfirm', { title: trip.title })}
+              {t('trips.card.deleteConfirm', { title: displayTitle })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

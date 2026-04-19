@@ -41,7 +41,7 @@
     }
   },
   "common": {
-    "loading": "Cargando...",
+    "loading": "Cargando…",
     "error": "Error",
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -59,7 +59,13 @@
     "tryAgain": "Reintentar",
     "allEvents": "Todos los eventos",
     "browseAll": "Ver todo",
-    "allStories": "Todos los artículos"
+    "allStories": "Todos los artículos",
+    "create": "Crear",
+    "skip": "Omitir",
+    "done": "Listo",
+    "unknown": "Desconocido",
+    "somethingWentWrong": "Algo salió mal.",
+    "clear": "Borrar"
   },
   "navigation": {
     "home": "Inicio",
@@ -358,7 +364,7 @@
       "spendingByCategory": "Gasto por categoría",
       "settlements": "Liquidaciones",
       "unknownMember": "Desconocido",
-      "paidBy": "Pagado por {{name}}",
+      "paidBy": "Pagado por",
       "splitWays_one": "dividido en {{count}} parte",
       "splitWays_other": "dividido en {{count}} partes",
       "itemsCount_one": "{{count}} gasto registrado",
@@ -370,14 +376,23 @@
       "deleteAria": "Eliminar gasto",
       "deleteTitle": "Eliminar gasto",
       "deleteConfirm": "¿Seguro que quieres eliminar este gasto? Esta acción no se puede deshacer.",
-      "category": {
+      "category": "Categoría",
+      "expenseAdded": "Gasto añadido",
+      "addFailed": "Error al añadir gasto",
+      "titleLabel": "Título",
+      "titlePlaceholder": "p. ej. Cena en Rainbow Cafe",
+      "amount": "Importe",
+      "currency": "Moneda",
+      "categories": {
         "food": "Comida",
         "transport": "Transporte",
         "accommodation": "Alojamiento",
         "activities": "Actividades",
         "shopping": "Compras",
-        "other": "Otros"
-      }
+        "other": "Otro"
+      },
+      "date": "Fecha",
+      "splitAmong": "Dividir entre"
     },
     "reservations": {
       "emptyTitle": "Sin reservas todavía",
@@ -472,6 +487,28 @@
       "pushPrompt": "Recibe un aviso 30 min antes de cada reserva.",
       "pushEnable": "Activar"
     },
+    "bookingAssistant": {
+      "tabs": {
+        "suggestions": "Sugerencias",
+        "book": "Reservar"
+      },
+      "addedToast": "Añadido al viaje",
+      "addFailedToast": "Error al añadir",
+      "emptyHint": "Añade lugares para ver sugerencias y opciones de reserva",
+      "lowerEquality": "tiene una puntuación de igualdad más baja",
+      "suggestedFor": "Sugerido para {{city}}",
+      "unknownCity": "Desconocido",
+      "add": "Añadir",
+      "stillNeed": "Aún necesitas",
+      "flights": "Vuelos",
+      "search": "Buscar",
+      "flightsBooked": "Vuelos reservados",
+      "hotel": "Hotel",
+      "hotelIn": "Hotel en {{city}}",
+      "hotelBooked": "Hotel reservado",
+      "hotelsIn": "Hoteles en {{city}}",
+      "noHotelsFound": "No se encontraron hoteles"
+    },
     "contextBar": {
       "openTrip": "Abrir viaje",
       "ariaLabel": "Viaje activo",
@@ -498,6 +535,128 @@
     "discover": {
       "title": "Descubrir lugares",
       "button": "Explorar mercado"
+    },
+    "polls": {
+      "createdToast": "Encuesta creada",
+      "createFailedToast": "Error al crear la encuesta",
+      "voteFailedToast": "Error al votar",
+      "poll": "encuesta",
+      "polls": "encuestas",
+      "create": "Crear encuesta",
+      "noPolls": "Aún no hay encuestas",
+      "noPollsHint": "Crea una para ayudar a tu grupo a tomar decisiones",
+      "closed": "Cerrada",
+      "multiple": "Múltiple",
+      "totalVote": "voto total",
+      "totalVotes": "votos totales",
+      "closePoll": "Cerrar encuesta",
+      "questionPlaceholder": "¿Qué te gustaría preguntar?",
+      "options": "Opciones",
+      "optionPlaceholder": "Opción {{n}}",
+      "addOption": "+ Añadir opción",
+      "allowMultiple": "Permitir selección múltiple",
+      "deadline": "Fecha límite (opcional)"
+    },
+    "bundledCheckout": {
+      "stayIn": "Estancia en {{city}}",
+      "compareHotels": "Compara hoteles para tus fechas",
+      "thingsToDoIn": "Qué hacer en {{city}}",
+      "toursTicketsDayTrips": "Tours, entradas, excursiones",
+      "title": "Agrupa tus reservas",
+      "description": "Recorre hoteles y actividades de cada ciudad de tu viaje.",
+      "emptyHint": "Primero añade lugares a tu viaje — generaremos enlaces reservables por ciudad.",
+      "openedOf": "{{booked}} de {{total}} abiertos",
+      "allSkipped": "Todos los pasos omitidos",
+      "revisitHint": "Puedes volver aquí en cualquier momento desde la pestaña Presupuesto.",
+      "stepOf": "Paso {{current}} de {{total}} · {{booked}} abiertos",
+      "via": "vía",
+      "openAndMarkBooked": "Abrir y marcar como reservado"
+    },
+    "addPlace": {
+      "addedToast": "Lugar añadido al viaje",
+      "addFailedToast": "Error al añadir lugar",
+      "title": "Añadir lugar",
+      "assignToDay": "Asignar a día",
+      "unassigned": "Sin asignar",
+      "searchTab": "Buscar en queer.guide",
+      "customTab": "Lugar personalizado",
+      "searchPlaceholder": "Buscar lugares, eventos, hoteles...",
+      "recent": "Recientes",
+      "filter": {
+        "all": "Todos",
+        "venue": "Lugar",
+        "event": "Evento",
+        "hotel": "Hotel"
+      },
+      "noResults": "No se encontraron resultados. Prueba otra búsqueda o añade un lugar personalizado.",
+      "placeName": "Nombre del lugar",
+      "placeNamePlaceholder": "p. ej. Rainbow Cafe",
+      "address": "Dirección",
+      "latitude": "Latitud",
+      "longitude": "Longitud",
+      "category": "Categoría",
+      "customCategories": {
+        "restaurant": "Restaurante",
+        "bar": "Bar",
+        "club": "Club",
+        "cafe": "Café",
+        "museum": "Museo",
+        "park": "Parque",
+        "beach": "Playa",
+        "shopping": "Compras",
+        "accommodation": "Alojamiento",
+        "transport": "Transporte",
+        "other": "Otro"
+      }
+    },
+    "addTo": {
+      "tripFallback": "viaje",
+      "addedTitle": "Añadido a {{trip}}",
+      "addedDesc": "{{name}} se ha añadido a tu viaje.",
+      "failedToAdd": "Error al añadir",
+      "addedNewDesc": "{{name}} se ha añadido a tu nuevo viaje.",
+      "failedToCreate": "Error al crear el viaje.",
+      "title": "Añadir al viaje",
+      "signInPrompt": "Inicia sesión para planificar viajes",
+      "signInDesc": "Crea una cuenta para guardar lugares en tus planes de viaje.",
+      "adding": "Añadiendo",
+      "assignToDay": "Asignar a día (opcional)",
+      "createNewTrip": "Crear nuevo viaje",
+      "backToTrips": "Volver a viajes",
+      "firstTripHint": "Crea tu primer viaje para empezar a planificar.",
+      "tripTitle": "Título del viaje",
+      "tripTitlePlaceholder": "p. ej. Pride Week Berlin 2026",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "createAndAdd": "Crear y añadir"
+    },
+    "notes": {
+      "updatedToast": "Nota actualizada",
+      "saveFailedToast": "Error al guardar nota",
+      "createdToast": "Nota creada",
+      "createFailedToast": "Error al crear nota",
+      "deletedToast": "Nota eliminada",
+      "deleteFailedToast": "Error al eliminar nota",
+      "note": "nota",
+      "notes": "notas",
+      "newNote": "Nueva nota",
+      "noNotes": "Aún no hay notas",
+      "noNotesHint": "Crea una para compartir información con tu grupo",
+      "untitled": "Sin título",
+      "category": {
+        "general": "General",
+        "logistics": "Logística",
+        "safety": "Seguridad",
+        "ideas": "Ideas"
+      },
+      "editNote": "Editar nota",
+      "titlePlaceholder": "Título de la nota",
+      "contentPlaceholder": "Escribe tu nota...",
+      "categoryLabel": "Categoría",
+      "unpin": "Desfijar",
+      "pin": "Fijar",
+      "deleteTitle": "Eliminar nota",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar esta nota? Esto no se puede deshacer."
     }
   },
   "auth": {
