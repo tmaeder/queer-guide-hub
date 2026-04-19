@@ -29,7 +29,16 @@
     "sortBy": "Trier Par",
     "name": "Nom",
     "ascending": "Croissant",
-    "descending": "Décroissant"
+    "descending": "Décroissant",
+    "placeholders": {
+      "venues": "Rechercher des lieux…",
+      "events": "Trouver des événements…",
+      "marketplace": "Parcourir le marché…",
+      "people": "Découvrir des personnes…",
+      "news": "Lire les actualités…",
+      "resources": "Explorer les ressources…",
+      "personalities": "Rencontrer des personnalités…"
+    }
   },
   "common": {
     "loading": "Chargement...",
@@ -86,7 +95,24 @@
     "title": "Mes voyages",
     "subtitle": "Planifiez, organisez et voyagez en sécurité.",
     "create": "Créer un voyage",
-    "error": "Impossible de charger vos voyages. Réessayez.",
+    "error": {
+      "invalid-id": {
+        "title": "Lien de voyage invalide",
+        "description": "Ce lien ne pointe pas vers un voyage valide. Retournez à vos voyages pour continuer."
+      },
+      "not-found": {
+        "title": "Voyage introuvable",
+        "description": "Ce voyage a peut-être été supprimé ou le lien est obsolète."
+      },
+      "permission-denied": {
+        "title": "Vous n'avez pas accès à ce voyage",
+        "description": "Demandez au propriétaire du voyage de vous inviter, ou retournez à vos propres voyages."
+      },
+      "load-error": {
+        "title": "Impossible de charger ce voyage",
+        "description": "Une erreur est survenue lors du chargement. Veuillez réessayer."
+      }
+    },
     "empty": {
       "title": "Planifiez votre premier voyage",
       "description": "Construisez un itinéraire, consultez les informations LGBTQ+ pour chaque destination et gardez tout au même endroit.",
@@ -171,7 +197,8 @@
         "safe": "Destinations sûres",
         "caution": "Vérifier les conditions locales",
         "danger": "Destination à haut risque sur ce voyage"
-      }
+      },
+      "activeToday": "Actif · Aujourd hui"
     },
     "toast": {
       "created": "Voyage créé",
@@ -444,6 +471,33 @@
       "offlineBanner": "Hors ligne — itinéraire enregistré affiché.",
       "pushPrompt": "Recevoir un rappel 30 min avant chaque réservation.",
       "pushEnable": "Activer"
+    },
+    "contextBar": {
+      "openTrip": "Ouvrir le voyage",
+      "ariaLabel": "Voyage actif",
+      "dismissAria": "Fermer la bannière du voyage actif"
+    },
+    "phase": {
+      "label": {
+        "seed": "Début",
+        "plan": "Planifier",
+        "countdown": "Compte à rebours",
+        "live": "En direct",
+        "memory": "Souvenir"
+      },
+      "status": {
+        "datesNotSet": "Dates non définies",
+        "inDays": "Dans {{count}} jours",
+        "tomorrow": "Demain",
+        "soon": "Bientôt",
+        "dayOf": "Aujourd hui",
+        "daysAgo": "Il y a {{count}} jours",
+        "yesterday": "Hier"
+      }
+    },
+    "discover": {
+      "title": "Découvrir des lieux",
+      "button": "Parcourir le marché"
     }
   },
   "auth": {

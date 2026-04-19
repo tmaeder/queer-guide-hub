@@ -29,7 +29,16 @@
     "sortBy": "並び順",
     "name": "名前",
     "ascending": "昇順",
-    "descending": "降順"
+    "descending": "降順",
+    "placeholders": {
+      "venues": "会場を検索…",
+      "events": "イベントを探す…",
+      "marketplace": "マーケットを見る…",
+      "people": "人を探す…",
+      "news": "ニュースを読む…",
+      "resources": "リソース…",
+      "personalities": "人物を探す…"
+    }
   },
   "common": {
     "loading": "読み込み中...",
@@ -171,7 +180,8 @@
       },
       "placeCount_one": "{{count}} 件の場所",
       "dayCount_one": "{{count}} 日",
-      "memberCount_one": "{{count}} 人のメンバー"
+      "memberCount_one": "{{count}} 人のメンバー",
+      "activeToday": "アクティブ · 本日"
     },
     "toast": {
       "created": "旅を作成しました",
@@ -204,6 +214,24 @@
       }
     },
     "backToTrips": "旅の一覧に戻る",
+    "error": {
+      "invalid-id": {
+        "title": "無効な旅リンク",
+        "description": "このリンクは有効な旅を指していません。旅の一覧に戻って続けてください。"
+      },
+      "not-found": {
+        "title": "旅が見つかりません",
+        "description": "この旅は削除されたか、リンクが古くなっている可能性があります。"
+      },
+      "permission-denied": {
+        "title": "この旅にアクセスできません",
+        "description": "旅のオーナーに招待を依頼するか、自分の旅の一覧に戻ってください。"
+      },
+      "load-error": {
+        "title": "この旅を読み込めませんでした",
+        "description": "読み込み中に問題が発生しました。もう一度お試しください。"
+      }
+    },
     "planner": {
       "loadFailed": "この旅を読み込めませんでした。",
       "notFound": "旅が見つかりません。",
@@ -444,6 +472,33 @@
       "offlineBanner": "オフラインです — 最後に保存した旅程を表示しています。",
       "pushPrompt": "各予約の30分前に通知を受け取ります。",
       "pushEnable": "有効にする"
+    },
+    "contextBar": {
+      "openTrip": "旅行を開く",
+      "ariaLabel": "アクティブな旅行",
+      "dismissAria": "アクティブな旅行バナーを閉じる"
+    },
+    "phase": {
+      "label": {
+        "seed": "準備",
+        "plan": "計画",
+        "countdown": "カウントダウン",
+        "live": "進行中",
+        "memory": "思い出"
+      },
+      "status": {
+        "datesNotSet": "日付未設定",
+        "inDays": "あと {{count}} 日",
+        "tomorrow": "明日",
+        "soon": "まもなく",
+        "dayOf": "本日",
+        "daysAgo": "{{count}} 日前",
+        "yesterday": "昨日"
+      }
+    },
+    "discover": {
+      "title": "場所を探す",
+      "button": "マーケットを見る"
     }
   },
   "auth": {

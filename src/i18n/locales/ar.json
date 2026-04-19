@@ -29,7 +29,16 @@
     "sortBy": "ترتيب حسب",
     "name": "الاسم",
     "ascending": "تصاعدي",
-    "descending": "تنازلي"
+    "descending": "تنازلي",
+    "placeholders": {
+      "venues": "البحث عن أماكن…",
+      "events": "البحث عن فعاليات…",
+      "marketplace": "تصفح السوق…",
+      "people": "اكتشف أشخاصاً…",
+      "news": "قراءة الأخبار…",
+      "resources": "استكشاف الموارد…",
+      "personalities": "التعرف على شخصيات…"
+    }
   },
   "common": {
     "loading": "تحميل...",
@@ -171,7 +180,8 @@
       },
       "placeCount_one": "{{count}} مكان",
       "dayCount_one": "{{count}} يوم",
-      "memberCount_one": "{{count}} عضو"
+      "memberCount_one": "{{count}} عضو",
+      "activeToday": "نشطة · اليوم"
     },
     "toast": {
       "created": "تم إنشاء الرحلة",
@@ -204,6 +214,24 @@
       }
     },
     "backToTrips": "العودة إلى الرحلات",
+    "error": {
+      "invalid-id": {
+        "title": "رابط رحلة غير صالح",
+        "description": "هذا الرابط لا يؤدي إلى رحلة صالحة. عُد إلى رحلاتك للمتابعة."
+      },
+      "not-found": {
+        "title": "الرحلة غير موجودة",
+        "description": "ربما حُذفت هذه الرحلة أو أن الرابط قديم."
+      },
+      "permission-denied": {
+        "title": "ليس لديك صلاحية الوصول إلى هذه الرحلة",
+        "description": "اطلب من مالك الرحلة دعوتك، أو عُد إلى رحلاتك."
+      },
+      "load-error": {
+        "title": "تعذّر تحميل هذه الرحلة",
+        "description": "حدث خطأ أثناء تحميل الرحلة. يرجى المحاولة مرة أخرى."
+      }
+    },
     "planner": {
       "loadFailed": "تعذّر تحميل هذه الرحلة.",
       "notFound": "الرحلة غير موجودة.",
@@ -444,6 +472,33 @@
       "offlineBanner": "أنت غير متصل — نعرض آخر خط سير محفوظ.",
       "pushPrompt": "تذكير قبل 30 دقيقة من كل حجز.",
       "pushEnable": "تفعيل"
+    },
+    "contextBar": {
+      "openTrip": "فتح الرحلة",
+      "ariaLabel": "الرحلة النشطة",
+      "dismissAria": "إغلاق شريط الرحلة النشطة"
+    },
+    "phase": {
+      "label": {
+        "seed": "البداية",
+        "plan": "التخطيط",
+        "countdown": "العد التنازلي",
+        "live": "جارية",
+        "memory": "ذكرى"
+      },
+      "status": {
+        "datesNotSet": "التواريخ غير محددة",
+        "inDays": "خلال {{count}} أيام",
+        "tomorrow": "غداً",
+        "soon": "قريباً",
+        "dayOf": "اليوم",
+        "daysAgo": "قبل {{count}} أيام",
+        "yesterday": "أمس"
+      }
+    },
+    "discover": {
+      "title": "اكتشاف أماكن",
+      "button": "تصفح السوق"
     }
   },
   "auth": {

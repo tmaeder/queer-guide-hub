@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import type { TripPlace } from '@/hooks/useTrips';
 import { getScoreRingColor } from '@/utils/equalityScore';
 import { PlaceBookableLinks } from './PlaceBookableLinks';
-import { PlaceBookableLinks } from './PlaceBookableLinks';
 
 const categoryIcons: Record<string, typeof MapPin> = {
   venue: MapPin,

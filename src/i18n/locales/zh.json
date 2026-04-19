@@ -29,7 +29,16 @@
     "sortBy": "排序方式",
     "name": "名称",
     "ascending": "升序",
-    "descending": "降序"
+    "descending": "降序",
+    "placeholders": {
+      "venues": "搜索场所…",
+      "events": "查找活动…",
+      "marketplace": "浏览市场…",
+      "people": "发现用户…",
+      "news": "阅读新闻…",
+      "resources": "探索资源…",
+      "personalities": "认识人物…"
+    }
   },
   "common": {
     "loading": "加载中...",
@@ -171,7 +180,8 @@
       },
       "placeCount_one": "{{count}} 个地点",
       "dayCount_one": "{{count}} 天",
-      "memberCount_one": "{{count}} 位成员"
+      "memberCount_one": "{{count}} 位成员",
+      "activeToday": "进行中 · 今天"
     },
     "toast": {
       "created": "行程已创建",
@@ -204,6 +214,24 @@
       }
     },
     "backToTrips": "返回行程",
+    "error": {
+      "invalid-id": {
+        "title": "行程链接无效",
+        "description": "此链接未指向有效的行程。请返回你的行程继续。"
+      },
+      "not-found": {
+        "title": "未找到行程",
+        "description": "该行程可能已被删除，或链接已失效。"
+      },
+      "permission-denied": {
+        "title": "你无权访问此行程",
+        "description": "请让行程所有者邀请你，或返回你自己的行程。"
+      },
+      "load-error": {
+        "title": "无法加载该行程",
+        "description": "加载行程时出错。请重试。"
+      }
+    },
     "planner": {
       "loadFailed": "无法加载该行程。",
       "notFound": "未找到行程。",
@@ -444,6 +472,33 @@
       "offlineBanner": "您处于离线状态 — 显示上次保存的行程。",
       "pushPrompt": "每次预订前 30 分钟收到提醒。",
       "pushEnable": "启用"
+    },
+    "contextBar": {
+      "openTrip": "打开行程",
+      "ariaLabel": "当前行程",
+      "dismissAria": "关闭当前行程横幅"
+    },
+    "phase": {
+      "label": {
+        "seed": "起步",
+        "plan": "计划",
+        "countdown": "倒计时",
+        "live": "进行中",
+        "memory": "回忆"
+      },
+      "status": {
+        "datesNotSet": "未设置日期",
+        "inDays": "{{count}} 天后",
+        "tomorrow": "明天",
+        "soon": "即将",
+        "dayOf": "今天",
+        "daysAgo": "{{count}} 天前",
+        "yesterday": "昨天"
+      }
+    },
+    "discover": {
+      "title": "发现地点",
+      "button": "浏览市场"
     }
   },
   "auth": {

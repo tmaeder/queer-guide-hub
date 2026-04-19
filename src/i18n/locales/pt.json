@@ -29,7 +29,16 @@
     "sortBy": "Ordenar Por",
     "name": "Nome",
     "ascending": "Crescente",
-    "descending": "Decrescente"
+    "descending": "Decrescente",
+    "placeholders": {
+      "venues": "Buscar lugares…",
+      "events": "Encontrar eventos…",
+      "marketplace": "Explorar mercado…",
+      "people": "Descobrir pessoas…",
+      "news": "Ler notícias…",
+      "resources": "Explorar recursos…",
+      "personalities": "Conhecer personalidades…"
+    }
   },
   "common": {
     "loading": "Carregando...",
@@ -86,7 +95,24 @@
     "title": "Minhas viagens",
     "subtitle": "Planeie, organize e viaje com segurança.",
     "create": "Criar viagem",
-    "error": "Não foi possível carregar suas viagens. Tente novamente.",
+    "error": {
+      "invalid-id": {
+        "title": "Link de viagem inválido",
+        "description": "Este link não aponta para uma viagem válida. Volte às suas viagens para continuar."
+      },
+      "not-found": {
+        "title": "Viagem não encontrada",
+        "description": "Esta viagem pode ter sido eliminada ou o link está desatualizado."
+      },
+      "permission-denied": {
+        "title": "Não tens acesso a esta viagem",
+        "description": "Pede ao organizador que te convide, ou volta às tuas próprias viagens."
+      },
+      "load-error": {
+        "title": "Não foi possível carregar esta viagem",
+        "description": "Ocorreu um erro ao carregar esta viagem. Por favor, tenta novamente."
+      }
+    },
     "empty": {
       "title": "Planeie sua primeira viagem",
       "description": "Crie um roteiro, consulte informações LGBTQIA+ de cada destino e mantenha tudo em um só lugar.",
@@ -171,7 +197,8 @@
         "safe": "Destinos seguros",
         "caution": "Verifica as condições locais",
         "danger": "Destino de alto risco nesta viagem"
-      }
+      },
+      "activeToday": "Ativo · Hoje"
     },
     "toast": {
       "created": "Viagem criada",
@@ -444,6 +471,33 @@
       "offlineBanner": "Sem conexão — mostrando o último itinerário salvo.",
       "pushPrompt": "Receba um aviso 30 min antes de cada reserva.",
       "pushEnable": "Ativar"
+    },
+    "contextBar": {
+      "openTrip": "Abrir viagem",
+      "ariaLabel": "Viagem ativa",
+      "dismissAria": "Dispensar banner da viagem ativa"
+    },
+    "phase": {
+      "label": {
+        "seed": "Início",
+        "plan": "Planejar",
+        "countdown": "Contagem regressiva",
+        "live": "Ao vivo",
+        "memory": "Lembrança"
+      },
+      "status": {
+        "datesNotSet": "Datas não definidas",
+        "inDays": "Em {{count}} dias",
+        "tomorrow": "Amanhã",
+        "soon": "Em breve",
+        "dayOf": "Hoje",
+        "daysAgo": "Há {{count}} dias",
+        "yesterday": "Ontem"
+      }
+    },
+    "discover": {
+      "title": "Descobrir lugares",
+      "button": "Explorar mercado"
     }
   },
   "auth": {

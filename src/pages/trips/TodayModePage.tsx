@@ -35,6 +35,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorState } from '@/components/ui/EmptyState';
+import { classifyTripError } from '@/utils/tripError';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 /**
  * Day-of-travel mode.
@@ -104,6 +106,7 @@ function isTripActiveToday(startDate: string | null, endDate: string | null, now
 
 export default function TodayModePage() {
   const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const { tripId } = useParams<{ tripId: string }>();
   const { data: trip, isLoading, error } = useTrip(tripId);
   const { data: reservations } = useReservations();
@@ -265,9 +268,18 @@ export default function TodayModePage() {
   }
 
   if ((error && !effectiveTrip) || !effectiveTrip) {
+    const kind = classifyTripError(tripId, error, effectiveTrip) ?? 'load-error';
     return (
       <Container sx={{ py: 8 }}>
-        <ErrorState message={t('trips.today.notFound', "Couldn't load this trip.")} />
+        <ErrorState
+          title={t(`trips.error.${kind}.title`)}
+          description={t(`trips.error.${kind}.description`)}
+          primaryAction={{
+            label: t('trips.backToTrips'),
+            onClick: () => navigate('/trips'),
+            variant: 'default',
+          }}
+        />
       </Container>
     );
   }

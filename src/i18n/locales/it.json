@@ -29,7 +29,16 @@
     "sortBy": "Ordina Per",
     "name": "Nome",
     "ascending": "Crescente",
-    "descending": "Decrescente"
+    "descending": "Decrescente",
+    "placeholders": {
+      "venues": "Cerca luoghi…",
+      "events": "Trova eventi…",
+      "marketplace": "Esplora mercato…",
+      "people": "Scopri persone…",
+      "news": "Leggi notizie…",
+      "resources": "Esplora risorse…",
+      "personalities": "Incontra personalità…"
+    }
   },
   "common": {
     "loading": "Caricamento...",
@@ -86,7 +95,24 @@
     "title": "I miei viaggi",
     "subtitle": "Pianifica, organizza e viaggia in sicurezza.",
     "create": "Crea viaggio",
-    "error": "Impossibile caricare i tuoi viaggi. Riprova.",
+    "error": {
+      "invalid-id": {
+        "title": "Link di viaggio non valido",
+        "description": "Questo link non punta a un viaggio valido. Torna ai tuoi viaggi per continuare."
+      },
+      "not-found": {
+        "title": "Viaggio non trovato",
+        "description": "Questo viaggio potrebbe essere stato eliminato o il link non è più valido."
+      },
+      "permission-denied": {
+        "title": "Non hai accesso a questo viaggio",
+        "description": "Chiedi al proprietario del viaggio di invitarti, oppure torna ai tuoi viaggi."
+      },
+      "load-error": {
+        "title": "Impossibile caricare questo viaggio",
+        "description": "Si è verificato un errore durante il caricamento. Riprova."
+      }
+    },
     "empty": {
       "title": "Pianifica il tuo primo viaggio",
       "description": "Crea un itinerario, consulta le informazioni LGBTQ+ per ogni destinazione e tieni tutto in un unico posto.",
@@ -171,7 +197,8 @@
         "safe": "Destinazioni sicure",
         "caution": "Controlla le condizioni locali",
         "danger": "Destinazione ad alto rischio in questo viaggio"
-      }
+      },
+      "activeToday": "Attivo · Oggi"
     },
     "toast": {
       "created": "Viaggio creato",
@@ -444,6 +471,33 @@
       "offlineBanner": "Offline — mostro l’ultimo itinerario salvato.",
       "pushPrompt": "Ricevi un promemoria 30 min prima di ogni prenotazione.",
       "pushEnable": "Attiva"
+    },
+    "contextBar": {
+      "openTrip": "Apri viaggio",
+      "ariaLabel": "Viaggio attivo",
+      "dismissAria": "Chiudi banner del viaggio attivo"
+    },
+    "phase": {
+      "label": {
+        "seed": "Inizio",
+        "plan": "Pianifica",
+        "countdown": "Conto alla rovescia",
+        "live": "Dal vivo",
+        "memory": "Ricordo"
+      },
+      "status": {
+        "datesNotSet": "Date non impostate",
+        "inDays": "Tra {{count}} giorni",
+        "tomorrow": "Domani",
+        "soon": "Presto",
+        "dayOf": "Oggi",
+        "daysAgo": "{{count}} giorni fa",
+        "yesterday": "Ieri"
+      }
+    },
+    "discover": {
+      "title": "Scopri luoghi",
+      "button": "Esplora mercato"
     }
   },
   "auth": {

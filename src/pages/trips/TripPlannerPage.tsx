@@ -49,6 +49,8 @@ import { TripLocalContext } from '@/components/trips/TripLocalContext';
 import { getTripPhase } from '@/components/trips/tripPhase';
 import { Button } from '@/components/ui/button';
 import { ErrorState } from '@/components/ui/EmptyState';
+import { classifyTripError } from '@/utils/tripError';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const BudgetTab = lazy(() =>
   import('@/components/trips/BudgetTab').then((m) => ({ default: m.BudgetTab })),
@@ -136,11 +138,17 @@ export default function TripPlannerPage() {
   }
 
   if (error || !trip) {
+    const kind = classifyTripError(tripId, error, trip) ?? 'load-error';
     return (
       <Container sx={{ py: { xs: 4, md: 8 } }}>
         <ErrorState
-          message={error ? t('trips.planner.loadFailed') : t('trips.planner.notFound')}
-          onRetry={() => navigate('/trips')}
+          title={t(`trips.error.${kind}.title`)}
+          description={t(`trips.error.${kind}.description`)}
+          primaryAction={{
+            label: t('trips.backToTrips'),
+            onClick: () => navigate('/trips'),
+            variant: 'default',
+          }}
         />
       </Container>
     );
@@ -488,9 +496,11 @@ export default function TripPlannerPage() {
       )}
 
       {tab === 5 && (
-        <Suspense fallback={<CircularProgress sx={{ display: 'block', mx: 'auto', my: 4 }} />}>
-          <PackingTab tripId={trip.id} />
-        </Suspense>
+        <ErrorBoundary section="packing">
+          <Suspense fallback={<CircularProgress sx={{ display: 'block', mx: 'auto', my: 4 }} />}>
+            <PackingTab tripId={trip.id} />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {tab === 6 && (

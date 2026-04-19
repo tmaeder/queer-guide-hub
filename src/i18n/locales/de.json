@@ -29,7 +29,16 @@
     "sortBy": "Sortieren nach",
     "name": "Name",
     "ascending": "Aufsteigend",
-    "descending": "Absteigend"
+    "descending": "Absteigend",
+    "placeholders": {
+      "venues": "Orte suchen…",
+      "events": "Veranstaltungen finden…",
+      "marketplace": "Marktplatz durchsuchen…",
+      "people": "Menschen entdecken…",
+      "news": "Nachrichten lesen…",
+      "resources": "Ressourcen erkunden…",
+      "personalities": "Persönlichkeiten treffen…"
+    }
   },
   "common": {
     "loading": "Lädt...",
@@ -86,7 +95,24 @@
     "title": "Meine Reisen",
     "subtitle": "Plane, organisiere und reise sicher.",
     "create": "Reise erstellen",
-    "error": "Deine Reisen konnten nicht geladen werden. Bitte versuche es erneut.",
+    "error": {
+      "invalid-id": {
+        "title": "Ungültiger Reise-Link",
+        "description": "Dieser Link verweist nicht auf eine gültige Reise. Kehre zu deinen Reisen zurück."
+      },
+      "not-found": {
+        "title": "Reise nicht gefunden",
+        "description": "Diese Reise wurde möglicherweise gelöscht oder der Link ist veraltet."
+      },
+      "permission-denied": {
+        "title": "Kein Zugriff auf diese Reise",
+        "description": "Bitte den Reise-Besitzer, dich einzuladen, oder kehre zu deinen eigenen Reisen zurück."
+      },
+      "load-error": {
+        "title": "Reise konnte nicht geladen werden",
+        "description": "Beim Laden dieser Reise ist ein Fehler aufgetreten. Bitte versuche es erneut."
+      }
+    },
     "empty": {
       "title": "Plane deine erste Reise",
       "description": "Erstelle eine Reiseroute, prüfe LGBTQ+-Sicherheitsinfos für jedes Ziel und behalte alles an einem Ort.",
@@ -171,7 +197,8 @@
         "safe": "Sichere Reiseziele",
         "caution": "Lokale Bedingungen prüfen",
         "danger": "Hochrisiko-Ziel auf dieser Reise"
-      }
+      },
+      "activeToday": "Aktiv · Heute"
     },
     "toast": {
       "created": "Reise erstellt",
@@ -448,6 +475,33 @@
       "offlineBanner": "Offline — zeigt deinen zuletzt gespeicherten Reiseplan.",
       "pushPrompt": "Erinnere mich 30 Minuten vor jeder Reservierung.",
       "pushEnable": "Aktivieren"
+    },
+    "contextBar": {
+      "openTrip": "Reise öffnen",
+      "ariaLabel": "Aktive Reise",
+      "dismissAria": "Banner der aktiven Reise schließen"
+    },
+    "phase": {
+      "label": {
+        "seed": "Anfang",
+        "plan": "Planung",
+        "countdown": "Countdown",
+        "live": "Live",
+        "memory": "Erinnerung"
+      },
+      "status": {
+        "datesNotSet": "Keine Daten festgelegt",
+        "inDays": "In {{count}} Tagen",
+        "tomorrow": "Morgen",
+        "soon": "Bald",
+        "dayOf": "Heute",
+        "daysAgo": "Vor {{count}} Tagen",
+        "yesterday": "Gestern"
+      }
+    },
+    "discover": {
+      "title": "Orte entdecken",
+      "button": "Marktplatz durchsuchen"
     }
   },
   "help": {

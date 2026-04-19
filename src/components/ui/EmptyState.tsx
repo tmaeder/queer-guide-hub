@@ -127,26 +127,69 @@ export const LoadingTimeout: React.FC<LoadingTimeoutProps> = ({
 /**
  * Inline error state — shown when a data fetch fails.
  */
+interface ErrorStateAction {
+  label: string;
+  onClick: () => void;
+  variant?: 'default' | 'outline' | 'ghost' | 'brand';
+}
+
 interface ErrorStateProps {
   message?: string;
+  title?: string;
+  description?: string;
   onRetry?: () => void;
+  retryLabel?: string;
+  primaryAction?: ErrorStateAction;
+  secondaryAction?: ErrorStateAction;
 }
 
 export const ErrorState: React.FC<ErrorStateProps> = ({
-  message = 'Something went wrong while loading data. Please try again.',
+  message,
+  title,
+  description,
   onRetry,
+  retryLabel = 'Retry',
+  primaryAction,
+  secondaryAction,
 }) => {
+  const headline =
+    title ?? message ?? 'Something went wrong while loading data. Please try again.';
   return (
     <Card>
       <CardContent>
-        <Typography variant="body1" color="error.main" sx={{ mb: 2 }}>
-          {message}
-        </Typography>
-        {onRetry && (
-          <Button variant="outline" onClick={onRetry}>
-            Retry
-          </Button>
-        )}
+        <Box role="alert" aria-live="polite">
+          <Typography variant="h6" component="h2" color="error.main" sx={{ fontWeight: 600, mb: description ? 1 : 2 }}>
+            {headline}
+          </Typography>
+          {description && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: '28rem' }}>
+              {description}
+            </Typography>
+          )}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+            {primaryAction && (
+              <Button
+                variant={primaryAction.variant ?? 'default'}
+                onClick={primaryAction.onClick}
+              >
+                {primaryAction.label}
+              </Button>
+            )}
+            {secondaryAction && (
+              <Button
+                variant={secondaryAction.variant ?? 'outline'}
+                onClick={secondaryAction.onClick}
+              >
+                {secondaryAction.label}
+              </Button>
+            )}
+            {onRetry && !primaryAction && (
+              <Button variant="outline" onClick={onRetry}>
+                {retryLabel}
+              </Button>
+            )}
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

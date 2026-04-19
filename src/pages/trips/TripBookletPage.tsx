@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { useTrip, type TripPlace } from '@/hooks/useTrips';
 import { useTripReservations } from '@/hooks/useTripReservations';
 import { ErrorState } from '@/components/ui/EmptyState';
+import { classifyTripError } from '@/utils/tripError';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 /**
  * Print-optimized trip booklet.
@@ -23,6 +25,7 @@ import { ErrorState } from '@/components/ui/EmptyState';
 export default function TripBookletPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const { data: trip, isLoading, error } = useTrip(tripId);
   const { data: reservations } = useTripReservations(tripId);
 
@@ -73,11 +76,19 @@ export default function TripBookletPage() {
     return <div style={{ padding: 32 }}>Loading…</div>;
   }
   if (error || !trip) {
+    const kind = classifyTripError(tripId, error, trip) ?? 'load-error';
     return (
-      <ErrorState
-        title={t('trips.notFound', 'Trip not found')}
-        description={t('trips.notFoundDescription', 'This trip may have been deleted.')}
-      />
+      <div style={{ padding: 32 }}>
+        <ErrorState
+          title={t(`trips.error.${kind}.title`)}
+          description={t(`trips.error.${kind}.description`)}
+          primaryAction={{
+            label: t('trips.backToTrips'),
+            onClick: () => navigate('/trips'),
+            variant: 'default',
+          }}
+        />
+      </div>
     );
   }
 

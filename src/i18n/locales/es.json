@@ -29,7 +29,16 @@
     "sortBy": "Ordenar Por",
     "name": "Nombre",
     "ascending": "Ascendente",
-    "descending": "Descendente"
+    "descending": "Descendente",
+    "placeholders": {
+      "venues": "Buscar lugares…",
+      "events": "Encontrar eventos…",
+      "marketplace": "Explorar mercado…",
+      "people": "Descubrir personas…",
+      "news": "Leer noticias…",
+      "resources": "Explorar recursos…",
+      "personalities": "Conocer personalidades…"
+    }
   },
   "common": {
     "loading": "Cargando...",
@@ -86,7 +95,24 @@
     "title": "Mis viajes",
     "subtitle": "Planifica, organiza y viaja con seguridad.",
     "create": "Crear viaje",
-    "error": "No pudimos cargar tus viajes. Inténtalo de nuevo.",
+    "error": {
+      "invalid-id": {
+        "title": "Enlace de viaje no válido",
+        "description": "Este enlace no apunta a un viaje válido. Vuelve a tus viajes para continuar."
+      },
+      "not-found": {
+        "title": "Viaje no encontrado",
+        "description": "Es posible que este viaje se haya eliminado o que el enlace esté desactualizado."
+      },
+      "permission-denied": {
+        "title": "No tienes acceso a este viaje",
+        "description": "Pídele al organizador que te invite, o vuelve a tus propios viajes."
+      },
+      "load-error": {
+        "title": "No se pudo cargar este viaje",
+        "description": "Algo salió mal al cargar este viaje. Por favor, inténtalo de nuevo."
+      }
+    },
     "empty": {
       "title": "Planifica tu primer viaje",
       "description": "Crea un itinerario, consulta información LGTBI+ de cada destino y mantenlo todo en un solo lugar.",
@@ -171,7 +197,8 @@
         "safe": "Destinos seguros",
         "caution": "Consulta las condiciones locales",
         "danger": "Destino de alto riesgo en este viaje"
-      }
+      },
+      "activeToday": "Activo · Hoy"
     },
     "toast": {
       "created": "Viaje creado",
@@ -444,6 +471,33 @@
       "offlineBanner": "Sin conexión — mostrando tu itinerario guardado.",
       "pushPrompt": "Recibe un aviso 30 min antes de cada reserva.",
       "pushEnable": "Activar"
+    },
+    "contextBar": {
+      "openTrip": "Abrir viaje",
+      "ariaLabel": "Viaje activo",
+      "dismissAria": "Descartar banner del viaje activo"
+    },
+    "phase": {
+      "label": {
+        "seed": "Inicio",
+        "plan": "Planificar",
+        "countdown": "Cuenta atrás",
+        "live": "En vivo",
+        "memory": "Recuerdo"
+      },
+      "status": {
+        "datesNotSet": "Fechas no definidas",
+        "inDays": "En {{count}} días",
+        "tomorrow": "Mañana",
+        "soon": "Pronto",
+        "dayOf": "Hoy",
+        "daysAgo": "Hace {{count}} días",
+        "yesterday": "Ayer"
+      }
+    },
+    "discover": {
+      "title": "Descubrir lugares",
+      "button": "Explorar mercado"
     }
   },
   "auth": {
