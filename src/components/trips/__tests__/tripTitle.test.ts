@@ -63,4 +63,24 @@ describe('resolveTripTitle', () => {
       resolveTripTitle({ title: '', primary_city_name: null }, t),
     ).toBe('Untitled trip');
   });
+
+  it('legacy null-title trip with no city still returns a human label', () => {
+    // Regression: legacy rows where title is NULL and no city is set
+    // previously leaked the raw key via a find()-?. chain.
+    const result = resolveTripTitle(
+      { title: null as unknown as string, primary_city_name: null },
+      t,
+    );
+    expect(result).toBe('Untitled trip');
+    expect(result).not.toMatch(/trips\.[a-z.]+/);
+  });
+
+  it('legacy null-title trip with primary_city_name localizes', () => {
+    const result = resolveTripTitle(
+      { title: null as unknown as string, primary_city_name: 'Lisbon' },
+      t,
+    );
+    expect(result).toBe('Trip to Lisbon');
+    expect(result).not.toMatch(/trips\.[a-z.]+/);
+  });
 });

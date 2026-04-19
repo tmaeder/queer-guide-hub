@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardImage, CardContent } from '@/components/ui/card';
 import type { DiscoverableTrip } from '@/hooks/useDiscoverableTrips';
+import { resolveTripTitle } from '@/components/trips/tripTitle';
 
 interface Props {
   trip: DiscoverableTrip;
@@ -22,6 +23,10 @@ interface Props {
 export function PublicTripCard({ trip }: Props) {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
+  const title = resolveTripTitle(
+    { title: trip.title, primary_city_name: trip.cities[0] ?? null },
+    t,
+  );
 
   const dateRange = (() => {
     if (!trip.start_date || !trip.end_date) return null;
@@ -54,11 +59,11 @@ export function PublicTripCard({ trip }: Props) {
       }}
     >
       {trip.cover_image_url && (
-        <CardImage src={trip.cover_image_url} alt={trip.title} height={160} />
+        <CardImage src={trip.cover_image_url} alt={title} height={160} />
       )}
       <CardContent>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }} noWrap>
-          {trip.title}
+          {title}
         </Typography>
 
         {trip.description && (

@@ -7,6 +7,7 @@ import { useTripReservations } from '@/hooks/useTripReservations';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { resolveTripTitle } from '@/components/trips/tripTitle';
 
 /**
  * Print-optimized trip booklet.
@@ -137,7 +138,7 @@ export default function TripBookletPage() {
 
         {/* Cover */}
         <section className="cover">
-          <h1>{trip.title}</h1>
+          <h1>{resolveTripTitle(trip, t)}</h1>
           {trip.description && <p className="muted">{trip.description}</p>}
           <div className="meta">
             {fmtDate(trip.start_date)} → {fmtDate(trip.end_date)}

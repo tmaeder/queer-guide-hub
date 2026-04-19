@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrips, useTrip, useTripMutations } from '@/hooks/useTrips';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
+import { resolveTripTitle } from '@/components/trips/tripTitle';
 
 export interface AddToTripDialogProps {
   open: boolean;
@@ -96,8 +97,10 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         created_by: null,
       });
 
-      const tripName =
-        trips?.find((tr) => tr.id === selectedTripId)?.title || t('trips.addTo.tripFallback', 'trip');
+      const selected = trips?.find((tr) => tr.id === selectedTripId);
+      const tripName = selected
+        ? resolveTripTitle(selected, t)
+        : t('trips.addTo.tripFallback', 'trip');
       toast({
         title: t('trips.addTo.addedTitle', 'Added to {{trip}}', { trip: tripName }),
         description: t('trips.addTo.addedDesc', '{{name}} has been added to your trip.', { name: entity.name }),
@@ -144,7 +147,9 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
       });
 
       toast({
-        title: t('trips.addTo.addedTitle', 'Added to {{trip}}', { trip: trip.title }),
+        title: t('trips.addTo.addedTitle', 'Added to {{trip}}', {
+          trip: resolveTripTitle(trip, t),
+        }),
         description: t('trips.addTo.addedNewDesc', '{{name}} has been added to your new trip.', { name: entity.name }),
       });
       handleOpenChange(false);
@@ -232,7 +237,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                   >
                     <Box sx={{ minWidth: 0 }}>
                       <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-                        {trip.title}
+                        {resolveTripTitle(trip, t)}
                       </Typography>
                       <Box
                         sx={{

@@ -37,6 +37,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { resolveTripTitle } from '@/components/trips/tripTitle';
 
 const TYPE_ICONS: Record<Reservation['type'], typeof Plane> = {
   flight: Plane,
@@ -322,7 +323,7 @@ function OrphanRow({
   canAttach,
 }: {
   reservation: Reservation;
-  trips: Array<{ id: string; title: string }>;
+  trips: Array<{ id: string; title: string; primary_city_name: string | null }>;
   onAttach: (tripId: string) => void | Promise<void>;
   canAttach: boolean;
 }) {
@@ -397,7 +398,7 @@ function OrphanRow({
                     await onAttach(trip.id);
                   }}
                 >
-                  {trip.title}
+                  {resolveTripTitle(trip, t)}
                 </MenuItem>
               ))}
               {trips.length > 0 && <Divider />}

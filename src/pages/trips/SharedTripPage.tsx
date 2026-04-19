@@ -20,6 +20,7 @@ import { useTripReactions } from '@/hooks/useTripReactions';
 import { PlaceCommentThread } from '@/components/trips/PlaceCommentThread';
 import { useTripComments } from '@/hooks/useTripComments';
 import { useAuth } from '@/hooks/useAuth';
+import { resolveTripTitle } from '@/components/trips/tripTitle';
 
 interface SharedTripData {
   trip: {
@@ -163,7 +164,11 @@ function SharedTripPage() {
   // (we don't have SSR); search crawlers that execute JS will still pick it up.
   useEffect(() => {
     if (!data?.trip) return;
-    const title = `${data.trip.title} · Queer Guide`;
+    const resolved = resolveTripTitle(
+      { title: data.trip.title, primary_city_name: null },
+      t,
+    );
+    const title = `${resolved} · Queer Guide`;
     document.title = title;
     const desc = data.trip.description || t('trips.shared.metaDescription');
     const setMeta = (name: string, content: string, property = false) => {
@@ -335,7 +340,7 @@ function SharedTripPage() {
               textShadow: '0 2px 16px rgba(0,0,0,0.4)',
             }}
           >
-            {trip.title}
+            {resolveTripTitle({ title: trip.title, primary_city_name: null }, t)}
           </Typography>
           {trip.start_date && trip.end_date && (
             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.92)', mt: 1 }}>
