@@ -1,4 +1,5 @@
 import React, { memo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/lib/currency';
 import { Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +24,7 @@ import { format } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatEventTime } from '@/lib/event-time';
 import { FavoriteButton } from '@/components/ui/favorite-button';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -36,6 +38,7 @@ import { AddToTripMenuItem } from '@/components/trips/AddToTripMenuItem';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { rangesOverlap } from '@/components/trips/tripOverlap';
+import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -137,6 +140,7 @@ export const EventCard = memo(function EventCard({
   loading = false,
   onUpdateAttendance,
 }: EventCardProps) {
+  const { t } = useTranslation();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   const { activeTrip } = useActiveTrip();
@@ -148,14 +152,9 @@ export const EventCard = memo(function EventCard({
       { start_date: activeTrip.start_date, end_date: activeTrip.end_date },
     );
   const attendeeCount = event?.event_attendees?.filter((a) => a.status === 'going').length || 0;
-  const firstImage = event?.images?.[0];
-  const imageUrlValid = !!(
-    firstImage &&
-    firstImage.startsWith('http') &&
-    !firstImage.includes('data:image/svg')
-  );
+  const resolvedImage = resolveEntityImage('event', event ?? null).url;
   const [imageError, setImageError] = React.useState(false);
-  const hasImage = imageUrlValid && !imageError;
+  const hasImage = !!resolvedImage && !imageError;
   const hasVenue = event?.venues?.name || event?.venue_name;
   const hasLocation = hasVenue || event?.city;
 
@@ -219,7 +218,7 @@ export const EventCard = memo(function EventCard({
               <Box sx={{ position: 'relative', height: 200, overflow: 'hidden' }}>
                 <Box
                   component="img"
-                  src={firstImage}
+                  src={resolvedImage ?? ''}
                   alt={event.title}
                   loading="lazy"
                   onError={() => setImageError(true)}
@@ -373,7 +372,12 @@ export const EventCard = memo(function EventCard({
                 </Box>
               )}
 
-              <CardTitle>{event.title}</CardTitle>
+              <CardTitle>
+                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                  {event.title}
+                  <ContentLangBadge text={event.title} />
+                </Box>
+              </CardTitle>
 
               {/* Date and Time Info */}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 1 }}>
@@ -424,6 +428,7 @@ export const EventCard = memo(function EventCard({
                     WebkitLineClamp: 3,
                     WebkitBoxOrient: 'vertical',
                     lineHeight: 1.6,
+                    wordBreak: 'break-word',
                   }}
                 >
                   {event.description}
@@ -435,7 +440,7 @@ export const EventCard = memo(function EventCard({
                 <Box
                   sx={{
                     display: 'flex',
-                    alignItems: 'flex-start',
+                    alignItems: event.venues?.address ? 'flex-start' : 'center',
                     gap: 1,
                     p: 1.5,
                     bgcolor: 'action.hover',
@@ -447,8 +452,8 @@ export const EventCard = memo(function EventCard({
                       height: 16,
                       width: 16,
                       color: 'var(--primary)',
-                      marginTop: 2,
                       flexShrink: 0,
+                      marginTop: event.venues?.address ? 2 : 0,
                     }}
                   />
                   <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -458,8 +463,10 @@ export const EventCard = memo(function EventCard({
                         sx={{
                           fontWeight: 500,
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: 'vertical',
+                          wordBreak: 'break-word',
                         }}
                       >
                         {event.venues?.name || event.venue_name}
@@ -496,7 +503,7 @@ export const EventCard = memo(function EventCard({
                   {attendeeCount > 0 && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Box sx={{ p: 0.75, bgcolor: 'action.hover', borderRadius: 2 }}>
-                        <Users style={{ height: 12, width: 12, color: 'var(--primary)' }} />
+                        <Users style={{ height: 14, width: 14, color: 'var(--primary)' }} />
                       </Box>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         {attendeeCount} attending
@@ -515,15 +522,25 @@ export const EventCard = memo(function EventCard({
                   </Box>
                   <IconButton
                     size="small"
+                    aria-label={t('events.card.moreActions', 'More actions')}
+                    aria-haspopup="menu"
+                    aria-expanded={Boolean(menuAnchor)}
+                    aria-controls={menuAnchor ? `event-card-menu-${event.id}` : undefined}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       setMenuAnchor(e.currentTarget);
                     }}
+                    sx={{ minWidth: 44, minHeight: 44 }}
                   >
-                    <MoreVertical style={{ width: 16, height: 16 }} />
+                    <MoreVertical
+                      style={{ width: 16, height: 16 }}
+                      aria-hidden="true"
+                      focusable="false"
+                    />
                   </IconButton>
                   <Menu
+                    id={`event-card-menu-${event.id}`}
                     anchorEl={menuAnchor}
                     open={Boolean(menuAnchor)}
                     onClose={(_e: Record<string, unknown>, _reason: string) => {
@@ -564,41 +581,70 @@ export const EventCard = memo(function EventCard({
               </Box>
 
               {/* Action Buttons */}
-              <Box sx={{ display: 'flex', gap: 1, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 1,
+                  pt: 2,
+                  borderTop: 1,
+                  borderColor: 'divider',
+                }}
+              >
                 <Button size="sm" variant="outline">
                   <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
                   View Details
                 </Button>
 
-                {/* External Links */}
-                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                {/* External Links — only when data exists */}
+                {(event.venues?.website || event.ticket_url) && (
+                <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto' }}>
                   {event.venues?.website && (
                     <Button
+                      type="button"
                       size="sm"
                       variant="outline"
+                      aria-label={t('events.card.visitWebsite', 'Visit venue website')}
+                      title={t('events.card.visitWebsite', 'Visit venue website')}
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
                         window.open(event.venues!.website!, '_blank');
                       }}
+                      style={{ minWidth: 44, minHeight: 44 }}
                     >
-                      <ExternalLink style={{ height: 16, width: 16 }} />
+                      <ExternalLink
+                        style={{ height: 16, width: 16 }}
+                        aria-hidden="true"
+                        focusable="false"
+                      />
                     </Button>
                   )}
                   {event.ticket_url && (
                     <Button
+                      type="button"
                       size="sm"
                       variant="default"
+                      aria-label={t('events.card.getTickets', 'Get tickets')}
+                      title={t('events.card.getTickets', 'Get tickets')}
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
                         window.open(event.ticket_url!, '_blank');
                       }}
+                      style={{ minWidth: 44, minHeight: 44 }}
                     >
-                      <Ticket style={{ height: 16, width: 16 }} />
+                      <Ticket
+                        style={{ height: 16, width: 16, marginRight: 6 }}
+                        aria-hidden="true"
+                        focusable="false"
+                      />
+                      {t('events.card.tickets', 'Tickets')}
                     </Button>
                   )}
                 </Box>
+                )}
               </Box>
 
               {/* Attendance Buttons */}
