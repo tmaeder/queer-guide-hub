@@ -317,12 +317,26 @@ a:hover {
   opacity: 0.7;
 }
 
-/* ── Focus-visible (global accessibility) — square ───────────────── */
+/* ── Focus-visible (global accessibility, WCAG 2.4.7) ──────────────
+   Solid brand outline on any interactive element that receives
+   keyboard focus. The `.Mui-focusVisible` selector is required
+   because MUI's ButtonBase sets `outline: 0` on `.MuiButtonBase-root`
+   with higher specificity than the `*:focus-visible` rule. */
 
-*:focus-visible {
-  outline: 2px solid hsl(var(--brand));
-  outline-offset: 2px;
+*:focus-visible,
+.Mui-focusVisible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+[role="option"]:focus-visible,
+[role="menuitem"]:focus-visible {
+  outline: 2px solid hsl(var(--brand)) !important;
+  outline-offset: 2px !important;
   border-radius: 0;
+}
+
+/* Never remove focus without providing a replacement. */
+:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* ── Touch target minimum ─────────────────────────────────────────── */

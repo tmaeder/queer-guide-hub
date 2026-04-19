@@ -67,6 +67,26 @@ const baseThemeOptions: ThemeOptions = {
         },
       },
     },
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focusVisible': {
+            outline: `2px solid ${brandColors.main}`,
+            outlineOffset: '2px',
+          },
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focusVisible': {
+            outline: `2px solid ${brandColors.main}`,
+            outlineOffset: '-2px',
+          },
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {

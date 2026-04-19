@@ -97,11 +97,6 @@ export function ThemeProvider({
             transition: 'color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
           },
           'a:hover': { color: brandColors.dark },
-          '*:focus-visible': {
-            outline: `2px solid ${brandColors.main}`,
-            outlineOffset: '2px',
-            borderRadius: '4px',
-          },
         }} />
         {children}
       </MuiThemeProvider>
