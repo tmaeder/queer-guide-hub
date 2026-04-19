@@ -48,6 +48,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { format } from 'date-fns';
+import { dedupeCitiesByNormalized, normalizeCityLabel } from '@/utils/dateRange';
 import Box from '@mui/material/Box';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import Typography from '@mui/material/Typography';
@@ -119,7 +120,7 @@ const Events = () => {
 
   // Get unique cities from events for auto-suggest
   const availableCities = useMemo(
-    () => Array.from(new Set(events.map((event) => event.city).filter(Boolean))).sort() as string[],
+    () => dedupeCitiesByNormalized(events.map((event) => event.city).filter(Boolean) as string[]),
     [events],
   );
   const handleFiltersChange = async () => {
@@ -469,7 +470,7 @@ const Events = () => {
                           <CommandEmpty>No cities found.</CommandEmpty>
                           <CommandGroup>
                             {availableCities
-                              .filter((c) => c.toLowerCase().includes(city.toLowerCase()))
+                              .filter((c) => normalizeCityLabel(c).includes(normalizeCityLabel(city)))
                               .map((cityName) => (
                                 <CommandItem
                                   key={cityName}
@@ -594,7 +595,7 @@ const Events = () => {
                 }}
               >
                 <Label htmlFor="show-past-events" style={{ cursor: 'pointer' }}>
-                  Vergangene Termine anzeigen
+                  {t('pages.events.showPastEvents', 'Show past events')}
                 </Label>
                 <Switch
                   id="show-past-events"
@@ -696,7 +697,7 @@ const Events = () => {
               )}
               {showPast && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
-                  Vergangene Termine
+                  {t('pages.events.pastEvents', 'Past events')}
                   <X
                     style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
