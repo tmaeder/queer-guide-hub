@@ -37,6 +37,7 @@ import { formatEventTime } from '@/lib/event-time';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { EntityMap } from '@/components/map/EntityMap';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { toast } from '@/hooks/use-toast';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
@@ -329,7 +330,7 @@ export default function EventDetail() {
     return 'Price TBA';
   };
 
-  const heroImage = event.images && event.images.length > 0 ? event.images[0] : null;
+  const heroImage = resolveEntityImage('event', event).url;
   const cityName = event.cities?.name || event.city;
   const countryName = event.countries?.name || event.country;
   const cityLink = event.cities?.id ? `/city/${event.cities.slug || event.cities.id}` : null;
@@ -339,7 +340,11 @@ export default function EventDetail() {
   return (
     <Container sx={{ py: 4 }}>
       {/* Breadcrumb */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
+      <Box
+        component="nav"
+        aria-label="Breadcrumb"
+        sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}
+      >
         <LocalizedLink
           to="/events"
           style={{
@@ -349,7 +354,6 @@ export default function EventDetail() {
             textDecoration: 'none',
           }}
         >
-          <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
           <Typography
             variant="body2"
             color="text.secondary"
@@ -360,7 +364,7 @@ export default function EventDetail() {
         </LocalizedLink>
         {countryName && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+            <ChevronRight style={{ width: 14, height: 14, color: 'var(--muted-foreground)' }} />
             {countryLink ? (
               <LocalizedLink to={countryLink} style={{ textDecoration: 'none' }}>
                 <Typography
@@ -380,7 +384,7 @@ export default function EventDetail() {
         )}
         {cityName && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+            <ChevronRight style={{ width: 14, height: 14, color: 'var(--muted-foreground)' }} />
             {cityLink ? (
               <LocalizedLink to={cityLink} style={{ textDecoration: 'none' }}>
                 <Typography
@@ -398,10 +402,14 @@ export default function EventDetail() {
             )}
           </>
         )}
-        <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {event.title}
-        </Typography>
+        {event.title && (
+          <>
+            <ChevronRight style={{ width: 14, height: 14, color: 'var(--muted-foreground)' }} />
+            <Typography variant="body2" aria-current="page" sx={{ fontWeight: 500 }}>
+              {event.title}
+            </Typography>
+          </>
+        )}
       </Box>
 
       {/* Compact Hero Image */}
