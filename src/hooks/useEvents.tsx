@@ -47,87 +47,124 @@ export function useEvents(autoFetch: boolean = true) {
       const page = options?.page;
       const pageSize = options?.pageSize ?? 24;
 
-      let query = supabase
-        .from('events')
-        .select(
-          `
-          *,
-          event_attendees(status),
-          venues(
-            id,
-            name,
-            address,
-            city,
-            state,
-            country,
-            phone,
-            website,
-            email
-          )
-        `,
-          { count: 'exact' },
-        )
-        .eq('status', 'active')
-        .order('featured', { ascending: false })
-        .order('start_date', { ascending: filters?.includePast ? false : true });
+      // Route through search_events RPC when we need accent-insensitive
+      // city match or overlap-aware date filtering. Geo-bounds / nearMe
+      // still use the legacy client query below (RPC has no geo filter).
+      const useRpc =
+        !filters?.bounds &&
+        !filters?.nearMe &&
+        (Boolean(filters?.city) || Boolean(filters?.dateRange));
 
-      const nowIso = new Date().toISOString();
-      if (filters?.includePast) {
-        query = query.lte('start_date', nowIso);
+      let data: Event[] | null = null;
+      let error: Error | null = null;
+      let count: number | null = null;
+
+      if (useRpc) {
+        const limit =
+          typeof filters?.limit === 'number'
+            ? filters.limit
+            : typeof page === 'number'
+            ? pageSize
+            : 1000;
+        const offset = typeof page === 'number' ? (page - 1) * pageSize : 0;
+
+        const rpcResult = (await queryWithRetry(() =>
+          supabase.rpc('search_events', {
+            p_city: filters?.city ?? null,
+            p_event_type: filters?.eventType ?? null,
+            p_start: filters?.dateRange?.start ?? null,
+            p_end: filters?.dateRange?.end ?? null,
+            p_tags: filters?.tags?.length ? filters.tags : null,
+            p_accessibility_attributes: filters?.accessibilityAttributes?.length
+              ? filters.accessibilityAttributes
+              : null,
+            p_target_groups: filters?.targetGroups?.length ? filters.targetGroups : null,
+            p_search: filters?.search ?? null,
+            p_include_past: filters?.includePast ?? false,
+            p_limit: limit,
+            p_offset: offset,
+          }),
+        )) as { data: Array<{ total: number | string; event: Event }> | null; error: Error | null };
+
+        if (rpcResult.error) throw rpcResult.error;
+        const rows = rpcResult.data ?? [];
+        data = rows.map((r) => r.event);
+        count = rows.length > 0 ? Number(rows[0].total) : 0;
       } else {
-        query = query.gte('start_date', nowIso);
-      }
+        let query = supabase
+          .from('events')
+          .select(
+            `
+            *,
+            event_attendees(status),
+            venues(
+              id,
+              name,
+              address,
+              city,
+              state,
+              country,
+              phone,
+              website,
+              email
+            )
+          `,
+            { count: 'exact' },
+          )
+          .eq('status', 'active')
+          .order('featured', { ascending: false })
+          .order('start_date', { ascending: filters?.includePast ? false : true });
 
-      if (filters?.city) {
-        query = query.ilike('city', `%${filters.city}%`);
-      }
+        const nowIso = new Date().toISOString();
+        if (filters?.includePast) {
+          query = query.lte('start_date', nowIso);
+        } else {
+          query = query.gte('start_date', nowIso);
+        }
 
-      if (filters?.eventType) {
-        query = query.eq('event_type', filters.eventType);
-      }
+        if (filters?.eventType) {
+          query = query.eq('event_type', filters.eventType);
+        }
 
-      if (filters?.dateRange) {
-        query = query
-          .gte('start_date', filters.dateRange.start)
-          .lte('start_date', filters.dateRange.end);
-      }
+        if (filters?.tags && filters.tags.length > 0) {
+          query = query.overlaps('tags', filters.tags);
+        }
 
-      if (filters?.tags && filters.tags.length > 0) {
-        query = query.overlaps('tags', filters.tags);
-      }
+        if (filters?.accessibilityAttributes?.length) {
+          query = query.overlaps('accessibility_attributes', filters.accessibilityAttributes);
+        }
 
-      if (filters?.accessibilityAttributes?.length) {
-        query = query.overlaps('accessibility_attributes', filters.accessibilityAttributes);
-      }
+        if (filters?.targetGroups?.length) {
+          query = query.overlaps('target_groups', filters.targetGroups);
+        }
 
-      if (filters?.targetGroups?.length) {
-        query = query.overlaps('target_groups', filters.targetGroups);
-      }
+        if (filters?.bounds) {
+          query = query
+            .gte('latitude', filters.bounds.minLat)
+            .lte('latitude', filters.bounds.maxLat)
+            .gte('longitude', filters.bounds.minLng)
+            .lte('longitude', filters.bounds.maxLng);
+        }
 
-      // Geographic bounds filtering (for map viewport)
-      if (filters?.bounds) {
-        query = query
-          .gte('latitude', filters.bounds.minLat)
-          .lte('latitude', filters.bounds.maxLat)
-          .gte('longitude', filters.bounds.minLng)
-          .lte('longitude', filters.bounds.maxLng);
-      }
+        if (typeof filters?.limit === 'number') {
+          query = query.limit(filters.limit);
+        }
 
-      if (typeof filters?.limit === 'number') {
-        query = query.limit(filters.limit);
-      }
+        if (filters?.search) {
+          query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+        }
 
-      if (filters?.search) {
-        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-      }
+        if (typeof page === 'number') {
+          const from = (page - 1) * pageSize;
+          const to = from + pageSize - 1;
+          query = query.range(from, to);
+        }
 
-      if (typeof page === 'number') {
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
-        query = query.range(from, to);
+        const result = (await queryWithRetry(() => query)) as { data: Event[] | null; error: Error | null; count: number | null };
+        data = result.data;
+        error = result.error;
+        count = result.count;
       }
-
-      const { data, error, count } = (await queryWithRetry(() => query)) as { data: Event[] | null; error: Error | null; count: number | null };
 
       if (error) throw error;
 
