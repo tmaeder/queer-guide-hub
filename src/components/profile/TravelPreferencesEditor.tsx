@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,10 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Shield, DollarSign, Compass, Home, Users, Accessibility } from 'lucide-react';
+import { Shield, DollarSign, Compass, Home, Users, Accessibility, Plane, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  useUserTravelPreferences,
+  useUpdateUserTravelPreferences,
+  type TransportMode,
+  type BudgetTier,
+} from '@/hooks/useUserTravelPreferences';
+import {
+  CityCountryAutocomplete,
+  type GeoSelection,
+} from '@/components/trips/create/CityCountryAutocomplete';
 
 interface TravelPreferences {
   budget_level: string;
@@ -51,12 +62,32 @@ const ACCESSIBILITY_OPTIONS = [
   'wheelchair', 'hearing', 'visual', 'mobility', 'sensory',
 ];
 
+const TRANSPORT_OPTIONS: { value: TransportMode; label: string }[] = [
+  { value: 'flight', label: 'Flight' },
+  { value: 'rail', label: 'Rail' },
+  { value: 'bus', label: 'Bus' },
+  { value: 'car', label: 'Car' },
+];
+
+// budget_level (profiles.travel_preferences) uses 'mid_range'; user_travel_preferences uses 'mid'
+const BUDGET_TO_TIER: Record<string, BudgetTier> = {
+  budget: 'budget',
+  mid_range: 'mid',
+  luxury: 'luxury',
+};
+
 export function TravelPreferencesEditor() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const qc = useQueryClient();
   const [prefs, setPrefs] = useState<TravelPreferences>(DEFAULT_PREFS);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [preferredTransport, setPreferredTransport] = useState<TransportMode[]>([]);
+  const [homeCity, setHomeCity] = useState<GeoSelection | null>(null);
+
+  const { data: travelPrefs } = useUserTravelPreferences();
+  const updateTravelPrefs = useUpdateUserTravelPreferences();
 
   useEffect(() => {
     if (!user) return;
@@ -73,6 +104,42 @@ export function TravelPreferencesEditor() {
     })();
   }, [user]);
 
+  // Hydrate transport + home city from user_travel_preferences
+  useEffect(() => {
+    if (!travelPrefs) return;
+    setPreferredTransport(travelPrefs.preferred_transport ?? []);
+    if (travelPrefs.home_city_id && !homeCity) {
+      (async () => {
+        const { data } = await supabase
+          .from('cities')
+          .select('id, name, timezone, country:country_id(id, name, code)')
+          .eq('id', travelPrefs.home_city_id!)
+          .maybeSingle();
+        if (data) {
+          const row = data as Record<string, unknown>;
+          const country = row.country as { id: string; name: string; code: string | null } | null;
+          if (country) {
+            setHomeCity({
+              cityId: row.id as string,
+              cityName: row.name as string,
+              countryId: country.id,
+              countryName: country.name,
+              countryCode: country.code ?? null,
+              timezone: (row.timezone as string | null) ?? null,
+            });
+          }
+        }
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [travelPrefs]);
+
+  const toggleTransport = (mode: TransportMode) => {
+    setPreferredTransport((prev) =>
+      prev.includes(mode) ? prev.filter((m) => m !== mode) : [...prev, mode],
+    );
+  };
+
   const save = async () => {
     if (!user) return;
     setSaving(true);
@@ -82,6 +149,15 @@ export function TravelPreferencesEditor() {
         .update({ travel_preferences: prefs })
         .eq('user_id', user.id);
       if (error) throw error;
+
+      await updateTravelPrefs.mutateAsync({
+        budget_tier: BUDGET_TO_TIER[prefs.budget_level] ?? null,
+        preferred_transport: preferredTransport,
+        home_city_id: homeCity?.cityId ?? null,
+        home_country_id: homeCity?.countryId ?? null,
+      });
+
+      qc.invalidateQueries({ queryKey: ['trip-reservation-suggestions'] });
       toast({ title: 'Travel preferences saved' });
     } catch (err) {
       toast({ title: 'Failed to save', description: String(err), variant: 'destructive' });
@@ -266,6 +342,57 @@ export function TravelPreferencesEditor() {
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
             We'll prioritize accessible venues and hotels in your recommendations
+          </Typography>
+        </CardContent>
+      </Card>
+
+      {/* Preferred Transport */}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Plane style={{ width: 18, height: 18 }} />
+              Preferred Transport
+            </Box>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {TRANSPORT_OPTIONS.map(({ value, label }) => (
+              <Badge
+                key={value}
+                variant={preferredTransport.includes(value) ? 'default' : 'outline'}
+                onClick={() => toggleTransport(value)}
+              >
+                {label}
+              </Badge>
+            ))}
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            Trip transport suggestions prioritize your preferred modes
+          </Typography>
+        </CardContent>
+      </Card>
+
+      {/* Home City */}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <MapPin style={{ width: 18, height: 18 }} />
+              Home City
+            </Box>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CityCountryAutocomplete
+            value={homeCity}
+            onChange={setHomeCity}
+            label="Home city"
+            id="travel-prefs-home-city"
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            Used as the default origin for flight, rail and bus deep-links
           </Typography>
         </CardContent>
       </Card>

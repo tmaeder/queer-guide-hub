@@ -44,7 +44,7 @@ const EUROPEAN_COUNTRY_CODES = new Set([
   'PL','CZ','SK','HU','SI','HR','RO','BG','GR','EE','LV','LT',
 ]);
 
-async function lookupIataByNameByName(cityName: string | null): Promise<string | null> {
+async function lookupIataByName(cityName: string | null): Promise<string | null> {
   if (!cityName) return null;
   const { data } = await supabase
     .from('airports')
