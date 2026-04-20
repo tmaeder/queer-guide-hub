@@ -59,7 +59,7 @@ export function useSubmission(config: SubmissionTypeConfig) {
       form.setValue(name as Path<FieldValues>, value as FieldValues[string], {
         shouldDirty: true,
         shouldTouch: true,
-        shouldValidate: form.formState.isSubmitted,
+        shouldValidate: true,
       });
     },
     [form],
@@ -71,7 +71,7 @@ export function useSubmission(config: SubmissionTypeConfig) {
         form.setValue(name as Path<FieldValues>, value as FieldValues[string], {
           shouldDirty: true,
           shouldTouch: true,
-          shouldValidate: form.formState.isSubmitted,
+          shouldValidate: true,
         });
       }
     },
@@ -101,12 +101,19 @@ export function useSubmission(config: SubmissionTypeConfig) {
         }
       }
 
-      const ok = await form.trigger(step.fields as Path<FieldValues>[]);
-      if (ok) {
+      let firstInvalid: string | undefined;
+      let allValid = true;
+      for (const name of step.fields) {
+        const ok = await form.trigger(name as Path<FieldValues>);
+        if (!ok) {
+          allValid = false;
+          if (!firstInvalid) firstInvalid = name;
+        }
+      }
+      if (allValid) {
         setStepAnnouncement('');
         return { ok: true };
       }
-      const firstInvalid = step.fields.find((name) => form.formState.errors[name]);
       setStepAnnouncement('Please fix the highlighted fields before continuing.');
       return { ok: false, firstInvalid };
     },
