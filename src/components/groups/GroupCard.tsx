@@ -46,9 +46,11 @@ interface GroupCardProps {
   loading?: boolean;
   onJoin?: (groupId: string) => void;
   onLeave?: (groupId: string) => void;
+  onRequestJoin?: (groupId: string) => void;
   onManage?: (group: Group) => void;
   isJoining?: boolean;
   isLeaving?: boolean;
+  isRequesting?: boolean;
 }
 
 export const GroupCard = ({
@@ -56,9 +58,11 @@ export const GroupCard = ({
   loading = false,
   onJoin,
   onLeave,
+  onRequestJoin,
   onManage,
   isJoining,
   isLeaving,
+  isRequesting,
 }: GroupCardProps) => {
   if (loading || !group) {
     return (
@@ -135,6 +139,11 @@ export const GroupCard = ({
                     <Typography variant="caption">{group.user_role}</Typography>
                   </Badge>
                 )}
+                {!group.is_member && group.has_pending_request && (
+                  <Badge variant="outline">
+                    <Typography variant="caption">Pending</Typography>
+                  </Badge>
+                )}
               </Box>
             </Box>
 
@@ -196,15 +205,32 @@ export const GroupCard = ({
           </Button>
 
           {!group.is_member ? (
-            <Button
-              onClick={() => onJoin?.(group.id)}
-              disabled={isJoining}
-              size="sm"
-
-            >
-              <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
-              {isJoining ? 'Joining...' : 'Join'}
-            </Button>
+            group.is_private ? (
+              group.has_pending_request ? (
+                <Button disabled variant="outline" size="sm">
+                  <Lock style={{ width: 16, height: 16, marginRight: 8 }} />
+                  Requested
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => onRequestJoin?.(group.id)}
+                  disabled={isRequesting}
+                  size="sm"
+                >
+                  <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                  {isRequesting ? 'Requesting...' : 'Request to Join'}
+                </Button>
+              )
+            ) : (
+              <Button
+                onClick={() => onJoin?.(group.id)}
+                disabled={isJoining}
+                size="sm"
+              >
+                <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                {isJoining ? 'Joining...' : 'Join'}
+              </Button>
+            )
           ) : (
             <Button
               onClick={() => onLeave?.(group.id)}

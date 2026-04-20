@@ -47,5 +47,7 @@ describe('useGroups', () => {
     expect(typeof result.current.createGroup).toBe('function');
     expect(typeof result.current.joinGroup).toBe('function');
     expect(typeof result.current.leaveGroup).toBe('function');
+    expect(typeof result.current.requestJoin).toBe('function');
+    expect(typeof result.current.cancelJoinRequest).toBe('function');
   });
 });

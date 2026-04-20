@@ -18,7 +18,10 @@ export default function Groups() {
   const { t } = useTranslation();
   const {
     groups, userGroups, isLoading,
-    createGroup, isCreating, joinGroup, isJoining, leaveGroup, isLeaving,
+    createGroup, isCreating,
+    joinGroup, isJoining,
+    requestJoin, isRequesting,
+    leaveGroup, isLeaving,
   } = useGroups();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -54,6 +57,9 @@ export default function Groups() {
     }
     return filtered;
   }, [groups, userGroups, searchQuery, selectedTags, activeFilters, showMyGroups]);
+
+  const hasActiveFilters =
+    !!searchQuery || selectedTags.length > 0 || activeFilters.length > 0;
 
   const popularGroups = useMemo(
     () => [...groups].filter(g => !g.is_private).sort((a, b) => b.member_count - a.member_count).slice(0, 6),
@@ -96,17 +102,34 @@ export default function Groups() {
                 {Array.from({ length: 6 }).map((_, i) => (<GroupCard key={i} loading />))}
               </Box>
             ) : filteredGroups.length === 0 ? (
-              <EmptyState
-                icon={Users}
-                title={t('pages.groups.emptyTitle', 'No groups here yet')}
-                description={t('pages.groups.emptyDescription', 'Be the spark — create the first group and bring people together.')}
-                mood="encouraging"
-                primaryAction={{ label: t('pages.groups.createGroup', 'Create a Group'), onClick: () => {} }}
-              />
+              hasActiveFilters ? (
+                <EmptyState
+                  icon={Search}
+                  title={t('pages.groups.noMatchTitle', 'No groups match your search')}
+                  description={t('pages.groups.noMatchDescription', 'Try a different keyword or clear your filters.')}
+                  mood="neutral"
+                  primaryAction={{
+                    label: t('pages.groups.clearFilters', 'Clear filters'),
+                    onClick: () => {
+                      setSearchQuery('');
+                      setActiveFilters([]);
+                      setSelectedTags([]);
+                    },
+                  }}
+                />
+              ) : (
+                <EmptyState
+                  icon={Users}
+                  title={t('pages.groups.emptyTitle', 'No groups here yet')}
+                  description={t('pages.groups.emptyDescription', 'Be the spark — create the first group and bring people together.')}
+                  mood="encouraging"
+                  primaryAction={{ label: t('pages.groups.createGroup', 'Create a Group'), onClick: () => {} }}
+                />
+              )
             ) : (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
                 {filteredGroups.map(group => (
-                  <GroupCard key={group.id} group={group} onJoin={joinGroup} onLeave={leaveGroup} isJoining={isJoining} isLeaving={isLeaving} />
+                  <GroupCard key={group.id} group={group} onJoin={joinGroup} onRequestJoin={(id) => requestJoin({ groupId: id })} onLeave={leaveGroup} isJoining={isJoining} isRequesting={isRequesting} isLeaving={isLeaving} />
                 ))}
               </Box>
             )}
@@ -146,7 +169,7 @@ export default function Groups() {
                 ) : (
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
                     {popularGroups.map(group => (
-                      <GroupCard key={group.id} group={group} onJoin={joinGroup} onLeave={leaveGroup} isJoining={isJoining} isLeaving={isLeaving} />
+                      <GroupCard key={group.id} group={group} onJoin={joinGroup} onRequestJoin={(id) => requestJoin({ groupId: id })} onLeave={leaveGroup} isJoining={isJoining} isRequesting={isRequesting} isLeaving={isLeaving} />
                     ))}
                   </Box>
                 )}
