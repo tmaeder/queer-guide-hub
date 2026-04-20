@@ -625,8 +625,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <Box className={className} sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden' }}>
-      <Box ref={containerRef} sx={{ height, width: '100%' }} />
+    <Box className={className} sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', height }}>
+      <Box ref={containerRef} sx={{ flex: 1, width: '100%', minHeight: 0 }} />
 
       {/* Lightweight hover tooltip for boundary polygons */}
       <Box
@@ -721,12 +721,10 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
       {/* Filters bar */}
       {showFilters && (
-        <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
-          <ExploreMapFiltersPanel
-            filters={filters}
-            onFiltersChange={setFilters}
-          />
-        </Box>
+        <ExploreMapFiltersPanel
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
       )}
     </Box>
   );
