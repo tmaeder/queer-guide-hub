@@ -285,7 +285,7 @@ export default function CountryDetail() {
 
           {/* Hero Image */}
           <Box sx={{ position: 'relative', mb: 3 }}>
-            <CountryHeroImages countryName={country.name} />
+            <CountryHeroImages country={country} />
           </Box>
 
           {/* Title Row */}

@@ -1,97 +1,107 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import Box from '@mui/material/Box';
+import { resolveEntityImage, isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
-interface CountryImage {
+interface CountryRecord {
   id: string;
-  url: string;
-  thumbnail: string;
-  alt: string;
-  photographer: string;
-  photographer_url: string;
+  name: string;
+  capital?: string | null;
+  image_url?: string | null;
+  curated_image_url?: string | null;
+  image_flagged?: boolean | null;
+  image_metadata?: {
+    photographer?: string;
+    photographer_url?: string;
+  } | null;
 }
 
 interface CountryHeroImagesProps {
-  countryName: string;
+  country: CountryRecord;
   className?: string;
 }
 
-export default function CountryHeroImages({ countryName, className = "" }: CountryHeroImagesProps) {
-  const [images, setImages] = useState<CountryImage[]>([]);
-  const [loading, setLoading] = useState(true);
+/**
+ * Country hero image.
+ *
+ * Resolution order:
+ *   1. curated_image_url
+ *   2. persisted image_url (not flagged)
+ *   3. fetch-country-images (scored + persisted)
+ *   4. null -> render nothing
+ */
+export default function CountryHeroImages({ country, className = '' }: CountryHeroImagesProps) {
+  const resolved = resolveEntityImage('country', country);
+  const [url, setUrl] = useState<string | null>(resolved.url);
+  const [metadata, setMetadata] = useState(country.image_metadata ?? null);
 
   useEffect(() => {
-    fetchCountryImages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchCountryImages defined below, re-run on countryName change
-  }, [countryName]);
-
-  const fetchCountryImages = async () => {
-    try {
-      setLoading(true);
-
-      const { data, error } = await supabase.functions.invoke('get-pexels-images', {
-        body: {
-          query: `${countryName} famous landmarks architecture cityscape national symbols capital`,
-          type: 'country',
-          page: 1
+    if (resolved.url) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('fetch-country-images', {
+          body: {
+            countryId: country.id,
+            countryName: country.name,
+            capital: country.capital ?? undefined,
+          },
+        });
+        if (cancelled) return;
+        if (error || !data?.success) return;
+        if (isValidImageUrl(data.image_url)) {
+          setUrl(data.image_url);
+          setMetadata(data.image_metadata ?? null);
         }
-      });
-
-      if (error) {
-        console.error('Error fetching country images:', error);
-        return;
+      } catch {
+        /* silent — placeholder stays */
       }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [country.id, country.name, country.capital, resolved.url]);
 
-      if (data?.success && data.images) {
-        setImages(data.images.slice(0, 3)); // Get first 3 images
-      }
-    } catch (error) {
-      console.error('Error fetching country images:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading || images.length === 0) {
-    return null;
-  }
+  if (!url) return null;
 
   return (
-    <Box sx={{ position: 'relative', height: 192, borderRadius: 2, overflow: 'hidden', mb: 3 }} className={className}>
-      {/* Main image as background */}
+    <Box
+      sx={{ position: 'relative', height: 192, borderRadius: 2, overflow: 'hidden', mb: 3 }}
+      className={className}
+    >
       <Box
         sx={{ position: 'absolute', inset: 0, backgroundSize: 'cover', backgroundPosition: 'center' }}
-        style={{ backgroundImage: `url(${images[0]?.url})` }}
+        style={{ backgroundImage: `url(${url})` }}
       >
         <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.4)' }} />
       </Box>
-
-      {/* Small thumbnail images overlay */}
-      {images.length > 1 && (
-        <Box sx={{ position: 'absolute', bottom: 16, right: 16, display: 'flex', gap: 1 }}>
-          {images.slice(1).map((image) => (
+      {metadata?.photographer && (
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 8,
+            left: 8,
+            fontSize: '0.75rem',
+            color: 'white',
+            textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+          }}
+        >
+          Photo by{' '}
+          {metadata.photographer_url ? (
             <Box
-              key={image.id}
-              sx={{ width: 48, height: 48, borderRadius: 1, border: '2px solid rgba(255,255,255,0.7)', overflow: 'hidden', backgroundSize: 'cover', backgroundPosition: 'center' }}
-              style={{ backgroundImage: `url(${image.thumbnail})` }}
-            />
-          ))}
+              component="a"
+              href={metadata.photographer_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ textDecoration: 'underline', color: 'white', '&:hover': { opacity: 0.8 } }}
+            >
+              {metadata.photographer}
+            </Box>
+          ) : (
+            metadata.photographer
+          )}
         </Box>
       )}
-
-      {/* Photographer credit */}
-      <Box sx={{ position: 'absolute', bottom: 8, left: 8, fontSize: '0.75rem', color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-        Photo by{' '}
-        <Box
-          component="a"
-          href={images[0]?.photographer_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          sx={{ textDecoration: 'underline', color: 'white', '&:hover': { opacity: 0.8 } }}
-        >
-          {images[0]?.photographer}
-        </Box>
-      </Box>
     </Box>
   );
 }
