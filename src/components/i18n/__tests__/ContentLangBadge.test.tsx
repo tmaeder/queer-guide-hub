@@ -52,4 +52,25 @@ describe('ContentLangBadge', () => {
     const { container } = renderWith('en', 'The best party of the year with drinks');
     expect(container.textContent).toBe('');
   });
+
+  it('prefers authoritative `language` prop over text detection', () => {
+    i18n.changeLanguage('en');
+    // Very short text, detector would bail — authoritative DE wins.
+    const { container } = render(
+      <I18nextProvider i18n={i18n}>
+        <ContentLangBadge text="Pride" language="de" />
+      </I18nextProvider>,
+    );
+    expect(container.textContent).toMatch(/^In /);
+  });
+
+  it('hides when authoritative language matches UI locale', () => {
+    i18n.changeLanguage('en');
+    const { container } = render(
+      <I18nextProvider i18n={i18n}>
+        <ContentLangBadge text="Some long enough text here" language="en-US" />
+      </I18nextProvider>,
+    );
+    expect(container.textContent).toBe('');
+  });
 });

@@ -380,7 +380,7 @@ export const EventCard = memo(function EventCard({
               <CardTitle>
                 <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                   {event.title}
-                  <ContentLangBadge text={event.title} />
+                  <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
                 </Box>
               </CardTitle>
 
