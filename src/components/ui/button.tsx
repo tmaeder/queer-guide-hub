@@ -88,8 +88,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className={className}
           color={variant === "destructive" ? "error" : variant === "default" ? "primary" : "default"}
           sx={{
-            width: 40,
-            height: 40,
+            minWidth: 44,
+            minHeight: 44,
+            width: 44,
+            height: 44,
           }}
           style={style}
           {...motionInteractions}

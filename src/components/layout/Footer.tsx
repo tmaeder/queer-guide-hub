@@ -62,7 +62,7 @@ export function Footer() {
             ))}
           </Box>
 
-          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.65rem' }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem' }}>
             &copy; {currentYear} Queer Guide
           </Typography>
         </Box>

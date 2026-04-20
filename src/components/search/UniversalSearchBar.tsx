@@ -326,6 +326,8 @@ export const UniversalSearchBar = () => {
               <Button
                 variant="ghost"
                 size="sm"
+                aria-hidden="true"
+                tabIndex={-1}
                 style={{
                   height: isMobile ? 48 : 40,
                   paddingLeft: isMobile ? 16 : 12,
