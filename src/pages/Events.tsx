@@ -375,6 +375,7 @@ const Events = () => {
                 }}
               />
               <SearchInputTyped
+                aria-label={t('pages.events.searchLabel', 'Search events')}
                 placeholders={[
                   'Search for events...',
                   'Find parties near you...',

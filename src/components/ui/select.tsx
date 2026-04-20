@@ -132,10 +132,21 @@ interface SelectTriggerProps extends React.HTMLAttributes<HTMLDivElement> {
   asChild?: boolean;
 }
 
+const SELECT_ARIA_KEYS = ['aria-label', 'aria-labelledby', 'aria-describedby'] as const;
+
 const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
   ({ className, children, style, ...props }, ref) => {
     const { value, onValueChange, disabled, placeholder, items } =
       React.useContext(SelectContext);
+
+    const rest: Record<string, unknown> = { ...(props as Record<string, unknown>) };
+    const triggerInputProps: Record<string, unknown> = {};
+    for (const key of SELECT_ARIA_KEYS) {
+      if (rest[key] != null) {
+        triggerInputProps[key] = rest[key];
+        delete rest[key];
+      }
+    }
 
     return (
       <FormControl
@@ -176,7 +187,8 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
               },
             },
           }}
-          {...(props as Record<string, unknown>)}
+          inputProps={triggerInputProps}
+          {...rest}
         >
           {items.map((item) => (
             <MuiMenuItem
