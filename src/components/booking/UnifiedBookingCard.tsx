@@ -5,6 +5,7 @@ import { Plane, ArrowRight, ExternalLink, Hotel, MapPin, Star, Ticket } from 'lu
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { BookingResult } from '@/lib/booking/types';
+import { formatPrice } from '@/lib/booking/price';
 import { trackTravelEvent } from '@/utils/travelAnalytics';
 
 interface UnifiedBookingCardProps {
@@ -24,15 +25,6 @@ function formatDuration(minutes: number | undefined): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${h}h ${m}m`;
-}
-
-function formatPrice(price: number, currency: string): string {
-  return new Intl.NumberFormat(navigator?.language || 'en-US', {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price);
 }
 
 const verticalIcons = {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -13,7 +14,12 @@ import { Plane, Hotel, Ticket, TrendingUp } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { FlightSearchForm } from '@/components/travel/FlightSearchForm';
-import { HotelSearchForm } from '@/components/booking/HotelSearchForm';
+import {
+  HotelSearchForm,
+  HOTEL_TYPE_OPTIONS,
+  type HotelSearchParams,
+  type HotelTypeOption,
+} from '@/components/booking/HotelSearchForm';
 import { TravelDealCard } from '@/components/travel/TravelDealCard';
 import { UnifiedBookingCard } from '@/components/booking/UnifiedBookingCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
@@ -35,6 +41,41 @@ const TAB_CONFIG: { value: BookingTab; label: string; icon: typeof Plane }[] = [
   { value: 'activities', label: 'Activities', icon: Ticket },
 ];
 
+const HOTEL_TYPE_LABELS: Record<HotelTypeOption, string> = {
+  all: 'Any type',
+  hotel: 'Hotel',
+  boutique: 'Boutique Hotel',
+  bnb: 'B&B',
+  hostel: 'Hostel',
+  guesthouse: 'Guesthouse',
+  apartment: 'Apartment',
+  resort: 'Resort',
+};
+
+function parseUrlType(raw: string | null): HotelTypeOption | undefined {
+  if (!raw) return undefined;
+  return (HOTEL_TYPE_OPTIONS as readonly string[]).includes(raw)
+    ? (raw as HotelTypeOption)
+    : undefined;
+}
+
+function parseUrlBound(raw: string | null): number | undefined {
+  if (!raw) return undefined;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return undefined;
+  return n;
+}
+
+interface HotelSearchState {
+  city: string;
+  checkIn?: string;
+  checkOut?: string;
+  guests: number;
+  hotelType?: HotelTypeOption;
+  priceMin?: number;
+  priceMax?: number;
+}
+
 export default function Travel() {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -42,14 +83,28 @@ export default function Travel() {
   const initialTab = (searchParams.get('tab') as BookingTab) || 'flights';
   const initialTo = searchParams.get('to') || undefined;
   const initialCity = searchParams.get('city') || undefined;
+  const initialCheckIn = searchParams.get('checkIn') || undefined;
+  const initialCheckOut = searchParams.get('checkOut') || undefined;
+  const initialGuestsParam = searchParams.get('guests');
+  const initialGuests = initialGuestsParam ? parseInt(initialGuestsParam, 10) || 2 : 2;
+  const initialHotelType = parseUrlType(searchParams.get('type'));
+  const initialPriceMin = parseUrlBound(searchParams.get('priceMin'));
+  const initialPriceMax = parseUrlBound(searchParams.get('priceMax'));
 
   const [activeTab, setActiveTab] = useState<BookingTab>(initialTab);
-  const [hotelSearch, setHotelSearch] = useState<{
-    city: string;
-    checkIn?: string;
-    checkOut?: string;
-    guests: number;
-  } | null>(initialCity ? { city: initialCity, guests: 2 } : null);
+  const [hotelSearch, setHotelSearch] = useState<HotelSearchState | null>(
+    initialCity
+      ? {
+          city: initialCity,
+          checkIn: initialCheckIn,
+          checkOut: initialCheckOut,
+          guests: initialGuests,
+          hotelType: initialHotelType,
+          priceMin: initialPriceMin,
+          priceMax: initialPriceMax,
+        }
+      : null,
+  );
 
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 
@@ -65,6 +120,9 @@ export default function Travel() {
     checkIn: hotelSearch?.checkIn,
     checkOut: hotelSearch?.checkOut,
     guests: hotelSearch?.guests,
+    hotelType: hotelSearch?.hotelType,
+    priceMin: hotelSearch?.priceMin,
+    priceMax: hotelSearch?.priceMax,
     enabled: activeTab === 'hotels' && !!hotelSearch?.city,
   });
 
@@ -104,9 +162,49 @@ export default function Travel() {
     });
   };
 
-  const handleHotelSearch = (params: { city: string; checkIn?: string; checkOut?: string; guests: number }) => {
-    setHotelSearch(params);
+  const syncHotelParamsToUrl = (params: HotelSearchParams) => {
+    setSearchParams((prev) => {
+      prev.set('tab', 'hotels');
+      prev.set('city', params.city);
+      if (params.checkIn) prev.set('checkIn', params.checkIn); else prev.delete('checkIn');
+      if (params.checkOut) prev.set('checkOut', params.checkOut); else prev.delete('checkOut');
+      prev.set('guests', String(params.guests));
+      if (params.hotelType) prev.set('type', params.hotelType); else prev.delete('type');
+      if (params.priceMin !== undefined) prev.set('priceMin', String(params.priceMin)); else prev.delete('priceMin');
+      if (params.priceMax !== undefined) prev.set('priceMax', String(params.priceMax)); else prev.delete('priceMax');
+      return prev;
+    });
   };
+
+  const handleHotelSearch = (params: HotelSearchParams) => {
+    setHotelSearch(params);
+    syncHotelParamsToUrl(params);
+  };
+
+  const clearHotelFilter = (key: 'hotelType' | 'priceMin' | 'priceMax') => {
+    if (!hotelSearch) return;
+    const next: HotelSearchState = { ...hotelSearch, [key]: undefined };
+    setHotelSearch(next);
+    syncHotelParamsToUrl(next);
+  };
+
+  const clearAllHotelFilters = () => {
+    if (!hotelSearch) return;
+    const next: HotelSearchState = {
+      city: hotelSearch.city,
+      checkIn: hotelSearch.checkIn,
+      checkOut: hotelSearch.checkOut,
+      guests: hotelSearch.guests,
+    };
+    setHotelSearch(next);
+    syncHotelParamsToUrl(next);
+  };
+
+  const hasActiveHotelFilters =
+    !!hotelSearch &&
+    (hotelSearch.hotelType !== undefined ||
+      hotelSearch.priceMin !== undefined ||
+      hotelSearch.priceMax !== undefined);
 
   return (
     <Container sx={{ py: { xs: 6, md: 10 } }}>
@@ -156,7 +254,16 @@ export default function Travel() {
 
           {/* Hotels Tab */}
           {activeTab === 'hotels' && (
-            <HotelSearchForm initialCity={initialCity} onSearch={handleHotelSearch} />
+            <HotelSearchForm
+              initialCity={initialCity}
+              initialCheckIn={initialCheckIn}
+              initialCheckOut={initialCheckOut}
+              initialGuests={initialGuests}
+              initialHotelType={initialHotelType}
+              initialPriceMin={initialPriceMin}
+              initialPriceMax={initialPriceMax}
+              onSearch={handleHotelSearch}
+            />
           )}
 
           {/* Activities Tab */}
@@ -230,6 +337,35 @@ export default function Travel() {
             </Typography>
           </Box>
 
+          {hasActiveHotelFilters && hotelSearch && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2, alignItems: 'center' }}>
+              {hotelSearch.hotelType && (
+                <Chip
+                  label={`Type: ${HOTEL_TYPE_LABELS[hotelSearch.hotelType]}`}
+                  size="small"
+                  onDelete={() => clearHotelFilter('hotelType')}
+                />
+              )}
+              {hotelSearch.priceMin !== undefined && (
+                <Chip
+                  label={`≥ €${hotelSearch.priceMin}`}
+                  size="small"
+                  onDelete={() => clearHotelFilter('priceMin')}
+                />
+              )}
+              {hotelSearch.priceMax !== undefined && (
+                <Chip
+                  label={`≤ €${hotelSearch.priceMax}`}
+                  size="small"
+                  onDelete={() => clearHotelFilter('priceMax')}
+                />
+              )}
+              <Button size="sm" variant="outline" onClick={clearAllHotelFilters}>
+                Clear filters
+              </Button>
+            </Box>
+          )}
+
           {hotelsLoading ? (
             <ResultsGrid>
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -242,6 +378,15 @@ export default function Travel() {
                 <UnifiedBookingCard key={hotel.id} result={hotel} />
               ))}
             </ResultsGrid>
+          ) : hotelSearch && hasActiveHotelFilters ? (
+            <EmptyState>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                <span>No hotels match your filters in {hotelSearch.city}.</span>
+                <Button size="sm" variant="outline" onClick={clearAllHotelFilters}>
+                  Clear filters
+                </Button>
+              </Box>
+            </EmptyState>
           ) : hotelSearch ? (
             <EmptyState>No hotels found in {hotelSearch.city}. Try a different city.</EmptyState>
           ) : (
@@ -312,7 +457,9 @@ function ResultsGrid({ children }: { children: React.ReactNode }) {
 function EmptyState({ children }: { children: React.ReactNode }) {
   return (
     <Box sx={{ textAlign: 'center', py: 4, bgcolor: 'action.hover', borderRadius: 2 }}>
-      <Typography sx={{ color: 'text.secondary' }}>{children}</Typography>
+      <Typography component="div" sx={{ color: 'text.secondary' }}>
+        {children}
+      </Typography>
     </Box>
   );
 }

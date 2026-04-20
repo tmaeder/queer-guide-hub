@@ -48,6 +48,8 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { format } from 'date-fns';
+import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
+import { displayCityName } from '@/utils/cityDisplay';
 import { dedupeCitiesByNormalized, normalizeCityLabel } from '@/utils/dateRange';
 import Box from '@mui/material/Box';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
@@ -80,7 +82,8 @@ const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
 ];
 
 const Events = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dfLocale = dateFnsLocaleFor(i18n.language);
   const navigate = useLocalizedNavigate();
   const theme = useTheme();
   const { events, loading, error, hasMore, datasetTotal, fetchEvents, updateAttendance, loadingTimedOut } =
@@ -640,7 +643,7 @@ const Events = () => {
                   id="show-past-events"
                   checked={showPast}
                   onCheckedChange={setShowPast}
-                  aria-label="Show past events"
+                  aria-label={t('pages.events.showPastEvents', 'Show past events')}
                 />
               </Box>
 
@@ -654,7 +657,7 @@ const Events = () => {
                     style={{ display: 'flex', gap: 8 }}
                   >
                     <X style={{ width: 16, height: 16 }} />
-                    Clear All
+                    {t('pages.events.clearAll', 'Clear All')}
                   </Button>
                 )}
               </Box>
@@ -665,15 +668,15 @@ const Events = () => {
           {hasActiveFilters && !showFilters && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
               <Typography variant="body2" color="text.secondary">
-                Active filters:
+                {t('pages.events.activeFilters', 'Active filters:')}
               </Typography>
               {search && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
-                  Search: {search}
+                  {t('pages.events.filterSearch', { value: search, defaultValue: `Search: ${search}` })}
                   <X
                     style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
-                    aria-label="Clear search"
+                    aria-label={t('pages.events.clearFilterSearch', 'Clear search')}
                     onClick={() => setSearch('')}
                   />
                 </Badge>
@@ -681,11 +684,19 @@ const Events = () => {
               {city && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
                   {autoLocationLabel === city && <MapPin style={{ width: 10, height: 10 }} />}
-                  {autoLocationLabel === city ? `Near you: ${city}` : `City: ${city}`}
+                  {autoLocationLabel === city
+                    ? t('pages.events.filterNearYou', {
+                        value: displayCityName(city, i18n.language),
+                        defaultValue: `Near you: ${displayCityName(city, i18n.language)}`,
+                      })
+                    : t('pages.events.filterCity', {
+                        value: displayCityName(city, i18n.language),
+                        defaultValue: `City: ${displayCityName(city, i18n.language)}`,
+                      })}
                   <X
                     style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
-                    aria-label="Clear city filter"
+                    aria-label={t('pages.events.clearFilterCity', 'Clear city filter')}
                     onClick={() => { setCity(''); setAutoLocationLabel(null); }}
                   />
                 </Badge>
@@ -696,40 +707,46 @@ const Events = () => {
                   <X
                     style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
-                    aria-label="Clear event type filter"
+                    aria-label={t('pages.events.clearFilterEventType', 'Clear event type filter')}
                     onClick={() => setEventType('')}
                   />
                 </Badge>
               )}
               {startDate && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
-                  From: {format(startDate, 'MMM d, yyyy')}
+                  {t('pages.events.filterFrom', {
+                    value: format(startDate, 'PP', { locale: dfLocale }),
+                    defaultValue: `From: ${format(startDate, 'PP', { locale: dfLocale })}`,
+                  })}
                   <X
                     style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
-                    aria-label="Clear start date filter"
+                    aria-label={t('pages.events.clearFilterStartDate', 'Clear start date filter')}
                     onClick={() => setStartDate(undefined)}
                   />
                 </Badge>
               )}
               {endDate && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
-                  To: {format(endDate, 'MMM d, yyyy')}
+                  {t('pages.events.filterTo', {
+                    value: format(endDate, 'PP', { locale: dfLocale }),
+                    defaultValue: `To: ${format(endDate, 'PP', { locale: dfLocale })}`,
+                  })}
                   <X
                     style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
-                    aria-label="Clear end date filter"
+                    aria-label={t('pages.events.clearFilterEndDate', 'Clear end date filter')}
                     onClick={() => setEndDate(undefined)}
                   />
                 </Badge>
               )}
               {nearMe && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
-                  Near Me
+                  {t('pages.events.filterNearMe', 'Near Me')}
                   <X
                     style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
-                    aria-label="Clear near me filter"
+                    aria-label={t('pages.events.clearFilterNearMe', 'Clear near me filter')}
                     onClick={() => setNearMe(false)}
                   />
                 </Badge>
@@ -740,7 +757,7 @@ const Events = () => {
                   <X
                     style={{ width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' }}
                     role="button"
-                    aria-label="Clear past events filter"
+                    aria-label={t('pages.events.clearFilterPast', 'Clear past events filter')}
                     onClick={() => setShowPast(false)}
                   />
                 </Badge>

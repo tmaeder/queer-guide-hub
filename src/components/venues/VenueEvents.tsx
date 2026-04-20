@@ -1,4 +1,5 @@
 import { formatCurrency } from '@/lib/currency';
+import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -47,7 +48,10 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
         {upcomingEvents.map((event) => (
           <Box key={event.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1, borderRadius: 1, bgcolor: 'action.hover' }}>
             <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {event.title}
+                <ContentLangBadge text={event.title} />
+              </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
                 <Calendar style={{ width: 12, height: 12 }} />
                 <Typography variant="caption">{formatEventDate(event.start_date)}</Typography>
@@ -79,7 +83,10 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
           {upcomingEvents.map((event) => (
             <Box key={event.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 1, border: 1, borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' }, transition: 'background-color 0.2s' }}>
               <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>{event.title}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  {event.title}
+                  <ContentLangBadge text={event.title} />
+                </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5, color: 'text.secondary' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Calendar style={{ width: 12, height: 12 }} />
