@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Popper from '@mui/material/Popper';
@@ -36,13 +42,13 @@ interface Props {
   id?: string;
 }
 
+const normalize = (s: string) => s.normalize('NFC').trim();
+
 /**
- * City + Country autocomplete backed by the public.cities table.
- * Returns a fully-resolved GeoSelection (city_id + country_id + timezone)
- * so callers can persist structured geo data — never free text.
- *
- * Falls back to a mapbox-geocoding upsert flow when no cities match
- * (caller wires that via onFallbackRequested).
+ * City + Country autocomplete backed by the `search_cities` RPC
+ * (PostgreSQL `unaccent` → diacritic-insensitive prefix/substring match).
+ * Returns a fully-resolved GeoSelection so callers can persist structured
+ * geo data — never free text.
  */
 export function CityCountryAutocomplete({
   value,
@@ -53,7 +59,7 @@ export function CityCountryAutocomplete({
   autoFocus,
   id = 'trip-city-country',
 }: Props) {
-  const { t, ready } = useTranslation();
+  const { t } = useTranslation();
   const [query, setQuery] = useState(
     value ? `${value.cityName}, ${value.countryName}` : '',
   );
@@ -62,43 +68,59 @@ export function CityCountryAutocomplete({
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
-  const anchorRef = useRef<HTMLDivElement>(null);
+  const [composing, setComposing] = useState(false);
+  const [anchorReady, setAnchorReady] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const lastSyncedCityId = useRef<string | null>(null);
 
-  // Sync external value → input text
+  // Popper needs a non-null anchorEl on first open — force a re-render
+  // after mount so anchorEl is populated before open flips to true.
+  useLayoutEffect(() => {
+    setAnchorReady(true);
+  }, []);
+
+  // Sync external value → input text, but only when the city id actually
+  // changes. Prevents the value-effect clobbering user typing.
   useEffect(() => {
-    if (value) setQuery(`${value.cityName}, ${value.countryName}`);
+    if (!value) return;
+    if (lastSyncedCityId.current === value.cityId) return;
+    lastSyncedCityId.current = value.cityId;
+    setQuery(`${value.cityName}, ${value.countryName}`);
   }, [value]);
 
+  // Close on outside mousedown — no blur-timer race.
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [open]);
+
   const search = useCallback(async (q: string) => {
-    const trimmed = q.trim();
+    const trimmed = normalize(q);
     if (trimmed.length < 2) {
       setOptions([]);
       return;
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('cities')
-        .select('id, name, timezone, country:country_id(id, name, code)')
-        .ilike('name', `${trimmed}%`)
-        .order('name', { ascending: true })
-        .limit(8);
-
+      const { data, error } = await supabase.rpc('search_cities', {
+        q: trimmed,
+        max_results: 8,
+      });
       if (error) throw error;
-
-      const mapped: Option[] = (data ?? [])
-        .filter((row: Record<string, unknown>) => !!row.country)
-        .map((row: Record<string, unknown>) => {
-          const country = row.country as { id: string; name: string; code: string | null };
-          return {
-            cityId: row.id as string,
-            cityName: row.name as string,
-            countryId: country.id,
-            countryName: country.name,
-            countryCode: country.code ?? null,
-            timezone: (row.timezone as string | null) ?? null,
-          };
-        });
+      const mapped: Option[] = (data ?? []).map(
+        (row: Record<string, unknown>) => ({
+          cityId: row.id as string,
+          cityName: row.name as string,
+          countryId: row.country_id as string,
+          countryName: row.country_name as string,
+          countryCode: (row.country_code as string | null) ?? null,
+          timezone: (row.timezone as string | null) ?? null,
+        }),
+      );
       setOptions(mapped);
     } catch (err) {
       console.error('[CityCountryAutocomplete] search failed', err);
@@ -109,9 +131,10 @@ export function CityCountryAutocomplete({
   }, []);
 
   useEffect(() => {
+    if (composing) return;
     if (value && `${value.cityName}, ${value.countryName}` === query) return;
     search(debounced);
-  }, [debounced, search, value, query]);
+  }, [debounced, search, value, query, composing]);
 
   const handleSelect = (opt: Option) => {
     const selection: GeoSelection = {
@@ -122,12 +145,17 @@ export function CityCountryAutocomplete({
       countryCode: opt.countryCode,
       timezone: opt.timezone,
     };
+    lastSyncedCityId.current = opt.cityId;
     onChange(selection);
     setQuery(`${opt.cityName}, ${opt.countryName}`);
     setOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      setOpen(false);
+      return;
+    }
     if (!open || options.length === 0) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -138,13 +166,13 @@ export function CityCountryAutocomplete({
     } else if (e.key === 'Enter') {
       e.preventDefault();
       handleSelect(options[highlight]);
-    } else if (e.key === 'Escape') {
-      setOpen(false);
     }
   };
 
+  const normalizedQueryLen = normalize(debounced).length;
+
   return (
-    <Box ref={anchorRef} sx={{ position: 'relative' }}>
+    <Box ref={rootRef} sx={{ position: 'relative' }}>
       <TextField
         id={id}
         fullWidth
@@ -157,10 +185,18 @@ export function CityCountryAutocomplete({
           setQuery(e.target.value);
           setOpen(true);
           setHighlight(0);
-          if (value) onChange(null); // clear if user retypes
+          if (value) {
+            lastSyncedCityId.current = null;
+            onChange(null);
+          }
         }}
         onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onCompositionStart={() => setComposing(true)}
+        onCompositionEnd={(e) => {
+          setComposing(false);
+          setQuery((e.target as HTMLInputElement).value);
+          setOpen(true);
+        }}
         onKeyDown={handleKeyDown}
         InputProps={{
           startAdornment: (
@@ -180,10 +216,14 @@ export function CityCountryAutocomplete({
       />
 
       <Popper
-        open={open && (options.length > 0 || (!loading && debounced.length >= 2))}
-        anchorEl={anchorRef.current}
+        open={
+          anchorReady &&
+          open &&
+          (options.length > 0 || (!loading && normalizedQueryLen >= 2))
+        }
+        anchorEl={rootRef.current}
         placement="bottom-start"
-        style={{ zIndex: 1500, width: anchorRef.current?.clientWidth }}
+        style={{ zIndex: 1500, width: rootRef.current?.clientWidth }}
       >
         <Paper
           id={`${id}-listbox`}
@@ -202,7 +242,7 @@ export function CityCountryAutocomplete({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
-                    onFallbackRequested(debounced);
+                    onFallbackRequested(normalize(debounced));
                     setOpen(false);
                   }}
                   sx={{
@@ -215,7 +255,9 @@ export function CityCountryAutocomplete({
                     p: 0,
                   }}
                 >
-                  {t('trips.dialog.create.addNewPlace', { query: debounced })}
+                  {t('trips.dialog.create.addNewPlace', {
+                    query: normalize(debounced),
+                  })}
                 </Box>
               )}
             </Box>
@@ -242,7 +284,12 @@ export function CityCountryAutocomplete({
             >
               <Box
                 component="span"
-                sx={{ fontSize: 18, lineHeight: 1, minWidth: 22, textAlign: 'center' }}
+                sx={{
+                  fontSize: 18,
+                  lineHeight: 1,
+                  minWidth: 22,
+                  textAlign: 'center',
+                }}
                 aria-hidden
               >
                 {flagEmoji(opt.countryCode)}

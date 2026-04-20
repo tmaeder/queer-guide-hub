@@ -18,6 +18,7 @@ import { useHotelSearch } from '@/hooks/useHotelSearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 import { HotelBookingFlow } from '@/components/booking/HotelBookingFlow';
 import type { BookingResult } from '@/lib/booking/types';
+import { formatPrice } from '@/lib/booking/price';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 interface Props {
@@ -326,7 +327,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
                         </Box>
                       </Box>
                       <Typography variant="body2" fontWeight={700} color="primary">
-                        €{Math.round(hotel.price)}
+                        {formatPrice(hotel.price, hotel.currency)}
                       </Typography>
                     </Box>
                   ))}

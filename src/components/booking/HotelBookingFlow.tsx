@@ -13,6 +13,7 @@ import Chip from '@mui/material/Chip';
 import { X, Star, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { BookingResult } from '@/lib/booking/types';
+import { formatPrice, hasValidPrice } from '@/lib/booking/price';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -169,10 +170,12 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
               <Chip label={`Rating: ${hotel.rating.toFixed(1)}`} size="small" sx={{ mb: 1 }} />
             )}
             <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main', mt: 2 }}>
-              {hotel.currency === 'EUR' ? '€' : hotel.currency} {Math.round(hotel.price)}
-              <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 400, color: 'text.secondary' }}>
-                {' '}/ night
-              </Typography>
+              {formatPrice(hotel.price, hotel.currency)}
+              {hasValidPrice(hotel.price) && (
+                <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 400, color: 'text.secondary' }}>
+                  {' '}/ night
+                </Typography>
+              )}
             </Typography>
             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
               <Button onClick={handleNext}>Continue</Button>
