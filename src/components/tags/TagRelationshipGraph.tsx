@@ -51,9 +51,9 @@ export default function TagRelationshipGraph({
   categories = [],
 }: TagRelationshipGraphProps) {
   const isMobile = useIsMobile();
-  const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<ForceGraphMethods | undefined>();
-  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
+  const observerRef = useRef<ResizeObserver | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [minScore, setMinScore] = useState(0.8);
   const [internalCategoryFilter, setInternalCategoryFilter] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<ForceNode | null>(null);
@@ -62,22 +62,63 @@ export default function TagRelationshipGraph({
 
   const { data: graphData, isLoading } = useTagGraph(minScore, categoryFilter);
 
-  // Resize observer
-  useEffect(() => {
-    const el = containerRef.current;
+  // Measure container via a callback ref + ResizeObserver.
+  //
+  // Root cause of the prior left-bias: dimensions were seeded to 800x500 and
+  // a useEffect([]) tried to attach the ResizeObserver once. But the component
+  // early-returns a skeleton while data is loading, so containerRef.current
+  // was null on first mount and the observer never attached. After data
+  // arrived the graph container appeared, but the effect didn't re-run — so
+  // ForceGraph2D rendered at 800x500, d3's forceCenter settled at (400, 250),
+  // and zoomToFit cemented a stale viewport. When the real width surfaced the
+  // transform stayed put, leaving the cluster pinned to the left half.
+  //
+  // A callback ref fires every time the element attaches/detaches — surviving
+  // the skeleton → graph transition and every Grid ↔ Network remount.
+  const setContainer = useCallback((el: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
     if (!el) return;
+
+    const apply = (w: number, h: number) => {
+      if (w <= 0 || h <= 0) return;
+      setDimensions((prev) =>
+        Math.abs(prev.width - w) < 4 && Math.abs(prev.height - h) < 4
+          ? prev
+          : { width: w, height: h },
+      );
+    };
+
+    const rect = el.getBoundingClientRect();
+    apply(Math.floor(rect.width), Math.floor(rect.height));
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        if (width > 0 && height > 0) {
-          setDimensions({ width: Math.floor(width), height: Math.floor(height) });
-        }
+        apply(Math.floor(entry.contentRect.width), Math.floor(entry.contentRect.height));
       }
     });
     observer.observe(el);
-    return () => observer.disconnect();
+    observerRef.current = observer;
   }, []);
+
+  useEffect(() => () => observerRef.current?.disconnect(), []);
+
+  // Re-center d3 force + reheat whenever dimensions change (initial measure,
+  // window resize, breakpoint). Without this the simulation keeps its
+  // original center and the cluster drifts left as the viewport widens.
+  useEffect(() => {
+    if (dimensions.width === 0 || dimensions.height === 0) return;
+    const g = graphRef.current;
+    if (!g) return;
+    const centerForce = g.d3Force('center') as
+      | { x: (v: number) => void; y: (v: number) => void }
+      | undefined;
+    if (centerForce) {
+      centerForce.x(dimensions.width / 2);
+      centerForce.y(dimensions.height / 2);
+    }
+    g.d3ReheatSimulation();
+  }, [dimensions.width, dimensions.height]);
 
   // Transform data for force-graph
   const forceData = useMemo(() => {
@@ -279,7 +320,7 @@ export default function TagRelationshipGraph({
 
       {/* Graph */}
       <Box
-        ref={containerRef}
+        ref={setContainer}
         sx={{
           flex: 1,
           minHeight: 400,
@@ -288,7 +329,7 @@ export default function TagRelationshipGraph({
           position: 'relative',
         }}
       >
-        {forceData.nodes.length > 0 ? (
+        {forceData.nodes.length > 0 && dimensions.width > 0 && dimensions.height > 0 ? (
           <ForceGraph2D
             ref={graphRef}
             graphData={forceData}
@@ -322,7 +363,9 @@ export default function TagRelationshipGraph({
             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
           >
             <Typography color="text.secondary">
-              No relationships found. Try lowering the similarity threshold.
+              {forceData.nodes.length === 0
+                ? 'No relationships found. Try lowering the similarity threshold.'
+                : 'Preparing graph…'}
             </Typography>
           </Box>
         )}
