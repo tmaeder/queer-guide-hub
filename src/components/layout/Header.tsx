@@ -199,6 +199,10 @@ export function Header() {
       anchor="right"
       transitionDuration={{ enter: 300, exit: 200 }}
       PaperProps={{
+        id: 'mobile-nav-drawer',
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': t('header.navigation', 'Navigation'),
         sx: {
           width: { xs: '100%', sm: 320 },
           pt: 'env(safe-area-inset-top, 0px)',
@@ -241,7 +245,7 @@ export function Header() {
         </Link>
         <IconButton
           onClick={() => setDrawerOpen(false)}
-          aria-label="Close menu"
+          aria-label={t('header.closeMenu', 'Close menu')}
           sx={{ width: 44, height: 44 }}
         >
           <X style={{ width: 20, height: 20 }} />
@@ -552,10 +556,13 @@ export function Header() {
           {isMobile ? (
             <IconButton
               onClick={() => setDrawerOpen(true)}
-              aria-label="Open menu"
+              aria-label={t('header.openMenu', 'Open menu')}
+              aria-haspopup="dialog"
+              aria-expanded={drawerOpen}
+              aria-controls="mobile-nav-drawer"
               sx={{
-                width: 44,
-                height: 44,
+                width: 48,
+                height: 48,
                 flexShrink: 0,
                 color: 'text.primary',
                 // Notification dot
@@ -616,8 +623,8 @@ export function Header() {
                   variant="ghost"
                   size="sm"
                   style={{ position: 'relative', height: 40, width: 40, padding: 0 }}
-                  aria-label="Admin Console"
-                  title="Admin Console"
+                  aria-label={t('header.adminConsole', 'Admin Console')}
+                  title={t('header.adminConsole', 'Admin Console')}
                   onClick={() => navigate('/admin')}
                 >
                   <Shield style={{ width: 16, height: 16 }} />
@@ -632,7 +639,7 @@ export function Header() {
                       variant="ghost"
                       size="sm"
                       style={{ position: 'relative', height: 40, width: 40, padding: 0 }}
-                      aria-label="Open user menu"
+                      aria-label={t('header.openUserMenu', 'Open user menu')}
                     >
                       <Avatar style={{ height: 36, width: 36 }}>
                         <AvatarImage
@@ -744,7 +751,7 @@ export function Header() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button onClick={() => setAuthDialogOpen(true)} size="icon" aria-label="Sign in">
+                <Button onClick={() => setAuthDialogOpen(true)} size="icon" aria-label={t('header.signIn', 'Sign in')}>
                   <User style={{ width: 16, height: 16 }} />
                 </Button>
               )}
@@ -752,7 +759,7 @@ export function Header() {
               {/* Navigation dropdown (desktop) */}
               <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" aria-label="Open navigation menu">
+                  <Button variant="ghost" size="sm" aria-label={t('header.openNavigation', 'Open navigation menu')} aria-haspopup="menu" aria-expanded={menuOpen}>
                     <Menu style={{ width: 20, height: 20 }} />
                   </Button>
                 </DropdownMenuTrigger>
