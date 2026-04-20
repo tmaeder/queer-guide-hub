@@ -50,7 +50,7 @@ export function useDiscoverableTrips(cityFilter?: string) {
     queryKey: ['discoverable-trips', trimmed.toLowerCase()],
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<DiscoverableTrip[]> => {
-      const { data, error } = await supabase
+      const withOwner = await supabase
         .from('trips')
         .select(
           `id, title, description, start_date, end_date, cover_image_url, owner_id, created_at,
@@ -60,7 +60,28 @@ export function useDiscoverableTrips(cityFilter?: string) {
         .eq('is_public', true)
         .order('created_at', { ascending: false })
         .limit(60);
-      if (error) throw error;
+
+      // Fallback if the `owner:profiles!owner_id(...)` embed fails (e.g. FK
+      // cache not reloaded after migration). Retry once without the join and
+      // degrade to owner: null so /trips/discover still renders.
+      let data = withOwner.data;
+      if (withOwner.error) {
+        console.warn(
+          '[useDiscoverableTrips] owner embed failed, retrying without',
+          withOwner.error,
+        );
+        const bare = await supabase
+          .from('trips')
+          .select(
+            `id, title, description, start_date, end_date, cover_image_url, owner_id, created_at,
+             trip_places(cities:city_id(name), countries:country_id(name))`,
+          )
+          .eq('is_public', true)
+          .order('created_at', { ascending: false })
+          .limit(60);
+        if (bare.error) throw bare.error;
+        data = (bare.data ?? []).map((t) => ({ ...t, owner: null }));
+      }
 
       const lowered = trimmed.toLowerCase();
       const trips = ((data ?? []) as unknown as RawTrip[])
