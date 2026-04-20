@@ -126,8 +126,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		mergedFilters.types = [tMap[rewrite.type_hint] || rewrite.type_hint];
 	}
 
-	const requestedIndexes = mergedFilters.types?.length
-		? [...new Set(mergedFilters.types.map((t: string) => INDEX_MAP[t] || t).filter((t: string) => ALL_INDEXES.includes(t)))]
+	const requestedIndexes: string[] = mergedFilters.types?.length
+		? [...new Set<string>(mergedFilters.types.map((t: string) => INDEX_MAP[t] || t).filter((t: string) => ALL_INDEXES.includes(t)))]
 		: ALL_INDEXES;
 
 	const filterParts = buildFilters(mergedFilters);
