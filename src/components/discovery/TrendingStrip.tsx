@@ -99,6 +99,7 @@ export function TrendingStrip({
 									const slug = it.slug || it.entity_id;
 									const to = hitPath(it.entity_type, slug);
 									if (!to) return null;
+									if (!it.title) return null;
 									return (
 										<LocalizedLink
 											key={`${it.entity_type}:${it.entity_id}`}
@@ -119,7 +120,7 @@ export function TrendingStrip({
 													<div className="h-24 w-full bg-gradient-to-br from-orange-200 to-pink-200" />
 												)}
 												<CardContent className="p-2">
-													<div className="text-sm font-medium truncate">{it.title || it.entity_id.slice(0, 8)}</div>
+													<div className="text-sm font-medium truncate">{it.title}</div>
 													<div className="text-xs text-muted-foreground truncate">
 														{[it.city, it.country].filter(Boolean).join(", ")}
 													</div>
