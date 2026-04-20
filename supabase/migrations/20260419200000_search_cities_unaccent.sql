@@ -1,7 +1,6 @@
 -- Diacritic-insensitive city search RPC.
 -- Used by CityCountryAutocomplete so typing "Zurich" matches "Zürich" (and vice versa).
-create extension if not exists unaccent;
-
+-- unaccent is installed in the `extensions` schema on Supabase; schema-qualify.
 create or replace function public.search_cities(q text, max_results int default 8)
 returns table (
   id uuid,
@@ -14,10 +13,10 @@ returns table (
 language sql
 stable
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
   with needle as (
-    select unaccent(lower(coalesce(q, ''))) as n
+    select extensions.unaccent(lower(coalesce(q, ''))) as n
   )
   select c.id,
          c.name,
@@ -30,11 +29,11 @@ as $$
        needle
   where length(needle.n) >= 2
     and (
-      unaccent(lower(c.name)) like needle.n || '%'
-      or unaccent(lower(c.name)) like '%' || needle.n || '%'
+      extensions.unaccent(lower(c.name)) like needle.n || '%'
+      or extensions.unaccent(lower(c.name)) like '%' || needle.n || '%'
     )
   order by
-    (unaccent(lower(c.name)) like needle.n || '%') desc,
+    (extensions.unaccent(lower(c.name)) like needle.n || '%') desc,
     c.name asc
   limit greatest(1, least(coalesce(max_results, 8), 50));
 $$;
