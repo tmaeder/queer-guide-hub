@@ -10,27 +10,40 @@ import { resolveTripTitle } from './tripTitle';
 
 /**
  * Routes where the bar is suppressed — already inside trip context, admin shell,
- * or auth flow.
+ * auth flow, onboarding, or transactional / account contexts where a trip nudge
+ * is noise.
  */
-const HIDDEN_PREFIXES = ['/trips', '/admin', '/auth', '/onboarding'];
+const HIDDEN_PREFIXES = [
+  '/trips',
+  '/admin',
+  '/auth',
+  '/onboarding',
+  '/settings',
+  '/account',
+  '/checkout',
+  '/legal',
+];
 
 /**
  * Slim sticky banner that surfaces the user's active trip across the app.
  * Renders nothing when:
+ *   - the `VITE_TRIP_CONTEXT_BAR=off` kill-switch is set,
  *   - user has no trips,
  *   - user dismissed the bar for the current active trip,
- *   - current route already lives inside the trip context.
+ *   - current route already lives inside the trip context,
+ *   - trip title is malformed (defensive guard for unsanitized DB rows).
  */
 export function TripContextBar() {
   const { pathname } = useLocation();
   const { activeTrip, isDismissed, dismiss } = useActiveTrip();
   const { t } = useTranslation();
 
+  if (import.meta.env.VITE_TRIP_CONTEXT_BAR === 'off') return null;
   if (!activeTrip || isDismissed) return null;
   if (HIDDEN_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
+  if (typeof activeTrip.title === 'string' && activeTrip.title.trim().startsWith('<')) return null;
 
   const displayTitle = resolveTripTitle(activeTrip, t);
-
   const phase = getTripPhase(activeTrip);
   const status = phaseStatusText(activeTrip, undefined, t);
 
@@ -67,11 +80,7 @@ export function TripContextBar() {
         </Typography>
         <Typography
           variant="caption"
-          sx={{
-            opacity: 0.7,
-            display: { xs: 'none', sm: 'inline' },
-            flexShrink: 0,
-          }}
+          sx={{ opacity: 0.7, display: { xs: 'none', sm: 'inline' }, flexShrink: 0 }}
         >
           · {phaseLabel(phase, t)} · {status}
         </Typography>
