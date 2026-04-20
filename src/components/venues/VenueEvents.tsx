@@ -50,7 +50,7 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
             <Box sx={{ flex: 1 }}>
               <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {event.title}
-                <ContentLangBadge text={event.title} />
+                <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
                 <Calendar style={{ width: 12, height: 12 }} />
@@ -85,7 +85,7 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
               <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   {event.title}
-                  <ContentLangBadge text={event.title} />
+                  <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5, color: 'text.secondary' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

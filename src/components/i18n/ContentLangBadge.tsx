@@ -4,6 +4,11 @@ import { detectLanguage } from '@/i18n/detectLanguage';
 
 interface Props {
   text?: string | null;
+  /**
+   * Authoritative ISO 639-1 source language (e.g. from
+   * `events.content_language`). When provided, skips the heuristic detector.
+   */
+  language?: string | null;
 }
 
 function displayName(code: string, uiLanguage: string): string {
@@ -24,10 +29,11 @@ function displayName(code: string, uiLanguage: string): string {
  * locale, so users see at a glance which cards are foreign-language.
  * Renders nothing when detection fails or matches the UI locale.
  */
-export function ContentLangBadge({ text }: Props) {
+export function ContentLangBadge({ text, language }: Props) {
   const { t, i18n } = useTranslation();
-  if (!text) return null;
-  const detected = detectLanguage(text);
+  const authoritative = language?.toLowerCase().split(/[-_]/)[0] || null;
+  if (!authoritative && !text) return null;
+  const detected = authoritative ?? (text ? detectLanguage(text) : null);
   if (!detected) return null;
   const uiLang = (i18n.language || 'en').toLowerCase().split(/[-_]/)[0];
   if (detected === uiLang) return null;
