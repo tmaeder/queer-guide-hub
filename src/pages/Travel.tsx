@@ -41,7 +41,7 @@ const TAB_CONFIG: { value: BookingTab; label: string; icon: typeof Plane }[] = [
   { value: 'activities', label: 'Activities', icon: Ticket },
 ];
 
-const HOTEL_TYPE_LABELS: Record<HotelTypeOption, string> = {
+const HOTEL_TYPE_LABEL_FALLBACK: Record<HotelTypeOption, string> = {
   all: 'Any type',
   hotel: 'Hotel',
   boutique: 'Boutique Hotel',
@@ -341,7 +341,7 @@ export default function Travel() {
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2, alignItems: 'center' }}>
               {hotelSearch.hotelType && (
                 <Chip
-                  label={`Type: ${HOTEL_TYPE_LABELS[hotelSearch.hotelType]}`}
+                  label={`${t('pages.travel.hotels.typeLabel', 'Type')}: ${t(`pages.travel.hotels.type.${hotelSearch.hotelType}`, HOTEL_TYPE_LABEL_FALLBACK[hotelSearch.hotelType])}`}
                   size="small"
                   onDelete={() => clearHotelFilter('hotelType')}
                 />
@@ -361,7 +361,7 @@ export default function Travel() {
                 />
               )}
               <Button size="sm" variant="outline" onClick={clearAllHotelFilters}>
-                Clear filters
+                {t('pages.travel.hotels.clearFilters', 'Clear filters')}
               </Button>
             </Box>
           )}
@@ -381,7 +381,7 @@ export default function Travel() {
           ) : hotelSearch && hasActiveHotelFilters ? (
             <EmptyState>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                <span>No hotels match your filters in {hotelSearch.city}.</span>
+                <span>{t('pages.travel.hotels.noResultsWithFilters', 'No hotels match your filters in {{city}}.', { city: hotelSearch.city })}</span>
                 <Button size="sm" variant="outline" onClick={clearAllHotelFilters}>
                   Clear filters
                 </Button>
