@@ -1,4 +1,5 @@
 import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { scoreImage as sharedScoreImage, pickBest, isAcceptable, MIN_ACCEPTANCE_SCORE } from '../_shared/scoreImage.ts'
 
 interface ImageResult {
   url: string
@@ -127,36 +128,26 @@ async function fetchFromWikimedia(query: string): Promise<ImageResult[]> {
 // Scoring: pick the image most likely to actually depict the target place
 // ---------------------------------------------------------------------------
 
+// Known coastal/port cities — ferries and ships are acceptable depictions.
+const COASTAL_CITIES = new Set([
+  'amsterdam', 'venice', 'venezia', 'istanbul', 'stockholm', 'copenhagen',
+  'hamburg', 'rotterdam', 'hong kong', 'singapore', 'sydney', 'naples',
+  'lisbon', 'lisboa', 'oslo', 'helsinki', 'piraeus', 'genoa', 'marseille',
+  'san francisco', 'seattle', 'vancouver', 'dubrovnik', 'santorini',
+  'mykonos', 'rhodes', 'heraklion', 'split', 'valletta', 'reykjavik',
+  'tallinn', 'riga', 'gdansk', 'cartagena', 'havana', 'miami',
+])
+
 function scoreImage(img: ImageResult, cityName: string, countryName: string): number {
-  let score = 0
-  const alt = (img.alt || '').toLowerCase()
-  const cityLower = cityName.toLowerCase()
-  const countryLower = countryName.toLowerCase()
-
-  // Highest priority: alt text contains the city name
-  if (alt.includes(cityLower)) score += 50
-
-  // Also good: alt text contains country name
-  if (countryLower && alt.includes(countryLower)) score += 20
-
-  // Wikimedia images are more likely to be correctly tagged
-  if (img.source === 'wikimedia') score += 15
-  else if (img.source === 'unsplash') score += 5
-
-  // Prefer landscape orientation and decent size
-  if (img.width && img.height) {
-    const ratio = img.width / img.height
-    if (ratio >= 1.3 && ratio <= 2.5) score += 10
-    if (img.width >= 1280) score += 5
-  }
-
-  // Penalize generic stock-photo alt text
-  const genericTerms = ['skyscraper', 'modern building', 'abstract', 'business', 'office']
-  for (const term of genericTerms) {
-    if (alt.includes(term) && !alt.includes(cityLower)) score -= 10
-  }
-
-  return score
+  return sharedScoreImage({
+    alt: img.alt,
+    width: img.width,
+    height: img.height,
+    source: img.source,
+    subject: { name: cityName, country: countryName },
+    subjectType: 'city',
+    isPortOrCoastal: COASTAL_CITIES.has(cityName.toLowerCase()),
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -196,16 +187,23 @@ async function findBestImage(
     for (const img of fallbackResults) {
       img.score = scoreImage(img, cityName, countryName)
     }
-    fallbackResults.sort((a, b) => b.score - a.score)
-    return fallbackResults[0]
+    logTopCandidates(fallbackResults, `${cityName} (fallback)`)
+    return pickBest(fallbackResults)
   }
 
-  // Score and pick the best
   for (const img of results) {
     img.score = scoreImage(img, cityName, countryName)
   }
-  results.sort((a, b) => b.score - a.score)
-  return results[0]
+  logTopCandidates(results, cityName)
+  return pickBest(results)
+}
+
+function logTopCandidates(imgs: ImageResult[], label: string) {
+  const top = [...imgs].sort((a, b) => b.score - a.score).slice(0, 3)
+  console.log(
+    `[fetch-city-images] ${label} — top candidates:`,
+    top.map((i) => ({ source: i.source, score: i.score, alt: i.alt?.slice(0, 80) })),
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -255,21 +253,37 @@ async function processSingleCity(
   unsplashKey?: string,
   forceUpdate = false,
 ) {
-  // Skip if already has image (unless force)
-  if (!forceUpdate) {
-    const { data: existing } = await supabase
-      .from('cities')
-      .select('image_url')
-      .eq('id', cityId)
-      .single()
-    if (existing?.image_url) {
-      return { success: true, image_url: existing.image_url, cached: true }
-    }
+  // Honor curated_image_url, existing image (unless force/flagged)
+  const { data: existing } = await supabase
+    .from('cities')
+    .select('image_url, image_flagged, curated_image_url')
+    .eq('id', cityId)
+    .single()
+  if (existing?.curated_image_url) {
+    return { success: true, image_url: existing.curated_image_url, cached: true, source: 'curated' }
+  }
+  const mustRefresh = forceUpdate || !!existing?.image_flagged
+  if (!mustRefresh && existing?.image_url) {
+    return { success: true, image_url: existing.image_url, cached: true }
   }
 
   const best = await findBestImage(cityName, countryName, pexelsKey, unsplashKey)
-  if (!best) {
-    return { success: false, error: `No images found for ${cityName}` }
+  if (!best || !isAcceptable(best.score)) {
+    // Persist null + rejection metadata rather than a bad image.
+    await supabase
+      .from('cities')
+      .update({
+        image_url: null,
+        image_metadata: {
+          rejected: true,
+          reason: best ? `score ${best.score} < ${MIN_ACCEPTANCE_SCORE}` : 'no candidates',
+          updated_at: new Date().toISOString(),
+        },
+        image_flagged: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', cityId)
+    return { success: false, error: `No acceptable image for ${cityName}`, rejected: true }
   }
 
   const storedUrl = await storeImage(supabase, best, cityId, 'city-images')
@@ -289,7 +303,12 @@ async function processSingleCity(
 
   const { error: updateError } = await supabase
     .from('cities')
-    .update({ image_url: storedUrl, image_metadata: metadata, updated_at: new Date().toISOString() })
+    .update({
+      image_url: storedUrl,
+      image_metadata: metadata,
+      image_flagged: false,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', cityId)
 
   if (updateError) {
@@ -315,7 +334,8 @@ async function processBatch(
     .select('id, name, countries(name)')
 
   if (!forceUpdate) {
-    query = query.is('image_url', null)
+    // Pick rows missing image OR flagged for refresh.
+    query = query.or('image_url.is.null,image_flagged.eq.true')
   }
 
   const { data: cities, error } = await query.order('name').limit(batchLimit)

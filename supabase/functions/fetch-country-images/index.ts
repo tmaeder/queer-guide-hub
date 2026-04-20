@@ -1,4 +1,5 @@
 import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { scoreImage as sharedScoreImage, pickBest, isAcceptable, MIN_ACCEPTANCE_SCORE } from '../_shared/scoreImage.ts'
 
 interface ImageResult {
   url: string
@@ -239,27 +240,20 @@ async function fetchFromWikimedia(query: string): Promise<ImageResult[]> {
 // ---------------------------------------------------------------------------
 
 function scoreImage(img: ImageResult, countryName: string, capital?: string): number {
-  let score = 0
-  const alt = (img.alt || '').toLowerCase()
-  const country = countryName.toLowerCase()
-
-  if (alt.includes(country)) score += 50
-  if (capital && alt.includes(capital.toLowerCase())) score += 30
-  if (img.source === 'wikimedia') score += 15
-  else if (img.source === 'unsplash') score += 5
-
-  if (img.width && img.height) {
-    const ratio = img.width / img.height
-    if (ratio >= 1.3 && ratio <= 2.5) score += 10
-    if (img.width >= 1280) score += 5
+  const base = sharedScoreImage({
+    alt: img.alt,
+    width: img.width,
+    height: img.height,
+    source: img.source,
+    subject: { name: countryName },
+    subjectType: 'country',
+  })
+  if (!Number.isFinite(base)) return base
+  // Bonus if the country's capital is mentioned.
+  if (capital && (img.alt || '').toLowerCase().includes(capital.toLowerCase())) {
+    return base + 30
   }
-
-  const genericTerms = ['skyscraper', 'abstract', 'business', 'office', 'stock']
-  for (const term of genericTerms) {
-    if (alt.includes(term) && !alt.includes(country)) score -= 10
-  }
-
-  return score
+  return base
 }
 
 async function findBestImage(
@@ -285,8 +279,12 @@ async function findBestImage(
   }
 
   for (const img of results) img.score = scoreImage(img, countryName, capital)
-  results.sort((a, b) => b.score - a.score)
-  return results[0]
+  const top = [...results].sort((a, b) => b.score - a.score).slice(0, 3)
+  console.log(
+    `[fetch-country-images] ${countryName} — top:`,
+    top.map((i) => ({ source: i.source, score: i.score, alt: i.alt?.slice(0, 80) })),
+  )
+  return pickBest(results)
 }
 
 // ---------------------------------------------------------------------------
@@ -336,20 +334,35 @@ async function processCountry(
   unsplashKey?: string,
   forceUpdate = false,
 ) {
-  if (!forceUpdate) {
-    const { data: existing } = await supabase
-      .from('countries')
-      .select('image_url')
-      .eq('id', countryId)
-      .single()
-    if (existing?.image_url) {
-      return { success: true, image_url: existing.image_url, cached: true }
-    }
+  const { data: existing } = await supabase
+    .from('countries')
+    .select('image_url, image_flagged, curated_image_url')
+    .eq('id', countryId)
+    .single()
+  if (existing?.curated_image_url) {
+    return { success: true, image_url: existing.curated_image_url, cached: true, source: 'curated' }
+  }
+  const mustRefresh = forceUpdate || !!existing?.image_flagged
+  if (!mustRefresh && existing?.image_url) {
+    return { success: true, image_url: existing.image_url, cached: true }
   }
 
   const best = await findBestImage(countryName, capital, pexelsKey, unsplashKey)
-  if (!best) {
-    return { success: false, error: `No images found for ${countryName}` }
+  if (!best || !isAcceptable(best.score)) {
+    await supabase
+      .from('countries')
+      .update({
+        image_url: null,
+        image_metadata: {
+          rejected: true,
+          reason: best ? `score ${best.score} < ${MIN_ACCEPTANCE_SCORE}` : 'no candidates',
+          updated_at: new Date().toISOString(),
+        },
+        image_flagged: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', countryId)
+    return { success: false, error: `No acceptable image for ${countryName}`, rejected: true }
   }
 
   const storedUrl = await storeImage(supabase, best, countryId)
@@ -369,7 +382,12 @@ async function processCountry(
 
   const { error: updateError } = await supabase
     .from('countries')
-    .update({ image_url: storedUrl, image_metadata: metadata, updated_at: new Date().toISOString() })
+    .update({
+      image_url: storedUrl,
+      image_metadata: metadata,
+      image_flagged: false,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', countryId)
 
   if (updateError) {
@@ -395,7 +413,7 @@ async function processBatch(
     .select('id, name, capital')
 
   if (!forceUpdate) {
-    query = query.is('image_url', null)
+    query = query.or('image_url.is.null,image_flagged.eq.true')
   }
 
   const { data: countries, error } = await query.order('name').limit(batchLimit)

@@ -39,6 +39,7 @@ import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { rangesOverlap } from '@/components/trips/tripOverlap';
 import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
+import { isMeaningfulTag, sanitizeExcerpt } from '@/utils/eventText';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -290,9 +291,11 @@ export const EventCard = memo(function EventCard({
                         Featured
                       </Badge>
                     )}
-                    <Badge style={{ ...getEventTypeStyle(event.event_type) }}>
-                      {event.event_type}
-                    </Badge>
+                    {isMeaningfulTag(event.event_type) && (
+                      <Badge style={{ ...getEventTypeStyle(event.event_type) }}>
+                        {event.event_type}
+                      </Badge>
+                    )}
                   </Box>
 
                   {event.images && event.images.length > 1 && (
@@ -363,9 +366,11 @@ export const EventCard = memo(function EventCard({
                       Featured
                     </Badge>
                   )}
-                  <Badge style={{ ...getEventTypeStyle(event.event_type) }}>
-                    {event.event_type}
-                  </Badge>
+                  {isMeaningfulTag(event.event_type) && (
+                    <Badge style={{ ...getEventTypeStyle(event.event_type) }}>
+                      {event.event_type}
+                    </Badge>
+                  )}
                   {priceDisplay && (
                     <Badge variant={event.is_free ? 'default' : 'secondary'}>{priceDisplay}</Badge>
                   )}
@@ -418,7 +423,7 @@ export const EventCard = memo(function EventCard({
 
             <CardContent>
               {/* Description */}
-              {event.description && (
+              {sanitizeExcerpt(event.description) && (
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -431,7 +436,7 @@ export const EventCard = memo(function EventCard({
                     wordBreak: 'break-word',
                   }}
                 >
-                  {event.description}
+                  {sanitizeExcerpt(event.description)}
                 </Typography>
               )}
 

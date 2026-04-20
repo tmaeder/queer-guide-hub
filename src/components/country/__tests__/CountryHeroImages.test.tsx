@@ -9,7 +9,9 @@ import CountryHeroImages from '../CountryHeroImages';
 
 describe('CountryHeroImages', () => {
   it('should render without crashing', () => {
-    render(<CountryHeroImages countryName="Switzerland" />);
+    render(
+      <CountryHeroImages country={{ id: 'x', name: 'Switzerland' }} />,
+    );
     expect(document.body).toBeTruthy();
   });
 });

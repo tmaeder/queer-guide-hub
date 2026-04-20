@@ -48,7 +48,9 @@ import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
-import { SendEventDialog } from '@/components/messaging/SendEventDialog';import { useTranslation } from 'react-i18next';
+import { SendEventDialog } from '@/components/messaging/SendEventDialog';
+import { useTranslation } from 'react-i18next';
+import { isMeaningfulTag } from '@/utils/eventText';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -462,7 +464,16 @@ export default function EventDetail() {
         }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5, flexWrap: 'wrap' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              mb: 0.5,
+              flexWrap: 'wrap',
+              pl: '2px',
+            }}
+          >
             {event.logo_url && (
               <Box
                 component="img"
@@ -481,7 +492,17 @@ export default function EventDetail() {
                 }}
               />
             )}
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 700,
+                minWidth: 0,
+                flex: { xs: '1 1 100%', sm: '1 1 auto' },
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere',
+                pl: '1px',
+              }}
+            >
               {event.title}
             </Typography>
             {event.featured && (
@@ -648,7 +669,7 @@ export default function EventDetail() {
           size="small"
           variant="outlined"
         />
-        {event.event_type && (
+        {isMeaningfulTag(event.event_type) && (
           <Chip
             icon={<Tag style={{ width: 14, height: 14 }} />}
             label={event.event_type}
@@ -660,6 +681,41 @@ export default function EventDetail() {
           <Chip label={event.age_restriction} size="small" variant="outlined" />
         )}
       </Box>
+
+      {(() => {
+        const priceUnknown = !event.is_free && !event.price_min;
+        const locationUnknown = !(event.venues?.name || event.venue_name);
+        const sourceUrl = event.website || event.ticket_url;
+        if ((!priceUnknown && !locationUnknown) || !sourceUrl) return null;
+        const missing = [priceUnknown && 'price', locationUnknown && 'location']
+          .filter(Boolean)
+          .join(' and ');
+        return (
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: 1.5,
+              mb: 3,
+              p: 1.5,
+              bgcolor: 'action.hover',
+              borderRadius: 2,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet —
+              check the source for the latest info.
+            </Typography>
+            <Button size="sm" variant="outline" asChild>
+              <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink style={{ width: 14, height: 14, marginRight: 6 }} />
+                Visit source
+              </a>
+            </Button>
+          </Box>
+        );
+      })()}
 
       {/* 2-Column Layout */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
