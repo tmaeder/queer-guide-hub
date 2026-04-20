@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "地理目录",
     "loading": "正在加载目录...",
@@ -101,7 +118,24 @@
     "title": "我的行程",
     "subtitle": "安全地规划、组织和旅行。",
     "create": "创建行程",
-    "error": "无法加载你的行程，请重试。",
+    "error": {
+      "invalid-id": {
+        "title": "行程链接无效",
+        "description": "此链接未指向有效的行程。请返回你的行程继续。"
+      },
+      "not-found": {
+        "title": "未找到行程",
+        "description": "该行程可能已被删除，或链接已失效。"
+      },
+      "permission-denied": {
+        "title": "你无权访问此行程",
+        "description": "请让行程所有者邀请你，或返回你自己的行程。"
+      },
+      "load-error": {
+        "title": "无法加载该行程",
+        "description": "加载行程时出错。请重试。"
+      }
+    },
     "empty": {
       "title": "规划你的第一次行程",
       "description": "创建行程表，查看每个目的地的 LGBTQ+ 安全信息，把一切都集中在一处。",
@@ -220,24 +254,6 @@
       }
     },
     "backToTrips": "返回行程",
-    "error": {
-      "invalid-id": {
-        "title": "行程链接无效",
-        "description": "此链接未指向有效的行程。请返回你的行程继续。"
-      },
-      "not-found": {
-        "title": "未找到行程",
-        "description": "该行程可能已被删除，或链接已失效。"
-      },
-      "permission-denied": {
-        "title": "你无权访问此行程",
-        "description": "请让行程所有者邀请你，或返回你自己的行程。"
-      },
-      "load-error": {
-        "title": "无法加载该行程",
-        "description": "加载行程时出错。请重试。"
-      }
-    },
     "planner": {
       "loadFailed": "无法加载该行程。",
       "notFound": "未找到行程。",
@@ -1200,7 +1216,16 @@
       "subtitle": "全球LGBTQ+友好住宿",
       "submitHotel": "提交酒店",
       "noResults": "未找到酒店",
-      "noResultsHint": "尝试调整筛选条件或稍后再来。"
+      "noResultsHint": "尝试调整筛选条件或稍后再来。",
+      "resetFilters": "重置筛选",
+      "emptyDataset": {
+        "title": "暂无酒店",
+        "body": "我们还没有在这里添加酒店。欢迎提交一家,帮助我们丰富指南。"
+      },
+      "filteredEmpty": {
+        "title": "没有匹配筛选条件的酒店",
+        "body": "尝试调整筛选条件或搜索以查看更多结果。"
+      }
     },
     "hotelDetail": {
       "loadFailed": "无法加载酒店详情。",

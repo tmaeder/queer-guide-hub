@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "Places",
     "loading": "Loading places...",
@@ -1148,6 +1165,7 @@
       "calendarView": "Calendar view",
       "city": "City",
       "eventType": "Event Type",
+      "prideSubtype": "Pride type",
       "startDate": "Start Date",
       "endDate": "End Date",
       "applyFilters": "Apply Filters",
@@ -1195,7 +1213,16 @@
       "subtitle": "LGBTQ+ friendly accommodations worldwide",
       "submitHotel": "Submit Hotel",
       "noResults": "No hotels found",
-      "noResultsHint": "Try adjusting your filters or check back later."
+      "noResultsHint": "Try adjusting your filters or check back later.",
+      "resetFilters": "Reset filters",
+      "emptyDataset": {
+        "title": "No hotels yet",
+        "body": "We haven't added any hotels here yet. Help us grow the guide by submitting one."
+      },
+      "filteredEmpty": {
+        "title": "No hotels match your filters",
+        "body": "Try adjusting your filters or search to see more results."
+      }
     },
     "hotelDetail": {
       "loadFailed": "Failed to load hotel details.",
@@ -1266,7 +1293,14 @@
       "activeFilters": "Active filters",
       "clearAll": "Clear All",
       "emptyTitle": "The newsroom is quiet",
-      "emptyDescription": "No stories right now — check back soon.",
+      "emptyDescription": "No stories right now. Check back soon.",
+      "filteredEmptyTitle": "No news matches your filters",
+      "filteredEmptyDescription": "Try resetting your filters or exploring another topic.",
+      "resetFilters": "Reset filters",
+      "filterSearch": "Search",
+      "filterCategory": "Category",
+      "filterSource": "Source",
+      "filterFeatured": "Featured only",
       "previous": "Previous",
       "next": "Next"
     },

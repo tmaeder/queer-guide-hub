@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "Geografisches Verzeichnis",
     "loading": "Verzeichnis wird geladen...",
@@ -1156,6 +1173,7 @@
       "calendarView": "Kalenderansicht",
       "city": "Stadt",
       "eventType": "Veranstaltungstyp",
+      "prideSubtype": "Pride-Typ",
       "startDate": "Startdatum",
       "endDate": "Enddatum",
       "applyFilters": "Filter anwenden",
@@ -1203,7 +1221,16 @@
       "subtitle": "LGBTQ+-freundliche Unterkünfte weltweit",
       "submitHotel": "Hotel einreichen",
       "noResults": "Keine Hotels gefunden",
-      "noResultsHint": "Passe deine Filter an oder schau später wieder vorbei."
+      "noResultsHint": "Passe deine Filter an oder schau später wieder vorbei.",
+      "resetFilters": "Filter zurücksetzen",
+      "emptyDataset": {
+        "title": "Noch keine Hotels",
+        "body": "Wir haben hier noch keine Hotels hinzugefügt. Hilf mit, den Guide auszubauen, und reiche eines ein."
+      },
+      "filteredEmpty": {
+        "title": "Keine Hotels passen zu deinen Filtern",
+        "body": "Passe deine Filter oder Suche an, um mehr Ergebnisse zu sehen."
+      }
     },
     "hotelDetail": {
       "loadFailed": "Hoteldetails konnten nicht geladen werden.",

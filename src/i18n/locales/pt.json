@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "Diretório Geográfico",
     "loading": "Carregando diretório...",
@@ -1199,7 +1216,16 @@
       "subtitle": "Acomodações LGBTQ+ friendly no mundo todo",
       "submitHotel": "Enviar hotel",
       "noResults": "Nenhum hotel encontrado",
-      "noResultsHint": "Tente ajustar seus filtros ou volte mais tarde."
+      "noResultsHint": "Tente ajustar seus filtros ou volte mais tarde.",
+      "resetFilters": "Redefinir filtros",
+      "emptyDataset": {
+        "title": "Ainda não há hotéis",
+        "body": "Ainda não adicionamos hotéis aqui. Ajude-nos a expandir o guia enviando um."
+      },
+      "filteredEmpty": {
+        "title": "Nenhum hotel corresponde aos seus filtros",
+        "body": "Tente ajustar seus filtros ou busca para ver mais resultados."
+      }
     },
     "hotelDetail": {
       "loadFailed": "Não foi possível carregar os detalhes do hotel.",

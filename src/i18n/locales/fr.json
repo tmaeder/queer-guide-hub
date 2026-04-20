@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "Répertoire Géographique",
     "loading": "Chargement du répertoire...",
@@ -1199,7 +1216,16 @@
       "subtitle": "Hébergements LGBTQ+ friendly dans le monde entier",
       "submitHotel": "Proposer un hôtel",
       "noResults": "Aucun hôtel trouvé",
-      "noResultsHint": "Essaie d'ajuster tes filtres ou reviens plus tard."
+      "noResultsHint": "Essaie d'ajuster tes filtres ou reviens plus tard.",
+      "resetFilters": "Réinitialiser les filtres",
+      "emptyDataset": {
+        "title": "Aucun hôtel pour le moment",
+        "body": "Nous n'avons pas encore ajouté d'hôtels ici. Aide-nous à enrichir le guide en en proposant un."
+      },
+      "filteredEmpty": {
+        "title": "Aucun hôtel ne correspond à tes filtres",
+        "body": "Essaie d'ajuster tes filtres ou ta recherche pour voir plus de résultats."
+      }
     },
     "hotelDetail": {
       "loadFailed": "Impossible de charger les détails de l'hôtel.",

@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "Directory Geografica",
     "loading": "Caricamento directory...",
@@ -1199,7 +1216,16 @@
       "subtitle": "Alloggi LGBTQ+ friendly in tutto il mondo",
       "submitHotel": "Proponi hotel",
       "noResults": "Nessun hotel trovato",
-      "noResultsHint": "Prova a modificare i filtri o torna più tardi."
+      "noResultsHint": "Prova a modificare i filtri o torna più tardi.",
+      "resetFilters": "Reimposta filtri",
+      "emptyDataset": {
+        "title": "Ancora nessun hotel",
+        "body": "Non abbiamo ancora aggiunto hotel qui. Aiutaci a far crescere la guida proponendone uno."
+      },
+      "filteredEmpty": {
+        "title": "Nessun hotel corrisponde ai tuoi filtri",
+        "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
+      }
     },
     "hotelDetail": {
       "loadFailed": "Impossibile caricare i dettagli dell'hotel.",

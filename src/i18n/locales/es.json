@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "Directorio Geográfico",
     "loading": "Cargando directorio...",
@@ -1199,7 +1216,16 @@
       "subtitle": "Alojamientos LGBTQ+ friendly en todo el mundo",
       "submitHotel": "Enviar hotel",
       "noResults": "No se encontraron hoteles",
-      "noResultsHint": "Intenta ajustar tus filtros o vuelve más tarde."
+      "noResultsHint": "Intenta ajustar tus filtros o vuelve más tarde.",
+      "resetFilters": "Restablecer filtros",
+      "emptyDataset": {
+        "title": "Aún no hay hoteles",
+        "body": "Todavía no hemos añadido hoteles aquí. Ayúdanos a hacer crecer la guía enviando uno."
+      },
+      "filteredEmpty": {
+        "title": "Ningún hotel coincide con tus filtros",
+        "body": "Intenta ajustar tus filtros o búsqueda para ver más resultados."
+      }
     },
     "hotelDetail": {
       "loadFailed": "No se pudieron cargar los detalles del hotel.",
