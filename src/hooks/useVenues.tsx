@@ -13,6 +13,21 @@ export function useVenues(autoFetch: boolean = true) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  const [datasetTotal, setDatasetTotal] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from('venues')
+        .select('id', { head: true, count: 'exact' })
+        .neq('data_source', 'refuge_restrooms');
+      if (!cancelled) setDatasetTotal(count ?? 0);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -222,6 +237,7 @@ export function useVenues(autoFetch: boolean = true) {
     loadingTimedOut,
     error,
     hasMore,
+    datasetTotal,
     fetchVenues,
     createVenue,
     updateVenue,

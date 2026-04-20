@@ -1,126 +1,152 @@
 /**
- * useSubmission — Form state, step navigation, validation, Supabase insert
- * for community submissions via the unified submission system.
+ * useSubmission — React Hook Form + Zod backed wizard state for community submissions.
+ *
+ * Public surface is kept shape-compatible with the prior imperative hook so
+ * SubmitForm and other callers keep working. The underlying form state /
+ * validation is now driven by RHF, with Zod schemas derived from the field
+ * registry (buildSubmissionSchema).
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useForm, type FieldValues, type Path } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { SubmissionTypeConfig } from '@/config/submissionRegistry';
-import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { ensureProtocol } from '@/utils/ensureProtocol';
+import { buildSubmissionSchema } from '@/hooks/submission/buildSubmissionSchema';
+
+export interface NextStepResult {
+  ok: boolean;
+  firstInvalid?: string;
+}
 
 export function useSubmission(config: SubmissionTypeConfig) {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [data, setData] = useState<Record<string, unknown>>({ ...config.defaults });
+  const { fullSchema } = useMemo(() => buildSubmissionSchema(config), [config]);
+
+  const form = useForm<FieldValues>({
+    resolver: zodResolver(fullSchema),
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+    defaultValues: config.defaults as FieldValues,
+    shouldFocusError: true,
+  });
+
   const [currentStep, setCurrentStep] = useState(0);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [honeypot, setHoneypot] = useState('');
+  const [stepAnnouncement, setStepAnnouncement] = useState('');
 
-  const contentConfig = contentTypeRegistry[config.contentType];
+  const data = form.watch();
+  const errors = form.formState.errors;
 
-  // ── Field setters ──────────────────────────────────────────────
+  const flatErrors = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const [name, err] of Object.entries(errors)) {
+      const message = (err as { message?: string } | undefined)?.message;
+      if (message) out[name] = message;
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(Object.keys(errors))]);
 
-  const setField = useCallback((name: string, value: unknown) => {
-    setData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user changes a field
-    setErrors((prev) => {
-      if (!prev[name]) return prev;
-      const next = { ...prev };
-      delete next[name];
-      return next;
-    });
-  }, []);
+  const setField = useCallback(
+    (name: string, value: unknown) => {
+      form.setValue(name as Path<FieldValues>, value as FieldValues[string], {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: form.formState.isSubmitted,
+      });
+    },
+    [form],
+  );
 
-  /** Batch-set multiple fields (used by LocationField for auto-populating city/country/etc.) */
-  const setFields = useCallback((fields: Record<string, unknown>) => {
-    setData((prev) => ({ ...prev, ...fields }));
-  }, []);
-
-  // ── Validation ─────────────────────────────────────────────────
+  const setFields = useCallback(
+    (fields: Record<string, unknown>) => {
+      for (const [name, value] of Object.entries(fields)) {
+        form.setValue(name as Path<FieldValues>, value as FieldValues[string], {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: form.formState.isSubmitted,
+        });
+      }
+    },
+    [form],
+  );
 
   const validateStep = useCallback(
-    (stepIndex: number): boolean => {
+    async (stepIndex: number): Promise<NextStepResult> => {
       const step = config.steps[stepIndex];
-      if (!step) return true;
+      if (!step) return { ok: true };
 
-      const newErrors: Record<string, string> = {};
-
+      // Normalize string-looking URL fields before validating (so `foo.com` parses).
       for (const fieldName of step.fields) {
-        const fieldConfig = contentConfig?.fields.find((f) => f.name === fieldName);
-        if (!fieldConfig) continue;
-
-        const value = data[fieldName];
-        if (fieldConfig.required && (value === undefined || value === null || (typeof value === 'string' && !value.trim()))) {
-          newErrors[fieldName] = `${fieldConfig.label} is required`;
-        }
-
-        if (fieldConfig.type === 'url' && typeof value === 'string' && value.trim()) {
-          const normalized = ensureProtocol(value) as string;
+        const current = form.getValues(fieldName as Path<FieldValues>);
+        if (typeof current === 'string' && current.trim() && !/^https?:\/\//i.test(current) && /^[a-z0-9.-]+\.[a-z]{2,}/i.test(current)) {
+          const normalized = ensureProtocol(current) as string;
           try {
             new URL(normalized);
-            // Persist the protocol-prefixed value so downstream consumers
-            // (anchors, admin review, RSS) see a real URL.
-            if (normalized !== value) {
-              setData((prev) => ({ ...prev, [fieldName]: normalized }));
+            if (normalized !== current) {
+              form.setValue(fieldName as Path<FieldValues>, normalized as FieldValues[string], {
+                shouldValidate: false,
+              });
             }
           } catch {
-            newErrors[fieldName] = `Enter a valid website (e.g., example.com or https://example.com)`;
+            /* Zod will flag */
           }
         }
       }
 
-      setErrors((prev) => {
-        // Clear old errors for this step's fields, then add new ones
-        const cleared = { ...prev };
-        for (const fieldName of step.fields) {
-          delete cleared[fieldName];
-        }
-        return { ...cleared, ...newErrors };
-      });
-
-      return Object.keys(newErrors).length === 0;
+      const ok = await form.trigger(step.fields as Path<FieldValues>[]);
+      if (ok) {
+        setStepAnnouncement('');
+        return { ok: true };
+      }
+      const firstInvalid = step.fields.find((name) => form.formState.errors[name]);
+      setStepAnnouncement('Please fix the highlighted fields before continuing.');
+      return { ok: false, firstInvalid };
     },
-    [config.steps, contentConfig, data],
+    [config.steps, form],
   );
 
-  // ── Step navigation ────────────────────────────────────────────
-
-  const nextStep = useCallback(() => {
-    if (validateStep(currentStep)) {
+  const nextStep = useCallback(async (): Promise<NextStepResult> => {
+    const result = await validateStep(currentStep);
+    if (result.ok) {
       setCurrentStep((s) => Math.min(s + 1, config.steps.length - 1));
     }
+    return result;
   }, [currentStep, validateStep, config.steps.length]);
 
   const prevStep = useCallback(() => {
+    setStepAnnouncement('');
     setCurrentStep((s) => Math.max(s - 1, 0));
   }, []);
 
   const goToStep = useCallback(
-    (step: number) => {
+    async (step: number) => {
       if (step < currentStep) {
         setCurrentStep(step);
-      } else if (step === currentStep + 1 && validateStep(currentStep)) {
-        setCurrentStep(step);
+        setStepAnnouncement('');
+        return;
+      }
+      if (step === currentStep + 1) {
+        const result = await validateStep(currentStep);
+        if (result.ok) setCurrentStep(step);
       }
     },
     [currentStep, validateStep],
   );
 
-  // ── Submit ─────────────────────────────────────────────────────
-
-  const submit = useCallback(async () => {
-    // Honeypot check — bots fill this
+  const submit = useCallback(async (): Promise<void> => {
     if (honeypot) return;
 
-    // Validate all steps
     for (let i = 0; i < config.steps.length; i++) {
-      if (!validateStep(i)) {
+      const result = await validateStep(i);
+      if (!result.ok) {
         setCurrentStep(i);
         toast({ title: 'Please fix form errors', variant: 'destructive' });
         return;
@@ -136,14 +162,13 @@ export function useSubmission(config: SubmissionTypeConfig) {
       return;
     }
 
-    setIsSubmitting(true);
     try {
+      const values = form.getValues();
       const { error } = await supabase.from('community_submissions' as 'venues').insert({
         content_type: config.id,
-        data: data,
+        data: values,
         submitted_by: user.id,
       });
-
       if (error) throw error;
 
       setIsSubmitted(true);
@@ -152,33 +177,39 @@ export function useSubmission(config: SubmissionTypeConfig) {
         description: 'Thank you — your submission will be reviewed shortly.',
       });
     } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Please try again later.';
+      const match = message.match(/invalid_url:([a-z_]+)/i);
+      if (match) {
+        const fieldName = match[1];
+        form.setError(fieldName as Path<FieldValues>, {
+          type: 'server',
+          message: 'Please enter a full valid URL like https://example.com',
+        });
+      }
       toast({
         title: 'Submission failed',
-        description: err instanceof Error ? err.message : 'Please try again later.',
+        description: match ? 'Please fix form errors and try again.' : message,
         variant: 'destructive',
       });
-    } finally {
-      setIsSubmitting(false);
     }
-  }, [config, data, honeypot, user, toast, validateStep]);
-
-  // ── Reset ──────────────────────────────────────────────────────
+  }, [config, honeypot, user, toast, validateStep, form]);
 
   const reset = useCallback(() => {
-    setData({ ...config.defaults });
+    form.reset(config.defaults as FieldValues);
     setCurrentStep(0);
-    setErrors({});
     setIsSubmitted(false);
     setHoneypot('');
-  }, [config.defaults]);
+    setStepAnnouncement('');
+  }, [form, config.defaults]);
 
   return {
     data,
-    errors,
+    errors: flatErrors,
     currentStep,
-    isSubmitting,
+    isSubmitting: form.formState.isSubmitting,
     isSubmitted,
     totalSteps: config.steps.length,
+    stepAnnouncement,
     setField,
     setFields,
     nextStep,
@@ -188,5 +219,6 @@ export function useSubmission(config: SubmissionTypeConfig) {
     reset,
     honeypot,
     setHoneypot,
+    control: form.control,
   };
 }

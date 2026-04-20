@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { LucideIcon } from 'lucide-react';
@@ -12,6 +13,11 @@ interface EmptyStateAction {
   variant?: 'default' | 'outline' | 'ghost' | 'brand';
 }
 
+export interface EmptyStateFilterChip {
+  label: string;
+  onRemove: () => void;
+}
+
 interface EmptyStateProps {
   icon: LucideIcon;
   title: string;
@@ -19,6 +25,16 @@ interface EmptyStateProps {
   primaryAction?: EmptyStateAction;
   secondaryAction?: EmptyStateAction;
   mood?: 'neutral' | 'encouraging' | 'playful';
+  /**
+   * 'empty' (default) = module has no data; preserves legacy render.
+   * 'filtered' = data exists but filters yielded zero results; renders
+   *   the active-filter chip row and a default "Reset filters" action
+   *   when onResetFilters is provided and no explicit secondaryAction is set.
+   */
+  variant?: 'empty' | 'filtered';
+  activeFilters?: EmptyStateFilterChip[];
+  onResetFilters?: () => void;
+  resetFiltersLabel?: string;
   /** Optional custom content below the description (e.g., dialog triggers) */
   children?: React.ReactNode;
 }
@@ -30,6 +46,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   primaryAction,
   secondaryAction,
   mood = 'neutral',
+  variant = 'empty',
+  activeFilters,
+  onResetFilters,
+  resetFiltersLabel = 'Reset filters',
   children,
 }) => {
   const theme = useTheme();
@@ -73,7 +93,23 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         >
           {description}
         </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5 }}>
+        {variant === 'filtered' && activeFilters && activeFilters.length > 0 && (
+          <Box
+            sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mb: 3 }}
+            data-testid="empty-state-active-filters"
+          >
+            {activeFilters.map((chip, i) => (
+              <Chip
+                key={`${chip.label}-${i}`}
+                label={chip.label}
+                size="small"
+                variant="outlined"
+                onDelete={chip.onRemove}
+              />
+            ))}
+          </Box>
+        )}
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5, flexWrap: 'wrap' }}>
           {primaryAction && (
             <Button
               variant={primaryAction.variant || 'default'}
@@ -83,13 +119,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               {primaryAction.label}
             </Button>
           )}
-          {secondaryAction && (
+          {secondaryAction ? (
             <Button
               variant={secondaryAction.variant || 'outline'}
               onClick={secondaryAction.onClick}
             >
               {secondaryAction.label}
             </Button>
+          ) : (
+            variant === 'filtered' && onResetFilters && (
+              <Button variant="outline" onClick={onResetFilters}>
+                {resetFiltersLabel}
+              </Button>
+            )
           )}
           {children}
         </Box>

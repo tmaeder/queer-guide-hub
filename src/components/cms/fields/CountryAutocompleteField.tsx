@@ -53,12 +53,15 @@ export function CountryAutocompleteField({
   return (
     <FieldWrapper field={field} error={error}>
       <CountryAutocomplete
+        id={field.name}
         value={String(value ?? '')}
         onValueChange={(name) => onChange(name)}
         onCountrySelect={handleCountrySelect}
         placeholder={field.placeholder || 'Select a country...'}
         required={field.required}
         disabled={disabled}
+        error={!!error}
+        ariaDescribedBy={error ? `${field.name}-error` : field.helpText ? `${field.name}-help` : undefined}
       />
     </FieldWrapper>
   );

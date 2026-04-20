@@ -10,6 +10,7 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
+import { safeText } from '@/utils/safeDisplay';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import type { NewsCategory } from '@/hooks/useNews';
@@ -83,9 +84,10 @@ export const NewsCard = ({
     );
   }
 
-  // Resolve display name: publisher_name (for API sources) → source name (for RSS)
-  const publisherName = (article as Record<string, unknown>).publisher_name as string | null;
-  const sourceFallback = sourcesMap[article.source_id]?.name || 'Unknown';
+  // Resolve display name: publisher_name (for API sources) → source name (for RSS).
+  // Empty string when nothing is known — caller suppresses the source badge.
+  const publisherName = safeText((article as Record<string, unknown>).publisher_name);
+  const sourceFallback = safeText(sourcesMap[article.source_id]?.name);
   const displaySource = publisherName || sourceFallback;
 
   const getCategoryColor = (category: string) => {
@@ -111,8 +113,9 @@ export const NewsCard = ({
     return category?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   };
 
-  const authorName = cleanAuthor(article.author || '');
-  const excerptText = cleanExcerpt(article.excerpt || '');
+  const authorName = safeText(cleanAuthor(safeText(article.author)));
+  const excerptText = safeText(cleanExcerpt(safeText(article.excerpt)));
+  const safeTitle = safeText(decodeHtmlEntities(safeText(article.title)));
   const displayCategory = article.category !== 'general' ? article.category : null;
   const fallbackCategoryFromTag = !displayCategory && tags.length > 0 ? tags[0] : null;
   const hasImage = article.image_url && !imgFailed;
@@ -145,7 +148,7 @@ export const NewsCard = ({
               whiteSpace: 'nowrap',
             }}
           >
-            {decodeHtmlEntities(article.title)}
+            {safeTitle}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
@@ -156,9 +159,11 @@ export const NewsCard = ({
               {getCategoryLabel(displayCategory)}
             </Badge>
           )}
-          <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
-            {displaySource}
-          </Typography>
+          {displaySource && (
+            <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
+              {displaySource}
+            </Typography>
+          )}
           {article.published_at && (
             <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
               {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
@@ -186,7 +191,7 @@ export const NewsCard = ({
               loading="lazy"
               referrerPolicy="no-referrer"
               src={article.image_url!}
-              alt={decodeHtmlEntities(article.title)}
+              alt={safeTitle}
               style={{ width: '100%', height: 240, objectFit: 'cover', display: 'block' }}
               onError={() => setImgFailed(true)}
             />
@@ -199,10 +204,12 @@ export const NewsCard = ({
                 {getCategoryLabel(displayCategory)}
               </Badge>
             )}
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>{displaySource}</Typography>
+            {displaySource && (
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>{displaySource}</Typography>
+            )}
           </Box>
           <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
-            {decodeHtmlEntities(article.title)}
+            {safeTitle}
           </Typography>
           {excerptText && (
             <Typography variant="body2" sx={{ color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -242,7 +249,7 @@ export const NewsCard = ({
               referrerPolicy="no-referrer"
               role="presentation"
               src={article.image_url!}
-              alt={decodeHtmlEntities(article.title)}
+              alt={safeTitle}
               style={{ width: '100%', height: 192, objectFit: 'cover', transition: 'transform 0.3s' }}
               onError={() => setImgFailed(true)}
             />
@@ -270,7 +277,7 @@ export const NewsCard = ({
               WebkitBoxOrient: 'vertical', overflow: 'hidden',
             }}
           >
-            {decodeHtmlEntities(article.title)}
+            {safeTitle}
           </Typography>
         </Box>
 
@@ -295,27 +302,29 @@ export const NewsCard = ({
               {fallbackCategoryFromTag}
             </Badge>
           )}
-          {/* Source badge with external link */}
-          <Badge
-            variant="outline"
-            role="button"
-            tabIndex={0}
-            style={{ fontSize: '0.75rem', cursor: onFilterBySource ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              const src = sourcesMap[article.source_id];
-              if (onFilterBySource && src?.id) onFilterBySource(src.id, displaySource);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault(); e.stopPropagation();
+          {/* Source badge — suppressed when publisher is unknown */}
+          {displaySource && (
+            <Badge
+              variant="outline"
+              role="button"
+              tabIndex={0}
+              style={{ fontSize: '0.75rem', cursor: onFilterBySource ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+              onClick={(e) => {
+                e.stopPropagation();
                 const src = sourcesMap[article.source_id];
                 if (onFilterBySource && src?.id) onFilterBySource(src.id, displaySource);
-              }
-            }}
-          >
-            {displaySource}
-          </Badge>
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault(); e.stopPropagation();
+                  const src = sourcesMap[article.source_id];
+                  if (onFilterBySource && src?.id) onFilterBySource(src.id, displaySource);
+                }
+              }}
+            >
+              {displaySource}
+            </Badge>
+          )}
           {/* Subtle external link icon */}
           <Box
             component="a"
@@ -361,7 +370,7 @@ export const NewsCard = ({
               </Typography>
             </Box>
           )}
-          {article.views_count > 0 && (
+          {typeof article.views_count === 'number' && article.views_count > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Eye style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
               <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
@@ -390,7 +399,9 @@ export const NewsCard = ({
 
         {/* Tags */}
         {(() => {
-          const displayTags = tags.filter((t) => t !== fallbackCategoryFromTag);
+          const displayTags = tags
+            .map((t) => safeText(t))
+            .filter((t) => t && t !== fallbackCategoryFromTag);
           if (displayTags.length === 0) return null;
           return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>

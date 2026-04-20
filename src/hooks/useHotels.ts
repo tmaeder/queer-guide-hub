@@ -23,6 +23,20 @@ export function useHotels(autoFetch = true) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [datasetTotal, setDatasetTotal] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from('hotels')
+        .select('id', { head: true, count: 'exact' });
+      if (!cancelled) setDatasetTotal(count ?? 0);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const fetchHotels = useCallback(async (
     filters?: HotelFilters,
@@ -126,6 +140,7 @@ export function useHotels(autoFetch = true) {
     error,
     hasMore,
     totalCount,
+    datasetTotal,
     fetchHotels,
     createHotel,
     updateHotel,

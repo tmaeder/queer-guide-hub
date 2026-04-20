@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -107,6 +108,7 @@ function ItemDetail({
   onChangeType: (type: 'event' | 'venue') => void;
   onApply: () => void;
 }) {
+  const { t } = useTranslation();
   const { fields, detected_type, matches } = item;
   const displayFields = detected_type === 'event' ? EVENT_DISPLAY_FIELDS : VENUE_DISPLAY_FIELDS;
 
@@ -214,9 +216,11 @@ function ItemDetail({
           </Box>
         ))}
         {extractedFields.length === 0 && (
-          <Typography variant="caption" color="text.secondary">
-            No fields could be extracted.
-          </Typography>
+          <Box role="status" data-testid="extraction-empty">
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+              {t('submission.errors.extractionEmpty')}
+            </Typography>
+          </Box>
         )}
       </Box>
 
@@ -282,6 +286,7 @@ export function FlyerScanResults({
   onApply,
   onDismiss,
 }: FlyerScanResultsProps) {
+  const { t } = useTranslation();
   // Flatten all items with their result indices
   const allItems: Array<{
     resultIdx: number;
@@ -316,12 +321,12 @@ export function FlyerScanResults({
   if (allItems.length === 0) {
     return (
       <Card>
-        <CardContent>
+        <CardContent data-testid="extraction-empty-card">
           <Typography variant="body2" color="text.secondary">
-            No events or venues could be extracted from the uploaded files.
+            {t('submission.errors.extractionEmpty')}
           </Typography>
           <Button variant="outline" size="sm" onClick={onDismiss} style={{ marginTop: 12 }}>
-            Dismiss
+            {t('submission.errors.manualFallbackCta')}
           </Button>
         </CardContent>
       </Card>

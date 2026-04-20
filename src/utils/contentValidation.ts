@@ -3,6 +3,8 @@
  * Validates content fields before submission to ensure data quality.
  */
 
+import { normalizeAndValidateUrl } from './url';
+
 export interface ValidationError {
   field: string;
   message: string;
@@ -74,10 +76,9 @@ function validateField(
     }
 
     if (rule.type === 'url') {
-      try {
-        new URL(strValue);
-      } catch {
-        errors.push({ field, message: `${rule.label || field} must be a valid URL`, severity: 'error' });
+      const result = normalizeAndValidateUrl(strValue);
+      if (!result.ok) {
+        errors.push({ field, message: result.reason, severity: 'error' });
       }
     }
 
@@ -377,9 +378,7 @@ export function validateImportRow(
 
     // URL fields
     if (key.toLowerCase().includes('url') || key.toLowerCase().includes('website')) {
-      try {
-        new URL(value);
-      } catch {
+      if (!normalizeAndValidateUrl(value).ok) {
         errors.push({
           field: key,
           message: `Row ${rowIndex + 1}: "${key}" contains an invalid URL`,

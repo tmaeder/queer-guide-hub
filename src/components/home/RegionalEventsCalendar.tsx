@@ -30,18 +30,23 @@ const RegionalEventsCalendar: React.FC = () => {
 
   useEffect(() => {
     if (locationLoading) return;
+    const ctrl = new AbortController();
+    const { signal } = ctrl;
     const now = new Date();
     const end = new Date();
     end.setDate(now.getDate() + 30);
     const range = { start: now.toISOString(), end: end.toISOString() };
     const city = userLocation?.city;
     if (city) {
-      fetchEvents({ city, dateRange: range }).then((res) => {
-        if (res.fetched === 0) fetchEvents({ dateRange: range });
+      fetchEvents({ city, dateRange: range }, { signal }).then((res) => {
+        if (!signal.aborted && res.fetched === 0) {
+          fetchEvents({ dateRange: range }, { signal });
+        }
       });
     } else {
-      fetchEvents({ dateRange: range });
+      fetchEvents({ dateRange: range }, { signal });
     }
+    return () => ctrl.abort();
   }, [userLocation?.city, locationLoading, fetchEvents]);
 
   const { hero, list, days, eventsByDay, today } = useMemo(() => {

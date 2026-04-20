@@ -22,6 +22,8 @@ interface CountryAutocompleteProps {
   required?: boolean;
   disabled?: boolean;
   id?: string;
+  error?: boolean;
+  ariaDescribedBy?: string;
 }
 
 export function CountryAutocomplete({
@@ -32,6 +34,8 @@ export function CountryAutocomplete({
   required,
   disabled,
   id,
+  error,
+  ariaDescribedBy,
 }: CountryAutocompleteProps) {
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(false);
@@ -120,9 +124,12 @@ export function CountryAutocomplete({
           placeholder={placeholder}
           required={required}
           size="small"
+          error={error}
           slotProps={{
             input: {
               ...params.InputProps,
+              'aria-invalid': error || undefined,
+              'aria-describedby': ariaDescribedBy,
               startAdornment: selectedCountry?.flag_emoji ? (
                 <span style={{ fontSize: '1.25rem', marginRight: 4 }}>
                   {selectedCountry.flag_emoji}

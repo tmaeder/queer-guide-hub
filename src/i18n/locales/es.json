@@ -1135,7 +1135,15 @@
       "emptyTitle": "Aún no hay lugares que coincidan con tu vibra",
       "emptyDescription": "Intenta ampliar tu búsqueda o explorar otra ciudad.",
       "submitVenue": "Enviar un lugar",
-      "clearFilters": "Borrar filtros"
+      "clearFilters": "Borrar filtros",
+      "emptyDataset": {
+        "title": "Aún no hay lugares",
+        "body": "Todavía no hemos añadido lugares aquí. Ayúdanos a hacer crecer la guía enviando uno."
+      },
+      "filteredEmpty": {
+        "title": "Ningún lugar coincide con tus filtros",
+        "body": "Intenta ajustar tus filtros o búsqueda para ver más resultados."
+      }
     },
     "venueDetail": {
       "loadFailed": "No se pudieron cargar los detalles del lugar.",
@@ -1189,7 +1197,15 @@
       "noPastEvents": "No se encontraron eventos pasados",
       "noPastEventsDesc": "Ningún evento pasado coincide con estos filtros. Desactiva el filtro para ver próximos eventos.",
       "emptyTitle": "La pista de baile está vacía... por ahora",
-      "emptyDescription": "Vuelve pronto o amplía tus filtros para encontrar algo divertido."
+      "emptyDescription": "Vuelve pronto o amplía tus filtros para encontrar algo divertido.",
+      "emptyDataset": {
+        "title": "Aún no hay eventos",
+        "body": "Todavía no hemos añadido eventos aquí. Ayúdanos a hacer crecer la guía enviando uno."
+      },
+      "filteredEmpty": {
+        "title": "Ningún evento coincide con tus filtros",
+        "body": "Intenta ajustar tus filtros o búsqueda para ver más resultados."
+      }
     },
     "eventDetail": {
       "loadFailed": "No se pudieron cargar los detalles del evento.",

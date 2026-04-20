@@ -7,6 +7,7 @@ import Paper from '@mui/material/Paper';
 import type { Hotel } from '@/hooks/useHotels';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { safeText } from '@/utils/safeDisplay';
 
 interface HotelCardProps {
   hotel?: Hotel;
@@ -67,6 +68,15 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
   }
 
   const imageUrl = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
+  const hotelName = safeText(hotel.name);
+  const city = safeText(hotel.city);
+  const country = safeText(hotel.country);
+  const location = [city, country].filter(Boolean).join(', ');
+  const typeLabel = hotel.hotel_type
+    ? safeText(TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type)
+    : '';
+  const hasNumericRating =
+    typeof hotel.star_rating === 'number' && Number.isFinite(hotel.star_rating) && hotel.star_rating > 0;
 
   return (
     <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
@@ -90,7 +100,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
           {imageUrl ? (
             <img
               src={imageUrl}
-              alt={hotel.name}
+              alt={hotelName}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               loading="lazy"
             />
@@ -119,7 +129,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
               Featured
             </Badge>
           )}
-          {hotel.hotel_type && (
+          {typeLabel && (
             <Badge
               variant="outline"
               style={{
@@ -129,28 +139,30 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
                 backgroundColor: '#ffffff',
               }}
             >
-              {TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type}
+              {typeLabel}
             </Badge>
           )}
         </Box>
 
         {/* Content */}
         <Box sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }} noWrap>
-            {hotel.name}
-          </Typography>
+          {hotelName && (
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }} noWrap>
+              {hotelName}
+            </Typography>
+          )}
 
-          {(hotel.city || hotel.country) && (
+          {location && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
               <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
               <Typography variant="body2" noWrap>
-                {[hotel.city, hotel.country].filter(Boolean).join(', ')}
+                {location}
               </Typography>
             </Box>
           )}
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto', pt: 1 }}>
-            {hotel.star_rating && (
+            {hasNumericRating && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
                 <Star style={{ width: 14, height: 14, fill: '#f59e0b', color: '#f59e0b' }} />
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>

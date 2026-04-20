@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
 import { useNews } from "@/hooks/useNews";
 import type { NewsCategory } from "@/hooks/useNews";
 import { useMeta } from "@/hooks/useMeta";
@@ -59,6 +60,7 @@ export default function News() {
   });
 
   const { t } = useTranslation();
+  const navigate = useLocalizedNavigate();
   const {
     articles,
     sources,
@@ -264,12 +266,19 @@ export default function News() {
     });
   };
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const clearAllFilters = () => {
     setQuickSearch('');
     setCurrentFilters({});
     setCurrentPage(1);
     setActiveCategory(null);
     fetchArticles({});
+  };
+
+  const handleResetAndFocus = () => {
+    clearAllFilters();
+    queueMicrotask(() => searchInputRef.current?.focus());
   };
 
   const hasActiveFilters = quickSearch || activeCategory || Object.keys(currentFilters).some(k => currentFilters[k] !== undefined);
@@ -405,7 +414,7 @@ export default function News() {
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2 }}>
             <Box sx={{ position: 'relative', flex: 1, maxWidth: '28rem' }}>
               <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-              <Input placeholder={t('pages.news.searchPlaceholder', 'Quick search articles...')} value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} aria-label="Search articles" />
+              <Input ref={searchInputRef} placeholder={t('pages.news.searchPlaceholder', 'Quick search articles...')} value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} aria-label="Search articles" />
               {quickSearch && (
                 <Button variant="ghost" size="sm" onClick={() => handleQuickSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', height: 24, width: 24, padding: 0 }}>
                   <X style={{ width: 16, height: 16 }} />
@@ -454,7 +463,7 @@ export default function News() {
         </Paper>
 
         {/* Active Filters Summary */}
-        {hasActiveFilters && (
+        {hasActiveFilters && sortedArticles.length > 0 && (
           <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'background.paper' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Filter style={{ width: 16, height: 16 }} />
@@ -491,7 +500,49 @@ export default function News() {
             {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
 
             {!loading && !error && sortedArticles.length === 0 && (
-              <EmptyState icon={Newspaper} title={t('pages.news.emptyTitle', 'The newsroom is quiet')} description={t('pages.news.emptyDescription', 'No stories right now — check back soon.')} mood="encouraging" />
+              hasActiveFilters ? (
+                <EmptyState
+                  icon={Newspaper}
+                  variant="filtered"
+                  title={t('pages.news.filteredEmptyTitle', 'No news matches your filters')}
+                  description={t('pages.news.filteredEmptyDescription', 'Try resetting your filters or exploring another topic.')}
+                  mood="neutral"
+                  activeFilters={[
+                    ...(quickSearch
+                      ? [{ label: `${t('pages.news.filterSearch', 'Search')}: ${quickSearch}`, onRemove: () => handleQuickSearch('') }]
+                      : []),
+                    ...(activeCategory
+                      ? [{ label: `${t('pages.news.filterCategory', 'Category')}: ${categoriesMap[activeCategory]?.name || activeCategory}`, onRemove: () => handleCategoryClick(null) }]
+                      : []),
+                    ...(currentFilters.sourceId
+                      ? [{ label: `${t('pages.news.filterSource', 'Source')}: ${sourcesMap[currentFilters.sourceId as string]?.name || 'Unknown'}`, onRemove: () => applyFiltersAndFetch({ ...currentFilters, sourceId: undefined }) }]
+                      : []),
+                    ...(currentFilters.featured !== undefined
+                      ? [{ label: t('pages.news.filterFeatured', 'Featured only'), onRemove: () => applyFiltersAndFetch({ ...currentFilters, featured: undefined }) }]
+                      : []),
+                  ]}
+                  primaryAction={{
+                    label: t('pages.news.resetFilters', 'Reset filters'),
+                    onClick: handleResetAndFocus,
+                    variant: 'default',
+                  }}
+                />
+              ) : (
+                <EmptyState
+                  icon={Newspaper}
+                  title={t('pages.news.emptyTitle', 'The newsroom is quiet')}
+                  description={t('pages.news.emptyDescription', 'No stories right now. Check back soon.')}
+                  mood="encouraging"
+                  primaryAction={{
+                    label: t('pages.news.refresh', 'Refresh'),
+                    onClick: () => fetchArticles(),
+                  }}
+                  secondaryAction={{
+                    label: t('pages.news.emptyBrowseEvents', 'Browse events'),
+                    onClick: () => navigate('/events'),
+                  }}
+                />
+              )
             )}
 
             {!loading && paginatedArticles.length > 0 && (

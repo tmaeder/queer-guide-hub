@@ -63,6 +63,7 @@ export function DateTimeField({ field, value, onChange, error, disabled }: Field
         onChange={handleChange}
         disabled={disabled}
         aria-invalid={!!error}
+        aria-describedby={error ? `${field.name}-error` : field.helpText ? `${field.name}-help` : undefined}
         className={`
           w-full h-10 px-3 py-2 rounded-lg text-sm
           bg-muted/50 border-0

@@ -1135,7 +1135,15 @@
       "emptyTitle": "Aucun lieu ne correspond encore à tes envies",
       "emptyDescription": "Essaie d'élargir ta recherche ou explore une autre ville.",
       "submitVenue": "Proposer un lieu",
-      "clearFilters": "Effacer les filtres"
+      "clearFilters": "Effacer les filtres",
+      "emptyDataset": {
+        "title": "Aucun lieu pour le moment",
+        "body": "Nous n'avons pas encore ajouté de lieux ici. Aide-nous à enrichir le guide en en proposant un."
+      },
+      "filteredEmpty": {
+        "title": "Aucun lieu ne correspond à tes filtres",
+        "body": "Essaie d'ajuster tes filtres ou ta recherche pour voir plus de résultats."
+      }
     },
     "venueDetail": {
       "loadFailed": "Impossible de charger les détails du lieu.",
@@ -1189,7 +1197,15 @@
       "noPastEvents": "Aucun événement passé trouvé",
       "noPastEventsDesc": "Aucun événement passé ne correspond à ces filtres. Désactive le bouton pour voir les prochains événements.",
       "emptyTitle": "La piste de danse est vide... pour l'instant",
-      "emptyDescription": "Reviens bientôt ou élargis tes filtres pour trouver quelque chose de sympa."
+      "emptyDescription": "Reviens bientôt ou élargis tes filtres pour trouver quelque chose de sympa.",
+      "emptyDataset": {
+        "title": "Aucun événement pour le moment",
+        "body": "Nous n'avons pas encore ajouté d'événements ici. Aide-nous à enrichir le guide en en proposant un."
+      },
+      "filteredEmpty": {
+        "title": "Aucun événement ne correspond à tes filtres",
+        "body": "Essaie d'ajuster tes filtres ou ta recherche pour voir plus de résultats."
+      }
     },
     "eventDetail": {
       "loadFailed": "Impossible de charger les détails de l'événement.",

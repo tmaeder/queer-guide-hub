@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserTravelPreferences } from '@/hooks/useUserTravelPreferences';
 
 /**
  * Dynamic trip templates surfaced on /trips.
@@ -15,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
  * `profiles.saved_cities` / bookmark surface that doesn't exist yet.
  */
 
-export type TripTemplateSource = 'event' | 'seasonal' | 'preference';
+export type TripTemplateSource = 'preference' | 'event' | 'seasonal';
 
 export interface TripTemplate {
   id: string;
@@ -186,6 +187,7 @@ const SEASONAL_POOL: SeasonalSeed[] = [
 ];
 
 const EVENT_GRADIENT = 'linear-gradient(135deg, #DB2777 0%, #7C3AED 100%)';
+const PREFERENCE_GRADIENT = 'linear-gradient(135deg, #0EA5E9 0%, #22C55E 100%)';
 
 function pickSeasonal(now: Date): SeasonalSeed[] {
   const m = now.getMonth() + 1;
@@ -203,8 +205,12 @@ function diffDays(start: string, end: string | null): number {
 }
 
 export function useTripTemplates() {
+  const { data: prefs } = useUserTravelPreferences();
+  const homeCountryId = prefs?.home_country_id ?? null;
+  const homeCityId = prefs?.home_city_id ?? null;
+
   return useQuery({
-    queryKey: ['trip-templates', new Date().getMonth()],
+    queryKey: ['trip-templates', new Date().getMonth(), homeCountryId, homeCityId],
     staleTime: 60 * 60 * 1000,
     queryFn: async (): Promise<TripTemplate[]> => {
       const now = new Date();
@@ -215,8 +221,9 @@ export function useTripTemplates() {
         new Set(seasonalSeeds.flatMap((s) => s.citySlugs)),
       );
 
-      // Fetch seasonal city photos + event-driven templates in parallel.
-      const [cityRes, eventRes] = await Promise.all([
+      // Fetch seasonal city photos + event-driven templates + preference
+      // cities (when a home country is set) in parallel.
+      const [cityRes, eventRes, prefRes] = await Promise.all([
         allSlugs.length
           ? supabase
               .from('cities')
@@ -234,6 +241,17 @@ export function useTripTemplates() {
           .or('event_type.ilike.%pride%,event_type.ilike.%festival%')
           .order('start_date', { ascending: true })
           .limit(3),
+        homeCountryId
+          ? supabase
+              .from('cities')
+              .select(
+                'id, name, image_url, lgbt_friendly_rating, countries:country_id(currency)',
+              )
+              .eq('country_id', homeCountryId)
+              .eq('is_major_city', true)
+              .order('lgbt_friendly_rating', { ascending: false, nullsFirst: false })
+              .limit(4)
+          : Promise.resolve({ data: [], error: null }),
       ]);
 
       if (cityRes.error) throw cityRes.error;
@@ -305,17 +323,49 @@ export function useTripTemplates() {
         };
       });
 
-      // Dedupe: if an event template already covers a seasonal city, drop the
-      // overlapping seasonal entry so we don't show two cards for the same city.
-      const eventCityIds = new Set(
-        eventTemplates.flatMap((t) => t.cityIds),
+      // Preference tier: 1–2 cities in the user's home country (excluding
+      // home city). Best-effort — failures don't block other tiers.
+      if (prefRes.error) {
+        console.warn('[useTripTemplates] preference fetch failed', prefRes.error);
+      }
+      type PrefRow = {
+        id: string;
+        name: string;
+        image_url: string | null;
+        lgbt_friendly_rating: number | null;
+        countries: { currency: string | null } | null;
+      };
+      const preferenceTemplates: TripTemplate[] = (
+        (prefRes.data ?? []) as unknown as PrefRow[]
+      )
+        .filter((c) => c.id !== homeCityId)
+        .slice(0, 2)
+        .map((c) => ({
+          id: `preference:${c.id}`,
+          title: `Weekend in ${c.name}`,
+          cities: c.name,
+          cityIds: [c.id],
+          days: 3,
+          currency: c.countries?.currency ?? 'USD',
+          coverImageUrl: c.image_url,
+          gradient: PREFERENCE_GRADIENT,
+          source: 'preference',
+        }));
+
+      // Dedupe across tiers by cityIds — preference wins, then event, then seasonal.
+      const preferenceCityIds = new Set(preferenceTemplates.flatMap((t) => t.cityIds));
+      const eventFiltered = eventTemplates.filter((t) =>
+        t.cityIds.every((id) => !preferenceCityIds.has(id)),
       );
+      const eventCityIds = new Set(eventFiltered.flatMap((t) => t.cityIds));
       const seasonalFiltered = seasonalTemplates.filter((t) =>
-        t.cityIds.every((id) => !eventCityIds.has(id)),
+        t.cityIds.every(
+          (id) => !preferenceCityIds.has(id) && !eventCityIds.has(id),
+        ),
       );
 
-      // Events first (timeliest), then seasonal. Cap at 6 cards.
-      return [...eventTemplates, ...seasonalFiltered].slice(0, 6);
+      // Preference first (personalized), then events (timeliest), then seasonal.
+      return [...preferenceTemplates, ...eventFiltered, ...seasonalFiltered].slice(0, 6);
     },
   });
 }

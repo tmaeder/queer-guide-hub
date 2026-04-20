@@ -1131,7 +1131,15 @@
       "emptyTitle": "No spots match your vibe yet",
       "emptyDescription": "Try widening your search or explore a different city.",
       "submitVenue": "Submit a Venue",
-      "clearFilters": "Clear Filters"
+      "clearFilters": "Clear Filters",
+      "emptyDataset": {
+        "title": "No venues yet",
+        "body": "We haven't added any venues here yet. Help us grow the guide by submitting one."
+      },
+      "filteredEmpty": {
+        "title": "No venues match your filters",
+        "body": "Try adjusting your filters or search to see more results."
+      }
     },
     "venueDetail": {
       "loadFailed": "Failed to load venue details.",
@@ -1186,7 +1194,15 @@
       "noPastEvents": "No past events found",
       "noPastEventsDesc": "No past events match these filters. Turn off the toggle to see upcoming events.",
       "emptyTitle": "The dance floor is empty... for now",
-      "emptyDescription": "Check back soon or widen your filters to find something fun."
+      "emptyDescription": "Check back soon or widen your filters to find something fun.",
+      "emptyDataset": {
+        "title": "No events yet",
+        "body": "We haven't added any events here yet. Help us grow the guide by submitting one."
+      },
+      "filteredEmpty": {
+        "title": "No events match your filters",
+        "body": "Try adjusting your filters or search to see more results."
+      }
     },
     "eventDetail": {
       "loadFailed": "Failed to load event details.",

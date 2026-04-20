@@ -1139,7 +1139,15 @@
       "emptyTitle": "Noch keine Orte gefunden, die zu dir passen",
       "emptyDescription": "Erweitere deine Suche oder entdecke eine andere Stadt.",
       "submitVenue": "Ort einreichen",
-      "clearFilters": "Filter löschen"
+      "clearFilters": "Filter löschen",
+      "emptyDataset": {
+        "title": "Noch keine Orte",
+        "body": "Wir haben hier noch keine Orte hinzugefügt. Hilf mit, den Guide auszubauen, und reiche einen ein."
+      },
+      "filteredEmpty": {
+        "title": "Keine Orte passen zu deinen Filtern",
+        "body": "Passe deine Filter oder Suche an, um mehr Ergebnisse zu sehen."
+      }
     },
     "venueDetail": {
       "loadFailed": "Details zum Ort konnten nicht geladen werden.",
@@ -1194,7 +1202,15 @@
       "noPastEvents": "Keine vergangenen Veranstaltungen gefunden",
       "noPastEventsDesc": "Keine vergangenen Veranstaltungen passen zu diesen Filtern. Schalte den Filter aus, um kommende Veranstaltungen zu sehen.",
       "emptyTitle": "Die Tanzfläche ist leer... noch",
-      "emptyDescription": "Schau bald wieder vorbei oder erweitere deine Filter."
+      "emptyDescription": "Schau bald wieder vorbei oder erweitere deine Filter.",
+      "emptyDataset": {
+        "title": "Noch keine Events",
+        "body": "Wir haben hier noch keine Events hinzugefügt. Hilf mit, den Guide auszubauen, und reiche eines ein."
+      },
+      "filteredEmpty": {
+        "title": "Keine Events passen zu deinen Filtern",
+        "body": "Passe deine Filter oder Suche an, um mehr Ergebnisse zu sehen."
+      }
     },
     "eventDetail": {
       "loadFailed": "Details zur Veranstaltung konnten nicht geladen werden.",

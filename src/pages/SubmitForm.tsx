@@ -6,6 +6,7 @@
 import { useParams, useLocation } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMemo, useState, useEffect, useRef } from 'react';
+import { Controller } from 'react-hook-form';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
@@ -67,7 +68,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
     isSubmitting,
     isSubmitted,
     totalSteps,
-    setField,
+    stepAnnouncement,
     setFields,
     nextStep,
     prevStep,
@@ -76,6 +77,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
     reset,
     honeypot,
     setHoneypot,
+    control,
   } = useSubmission(config);
 
   // Flyer scan (only for event/venue)
@@ -229,19 +231,15 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
       {/* Auth gate */}
       {!user && (
-        <Card>
+        <Card id="submit-auth-hint" role="status">
           <CardContent>
-            <Typography variant="body2" color="text.secondary">
-              <strong>Tip:</strong>{' '}
-              <Box
-                component="span"
-                onClick={() => navigate('/auth')}
-                sx={{ color: 'text.primary', textDecoration: 'underline', cursor: 'pointer' }}
-              >
-                Sign in or create an account
-              </Box>{' '}
-              to submit content directly. Guest submissions are not currently supported.
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              <strong>Sign in required.</strong> You can fill out the form now, but you'll need an
+              account to submit.
             </Typography>
+            <Button size="sm" onClick={() => navigate('/auth')}>
+              Sign in or create an account
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -337,15 +335,48 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         </Box>
       )}
 
+      {/* Step-level aria-live region for validation announcements */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="submit-form-announcer"
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          margin: -1,
+          padding: 0,
+          overflow: 'hidden',
+          clip: 'rect(0 0 0 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        {stepAnnouncement}
+      </div>
+
       {/* Form card */}
       <Card>
         <CardContent>
           <form
             noValidate
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              if (isLastStep) submit();
-              else nextStep();
+              if (isLastStep) {
+                submit();
+                return;
+              }
+              const result = await nextStep();
+              if (!result.ok && result.firstInvalid) {
+                requestAnimationFrame(() => {
+                  const el = document.getElementById(result.firstInvalid as string);
+                  if (el) {
+                    (el as HTMLElement).focus();
+                    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                  }
+                });
+              }
             }}
           >
             {/* Honeypot — hidden from real users */}
@@ -367,6 +398,67 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
               </Typography>
             )}
 
+            {/* Error summary — lists fields that need fixing on this step */}
+            {(() => {
+              const stepErrors = stepFields
+                .map((f) => ({ name: f.name, label: f.label, message: errors[f.name] }))
+                .filter((e) => !!e.message);
+              if (stepErrors.length === 0) return null;
+              return (
+                <Box
+                  role="alert"
+                  aria-live="polite"
+                  sx={{
+                    mb: 2,
+                    p: 1.5,
+                    bgcolor: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.35)',
+                    borderRadius: 1,
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, color: '#b91c1c' }}>
+                    Please fix the following to continue:
+                  </Typography>
+                  <Box component="ul" sx={{ m: 0, pl: 2 }}>
+                    {stepErrors.map((e) => (
+                      <li key={e.name}>
+                        <Box
+                          component="a"
+                          href={`#${e.name}`}
+                          onClick={(ev: React.MouseEvent) => {
+                            ev.preventDefault();
+                            const el = document.getElementById(e.name);
+                            if (el) {
+                              (el as HTMLElement).focus();
+                              el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                            }
+                          }}
+                          sx={{ color: '#b91c1c', textDecoration: 'underline', cursor: 'pointer' }}
+                        >
+                          {e.label}: {e.message}
+                        </Box>
+                      </li>
+                    ))}
+                  </Box>
+                </Box>
+              );
+            })()}
+
+            {/* Live region for step announcements (a11y) */}
+            <Box
+              role="status"
+              aria-live="polite"
+              sx={{
+                position: 'absolute',
+                left: -9999,
+                width: 1,
+                height: 1,
+                overflow: 'hidden',
+              }}
+            >
+              {stepAnnouncement}
+            </Box>
+
             {/* Fields */}
             <Box
               sx={{
@@ -380,12 +472,19 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                   key={fieldConfig.name}
                   sx={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
                 >
-                  <FieldRenderer
-                    field={fieldConfig}
-                    value={data[fieldConfig.name] ?? ''}
-                    onChange={(val) => setField(fieldConfig.name, val)}
-                    error={errors[fieldConfig.name]}
-                    setFields={setFields}
+                  <Controller
+                    control={control}
+                    name={fieldConfig.name}
+                    render={({ field, fieldState }) => (
+                      <FieldRenderer
+                        field={fieldConfig}
+                        value={field.value ?? ''}
+                        onChange={(val) => field.onChange(val)}
+                        error={fieldState.error?.message ?? errors[fieldConfig.name]}
+                        setFields={setFields}
+                        allValues={data}
+                      />
+                    )}
                   />
                 </Box>
               ))}
@@ -405,7 +504,8 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
               <Button
                 type="submit"
-                disabled={isSubmitting || !user}
+                disabled={isSubmitting}
+                aria-describedby={!user && isLastStep ? 'submit-auth-hint' : undefined}
                 style={{
                   display: 'flex',
                   alignItems: 'center',

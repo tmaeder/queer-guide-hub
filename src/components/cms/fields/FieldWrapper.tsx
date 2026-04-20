@@ -32,11 +32,11 @@ export function FieldWrapper({ field, error, children, hideLabel }: FieldWrapper
       {children}
 
       {field.helpText && !error && (
-        <p className="text-xs text-muted-foreground">{field.helpText}</p>
+        <p id={`${field.name}-help`} className="text-xs text-muted-foreground">{field.helpText}</p>
       )}
 
       {error && (
-        <p className="text-xs text-red-500">{error}</p>
+        <p id={`${field.name}-error`} role="alert" className="text-xs text-red-500">{error}</p>
       )}
     </div>
   );

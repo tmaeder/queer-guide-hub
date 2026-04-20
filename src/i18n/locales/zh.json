@@ -1135,7 +1135,15 @@
       "emptyTitle": "还没有找到符合你风格的地点",
       "emptyDescription": "尝试扩大搜索范围或探索其他城市。",
       "submitVenue": "提交场所",
-      "clearFilters": "清除筛选"
+      "clearFilters": "清除筛选",
+      "emptyDataset": {
+        "title": "暂无场地",
+        "body": "我们还没有在这里添加场地。欢迎提交一个,帮助我们丰富指南。"
+      },
+      "filteredEmpty": {
+        "title": "没有匹配筛选条件的场地",
+        "body": "尝试调整筛选条件或搜索以查看更多结果。"
+      }
     },
     "venueDetail": {
       "loadFailed": "无法加载场所详情。",
@@ -1189,7 +1197,15 @@
       "noPastEvents": "未找到过去的活动",
       "noPastEventsDesc": "没有过去的活动符合这些筛选条件。关闭切换以查看即将举办的活动。",
       "emptyTitle": "舞池暂时空空的……",
-      "emptyDescription": "请稍后再来或扩大筛选范围来发现有趣的活动。"
+      "emptyDescription": "请稍后再来或扩大筛选范围来发现有趣的活动。",
+      "emptyDataset": {
+        "title": "暂无活动",
+        "body": "我们还没有在这里添加活动。欢迎提交一个,帮助我们丰富指南。"
+      },
+      "filteredEmpty": {
+        "title": "没有匹配筛选条件的活动",
+        "body": "尝试调整筛选条件或搜索以查看更多结果。"
+      }
     },
     "eventDetail": {
       "loadFailed": "无法加载活动详情。",
