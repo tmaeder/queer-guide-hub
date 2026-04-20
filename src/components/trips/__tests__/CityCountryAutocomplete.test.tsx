@@ -10,30 +10,28 @@ import {
 type CityRow = {
   id: string;
   name: string;
+  country_id: string;
+  country_name: string;
+  country_code: string | null;
   timezone: string | null;
-  country: { id: string; name: string; code: string | null };
 };
 
-const { mockLimit, mockFrom, getLastQuery } = vi.hoisted(() => {
-  let lastQuery = '';
-  const mockLimit = vi.fn<[], Promise<{ data: CityRow[]; error: null }>>();
-  const mockFrom = vi.fn((_table: string) => {
-    const chain = {
-      select: () => chain,
-      ilike: (_col: string, pattern: string) => {
-        lastQuery = pattern.replace(/%$/, '');
-        return chain;
-      },
-      order: () => chain,
-      limit: () => mockLimit(),
-    };
-    return chain;
-  });
-  return { mockLimit, mockFrom, getLastQuery: () => lastQuery };
+const { mockRpc, getLastQuery } = vi.hoisted(() => {
+  const mockRpc = vi.fn<
+    [string, Record<string, unknown>?],
+    Promise<{ data: CityRow[]; error: null }>
+  >();
+  const getLastQuery = (): string => {
+    const calls = mockRpc.mock.calls;
+    if (calls.length === 0) return '';
+    const args = calls[calls.length - 1][1] as Record<string, unknown> | undefined;
+    return (args?.q as string) ?? '';
+  };
+  return { mockRpc, getLastQuery };
 });
 
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: mockFrom },
+  supabase: { rpc: mockRpc },
 }));
 
 vi.mock('react-i18next', () => ({
@@ -48,29 +46,34 @@ import { CityCountryAutocomplete } from '../create/CityCountryAutocomplete';
 const zurich: CityRow = {
   id: 'city-zurich',
   name: 'Zürich',
+  country_id: 'country-ch',
+  country_name: 'Switzerland',
+  country_code: 'CH',
   timezone: 'Europe/Zurich',
-  country: { id: 'country-ch', name: 'Switzerland', code: 'CH' },
 };
 
 const berlin: CityRow = {
   id: 'city-berlin',
   name: 'Berlin',
+  country_id: 'country-de',
+  country_name: 'Germany',
+  country_code: 'DE',
   timezone: 'Europe/Berlin',
-  country: { id: 'country-de', name: 'Germany', code: 'DE' },
 };
 
 const bern: CityRow = {
   id: 'city-bern',
   name: 'Bern',
+  country_id: 'country-ch',
+  country_name: 'Switzerland',
+  country_code: 'CH',
   timezone: 'Europe/Zurich',
-  country: { id: 'country-ch', name: 'Switzerland', code: 'CH' },
 };
 
 describe('CityCountryAutocomplete', () => {
   beforeEach(() => {
-    mockLimit.mockReset();
-    mockFrom.mockClear();
-    mockLimit.mockResolvedValue({ data: [berlin, bern], error: null });
+    mockRpc.mockReset();
+    mockRpc.mockResolvedValue({ data: [berlin, bern], error: null });
   });
 
   it('renders the text field with the provided label', () => {
@@ -94,7 +97,7 @@ describe('CityCountryAutocomplete', () => {
 
     fireEvent.change(input, { target: { value: 'Be' } });
 
-    await waitFor(() => expect(mockLimit).toHaveBeenCalled(), { timeout: 3000 });
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled(), { timeout: 3000 });
     expect(getLastQuery()).toBe('Be');
     expect(await screen.findByText('Berlin', {}, { timeout: 3000 })).toBeInTheDocument();
   });
@@ -122,27 +125,27 @@ describe('CityCountryAutocomplete', () => {
   });
 
   it('queries supabase with the typed text (accent-folding handled by the DB)', async () => {
-    mockLimit.mockResolvedValue({ data: [zurich], error: null });
+    mockRpc.mockResolvedValue({ data: [zurich], error: null });
     renderWithProviders(
       <CityCountryAutocomplete value={null} onChange={vi.fn()} label="city" />,
     );
     const input = screen.getByLabelText('city') as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'Zurich' } });
 
-    await waitFor(() => expect(mockLimit).toHaveBeenCalled(), { timeout: 3000 });
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled(), { timeout: 3000 });
     expect(getLastQuery()).toBe('Zurich');
     expect(await screen.findByText('Zürich', {}, { timeout: 3000 })).toBeInTheDocument();
   });
 
   it('also queries for the accented form', async () => {
-    mockLimit.mockResolvedValue({ data: [zurich], error: null });
+    mockRpc.mockResolvedValue({ data: [zurich], error: null });
     renderWithProviders(
       <CityCountryAutocomplete value={null} onChange={vi.fn()} label="city" />,
     );
     const input = screen.getByLabelText('city') as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'Zürich' } });
 
-    await waitFor(() => expect(mockLimit).toHaveBeenCalled(), { timeout: 3000 });
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled(), { timeout: 3000 });
     expect(getLastQuery()).toBe('Zürich');
     expect(await screen.findByText('Zürich', {}, { timeout: 3000 })).toBeInTheDocument();
   });
@@ -206,11 +209,11 @@ describe('CityCountryAutocomplete', () => {
     const input = screen.getByLabelText('city') as HTMLInputElement;
     fireEvent.change(input, { target: { value: '  B  ' } });
     await new Promise((r) => setTimeout(r, 400));
-    expect(mockLimit).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it('shows the fallback CTA when no cities match and a handler is wired', async () => {
-    mockLimit.mockResolvedValueOnce({ data: [], error: null });
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
     const onFallback = vi.fn();
     renderWithProviders(
       <CityCountryAutocomplete
