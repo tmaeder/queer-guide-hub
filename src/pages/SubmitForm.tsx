@@ -124,7 +124,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
   const cityDetectRef = useRef('');
   useEffect(() => {
     if (!titleValue || titleValue.length < 3) return;
-    if (data.city) return; // don't override existing city
+    if (data.city && data.city_id) return; // don't override when fully resolved
     if (cityDetectRef.current === titleValue) return; // already checked this value
 
     const timer = setTimeout(async () => {
