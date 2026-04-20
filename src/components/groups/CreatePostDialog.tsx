@@ -155,7 +155,7 @@ export const CreatePostDialog = ({
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Tabs value={postType} onValueChange={(value: string) => setPostType(value as 'text' | 'announcement' | 'poll')}>
-            <TabsList>
+            <TabsList variant="fullWidth">
               <TabsTrigger value="text">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <MessageSquare style={{ height: 16, width: 16 }} />

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import MuiTabs from '@mui/material/Tabs';
 import MuiTab from '@mui/material/Tab';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { tweens } from '@/lib/motion';
 
 const TabsContext = React.createContext<{
@@ -46,8 +46,18 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
 );
 Tabs.displayName = 'Tabs';
 
-const TabsList = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, ..._props }, ref) => {
+interface TabsListProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * Layout variant. Defaults to 'scrollable' (for tab sets that may
+   * overflow). Pass 'fullWidth' for fixed tab sets inside dialogs — this
+   * guarantees tab hitboxes match their visual position across resize /
+   * scroll (avoids MUI's scrollable inner-scroller offset).
+   */
+  variant?: 'fullWidth' | 'standard' | 'scrollable';
+}
+
+const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
+  ({ className, children, variant = 'scrollable', ..._props }, ref) => {
     const { value, onValueChange } = React.useContext(TabsContext);
     return (
       <MuiTabs
@@ -55,14 +65,15 @@ const TabsList = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
         value={value}
         onChange={(_, newValue) => onValueChange(newValue)}
         className={className}
-        variant="scrollable"
-        scrollButtons="auto"
+        variant={variant}
+        scrollButtons={variant === 'scrollable' ? 'auto' : false}
         sx={{
           minHeight: 40,
           bgcolor: 'action.hover',
           borderRadius: 1.25,
           p: 0.5,
           '& .MuiTabs-indicator': { display: 'none' },
+          '& .MuiTabs-flexContainer': { gap: 0.5 },
           '& .MuiTab-root': {
             minHeight: 32,
             textTransform: 'none',
@@ -89,13 +100,15 @@ interface TabsTriggerProps extends React.HTMLAttributes<HTMLButtonElement> {
 }
 
 const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
-  ({ className, value, children, disabled, ...props }, ref) => (
+  ({ className, value, children, disabled, id, ...props }, ref) => (
     <MuiTab
       ref={ref as React.Ref<HTMLDivElement>}
       value={value}
       label={children}
       disabled={disabled}
       className={className}
+      id={id ?? `tab-${value}`}
+      aria-controls={`tabpanel-${value}`}
       {...props}
     />
   ),
@@ -110,25 +123,26 @@ const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
   ({ className, value, children, style, ...props }, ref) => {
     const { value: activeValue } = React.useContext(TabsContext);
     const active = value === activeValue;
+    // Opacity-only transition, no y-translate, no AnimatePresence exit:
+    // a translating exit panel would linger briefly and intercept clicks on
+    // the tab bar. Tab switches are semantically instant.
+    if (!active) return null;
     return (
-      <AnimatePresence mode="wait">
-        {active && (
-          <motion.div
-            ref={ref}
-            key={value}
-            className={className}
-            style={{ marginTop: 8, ...style }}
-            role="tabpanel"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={tweens.fast}
-            {...(props as object)}
-          >
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.div
+        ref={ref}
+        key={value}
+        className={className}
+        style={{ marginTop: 8, ...style }}
+        role="tabpanel"
+        aria-labelledby={`tab-${value}`}
+        id={`tabpanel-${value}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={tweens.fast}
+        {...(props as object)}
+      >
+        {children}
+      </motion.div>
     );
   },
 );

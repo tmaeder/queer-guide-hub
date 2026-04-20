@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { buildPostValidationPayload, preSubmitCheck } from './postValidation';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -53,25 +54,29 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
   const [_tags, setTags] = useState<string[]>([]);
 
   const handleSubmit = async () => {
-    if (!content.trim()) {
+    const preErr = preSubmitCheck(postType, {
+      content,
+      linkUrl,
+      linkTitle,
+      linkDescription,
+      pollOptions,
+    });
+    if (preErr) {
       toast({
-        title: "Error",
-        description: "Post content cannot be empty",
-        variant: "destructive",
+        title: preErr.field === 'content' ? 'Error' : 'Invalid input',
+        description: preErr.message,
+        variant: 'destructive',
       });
       return;
     }
 
-    // Enhanced security validation
-    const validationData = {
-      content,
-      linkTitle,
-      linkDescription,
-      linkUrl,
-      pollOptions: pollOptions.join(' ')
-    };
-
-    const validation = await validateFormData(validationData, ['content', 'linkTitle', 'linkDescription', 'linkUrl', 'pollOptions']);
+    // Type-scoped security validation — avoid false positives like empty
+    // pollOptions on a text post.
+    const { data: validationData, fields: validationFields } = buildPostValidationPayload(
+      postType,
+      { content, linkUrl, linkTitle, linkDescription, pollOptions },
+    );
+    const validation = await validateFormData(validationData, validationFields);
     if (!validation.isValid) {
       toast({
         title: "Content Validation Failed",
