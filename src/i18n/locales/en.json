@@ -1277,7 +1277,25 @@
       "activitiesComingSoon": "Activities coming soon.",
       "browseDestinations": "Browse Destinations",
       "exploreCta": "Explore LGBTQ+ Friendly Destinations",
-      "exploreDescription": "Discover cities and countries with detailed safety information and travel guides"
+      "exploreDescription": "Discover cities and countries with detailed safety information and travel guides",
+      "hotels": {
+        "typeLabel": "Type",
+        "priceMin": "Min €",
+        "priceMax": "Max €",
+        "priceUnavailable": "Price on request",
+        "clearFilters": "Clear filters",
+        "noResultsWithFilters": "No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "Any type",
+          "hotel": "Hotel",
+          "boutique": "Boutique Hotel",
+          "bnb": "B&B",
+          "hostel": "Hostel",
+          "guesthouse": "Guesthouse",
+          "apartment": "Apartment",
+          "resort": "Resort"
+        }
+      }
     },
     "marketplace": {
       "title": "Marketplace",
