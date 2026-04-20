@@ -87,9 +87,15 @@ describe('News page empty states', () => {
     fireEvent.change(searchInputs[0], { target: { value: 'zzzzzz' } });
 
     await waitFor(() =>
-      expect(screen.getByText(/No stories match your filters/i)).toBeInTheDocument(),
+      expect(screen.getByText(/No news matches your filters/i)).toBeInTheDocument(),
     );
-    const clearButtons = screen.getAllByRole('button', { name: /Clear All/i });
+    // The filtered empty state exposes a primary CTA that clears the active
+    // filters. The current copy is "Reset filters" (see News.tsx's EmptyState
+    // primaryAction). We match it loosely so a future copy change to
+    // "Clear all" / "Clear filters" won't re-break this test.
+    const clearButtons = screen.getAllByRole('button', {
+      name: /Reset filters|Clear (all|filters)/i,
+    });
     expect(clearButtons.length).toBeGreaterThanOrEqual(1);
     expectNoPlaceholderLeaks(container);
 
