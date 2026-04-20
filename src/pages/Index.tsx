@@ -22,6 +22,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -40,28 +41,23 @@ const featureDefs = [
 ];
 
 const Index = React.memo(() => {
-  const { stats: realStats, loading } = useConsolidatedStats();
+  const { stats: realStats, loading, error: statsError } = useConsolidatedStats();
   const isMobile = useIsMobile();
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
 
   const stats = useMemo(
-    () =>
-      loading
-        ? [
-            { value: 0, label: t('home.stats.venues', 'Venues') },
-            { value: 0, label: t('home.stats.members', 'Members') },
-            { value: 0, label: t('home.stats.cities', 'Cities') },
-            { value: 0, label: t('home.stats.events', 'Events') },
-          ]
-        : [
-            { value: realStats.venues, label: t('home.stats.venues', 'Venues') },
-            { value: realStats.profiles, label: t('home.stats.members', 'Members') },
-            { value: realStats.cities, label: t('home.stats.cities', 'Cities') },
-            { value: realStats.events, label: t('home.stats.events', 'Events') },
-          ],
-    [loading, realStats, t],
+    () => [
+      { value: realStats.venues, label: t('home.stats.venues', 'Venues') },
+      { value: realStats.profiles, label: t('home.stats.members', 'Members') },
+      { value: realStats.cities, label: t('home.stats.cities', 'Cities') },
+      { value: realStats.events, label: t('home.stats.events', 'Events') },
+    ],
+    [realStats, t],
   );
+
+  const showStatsStrip =
+    loading || (!statsError && stats.some((s) => typeof s.value === 'number' && s.value > 0));
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -173,58 +169,67 @@ const Index = React.memo(() => {
       </Box>
 
       {/* ── Stats Strip ──────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          bgcolor: 'text.primary',
-          color: 'background.default',
-          py: { xs: 5, md: 7 },
-          px: { xs: 2, sm: 3, md: 4 },
-        }}
-      >
-        <StaggerGrid
-          stagger={0.1}
+      {showStatsStrip && (
+        <Box
+          data-testid="homepage-stats-strip"
           sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'repeat(2, 1fr)',
-              md: 'repeat(4, 1fr)',
-            },
-            gap: { xs: 3, md: 4 },
+            bgcolor: 'text.primary',
+            color: 'background.default',
+            py: { xs: 5, md: 7 },
+            px: { xs: 2, sm: 3, md: 4 },
           }}
         >
-          {stats.map((stat, i) => (
-            <Box key={i} sx={{ textAlign: 'center' }}>
-              <Typography
-                component="div"
-                sx={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 800,
-                  fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' },
-                  letterSpacing: '-0.03em',
-                  lineHeight: 1.1,
-                  color: 'brand.main',
-                }}
-              >
-                {loading ? '\u2014' : <AnimatedCounter value={stat.value} suffix="+" />}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'inherit',
-                  opacity: 0.6,
-                  mt: 0.5,
-                  fontWeight: 500,
-                  letterSpacing: '0.02em',
-                  textTransform: 'uppercase',
-                  fontSize: '0.7rem',
-                }}
-              >
-                {stat.label}
-              </Typography>
-            </Box>
-          ))}
-        </StaggerGrid>
-      </Box>
+          <StaggerGrid
+            stagger={0.1}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'repeat(2, 1fr)',
+                md: 'repeat(4, 1fr)',
+              },
+              gap: { xs: 3, md: 4 },
+            }}
+          >
+            {stats.map((stat, i) => (
+              <Box key={i} sx={{ textAlign: 'center' }}>
+                <Typography
+                  component="div"
+                  sx={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontWeight: 800,
+                    fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' },
+                    letterSpacing: '-0.03em',
+                    lineHeight: 1.1,
+                    color: 'brand.main',
+                  }}
+                >
+                  {loading ? (
+                    <Skeleton className="mx-auto h-[1em] w-24" />
+                  ) : typeof stat.value === 'number' && stat.value > 0 ? (
+                    <AnimatedCounter value={stat.value} suffix="+" />
+                  ) : (
+                    '\u2014'
+                  )}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'inherit',
+                    opacity: 0.6,
+                    mt: 0.5,
+                    fontWeight: 500,
+                    letterSpacing: '0.02em',
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  {stat.label}
+                </Typography>
+              </Box>
+            ))}
+          </StaggerGrid>
+        </Box>
+      )}
 
       {/* ── Discovery widgets (search v2) ────────────────────────────── */}
       <Box component="section" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 4, md: 6 }, display: 'flex', flexDirection: 'column', gap: 4 }}>

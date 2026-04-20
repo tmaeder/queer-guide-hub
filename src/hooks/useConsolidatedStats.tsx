@@ -1,86 +1,80 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import * as Sentry from '@sentry/react';
 import { supabase } from '@/integrations/supabase/client';
-import { useLoadingState } from './useLoadingState';
 
-interface ConsolidatedStats {
-  venues: number;
-  profiles: number;
-  cities: number;
-  countries: number;
-  events: number;
-  posts: number;
-  personalities: number;
-  groups: number;
-  tags: number;
-  marketplace: number;
-  news: number;
-  cms: number;
+export interface ConsolidatedStats {
+  venues: number | null;
+  profiles: number | null;
+  cities: number | null;
+  countries: number | null;
+  events: number | null;
+  posts: number | null;
+  personalities: number | null;
+  groups: number | null;
+  tags: number | null;
+  marketplace: number | null;
+  news: number | null;
+  cms: number | null;
+  generated_at?: string;
 }
 
-const DEFAULT_STATS: ConsolidatedStats = {
-  venues: 0,
-  profiles: 0,
-  cities: 0,
-  countries: 0,
-  events: 0,
-  posts: 0,
-  personalities: 0,
-  groups: 0,
-  tags: 0,
-  marketplace: 0,
-  news: 0,
-  cms: 0
+const NULL_STATS: ConsolidatedStats = {
+  venues: null,
+  profiles: null,
+  cities: null,
+  countries: null,
+  events: null,
+  posts: null,
+  personalities: null,
+  groups: null,
+  tags: null,
+  marketplace: null,
+  news: null,
+  cms: null,
 };
 
+const STAT_KEYS: (keyof ConsolidatedStats)[] = [
+  'venues', 'profiles', 'cities', 'countries', 'events', 'posts',
+  'personalities', 'groups', 'tags', 'marketplace', 'news', 'cms',
+];
+
+function coerceStats(raw: unknown): ConsolidatedStats {
+  if (!raw || typeof raw !== 'object') return NULL_STATS;
+  const src = raw as Record<string, unknown>;
+  const out = { ...NULL_STATS };
+  for (const key of STAT_KEYS) {
+    const v = src[key];
+    out[key] = typeof v === 'number' && Number.isFinite(v) ? v : null;
+  }
+  if (typeof src.generated_at === 'string') out.generated_at = src.generated_at;
+  return out;
+}
+
+async function fetchHomepageStats(): Promise<ConsolidatedStats> {
+  const { data, error } = await supabase.rpc('get_homepage_stats');
+  if (error) throw error;
+  return coerceStats(data);
+}
+
 export function useConsolidatedStats() {
-  const [stats, setStats] = useState<ConsolidatedStats>(DEFAULT_STATS);
-  const { loading, error, withLoading } = useLoadingState({ initialLoading: true });
+  const query = useQuery({
+    queryKey: ['homepage-stats'],
+    queryFn: fetchHomepageStats,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    retry: 1,
+  });
 
-  const fetchStats = useCallback(async () => {
-    return withLoading(async () => {
-      const results = await Promise.allSettled([
-        supabase.from('venues').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('cities').select('id', { count: 'exact', head: true }),
-        supabase.from('countries').select('id', { count: 'exact', head: true }),
-        supabase.from('events').select('id', { count: 'exact', head: true }),
-        supabase.from('community_posts').select('id', { count: 'exact', head: true }),
-        supabase.from('personalities').select('id', { count: 'exact', head: true }),
-        supabase.from('community_groups').select('id', { count: 'exact', head: true }),
-        supabase.from('unified_tags').select('id', { count: 'exact', head: true }),
-        supabase.from('marketplace_listings').select('id', { count: 'exact', head: true }),
-        supabase.from('news_articles').select('id', { count: 'exact', head: true }),
-        supabase.from('cms_content').select('id', { count: 'exact', head: true }).is('deleted_at', null)
-      ]);
-
-      const newStats: ConsolidatedStats = {
-        venues: results[0].status === 'fulfilled' ? results[0].value.count || 0 : 0,
-        profiles: results[1].status === 'fulfilled' ? results[1].value.count || 0 : 0,
-        cities: results[2].status === 'fulfilled' ? results[2].value.count || 0 : 0,
-        countries: results[3].status === 'fulfilled' ? results[3].value.count || 0 : 0,
-        events: results[4].status === 'fulfilled' ? results[4].value.count || 0 : 0,
-        posts: results[5].status === 'fulfilled' ? results[5].value.count || 0 : 0,
-        personalities: results[6].status === 'fulfilled' ? results[6].value.count || 0 : 0,
-        groups: results[7].status === 'fulfilled' ? results[7].value.count || 0 : 0,
-        tags: results[8].status === 'fulfilled' ? results[8].value.count || 0 : 0,
-        marketplace: results[9].status === 'fulfilled' ? results[9].value.count || 0 : 0,
-        news: results[10].status === 'fulfilled' ? results[10].value.count || 0 : 0,
-        cms: results[11].status === 'fulfilled' ? results[11].value.count || 0 : 0,
-      };
-
-      setStats(newStats);
-      return newStats;
-    });
-  }, [withLoading]);
-
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+  if (query.error) {
+    // eslint-disable-next-line no-console
+    console.error('[homepage-stats] aggregation failed', query.error);
+    Sentry.captureException(query.error, { tags: { area: 'homepage-stats' } });
+  }
 
   return {
-    stats,
-    loading,
-    error,
-    refetch: fetchStats
+    stats: query.data ?? NULL_STATS,
+    loading: query.isLoading,
+    error: (query.error as Error | null) ?? null,
+    refetch: query.refetch,
   };
 }
