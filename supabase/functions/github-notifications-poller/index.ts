@@ -1,14 +1,16 @@
 /**
- * github-notifications-poller — pulls unread `/notifications` threads as a
- * safety net for missed webhook deliveries.
+ * github-notifications-poller — safety net for missed webhook deliveries.
  *
- * Cron: every 5 min. For each Issue-type thread:
- *   - Fetch the issue, mirror state via applyIssueAction(action="edited" + explicit close/open)
- *   - Fetch comments since the cursor, apply each via applyCommentAction("created")
- *   - Dedup via github_event_ids (shared with webhook) so double-delivery is safe
- *   - Mark thread read on success
+ * Fine-grained PATs cannot access `/notifications`, so we poll the repo's
+ * issues and comments endpoints directly (Issues:read is enough).
  *
- * Cursor stored in a single-row `github_poller_state` table (upserted in-place).
+ * Cron: every 5 min.
+ *   - GET /repos/{owner}/{repo}/issues?since=<cursor>&state=all
+ *     → applyIssueAction("edited" + close/open mirror) per issue
+ *   - GET /repos/{owner}/{repo}/issues/comments?since=<cursor>
+ *     → applyCommentAction("created") per comment (dedup by github_comment_id)
+ *
+ * Cursor stored in a single-row `github_poller_state` table.
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -19,8 +21,10 @@ import {
   findSubmissionByIssue,
   GhComment,
   GhIssue,
-  markSeen,
 } from '../_shared/github-sync.ts';
+
+const REPO_OWNER = 'tmaeder';
+const REPO_NAME = 'queer-guide-hub';
 
 function getServiceClient(): SupabaseClient {
   return createClient(
@@ -36,23 +40,8 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
-interface NotificationThread {
-  id: string;
-  reason: string;
-  unread: boolean;
-  updated_at: string;
-  last_read_at: string | null;
-  subject: {
-    title: string;
-    url: string;
-    latest_comment_url: string | null;
-    type: 'Issue' | 'PullRequest' | 'Commit' | 'Release' | 'Discussion';
-  };
-  repository: { full_name: string };
-}
-
-async function gh<T>(url: string, token: string): Promise<T> {
-  const res = await fetch(url.startsWith('http') ? url : `https://api.github.com${url}`, {
+async function gh<T>(path: string, token: string): Promise<T> {
+  const res = await fetch(`https://api.github.com${path}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
@@ -62,21 +51,6 @@ async function gh<T>(url: string, token: string): Promise<T> {
   });
   if (!res.ok) throw new Error(`GH ${res.status}: ${await res.text()}`);
   return (await res.json()) as T;
-}
-
-async function patch(url: string, token: string, body?: unknown): Promise<void> {
-  const res = await fetch(url.startsWith('http') ? url : `https://api.github.com${url}`, {
-    method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'Content-Type': 'application/json',
-      'User-Agent': 'queer-guide-feedback-sync',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok && res.status !== 205) throw new Error(`GH PATCH ${res.status}: ${await res.text()}`);
 }
 
 serve(async (req) => {
@@ -93,42 +67,34 @@ serve(async (req) => {
     .eq('id', 'singleton')
     .maybeSingle();
   const since = stateRow?.cursor ?? new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-  const threads = await gh<NotificationThread[]>(
-    `/notifications?participating=true&since=${encodeURIComponent(since)}&per_page=50`,
-    token,
-  );
+  const sinceEnc = encodeURIComponent(since);
 
   const summary: Record<string, number> = {
-    threads: threads.length,
+    issues_checked: 0,
     synced_issues: 0,
+    comments_checked: 0,
     synced_comments: 0,
     dedup: 0,
     skipped: 0,
   };
 
-  for (const t of threads) {
-    if (t.subject.type !== 'Issue' || !t.subject.url) {
+  // Issues updated since cursor (excludes PRs via filter).
+  const issues = await gh<GhIssue[]>(
+    `/repos/${REPO_OWNER}/${REPO_NAME}/issues?since=${sinceEnc}&state=all&per_page=100&sort=updated&direction=asc`,
+    token,
+  );
+  for (const issue of issues) {
+    // Skip PRs — the issues endpoint returns both.
+    if ((issue as unknown as { pull_request?: unknown }).pull_request) {
       summary.skipped++;
       continue;
     }
-
-    // Dedup the thread-update itself (cheap global dedup by last-updated).
-    const threadKey = `gh-thread:${t.id}:${t.updated_at}`;
-    if (!(await markSeen(svc, threadKey, 'notification_thread'))) {
-      summary.dedup++;
-      continue;
-    }
-
-    const issue = await gh<GhIssue>(t.subject.url, token);
+    summary.issues_checked++;
     const sub = await findSubmissionByIssue(svc, issue.number);
     if (!sub) {
       summary.skipped++;
-      await patch(`/notifications/threads/${t.id}`, token).catch(() => {});
       continue;
     }
-
-    // Mirror current issue state (labels/assignees/title/body/state).
     await applyIssueAction(svc, 'edited', issue, sub);
     if (issue.state === 'closed' && sub.feedback_status !== 'done') {
       await applyIssueAction(svc, 'closed', issue, sub);
@@ -136,20 +102,31 @@ serve(async (req) => {
       await applyIssueAction(svc, 'reopened', issue, sub);
     }
     summary.synced_issues++;
+  }
 
-    // Fetch comments since last read.
-    const cursor = t.last_read_at ?? since;
-    const comments = await gh<GhComment[]>(
-      `/repos/${t.repository.full_name}/issues/${issue.number}/comments?since=${encodeURIComponent(cursor)}`,
-      token,
-    );
-    for (const c of comments) {
-      const res = await applyCommentAction(svc, 'created', c, { id: sub.id, data: sub.data });
-      if (res.action === 'comment_dedup') summary.dedup++;
-      else summary.synced_comments++;
+  // All repo comments updated since cursor.
+  const comments = await gh<GhComment[]>(
+    `/repos/${REPO_OWNER}/${REPO_NAME}/issues/comments?since=${sinceEnc}&per_page=100&sort=updated&direction=asc`,
+    token,
+  );
+  for (const c of comments) {
+    summary.comments_checked++;
+    // issue_url looks like https://api.github.com/repos/owner/repo/issues/123
+    const issueUrl = (c as unknown as { issue_url?: string }).issue_url;
+    const m = issueUrl?.match(/\/issues\/(\d+)$/);
+    if (!m) {
+      summary.skipped++;
+      continue;
     }
-
-    await patch(`/notifications/threads/${t.id}`, token).catch(() => {});
+    const issueNumber = Number(m[1]);
+    const sub = await findSubmissionByIssue(svc, issueNumber);
+    if (!sub) {
+      summary.skipped++;
+      continue;
+    }
+    const res = await applyCommentAction(svc, 'created', c, { id: sub.id, data: sub.data });
+    if (res.action === 'comment_dedup') summary.dedup++;
+    else summary.synced_comments++;
   }
 
   const newCursor = new Date().toISOString();
