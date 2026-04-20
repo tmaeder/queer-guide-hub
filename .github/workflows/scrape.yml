@@ -159,6 +159,17 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
+      # Keep the hourly job self-sufficient — apply any pending migrations
+      # before scraping so new columns/tables added to the repo get picked up
+      # on the next hourly run, not only on the daily full-refresh.
+      # Idempotent: migrate.ts skips files that are already in scraper_migrations.
+      - name: Run database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SCRAPER_USER_AGENT: ${{ secrets.SCRAPER_USER_AGENT }}
+          LOG_LEVEL: info
+        run: npm run migrate
+
       - name: Scrape events (rolling 90-day window)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
