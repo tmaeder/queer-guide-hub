@@ -37,6 +37,17 @@ export function CountryAutocomplete({
   const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState(value || '');
 
+  // Sync internal inputValue when the parent updates `value` externally
+  // (e.g. address autocomplete populating country). Without this, MUI sees
+  // a stale inputValue and would call onChange(null) on blur to "reset"
+  // invalid input, clobbering dependent fields.
+  useEffect(() => {
+    if (typeof value === 'string' && value !== inputValue) {
+      setInputValue(value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
   useEffect(() => {
     const fetchCountries = async () => {
       setLoading(true);
@@ -75,10 +86,18 @@ export function CountryAutocomplete({
         setInputValue(newInputValue);
       }}
       disabled={disabled}
-      onChange={(_, newValue) => {
+      onChange={(_, newValue, reason) => {
+        // Ignore blur reconciliation. MUI can fire onChange(null) with
+        // reason='blur' when the input doesn't match an option; that would
+        // wipe dependent fields (e.g. city) without user intent.
+        if (newValue === null && reason !== 'clear') return;
         onValueChange(newValue ? newValue.name : '');
         onCountrySelect?.(newValue);
       }}
+      clearOnBlur={false}
+      autoSelect={false}
+      selectOnFocus={false}
+      handleHomeEndKeys
       getOptionLabel={(option) => option.name}
       isOptionEqualToValue={(option, val) => option.code === val.code}
       renderOption={(props, option) => {
