@@ -7,7 +7,21 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { extractFileContent, isAcceptedFile } from '@/lib/fileExtractors';
-import { ensureProtocol } from '@/utils/ensureProtocol';
+import {
+  validateFile,
+  toUploadError,
+  makeUploadError,
+  logUploadError,
+  type UploadError,
+} from '@/lib/uploadErrors';
+import { normalizeAndValidateUrl } from '@/utils/url';
+
+/** Keep scanned URLs only when they validate; otherwise drop to avoid pre-filling garbage. */
+function safeScannedUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !value.trim()) return undefined;
+  const result = normalizeAndValidateUrl(value);
+  return result.ok ? result.value : undefined;
+}
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -59,7 +73,7 @@ export function useFlyerScan() {
   const { user } = useAuth();
   const [scanState, setScanState] = useState<ScanState>('idle');
   const [results, setResults] = useState<FlyerScanResult[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UploadError | null>(null);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [totalFiles, setTotalFiles] = useState(0);
 
@@ -74,110 +88,114 @@ export function useFlyerScan() {
   const startScan = useCallback(
     async (files: File[]) => {
       if (!user) {
-        setError('Sign in required to scan flyers');
+        const e = makeUploadError('UPLOAD_FAILED', 'sign in required');
+        // Sign-in is handled upstream via AuthGate; surface generic failure copy here.
+        setError(e);
         setScanState('error');
         return;
       }
 
-      const validFiles = files.filter(isAcceptedFile);
-      if (validFiles.length === 0) {
-        setError('No supported files selected. Upload images, PDFs, or DOCX files.');
+      if (files.length === 0) {
+        setError(makeUploadError('UNSUPPORTED_TYPE', 'no files selected'));
         setScanState('error');
         return;
       }
 
-      try {
-        setError(null);
-        setResults([]);
-        setTotalFiles(validFiles.length);
-        const fileErrors: string[] = [];
+      // Client-side validation: size + type gate for every file.
+      const validFiles: File[] = [];
+      for (const f of files) {
+        const ve = validateFile(f, isAcceptedFile);
+        if (ve) {
+          logUploadError(ve, { phase: 'validate', file: f.name });
+          setError(ve);
+          setScanState('error');
+          return;
+        }
+        validFiles.push(f);
+      }
 
-        for (let i = 0; i < validFiles.length; i++) {
-          setCurrentFileIndex(i);
-          const file = validFiles[i];
+      setError(null);
+      setResults([]);
+      setTotalFiles(validFiles.length);
+      const fileErrors: UploadError[] = [];
 
-          try {
-            // Extract content (image blob or text)
-            setScanState('uploading');
-            const content = await extractFileContent(file);
+      for (let i = 0; i < validFiles.length; i++) {
+        setCurrentFileIndex(i);
+        const file = validFiles[i];
 
-            let body: Record<string, unknown>;
-            let fileImageUrl: string | null = null;
+        try {
+          setScanState('uploading');
+          const content = await extractFileContent(file);
 
-            if (content.mode === 'image' && content.imageBlob) {
-              // Upload image to storage bucket
-              const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-              const { error: uploadError } = await supabase.storage
-                .from('flyer-scans')
-                .upload(fileName, content.imageBlob, {
-                  cacheControl: '3600',
-                  contentType: 'image/jpeg',
-                });
+          let body: Record<string, unknown>;
+          let fileImageUrl: string | null = null;
 
-              if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+          if (content.mode === 'image' && content.imageBlob) {
+            const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+            const { error: uploadError } = await supabase.storage
+              .from('flyer-scans')
+              .upload(fileName, content.imageBlob, {
+                cacheControl: '3600',
+                contentType: 'image/jpeg',
+              });
 
-              const { data: urlData } = supabase.storage.from('flyer-scans').getPublicUrl(fileName);
-              fileImageUrl = urlData.publicUrl;
-              body = { image_url: fileImageUrl };
-            } else {
-              // Text mode — send text directly
-              body = { text: content.text };
+            if (uploadError) {
+              throw toUploadError(uploadError, { phase: 'upload' });
             }
 
-            // Call analyze-flyer edge function
-            setScanState('analyzing');
-            const { data, error: fnError } = await supabase.functions.invoke('analyze-flyer', {
-              body,
-            });
+            const { data: urlData } = supabase.storage.from('flyer-scans').getPublicUrl(fileName);
+            fileImageUrl = urlData.publicUrl;
+            body = { image_url: fileImageUrl };
+          } else {
+            body = { text: content.text };
+          }
 
-            if (fnError) {
-              const msg = fnError.message || '';
-              if (msg.includes('Rate limit') || msg.includes('429')) {
-                throw new Error("You've reached the scan limit. Please try again in an hour.");
-              }
-              throw new Error(msg || 'Analysis failed');
-            }
-            if (data?.error) throw new Error(data.error);
+          setScanState('analyzing');
+          const { data, error: fnError } = await supabase.functions.invoke('analyze-flyer', {
+            body,
+          });
 
-            const scanResult: FlyerScanResult = {
-              scan_id: data.scan_id,
-              items: data.items || [],
-              raw_text: data.raw_text || '',
-              language: data.language || 'en',
-              processing_time_ms: data.processing_time_ms,
-              source_file: file.name,
-              image_url: fileImageUrl,
-            };
+          if (fnError) {
+            throw toUploadError(fnError, { phase: 'analyze' });
+          }
+          if (data?.error) {
+            throw toUploadError(new Error(data.error), { phase: 'analyze' });
+          }
 
-            setResults((prev) => [...prev, scanResult]);
-          } catch (err: unknown) {
-            const errMsg = err instanceof Error ? err.message : String(err);
-            console.error(`Flyer scan error (file ${i + 1}):`, err);
-            fileErrors.push(`${file.name}: ${errMsg}`);
-            // Rate limit error — stop processing remaining files
-            if (errMsg?.includes('scan limit')) {
-              setError(errMsg);
-              setScanState('error');
-              return;
-            }
+          const scanResult: FlyerScanResult = {
+            scan_id: data.scan_id,
+            items: data.items || [],
+            raw_text: data.raw_text || '',
+            language: data.language || 'en',
+            processing_time_ms: data.processing_time_ms,
+            source_file: file.name,
+            image_url: fileImageUrl,
+          };
+
+          setResults((prev) => [...prev, scanResult]);
+        } catch (err: unknown) {
+          const ue = toUploadError(err, { phase: 'analyze' });
+          logUploadError(ue, { fileIndex: i, fileName: file.name });
+          fileErrors.push(ue);
+          if (ue.code === 'RATE_LIMITED') {
+            setError(ue);
+            setScanState('error');
+            return;
           }
         }
-
-        // Check if we got any results
-        setResults((prev) => {
-          if (prev.length === 0 && fileErrors.length > 0) {
-            setError(fileErrors.join('\n'));
-            setScanState('error');
-          } else {
-            setScanState('results');
-          }
-          return prev;
-        });
-      } catch (err: unknown) {
-        console.error('Flyer scan error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to analyze files');
-        setScanState('error');
       }
+
+      // No results at all → surface the first error (or extraction-empty).
+      setResults((prev) => {
+        if (prev.length === 0) {
+          setError(fileErrors[0] ?? makeUploadError('EXTRACTION_EMPTY', 'no results'));
+          setScanState('error');
+        } else {
+          // Flag extraction-empty per-result handled by UI; overall state = results.
+          setScanState('results');
+        }
+        return prev;
+      });
     },
     [user],
   );
@@ -229,8 +247,12 @@ export function useFlyerScan() {
         if (!selectedVenueId && getVal('country')) formData.country = getVal('country');
         if (getVal('organizer_name')) formData.organizer_name = getVal('organizer_name');
         if (getVal('organizer_contact')) formData.organizer_contact = getVal('organizer_contact');
-        if (getVal('ticket_url')) formData.ticket_url = ensureProtocol(getVal('ticket_url'));
-        if (getVal('website')) formData.website = ensureProtocol(getVal('website'));
+        {
+          const ticket = safeScannedUrl(getVal('ticket_url'));
+          if (ticket) formData.ticket_url = ticket;
+          const site = safeScannedUrl(getVal('website'));
+          if (site) formData.website = site;
+        }
         if (getVal('is_free') !== undefined) formData.is_free = getVal('is_free');
 
         // Smart pricing: if presale exists, use it; otherwise use box office
@@ -291,7 +313,10 @@ export function useFlyerScan() {
         if (getVal('postal_code')) formData.postal_code = getVal('postal_code');
         if (getVal('phone')) formData.phone = getVal('phone');
         if (getVal('email')) formData.email = getVal('email');
-        if (getVal('website')) formData.website = ensureProtocol(getVal('website'));
+        {
+          const site = safeScannedUrl(getVal('website'));
+          if (site) formData.website = site;
+        }
         if (getVal('instagram')) formData.instagram = getVal('instagram');
       }
 

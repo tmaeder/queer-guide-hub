@@ -4,12 +4,21 @@
  * and extracts content accordingly.
  */
 
+import { UploadErrorException, makeUploadError, MAX_UPLOAD_BYTES } from './uploadErrors';
+
 export interface ExtractedContent {
   mode: 'image' | 'text';
   text?: string;
   imageBlob?: Blob;
   fileName: string;
 }
+
+const unreadable = (reason: string) =>
+  new UploadErrorException(makeUploadError('UNREADABLE_FILE', reason));
+const unsupported = (reason: string) =>
+  new UploadErrorException(makeUploadError('UNSUPPORTED_TYPE', reason));
+const tooLarge = (reason: string) =>
+  new UploadErrorException(makeUploadError('FILE_TOO_LARGE', reason));
 
 const MAX_PDF_PAGES = 10;
 const MIN_TEXT_LENGTH = 50;
@@ -35,19 +44,19 @@ function resizeImage(file: File | Blob, maxDim: number): Promise<Blob> {
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       if (!ctx) {
-        reject(new Error('Canvas 2D context unavailable'));
+        reject(unreadable('Canvas 2D context unavailable'));
         return;
       }
       ctx.drawImage(img, 0, 0, width, height);
       canvas.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error('Canvas resize failed'))),
+        (blob) => (blob ? resolve(blob) : reject(unreadable('Canvas resize failed'))),
         'image/jpeg',
         JPEG_QUALITY,
       );
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error('Failed to load image'));
+      reject(unreadable('Failed to load image'));
     };
     img.src = url;
   });
@@ -94,13 +103,13 @@ async function extractPdf(file: File): Promise<ExtractedContent> {
   canvas.width = Math.round(scaledViewport.width);
   canvas.height = Math.round(scaledViewport.height);
   const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas 2D context unavailable');
+  if (!ctx) throw unreadable('Canvas 2D context unavailable');
 
   await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error('PDF page render failed'))),
+      (b) => (b ? resolve(b) : reject(unreadable('PDF page render failed'))),
       'image/jpeg',
       JPEG_QUALITY,
     );
@@ -118,7 +127,7 @@ async function extractDocx(file: File): Promise<ExtractedContent> {
   const text = result.value.trim();
 
   if (text.length < MIN_TEXT_LENGTH) {
-    throw new Error('Could not extract enough text from this document');
+    throw unreadable('Could not extract enough text from this document');
   }
 
   return { mode: 'text', text, fileName: file.name };
@@ -132,17 +141,21 @@ function extractText(file: File): Promise<ExtractedContent> {
     reader.onload = () => {
       const text = (reader.result as string).trim();
       if (text.length < MIN_TEXT_LENGTH) {
-        reject(new Error('File contains too little text'));
+        reject(unreadable('File contains too little text'));
         return;
       }
       resolve({ mode: 'text', text, fileName: file.name });
     };
-    reader.onerror = () => reject(new Error('Failed to read text file'));
+    reader.onerror = () => reject(unreadable('Failed to read text file'));
     reader.readAsText(file);
   });
 }
 
 // ── Public API ────────────────────────────────────────────────────────
+
+export const MAX_FILE_SIZE_BYTES = MAX_UPLOAD_BYTES;
+export const SUPPORTED_FILES_COPY =
+  'Supported files are images, PDFs, DOC, DOCX, and TXT.';
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 const ACCEPTED_EXTENSIONS = [
@@ -170,8 +183,8 @@ export function isAcceptedFile(file: File): boolean {
 }
 
 export async function extractFileContent(file: File): Promise<ExtractedContent> {
-  if (file.size > 20 * 1024 * 1024) {
-    throw new Error('File too large (max 20MB)');
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    throw tooLarge(`file ${file.name} is ${file.size} bytes`);
   }
 
   const ext = file.name.split('.').pop()?.toLowerCase() || '';
@@ -204,5 +217,5 @@ export async function extractFileContent(file: File): Promise<ExtractedContent> 
     return extractText(file);
   }
 
-  throw new Error(`Unsupported file format: .${ext}`);
+  throw unsupported(`Unsupported file format: .${ext}`);
 }

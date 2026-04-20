@@ -88,11 +88,21 @@ const eventTypes = [
   'workshop',
   'meetup',
   'party',
+  'pride',
   'exhibition',
   'sports',
   'theater',
   'comedy',
   'other',
+];
+
+const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
+  { tag: 'pride:parade', label: 'Parade' },
+  { tag: 'pride:week', label: 'Pride Week' },
+  { tag: 'pride:festival', label: 'Festival' },
+  { tag: 'pride:party', label: 'Party' },
+  { tag: 'pride:rally', label: 'Rally / Protest' },
+  { tag: 'pride:community', label: 'Community' },
 ];
 
 const emptyForm = {
@@ -543,6 +553,35 @@ export default function AdminEvents() {
                     </Select>
                   </Box>
                 </Box>
+                {formData.event_type === 'pride' && (
+                  <Box>
+                    <Label>Pride type</Label>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                      {PRIDE_SUBTYPES.map(({ tag, label }) => {
+                        const active = formData.tags.includes(tag);
+                        return (
+                          <Button
+                            key={tag}
+                            type="button"
+                            size="sm"
+                            variant={active ? 'default' : 'outline'}
+                            onClick={() =>
+                              setFormData((p) => ({
+                                ...p,
+                                tags: active
+                                  ? p.tags.filter((x) => x !== tag)
+                                  : [...p.tags, tag],
+                              }))
+                            }
+                            aria-pressed={active}
+                          >
+                            {label}
+                          </Button>
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                )}
                 <Box>
                   <Label>Description</Label>
                   <Textarea

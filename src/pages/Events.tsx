@@ -69,11 +69,21 @@ const eventTypes = [
   'fundraiser',
   'performance',
 ];
+
+const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
+  { tag: 'pride:parade', label: 'Parade' },
+  { tag: 'pride:week', label: 'Pride Week' },
+  { tag: 'pride:festival', label: 'Festival' },
+  { tag: 'pride:party', label: 'Party' },
+  { tag: 'pride:rally', label: 'Rally / Protest' },
+  { tag: 'pride:community', label: 'Community' },
+];
+
 const Events = () => {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const theme = useTheme();
-  const { events, loading, error, hasMore, fetchEvents, updateAttendance, loadingTimedOut } =
+  const { events, loading, error, hasMore, datasetTotal, fetchEvents, updateAttendance, loadingTimedOut } =
     useEvents(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -574,6 +584,34 @@ const Events = () => {
                 </Box>
               </Box>
 
+              {/* Pride sub-kinds: Parade / Week / Festival / Party / Rally / Community */}
+              {eventType === 'pride' && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Label>{t('pages.events.prideSubtype', 'Pride type')}</Label>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {PRIDE_SUBTYPES.map(({ tag, label }) => {
+                      const active = selectedTags.includes(tag);
+                      return (
+                        <Button
+                          key={tag}
+                          type="button"
+                          size="sm"
+                          variant={active ? 'default' : 'outline'}
+                          onClick={() =>
+                            setSelectedTags((prev) =>
+                              active ? prev.filter((x) => x !== tag) : [...prev, tag],
+                            )
+                          }
+                          aria-pressed={active}
+                        >
+                          {label}
+                        </Button>
+                      );
+                    })}
+                  </Box>
+                </Box>
+              )}
+
               {/* Tags */}
               <TagSelector
                 selectedTags={selectedTags}
@@ -744,18 +782,31 @@ const Events = () => {
 
         {/* Empty State */}
         {!loading && !error && events.length === 0 && (
-          <EmptyState
-            icon={Calendar}
-            title={showPast ? t('pages.events.noPastEvents', 'No past events found') : t('pages.events.emptyTitle', 'The dance floor is empty... for now')}
-            description={
-              showPast
-                ? t('pages.events.noPastEventsDesc', 'No past events match these filters. Turn off the toggle to see upcoming events.')
-                : t('pages.events.emptyDescription', 'Check back soon or widen your filters to find something fun.')
-            }
-            mood="encouraging"
-            primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
-            secondaryAction={{ label: t('pages.events.clearFiltersLabel', 'Clear Filters'), onClick: clearFilters }}
-          />
+          datasetTotal === 0 || (datasetTotal === null && !hasActiveFilters) ? (
+            <EmptyState
+              icon={Calendar}
+              variant="empty"
+              title={t('pages.events.emptyDataset.title', 'No events yet')}
+              description={t(
+                'pages.events.emptyDataset.body',
+                "We haven't added any events here yet. Help us grow the guide by submitting one.",
+              )}
+              primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
+            />
+          ) : (
+            <EmptyState
+              icon={Calendar}
+              variant="filtered"
+              title={showPast ? t('pages.events.noPastEvents', 'No past events found') : t('pages.events.filteredEmpty.title', 'No events match your filters')}
+              description={
+                showPast
+                  ? t('pages.events.noPastEventsDesc', 'No past events match these filters. Turn off the toggle to see upcoming events.')
+                  : t('pages.events.filteredEmpty.body', 'Try adjusting your filters or search to see more results.')
+              }
+              primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
+              secondaryAction={hasActiveFilters ? { label: t('pages.events.clearFiltersLabel', 'Clear Filters'), onClick: clearFilters, variant: 'outline' } : undefined}
+            />
+          )
         )}
 
         {/* Event Content */}

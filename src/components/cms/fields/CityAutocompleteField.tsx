@@ -200,12 +200,20 @@ export function CityAutocompleteField({
         renderInput={(params) => (
           <TextField
             {...params}
+            id={field.name}
             placeholder={field.placeholder || 'Search or create a city...'}
             required={field.required}
             size="small"
+            error={!!error}
             slotProps={{
               input: {
                 ...params.InputProps,
+                'aria-invalid': !!error,
+                'aria-describedby': error
+                  ? `${field.name}-error`
+                  : field.helpText
+                    ? `${field.name}-help`
+                    : undefined,
                 endAdornment: (
                   <>
                     {loading || creating ? <CircularProgress color="inherit" size={20} /> : null}

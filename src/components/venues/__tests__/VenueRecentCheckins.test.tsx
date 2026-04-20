@@ -41,4 +41,13 @@ describe('VenueRecentCheckins', () => {
     render(<VenueRecentCheckins venueId="v-123" />);
     await waitFor(() => expect(mockGetVenueCheckins).toHaveBeenCalledWith('v-123'));
   });
+
+  it('shows error state with retry when fetch rejects (no stuck loader)', async () => {
+    mockGetVenueCheckins.mockRejectedValue(new Error('network down'));
+    render(<VenueRecentCheckins venueId="v-err" />);
+    await waitFor(() =>
+      expect(screen.getByText(/couldn't load recent activity/i)).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+  });
 });

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/uploadErrors";
 import { supabase } from "@/integrations/supabase/client";
 import { X, ImagePlus } from "lucide-react";
 import Box from '@mui/material/Box';
@@ -48,11 +49,10 @@ export const EventImageUpload = ({
         return;
       }
 
-      // Validate file size (max 20MB)
-      if (file.size > 20 * 1024 * 1024) {
+      if (file.size > MAX_UPLOAD_BYTES) {
         toast({
           title: "File too large",
-          description: "Please select an image smaller than 20MB",
+          description: `${file.name} is ${(file.size / (1024 * 1024)).toFixed(1)} MB. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`,
           variant: "destructive"
         });
         return;

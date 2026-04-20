@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, X, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/uploadErrors";
 
 interface TagImageUploadProps {
   currentImageUrl?: string;
@@ -37,11 +38,10 @@ export const TagImageUpload = ({
       return;
     }
 
-    // Validate file size (max 20MB)
-    if (file.size > 20 * 1024 * 1024) {
+    if (file.size > MAX_UPLOAD_BYTES) {
       toast({
         title: "File too large",
-        description: "Please select an image smaller than 20MB",
+        description: `${file.name} is ${(file.size / (1024 * 1024)).toFixed(1)} MB. Maximum allowed size is ${MAX_UPLOAD_MB} MB.`,
         variant: "destructive"
       });
       return;

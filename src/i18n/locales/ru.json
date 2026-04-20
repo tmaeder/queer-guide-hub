@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "Географический Справочник",
     "loading": "Загрузка справочника...",
@@ -101,7 +118,24 @@
     "title": "Мои поездки",
     "subtitle": "Планируйте, организуйте и путешествуйте безопасно.",
     "create": "Создать поездку",
-    "error": "Не удалось загрузить поездки. Попробуйте снова.",
+    "error": {
+      "invalid-id": {
+        "title": "Недействительная ссылка на поездку",
+        "description": "Эта ссылка не ведёт к существующей поездке. Вернитесь к своим поездкам, чтобы продолжить."
+      },
+      "not-found": {
+        "title": "Поездка не найдена",
+        "description": "Возможно, поездка была удалена или ссылка устарела."
+      },
+      "permission-denied": {
+        "title": "Нет доступа к этой поездке",
+        "description": "Попросите владельца пригласить вас или вернитесь к своим поездкам."
+      },
+      "load-error": {
+        "title": "Не удалось загрузить поездку",
+        "description": "При загрузке поездки произошла ошибка. Попробуйте ещё раз."
+      }
+    },
     "empty": {
       "title": "Запланируйте первую поездку",
       "description": "Создайте маршрут, узнайте ЛГБТ+ информацию по каждому направлению и держите всё в одном месте.",
@@ -228,24 +262,6 @@
       }
     },
     "backToTrips": "К списку поездок",
-    "error": {
-      "invalid-id": {
-        "title": "Недействительная ссылка на поездку",
-        "description": "Эта ссылка не ведёт к существующей поездке. Вернитесь к своим поездкам, чтобы продолжить."
-      },
-      "not-found": {
-        "title": "Поездка не найдена",
-        "description": "Возможно, поездка была удалена или ссылка устарела."
-      },
-      "permission-denied": {
-        "title": "Нет доступа к этой поездке",
-        "description": "Попросите владельца пригласить вас или вернитесь к своим поездкам."
-      },
-      "load-error": {
-        "title": "Не удалось загрузить поездку",
-        "description": "При загрузке поездки произошла ошибка. Попробуйте ещё раз."
-      }
-    },
     "planner": {
       "loadFailed": "Не удалось загрузить поездку.",
       "notFound": "Поездка не найдена.",
@@ -1147,7 +1163,15 @@
       "emptyTitle": "Пока нет мест, подходящих под твой запрос",
       "emptyDescription": "Попробуй расширить поиск или исследовать другой город.",
       "submitVenue": "Предложить место",
-      "clearFilters": "Сбросить фильтры"
+      "clearFilters": "Сбросить фильтры",
+      "emptyDataset": {
+        "title": "Мест пока нет",
+        "body": "Мы ещё не добавили сюда места. Помоги расширить гид — предложи место."
+      },
+      "filteredEmpty": {
+        "title": "Нет мест, подходящих под фильтры",
+        "body": "Попробуй изменить фильтры или поиск, чтобы увидеть больше результатов."
+      }
     },
     "venueDetail": {
       "loadFailed": "Не удалось загрузить информацию о месте.",
@@ -1201,7 +1225,15 @@
       "noPastEvents": "Прошедшие мероприятия не найдены",
       "noPastEventsDesc": "Ни одно прошедшее мероприятие не соответствует этим фильтрам. Отключи переключатель, чтобы увидеть предстоящие.",
       "emptyTitle": "Танцпол пока пуст...",
-      "emptyDescription": "Загляни позже или расширь фильтры, чтобы найти что-нибудь интересное."
+      "emptyDescription": "Загляни позже или расширь фильтры, чтобы найти что-нибудь интересное.",
+      "emptyDataset": {
+        "title": "Событий пока нет",
+        "body": "Мы ещё не добавили сюда события. Помоги расширить гид — предложи событие."
+      },
+      "filteredEmpty": {
+        "title": "Нет событий, подходящих под фильтры",
+        "body": "Попробуй изменить фильтры или поиск, чтобы увидеть больше результатов."
+      }
     },
     "eventDetail": {
       "loadFailed": "Не удалось загрузить информацию о мероприятии.",
@@ -1228,7 +1260,16 @@
       "subtitle": "ЛГБТК+-дружественные отели по всему миру",
       "submitHotel": "Предложить отель",
       "noResults": "Отели не найдены",
-      "noResultsHint": "Попробуй изменить фильтры или загляни позже."
+      "noResultsHint": "Попробуй изменить фильтры или загляни позже.",
+      "resetFilters": "Сбросить фильтры",
+      "emptyDataset": {
+        "title": "Отелей пока нет",
+        "body": "Мы ещё не добавили сюда отели. Помоги расширить гид — предложи отель."
+      },
+      "filteredEmpty": {
+        "title": "Нет отелей, подходящих под фильтры",
+        "body": "Попробуй изменить фильтры или поиск, чтобы увидеть больше результатов."
+      }
     },
     "hotelDetail": {
       "loadFailed": "Не удалось загрузить информацию об отеле.",

@@ -92,3 +92,20 @@ export function renderWithProviders(
 // Re-export the commonly used testing-library bits so test files can
 // import everything from a single place.
 export * from '@testing-library/react';
+
+export function expectNoPlaceholderLeaks(container: HTMLElement) {
+  const text = container.textContent ?? '';
+  const needles: Array<[string, RegExp]> = [
+    ['"null" literal in text', /\bnull\b/],
+    ['"undefined" literal in text', /\bundefined\b/],
+    ['"[object Object]" leak', /\[object Object\]/],
+    ['unresolved {{moustache}} template', /\{\{[^}]*\}\}/],
+  ];
+  for (const [label, re] of needles) {
+    if (re.test(text)) {
+      throw new Error(
+        `Placeholder leak detected (${label}):\n${text.slice(0, 500)}`,
+      );
+    }
+  }
+}

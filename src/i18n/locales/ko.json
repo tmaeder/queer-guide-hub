@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "지리 디렉토리",
     "loading": "디렉토리 로딩 중...",
@@ -101,7 +118,24 @@
     "title": "내 여행",
     "subtitle": "안전하게 계획하고, 정리하고, 여행하세요.",
     "create": "여행 만들기",
-    "error": "여행을 불러오지 못했습니다. 다시 시도해 주세요.",
+    "error": {
+      "invalid-id": {
+        "title": "유효하지 않은 여행 링크",
+        "description": "이 링크는 올바른 여행을 가리키지 않습니다. 여행 목록으로 돌아가 주세요."
+      },
+      "not-found": {
+        "title": "여행을 찾을 수 없습니다",
+        "description": "이 여행이 삭제되었거나 링크가 오래되었을 수 있습니다."
+      },
+      "permission-denied": {
+        "title": "이 여행에 접근할 수 없습니다",
+        "description": "여행 소유자에게 초대를 요청하거나, 내 여행 목록으로 돌아가세요."
+      },
+      "load-error": {
+        "title": "여행을 불러올 수 없습니다",
+        "description": "여행을 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요."
+      }
+    },
     "empty": {
       "title": "첫 여행을 계획하세요",
       "description": "일정을 만들고, 각 목적지의 LGBTQ+ 안전 정보를 확인하고, 모든 것을 한곳에 모으세요.",
@@ -220,24 +254,6 @@
       }
     },
     "backToTrips": "여행 목록으로",
-    "error": {
-      "invalid-id": {
-        "title": "유효하지 않은 여행 링크",
-        "description": "이 링크는 올바른 여행을 가리키지 않습니다. 여행 목록으로 돌아가 주세요."
-      },
-      "not-found": {
-        "title": "여행을 찾을 수 없습니다",
-        "description": "이 여행이 삭제되었거나 링크가 오래되었을 수 있습니다."
-      },
-      "permission-denied": {
-        "title": "이 여행에 접근할 수 없습니다",
-        "description": "여행 소유자에게 초대를 요청하거나, 내 여행 목록으로 돌아가세요."
-      },
-      "load-error": {
-        "title": "여행을 불러올 수 없습니다",
-        "description": "여행을 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요."
-      }
-    },
     "planner": {
       "loadFailed": "이 여행을 불러올 수 없습니다.",
       "notFound": "여행을 찾을 수 없습니다.",
@@ -1119,7 +1135,15 @@
       "emptyTitle": "아직 당신의 스타일에 맞는 장소가 없어요",
       "emptyDescription": "검색 범위를 넓히거나 다른 도시를 탐색해 보세요.",
       "submitVenue": "장소 등록",
-      "clearFilters": "필터 초기화"
+      "clearFilters": "필터 초기화",
+      "emptyDataset": {
+        "title": "아직 장소가 없습니다",
+        "body": "아직 이곳에 장소를 추가하지 않았습니다. 장소를 등록하여 가이드 성장에 도움을 주세요."
+      },
+      "filteredEmpty": {
+        "title": "필터와 일치하는 장소가 없습니다",
+        "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
+      }
     },
     "venueDetail": {
       "loadFailed": "장소 상세 정보를 불러올 수 없습니다.",
@@ -1173,7 +1197,15 @@
       "noPastEvents": "지난 이벤트를 찾을 수 없음",
       "noPastEventsDesc": "이 필터에 맞는 지난 이벤트가 없습니다. 토글을 끄면 다가오는 이벤트를 볼 수 있어요.",
       "emptyTitle": "댄스 플로어가 아직 비어 있어요...",
-      "emptyDescription": "곧 다시 확인하거나 필터를 넓혀 재미있는 이벤트를 찾아보세요."
+      "emptyDescription": "곧 다시 확인하거나 필터를 넓혀 재미있는 이벤트를 찾아보세요.",
+      "emptyDataset": {
+        "title": "아직 이벤트가 없습니다",
+        "body": "아직 이곳에 이벤트를 추가하지 않았습니다. 이벤트를 등록하여 가이드 성장에 도움을 주세요."
+      },
+      "filteredEmpty": {
+        "title": "필터와 일치하는 이벤트가 없습니다",
+        "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
+      }
     },
     "eventDetail": {
       "loadFailed": "이벤트 상세 정보를 불러올 수 없습니다.",
@@ -1200,7 +1232,16 @@
       "subtitle": "전 세계 LGBTQ+ 친화적 숙소",
       "submitHotel": "호텔 등록",
       "noResults": "호텔을 찾을 수 없음",
-      "noResultsHint": "필터를 조정하거나 나중에 다시 확인해 보세요."
+      "noResultsHint": "필터를 조정하거나 나중에 다시 확인해 보세요.",
+      "resetFilters": "필터 초기화",
+      "emptyDataset": {
+        "title": "아직 호텔이 없습니다",
+        "body": "아직 이곳에 호텔을 추가하지 않았습니다. 호텔을 등록하여 가이드 성장에 도움을 주세요."
+      },
+      "filteredEmpty": {
+        "title": "필터와 일치하는 호텔이 없습니다",
+        "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
+      }
     },
     "hotelDetail": {
       "loadFailed": "호텔 상세 정보를 불러올 수 없습니다.",

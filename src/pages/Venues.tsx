@@ -30,7 +30,7 @@ type Venue = Database['public']['Tables']['venues']['Row'];
 const Venues = () => {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
-  const { venues, loading, error, hasMore, fetchVenues, loadingTimedOut } = useVenues(false);
+  const { venues, loading, error, hasMore, datasetTotal, fetchVenues, loadingTimedOut } = useVenues(false);
 
   useMeta({
     title: 'Venues',
@@ -247,23 +247,44 @@ const Venues = () => {
             {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchVenues()} />}
 
             {!loading && !error && venues.length === 0 && (
-              <EmptyState
-                icon={MapPin}
-                title={t('pages.venues.emptyTitle', 'No spots match your vibe yet')}
-                description={t(
-                  'pages.venues.emptyDescription',
-                  'Try widening your search or explore a different city.',
-                )}
-                mood="encouraging"
-                primaryAction={{
-                  label: t('pages.venues.submitVenue', 'Submit a Venue'),
-                  onClick: () => navigate('/submit/venue'),
-                }}
-                secondaryAction={{
-                  label: t('pages.venues.clearFilters', 'Clear Filters'),
-                  onClick: () => handleFiltersChange({}),
-                }}
-              />
+              datasetTotal === 0 || (datasetTotal === null && Object.keys(currentFilters).length === 0) ? (
+                <EmptyState
+                  icon={MapPin}
+                  variant="empty"
+                  title={t('pages.venues.emptyDataset.title', 'No venues yet')}
+                  description={t(
+                    'pages.venues.emptyDataset.body',
+                    "We haven't added any venues here yet. Help us grow the guide by submitting one.",
+                  )}
+                  primaryAction={{
+                    label: t('pages.venues.submitVenue', 'Submit a Venue'),
+                    onClick: () => navigate('/submit/venue'),
+                  }}
+                />
+              ) : (
+                <EmptyState
+                  icon={MapPin}
+                  variant="filtered"
+                  title={t('pages.venues.filteredEmpty.title', 'No venues match your filters')}
+                  description={t(
+                    'pages.venues.filteredEmpty.body',
+                    'Try adjusting your filters or search to see more results.',
+                  )}
+                  primaryAction={{
+                    label: t('pages.venues.submitVenue', 'Submit a Venue'),
+                    onClick: () => navigate('/submit/venue'),
+                  }}
+                  secondaryAction={
+                    Object.keys(currentFilters).length > 0
+                      ? {
+                          label: t('pages.venues.clearFilters', 'Clear Filters'),
+                          onClick: () => handleFiltersChange({}),
+                          variant: 'outline',
+                        }
+                      : undefined
+                  }
+                />
+              )
             )}
 
             {!loading && venues.length > 0 && (

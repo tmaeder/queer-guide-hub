@@ -13,6 +13,20 @@ export function useEvents(autoFetch: boolean = true) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  const [datasetTotal, setDatasetTotal] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from('events')
+        .select('id', { head: true, count: 'exact' });
+      if (!cancelled) setDatasetTotal(count ?? 0);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -37,8 +51,10 @@ export function useEvents(autoFetch: boolean = true) {
       limit?: number;
       includePast?: boolean;
     },
-    options?: { page?: number; pageSize?: number; append?: boolean },
+    options?: { page?: number; pageSize?: number; append?: boolean; signal?: AbortSignal },
   ) => {
+    const signal = options?.signal;
+    if (signal?.aborted) return { fetched: 0, total: null as number | null };
     let fetchedCount = 0;
     let totalCount: number | null = null;
     try {
@@ -68,8 +84,8 @@ export function useEvents(autoFetch: boolean = true) {
             : 1000;
         const offset = typeof page === 'number' ? (page - 1) * pageSize : 0;
 
-        const rpcResult = (await queryWithRetry(() =>
-          supabase.rpc('search_events', {
+        const rpcResult = (await queryWithRetry(() => {
+          const q = supabase.rpc('search_events', {
             p_city: filters?.city ?? null,
             p_event_type: filters?.eventType ?? null,
             p_start: filters?.dateRange?.start ?? null,
@@ -83,8 +99,9 @@ export function useEvents(autoFetch: boolean = true) {
             p_include_past: filters?.includePast ?? false,
             p_limit: limit,
             p_offset: offset,
-          }),
-        )) as { data: Array<{ total: number | string; event: Event }> | null; error: Error | null };
+          });
+          return signal ? q.abortSignal(signal) : q;
+        })) as { data: Array<{ total: number | string; event: Event }> | null; error: Error | null };
 
         if (rpcResult.error) throw rpcResult.error;
         const rows = rpcResult.data ?? [];
@@ -160,12 +177,13 @@ export function useEvents(autoFetch: boolean = true) {
           query = query.range(from, to);
         }
 
-        const result = (await queryWithRetry(() => query)) as { data: Event[] | null; error: Error | null; count: number | null };
+        const result = (await queryWithRetry(() => (signal ? query.abortSignal(signal) : query))) as { data: Event[] | null; error: Error | null; count: number | null };
         data = result.data;
         error = result.error;
         count = result.count;
       }
 
+      if (signal?.aborted) return { fetched: 0, total: null as number | null };
       if (error) throw error;
 
       let eventsData = (data as Event[]) || [];
@@ -211,9 +229,10 @@ export function useEvents(autoFetch: boolean = true) {
         setHasMore(false);
       }
     } catch (err) {
+      if (signal?.aborted) return { fetched: 0, total: null as number | null };
       setError(err instanceof Error ? err.message : 'Failed to fetch events');
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
     return { fetched: fetchedCount, total: totalCount } as { fetched: number; total: number | null };
   }, []);
@@ -306,6 +325,7 @@ export function useEvents(autoFetch: boolean = true) {
     loadingTimedOut,
     error,
     hasMore,
+    datasetTotal,
     fetchEvents,
     createEvent,
     updateEvent,

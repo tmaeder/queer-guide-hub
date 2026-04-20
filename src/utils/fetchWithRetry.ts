@@ -17,15 +17,18 @@ interface RetryableError {
 function isRetryableError(error: unknown): boolean {
   if (!error) return false;
 
-  const err = error as RetryableError;
+  const err = error as RetryableError & { name?: string };
+  // Never retry user/caller-initiated aborts — that re-fires cancelled requests.
+  if (err.name === 'AbortError') return false;
+
   const message = (err.message || String(error)).toLowerCase();
+  if (message.includes('abort')) return false;
 
   // Network errors
   if (
     message.includes('fetch') ||
     message.includes('network') ||
     message.includes('timeout') ||
-    message.includes('aborted') ||
     message.includes('econnrefused') ||
     message.includes('econnreset') ||
     message.includes('failed to fetch')

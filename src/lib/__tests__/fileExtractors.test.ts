@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { isAcceptedFile } from '../fileExtractors';
+import { isAcceptedFile, extractFileContent, MAX_FILE_SIZE_BYTES } from '../fileExtractors';
+import { UploadErrorException } from '../uploadErrors';
 
 // extractFileContent and internal functions need Canvas/PDF/mammoth — tested via integration.
 // Test the synchronous guard function here.
@@ -45,5 +46,38 @@ describe('isAcceptedFile', () => {
   it('should reject unsupported types', () => {
     expect(isAcceptedFile(makeFile('video.mp4', 'video/mp4'))).toBe(false);
     expect(isAcceptedFile(makeFile('archive.zip', 'application/zip'))).toBe(false);
+  });
+
+  it('should reject executables and scripts by extension', () => {
+    expect(isAcceptedFile(makeFile('fake.exe', 'application/octet-stream'))).toBe(false);
+    expect(isAcceptedFile(makeFile('run.sh', ''))).toBe(false);
+    expect(isAcceptedFile(makeFile('bundle.zip', ''))).toBe(false);
+  });
+});
+
+describe('extractFileContent — typed errors', () => {
+  function sized(name: string, type: string, size: number): File {
+    const f = new File(['x'], name, { type });
+    Object.defineProperty(f, 'size', { value: size });
+    return f;
+  }
+
+  it('throws UploadErrorException with FILE_TOO_LARGE for oversize files', async () => {
+    const big = sized('huge.png', 'image/png', MAX_FILE_SIZE_BYTES + 1);
+    await expect(extractFileContent(big)).rejects.toMatchObject({
+      uploadError: { code: 'FILE_TOO_LARGE' },
+    });
+    try {
+      await extractFileContent(big);
+    } catch (e) {
+      expect(e).toBeInstanceOf(UploadErrorException);
+    }
+  });
+
+  it('throws UploadErrorException with UNSUPPORTED_TYPE for unknown extension', async () => {
+    const zip = sized('notes.zip', 'application/zip', 100);
+    await expect(extractFileContent(zip)).rejects.toMatchObject({
+      uploadError: { code: 'UNSUPPORTED_TYPE' },
+    });
   });
 });

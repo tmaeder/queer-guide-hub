@@ -18,6 +18,7 @@ export function SelectField({ field, value, onChange, error, disabled }: FieldPr
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         aria-invalid={!!error}
+        aria-describedby={error ? `${field.name}-error` : field.helpText ? `${field.name}-help` : undefined}
         className={`
           w-full h-10 px-3 py-2 rounded-lg text-sm
           bg-muted/50 border-0

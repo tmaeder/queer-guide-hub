@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "Directory Geografica",
     "loading": "Caricamento directory...",
@@ -1118,7 +1135,15 @@
       "emptyTitle": "Nessun locale corrisponde ancora al tuo stile",
       "emptyDescription": "Prova ad ampliare la ricerca o esplora un'altra città.",
       "submitVenue": "Proponi un locale",
-      "clearFilters": "Cancella filtri"
+      "clearFilters": "Cancella filtri",
+      "emptyDataset": {
+        "title": "Ancora nessun locale",
+        "body": "Non abbiamo ancora aggiunto locali qui. Aiutaci a far crescere la guida proponendone uno."
+      },
+      "filteredEmpty": {
+        "title": "Nessun locale corrisponde ai tuoi filtri",
+        "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
+      }
     },
     "venueDetail": {
       "loadFailed": "Impossibile caricare i dettagli del locale.",
@@ -1172,7 +1197,15 @@
       "noPastEvents": "Nessun evento passato trovato",
       "noPastEventsDesc": "Nessun evento passato corrisponde a questi filtri. Disattiva il filtro per vedere i prossimi eventi.",
       "emptyTitle": "La pista da ballo è vuota... per ora",
-      "emptyDescription": "Torna presto o amplia i filtri per trovare qualcosa di divertente."
+      "emptyDescription": "Torna presto o amplia i filtri per trovare qualcosa di divertente.",
+      "emptyDataset": {
+        "title": "Ancora nessun evento",
+        "body": "Non abbiamo ancora aggiunto eventi qui. Aiutaci a far crescere la guida proponendone uno."
+      },
+      "filteredEmpty": {
+        "title": "Nessun evento corrisponde ai tuoi filtri",
+        "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
+      }
     },
     "eventDetail": {
       "loadFailed": "Impossibile caricare i dettagli dell'evento.",
@@ -1199,7 +1232,16 @@
       "subtitle": "Alloggi LGBTQ+ friendly in tutto il mondo",
       "submitHotel": "Proponi hotel",
       "noResults": "Nessun hotel trovato",
-      "noResultsHint": "Prova a modificare i filtri o torna più tardi."
+      "noResultsHint": "Prova a modificare i filtri o torna più tardi.",
+      "resetFilters": "Reimposta filtri",
+      "emptyDataset": {
+        "title": "Ancora nessun hotel",
+        "body": "Non abbiamo ancora aggiunto hotel qui. Aiutaci a far crescere la guida proponendone uno."
+      },
+      "filteredEmpty": {
+        "title": "Nessun hotel corrisponde ai tuoi filtri",
+        "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
+      }
     },
     "hotelDetail": {
       "loadFailed": "Impossibile caricare i dettagli dell'hotel.",

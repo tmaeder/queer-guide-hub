@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "الدليل الجغرافي",
     "loading": "تحميل الدليل...",
@@ -101,7 +118,24 @@
     "title": "رحلاتي",
     "subtitle": "خطط ونظم وسافر بأمان.",
     "create": "إنشاء رحلة",
-    "error": "تعذّر تحميل رحلاتك. يرجى المحاولة مرة أخرى.",
+    "error": {
+      "invalid-id": {
+        "title": "رابط رحلة غير صالح",
+        "description": "هذا الرابط لا يؤدي إلى رحلة صالحة. عُد إلى رحلاتك للمتابعة."
+      },
+      "not-found": {
+        "title": "الرحلة غير موجودة",
+        "description": "ربما حُذفت هذه الرحلة أو أن الرابط قديم."
+      },
+      "permission-denied": {
+        "title": "ليس لديك صلاحية الوصول إلى هذه الرحلة",
+        "description": "اطلب من مالك الرحلة دعوتك، أو عُد إلى رحلاتك."
+      },
+      "load-error": {
+        "title": "تعذّر تحميل هذه الرحلة",
+        "description": "حدث خطأ أثناء تحميل الرحلة. يرجى المحاولة مرة أخرى."
+      }
+    },
     "empty": {
       "title": "خطّط لأول رحلة لك",
       "description": "أنشئ مسارًا، وتحقق من معلومات الأمان لمجتمع الميم لكل وجهة، واحتفظ بكل شيء في مكان واحد.",
@@ -220,24 +254,6 @@
       }
     },
     "backToTrips": "العودة إلى الرحلات",
-    "error": {
-      "invalid-id": {
-        "title": "رابط رحلة غير صالح",
-        "description": "هذا الرابط لا يؤدي إلى رحلة صالحة. عُد إلى رحلاتك للمتابعة."
-      },
-      "not-found": {
-        "title": "الرحلة غير موجودة",
-        "description": "ربما حُذفت هذه الرحلة أو أن الرابط قديم."
-      },
-      "permission-denied": {
-        "title": "ليس لديك صلاحية الوصول إلى هذه الرحلة",
-        "description": "اطلب من مالك الرحلة دعوتك، أو عُد إلى رحلاتك."
-      },
-      "load-error": {
-        "title": "تعذّر تحميل هذه الرحلة",
-        "description": "حدث خطأ أثناء تحميل الرحلة. يرجى المحاولة مرة أخرى."
-      }
-    },
     "planner": {
       "loadFailed": "تعذّر تحميل هذه الرحلة.",
       "notFound": "الرحلة غير موجودة.",
@@ -1119,7 +1135,15 @@
       "emptyTitle": "لم نجد أماكن تناسب ذوقك بعد",
       "emptyDescription": "حاول توسيع بحثك أو استكشاف مدينة أخرى.",
       "submitVenue": "إضافة مكان",
-      "clearFilters": "مسح الفلاتر"
+      "clearFilters": "مسح الفلاتر",
+      "emptyDataset": {
+        "title": "لا توجد أماكن بعد",
+        "body": "لم نضف أي أماكن هنا بعد. ساعدنا على تطوير الدليل بإضافة واحد."
+      },
+      "filteredEmpty": {
+        "title": "لا توجد أماكن تطابق فلاترك",
+        "body": "حاول تعديل الفلاتر أو البحث لرؤية نتائج أكثر."
+      }
     },
     "venueDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل المكان.",
@@ -1173,7 +1197,15 @@
       "noPastEvents": "لم يتم العثور على فعاليات سابقة",
       "noPastEventsDesc": "لا توجد فعاليات سابقة تطابق هذه الفلاتر. أوقف التبديل لعرض الفعاليات القادمة.",
       "emptyTitle": "حلبة الرقص فارغة... حالياً",
-      "emptyDescription": "عد قريباً أو وسّع الفلاتر للعثور على شيء ممتع."
+      "emptyDescription": "عد قريباً أو وسّع الفلاتر للعثور على شيء ممتع.",
+      "emptyDataset": {
+        "title": "لا توجد فعاليات بعد",
+        "body": "لم نضف أي فعاليات هنا بعد. ساعدنا على تطوير الدليل بإضافة واحدة."
+      },
+      "filteredEmpty": {
+        "title": "لا توجد فعاليات تطابق فلاترك",
+        "body": "حاول تعديل الفلاتر أو البحث لرؤية نتائج أكثر."
+      }
     },
     "eventDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل الفعالية.",
@@ -1200,7 +1232,16 @@
       "subtitle": "أماكن إقامة صديقة لمجتمع LGBTQ+ حول العالم",
       "submitHotel": "إضافة فندق",
       "noResults": "لم يتم العثور على فنادق",
-      "noResultsHint": "حاول تعديل الفلاتر أو عد لاحقاً."
+      "noResultsHint": "حاول تعديل الفلاتر أو عد لاحقاً.",
+      "resetFilters": "إعادة ضبط الفلاتر",
+      "emptyDataset": {
+        "title": "لا توجد فنادق بعد",
+        "body": "لم نضف أي فنادق هنا بعد. ساعدنا على تطوير الدليل بإضافة واحد."
+      },
+      "filteredEmpty": {
+        "title": "لا توجد فنادق تطابق فلاترك",
+        "body": "حاول تعديل الفلاتر أو البحث لرؤية نتائج أكثر."
+      }
     },
     "hotelDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل الفندق.",

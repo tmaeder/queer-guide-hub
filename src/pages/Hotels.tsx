@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Hotel as HotelIcon, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HotelCard } from '@/components/hotels/HotelCard';
 import { HotelFilters } from '@/components/hotels/HotelFilters';
 import { useHotels, type HotelFilters as HotelFilterType } from '@/hooks/useHotels';
+import { EmptyState, type EmptyStateFilterChip } from '@/components/ui/EmptyState';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -14,11 +15,31 @@ import { useTranslation } from 'react-i18next';
 export default function Hotels() {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
-  const { hotels, loading, hasMore, fetchHotels } = useHotels(false);
+  const { hotels, loading, hasMore, datasetTotal, fetchHotels } = useHotels(false);
   const [search, setSearch] = useState('');
   const [hotelType, setHotelType] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
   const [page, setPage] = useState(1);
+
+  const hasActiveFilters = Boolean(search) || hotelType !== 'all' || priceRange !== 'all';
+
+  const resetFilters = useCallback(() => {
+    setSearch('');
+    setHotelType('all');
+    setPriceRange('all');
+  }, []);
+
+  const activeFilterChips = useMemo<EmptyStateFilterChip[]>(() => {
+    const chips: EmptyStateFilterChip[] = [];
+    if (search) chips.push({ label: `“${search}”`, onRemove: () => setSearch('') });
+    if (hotelType !== 'all') chips.push({ label: hotelType, onRemove: () => setHotelType('all') });
+    if (priceRange !== 'all') {
+      chips.push({ label: '$'.repeat(Number(priceRange)), onRemove: () => setPriceRange('all') });
+    }
+    return chips;
+  }, [search, hotelType, priceRange]);
+
+  const isModuleEmpty = datasetTotal === 0 || (datasetTotal === null && !hasActiveFilters);
 
   const buildFilters = useCallback((): HotelFilterType => {
     const filters: HotelFilterType = {};
@@ -70,15 +91,45 @@ export default function Hotels() {
           {Array.from({ length: 8 }).map((_, i) => (<HotelCard key={i} loading />))}
         </Box>
       ) : hotels.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <HotelIcon style={{ width: 48, height: 48, opacity: 0.3, margin: '0 auto 16px' }} />
-          <Typography variant="h6" color="text.secondary">
-            {t('pages.hotels.noResults', 'No hotels found')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            {t('pages.hotels.noResultsHint', 'Try adjusting your filters or check back later.')}
-          </Typography>
-        </Box>
+        isModuleEmpty ? (
+          <EmptyState
+            icon={HotelIcon}
+            variant="empty"
+            title={t('pages.hotels.emptyDataset.title', 'No hotels yet')}
+            description={t(
+              'pages.hotels.emptyDataset.body',
+              "We haven't added any hotels here yet. Help us grow the guide by submitting one.",
+            )}
+            primaryAction={{
+              label: t('pages.hotels.submitHotel', 'Submit Hotel'),
+              onClick: () => navigate('/submit/hotel'),
+            }}
+          />
+        ) : (
+          <EmptyState
+            icon={HotelIcon}
+            variant="filtered"
+            title={t('pages.hotels.filteredEmpty.title', 'No hotels match your filters')}
+            description={t(
+              'pages.hotels.filteredEmpty.body',
+              'Try adjusting your filters or search to see more results.',
+            )}
+            activeFilters={activeFilterChips}
+            primaryAction={{
+              label: t('pages.hotels.submitHotel', 'Submit Hotel'),
+              onClick: () => navigate('/submit/hotel'),
+            }}
+            secondaryAction={
+              hasActiveFilters
+                ? {
+                    label: t('pages.hotels.resetFilters', 'Reset filters'),
+                    onClick: resetFilters,
+                    variant: 'outline',
+                  }
+                : undefined
+            }
+          />
+        )
       ) : (
         <>
           <Box

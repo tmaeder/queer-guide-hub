@@ -5,6 +5,7 @@
  */
 
 import { useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -12,15 +13,17 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, Upload, AlertCircle, RotateCcw, FileText } from 'lucide-react';
-import { isAcceptedFile } from '@/lib/fileExtractors';
+import { isAcceptedFile, MAX_FILE_SIZE_BYTES } from '@/lib/fileExtractors';
+import { useToast } from '@/hooks/use-toast';
 import type { ScanState } from '@/hooks/useFlyerScan';
+import { MAX_UPLOAD_MB, type UploadError } from '@/lib/uploadErrors';
 
 const ACCEPTED_TYPES =
   'image/*,.pdf,.docx,.doc,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain';
 
 interface FlyerScanUploadProps {
   scanState: ScanState;
-  error: string | null;
+  error: UploadError | null;
   currentFileIndex: number;
   totalFiles: number;
   onFilesSelected: (files: File[]) => void;
@@ -37,19 +40,58 @@ export function FlyerScanUpload({
   onReset,
   children,
 }: FlyerScanUploadProps) {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [dragOver, setDragOver] = useState(false);
+  const [, setDragOver] = useState(false);
+  const [rejectionMessage, setRejectionMessage] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const handleFiles = useCallback(
     (fileList: FileList | File[]) => {
-      const files = Array.from(fileList).filter(
-        (f) => isAcceptedFile(f) && f.size <= 20 * 1024 * 1024,
-      );
-      if (files.length > 0) onFilesSelected(files);
+      const accepted: File[] = [];
+      const unsupported: string[] = [];
+      const oversized: string[] = [];
+
+      for (const f of Array.from(fileList)) {
+        if (!isAcceptedFile(f)) {
+          unsupported.push(f.name);
+          continue;
+        }
+        if (f.size > MAX_FILE_SIZE_BYTES) {
+          oversized.push(f.name);
+          continue;
+        }
+        accepted.push(f);
+      }
+
+      const parts: string[] = [];
+      if (unsupported.length > 0) {
+        parts.push(
+          t('submission.errors.unsupportedTypeNamed', { names: unsupported.join(', ') }),
+        );
+      }
+      if (oversized.length > 0) {
+        parts.push(
+          t('submission.errors.fileTooLargeNamed', {
+            names: oversized.join(', '),
+            maxMb: MAX_UPLOAD_MB,
+          }),
+        );
+      }
+      const message = parts.length > 0 ? parts.join(' ') : null;
+      setRejectionMessage(message);
+      if (message) {
+        toast({
+          title: t('submission.errors.title'),
+          description: message,
+          variant: 'destructive',
+        });
+      }
+      if (accepted.length > 0) onFilesSelected(accepted);
     },
-    [onFilesSelected],
+    [onFilesSelected, toast, t],
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,13 +109,16 @@ export function FlyerScanUpload({
     }
   };
 
-  // Results state — render children (FlyerScanResults)
   if (scanState === 'results' && children) {
     return <>{children}</>;
   }
 
-  // Error state
   if (scanState === 'error') {
+    const errorCopy = error
+      ? t(error.i18nKey, error.i18nValues as Record<string, unknown> | undefined)
+      : t('submission.errors.uploadFailed');
+    const showRetry = error ? error.retryable : true;
+
     return (
       <Card>
         <CardContent>
@@ -83,28 +128,29 @@ export function FlyerScanUpload({
             />
             <Box sx={{ flex: 1 }}>
               <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                Scan failed
+                {t('submission.errors.title')}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>
-                {error || 'Something went wrong. Please try again.'}
+                {errorCopy}
               </Typography>
             </Box>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onReset}
-              style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-            >
-              <RotateCcw style={{ width: 14, height: 14 }} />
-              Retry
-            </Button>
+            {showRetry && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onReset}
+                style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+              >
+                <RotateCcw style={{ width: 14, height: 14 }} />
+                {t('submission.errors.retry')}
+              </Button>
+            )}
           </Box>
         </CardContent>
       </Card>
     );
   }
 
-  // Uploading / Analyzing state
   if (scanState === 'uploading' || scanState === 'analyzing') {
     const progressText =
       totalFiles > 1
@@ -147,10 +193,8 @@ export function FlyerScanUpload({
     );
   }
 
-  // Idle state — upload zone
   return (
     <Card
-
       onClick={() => fileInputRef.current?.click()}
       onDragOver={(e: React.DragEvent) => {
         e.preventDefault();
@@ -204,6 +248,21 @@ export function FlyerScanUpload({
             />
           )}
         </Box>
+        {rejectionMessage && (
+          <Box
+            role="alert"
+            aria-live="polite"
+            sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 1.5 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AlertCircle
+              style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 2 }}
+            />
+            <Typography variant="caption" sx={{ color: '#ef4444' }}>
+              {rejectionMessage}
+            </Typography>
+          </Box>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,4 +1,21 @@
 {
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
   "directory": {
     "title": "Diretório Geográfico",
     "loading": "Carregando diretório...",
@@ -1118,7 +1135,15 @@
       "emptyTitle": "Ainda não encontramos lugares com a sua vibe",
       "emptyDescription": "Tente ampliar sua busca ou explorar outra cidade.",
       "submitVenue": "Enviar um local",
-      "clearFilters": "Limpar filtros"
+      "clearFilters": "Limpar filtros",
+      "emptyDataset": {
+        "title": "Ainda não há locais",
+        "body": "Ainda não adicionamos locais aqui. Ajude-nos a expandir o guia enviando um."
+      },
+      "filteredEmpty": {
+        "title": "Nenhum local corresponde aos seus filtros",
+        "body": "Tente ajustar seus filtros ou busca para ver mais resultados."
+      }
     },
     "venueDetail": {
       "loadFailed": "Não foi possível carregar os detalhes do local.",
@@ -1172,7 +1197,15 @@
       "noPastEvents": "Nenhum evento passado encontrado",
       "noPastEventsDesc": "Nenhum evento passado corresponde a esses filtros. Desative o filtro para ver os próximos eventos.",
       "emptyTitle": "A pista de dança está vazia... por enquanto",
-      "emptyDescription": "Volte em breve ou amplie seus filtros para encontrar algo divertido."
+      "emptyDescription": "Volte em breve ou amplie seus filtros para encontrar algo divertido.",
+      "emptyDataset": {
+        "title": "Ainda não há eventos",
+        "body": "Ainda não adicionamos eventos aqui. Ajude-nos a expandir o guia enviando um."
+      },
+      "filteredEmpty": {
+        "title": "Nenhum evento corresponde aos seus filtros",
+        "body": "Tente ajustar seus filtros ou busca para ver mais resultados."
+      }
     },
     "eventDetail": {
       "loadFailed": "Não foi possível carregar os detalhes do evento.",
@@ -1199,7 +1232,16 @@
       "subtitle": "Acomodações LGBTQ+ friendly no mundo todo",
       "submitHotel": "Enviar hotel",
       "noResults": "Nenhum hotel encontrado",
-      "noResultsHint": "Tente ajustar seus filtros ou volte mais tarde."
+      "noResultsHint": "Tente ajustar seus filtros ou volte mais tarde.",
+      "resetFilters": "Redefinir filtros",
+      "emptyDataset": {
+        "title": "Ainda não há hotéis",
+        "body": "Ainda não adicionamos hotéis aqui. Ajude-nos a expandir o guia enviando um."
+      },
+      "filteredEmpty": {
+        "title": "Nenhum hotel corresponde aos seus filtros",
+        "body": "Tente ajustar seus filtros ou busca para ver mais resultados."
+      }
     },
     "hotelDetail": {
       "loadFailed": "Não foi possível carregar os detalhes do hotel.",
