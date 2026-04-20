@@ -36,6 +36,9 @@ export function PersonalityCardSkeleton() {
   return (
     <Box
       sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
         bgcolor: 'background.paper',
         overflow: 'hidden',
       }}
@@ -77,20 +80,30 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
       onClick={onClick}
       aria-label={ariaLabel}
       sx={{
-        display: 'block',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        cursor: 'pointer',
         textDecoration: 'none',
         color: 'inherit',
         bgcolor: 'background.paper',
         overflow: 'hidden',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
         transition: 'all 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
         '&:hover': {
           transform: 'translateY(-2px)',
           '& .personality-card-image': { transform: 'scale(1.04)' },
         },
+        '&:active': {
+          transform: 'translateY(0)',
+          opacity: 0.85,
+        },
         '&:focus-visible': {
           outline: '2px solid',
           outlineColor: 'brand.main',
-          outlineOffset: 2,
+          outlineOffset: -2,
         },
       }}
     >
@@ -110,6 +123,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
             src={personality.image_url}
             alt={personality.name}
             loading="lazy"
+            draggable={false}
             onError={() => setImgError(true)}
             className="personality-card-image"
             sx={{
@@ -170,6 +184,8 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
               fontWeight: 600,
               color: 'text.primary',
               boxShadow: 1,
+              pointerEvents: 'none',
+              userSelect: 'none',
             }}
           >
             <Star size={12} fill="#DB2777" color="#DB2777" aria-hidden="true" />
@@ -179,7 +195,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
       </Box>
 
       {/* Content */}
-      <Box sx={{ p: 1.5 }}>
+      <Box sx={{ p: 1.5, flexGrow: 1 }}>
         <Typography
           component="h3"
           sx={{
