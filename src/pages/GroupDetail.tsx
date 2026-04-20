@@ -272,7 +272,12 @@ export default function GroupDetail() {
                   </Box>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {group.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" style={{ fontSize: '0.75rem' }}>
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        style={{ fontSize: '0.75rem', cursor: 'pointer' }}
+                        onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+                      >
                         {tag}
                       </Badge>
                     ))}
@@ -401,7 +406,12 @@ export default function GroupDetail() {
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {group.tags.map((tag) => (
-                        <Badge key={tag} variant="outline">
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+                        >
                           {tag}
                         </Badge>
                       ))}

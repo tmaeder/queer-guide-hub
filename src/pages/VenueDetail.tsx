@@ -1,5 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -66,6 +67,7 @@ type VenueWithRelations = Venue & {
 
 export default function VenueDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
   const [venue, setVenue] = useState<VenueWithRelations | null>(null);
@@ -352,6 +354,28 @@ export default function VenueDetail() {
           criminalization={venue.countries.lgbti_criminalization}
           countryName={venue.countries.name}
         />
+      )}
+
+      {/* Permanently Closed Banner */}
+      {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
+        <Box
+          sx={{
+            mb: 3,
+            px: 2,
+            py: 1.5,
+            bgcolor: 'error.main',
+            color: 'error.contrastText',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            Permanently closed
+            {' · '}
+            {new Date(venue.closed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+          </Typography>
+        </Box>
       )}
 
       {/* Title Row */}
@@ -771,7 +795,14 @@ export default function VenueDetail() {
                   <CardContent>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {venue.tags.map((tag, index) => (
-                        <Chip key={index} label={tag} size="small" variant="outlined" />
+                        <Chip
+                          key={index}
+                          label={tag}
+                          size="small"
+                          variant="outlined"
+                          onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+                          sx={{ cursor: 'pointer' }}
+                        />
                       ))}
                     </Box>
                   </CardContent>
