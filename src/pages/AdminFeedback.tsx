@@ -389,6 +389,17 @@ export default function AdminFeedback() {
     [user],
   );
 
+  const pushToGithub = useCallback(
+    (id: string, action: 'reply' | 'close' | 'reopen' | 'set_labels', extra: Record<string, unknown> = {}) => {
+      const it = items.find((i) => i.id === id);
+      if (!it?.github_issue_number) return;
+      void supabase.functions
+        .invoke('push-feedback-to-github', { body: { submission_id: id, action, ...extra } })
+        .catch((e) => console.warn('push-feedback-to-github failed', e));
+    },
+    [items],
+  );
+
   const statusMutation = useMutation({
     mutationFn: ({ ids, status }: { ids: string[]; status: KanbanStatus }) =>
       updateRow(ids, { feedback_status: status }),
@@ -401,6 +412,10 @@ export default function AdminFeedback() {
     onSuccess: (_data, { ids, status }) => {
       queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] });
       fireStatusNotification(ids, status);
+      for (const id of ids) {
+        if (status === 'done') pushToGithub(id, 'close', { resolution: 'fixed' });
+        else if (status === 'in_progress') pushToGithub(id, 'reopen');
+      }
     },
     onError: (err: Error) => {
       toast({ title: 'Update failed', description: err.message, variant: 'destructive' });
@@ -449,7 +464,10 @@ export default function AdminFeedback() {
         old?.map((it) => (it.id === id ? { ...it, labels } : it)),
       );
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+    onSuccess: (_data, { id, labels }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] });
+      pushToGithub(id, 'set_labels', { labels });
+    },
     onError: (err: Error) =>
       toast({ title: 'Labels failed', description: err.message, variant: 'destructive' }),
   });
@@ -476,6 +494,8 @@ export default function AdminFeedback() {
     },
     onSuccess: (_data, { id, resolution }) => {
       queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] });
+      if (resolution) pushToGithub(id, 'close', { resolution });
+      else pushToGithub(id, 'reopen');
       const it = items.find((i) => i.id === id);
       if (!it || it.is_spam || it.duplicate_of || !it.notify_submitter) return;
       if (!it.data.contact_email) return;

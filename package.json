@@ -23,6 +23,7 @@
     "bones:force": "boneyard build --force",
     "i18n:check": "tsx scripts/sync-translations.ts",
     "i18n:fill": "tsx scripts/sync-translations.ts --fill",
+    "verify:gh-sync": "tsx scripts/verify-github-sync.ts",
     "prepare": "husky"
   },
   "lint-staged": {
