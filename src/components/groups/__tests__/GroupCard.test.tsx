@@ -107,6 +107,36 @@ describe('GroupCard', () => {
     expect(links.some(l => l.getAttribute('href') === '/groups/g-1')).toBe(true);
   });
 
+  it('should show Request to Join for private non-member without pending request', () => {
+    render(
+      <MemoryRouter>
+        <GroupCard
+          group={makeGroup({ is_private: true }) as unknown as React.ComponentProps<typeof GroupCard>['group']}
+          onRequestJoin={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Request to Join')).toBeInTheDocument();
+    expect(screen.queryByText('Join')).not.toBeInTheDocument();
+  });
+
+  it('should show Requested (disabled) for private non-member with pending request', () => {
+    render(
+      <MemoryRouter>
+        <GroupCard
+          group={
+            makeGroup({ is_private: true, has_pending_request: true }) as unknown as React.ComponentProps<typeof GroupCard>['group']
+          }
+          onRequestJoin={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+    const btn = screen.getByRole('button', { name: /Requested/i });
+    expect(btn).toBeDisabled();
+    expect(screen.queryByText('Request to Join')).not.toBeInTheDocument();
+    expect(screen.getByText('Pending')).toBeInTheDocument();
+  });
+
   it('should show +N more for excess tags', () => {
     render(
       <MemoryRouter>

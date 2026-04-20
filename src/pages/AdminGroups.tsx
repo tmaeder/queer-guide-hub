@@ -21,7 +21,8 @@ import {
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
-import { ArrowLeft, Eye, Trash2, Lock, Globe, Users } from 'lucide-react';
+import { ArrowLeft, Eye, Trash2, Lock, Globe, Users, Check, X } from 'lucide-react';
+import { useGroupJoinRequests } from '@/hooks/useGroupJoinRequests';
 
 interface GroupRow {
   id: string;
@@ -264,7 +265,75 @@ export default function AdminGroups() {
         </div>
       </Box>
 
+      <PendingJoinRequestsPanel />
+
       <AdminDataTable config={tableConfig} />
+    </Box>
+  );
+}
+
+function PendingJoinRequestsPanel() {
+  const { requests, isLoading, approve, isApproving, reject, isRejecting } =
+    useGroupJoinRequests();
+
+  if (isLoading) return null;
+  if (!requests.length) return null;
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.5,
+        p: 2,
+        bgcolor: 'background.paper',
+      }}
+    >
+      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        Pending Join Requests ({requests.length})
+      </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {requests.map((req) => (
+          <Box
+            key={req.id}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 2,
+              py: 1,
+            }}
+          >
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {req.group_name ?? req.group_id}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                User {req.user_id.slice(0, 8)}…
+                {req.message ? ` — ${req.message}` : ''} ·{' '}
+                {new Date(req.created_at).toLocaleString()}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                size="sm"
+                onClick={() => approve(req.id)}
+                disabled={isApproving || isRejecting}
+              >
+                <Check style={{ width: 14, height: 14, marginRight: 4 }} /> Approve
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => reject(req.id)}
+                disabled={isApproving || isRejecting}
+              >
+                <X style={{ width: 14, height: 14, marginRight: 4 }} /> Reject
+              </Button>
+            </Box>
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 }

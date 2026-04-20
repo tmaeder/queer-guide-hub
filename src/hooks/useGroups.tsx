@@ -17,6 +17,7 @@ export interface Group {
   tags?: string[];
   user_role?: string;
   is_member?: boolean;
+  has_pending_request?: boolean;
 }
 
 export interface GroupMembership {
@@ -32,35 +33,45 @@ export const useGroups = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all public groups and user's private groups
+  // Fetch all visible groups (public + private, via RLS) with user membership + pending request flag.
   const { data: groups = [], isLoading } = useQuery({
-    queryKey: ['groups'],
+    queryKey: ['groups', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
 
-      // Get all public groups and private groups the user is a member of
-      // RLS handles visibility: public groups for everyone, private only for members
-      const { data, error } = await supabase
-        .from('community_groups')
-        .select(`
-          *,
-          group_memberships!left(role, user_id)
-        `)
-        .order('created_at', { ascending: false });
+      const [{ data: rows, error }, { data: pending, error: pendingError }] = await Promise.all([
+        supabase
+          .from('community_groups')
+          .select(`
+            *,
+            group_memberships!left(role, user_id)
+          `)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('group_join_requests')
+          .select('group_id')
+          .eq('user_id', user.id)
+          .eq('status', 'pending'),
+      ]);
 
       if (error) throw error;
+      if (pendingError) throw pendingError;
 
-      // Transform data to include user membership info
-      return data.map(group => {
-        const userMembership = group.group_memberships?.find(m => m.user_id === user.id);
+      const pendingSet = new Set((pending ?? []).map((r) => r.group_id));
+
+      return (rows ?? []).map((group) => {
+        const userMembership = group.group_memberships?.find(
+          (m: { user_id: string }) => m.user_id === user.id,
+        );
         return {
           ...group,
           user_role: userMembership?.role,
-          is_member: !!userMembership
+          is_member: !!userMembership,
+          has_pending_request: pendingSet.has(group.id),
         };
       });
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Fetch user's groups
@@ -78,16 +89,15 @@ export const useGroups = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      return data.map(membership => ({
+      return data.map((membership) => ({
         ...membership.community_groups,
         user_role: membership.role,
-        is_member: true
+        is_member: true,
       }));
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
   });
 
-  // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: async ({ name, description, isPrivate, imageUrl, rules, tags }: {
       name: string;
@@ -108,21 +118,16 @@ export const useGroups = () => {
           image_url: imageUrl,
           rules,
           tags: tags || [],
-          created_by: user.id
+          created_by: user.id,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Add creator as admin
       const { error: membershipError } = await supabase
         .from('group_memberships')
-        .insert({
-          group_id: data.id,
-          user_id: user.id,
-          role: 'admin'
-        });
+        .insert({ group_id: data.id, user_id: user.id, role: 'admin' });
 
       if (membershipError) throw membershipError;
 
@@ -131,53 +136,78 @@ export const useGroups = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      toast({
-        title: "Success",
-        description: "Group created successfully!"
-      });
+      toast({ title: 'Success', description: 'Group created successfully!' });
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
   });
 
-  // Join group mutation
+  // Direct join - used for public groups (or by request-approval flow internally).
   const joinGroupMutation = useMutation({
     mutationFn: async (groupId: string) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { error } = await supabase
         .from('group_memberships')
-        .insert({
-          group_id: groupId,
-          user_id: user.id,
-          role: 'member'
-        });
+        .insert({ group_id: groupId, user_id: user.id, role: 'member' });
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      toast({
-        title: "Success",
-        description: "Joined group successfully!"
-      });
+      toast({ title: 'Success', description: 'Joined group successfully!' });
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
   });
 
-  // Leave group mutation
+  // Request to join - used for private groups.
+  const requestJoinMutation = useMutation({
+    mutationFn: async ({ groupId, message }: { groupId: string; message?: string }) => {
+      if (!user?.id) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('group_join_requests')
+        .insert({ group_id: groupId, user_id: user.id, message: message ?? null });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: ['group-join-requests'] });
+      toast({ title: 'Request sent', description: 'A group admin will review your request.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const cancelJoinRequestMutation = useMutation({
+    mutationFn: async (groupId: string) => {
+      if (!user?.id) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('group_join_requests')
+        .update({ status: 'cancelled' })
+        .eq('group_id', groupId)
+        .eq('user_id', user.id)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: ['group-join-requests'] });
+      toast({ title: 'Request cancelled' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
   const leaveGroupMutation = useMutation({
     mutationFn: async (groupId: string) => {
       if (!user?.id) throw new Error('User not authenticated');
@@ -193,21 +223,13 @@ export const useGroups = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      toast({
-        title: "Success",
-        description: "Left group successfully!"
-      });
+      toast({ title: 'Success', description: 'Left group successfully!' });
     },
     onError: (error) => {
-      toast({
-        title: "Error", 
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
   });
 
-  // Update group mutation
   const updateGroupMutation = useMutation({
     mutationFn: async ({ groupId, updates }: {
       groupId: string;
@@ -223,18 +245,11 @@ export const useGroups = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      toast({
-        title: "Success",
-        description: "Group updated successfully!"
-      });
+      toast({ title: 'Success', description: 'Group updated successfully!' });
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
   });
 
   return {
@@ -245,9 +260,13 @@ export const useGroups = () => {
     isCreating: createGroupMutation.isPending,
     joinGroup: joinGroupMutation.mutate,
     isJoining: joinGroupMutation.isPending,
+    requestJoin: requestJoinMutation.mutate,
+    isRequesting: requestJoinMutation.isPending,
+    cancelJoinRequest: cancelJoinRequestMutation.mutate,
+    isCancellingRequest: cancelJoinRequestMutation.isPending,
     leaveGroup: leaveGroupMutation.mutate,
     isLeaving: leaveGroupMutation.isPending,
     updateGroup: updateGroupMutation.mutate,
-    isUpdating: updateGroupMutation.isPending
+    isUpdating: updateGroupMutation.isPending,
   };
 };
