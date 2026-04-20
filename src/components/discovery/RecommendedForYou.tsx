@@ -127,6 +127,7 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 									const slug = it.slug || it.id;
 									const to = hitPath(it.type, slug);
 									if (!to) return null;
+									if (!it.title) return null;
 									return (
 										<LocalizedLink
 											key={`${it.type}:${it.id}`}
@@ -142,7 +143,7 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 												)}
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">
-														{it.title ? decodeEntities(it.title) : it.id.slice(0, 8)}
+														{decodeEntities(it.title!)}
 													</div>
 													<div className="text-xs text-muted-foreground truncate">
 														{[it.city, it.country].filter(Boolean).join(", ")}

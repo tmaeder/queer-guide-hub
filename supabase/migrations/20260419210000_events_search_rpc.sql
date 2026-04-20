@@ -49,7 +49,6 @@ AS $$
       -- intersects requested window [p_start, p_end].
       AND (p_end   IS NULL OR e.start_date                       <= p_end)
       AND (p_start IS NULL OR COALESCE(e.end_date, e.start_date) >= p_start)
-      AND (p_tags IS NULL OR e.tags && p_tags)
       AND (p_accessibility_attributes IS NULL OR e.accessibility_attributes && p_accessibility_attributes)
       AND (p_target_groups IS NULL OR e.target_groups && p_target_groups)
       AND (
