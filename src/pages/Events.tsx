@@ -430,6 +430,14 @@ const Events = () => {
             >
               <Filter style={{ width: 16, height: 16 }} />
             </Button>
+            <Button
+              variant={showPast ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setShowPast(!showPast)}
+              aria-pressed={showPast}
+            >
+              {t('pages.events.showPastEvents', 'Past events')}
+            </Button>
           </Box>
 
           {/* Extended Filters */}

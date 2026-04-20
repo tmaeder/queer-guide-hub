@@ -153,6 +153,7 @@ export const EventCard = memo(function EventCard({
       { start_date: activeTrip.start_date, end_date: activeTrip.end_date },
     );
   const attendeeCount = event?.event_attendees?.filter((a) => a.status === 'going').length || 0;
+  const isPast = !!event && new Date(event.end_date ?? event.start_date) < new Date();
   const resolvedImage = resolveEntityImage('event', event ?? null).url;
   const [imageError, setImageError] = React.useState(false);
   const hasImage = !!resolvedImage && !imageError;
@@ -294,6 +295,11 @@ export const EventCard = memo(function EventCard({
                     {isMeaningfulTag(event.event_type) && (
                       <Badge style={{ ...getEventTypeStyle(event.event_type) }}>
                         {event.event_type}
+                      </Badge>
+                    )}
+                    {isPast && (
+                      <Badge variant="secondary" style={{ opacity: 0.7 }}>
+                        {t('events.past', 'Past')}
                       </Badge>
                     )}
                   </Box>
