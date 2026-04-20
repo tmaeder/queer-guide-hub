@@ -31,7 +31,7 @@ function PriceIndicator({ range }: { range: number | null }) {
       {Array.from({ length: 4 }, (_, i) => (
         <DollarSign
           key={i}
-          style={{ width: 12, height: 12, color: i < range ? 'currentColor' : '#cccccc' }}
+          style={{ width: 12, height: 12, color: i < range ? 'currentColor' : 'hsl(var(--muted-foreground))' }}
         />
       ))}
     </Box>
@@ -41,7 +41,7 @@ function PriceIndicator({ range }: { range: number | null }) {
 const HotelCardFixture = () => (
   <Paper elevation={1} sx={{ overflow: 'hidden', borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
     <Box sx={{ height: 180, bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <MapPin style={{ width: 32, height: 32, color: '#999' }} />
+      <MapPin style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))' }} />
     </Box>
     <Box sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
       <Typography variant="subtitle1" sx={{ fontWeight: 600 }} noWrap>Sample Hotel</Typography>
@@ -136,7 +136,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
                 position: 'absolute',
                 top: 8,
                 left: 8,
-                backgroundColor: '#ffffff',
+                backgroundColor: 'hsl(var(--background))',
               }}
             >
               {typeLabel}

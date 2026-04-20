@@ -31,15 +31,15 @@ interface GroupEventCardProps {
 }
 
 const eventTypeColors: Record<string, { bgcolor: string; color: string }> = {
-  social: { bgcolor: '#dbeafe', color: '#1e40af' },
-  meetup: { bgcolor: '#dcfce7', color: '#166534' },
-  workshop: { bgcolor: '#f3e8ff', color: '#6b21a8' },
-  conference: { bgcolor: '#e0e7ff', color: '#3730a3' },
-  party: { bgcolor: '#fce7f3', color: '#9d174d' },
-  sports: { bgcolor: '#ffedd5', color: '#9a3412' },
-  cultural: { bgcolor: '#ccfbf1', color: '#115e59' },
-  educational: { bgcolor: '#fef9c3', color: '#854d0e' },
-  other: { bgcolor: '#f3f4f6', color: '#1f2937' },
+  social: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
+  meetup: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
+  workshop: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
+  conference: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
+  party: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
+  sports: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
+  cultural: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
+  educational: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
+  other: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
 };
 
 export function GroupEventCard({

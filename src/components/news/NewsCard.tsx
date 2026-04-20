@@ -254,7 +254,7 @@ export const NewsCard = ({
               onError={() => setImgFailed(true)}
             />
             {article.is_featured && (
-              <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: '#333', color: '#fff' }}>
+              <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>
                 Featured
               </Badge>
             )}
@@ -263,7 +263,7 @@ export const NewsCard = ({
 
         {/* Featured badge when no image */}
         {!hasImage && article.is_featured && (
-          <Badge style={{ backgroundColor: '#333', color: '#fff', alignSelf: 'flex-start' }}>
+          <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', alignSelf: 'flex-start' }}>
             Featured
           </Badge>
         )}
@@ -296,7 +296,7 @@ export const NewsCard = ({
           )}
           {!displayCategory && fallbackCategoryFromTag && (
             <Badge
-              style={{ backgroundColor: '#64748b', color: '#fff', cursor: onFilterByCategory ? 'pointer' : 'default' }}
+              style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', cursor: onFilterByCategory ? 'pointer' : 'default' }}
               onClick={(e) => { e.stopPropagation(); onFilterByCategory?.(fallbackCategoryFromTag); }}
             >
               {fallbackCategoryFromTag}

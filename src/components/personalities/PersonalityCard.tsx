@@ -178,7 +178,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
               px: 1,
               py: 0.375,
               borderRadius: 999,
-              bgcolor: 'rgba(255,255,255,0.88)',
+              bgcolor: 'background.paper',
               backdropFilter: 'blur(4px)',
               fontSize: '11px',
               fontWeight: 600,

@@ -51,7 +51,7 @@ export function FestivalCard({ festival }: FestivalCardProps) {
               {festival.name}
             </Typography>
             {festival.featured && (
-              <Badge style={{ backgroundColor: '#333', color: '#fff' }}>Featured</Badge>
+              <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>Featured</Badge>
             )}
           </Box>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
