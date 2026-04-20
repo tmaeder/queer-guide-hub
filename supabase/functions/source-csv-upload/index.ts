@@ -13,7 +13,11 @@ const csvUploadAdapter: SourceAdapter = {
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
     const fileUrl = config.filters?.fileUrl as string
-    if (!fileUrl) throw new Error('fileUrl is required')
+    // No-op when fileUrl is absent — csv-upload is an optional node in
+    // DAGs (e.g. city-ingestion) that should only activate when an
+    // admin actually uploads a file. Missing fileUrl means no upload,
+    // not a pipeline failure.
+    if (!fileUrl) return []
 
     const supabase = getServiceClient()
 

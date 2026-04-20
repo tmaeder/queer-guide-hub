@@ -21,7 +21,7 @@ Status legend:
 | personality-ingestion | manual | — | manual | CSV upload via admin UI | `personalities` |
 | events-ingestion-bulletproof | manual | — | manual | Eventbrite / Ticketmaster / GayCities / web scrape | `events` |
 | hotel-ingestion-pipeline | manual | — | manual | Spartacus / MisterB&B / Foursquare | `venues` (accommodation_type) |
-| city-ingestion | paused | — (was `7 * * * *`) | — | GeoNames + CSV | `cities` |
+| city-ingestion | live | `7 * * * *` | hourly run OK | GeoNames + optional CSV | `cities` |
 | country-ingestion | paused | — (was `45 3 * * *`) | — | REST Countries | `countries` |
 | venue-ingestion-unified | template | — | — | — | — |
 | event-ingestion-unified | template | — | — | — | — |
@@ -33,7 +33,6 @@ Status legend:
 
 Blocked reasons (see `description` column for canonical text):
 - `marketplace-ingestion`: `AWIN_FEED_URL` edge-function secret missing.
-- `city-ingestion`: `source-csv-upload` node errors `fileUrl is required` even when unused in DAG context.
 - `country-ingestion`: Wolfram Alpha auth invalid.
 
 ## Workflows (`workflow_definitions`)
@@ -57,14 +56,14 @@ Blocked reasons (see `description` column for canonical text):
 | scrape-web-sources | live | `45 3 * * 0` | Staggered off 03:00 Sun |
 | health-check | never-run | `0 8 * * *` | Verify edge function deployed |
 | enrich_entity | manual | — | Generic param-driven enricher |
-| automation-auto-tagger | paused-cron | manual only | Dispatcher auth issue; cron removed |
-| automation-content-classifier | paused-cron | manual only | Dispatcher auth issue; cron removed |
-| automation-content-validator | paused-cron | manual only | Dispatcher auth issue; cron removed |
-| automation-data-normalizer | paused-cron | manual only | Dispatcher auth issue; cron removed |
-| automation-dedup-checker | paused-cron | manual only | Dispatcher auth issue; cron removed |
-| automation-event-validator | paused-cron | manual only | Dispatcher auth issue; cron removed |
-| automation-geo-enricher | paused-cron | manual only | Dispatcher auth issue; cron removed |
-| automation-link-sanitizer | paused-cron | manual only | Dispatcher auth issue; cron removed |
+| automation-auto-tagger | live | `5 5 * * *` | Runs via `content-automation` module=auto-tagger |
+| automation-content-classifier | live | `10 5 * * *` | Runs via `content-automation` |
+| automation-content-validator | live | `15 5 * * *` | Runs via `content-automation` |
+| automation-data-normalizer | live | `20 5 * * *` | Runs via `content-automation` |
+| automation-dedup-checker | live | `25 5 * * *` | Runs via `content-automation` |
+| automation-event-validator | live | `30 5 * * *` | Runs via `content-automation` |
+| automation-geo-enricher | live | `35 5 * * *` | Runs via `content-automation` |
+| automation-link-sanitizer | live | `40 5 * * *` | Runs via `content-automation` |
 | enrich-wolfram-cities | deprecated | — | Use `enrich_entity` with content_type=city |
 | enrich-wolfram-countries | deprecated | — | Use `enrich_entity` with content_type=country |
 | enrich-wolfram-tags | deprecated | — | Use `enrich_entity` with content_type=tag |
@@ -86,8 +85,9 @@ Blocked reasons (see `description` column for canonical text):
 These cannot be fixed from SQL. Track until cleared.
 
 1. Set `AWIN_FEED_URL` edge-function secret → unblocks marketplace-ingestion.
-2. Rotate Wolfram Alpha creds → unblocks country-ingestion + any manual `enrich_entity` Wolfram runs.
-3. Fix `workflow-dispatcher` service-role auth → re-enables all automation-* crons.
-4. Patch `source-csv-upload` node to no-op when `fileUrl` is absent → unblocks city-ingestion.
-5. Verify `health-check` edge function is deployed and returns 200 → will produce runs daily at 08:00.
-6. Re-add pg_cron triggers for city/country pipelines once 2 & 4 are resolved.
+2. Rotate Wolfram Alpha creds → unblocks country-ingestion + manual `enrich_entity` Wolfram runs; then re-add `pipeline-country-ingestion` cron at `45 3 * * *`.
+
+Resolved 2026-04-20:
+- ~~Fix workflow-dispatcher service-role auth~~: patched `content-automation` to accept service-role token as system call. All 8 automation-* crons re-enabled 05:05–05:40 UTC.
+- ~~Patch `source-csv-upload` node to no-op when `fileUrl` is absent~~: done; city-ingestion cron restored at `7 * * * *`.
+- `health-check` workflow_definition's edge_function is `workflow-dispatcher` (action inferred). No separate edge function required.

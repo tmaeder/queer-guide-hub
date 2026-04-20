@@ -84,9 +84,14 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
-  // ── Authentication: require admin role ──────────────────────────────────────
-  const auth = await requireAdmin(req, supabase)
-  if (auth instanceof Response) return auth
+  // ── Authentication: admin user OR service-role (internal dispatcher) ────────
+  const authHeader = req.headers.get('Authorization') || ''
+  const token = authHeader.replace('Bearer ', '')
+  const isServiceRole = token && token === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (!isServiceRole) {
+    const auth = await requireAdmin(req, supabase)
+    if (auth instanceof Response) return auth
+  }
 
   try {
     let payload: Record<string, unknown> = {}
