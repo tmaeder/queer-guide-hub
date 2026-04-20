@@ -116,21 +116,13 @@ export default function About() {
   const isDark = theme.palette.mode === 'dark';
 
   const statItems = useMemo(
-    () =>
-      loading
-        ? [
-            { value: 0, label: 'Venues' },
-            { value: 0, label: 'Events' },
-            { value: 0, label: 'Cities' },
-            { value: 0, label: 'Countries' },
-          ]
-        : [
-            { value: stats.venues, label: 'Venues' },
-            { value: stats.events, label: 'Events' },
-            { value: stats.cities, label: 'Cities' },
-            { value: stats.countries, label: 'Countries' },
-          ],
-    [loading, stats],
+    () => [
+      { value: stats.venues, label: 'Venues' },
+      { value: stats.events, label: 'Events' },
+      { value: stats.cities, label: 'Cities' },
+      { value: stats.countries, label: 'Countries' },
+    ],
+    [stats],
   );
 
   return (
@@ -209,7 +201,11 @@ export default function About() {
                   color: 'brand.main',
                 }}
               >
-                {loading ? '\u2014' : <AnimatedCounter value={stat.value} suffix="+" />}
+                {loading || typeof stat.value !== 'number' || stat.value <= 0 ? (
+                  '\u2014'
+                ) : (
+                  <AnimatedCounter value={stat.value} suffix="+" />
+                )}
               </Typography>
               <Typography
                 variant="body2"
