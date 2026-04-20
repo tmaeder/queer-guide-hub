@@ -92,6 +92,12 @@ Dev/web/eslint.config.js
 !Dev/web/.github/workflows/
 !Dev/web/.github/workflows/
 
+# Supabase CLI local cache
+supabase/.temp/
+
+# Playwright test results
+Dev/web/test-results/
+
 # Asset staging dirs
 Icons/
 stich/
