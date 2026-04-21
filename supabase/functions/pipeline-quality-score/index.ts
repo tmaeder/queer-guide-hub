@@ -28,8 +28,6 @@ Deno.serve(async (req) => {
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
-    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
-
     const { data: items, error } = await query
     if (error) return errorResponse(`Failed to load items: ${error.message}`, 500, req)
     if (!items || items.length === 0) {

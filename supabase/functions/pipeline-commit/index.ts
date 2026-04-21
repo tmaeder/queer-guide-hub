@@ -140,7 +140,6 @@ Deno.serve(async (req) => {
         .eq('target_table', 'news_articles')
         .eq('disposition', 'pending')
         .limit(50)
-      if (pipelineRunId) jobQuery.eq('pipeline_run_id', pipelineRunId)
       const { data: jobRows, error: jobErr } = await jobQuery
       if (jobErr) return errorResponse(`load jobs: ${jobErr.message}`, 500, req)
       const jobIds = Array.from(new Set((jobRows ?? []).map((r: { job_id: string }) => r.job_id)))
@@ -185,7 +184,6 @@ Deno.serve(async (req) => {
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
-    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (targetTable)   query = query.eq('target_table', targetTable)
 
     const { data: items, error } = await query

@@ -64,12 +64,14 @@ serve(async (req) => {
   }
 
   try {
+    const body = await req.json() as PopulateRequest & { pipeline_run_id?: string };
     const {
       content_types = ['venue', 'event', 'tag', 'group', 'marketplace', 'personality', 'city', 'news'],
       _force_refresh = false,
       limit: rawLimit = 100,
-      offset: rawOffset = 0
-    } = await req.json() as PopulateRequest;
+      offset: rawOffset = 0,
+      pipeline_run_id,
+    } = body;
 
     // Sanitize inputs
     const limit = Math.min(Math.max(1, rawLimit), 500);
@@ -79,9 +81,11 @@ serve(async (req) => {
 
     const supabase = getServiceClient();
 
-    // Require admin authentication
-    const authResult = await requireAdmin(req, supabase);
-    if (authResult instanceof Response) return authResult;
+    // Skip admin check for internal pipeline calls (service role)
+    if (!pipeline_run_id) {
+      const authResult = await requireAdmin(req, supabase);
+      if (authResult instanceof Response) return authResult;
+    }
 
     if (!cfApiToken) {
       console.log('CLOUDFLARE_API_TOKEN not found, will use fallback embeddings');

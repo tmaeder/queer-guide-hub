@@ -116,27 +116,31 @@ async function handleStart(
     return errorResponse(`Failed to create run: ${runError?.message}`, 500, req)
   }
 
-  // Topologically sort nodes and find the first one(s)
+  // Find all initial nodes (in-degree = 0) — support parallel fan-out at start
   const sorted = topologicalSort(nodes, edges)
-  const firstNodeId = sorted[0]
+  const targetIds = new Set(edges.map(e => e.target))
+  const initialNodeIds = nodes.map(n => n.id).filter(id => !targetIds.has(id))
+  if (initialNodeIds.length === 0) initialNodeIds.push(sorted[0])
 
-  // Enqueue the first step
-  await enqueueStep(supabase, {
-    pipeline_run_id: run.id,
-    pipeline_id: pipeline.id,
-    pipeline_name: pipeline.name,
-    current_node_id: firstNodeId,
-    current_step: 0,
-    total_steps: sorted.length,
-    context,
-  })
+  // Enqueue all initial nodes in parallel
+  for (const nodeId of initialNodeIds) {
+    await enqueueStep(supabase, {
+      pipeline_run_id: run.id,
+      pipeline_id: pipeline.id,
+      pipeline_name: pipeline.name,
+      current_node_id: nodeId,
+      current_step: 0,
+      total_steps: sorted.length,
+      context,
+    })
+  }
 
   return jsonResponse({
     success: true,
     pipeline_run_id: run.id,
     pipeline_name: pipeline.name,
     total_steps: sorted.length,
-    first_node: firstNodeId,
+    initial_nodes: initialNodeIds,
   }, 200, req)
 }
 
@@ -167,7 +171,7 @@ async function handleContinue(
     return errorResponse(`Run not found: ${runId}`, 404, req)
   }
 
-  if (run.status === 'cancelled' || run.status === 'paused') {
+  if (run.status === 'cancelled' || run.status === 'paused' || run.status === 'failed' || run.status === 'completed') {
     return jsonResponse({ success: true, message: `Run is ${run.status}, skipping` }, 200, req)
   }
 
@@ -532,7 +536,7 @@ function skipDescendants(
 async function handleBuiltInNode(
   supabase: SupabaseClient,
   node: PipelineNode,
-  _run: Record<string, unknown>,
+  run: Record<string, unknown>,
   _nodeStates: Record<string, NodeState>
 ): Promise<{ items_out: number }> {
   const config = node.data?.config || {}
@@ -565,6 +569,24 @@ async function handleBuiltInNode(
         }
       }
       return { items_out: 0 }
+    }
+    case 'source-personality-staging': {
+      // Adopt pending personality staging rows into this pipeline run so
+      // downstream nodes (normalize, validate, etc.) can filter by pipeline_run_id.
+      const entityType = (config as Record<string, string>).entity_type || 'personality'
+      const batchSize = (config as Record<string, number>).batch_size || 500
+      const runId = run.id as string
+      const { data: items } = await supabase
+        .from('ingestion_staging')
+        .select('id')
+        .eq('entity_type', entityType)
+        .is('normalized_data', null)
+        .eq('disposition', 'pending')
+        .limit(batchSize)
+      if (!items || items.length === 0) return { items_out: 0 }
+      const ids = items.map((r: Record<string, string>) => r.id)
+      await supabase.from('ingestion_staging').update({ pipeline_run_id: runId }).in('id', ids)
+      return { items_out: ids.length }
     }
     default:
       console.warn(`Unknown built-in node type: ${node.type}`)
