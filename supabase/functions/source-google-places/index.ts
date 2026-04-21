@@ -1,7 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 
 // ============================================================
 // Source: Google Places Text Search API
@@ -22,7 +22,7 @@ const googlePlacesAdapter: SourceAdapter = {
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
     const apiKey = config.apiKey || Deno.env.get('GOOGLE_PLACES_API_KEY')
-    if (!apiKey) throw new Error('GOOGLE_PLACES_API_KEY not configured')
+    if (!apiKey) throw new MissingCredentialsError('GOOGLE_PLACES_API_KEY')
 
     const supabase = getServiceClient()
     const locations = (config.filters?.locations as string[]) || DEFAULT_LOCATIONS
@@ -112,6 +112,9 @@ Deno.serve(async (req) => {
     const written = await writeToStaging(supabase, googlePlacesAdapter, rawItems, { ...config, targetTable: 'venues' })
     return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
   } catch (error) {
+    if (error instanceof MissingCredentialsError) {
+      return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
+    }
     return errorResponse((error as Error).message, 500, req)
   }
 })

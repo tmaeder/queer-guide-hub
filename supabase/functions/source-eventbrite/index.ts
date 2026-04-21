@@ -1,7 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 
 // ============================================================
 // Source: Eventbrite Events API
@@ -17,7 +17,7 @@ const eventbriteAdapter: SourceAdapter = {
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
     const token = config.apiKey || Deno.env.get('EVENTBRITE_OAUTH_TOKEN')
-    if (!token) throw new Error('EVENTBRITE_OAUTH_TOKEN not configured')
+    if (!token) throw new MissingCredentialsError('EVENTBRITE_OAUTH_TOKEN')
 
     const supabase = getServiceClient()
     const cities = (config.filters?.cities as string[]) || ['New York', 'San Francisco', 'Los Angeles', 'London', 'Berlin']
@@ -113,6 +113,9 @@ Deno.serve(async (req) => {
     const written = await writeToStaging(supabase, eventbriteAdapter, rawItems, { ...config, targetTable: 'events' })
     return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
   } catch (error) {
+    if (error instanceof MissingCredentialsError) {
+      return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
+    }
     return errorResponse((error as Error).message, 500, req)
   }
 })

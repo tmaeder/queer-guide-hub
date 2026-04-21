@@ -14,6 +14,40 @@ export interface AdapterConfig {
   nodeId?: string
 }
 
+/**
+ * Thrown by source adapters when required credentials are not configured.
+ * Callers should map this to a 200-OK skipped response so a single missing
+ * key does not fail the whole pipeline DAG.
+ */
+export class MissingCredentialsError extends Error {
+  readonly missing: string[]
+  constructor(missing: string | string[]) {
+    const arr = Array.isArray(missing) ? missing : [missing]
+    super(`Missing credentials: ${arr.join(', ')}`)
+    this.name = 'MissingCredentialsError'
+    this.missing = arr
+  }
+}
+
+/**
+ * Build a 200-OK response body that signals a source was skipped because
+ * credentials were missing. Pipeline-executor treats this as a non-fatal
+ * skipped node, not a failure.
+ */
+export function skippedResponse(reason: string, missing: string[]): Record<string, unknown> {
+  return {
+    success: true,
+    skipped: true,
+    reason,
+    missing_credentials: missing,
+    items: 0,
+    items_total: 0,
+    items_processed: 0,
+    items_succeeded: 0,
+    items_failed: 0,
+  }
+}
+
 export interface RawItem {
   sourceId: string
   data: Record<string, unknown>
