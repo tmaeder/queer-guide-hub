@@ -12,6 +12,7 @@ import { TripCard } from '@/components/trips/TripCard';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { TripTemplates } from '@/components/trips/TripTemplates';
+import { TripsInboxSection } from '@/components/trips/TripsInboxSection';
 import {
   TripsToolbar,
   type TripSortKey,
@@ -106,6 +107,9 @@ export default function TripsPage() {
           </Button>
         </Box>
       </Box>
+
+      {/* Travel inbox — unattached reservations, suggestions, forwarding address */}
+      <TripsInboxSection />
 
       {/* Toolbar — hide while loading or completely empty */}
       {hasAnyTrips && (

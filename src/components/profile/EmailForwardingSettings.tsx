@@ -113,7 +113,7 @@ export function EmailForwardingSettings() {
           </Box>
 
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <LocalizedLink to="/trips/inbox">
+            <LocalizedLink to="/trips">
               <Button variant="outline" size="sm">
                 <InboxIcon style={{ width: 14, height: 14, marginRight: 6 }} />
                 {t('settings.email.openInbox', 'Open inbox')}

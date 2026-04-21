@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
@@ -16,7 +15,6 @@ import {
   Link2,
   Plus,
   Sparkles,
-  ArrowRight,
   Mail,
   Copy,
   Check,
@@ -24,7 +22,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { useAuth } from '@/hooks/useAuth';
 import { useTrips, useTripMutations } from '@/hooks/useTrips';
 import {
   useReservations,
@@ -34,9 +31,7 @@ import {
 import { suggestTripGroupings, type TripSuggestion } from '@/utils/tripGrouping';
 import { useEmailForwardingAddress } from '@/hooks/useEmailForwardingAddress';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/EmptyState';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
 
 const TYPE_ICONS: Record<Reservation['type'], typeof Plane> = {
@@ -74,8 +69,7 @@ const formatAmount = (amount: number | null, currency: string | null) => {
   return `${symbol}${Math.round(amount).toLocaleString()}`;
 };
 
-export default function TripsInboxPage() {
-  const { user } = useAuth();
+export function TripsInboxSection() {
   const { t } = useTranslation();
 
   const { data: reservations, isLoading, error } = useReservations();
@@ -83,6 +77,7 @@ export default function TripsInboxPage() {
   const { createTrip } = useTripMutations();
   const attach = useAttachBookingToTrip();
   const navigate = useNavigate();
+  const { data: forwarding } = useEmailForwardingAddress();
 
   const orphanReservations = useMemo(
     () => (reservations ?? []).filter((r) => !r.trip_id),
@@ -93,8 +88,6 @@ export default function TripsInboxPage() {
     [orphanReservations],
   );
 
-  // Reservations already in a suggestion are hidden from the orphan list
-  // to avoid showing them twice.
   const reservationIdsInSuggestions = useMemo(() => {
     const set = new Set<string>();
     for (const s of suggestions) for (const r of s.reservations) set.add(r.key);
@@ -106,91 +99,54 @@ export default function TripsInboxPage() {
     [orphanReservations, reservationIdsInSuggestions],
   );
 
-  if (!user) return <TripsSignedOutHero />;
+  // Hide the section entirely when there's nothing to show and no
+  // forwarding address to surface — keeps the Trips page clean.
+  const hasContent =
+    isLoading || !!error || orphanReservations.length > 0 || !!forwarding;
+  if (!hasContent) return null;
 
   return (
-    <Container sx={{ py: { xs: 4, md: 6 } }}>
-      {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { sm: 'center' },
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 4,
-        }}
-      >
-        <Box>
-          <Typography variant="h3" sx={{ fontSize: { xs: '1.75rem', md: '2.25rem' }, mb: 0.5 }}>
-            {t('pages.inbox.title', 'Travel inbox')}
-            {orphanReservations.length > 0 && (
-              <Box
-                component="span"
-                sx={{
-                  ml: 1.25,
-                  color: 'text.secondary',
-                  fontSize: '0.65em',
-                  fontWeight: 500,
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                · {orphanReservations.length}
-              </Box>
-            )}
-          </Typography>
-          <Typography color="text.secondary">
-            {t(
-              'pages.inbox.subtitle',
-              'Bookings not yet attached to a trip. Group them into a trip or attach them to an existing one.',
-            )}
-          </Typography>
-        </Box>
-        <LocalizedLink to="/trips">
-          <Button variant="outline">
-            {t('pages.inbox.viewTrips', 'View all trips')}
-            <ArrowRight style={{ width: 16, height: 16, marginLeft: 6 }} />
-          </Button>
-        </LocalizedLink>
+    <Box sx={{ mb: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <InboxIcon style={{ width: 20, height: 20, color: 'var(--primary)' }} />
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          {t('pages.inbox.title', 'Travel inbox')}
+          {orphanReservations.length > 0 && (
+            <Box
+              component="span"
+              sx={{
+                ml: 1,
+                color: 'text.secondary',
+                fontSize: '0.75em',
+                fontWeight: 500,
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              · {orphanReservations.length}
+            </Box>
+          )}
+        </Typography>
       </Box>
 
-      {/* Loading */}
       {isLoading && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          {[1, 2, 3].map((i) => (
+          {[1, 2].map((i) => (
             <Skeleton key={i} variant="rounded" height={96} />
           ))}
         </Box>
       )}
 
-      {/* Error */}
       {error && !isLoading && (
-        <Typography color="error" sx={{ py: 4 }}>
+        <Typography color="error" sx={{ py: 2 }}>
           {t('pages.inbox.error', "Couldn't load your reservations. Please retry.")}
         </Typography>
       )}
 
-      {/* Empty */}
-      {!isLoading && !error && orphanReservations.length === 0 && (
-        <Box>
-          <EmptyState
-            icon={InboxIcon}
-            title={t('pages.inbox.empty.title', 'Inbox zero')}
-            description={t(
-              'pages.inbox.empty.description',
-              'Every booking is attached to a trip. New bookings will appear here when they arrive.',
-            )}
-          />
-          <ForwardingAddressCard />
-        </Box>
-      )}
-
-      {/* Grouping suggestions */}
       {suggestions.length > 0 && (
-        <Box sx={{ mb: 5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <Sparkles style={{ width: 18, height: 18, color: 'var(--primary)' }} />
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        <Box sx={{ mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <Sparkles style={{ width: 16, height: 16, color: 'var(--primary)' }} />
+            <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem' }}>
               {t('pages.inbox.suggestions.title', 'Suggested trips')}
             </Typography>
           </Box>
@@ -206,9 +162,6 @@ export default function TripsInboxPage() {
                     end_date: s.end_at.slice(0, 10),
                     currency: s.currency ?? 'EUR',
                   });
-                  // Attach orphan reservations to the new trip. Manual rows
-                  // already on a trip won't appear here (they're filtered out
-                  // upstream as standalone-orphans only).
                   await Promise.all(
                     s.reservations.map((r) =>
                       attach.mutateAsync({ reservationId: r.id, tripId: trip.id }),
@@ -223,10 +176,9 @@ export default function TripsInboxPage() {
         </Box>
       )}
 
-      {/* Orphan list */}
       {standaloneOrphans.length > 0 && (
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+        <Box sx={{ mb: 3 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem', mb: 1.5 }}>
             {t('pages.inbox.orphans.title', 'Unattached reservations')}
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -244,7 +196,9 @@ export default function TripsInboxPage() {
           </Box>
         </Box>
       )}
-    </Container>
+
+      <ForwardingAddressCard />
+    </Box>
   );
 }
 
@@ -262,7 +216,6 @@ function SuggestionCard({
   const { t } = useTranslation();
   const dateRange = formatRange(suggestion.start_at, suggestion.end_at);
   const titleSuggestion = useMemo(() => {
-    // Pick a city name if we have one, otherwise fall back to date range.
     const dateLabel = dateRange ?? '';
     return `${t('pages.inbox.suggestions.defaultTitle', 'Trip')} · ${dateLabel}`;
   }, [dateRange, t]);
@@ -434,7 +387,7 @@ function ForwardingAddressCard() {
   };
 
   return (
-    <Box sx={{ mt: 4, p: 3, bgcolor: 'action.hover' }}>
+    <Box sx={{ mt: 2, p: 3, bgcolor: 'action.hover' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
         <Mail style={{ width: 18, height: 18, color: 'var(--primary)' }} />
         <Typography sx={{ fontWeight: 700 }}>

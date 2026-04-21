@@ -151,7 +151,6 @@ const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const Favorites = lazyRetry(() => import('./pages/Favorites'));
 
 const TripsPage = lazyRetry(() => import('./pages/trips/TripsPage'));
-const TripsInboxPage = lazyRetry(() => import('./pages/trips/TripsInboxPage'));
 const TripPlannerPage = lazyRetry(() => import('./pages/trips/TripPlannerPage'));
 const TripBookletPage = lazyRetry(() => import('./pages/trips/TripBookletPage'));
 const TripsDiscoverPage = lazyRetry(() => import('./pages/trips/TripsDiscoverPage'));
@@ -467,13 +466,13 @@ const AppRoutes = () => {
                 <Route path="places" element={<Places />} />
                 <Route path="travel" element={<Travel />} />
                 <Route path="trips" element={<TripsPage />} />
-                <Route path="trips/inbox" element={<TripsInboxPage />} />
+                <Route path="trips/inbox" element={<Navigate to="/trips" replace />} />
                 <Route path="trips/discover" element={<TripsDiscoverPage />} />
                 <Route path="trips/shared/:token" element={<SharedTripPage />} />
                 <Route path="trips/:tripId/today" element={<TodayModePage />} />
                 <Route path="trips/:tripId/booklet" element={<TripBookletPage />} />
                 <Route path="trips/:tripId" element={<TripPlannerPage />} />
-                <Route path="bookings" element={<Navigate to="/trips/inbox" replace />} />
+                <Route path="bookings" element={<Navigate to="/trips" replace />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
                 <Route path="city/:slug" element={<CityDetail />} />

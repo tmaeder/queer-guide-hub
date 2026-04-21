@@ -39,7 +39,6 @@ import {
   Building,
   Luggage,
   LifeBuoy,
-  Inbox,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -104,7 +103,6 @@ const navigationSections = [
 
 const userMenuItems = [
   { to: '/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
-  { to: '/trips/inbox', icon: Inbox, labelKey: 'header.userMenu.tripInbox' },
   { to: '/favorites', icon: Heart, labelKey: 'header.userMenu.favorites' },
   { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
   { to: '/inbox', icon: Mail, labelKey: 'header.userMenu.inbox' },
@@ -414,7 +412,7 @@ export function Header() {
         {user && (
           <>
             {userMenuItems.map((item) => {
-              const showBadge = item.to === '/trips/inbox' && inboxBadgeCount > 0;
+              const showBadge = item.to === '/trips' && inboxBadgeCount > 0;
               return (
                 <ListItemButton
                   key={item.to}
@@ -705,7 +703,7 @@ export function Header() {
                     <Box sx={{ my: 1 }} />
 
                     {userMenuItems.map((item) => {
-                      const showBadge = item.to === '/trips/inbox' && inboxBadgeCount > 0;
+                      const showBadge = item.to === '/trips' && inboxBadgeCount > 0;
                       return (
                         <Button
                           key={item.to}
