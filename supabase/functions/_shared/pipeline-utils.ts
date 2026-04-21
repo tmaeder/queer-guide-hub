@@ -43,6 +43,7 @@ export async function writeStagingBatch(
 
   const { error } = await supabase.from('ingestion_staging').insert(rows)
   if (error) {
+    if (error.code === '23505') return  // items already in staging, skip
     throw new Error(`Staging write failed: ${error.message}`)
   }
 

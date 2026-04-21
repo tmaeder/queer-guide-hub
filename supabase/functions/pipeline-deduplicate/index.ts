@@ -32,14 +32,18 @@ Deno.serve(async (req) => {
     const reviewMin     = Math.min(body.review_min ?? 0.75, autoMergeMin)
     const batchSize     = body.batch_size || 50
     const dryRun        = body.dry_run || false
+    const entityType    = body.entityType as string | undefined
 
     let query = supabase
       .from('ingestion_staging')
       .select('id, normalized_data, entity_type, target_table')
       .eq('ai_validation_status', 'approved')
       .eq('dedup_status', 'pending')
+      .eq('disposition', 'pending')
       .order('created_at', { ascending: true })
       .limit(batchSize)
+
+    if (entityType) query = query.eq('entity_type', entityType)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
