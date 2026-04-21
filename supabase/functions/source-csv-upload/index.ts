@@ -1,6 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 
 // ============================================================
 // Source: CSV File Upload — generic adapter for all entity types
@@ -13,7 +13,7 @@ const csvUploadAdapter: SourceAdapter = {
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
     const fileUrl = config.filters?.fileUrl as string
-    if (!fileUrl) throw new Error('fileUrl is required')
+    if (!fileUrl) throw new MissingCredentialsError('CSV_FILE_URL')
 
     const supabase = getServiceClient()
 
@@ -130,6 +130,9 @@ Deno.serve(async (req) => {
     const written = await writeToStaging(supabase, csvUploadAdapter, rawItems, { ...config, targetTable })
     return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
   } catch (error) {
+    if (error instanceof MissingCredentialsError) {
+      return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
+    }
     return errorResponse((error as Error).message, 500, req)
   }
 })

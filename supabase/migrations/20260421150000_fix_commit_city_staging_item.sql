@@ -1,0 +1,5 @@
+-- Applied directly via MCP. Tracked here for migration history.
+-- Fix ambiguous city_id in commit_city_staging_item (same bug as country).
+-- Renamed OUT column to out_city_id. Updated batch fn to match.
+-- Also simplified city-ingestion pipeline: weekly schedule, removed auth-failing enrichers.
+-- source-csv-upload now skips gracefully when no fileUrl (MissingCredentialsError).
