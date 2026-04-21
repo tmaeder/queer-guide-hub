@@ -36,23 +36,17 @@ export default function AdminAnalytics() {
 
   const fetchStats = async () => {
     try {
-      const [users, venues, events, groups, listings, articles] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('venues').select('id', { count: 'exact', head: true }),
-        supabase.from('events').select('id', { count: 'exact', head: true }),
-        supabase.from('community_groups').select('id', { count: 'exact', head: true }),
-        supabase.from('marketplace_listings').select('id', { count: 'exact', head: true }),
-        supabase.from('news_articles').select('id', { count: 'exact', head: true })
-      ]);
-
+      const { data, error } = await supabase.rpc('get_admin_platform_stats');
+      if (error) throw error;
+      const s = (data ?? {}) as Record<string, number>;
       setStats({
-        totalUsers: users.count || 0,
-        totalVenues: venues.count || 0,
-        totalEvents: events.count || 0,
-        totalGroups: groups.count || 0,
-        marketplaceItems: listings.count || 0,
-        newsArticles: articles.count || 0,
-        totalEngagement: (users.count || 0) + (events.count || 0) + (groups.count || 0)
+        totalUsers: s.totalUsers || 0,
+        totalVenues: s.totalVenues || 0,
+        totalEvents: s.totalEvents || 0,
+        totalGroups: s.totalGroups || 0,
+        marketplaceItems: s.marketplaceItems || 0,
+        newsArticles: s.newsArticles || 0,
+        totalEngagement: (s.totalUsers || 0) + (s.totalEvents || 0) + (s.totalGroups || 0),
       });
     } catch (error) {
       console.error('Error fetching analytics stats:', error);
