@@ -81,8 +81,11 @@ serve(async (req) => {
 
     const supabase = getServiceClient();
 
-    // Skip admin check for internal pipeline calls (service role)
-    if (!pipeline_run_id) {
+    // Skip admin check for pipeline calls or service role calls
+    const authHeader = req.headers.get('Authorization');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '___none___';
+    const isServiceRole = authHeader?.includes(serviceRoleKey);
+    if (!pipeline_run_id && !isServiceRole) {
       const authResult = await requireAdmin(req, supabase);
       if (authResult instanceof Response) return authResult;
     }

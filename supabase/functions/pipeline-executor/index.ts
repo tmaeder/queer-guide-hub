@@ -187,6 +187,12 @@ async function handleContinue(
     return errorResponse(`Node ${currentNodeId} not found in pipeline`, 400, req)
   }
 
+  // Guard: skip if already processed (prevents duplicate queue messages from re-running nodes)
+  const currentNodeState = nodeStates[currentNodeId]
+  if (currentNodeState?.status === 'completed' || currentNodeState?.status === 'skipped') {
+    return jsonResponse({ success: true, message: `Node ${currentNodeId} already ${currentNodeState.status}` }, 200, req)
+  }
+
   // Check if upstream nodes are all completed (with advisory lock for fan-in safety)
   const incomingEdges = edges.filter(e => e.target === currentNodeId)
   if (incomingEdges.length > 1) {
@@ -225,7 +231,7 @@ async function handleContinue(
       if (!evaluateCondition(edge.condition, condCtx)) {
         // Condition not met — skip this node
         nodeStates[currentNodeId] = { status: 'skipped', items_in: 0, items_out: 0 }
-        await updateNodeStates(supabase, runId, nodeStates)
+        await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
         await advanceToNextNodes(supabase, run, nodes, edges, currentNodeId, nodeStates)
         return jsonResponse({ success: true, message: `Node ${currentNodeId} skipped (condition)` }, 200, req)
       }
@@ -238,7 +244,7 @@ async function handleContinue(
     status: 'running',
     started_at: new Date().toISOString(),
   }
-  await updateNodeStates(supabase, runId, nodeStates)
+  await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
 
   // Look up node type to find the edge function to invoke
   const { data: nodeType } = await supabase
@@ -258,7 +264,7 @@ async function handleContinue(
       items_out: result.items_out,
       duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
     }
-    await updateNodeStates(supabase, runId, nodeStates)
+    await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
     await advanceToNextNodes(supabase, run, nodes, edges, currentNodeId, nodeStates)
     return jsonResponse({ success: true, node: currentNodeId, status: 'completed', ...result }, 200, req)
   }
@@ -306,7 +312,7 @@ async function handleContinue(
         items_out: itemsOut,
         duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
       }
-      await updateNodeStates(supabase, runId, nodeStates)
+      await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
 
       // Update run counters
       await supabase
@@ -336,7 +342,7 @@ async function handleContinue(
         error: errorMsg,
         duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
       }
-      await updateNodeStates(supabase, runId, nodeStates)
+      await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
 
       // Mark the entire run as failed
       await supabase
