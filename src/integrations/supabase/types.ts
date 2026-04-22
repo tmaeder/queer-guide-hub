@@ -11991,6 +11991,8 @@ export type Database = {
           city: string
           city_id: string | null
           classified_at: string | null
+          closed_at: string | null
+          content_language: string | null
           country: string
           country_id: string | null
           created_at: string
@@ -12064,6 +12066,8 @@ export type Database = {
           city: string
           city_id?: string | null
           classified_at?: string | null
+          closed_at?: string | null
+          content_language?: string | null
           country?: string
           country_id?: string | null
           created_at?: string
@@ -12137,6 +12141,8 @@ export type Database = {
           city?: string
           city_id?: string | null
           classified_at?: string | null
+          closed_at?: string | null
+          content_language?: string | null
           country?: string
           country_id?: string | null
           created_at?: string

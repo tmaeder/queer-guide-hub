@@ -24,11 +24,7 @@ serve(async (req) => {
     }
 
     if (data && data.success === false) {
-      console.error('track_umami_event failed:', data.error);
-      return new Response(
-        JSON.stringify(data),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
+      console.warn('track_umami_event soft-failed:', data.error);
     }
 
     return new Response(

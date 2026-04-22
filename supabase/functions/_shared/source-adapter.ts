@@ -125,13 +125,28 @@ export async function writeToStaging(
 
   if (rows.length === 0) return 0
 
-  const { error } = await supabase.from('ingestion_staging').insert(rows)
-  if (error) {
-    if (error.code === '23505' || error.message?.includes('duplicate key')) return 0
-    throw new Error(`Staging write failed for ${adapter.name}: ${error.message}`)
+  // Try bulk insert first (fast path). If any row hits a uniqueness constraint
+  // (idempotency_key partial index), fall back to per-row inserts so individual
+  // duplicates are skipped without killing the entire batch.
+  const isDuplicate = (e: { code?: string; message?: string }) =>
+    e.code === '23505' || !!e.message?.includes('duplicate key')
+
+  const { error: bulkErr } = await supabase.from('ingestion_staging').insert(rows)
+  if (!bulkErr) return rows.length
+  if (!isDuplicate(bulkErr)) {
+    throw new Error(`Staging write failed for ${adapter.name}: ${bulkErr.message}`)
   }
 
-  return rows.length
+  // Fallback: insert row-by-row, skip known duplicates
+  let inserted = 0
+  for (const row of rows) {
+    const { error: rowErr } = await supabase.from('ingestion_staging').insert(row)
+    if (!rowErr) inserted++
+    else if (!isDuplicate(rowErr)) {
+      throw new Error(`Staging write failed for ${adapter.name}: ${rowErr.message}`)
+    }
+  }
+  return inserted
 }
 
 /**

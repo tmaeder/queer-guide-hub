@@ -4,6 +4,7 @@ import { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -140,6 +141,13 @@ export function VenueCard({
               >
                 <FavoriteButton itemId={venue.id} type="venue" />
               </Box>
+
+              {/* Closed badge */}
+              {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
+                <Box sx={{ position: 'absolute', top: 8, right: 44 }}>
+                  <Chip label="Closed" color="error" size="small" sx={{ fontWeight: 700, fontSize: '0.65rem', height: 20 }} />
+                </Box>
+              )}
 
               {/* Trip badge */}
               {tripStatus?.isInTrip && (

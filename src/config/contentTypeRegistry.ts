@@ -162,6 +162,13 @@ const venueFields: FieldConfig[] = [
   // Settings
   { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
   { name: 'verified', label: 'Verified', type: 'boolean', group: 'settings' },
+  {
+    name: 'closed_at',
+    label: 'Closed At',
+    type: 'datetime',
+    group: 'settings',
+    helpText: 'Set when this venue permanently closed. Leave empty if still open.',
+  },
   // External (read-only)
   {
     name: 'foursquare_id',

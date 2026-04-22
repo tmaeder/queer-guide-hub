@@ -178,9 +178,10 @@ Rules:
 - If you find MULTIPLE distinct events or venues, return one item per event/venue (max 10 items)
 - If only one event or venue is found, return an array with a single item
 - Do NOT merge separate events into one — each gets its own item
-- If a flyer shows MULTIPLE separate dates (e.g. "April 5" and "April 12"), these are DIFFERENT events — create one item per date. Do NOT put them into start_date/end_date of a single item.
-- Only use end_date when an event clearly spans continuously from start to end (e.g. a multi-day festival "April 5-7" or "Friday 22:00 to Saturday 06:00").
-- Recurring events (e.g. "every Friday", multiple listed dates) → separate items per occurrence.
+- CRITICAL: If a flyer shows MULTIPLE separate dates (e.g. "April 5" and "April 12", or "5. April und 12. April"), these are DIFFERENT events — create one item per date. Do NOT put them into start_date/end_date of a single item. This is the most common mistake — avoid it.
+- end_date is ONLY for events that run CONTINUOUSLY from start to end, such as: multi-day festivals ("April 5–7"), overnight events ("Friday 22:00 to Saturday 06:00"), or conferences with exact day spans. If two dates are more than 36 hours apart, they are almost certainly separate events, not a range.
+- Recurring events (e.g. "every Friday", multiple listed dates, "5. April und 12. April") → separate items, one per date.
+- When in doubt between "range" and "separate events": always prefer separate items.
 - Each item should be self-contained with its own location, dates, etc.
 - Set confidence to 0 and value to null for fields you cannot determine
 - For detected_type: "event" if there's a specific date/time; "venue" if it's a business listing/card
@@ -627,6 +628,32 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('Failed to insert audit row:', insertError)
+    }
+
+    // Auto-create community_submissions for each extracted item so they
+    // flow through the ingestion pipeline (normalize → validate → dedup → commit).
+    if (scanRow?.id) {
+      for (const item of itemsWithMatches) {
+        const fields = item.fields as Record<string, { value: unknown; confidence: number } | unknown>
+        // Flatten fields: { fieldName: value } dropping low-confidence nulls
+        const flat: Record<string, unknown> = {}
+        for (const [k, v] of Object.entries(fields)) {
+          if (v && typeof v === 'object' && 'value' in v) {
+            const f = v as { value: unknown; confidence: number }
+            if (f.value !== null && f.value !== undefined) flat[k] = f.value
+          }
+        }
+        if (Object.keys(flat).length === 0) continue
+
+        const { error: subErr } = await supabase.from('community_submissions').insert({
+          content_type:  item.detected_type,
+          status:        'pending',
+          data:          { ...flat, _source: 'flyer_scan', _scan_id: scanRow.id },
+          submitted_by:  user.id,
+          flyer_scan_id: scanRow.id,
+        })
+        if (subErr) console.error('Failed to create community_submission:', subErr.message)
+      }
     }
 
     console.log(`Analysis complete in ${processingTime}ms — ${itemsWithMatches.length} item(s)`)

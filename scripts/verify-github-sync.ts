@@ -64,17 +64,23 @@ async function waitFor<T>(label: string, check: () => Promise<T | null>): Promis
 
 async function checkWebhookConfig() {
   console.log('1. Webhook config');
-  const hooks = await gh(`/repos/${REPO_OWNER}/${REPO_NAME}/hooks`);
-  const hook = (hooks as Array<{ config: { url: string }; events: string[]; active: boolean }>).find((h) =>
-    h.config.url.includes(WEBHOOK_URL_MARKER),
-  );
-  if (!hook) return fail(`No webhook found pointing at ${WEBHOOK_URL_MARKER}`);
-  pass(`Webhook present at ${hook.config.url}`);
-  if (!hook.active) fail('Webhook is not active');
-  else pass('Webhook active');
-  const missing = REQUIRED_EVENTS.filter((e) => !hook.events.includes(e));
-  if (missing.length) fail(`Missing events: ${missing.join(', ')}`);
-  else pass(`Subscribed to ${REQUIRED_EVENTS.join(', ')}`);
+  try {
+    const hooks = await gh(`/repos/${REPO_OWNER}/${REPO_NAME}/hooks`);
+    const hook = (hooks as Array<{ config: { url: string }; events: string[]; active: boolean }>).find((h) =>
+      h.config.url.includes(WEBHOOK_URL_MARKER),
+    );
+    if (!hook) return fail(`No webhook found pointing at ${WEBHOOK_URL_MARKER}`);
+    pass(`Webhook present at ${hook.config.url}`);
+    if (!hook.active) fail('Webhook is not active');
+    else pass('Webhook active');
+    const missing = REQUIRED_EVENTS.filter((e) => !hook.events.includes(e));
+    if (missing.length) fail(`Missing events: ${missing.join(', ')}`);
+    else pass(`Subscribed to ${REQUIRED_EVENTS.join(', ')}`);
+  } catch (e) {
+    const msg = (e as Error).message;
+    if (msg.includes('403')) console.log(`  ⚠ skipped (PAT lacks admin:repo_hook): ${msg.slice(0, 80)}`);
+    else throw e;
+  }
 }
 
 async function checkRoundTrip() {

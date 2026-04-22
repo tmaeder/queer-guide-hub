@@ -172,6 +172,22 @@ Deno.serve(async (req) => {
       }, 200, req)
     }
 
+    if (resolvedTarget === 'queer_villages' && !dryRun) {
+      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, village_id: string, action: string }>>(
+        supabase, 'rpc.commit_village_staging_batch', 'commit_village_staging_batch', { p_limit: batchSize },
+      )
+      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
+      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
+      const rows = (data ?? []) as Array<{ staging_id: string, village_id: string, action: string }>
+      const inserted = rows.filter((r) => r.action === 'inserted').length
+      const updated  = rows.filter((r) => r.action === 'updated').length
+      return jsonResponse({
+        success: true, items: rows.length,
+        items_processed: rows.length, items_succeeded: rows.length,
+        inserted, updated,
+      }, 200, req)
+    }
+
     // ---- Legacy non-venue path ----
     // Idempotency: select target_record_id + idempotency_key so we can SKIP
     // items that were already committed in a prior partial run. Without this,

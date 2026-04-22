@@ -54,6 +54,8 @@ export default function FeedbackBoard() {
         .from('community_submissions' as const)
         .select('id,data,submitted_at,feedback_status')
         .eq('content_type', 'feedback')
+        .or('is_spam.is.null,is_spam.eq.false')
+        .is('duplicate_of', null)
         .order('submitted_at', { ascending: false });
       if (error) throw error;
       return data || [];

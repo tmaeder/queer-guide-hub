@@ -24,11 +24,13 @@ Deno.serve(async (req) => {
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
 
+    // Process both 'auto' items (first pass) and 'pending_review' items that
+    // now have a quality_score and can be re-evaluated for auto-approval.
     let query = supabase
       .from('ingestion_staging')
       .select('id, ai_confidence_score, ai_validation_status, review_status, enriched_data, target_table')
       .eq('ai_validation_status', 'approved')
-      .eq('review_status', 'auto')
+      .in('review_status', ['auto', 'pending_review'])
       .eq('disposition', 'pending')
       .order('created_at', { ascending: true })
       .limit(batchSize)
