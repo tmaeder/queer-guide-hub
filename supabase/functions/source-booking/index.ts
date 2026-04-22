@@ -1,7 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 
 // ============================================================
 // Source: Booking.com
@@ -30,7 +30,7 @@ const bookingAdapter: SourceAdapter = {
     // Sitemap fallback.
     const sitemaps = (config.filters?.sitemaps as string[]) ?? []
     if (sitemaps.length === 0) {
-      throw new Error('source-booking: provide filters.sitemaps[] (sub-sitemaps from ' + SITEMAP_INDEX + ') or set BOOKING_DEMAND_API_KEY')
+      throw new MissingCredentialsError('BOOKING_DEMAND_API_KEY')
     }
 
     const items: RawItem[] = []
@@ -201,5 +201,8 @@ Deno.serve(async (req) => {
       items_processed: written, items_succeeded: written, items_failed: 0,
       mode: config.apiKey ? 'demand_api' : 'sitemap',
     }, 200, req)
-  } catch (e) { return errorResponse((e as Error).message, 500, req) }
+  } catch (e) {
+    if (e instanceof MissingCredentialsError) return jsonResponse(skippedResponse('missing_credentials', e.missing), 200, req)
+    return errorResponse((e as Error).message, 500, req)
+  }
 })

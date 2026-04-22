@@ -450,7 +450,7 @@ async function enqueueStep(
   message: PipelineMessage | Record<string, unknown>,
   delaySec = 0
 ): Promise<void> {
-  await supabase.rpc('pgmq_send', {
+  const { error } = await supabase.rpc('pgmq_send', {
     p_queue: 'pipeline_steps',
     p_msg: {
       workflow: 'pipeline-executor',
@@ -459,6 +459,10 @@ async function enqueueStep(
     },
     p_delay: delaySec,
   })
+  if (error) {
+    console.error(`[pipeline-executor] enqueueStep failed for node ${(message as PipelineMessage).current_node_id}:`, error)
+    throw new Error(`enqueueStep failed: ${error.message}`)
+  }
 }
 
 /** Find and enqueue next nodes after current completes */
