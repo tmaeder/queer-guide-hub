@@ -87,7 +87,7 @@ jobs:
           # (each bundles shared code at deploy time).
           if [ "$REDEPLOY_ALL" = "true" ] || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/functions/_shared/"; then
             echo "Redeploying every function (manual trigger or shared code changed)."
-            CHANGED=$(ls -1 supabase/functions | grep -v '^_shared$')
+            CHANGED=$(ls -1 supabase/functions | grep -v '^_')
           else
             CHANGED=$(git diff --name-only HEAD~1 HEAD | awk -F/ '/^supabase\/functions\// && $3 != "_shared" {print $3}' | sort -u)
           fi
