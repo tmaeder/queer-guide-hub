@@ -127,7 +127,7 @@ export async function writeToStaging(
 
   const { error } = await supabase.from('ingestion_staging').insert(rows)
   if (error) {
-    if (error.code === '23505') return 0  // items already in staging, skip
+    if (error.code === '23505' || error.message?.includes('duplicate key')) return 0
     throw new Error(`Staging write failed for ${adapter.name}: ${error.message}`)
   }
 

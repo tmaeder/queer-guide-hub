@@ -214,6 +214,9 @@ Deno.serve(async (req) => {
     if (error instanceof MissingCredentialsError) {
       return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
     }
+    if ((error as Error).message?.includes('401')) {
+      return jsonResponse(skippedResponse('invalid_credentials', ['FOURSQUARE_API_KEY']), 200, req)
+    }
     console.error('source-foursquare error:', error)
     return errorResponse((error as Error).message, 500, req)
   }
