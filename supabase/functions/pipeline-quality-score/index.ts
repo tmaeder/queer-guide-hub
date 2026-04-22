@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
 
-    let query = supabase
+    const query = supabase
       .from('ingestion_staging')
       .select('id, normalized_data, enriched_data, entity_type, target_table')
       .eq('enrichment_status', 'pending')

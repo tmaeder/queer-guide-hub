@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     // Process both 'auto' items (first pass) and 'pending_review' items that
     // now have a quality_score and can be re-evaluated for auto-approval.
-    let query = supabase
+    const query = supabase
       .from('ingestion_staging')
       .select('id, ai_confidence_score, ai_validation_status, review_status, enriched_data, target_table')
       .eq('ai_validation_status', 'approved')
