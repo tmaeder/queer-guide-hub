@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useNews } from '@/hooks/useNews';
@@ -48,33 +48,15 @@ const pulse = {
 };
 
 const LatestNewsSlider = React.memo(() => {
-  const { articles, loading, error, getFeaturedArticles } = useNews();
+  const { articles, loading, error } = useNews();
   const isMobile = useIsMobile();
   const { t } = useTranslation();
-  const [featuredArticles, setFeaturedArticles] = useState<Record<string, unknown>[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const loadFeatured = async () => {
-      try {
-        const data = await getFeaturedArticles();
-        if (!cancelled) setFeaturedArticles(data);
-      } catch (e) {
-        console.warn('Failed to load featured news:', e);
-      }
-    };
-    loadFeatured();
-    return () => {
-      cancelled = true;
-    };
-  }, [getFeaturedArticles]);
 
   const latest = useMemo<Article[]>(() => {
-    const source = featuredArticles.length > 0 ? featuredArticles : articles;
-    return source.slice(0, 6) as unknown as Article[];
-  }, [featuredArticles, articles]);
+    return articles.slice(0, 6) as unknown as Article[];
+  }, [articles]);
 
-  if (loading && featuredArticles.length === 0) {
+  if (loading && latest.length === 0) {
     return (
       <Box component="section" sx={{ ...container, py: { xs: 4, md: 8 } }}>
         <Box sx={{ ...pulse, height: 32, width: { xs: 160, md: 240 }, mb: 2 }} />
