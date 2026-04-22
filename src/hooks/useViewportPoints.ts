@@ -31,7 +31,7 @@ import {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 /** Point layer types handled by this hook */
-export const POINT_LAYER_TYPES: LayerType[] = ['venues', 'events', 'restrooms'];
+export const POINT_LAYER_TYPES: LayerType[] = ['venues', 'events', 'restrooms', 'hotels'];
 
 export interface PointFeatureProps {
   id: string;
@@ -180,6 +180,32 @@ async function fetchEventsInBbox(
     .filter(Boolean) as PointFeature[];
 }
 
+async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
+  const { data, error } = await supabase
+    .from('hotels')
+    .select('id, slug, name, hotel_type, latitude, longitude, city, country, featured')
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+    .gte('latitude', bbox.south)
+    .lte('latitude', bbox.north)
+    .gte('longitude', bbox.west)
+    .lte('longitude', bbox.east);
+  if (error) throw error;
+  return (data ?? []).map((h: Record<string, unknown>) => ({
+    type: 'Feature' as const,
+    geometry: { type: 'Point' as const, coordinates: [Number(h.longitude), Number(h.latitude)] },
+    properties: {
+      id: `hotel-${h.id}`,
+      pointType: 'hotels' as const,
+      name: (h.name as string) ?? 'Hotel',
+      subtitle: (h.hotel_type as string) ?? '',
+      color: LAYER_COLORS.hotels,
+      linkTo: h.slug ? `/hotels/${h.slug}` : '',
+      meta: JSON.stringify({ city: h.city, country: h.country, hotel_type: h.hotel_type, featured: h.featured }),
+    },
+  }));
+}
+
 async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
   const lat = (bbox.south + bbox.north) / 2;
   const lng = (bbox.west + bbox.east) / 2;
@@ -283,6 +309,9 @@ export function useViewportPoints({
               break;
             case 'restrooms':
               features = await fetchRestroomsInBbox(quantized);
+              break;
+            case 'hotels':
+              features = await fetchHotelsInBbox(quantized);
               break;
           }
           featureCache.set(ck, features);

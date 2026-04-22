@@ -25,7 +25,7 @@ export const LAYER_DEFS: LayerDef[] = [
   { type: 'cities', label: 'Cities', icon: Building2, defaultOn: false },
   { type: 'countries', label: 'Countries', icon: Globe, defaultOn: false },
   { type: 'restrooms', label: 'Restrooms', icon: Accessibility, defaultOn: false },
-  { type: 'hotels', label: 'Hotels', icon: Hotel, defaultOn: false, comingSoon: true },
+  { type: 'hotels', label: 'Hotels', icon: Hotel, defaultOn: true },
   { type: 'neighbourhoods', label: 'Villages', icon: Landmark, defaultOn: false },
 ];
 
