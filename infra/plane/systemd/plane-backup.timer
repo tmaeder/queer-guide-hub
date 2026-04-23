@@ -1,0 +1,12 @@
+[Unit]
+Description=Nightly Plane backup at 03:00 UTC
+Requires=plane-backup.service
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 UTC
+Persistent=true
+RandomizedDelaySec=5min
+Unit=plane-backup.service
+
+[Install]
+WantedBy=timers.target
