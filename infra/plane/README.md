@@ -5,11 +5,12 @@ queer.guide. This directory contains everything needed to provision, run,
 back up, and restore the deployment.
 
 **Live URL:** https://plane.queer.guide
-**Host:** Infomaniak Public Cloud VM (Ubuntu 24.04)
+**Host:** existing queer.guide Infomaniak VPS (co-located)
 **Ingress:** Cloudflare Tunnel (no public ports)
 **Object storage:** Cloudflare R2 (S3-compatible) — bucket `qg-plane-assets`
 **Backups:** Cloudflare R2 — bucket `qg-plane-backups`, nightly 03:00 UTC
-**Auth:** Google OAuth + magic-link invite (signups disabled)
+**Mail:** Resend SMTP (`smtp.resend.com`)
+**Auth:** magic-link email invite only, signups disabled
 
 ---
 
@@ -17,113 +18,138 @@ back up, and restore the deployment.
 
 | Path | Purpose |
 |---|---|
-| `docker-compose.yml` | Plane stack (api, web, space, admin, live, workers, proxy, db, redis, mq) + cloudflared sidecar |
-| `.env.example` | All required env vars; copy to `.env` on the VM |
-| `cloudflared/config.yml` | Reference tunnel config for credentials-file mode |
+| `docker-compose.yml` | Plane stack (api, web, space, admin, live, workers, proxy, db, redis, mq); joins shared `web` network for Caddy |
+| `.env.example` | All required env vars; copy to `.env` on the VPS |
 | `backup/backup.sh` | Nightly Postgres dump + asset mirror → R2 |
 | `backup/restore.sh` | Destructive restore from a dump file |
-| `systemd/plane.service` | Boots the compose stack on VM start |
+| `systemd/plane.service` | Boots the compose stack on VPS start |
 | `systemd/plane-backup.{service,timer}` | 03:00 UTC daily backup |
 
 ---
 
 ## 2. First-time setup (runbook)
 
-Run through once to go live. Every step is manual on purpose — the steps
-touch external accounts (Infomaniak, Cloudflare, Google) and secrets.
+Assumes Plane is co-located on the **existing queer.guide VPS** that already
+runs Meilisearch + Caddy (`Dev/web/meilisearch/docker-compose.yml`). No new
+VM, no Cloudflare Tunnel — traffic flows Internet → Caddy:443 → `plane-proxy:80`
+over a shared Docker network `web`.
 
-### 2.1 Provision the VM (Infomaniak Public Cloud)
+### 2.1 Prep the existing VPS
 
-1. In the Infomaniak Manager → Public Cloud → create an OpenStack project
-   if none exists.
-2. Launch instance:
-   - Image: **Ubuntu 24.04 LTS**
-   - Flavor: **a4-ram8-disk80** (4 vCPU / 8 GB RAM / 80 GB) — minimum
-   - SSH key: upload your public key; disable password auth
-   - Security group: allow inbound **SSH (22) only**, and only from your admin IPs
-3. Note the public IPv4 — but **no DNS record points to it** (Cloudflare
-   Tunnel avoids exposing the IP).
-
-### 2.2 Harden the VM
-
-SSH in as `ubuntu`, then:
+SSH in as the existing admin user. Install any missing packages:
 
 ```bash
-sudo apt update && sudo apt full-upgrade -y
-sudo apt install -y unattended-upgrades fail2ban ufw rclone curl gnupg ca-certificates
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow from <YOUR_ADMIN_IP> to any port 22 proto tcp
-sudo ufw enable
-sudo systemctl enable --now fail2ban unattended-upgrades
-
-# Non-root user
-sudo adduser --system --group --home /opt/plane --shell /bin/bash plane
-sudo usermod -aG docker plane   # after Docker is installed below
+sudo apt update
+sudo apt install -y rclone
+# Docker + docker-compose-plugin already installed for Meilisearch.
 ```
 
-### 2.3 Install Docker
+Create a non-root owner for Plane (keeps volumes + .env file ownership clean):
 
 ```bash
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
-  | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" \
-  | sudo tee /etc/apt/sources.list.d/docker.list
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo adduser --system --group --home /opt/plane --shell /bin/bash plane
 sudo usermod -aG docker plane
 ```
 
-### 2.4 Cloudflare DNS + Tunnel
+### 2.2 Create the shared docker network
 
-In Cloudflare Zero Trust dashboard:
+One-time, idempotent:
 
-1. **Networks → Tunnels → Create a tunnel** (name: `plane-queer-guide`).
-2. Choose **Cloudflared**, copy the **tunnel token** (the long string
-   starting with `eyJ…`). Paste it into `.env` as `CLOUDFLARE_TUNNEL_TOKEN`.
-3. **Public Hostname** tab → add:
-   - Subdomain: `plane`
-   - Domain: `queer.guide`
-   - Service: `HTTP` → `plane-proxy:80`
-4. Cloudflare auto-creates the `plane` CNAME in DNS; verify in
-   **DNS → Records** for zone `queer.guide`.
+```bash
+docker network inspect web >/dev/null 2>&1 || docker network create web
+```
 
-No orange-cloud toggle needed — Tunnel traffic is always proxied.
+### 2.3 Attach Caddy + Meilisearch to the shared network
+
+Edit the existing `Dev/web/meilisearch/docker-compose.yml` on the VPS to add
+the `web` network to the `caddy` service, then restart it:
+
+```yaml
+# Dev/web/meilisearch/docker-compose.yml  (caddy service only)
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [default, web]
+
+networks:
+  default:
+  web:
+    external: true
+```
+
+Append the Plane site block to the existing `Caddyfile`:
+
+```caddyfile
+plane.queer.guide {
+  reverse_proxy plane-proxy:80
+  encode zstd gzip
+  # Plane's live collab uses websockets — Caddy auto-detects Upgrade headers.
+}
+```
+
+Reload:
+
+```bash
+cd Dev/web/meilisearch
+docker compose up -d    # picks up the new network
+docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+```
+
+### 2.4 Cloudflare DNS
+
+Cloudflare → queer.guide zone → DNS → Add record:
+
+- Type: `A`
+- Name: `plane`
+- IPv4: existing VPS public IP (the one `search.queer.guide` / `s.queer.guide`
+  already points at)
+- Proxy status: **DNS only** (grey cloud) — Caddy handles TLS end-to-end
+  with Let's Encrypt; CF proxying would double-terminate.
+- TTL: Auto
 
 ### 2.5 Cloudflare R2
 
-In Cloudflare dashboard → **R2**:
+Buckets `qg-plane-assets` and `qg-plane-backups` are already created
+(account `7aa3765cc5f50f2b681b782eb4a8d296`); lifecycle rule
+`expire-postgres-30d` on `qg-plane-backups` (prefix `postgres/`, 30d) is
+live.
 
-1. Create two buckets: `qg-plane-assets` (private), `qg-plane-backups` (private).
-2. On `qg-plane-backups`: **Settings → Object lifecycle rules → Add** →
-   "Delete objects after 30 days" under prefix `postgres/`.
-3. **Manage R2 API Tokens → Create Token**:
-   - Token 1 (app): Permissions "Object Read & Write", scope to `qg-plane-assets` only.
-   - Token 2 (backup): Permissions "Object Read & Write", scope to `qg-plane-backups` AND "Object Read" on `qg-plane-assets`.
-4. Note the **Account ID** (shown on R2 page) → becomes `<ACCOUNT_ID>` in endpoint URL.
+Still to do, in **R2 → Manage R2 API Tokens → Create Account API Token**:
 
-Fill `.env` variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
-`BACKUP_R2_ACCESS_KEY_ID`, `BACKUP_R2_SECRET_ACCESS_KEY`, both endpoint URLs.
+- **Token 1 — `plane-app`**: permission "Object Read & Write", scope to
+  bucket `qg-plane-assets` only. Paste access key ID + secret into `.env`
+  as `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`.
+- **Token 2 — `plane-backup`**: permission "Object Read & Write" on
+  `qg-plane-backups`, "Object Read" on `qg-plane-assets`. Paste into
+  `.env` as `BACKUP_R2_ACCESS_KEY_ID` / `BACKUP_R2_SECRET_ACCESS_KEY`.
 
-Store both tokens in 1Password under `queer.guide / Plane / R2 tokens`.
+Endpoint URL for both: `https://7aa3765cc5f50f2b681b782eb4a8d296.r2.cloudflarestorage.com`
 
-### 2.6 Google OAuth
+Store both token secrets in 1Password under `queer.guide / Plane / R2 tokens`.
 
-Reuse the existing queer.guide GCP project (same one that supplies
-Supabase Auth's Google client):
+### 2.6 Auth (magic-link only, no OAuth)
 
-1. GCP Console → APIs & Services → Credentials → open the OAuth 2.0 Client used by queer.guide.
-2. Under **Authorized redirect URIs**, add:
-   `https://plane.queer.guide/auth/google/callback`
-3. Save. No new client needed. Copy the existing client ID + secret into
-   `.env` as `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+No OAuth providers. Admins authenticate exclusively via one-time magic-link
+emails delivered through Resend. `ENABLE_SIGNUP=0` ensures only explicitly
+invited emails can register.
 
-### 2.7 SMTP
+### 2.7 SMTP (Resend)
 
-Infomaniak Mail provides SMTP for any `@queer.guide` mailbox.
-Create (or reuse) a `plane@queer.guide` mailbox in kSuite, then paste
-credentials into `.env` (`EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`).
+1. In Resend dashboard (https://resend.com):
+   - **Domains** → verify `queer.guide` (add the shown CNAME/TXT records in
+     Cloudflare DNS for the `queer.guide` zone; propagation is typically < 5 min).
+   - **API Keys** → create a key named `plane-smtp` with "Sending access" scope
+     only. Copy the value once; it won't be shown again.
+2. Paste the API key into `.env` as `EMAIL_HOST_PASSWORD`. SMTP host is
+   `smtp.resend.com`, user is the literal string `resend`, port 465 SSL.
+3. The `From:` address `plane@queer.guide` does not require an Infomaniak
+   mailbox — Resend signs outbound mail with the verified domain's DKIM.
 
 ### 2.8 Deploy
 
@@ -175,16 +201,16 @@ systemctl list-timers plane-backup.timer   # next run visible
 
 ### 2.10 First-run Plane config (via UI)
 
-Open https://plane.queer.guide → the **admin** instance-setup screen appears
-on first visit.
+Open https://plane.queer.guide → the **instance-setup** screen appears on first visit.
 
-1. Create the instance admin account (use your real Google email).
-2. In instance admin: disable email/password signup; enable Google OAuth
-   (client ID/secret come from `.env`, already injected).
-3. Log out, log back in via Google.
-4. Create workspace **`queer.guide`** with URL slug `queer-guide`.
-5. Create projects + labels + views per section 4 below.
-6. Invite the rest of the admin team by email (magic-link arrives via SMTP).
+1. Create the instance admin account using your primary queer.guide email.
+   A magic-link is emailed via Resend; click it to activate.
+2. In instance admin (`…/god-mode/general`): ensure `ENABLE_SIGNUP=0`
+   and OAuth providers are empty (already set via `.env`).
+3. Create workspace **`queer.guide`** with URL slug `queer-guide`.
+4. Create projects + labels + views per section 4 below.
+5. Invite the rest of the admin team by email — each receives a magic-link
+   to set up their account.
 
 ---
 
@@ -264,35 +290,34 @@ Onboarding, Partner Contacts, Weekly Notes.
 | Secret | Location |
 |---|---|
 | `.env` on VM | `/opt/plane/infra/plane/.env`, mode 0600, owner `plane` |
-| 1Password vault | `queer.guide / Plane / *` (secrets, R2 tokens, SMTP, OAuth) |
+| 1Password vault | `queer.guide / Plane / *` (DB, RabbitMQ, Django secret, Resend API key, R2 tokens, tunnel token) |
 | GitHub Actions | not used for Plane (manual deploy) |
 | Cloudflare Tunnel token | CF Zero Trust dashboard + `.env` |
-| Google OAuth client | shared with queer.guide main app (GCP Console) |
+| Resend API key | Resend dashboard + `.env` (`EMAIL_HOST_PASSWORD`) |
 
 **Break-glass:** if the VM is lost, a fresh VM + latest R2 backup restores
 full state in < 30 min. Only the `.env` must be re-populated from 1Password.
 
 ---
 
-## 6. Auth model & SSO upgrade path
+## 6. Auth model
 
-v1 uses **Google OAuth** with the same Google Workspace account admins use
-for queer.guide. Plane and queer.guide maintain separate user records, but
-because both trust the same Google identity, UX is "click Sign in with
-Google" in either app — no second password.
+**Magic-link email only.** No OAuth providers. `ENABLE_SIGNUP=0` so only
+explicitly invited emails can register. Links are delivered via Resend SMTP
+from `plane@queer.guide`.
 
-Full SSO (single session, single user record) would require either:
+**Shared identity with queer.guide:** Plane and queer.guide are independent
+user stores. Admins sign in with the same email address in both apps, so
+identity is logically unified even though the records are separate. This is
+the simplest and most reliable approach given our stack — Supabase is an
+OAuth consumer only, not an OIDC provider, so real SSO would require
+adding an IdP (Keycloak/Authentik) or Plane Enterprise + a Supabase→OIDC
+shim Worker. Deferred; revisit only if admin count grows significantly.
 
-- **Plane Enterprise license** + a small Cloudflare Worker acting as an
-  OIDC provider that delegates to Supabase GoTrue and signs ID tokens; or
-- Verify current Plane CE version supports generic OIDC (recent releases
-  have added this). If yes: same Worker shim, no license needed.
-
-This upgrade is deferred; ~1 day of work once decided.
-
-**Apple Sign-In note:** queer.guide offers Apple OAuth; Plane CE does not.
-Admins who use only Apple must sign in to Plane via Google or be invited
-via magic-link email.
+**Adding / removing admins:**
+- Add: instance admin UI → Workspaces → `queer.guide` → Members → Invite by email.
+- Remove: same UI, set role to Guest or remove member.
+- First-ever admin is created on first page load at the instance-setup screen.
 
 ---
 
@@ -304,4 +329,5 @@ via magic-link email.
   before bumping `PLANE_VERSION`; read release notes.
 - **Cloudflare Tunnel single point of failure.** If CF is down, Plane is
   unreachable. Acceptable — most of our stack depends on CF anyway.
-- **No cross-app SSO in v1.** See section 6 for upgrade path.
+- **Separate user stores.** No automatic sync of roles/members between
+  queer.guide and Plane; admins are invited manually per app.
