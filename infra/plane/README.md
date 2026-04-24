@@ -90,8 +90,22 @@ plane.queer.guide {
   reverse_proxy plane-proxy:80
   encode zstd gzip
   # Plane's live collab uses websockets — Caddy auto-detects Upgrade headers.
+
+  # Force no-cache on every response. Plane serves a SPA with hashed assets but
+  # the root HTML and /api/* responses MUST NOT be cached — stale HTML pinned
+  # to an old bundle hash produces hard-to-debug 404s on chunk loads. Override
+  # upstream Cache-Control so CF edge + browser never cache app shell / API.
+  header_down >Cache-Control "private, no-store, no-cache, must-revalidate"
 }
 ```
+
+> **Cloudflare Cache Rules — must be disabled for `plane.queer.guide`.**
+> The queer.guide zone ships with four default "Cache Everything [Template]"
+> / "Set Browser/Edge Cache Time" rules (slots #3–#6 in **Caching → Cache
+> Rules**). These cache the Plane SPA HTML at the CF edge and cause stale
+> bundles after every deploy. Either scope them to exclude
+> `hostname eq "plane.queer.guide"`, or toggle them off. Verified absent as
+> of the initial cutover — re-check after any CF zone template migration.
 
 Reload:
 
@@ -132,6 +146,21 @@ Still to do, in **R2 → Manage R2 API Tokens → Create Account API Token**:
 Endpoint URL for both: `https://7aa3765cc5f50f2b681b782eb4a8d296.r2.cloudflarestorage.com`
 
 Store both token secrets in 1Password under `queer.guide / Plane / R2 tokens`.
+
+**CORS policy on `qg-plane-assets` (required for browser attachment
+uploads):** Plane's frontend presigns a POST to R2 and the browser uploads
+the file bytes directly. Without a CORS policy the preflight fails and
+attachments silently never reach the bucket. Set this in
+**R2 → qg-plane-assets → Settings → CORS Policy** (paste as compact
+single-line JSON — the CodeMirror editor auto-inserts braces on pretty-
+printed input and rejects it):
+
+```json
+[{"AllowedOrigins":["https://plane.queer.guide"],"AllowedMethods":["GET","PUT","POST","HEAD"],"AllowedHeaders":["*"],"ExposeHeaders":["ETag"],"MaxAgeSeconds":3600}]
+```
+
+Verify: `curl -i -X OPTIONS -H "Origin: https://plane.queer.guide" -H "Access-Control-Request-Method: POST" https://7aa3765cc5f50f2b681b782eb4a8d296.r2.cloudflarestorage.com/qg-plane-assets`
+must return `204` with `Access-Control-Allow-Origin: https://plane.queer.guide`.
 
 ### 2.6 Auth (magic-link only, no OAuth)
 
