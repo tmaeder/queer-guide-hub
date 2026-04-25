@@ -659,7 +659,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
             zIndex: 5,
           }}
         >
-          <CircularProgress size={32} />
+          <CircularProgress size={32} aria-label="Loading" />
         </Box>
       )}
 
@@ -691,7 +691,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
           pointerEvents: 'none',
         }}
       >
-        {isFetching && <CircularProgress size={12} />}
+        {isFetching && <CircularProgress size={12} aria-label="Loading" />}
         <Typography variant="caption" color="text.secondary">
           {isFetching ? 'Loading...' : `${pointsTotalCount.toLocaleString()} results in view`}
         </Typography>

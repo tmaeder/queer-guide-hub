@@ -524,7 +524,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
 
       {/* Links Table */}
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress  aria-label="Loading"/></Box>
       ) : filteredLinks.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography color="text.secondary">

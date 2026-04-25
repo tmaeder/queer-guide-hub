@@ -259,7 +259,7 @@ export function AddReservationDialog({ open, onClose, tripId, existing }: Props)
         <DialogFooter className="mt-3">
           <Button variant="outline" onClick={resetAndClose}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || isPending}>
-            {isPending && <CircularProgress size={16} sx={{ mr: 1 }} />}
+            {isPending && <CircularProgress size={16} sx={{ mr: 1 }} aria-label="Loading" />}
             {isEdit ? 'Save' : 'Add Reservation'}
           </Button>
         </DialogFooter>

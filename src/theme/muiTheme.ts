@@ -21,7 +21,9 @@ const lightPalette = {
   warning: { main: '#b31b25', contrastText: '#ffffff' },
   success: { main: '#0a0a0a', contrastText: '#ffffff' },
   background: { default: '#ffffff', paper: '#f5f5f5' },
-  text: { primary: '#0a0a0a', secondary: '#666666' },
+  // WCAG 1.4.3 — bumped from #666 (5.74:1) to #595959 so muted text retains
+  // ≥4.5:1 over light tinted/action.hover surfaces.
+  text: { primary: '#0a0a0a', secondary: '#595959' },
   divider: 'rgba(0,0,0,0)',
 };
 
@@ -34,7 +36,8 @@ const darkPalette = {
   warning: { main: '#fb5151', contrastText: '#ffffff' },
   success: { main: '#ffffff', contrastText: '#0a0a0a' },
   background: { default: '#0a0a0a', paper: '#111111' },
-  text: { primary: '#f2f2f2', secondary: '#999999' },
+  // WCAG 1.4.3 — bumped from #999 (4.98:1, fails on muted bg) to #adadad.
+  text: { primary: '#f2f2f2', secondary: '#adadad' },
   divider: 'rgba(0,0,0,0)',
 };
 

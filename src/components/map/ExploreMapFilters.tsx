@@ -48,7 +48,7 @@ export const ExploreMapFiltersPanel: React.FC<ExploreMapFiltersProps> = ({
                 ? {
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => updateFilter('search', undefined)}>
+                        <IconButton size="small" aria-label="Clear search" onClick={() => updateFilter('search', undefined)}>
                           <X size={14} />
                         </IconButton>
                       </InputAdornment>
@@ -62,6 +62,8 @@ export const ExploreMapFiltersPanel: React.FC<ExploreMapFiltersProps> = ({
 
         <IconButton
           size="small"
+          aria-label={open ? 'Hide filters' : 'Show filters'}
+          aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
           sx={{
             width: 36,

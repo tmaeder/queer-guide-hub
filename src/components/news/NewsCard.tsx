@@ -178,15 +178,19 @@ export const NewsCard = ({
   if (variant === 'featured') {
     return (
       <Box
+        component={LocalizedLink}
+        to={`/news/${article.slug}`}
+        aria-label={safeTitle}
         sx={{
           display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3,
-          cursor: 'pointer', transition: 'all 0.2s',
+          textDecoration: 'none', color: 'inherit', cursor: 'pointer',
+          transition: 'all 0.2s',
           '&:hover': { opacity: 0.9 },
         }}
-        onClick={() => navigate(`/news/${article.slug}`)}
       >
         {hasImage && (
           <Box sx={{ flex: { md: '0 0 45%' }, borderRadius: 2, overflow: 'hidden' }}>
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a non-interactive image lifecycle event */}
             <img
               loading="lazy"
               referrerPolicy="no-referrer"

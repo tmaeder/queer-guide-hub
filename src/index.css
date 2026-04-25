@@ -129,7 +129,9 @@
   --secondary-foreground: 0 0% 100%;
 
   --muted: 0 0% 94%;
-  --muted-foreground: 0 0% 40%;
+  /* WCAG 1.4.3 — was 40% (#666 ≈ 5.74:1 on white but ~3.9:1 on muted/action.hover).
+     Bumped to 35% so muted body text retains ≥4.5:1 over light tinted surfaces. */
+  --muted-foreground: 0 0% 35%;
 
   --accent: 0 0% 94%;
   --accent-foreground: 0 0% 4%;
@@ -203,7 +205,8 @@
   --secondary-foreground: 0 0% 95%;
 
   --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 60%;
+  /* WCAG 1.4.3 — was 60% (#999 ≈ 4.98:1 on #0a0a0a borderline AA, fails on muted bg). */
+  --muted-foreground: 0 0% 68%;
 
   --accent: 0 0% 12%;
   --accent-foreground: 0 0% 95%;

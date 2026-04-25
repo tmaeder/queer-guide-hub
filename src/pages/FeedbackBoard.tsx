@@ -123,7 +123,7 @@ export default function FeedbackBoard() {
   if (isLoading) {
     return (
       <Container sx={{ py: 6, textAlign: 'center' }}>
-        <CircularProgress />
+        <CircularProgress  aria-label="Loading"/>
       </Container>
     );
   }

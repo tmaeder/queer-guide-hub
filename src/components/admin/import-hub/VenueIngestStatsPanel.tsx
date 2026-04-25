@@ -186,7 +186,7 @@ export function VenueIngestStatsPanel() {
             Pipeline Health
           </Typography>
           {health.isLoading ? (
-            <CircularProgress size={20} />
+            <CircularProgress size={20} aria-label="Loading" />
           ) : (health.data ?? []).length === 0 ? (
             <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>No data.</Typography>
           ) : (
@@ -247,7 +247,7 @@ export function VenueIngestStatsPanel() {
             Venue Ingest Funnel (last 60 days)
           </Typography>
           {stats.isLoading ? (
-            <CircularProgress size={20} />
+            <CircularProgress size={20} aria-label="Loading" />
           ) : (
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 2 }}>
               {funnelSteps.map((s) => (
@@ -272,7 +272,7 @@ export function VenueIngestStatsPanel() {
             Flagged Duplicates by Source
           </Typography>
           {dupes.isLoading ? (
-            <CircularProgress size={20} />
+            <CircularProgress size={20} aria-label="Loading" />
           ) : (dupes.data ?? []).length === 0 ? (
             <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
               No duplicates flagged.
@@ -296,7 +296,7 @@ export function VenueIngestStatsPanel() {
             Per-Source Daily Breakdown
           </Typography>
           {stats.isLoading ? (
-            <CircularProgress size={20} />
+            <CircularProgress size={20} aria-label="Loading" />
           ) : (stats.data ?? []).length === 0 ? (
             <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>No activity.</Typography>
           ) : (
@@ -328,7 +328,7 @@ export function VenueIngestStatsPanel() {
             Recent Pipeline Events
           </Typography>
           {events.isLoading ? (
-            <CircularProgress size={20} />
+            <CircularProgress size={20} aria-label="Loading" />
           ) : (events.data ?? []).length === 0 ? (
             <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>No events.</Typography>
           ) : (

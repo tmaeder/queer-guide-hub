@@ -87,7 +87,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
   if (dailyLoading || slaLoading) {
     return (
       <Box sx={{ p: 6, textAlign: 'center' }}>
-        <CircularProgress />
+        <CircularProgress  aria-label="Loading"/>
       </Box>
     );
   }

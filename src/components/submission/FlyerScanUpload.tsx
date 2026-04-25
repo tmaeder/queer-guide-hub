@@ -165,7 +165,7 @@ export function FlyerScanUpload({
           <Box
             sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, py: 1 }}
           >
-            <CircularProgress size={32} sx={{ color: '#ec4899' }} />
+            <CircularProgress size={32} sx={{ color: '#ec4899' }} aria-label="Loading" />
             <Typography variant="body2" sx={{ fontWeight: 500 }}>
               {progressText}
             </Typography>

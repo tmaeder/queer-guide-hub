@@ -177,7 +177,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={24} />
+          <CircularProgress size={24} aria-label="Loading" />
         </Box>
       ) : error ? (
         <Alert severity="error" sx={{ mb: 2 }}>

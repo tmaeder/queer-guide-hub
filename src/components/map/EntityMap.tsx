@@ -304,7 +304,7 @@ export const EntityMap: React.FC<EntityMapProps> = ({
             zIndex: 5,
           }}
         >
-          <CircularProgress size={24} />
+          <CircularProgress size={24} aria-label="Loading" />
         </Box>
       )}
     </Box>

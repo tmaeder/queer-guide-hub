@@ -141,6 +141,25 @@ export function AdminShell() {
   return (
     <AdminShellContext.Provider value={{ openEditor, closeEditor }}>
       <Box
+        component="a"
+        href="#admin-main-content"
+        sx={{
+          position: 'absolute',
+          left: -9999,
+          top: 8,
+          zIndex: 2000,
+          px: 2,
+          py: 1,
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          textDecoration: 'none',
+          fontWeight: 600,
+          '&:focus': { left: 8, outline: `2px solid ${brandColors.main}` },
+        }}
+      >
+        Skip to admin content
+      </Box>
+      <Box
         sx={{
           display: 'flex',
           minHeight: 'calc(100vh - 100px)',
@@ -276,7 +295,7 @@ export function AdminShell() {
           )}
 
           {/* Content area */}
-          <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, sm: 3 } }}>
+          <Box id="admin-main-content" component="main" tabIndex={-1} sx={{ flex: 1, overflow: 'auto', p: { xs: 2, sm: 3 } }}>
             {/* Editor overlay takes priority when open */}
             {editor ? (
               <Suspense fallback={<ShellSkeleton />}>

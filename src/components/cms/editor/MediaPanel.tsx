@@ -189,7 +189,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
 
         {loading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={24} />
+            <CircularProgress size={24} aria-label="Loading" />
           </Box>
         )}
 
@@ -305,7 +305,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
                       sx={{ flexShrink: 0 }}
                     >
                       {isDetaching ? (
-                        <CircularProgress size={14} />
+                        <CircularProgress size={14} aria-label="Loading" />
                       ) : (
                         <Trash2 size={14} className="text-gray-400" />
                       )}

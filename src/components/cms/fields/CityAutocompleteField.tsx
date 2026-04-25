@@ -216,7 +216,7 @@ export function CityAutocompleteField({
                     : undefined,
                 endAdornment: (
                   <>
-                    {loading || creating ? <CircularProgress color="inherit" size={20} /> : null}
+                    {loading || creating ? <CircularProgress color="inherit" size={20} aria-label="Loading" /> : null}
                     {params.InputProps.endAdornment}
                   </>
                 ),

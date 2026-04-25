@@ -113,7 +113,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress size={24} />
+        <CircularProgress size={24} aria-label="Loading" />
       </Box>
     );
   }
@@ -327,7 +327,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
             color="warning"
             size="small"
             startIcon={
-              isRestoring ? <CircularProgress size={14} color="inherit" /> : <RotateCcw size={14} />
+              isRestoring ? <CircularProgress size={14} color="inherit" aria-label="Loading" /> : <RotateCcw size={14} />
             }
           >
             {isRestoring ? 'Restoring...' : 'Restore'}

@@ -73,4 +73,18 @@ i18n
     },
   });
 
+// WCAG 3.1.1 / 3.1.2 — keep <html lang> + dir in sync with the active locale
+// so screen readers pronounce content correctly and Arabic switches to RTL.
+const RTL_LOCALES = new Set(['ar', 'he', 'fa', 'ur']);
+function syncHtmlLangDir(lang: string) {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  const base = lang.split('-')[0];
+  if (root.getAttribute('lang') !== lang) root.setAttribute('lang', lang);
+  const dir = RTL_LOCALES.has(base) ? 'rtl' : 'ltr';
+  if (root.getAttribute('dir') !== dir) root.setAttribute('dir', dir);
+}
+syncHtmlLangDir(i18n.language || DEFAULT_LOCALE);
+i18n.on('languageChanged', syncHtmlLangDir);
+
 export default i18n;

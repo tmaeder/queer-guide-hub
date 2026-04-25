@@ -204,7 +204,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
 
           {tripsLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={24} />
+              <CircularProgress size={24} aria-label="Loading" />
             </Box>
           ) : hasTrips && !showCreateForm ? (
             <>
@@ -387,7 +387,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
               }
             >
               {(createTrip.isPending || addPlace.isPending) && (
-                <CircularProgress size={16} sx={{ mr: 1, color: 'inherit' }} />
+                <CircularProgress size={16} sx={{ mr: 1, color: 'inherit' }} aria-label="Loading" />
               )}
               {t('trips.addTo.createAndAdd', 'Create & Add')}
             </Button>
@@ -397,7 +397,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
               disabled={!selectedTripId || addPlace.isPending}
             >
               {addPlace.isPending && (
-                <CircularProgress size={16} sx={{ mr: 1, color: 'inherit' }} />
+                <CircularProgress size={16} sx={{ mr: 1, color: 'inherit' }} aria-label="Loading" />
               )}
               {t('trips.addTo.title', 'Add to Trip')}
             </Button>

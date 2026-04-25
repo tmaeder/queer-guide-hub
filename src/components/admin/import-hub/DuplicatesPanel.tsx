@@ -104,7 +104,7 @@ function StagingDedupSection() {
               style={{ display: 'flex', gap: 8 }}
             >
               {batchScan.isPending ? (
-                <CircularProgress size={16} sx={{ color: 'white' }} />
+                <CircularProgress size={16} sx={{ color: 'white' }} aria-label="Loading" />
               ) : (
                 <Search style={{ width: 16, height: 16 }} />
               )}
@@ -200,7 +200,7 @@ function ExistingDedupSection() {
               style={{ display: 'flex', gap: 8 }}
             >
               {scanMutation.isPending ? (
-                <CircularProgress size={16} sx={{ color: 'white' }} />
+                <CircularProgress size={16} sx={{ color: 'white' }} aria-label="Loading" />
               ) : (
                 <Search style={{ width: 16, height: 16 }} />
               )}
@@ -227,7 +227,7 @@ function ExistingDedupSection() {
       {/* Results grouped by confidence */}
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={28} />
+          <CircularProgress size={28} aria-label="Loading" />
         </Box>
       ) : pairs.length === 0 ? (
         <Card>
@@ -314,7 +314,7 @@ function MergeHistorySection() {
         <CardContent>
           {isLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={28} />
+              <CircularProgress size={28} aria-label="Loading" />
             </Box>
           ) : history.length === 0 ? (
             <Typography sx={{ color: 'var(--muted-foreground)', textAlign: 'center', py: 4 }}>

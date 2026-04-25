@@ -320,7 +320,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               {isDone ? (
                 <CheckCircle style={{ width: 12, height: 12, color: '#10b981' }} />
               ) : isCurrent ? (
-                <CircularProgress size={12} />
+                <CircularProgress size={12} aria-label="Loading" />
               ) : (
                 <Icon style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }} />
               )}
@@ -351,7 +351,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               border: '1px solid #6366f130',
             }}
           >
-            <CircularProgress size={12} />
+            <CircularProgress size={12} aria-label="Loading" />
             <span>Processing</span>
           </Box>
         )}
@@ -720,7 +720,7 @@ function PendingReviewSection() {
 
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={28} />
+          <CircularProgress size={28} aria-label="Loading" />
         </Box>
       ) : pairs.length === 0 ? (
         <Card>
@@ -845,7 +845,7 @@ function MergeHistorySection() {
       <CardContent>
         {isLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={28} />
+            <CircularProgress size={28} aria-label="Loading" />
           </Box>
         ) : history.length === 0 ? (
           <Typography sx={{ color: 'var(--muted-foreground)', textAlign: 'center', py: 4 }}>

@@ -761,7 +761,7 @@ export function AdminEditDialog({
 
         {logLoading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-            <CircularProgress size={16} />
+            <CircularProgress size={16} aria-label="Loading" />
           </Box>
         )}
 
@@ -789,7 +789,7 @@ export function AdminEditDialog({
             {enriching ? 'Enriching...' : 'Enrich with AI'}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || changedCount === 0}>
-            {loading ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
+            {loading ? <CircularProgress size={16} sx={{ mr: 1 }} aria-label="Loading" /> : null}
             Save{' '}
             {changedCount > 0 ? `(${changedCount} field${changedCount > 1 ? 's' : ''})` : 'Changes'}
           </Button>

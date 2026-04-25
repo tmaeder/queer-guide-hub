@@ -275,7 +275,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                 ),
                 endAdornment: searching ? (
                   <InputAdornment position="end">
-                    <CircularProgress size={18} />
+                    <CircularProgress size={18} aria-label="Loading" />
                   </InputAdornment>
                 ) : null,
               }}
@@ -445,7 +445,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
         <DialogFooter className="mt-3">
           <Button variant="outline" onClick={resetAndClose}>{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || addPlace.isPending}>
-            {addPlace.isPending && <CircularProgress size={16} sx={{ mr: 1 }} />}
+            {addPlace.isPending && <CircularProgress size={16} sx={{ mr: 1 }} aria-label="Loading" />}
             {t('trips.addPlace.title', 'Add Place')}
           </Button>
         </DialogFooter>

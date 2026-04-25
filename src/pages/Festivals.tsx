@@ -59,7 +59,7 @@ export default function Festivals() {
       </Box>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress  aria-label="Loading"/></Box>
       ) : festivals.length === 0 ? (
         <Box sx={{ py: 8, textAlign: 'center' }}>
           <Typography color="text.secondary">No festivals found matching your criteria.</Typography>

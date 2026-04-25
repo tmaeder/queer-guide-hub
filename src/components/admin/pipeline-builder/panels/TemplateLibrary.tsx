@@ -219,8 +219,9 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
                     Saving <strong>{selectedNodes.length}</strong> nodes and <strong>{selectedEdges.length}</strong> edges as a reusable template.
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium">Name <span className="text-destructive">*</span></label>
+                    <label htmlFor="tpl-name" className="text-xs font-medium">Name <span className="text-destructive">*</span></label>
                     <Input
+                      id="tpl-name"
                       value={saveName}
                       onChange={(e) => setSaveName(e.target.value)}
                       placeholder="e.g. news-ingestion-core"
@@ -228,8 +229,9 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium">Description</label>
+                    <label htmlFor="tpl-desc" className="text-xs font-medium">Description</label>
                     <Textarea
+                      id="tpl-desc"
                       value={saveDesc}
                       onChange={(e) => setSaveDesc(e.target.value)}
                       placeholder="What does this template do?"
@@ -237,9 +239,9 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium">Category</label>
+                    <label htmlFor="tpl-category" className="text-xs font-medium">Category</label>
                     <Select value={saveCategory} onValueChange={setSaveCategory}>
-                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="tpl-category" aria-label="Category" className="h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                       </SelectContent>

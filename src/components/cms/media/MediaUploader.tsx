@@ -171,7 +171,7 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
             onClick={handleUpload}
             disabled={uploading}
             startIcon={
-              uploading ? <CircularProgress size={16} color="inherit" /> : <Upload size={16} />
+              uploading ? <CircularProgress size={16} color="inherit" aria-label="Loading" /> : <Upload size={16} />
             }
           >
             {uploading ? 'Uploading...' : 'Upload'}

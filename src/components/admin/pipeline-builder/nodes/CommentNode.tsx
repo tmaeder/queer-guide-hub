@@ -91,7 +91,19 @@ function CommentNode({ data, selected, id }: NodeProps) {
         </div>
       </div>
 
-      <div className="p-2" onDoubleClick={() => setEditing(true)}>
+      <div
+        className="p-2"
+        role="button"
+        tabIndex={0}
+        aria-label="Edit comment text"
+        onDoubleClick={() => setEditing(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setEditing(true);
+          }
+        }}
+      >
         {editing ? (
           <textarea
             ref={textareaRef}

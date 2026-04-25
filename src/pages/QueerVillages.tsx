@@ -34,7 +34,7 @@ export default function QueerVillages() {
 
       {loading && villages.length === 0 ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
+          <CircularProgress  aria-label="Loading"/>
         </Box>
       ) : villages.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>

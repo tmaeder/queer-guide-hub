@@ -346,7 +346,7 @@ export function ReviewQueueEnhanced() {
       {/* Loading */}
       {isLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={28} />
+          <CircularProgress size={28} aria-label="Loading" />
         </Box>
       )}
 

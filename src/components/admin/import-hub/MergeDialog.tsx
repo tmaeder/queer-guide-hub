@@ -52,7 +52,7 @@ export function MergeDialog({
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
-            <CircularProgress size={32} />
+            <CircularProgress size={32} aria-label="Loading" />
             <Typography sx={{ ml: 2, color: 'var(--muted-foreground)' }}>Loading records...</Typography>
           </Box>
         ) : !entityA || !entityB ? (
@@ -77,7 +77,7 @@ export function MergeDialog({
 
         {mergeMutation.isPending && (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
-            <CircularProgress size={20} />
+            <CircularProgress size={20} aria-label="Loading" />
             <Typography variant="body2" sx={{ ml: 1, color: 'var(--muted-foreground)' }}>Merging records...</Typography>
           </Box>
         )}

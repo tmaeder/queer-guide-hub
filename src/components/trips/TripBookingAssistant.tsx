@@ -212,7 +212,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
         <>
           {venuesLoading ? (
             <Box className="flex justify-center py-8">
-              <CircularProgress size={24} />
+              <CircularProgress size={24} aria-label="Loading" />
             </Box>
           ) : (
             cityIds.map((cityId) => {
@@ -240,7 +240,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
                         {venue.category && <Badge variant="outline">{venue.category}</Badge>}
                       </div>
                       <Button variant="ghost" size="sm" onClick={() => handleAddVenue(venue)} disabled={addingId === venue.id}>
-                        {addingId === venue.id ? <CircularProgress size={12} /> : <Plus size={12} />}
+                        {addingId === venue.id ? <CircularProgress size={12} aria-label="Loading" /> : <Plus size={12} />}
                         {t('trips.bookingAssistant.add', 'Add')}
                       </Button>
                     </Box>

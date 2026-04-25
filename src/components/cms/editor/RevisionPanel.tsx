@@ -65,7 +65,7 @@ export function RevisionPanel({ sourceTable, sourceId }: RevisionPanelProps) {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-        <CircularProgress size={18} />
+        <CircularProgress size={18} aria-label="Loading" />
       </Box>
     );
   }

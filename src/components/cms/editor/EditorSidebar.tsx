@@ -173,7 +173,7 @@ export function EditorSidebar({
             </Typography>
           ) : mediaLoading ? (
             <Box className="flex items-center justify-center py-4">
-              <CircularProgress size={24} />
+              <CircularProgress size={24} aria-label="Loading" />
             </Box>
           ) : attachments.length === 0 ? (
             <Typography variant="body2" color="text.secondary">
@@ -264,7 +264,7 @@ export function EditorSidebar({
             </Typography>
           ) : revisionsLoading ? (
             <Box className="flex items-center justify-center py-4">
-              <CircularProgress size={24} />
+              <CircularProgress size={24} aria-label="Loading" />
             </Box>
           ) : revisions.length === 0 ? (
             <Typography variant="body2" color="text.secondary">

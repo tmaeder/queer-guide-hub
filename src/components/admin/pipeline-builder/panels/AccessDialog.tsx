@@ -122,8 +122,9 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
 
           <div className="flex gap-2 items-end">
             <div className="flex-1">
-              <label className="text-xs font-medium">User email</label>
+              <label htmlFor="access-dialog-email" className="text-xs font-medium">User email</label>
               <Input
+                id="access-dialog-email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="alice@example.com"
@@ -132,9 +133,9 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
               />
             </div>
             <div className="w-28">
-              <label className="text-xs font-medium">Permission</label>
+              <label htmlFor="access-dialog-perm" className="text-xs font-medium">Permission</label>
               <Select value={perm} onValueChange={(v) => setPerm(v as 'view' | 'edit' | 'run')}>
-                <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="access-dialog-perm" aria-label="Permission" className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="view">View</SelectItem>
                   <SelectItem value="run">Run</SelectItem>

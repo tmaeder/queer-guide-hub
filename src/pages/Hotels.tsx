@@ -152,7 +152,7 @@ export default function Hotels() {
           {hasMore && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
               <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
-                {loading ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
+                {loading ? <CircularProgress size={16} sx={{ mr: 1 }} aria-label="Loading" /> : null}
                 {t('common.loadMore', 'Load More')}
               </Button>
             </Box>

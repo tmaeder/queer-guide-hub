@@ -120,7 +120,7 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
         <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
-          <CircularProgress size={48} />
+          <CircularProgress size={48} aria-label="Loading" />
           <Typography variant="body2" color="text.secondary">Loading your data...</Typography>
         </Box>
       </Box>

@@ -115,7 +115,7 @@ export const ScrapeSourcesDashboard: React.FC = () => {
   if (loadingSources) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
+        <CircularProgress  aria-label="Loading"/>
       </Box>
     );
   }
@@ -140,7 +140,7 @@ export const ScrapeSourcesDashboard: React.FC = () => {
           </Button>
           <Button
             variant="contained"
-            startIcon={loading ? <CircularProgress size={16} /> : <ScheduleIcon />}
+            startIcon={loading ? <CircularProgress size={16} aria-label="Loading" /> : <ScheduleIcon />}
             onClick={handleTriggerAll}
             disabled={loading}
             size="small"
@@ -295,7 +295,7 @@ export const ScrapeSourcesDashboard: React.FC = () => {
                         disabled={triggeringSlug === source.slug || loading}
                       >
                         {triggeringSlug === source.slug ? (
-                          <CircularProgress size={16} />
+                          <CircularProgress size={16} aria-label="Loading" />
                         ) : (
                           <PlayArrowIcon fontSize="small" />
                         )}

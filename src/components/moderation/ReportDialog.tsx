@@ -135,7 +135,7 @@ export function ReportDialog({ open, onOpenChange, contentType, contentId, conte
             disabled={loading || reason.trim().length < 10}
           >
             {loading ? (
-              <CircularProgress size={16} sx={{ mr: 1 }} />
+              <CircularProgress size={16} sx={{ mr: 1 }} aria-label="Loading" />
             ) : null}
             Submit Report
           </Button>

@@ -59,6 +59,8 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
       {/* Toggle button */}
       <IconButton
         size="small"
+        aria-label={expanded ? 'Hide map layers' : 'Show map layers'}
+        aria-expanded={expanded}
         onClick={() => setExpanded((v) => !v)}
         sx={{
           bgcolor: 'background.paper',

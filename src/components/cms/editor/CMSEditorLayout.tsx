@@ -231,7 +231,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
           p: 4,
         }}
       >
-        <CircularProgress size={40} />
+        <CircularProgress size={40} aria-label="Loading" />
         <Typography variant="body2" color="text.secondary">
           Loading {config.label.singular.toLowerCase()}...
         </Typography>

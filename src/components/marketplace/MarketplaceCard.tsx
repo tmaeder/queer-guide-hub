@@ -167,7 +167,7 @@ export function MarketplaceCard({
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {listing.website && (
-              <Button size="sm" variant="ghost" aria-label="Visit website" asChild>
+              <Button size="default" variant="ghost" aria-label="Visit website" asChild>
                 <a
                   href={listing.website}
                   target="_blank"

@@ -209,7 +209,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
             onClick={handleSubmit}
             disabled={!canSubmit || addBudgetItem.isPending}
           >
-            {addBudgetItem.isPending && <CircularProgress size={16} sx={{ mr: 1 }} />}
+            {addBudgetItem.isPending && <CircularProgress size={16} sx={{ mr: 1 }} aria-label="Loading" />}
             {t('trips.budget.addExpense', 'Add Expense')}
           </Button>
         </DialogFooter>

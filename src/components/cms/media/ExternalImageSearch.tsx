@@ -171,7 +171,7 @@ export default function ExternalImageSearch({
 
         {loading && displayResults.length === 0 && (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-            <CircularProgress />
+            <CircularProgress  aria-label="Loading"/>
           </Box>
         )}
 
@@ -306,7 +306,7 @@ export default function ExternalImageSearch({
 
             {loading && displayResults.length > 0 && (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                <CircularProgress size={24} />
+                <CircularProgress size={24} aria-label="Loading" />
               </Box>
             )}
           </>

@@ -61,7 +61,7 @@ export function AutomationDashboard() {
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
+        <CircularProgress  aria-label="Loading"/>
       </Box>
     );
   }

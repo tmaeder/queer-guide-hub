@@ -282,7 +282,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
           gap: 2,
         }}
       >
-        <CircularProgress size={36} />
+        <CircularProgress size={36} aria-label="Loading" />
         <Typography variant="body2" color="text.secondary">
           Loading review queue...
         </Typography>
@@ -636,7 +636,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                       onClick={() => handleApprove(item)}
                       startIcon={
                         isActionLoading ? (
-                          <CircularProgress size={14} color="inherit" />
+                          <CircularProgress size={14} color="inherit" aria-label="Loading" />
                         ) : (
                           <ThumbsUp style={{ width: 14, height: 14 }} />
                         )

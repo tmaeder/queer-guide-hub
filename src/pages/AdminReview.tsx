@@ -129,7 +129,7 @@ function StatCard({ icon: Icon, label, count, color, active, onClick }: StatCard
 
 const Loading = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-    <CircularProgress size={28} />
+    <CircularProgress size={28} aria-label="Loading" />
   </Box>
 );
 

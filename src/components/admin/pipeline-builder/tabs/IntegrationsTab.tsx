@@ -135,8 +135,9 @@ export default function IntegrationsTab() {
               </DialogHeader>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium">Name</label>
+                  <label htmlFor="integration-name" className="text-xs font-medium">Name</label>
                   <Input
+                    id="integration-name"
                     value={form.name || ''}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="e.g. #data-ops alerts"
@@ -144,9 +145,9 @@ export default function IntegrationsTab() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Type</label>
+                  <label htmlFor="integration-kind" className="text-xs font-medium">Type</label>
                   <Select value={form.kind || 'slack'} onValueChange={(v) => setForm({ ...form, kind: v as Integration['kind'] })}>
-                    <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="integration-kind" aria-label="Type" className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="slack">Slack</SelectItem>
                       <SelectItem value="discord">Discord</SelectItem>
@@ -155,8 +156,9 @@ export default function IntegrationsTab() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Webhook URL</label>
+                  <label htmlFor="integration-url" className="text-xs font-medium">Webhook URL</label>
                   <Input
+                    id="integration-url"
                     value={form.webhook_url || ''}
                     onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
                     placeholder="https://hooks.slack.com/services/..."
@@ -164,12 +166,12 @@ export default function IntegrationsTab() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Minimum severity</label>
+                  <label htmlFor="integration-severity" className="text-xs font-medium">Minimum severity</label>
                   <Select
                     value={form.min_severity || 'warn'}
                     onValueChange={(v) => setForm({ ...form, min_severity: v as Integration['min_severity'] })}
                   >
-                    <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="integration-severity" aria-label="Minimum severity" className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="info">info (all alerts)</SelectItem>
                       <SelectItem value="warn">warn and above</SelectItem>

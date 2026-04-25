@@ -101,7 +101,7 @@ export function ProfessionAutocomplete({
               ...params.InputProps,
               endAdornment: (
                 <>
-                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                  {loading ? <CircularProgress color="inherit" size={20} aria-label="Loading" /> : null}
                   {params.InputProps.endAdornment}
                 </>
               ),

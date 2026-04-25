@@ -1371,7 +1371,7 @@ export default function CityDetail() {
             {/* ═══ MAP TAB ═══ */}
             <TabsContent value="map">
               {typeof city.latitude === 'number' && typeof city.longitude === 'number' && (
-                <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} /></Box>}>
+                <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} aria-label="Loading" /></Box>}>
                   <ExploreMap
                     height={500}
                     initialCenter={[Number(city.longitude), Number(city.latitude)]}

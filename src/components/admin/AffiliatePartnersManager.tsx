@@ -98,7 +98,7 @@ export function AffiliatePartnersManager() {
   };
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>;
+    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress  aria-label="Loading"/></Box>;
   }
 
   if (fetchError) {

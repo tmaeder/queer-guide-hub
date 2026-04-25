@@ -16,7 +16,7 @@ export default function Videos() {
       <Container sx={{ py: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
           <Box sx={{ textAlign: 'center' }}>
-            <CircularProgress size={32} sx={{ mb: 2 }} />
+            <CircularProgress size={32} sx={{ mb: 2 }} aria-label="Loading" />
             <Typography>Loading videos...</Typography>
           </Box>
         </Box>

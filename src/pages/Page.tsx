@@ -54,7 +54,7 @@ export default function Page() {
   if (loading) {
     return (
       <Container sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress />
+        <CircularProgress  aria-label="Loading"/>
       </Container>
     );
   }

@@ -276,7 +276,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
 
       {isLoading && (
         <Box className="flex justify-center py-8">
-          <CircularProgress size={24} />
+          <CircularProgress size={24} aria-label="Loading" />
         </Box>
       )}
 
@@ -332,7 +332,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
                     onClick={() => handleAddVenue(venue)}
                     disabled={addingId === venue.id}
                   >
-                    {addingId === venue.id ? <CircularProgress size={12} /> : <Plus size={12} />}
+                    {addingId === venue.id ? <CircularProgress size={12} aria-label="Loading" /> : <Plus size={12} />}
                     Add
                   </Button>
                 </Box>
@@ -370,7 +370,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
                     onClick={() => handleAddEvent(event)}
                     disabled={addingId === event.id}
                   >
-                    {addingId === event.id ? <CircularProgress size={12} /> : <Plus size={12} />}
+                    {addingId === event.id ? <CircularProgress size={12} aria-label="Loading" /> : <Plus size={12} />}
                     Add
                   </Button>
                 </Box>

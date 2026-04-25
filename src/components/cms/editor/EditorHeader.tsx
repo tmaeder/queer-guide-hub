@@ -268,7 +268,7 @@ export function EditorHeader({
               flexShrink: 0,
             }}
           >
-            <CircularProgress size={16} thickness={5} />
+            <CircularProgress size={16} thickness={5} aria-label="Loading" />
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
               Saving...
             </Typography>
@@ -377,7 +377,7 @@ export function EditorHeader({
               onClick={onSave}
               startIcon={
                 state.isSaving ? (
-                  <CircularProgress size={16} thickness={5} color="inherit" />
+                  <CircularProgress size={16} thickness={5} color="inherit" aria-label="Loading" />
                 ) : (
                   <Save style={{ width: 16, height: 16 }} />
                 )

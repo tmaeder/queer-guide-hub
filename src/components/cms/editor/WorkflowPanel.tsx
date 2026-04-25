@@ -227,7 +227,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
                     onClick={() => handleTransitionClick(trans)}
                     startIcon={
                       isTransitioning ? (
-                        <CircularProgress size={14} color="inherit" />
+                        <CircularProgress size={14} color="inherit" aria-label="Loading" />
                       ) : (
                         <Box
                           component="span"

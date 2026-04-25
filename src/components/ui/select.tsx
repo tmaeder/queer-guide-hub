@@ -147,6 +147,11 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
         delete rest[key];
       }
     }
+    // Fall back to placeholder so the underlying combobox always has an
+    // accessible name (axe `aria-input-field-name`, WCAG 4.1.2).
+    if (!triggerInputProps['aria-label'] && !triggerInputProps['aria-labelledby'] && placeholder) {
+      triggerInputProps['aria-label'] = placeholder;
+    }
 
     return (
       <FormControl

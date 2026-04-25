@@ -5,6 +5,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router';
 import './i18n';
+import { useTranslation } from 'react-i18next';
 import { AuthProvider } from '@/hooks/useAuth';
 import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
 import { AccessibilityProvider } from '@/hooks/useAccessibility';
@@ -53,6 +54,7 @@ const Contact = lazyRetry(() => import('./pages/Contact'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
 const SearchPersonalization = lazyRetry(() => import('./pages/onboarding/SearchPersonalization'));
+const PatternLibrary = lazyRetry(() => import('./pages/PatternLibrary'));
 
 // Unified Admin Shell (wraps all /admin/* routes)
 const AdminShell = lazy(() =>
@@ -200,6 +202,7 @@ const AppRoutes = () => {
   const mainRef = React.useRef<HTMLElement>(null);
   const isFirstRender = React.useRef(true);
   const [routeAnnouncement, setRouteAnnouncement] = React.useState('');
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     if (isFirstRender.current) {
@@ -210,9 +213,9 @@ const AppRoutes = () => {
       mainRef.current?.focus({ preventScroll: false });
       // Announce route change to screen readers
       const title = document.title || location.pathname.replace(/\//g, ' ').trim() || 'Home';
-      setRouteAnnouncement(`Navigated to ${title}`);
+      setRouteAnnouncement(t('a11y.navigatedTo', 'Navigated to {{title}}', { title }));
     });
-  }, [location.pathname]);
+  }, [location.pathname, t]);
 
   return (
     <Box
@@ -323,6 +326,7 @@ const AppRoutes = () => {
             <Routes>
               {/* Auth routes — no locale prefix */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/pattern-library" element={<PatternLibrary />} />
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
               <Route path="/onboarding/search" element={<SearchPersonalization />} />
               {/* ── Unified Admin Console ── */}

@@ -262,7 +262,7 @@ export default function TodayModePage() {
   if (isLoading && !effectiveTrip) {
     return (
       <Container sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress />
+        <CircularProgress  aria-label="Loading"/>
       </Container>
     );
   }

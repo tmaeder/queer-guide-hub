@@ -163,7 +163,7 @@ export function EstimateCostsDialog({
 
         {estimate.isPending && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 4, justifyContent: 'center' }}>
-            <CircularProgress size={18} />
+            <CircularProgress size={18} aria-label="Loading" />
             <Typography variant="body2" color="text.secondary">
               {t('trips.budget.estimate.loading', { defaultValue: 'Crunching numbers…' })}
             </Typography>
