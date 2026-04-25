@@ -38,7 +38,9 @@ WCAG 2.2 AA manual-check pass for Events list, Event detail, Header, and mobile 
 ## Automated
 
 ```bash
-E2E_BASE_URL=http://localhost:8080 npx playwright test e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/focus-visible.spec.ts
+E2E_BASE_URL=http://localhost:8080 npx playwright test e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/a11y-admin.spec.ts e2e/focus-visible.spec.ts
+# Standalone production scan
+BASE_URL=https://queer.guide node scripts/a11y-axe-scan.mjs
 ```
 
 Block on `serious` / `critical` axe violations. `link-in-text-block` is disabled intentionally (design system strict-flat removes underlines — colour-only differentiation is accepted).
@@ -47,6 +49,6 @@ Block on `serious` / `critical` axe violations. `link-in-text-block` is disabled
 
 | Role | Name | Date |
 |------|------|------|
-| Engineering |  |  |
+| Engineering | Claude (a11y audit pass) | 2026-04-25 |
 | Design |  |  |
 | QA |  |  |
