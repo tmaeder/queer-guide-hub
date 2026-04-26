@@ -673,36 +673,35 @@ export const UniversalSearchBar = () => {
                   </CommandEmpty>
                 )}
 
-              {/* Loading state */}
-              {(loading || suggestionsLoading) && (
-                <Box sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
-                  <Box
-                    sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}
-                  >
-                    <CircularProgress size={24} />
-                    <Typography variant="body2">Searching...</Typography>
-                  </Box>
-                </Box>
-              )}
-
-              {/* Search Action */}
-              {query && (
-                <>
-                  <CommandSeparator />
-                  <Box sx={{ p: 1.5 }}>
-                    <Button
-                      onClick={() => handleSearch()}
-                      variant="default"
-                      style={{ width: '100%' }}
-                      size="sm"
-                    >
-                      <Search style={{ height: 16, width: 16, marginRight: 8 }} />
-                      Search for "{query.length > 20 ? query.slice(0, 20) + '...' : query}"
-                    </Button>
-                  </Box>
-                </>
-              )}
             </CommandList>
+
+            {/* Loading + action button live OUTSIDE CommandList — cmdk's
+                role="listbox" only permits option/group children, so a
+                progressbar or action button inside violates aria-required-children. */}
+            {(loading || suggestionsLoading) && (
+              <Box sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }} aria-live="polite">
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}
+                >
+                  <CircularProgress size={24} aria-label="Searching" />
+                  <Typography variant="body2">Searching...</Typography>
+                </Box>
+              </Box>
+            )}
+
+            {query && (
+              <Box sx={{ p: 1.5, borderTop: '1px solid hsl(var(--border))' }}>
+                <Button
+                  onClick={() => handleSearch()}
+                  variant="default"
+                  style={{ width: '100%' }}
+                  size="sm"
+                >
+                  <Search style={{ height: 16, width: 16, marginRight: 8 }} />
+                  Search for "{query.length > 20 ? query.slice(0, 20) + '...' : query}"
+                </Button>
+              </Box>
+            )}
           </Command>
         </PopoverContent>
       </Popover>

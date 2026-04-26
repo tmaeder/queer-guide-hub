@@ -6,7 +6,12 @@ const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const ADMIN_ROUTES = [
   '/admin',
   '/admin/content/events',
+  '/admin/content/venues',
+  '/admin/content/news',
+  '/admin/content/marketplace',
   '/admin/pipelines',
+  '/admin/users',
+  '/admin/settings',
 ];
 
 test.describe('Admin shell — automated a11y', () => {
@@ -15,7 +20,11 @@ test.describe('Admin shell — automated a11y', () => {
   for (const route of ADMIN_ROUTES) {
     test(`${route} has no serious/critical axe violations`, async ({ page }) => {
       await page.goto(route);
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle').catch(() => {});
+      if (!page.url().includes('/admin')) {
+        test.skip(true, 'Admin requires auth; provide E2E_STORAGE_STATE pointing at a signed-in session.');
+        return;
+      }
       await page.waitForSelector('main, [role="main"], #admin-main-content', { timeout: 30_000 }).catch(() => {});
 
       const results = await new AxeBuilder({ page })
@@ -34,7 +43,6 @@ test.describe('Admin shell — automated a11y', () => {
   test('admin shell exposes a skip link to main content', async ({ page }) => {
     await page.goto('/admin');
     await page.waitForLoadState('domcontentloaded');
-    // Auth gate may redirect unauthenticated runs — skip rather than fail.
     if (!page.url().includes('/admin')) {
       test.skip(true, 'Admin requires auth; run with a signed-in session to assert skip link.');
       return;

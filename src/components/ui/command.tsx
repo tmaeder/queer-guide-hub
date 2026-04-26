@@ -200,10 +200,14 @@ const CommandSeparator = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
 >(({ className, style, ...props }, ref) => (
+  // role="none" + aria-hidden — cmdk's Separator sits inside role="listbox",
+  // which only permits option/group children. Strip it from the a11y tree.
   <CommandPrimitive.Separator
     ref={ref}
     className={className}
     style={mergeStyles(cmdkStyles.separator, style)}
+    role="none"
+    aria-hidden="true"
     {...props}
   />
 ))

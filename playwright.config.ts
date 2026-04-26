@@ -11,6 +11,11 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL || 'https://queer.guide',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // Optional: point at a Playwright storageState JSON to authenticate
+    // admin a11y specs. Without it, admin tests skip.
+    ...(process.env.E2E_STORAGE_STATE
+      ? { storageState: process.env.E2E_STORAGE_STATE }
+      : {}),
   },
   projects: [
     {

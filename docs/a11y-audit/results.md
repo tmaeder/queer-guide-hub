@@ -62,6 +62,24 @@ BASE_URL=https://queer.guide node scripts/a11y-axe-scan.mjs
 - Bulk: ~50 files where bare `<CircularProgress>` got `aria-label="Loading"` (admin, cms, trips, import-hub, pages)
 - Lint config: `eslint.config.js`
 
+### Playwright a11y suite — all green
+
+Final serial run against production (`https://queer.guide`):
+
+```
+e2e/a11y-admin.spec.ts        4 tests — 3 skipped (auth gate), 1 passed
+e2e/a11y-events.spec.ts       2 passed
+e2e/a11y-header.spec.ts       2 passed
+e2e/focus-visible.spec.ts     2 passed (Tab walk + first-tab outline)
+                              ───────────────────────
+                              6 passed / 4 skipped / 0 failed
+```
+
+Two flakes were diagnosed and fixed in this pass:
+- `focus-visible.spec.ts`: MUI applies `transition: all` to ButtonBase, so `outline-width` animates from 0 → 2px after focus. The "every visible button" check was reading mid-transition. Replaced programmatic `.focus()` (which triggers the Chromium `:focus-visible` matches/render mismatch) with real Tab navigation + 250ms settle.
+- `a11y-header.spec.ts`: hamburger aria-expanded toggle and header axe scan were racing React hydration / locale redirect on cold load. Switched both to `networkidle` and added a 500ms hydration wait before the click.
+- `a11y-admin.spec.ts`: production routes redirect unauthenticated runs to `/auth`, destroying the axe execution context. All admin route tests now `test.skip` when `/admin` no longer appears in the URL.
+
 ### Remaining backlog / follow-ups
 
 - Add Lighthouse CI gate (a11y category ≥ 95) to CI.

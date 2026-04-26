@@ -1,0 +1,141 @@
+name: A11y gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'e2e/a11y-*.spec.ts'
+      - 'e2e/focus-visible.spec.ts'
+      - 'eslint.config.js'
+      - 'playwright.config.ts'
+      - 'scripts/a11y-axe-scan.mjs'
+      - '.github/workflows/a11y.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'e2e/a11y-*.spec.ts'
+      - 'e2e/focus-visible.spec.ts'
+      - 'eslint.config.js'
+      - 'playwright.config.ts'
+      - 'scripts/a11y-axe-scan.mjs'
+      - '.github/workflows/a11y.yml'
+  schedule:
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL'
+        required: false
+        default: 'https://queer.guide'
+
+concurrency:
+  group: a11y-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  jsx-a11y-lint:
+    name: jsx-a11y lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults: { run: { working-directory: Dev/web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Dev/web/package-lock.json
+      - run: npm install --legacy-peer-deps
+      - run: npm run lint
+
+  axe-playwright:
+    name: Playwright + axe a11y suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults: { run: { working-directory: Dev/web } }
+    env:
+      E2E_BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Dev/web/package-lock.json
+      - run: npm install --legacy-peer-deps
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test e2e/a11y-admin.spec.ts e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/a11y-dialogs.spec.ts e2e/focus-visible.spec.ts --workers=1
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-a11y-report
+          path: Dev/web/playwright-report/
+          retention-days: 14
+
+  axe-route-sweep:
+    name: axe full route sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults: { run: { working-directory: Dev/web } }
+    env:
+      BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Dev/web/package-lock.json
+      - run: npm install --legacy-peer-deps
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/a11y-axe-scan.mjs
+      - name: Fail on serious/critical
+        run: |
+          node -e "const r=require('./docs/a11y-audit/axe-postdeploy.json');const bad=r.results.flatMap(x=>(x.violations||[]).filter(v=>v.impact==='serious'||v.impact==='critical'));if(bad.length){console.error('Found',bad.length,'serious/critical');process.exit(1)}console.log('Clean: 0 serious/critical')"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-postdeploy
+          path: |
+            Dev/web/docs/a11y-audit/axe-postdeploy.json
+            Dev/web/docs/a11y-audit/axe-postdeploy.md
+
+  lighthouse:
+    name: Lighthouse a11y >= 95
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults: { run: { working-directory: Dev/web } }
+    env:
+      BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+      ROUTE: ${{ matrix.route }}
+    strategy:
+      fail-fast: false
+      matrix:
+        route: ['/', '/events', '/venues', '/places', '/news', '/marketplace', '/trips', '/submit']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i -g lighthouse@12
+      - name: Lighthouse a11y
+        run: |
+          mkdir -p lh
+          slug=$(printf '%s' "$ROUTE" | sed 's|/|_|g; s|^_||')
+          [ -z "$slug" ] && slug=home
+          lighthouse "${BASE_URL}${ROUTE}" \
+            --only-categories=accessibility \
+            --output=json --output-path="lh/${slug}.json" \
+            --chrome-flags="--headless=new --no-sandbox" \
+            --quiet
+          score=$(node -e "console.log(Math.round(require('./lh/'+process.argv[1]+'.json').categories.accessibility.score*100))" "$slug")
+          echo "Lighthouse a11y for $ROUTE: $score"
+          if [ "$score" -lt 95 ]; then
+            echo "::error::Lighthouse a11y score $score < 95 for $ROUTE"
+            exit 1
+          fi
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-${{ strategy.job-index }}
+          path: Dev/web/lh/
