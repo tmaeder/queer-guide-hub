@@ -9,14 +9,14 @@ async function test() {
   let totalRaw = 0;
   let totalNormalized = 0;
   let totalFailed = 0;
-  let batchCount = 0;
+  let _batchCount = 0;
   const maxUrls = 30; // Fetch 30 event pages to be polite
   let urlsFetched = 0;
   const allEvents: Array<Record<string, unknown>> = [];
 
   try {
     for await (const batch of connector.discover('event')) {
-      batchCount++;
+      _batchCount++;
 
       for (const discovered of batch) {
         if (urlsFetched >= maxUrls) break;

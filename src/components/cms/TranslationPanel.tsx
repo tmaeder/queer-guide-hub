@@ -48,6 +48,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
 
   useEffect(() => {
     loadTranslations();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLang, recordId]);
 
   async function loadTranslations() {

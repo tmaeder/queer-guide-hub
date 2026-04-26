@@ -58,7 +58,7 @@ const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const [weatherData, setWeatherData] = useState<Record<string, unknown> | null>(null);
 
   const { track } = useTrackEvent();
@@ -79,6 +79,7 @@ export default function CountryDetail() {
     if (country?.id) {
       track({ eventType: 'page_view', entityType: 'country', entityId: country.id, metadata: { name: country.name } });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country?.id]);
 
   useEffect(() => {

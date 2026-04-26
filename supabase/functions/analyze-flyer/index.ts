@@ -390,6 +390,7 @@ async function matchVenues(
 
     const { data: fallbackData } = await query
     // deno-lint-ignore no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (fallbackData || []).map((v: any) => ({
       ...v,
       score: v.name.toLowerCase() === name.toLowerCase() ? 1.0 : 0.5,
@@ -417,6 +418,7 @@ async function checkEventDuplicates(
     .limit(5)
 
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data || []).map((e: any) => ({
     ...e,
     score: e.title.toLowerCase() === title.toLowerCase() ? 1.0 : 0.6,
@@ -440,6 +442,7 @@ async function checkVenueDuplicates(
 
   const { data } = await query
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data || []).map((v: any) => ({ ...v, score: 0.9 }))
 }
 

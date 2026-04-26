@@ -96,7 +96,7 @@ export default function AdminFeedback() {
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [focusedColumnIdx, setFocusedColumnIdx] = useState(0);
   const [forwardingIds, setForwardingIds] = useState<Set<string>>(new Set());
-  const [errorFilters, setErrorFilters] =
+  const [errorFilters, _setErrorFilters] =
     useState<ApiErrorFilterState>(DEFAULT_ERROR_FILTERS);
   const drawerOpen = !!state.sel;
 
@@ -181,7 +181,7 @@ export default function AdminFeedback() {
   const notifyStatus = useNotifyFeedbackStatus();
   const recordHandoff = useRecordHandoff();
   const updateHandoff = useUpdateHandoff();
-  const { data: apiErrorDaily = [] } = useApiErrorDailySeries();
+  const { data: _apiErrorDaily = [] } = useApiErrorDailySeries();
 
   // Stories — loaded on all tabs so the story chip on individual cards can
   // render without a second round trip when the admin switches tabs.
@@ -218,7 +218,7 @@ export default function AdminFeedback() {
   // Derive source + severity from the existing row shape so we can narrow
   // 100s of rows to the one the admin wants to triage without adding new
   // columns.
-  const errorFacets = useMemo(() => {
+  const _errorFacets = useMemo(() => {
     const bySource: Record<ErrorSource, number> = {
       runtime: 0,
       advisor: 0,
@@ -250,7 +250,7 @@ export default function AdminFeedback() {
     return { bySource, bySeverity, resolved };
   }, [apiErrors]);
 
-  const visibleApiErrors = useMemo(() => {
+  const _visibleApiErrors = useMemo(() => {
     const q = errorFilters.q.trim().toLowerCase();
     return apiErrors.filter((e) => {
       if (errorFilters.hideResolved && e.feedback_status === 'done') return false;
@@ -300,7 +300,7 @@ export default function AdminFeedback() {
   );
 
   const spamCount = useMemo(() => items.filter((it) => it.is_spam).length, [items]);
-  const communityCount = useMemo(() => items.filter((it) => !it.is_spam).length, [items]);
+  const _communityCount = useMemo(() => items.filter((it) => !it.is_spam).length, [items]);
 
   // ── Filtering + grouping ────────────────────────────────────
   const filteredItems = useMemo(() => {

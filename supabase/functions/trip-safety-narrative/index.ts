@@ -73,6 +73,7 @@ function overallRisk(countries: CountryRow[]): Risk {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadContext(supabase: any, tripId: string) {
   const { data: places, error: placesErr } = await supabase
     .from('trip_places')

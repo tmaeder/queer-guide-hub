@@ -37,6 +37,7 @@ interface Highlights {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadTrip(supabase: any, tripId: string) {
   const { data: trip, error } = await supabase
     .from('trips')
@@ -74,6 +75,7 @@ function placeName(p: {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildHighlights(trip: any, budget: { amount: number; currency: string }[]): Highlights {
   const cities = new Set<string>();
   const countries = new Set<string>();
@@ -103,6 +105,7 @@ function buildHighlights(trip: any, budget: { amount: number; currency: string }
     }
   }
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const favDay = favDayId ? (trip.trip_days ?? []).find((d: any) => d.id === favDayId) : null;
 
   const totals = new Map<string, number>();
@@ -112,6 +115,7 @@ function buildHighlights(trip: any, budget: { amount: number; currency: string }
 
   return {
     // deno-lint-ignore no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     top_places: (trip.trip_places ?? []).slice(0, 8).map((p: any) => placeName(p)),
     cities: [...cities],
     countries: [...countries],

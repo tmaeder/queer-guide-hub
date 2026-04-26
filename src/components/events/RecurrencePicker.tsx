@@ -149,6 +149,7 @@ export const RecurrencePicker: React.FC<RecurrencePickerProps> = ({ value, onCha
 /**
  * Human-readable summary of a recurrence rule.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function describeRecurrence(rule: RecurrenceRule | null | undefined): string | null {
   if (!rule) return null;
   const freq = rule.freq === 'biweekly' ? 'Every 2 weeks' : `${rule.freq.charAt(0).toUpperCase()}${rule.freq.slice(1)}`;

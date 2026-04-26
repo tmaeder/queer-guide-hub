@@ -96,7 +96,7 @@ interface UserFilters {
 }
 
 const UserDirectory = () => {
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
   const [filters, setFilters] = useState<UserFilters>({

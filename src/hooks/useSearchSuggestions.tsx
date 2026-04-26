@@ -60,6 +60,7 @@ export function useSearchSuggestions(query: string) {
       if (!res.ok) throw new Error(`Search failed: ${res.status}`);
       const data = await res.json();
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mapped: SearchSuggestion[] = (data.suggestions || []).map((hit: any) => ({
         id: hit.id || hit.objectID,
         name: hit.title || hit.name,

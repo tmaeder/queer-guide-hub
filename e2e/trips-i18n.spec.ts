@@ -12,7 +12,7 @@ import { test, expect, Page } from '@playwright/test';
  */
 
 const LOCALES = ['en', 'de', 'fr', 'es', 'it', 'pt', 'ja', 'ko', 'zh', 'ru', 'ar'] as const;
-type Locale = (typeof LOCALES)[number];
+type _Locale = (typeof LOCALES)[number];
 
 const RAW_KEY_RE = /\btrips\.[a-zA-Z0-9_.]+/;
 

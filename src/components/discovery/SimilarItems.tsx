@@ -64,6 +64,7 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 		return () => {
 			cancelled = true;
 		};
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [entity.type, entity.id, limit]);
 
 	if (error) return null;

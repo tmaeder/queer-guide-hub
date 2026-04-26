@@ -3,6 +3,7 @@ import { CommandGroup, CommandItem } from '@/components/ui/command';
 import { Search, MapPin, Calendar, Store, Newspaper, Users, Tag, Briefcase } from 'lucide-react';
 import Box from '@mui/material/Box';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const searchCategories = [
   { label: 'All', value: 'all', icon: Search },
   { label: 'Venues', value: 'venues', icon: MapPin },

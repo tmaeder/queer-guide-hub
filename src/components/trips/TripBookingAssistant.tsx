@@ -36,12 +36,12 @@ interface CityInfo {
   countries?: { equality_score: number | null; name: string } | null;
 }
 
-export function TripBookingAssistant({ tripId, places, days, startDate, endDate }: Props) {
+export function TripBookingAssistant({ tripId, places, _days, startDate, endDate }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const { toast } = useToast();
   const { addPlace } = useTripMutations();
-  const { originIata, originCity } = useVisitorOrigin();
+  const { originIata, _originCity } = useVisitorOrigin();
   const [bookingHotel, setBookingHotel] = useState<BookingResult | null>(null);
   const [activeTab, setActiveTab] = useState<'suggestions' | 'booking'>('suggestions');
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -111,7 +111,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
 
   // Flight deals for first city
   const firstCity = cities?.[0];
-  const { data: flightDeals } = useTravelDeals({
+  const { data: _flightDeals } = useTravelDeals({
     origin: originIata || undefined,
     type: 'popular_routes',
     limit: 3,

@@ -5,6 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const HOTEL_TYPE_OPTIONS = [
   'all',
   'hotel',

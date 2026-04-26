@@ -15,7 +15,7 @@ import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 const TRAVELPAYOUTS_BASE = 'https://api.travelpayouts.com/aviasales/v3/prices_for_dates';
 const PRICE_DROP_THRESHOLD = 0.15; // 15% drop triggers alert
 
-serve(async (req) => {
+serve(async (_req) => {
   try {
     const supabase = getServiceClient();
     const apiToken = Deno.env.get('TRAVELPAYOUTS_API_TOKEN');
@@ -49,7 +49,7 @@ serve(async (req) => {
 
     for (const [userId, cities] of userCities) {
       // Get user's origin airport from their last detected location
-      const { data: lastEvent } = await supabase
+      const { data: _lastEvent } = await supabase
         .from('user_events')
         .select('metadata')
         .eq('user_id', userId)
@@ -60,7 +60,7 @@ serve(async (req) => {
 
       // Check cached prices vs current for each favorited city
       for (const city of cities.slice(0, 5)) {
-        const cacheKey = `price_cache:${city.iata}`;
+        const _cacheKey = `price_cache:${city.iata}`;
 
         // Get cached price
         const { data: cached } = await supabase

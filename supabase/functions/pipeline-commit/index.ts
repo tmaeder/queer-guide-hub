@@ -147,13 +147,13 @@ Deno.serve(async (req) => {
         return jsonResponse({ success: true, items: 0, message: 'no pending news to commit' }, 200, req)
       }
       let totalInserted = 0, totalUpdated = 0, totalSkipped = 0, totalErrors = 0
-      let circuitTripped = 0
+      let _circuitTripped = 0
       for (const jid of jobIds) {
         const { data, error, circuitOpen } = await rpcWithBreaker<unknown>(
           supabase, 'rpc.news_commit_staging_batch', 'news_commit_staging_batch',
           { p_job_id: jid, p_pipeline_run_id: pipelineRunId ?? null, p_limit: batchSize },
         )
-        if (circuitOpen) { circuitTripped++; continue }
+        if (circuitOpen) { _circuitTripped++; continue }
         if (error) { console.error(`news_commit ${jid}:`, error.message); totalErrors++; continue }
         const row = Array.isArray(data) ? data[0] : data
         totalInserted += row?.inserted ?? 0

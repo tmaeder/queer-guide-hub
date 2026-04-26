@@ -85,6 +85,7 @@ export default function VenueDetail() {
     if (venue?.id) {
       track({ eventType: 'page_view', entityType: 'venue', entityId: venue.id, metadata: { name: venue.name } });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venue?.id]);
 
   const venueEvents = events.filter((event) => event.venue_id === venue?.id);

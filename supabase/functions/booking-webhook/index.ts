@@ -118,8 +118,8 @@ async function processImpalaWebhook(
 }
 
 async function processHotellookWebhook(
-  supabase: ReturnType<typeof getServiceClient>,
-  payload: Record<string, unknown>,
+  _supabase: ReturnType<typeof getServiceClient>,
+  _payload: Record<string, unknown>,
 ): Promise<{ processed: boolean; bookingId: string | null }> {
   // Hotellook doesn't have real-time webhooks — this is a placeholder
   // for when we switch to a provider that does (Impala, Booking.com)

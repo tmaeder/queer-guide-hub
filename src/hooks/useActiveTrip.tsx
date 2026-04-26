@@ -28,6 +28,7 @@ const ActiveTripContext = createContext<ActiveTripContextValue | undefined>(unde
  * Planning-only, seed (no dates), and memory/archived trips are never
  * auto-picked. Users can still pin them explicitly via `setActiveTripId`.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function pickDefaultTrip(trips: TripListItem[], now: Date = new Date()): TripListItem | null {
   if (!trips || trips.length === 0) return null;
   const ranked = trips
@@ -122,6 +123,7 @@ export function ActiveTripProvider({ children }: { children: React.ReactNode }) 
   return <ActiveTripContext.Provider value={value}>{children}</ActiveTripContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useActiveTrip(): ActiveTripContextValue {
   const ctx = useContext(ActiveTripContext);
   if (!ctx) throw new Error('useActiveTrip must be used within ActiveTripProvider');

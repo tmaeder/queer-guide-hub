@@ -39,7 +39,7 @@ const categoryConfig: Record<string, { label: string; icon: typeof Bug; color: s
 
 export default function FeedbackBoard() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

@@ -34,6 +34,7 @@ import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBo
 // ── Layer classification ─────────────────────────────────────────────────────
 
 /** Layers rendered as native MapLibre circle + label layers (area feel) */
+// eslint-disable-next-line react-refresh/only-export-components
 export const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
 
 /** Circle radius interpolation stops per area type: [zoom, radiusPx][] */

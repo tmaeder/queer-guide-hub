@@ -5,7 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
 
 type PersonalityRow = Database['public']['Tables']['personalities']['Row'];
-type PersonalityInsert = Database['public']['Tables']['personalities']['Insert'];
+type _PersonalityInsert = Database['public']['Tables']['personalities']['Insert'];
 
 export interface Personality {
   id: string;

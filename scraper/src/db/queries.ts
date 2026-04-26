@@ -44,7 +44,7 @@ export interface UpsertEntityParams {
  * - Always refreshes last_seen_at so multi-source "seen again" is visible.
  */
 export async function upsertEntity(params: UpsertEntityParams): Promise<{ id: string; inserted: boolean }> {
-  const { entityType, data, sourceUrl, sourceName, sourceId } = params;
+  const { entityType, data, _sourceUrl, sourceName, sourceId } = params;
   const table = TABLE_MAP[entityType];
 
   const client = await getClient();

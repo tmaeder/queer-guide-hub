@@ -9,6 +9,7 @@ import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 import { hapticTrigger } from '@/hooks/useHaptics';
 
 /** Layers rendered as translucent area circles (not point pins) */
+// eslint-disable-next-line react-refresh/only-export-components
 export const AREA_TYPES: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
 
 interface LayerDef {
@@ -19,6 +20,7 @@ interface LayerDef {
   comingSoon?: boolean;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const LAYER_DEFS: LayerDef[] = [
   { type: 'venues', label: 'Venues', icon: MapPin, defaultOn: true },
   { type: 'events', label: 'Events', icon: Calendar, defaultOn: true },

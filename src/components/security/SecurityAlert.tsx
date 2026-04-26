@@ -8,7 +8,7 @@ interface SecurityAlertProps {
   sx?: Record<string, unknown>;
 }
 
-export function SecurityAlert({ level, title, description, sx }: SecurityAlertProps) {
+export function SecurityAlert({ level, title, description, _sx }: SecurityAlertProps) {
   const getIcon = () => {
     switch (level) {
       case 'info': return <Info style={{ height: 16, width: 16 }} />;

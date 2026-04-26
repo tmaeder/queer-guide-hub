@@ -21,7 +21,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 export default function UserProfile() {
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const { userId } = useParams<{ userId: string }>();
   const navigate = useLocalizedNavigate();
   const { user: _currentUser } = useAuth();

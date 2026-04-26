@@ -73,7 +73,7 @@ import { useTranslation } from 'react-i18next';
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CityDetail() {
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
@@ -89,6 +89,7 @@ export default function CityDetail() {
     if (city?.id) {
       track({ eventType: 'page_view', entityType: 'city', entityId: city.id, metadata: { name: city.name } });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city?.id]);
 
   const hasAirport = !!(city?.major_airport_code || (city?.airport_codes && city.airport_codes.length > 0));

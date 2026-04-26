@@ -43,6 +43,7 @@ async function sha256Hex(input: string): Promise<string> {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadSnapshot(supabase: any, tripId: string) {
   const { data: trip, error } = await supabase
     .from('trips')

@@ -58,6 +58,7 @@ interface TripDigest {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadTrip(supabase: any, tripId: string): Promise<TripDigest> {
   const { data: trip, error } = await supabase
     .from('trips')
@@ -80,6 +81,7 @@ async function loadTrip(supabase: any, tripId: string): Promise<TripDigest> {
   let hotels = 0;
 
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const p of (trip.trip_places ?? []) as any[]) {
     if (p.hotels) hotels += 1;
     const cityName = p.venues?.city?.name ?? p.events?.city?.name;
@@ -173,6 +175,7 @@ Rules:
   const parsed = JSON.parse(cleaned.slice(start, end + 1));
 
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const raw = (parsed.suggestions ?? []) as any[];
   const allowedCats = new Set(['food', 'transport', 'accommodation', 'activities', 'shopping', 'other']);
   return raw

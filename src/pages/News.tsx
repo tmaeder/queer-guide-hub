@@ -383,16 +383,19 @@ export default function News() {
               {/* Hero featured article */}
               {featuredArticles[0] && (
                 <NewsCard
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   article={featuredArticles[0] as any}
                   variant="featured"
                   onViewArticle={handleViewArticle}
                   sourcesMap={sourcesMap}
                   categoriesMap={categoriesMap}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   tags={articleTags[(featuredArticles[0] as any).id] || []}
                 />
               )}
               {/* Secondary featured articles */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {featuredArticles.slice(1, 4).map((fa: any) => (
                   <NewsCard
                     key={fa.id}

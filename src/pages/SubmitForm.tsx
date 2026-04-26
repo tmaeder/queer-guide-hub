@@ -25,7 +25,7 @@ import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const SubmitForm = () => {
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const { contentType } = useParams<{ contentType: string }>();
   const navigate = useLocalizedNavigate();
 

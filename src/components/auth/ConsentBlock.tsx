@@ -17,8 +17,10 @@ interface Props {
   errors?: Partial<Record<keyof ConsentState, string>>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const emptyConsent: ConsentState = { terms: false, privacy: false, age18: false };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function isConsentComplete(c: ConsentState): boolean {
   return c.terms && c.privacy && c.age18;
 }

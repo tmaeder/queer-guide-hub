@@ -44,6 +44,7 @@ export function useSecureRoleManagement() {
       });
 
       return { success: true };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error assigning role:', error);
       
@@ -94,6 +95,7 @@ export function useSecureRoleManagement() {
       });
 
       return { success: true };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error removing role:', error);
       toast({
@@ -121,6 +123,7 @@ export function useSecureRoleManagement() {
 
       if (error) throw error;
       return { data, error: null };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error fetching audit logs:', error);
       return { data: null, error };

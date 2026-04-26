@@ -35,6 +35,7 @@ export interface FacetDistribution {
   [facet: string]: Record<string, number>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function searchWithRetry(body: Record<string, unknown>): Promise<any> {
   let lastError: unknown;
 

@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
 
 // --- Meilisearch HTTP helpers ---
 
-async function meiliPost(path: string, body: unknown) {
+async function _meiliPost(path: string, body: unknown) {
   const res = await fetch(`${MEILI_URL}${path}`, {
     method: 'POST',
     headers: {
@@ -135,11 +135,13 @@ async function meiliDelete(index: string, docId: string) {
 
 // --- Sync logic per type ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function syncType(supabase: any, type: string): Promise<number> {
   const fetcher = TYPE_FETCHERS[type]
   if (!fetcher) throw new Error(`Unknown type: ${type}`)
 
   // Paginate: Supabase returns max 1000 rows per query
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allDocs: any[] = []
   const PAGE_SIZE = 1000
   let offset = 0
@@ -163,6 +165,7 @@ async function syncType(supabase: any, type: string): Promise<number> {
   return allDocs.length
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function upsertDocument(supabase: any, type: string, id: string) {
   const fetcher = SINGLE_FETCHERS[type]
   if (!fetcher) throw new Error(`Unknown type: ${type}`)
@@ -179,6 +182,7 @@ async function upsertDocument(supabase: any, type: string, id: string) {
 
 // --- Data transformers ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TYPE_FETCHERS: Record<string, (sb: any, limit: number, offset: number) => Promise<any[]>> = {
   venues: fetchVenues,
   events: fetchEvents,
@@ -191,6 +195,7 @@ const TYPE_FETCHERS: Record<string, (sb: any, limit: number, offset: number) => 
   queer_villages: fetchQueerVillages,
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SINGLE_FETCHERS: Record<string, (sb: any, id: string) => Promise<any | null>> = {
   venues: fetchVenue,
   events: fetchEvent,
@@ -205,6 +210,7 @@ const SINGLE_FETCHERS: Record<string, (sb: any, id: string) => Promise<any | nul
 
 // --- Venues ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapVenue(v: any) {
   return {
     id: v.id,
@@ -226,6 +232,7 @@ function mapVenue(v: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchVenues(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('venues')
@@ -236,6 +243,7 @@ async function fetchVenues(sb: any, limit: number, offset: number) {
   return (data || []).map(mapVenue)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchVenue(sb: any, id: string) {
   const { data, error } = await sb
     .from('venues')
@@ -249,6 +257,7 @@ async function fetchVenue(sb: any, id: string) {
 
 // --- Events ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapEvent(e: any) {
   return {
     id: e.id,
@@ -274,6 +283,7 @@ function mapEvent(e: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchEvents(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('events')
@@ -283,6 +293,7 @@ async function fetchEvents(sb: any, limit: number, offset: number) {
   return (data || []).map(mapEvent)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchEvent(sb: any, id: string) {
   const { data, error } = await sb
     .from('events')
@@ -295,6 +306,7 @@ async function fetchEvent(sb: any, id: string) {
 
 // --- Cities ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapCity(c: any) {
   return {
     id: c.id,
@@ -312,6 +324,7 @@ function mapCity(c: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchCities(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('cities')
@@ -321,6 +334,7 @@ async function fetchCities(sb: any, limit: number, offset: number) {
   return (data || []).map(mapCity)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchCity(sb: any, id: string) {
   const { data, error } = await sb
     .from('cities')
@@ -333,6 +347,7 @@ async function fetchCity(sb: any, id: string) {
 
 // --- Countries ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapCountry(c: any) {
   return {
     id: c.id,
@@ -348,6 +363,7 @@ function mapCountry(c: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchCountries(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('countries')
@@ -357,6 +373,7 @@ async function fetchCountries(sb: any, limit: number, offset: number) {
   return (data || []).map(mapCountry)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchCountry(sb: any, id: string) {
   const { data, error } = await sb
     .from('countries')
@@ -369,6 +386,7 @@ async function fetchCountry(sb: any, id: string) {
 
 // --- News ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapNews(n: any) {
   return {
     id: n.id,
@@ -383,6 +401,7 @@ function mapNews(n: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchNews(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('news_articles')
@@ -392,6 +411,7 @@ async function fetchNews(sb: any, limit: number, offset: number) {
   return (data || []).map(mapNews)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchNewsArticle(sb: any, id: string) {
   const { data, error } = await sb
     .from('news_articles')
@@ -404,6 +424,7 @@ async function fetchNewsArticle(sb: any, id: string) {
 
 // --- Marketplace ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapMarketplace(m: any) {
   return {
     id: m.id,
@@ -417,6 +438,7 @@ function mapMarketplace(m: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchMarketplace(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('marketplace_listings')
@@ -427,6 +449,7 @@ async function fetchMarketplace(sb: any, limit: number, offset: number) {
   return (data || []).map(mapMarketplace)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchMarketplaceListing(sb: any, id: string) {
   const { data, error } = await sb
     .from('marketplace_listings')
@@ -440,6 +463,7 @@ async function fetchMarketplaceListing(sb: any, id: string) {
 
 // --- Personalities ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapPersonality(p: any) {
   return {
     id: p.id,
@@ -456,6 +480,7 @@ function mapPersonality(p: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchPersonalities(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('personalities')
@@ -465,6 +490,7 @@ async function fetchPersonalities(sb: any, limit: number, offset: number) {
   return (data || []).map(mapPersonality)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchPersonality(sb: any, id: string) {
   const { data, error } = await sb
     .from('personalities')
@@ -477,6 +503,7 @@ async function fetchPersonality(sb: any, id: string) {
 
 // --- Tags ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapTag(t: any) {
   return {
     id: t.id,
@@ -489,6 +516,7 @@ function mapTag(t: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchTags(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('unified_tags')
@@ -498,6 +526,7 @@ async function fetchTags(sb: any, limit: number, offset: number) {
   return (data || []).map(mapTag)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchTag(sb: any, id: string) {
   const { data, error } = await sb
     .from('unified_tags')
@@ -510,6 +539,7 @@ async function fetchTag(sb: any, id: string) {
 
 // --- Queer Villages ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapQueerVillage(qv: any) {
   return {
     id: qv.id,
@@ -525,6 +555,7 @@ function mapQueerVillage(qv: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchQueerVillages(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('queer_villages')
@@ -534,6 +565,7 @@ async function fetchQueerVillages(sb: any, limit: number, offset: number) {
   return (data || []).map(mapQueerVillage)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchQueerVillage(sb: any, id: string) {
   const { data, error } = await sb
     .from('queer_villages')
@@ -554,6 +586,7 @@ async function fetchQueerVillage(sb: any, id: string) {
  * Bounded to 50k docs per run — the scheduled call should process all
  * indexes sequentially.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function reconcileType(supabase: any, type: string): Promise<{
   meili_count: number
   source_count: number

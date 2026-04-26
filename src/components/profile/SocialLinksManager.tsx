@@ -26,7 +26,7 @@ interface SocialLinksManagerProps {
 export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: SocialLinksManagerProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [socialLinks, setSocialLinks] = useState<Record<string, string>>(initialSocialLinks);
+  const [socialLinks, _setSocialLinks] = useState<Record<string, string>>(initialSocialLinks);
   const [customLinks, setCustomLinks] = useState<SocialLink[]>(
     Object.entries(initialSocialLinks).map(([platform, url]) => ({ platform, url: url as string })),
   );

@@ -95,7 +95,7 @@ const columnHelper = createColumnHelper<RedirectRow>();
 
 export default function AdminRedirects() {
   const navigate = useNavigate();
-  const { createRedirect, updateRedirect, deleteRedirect, toggleEnabled, fetchEvents, bulkImport } =
+  const { createRedirect, updateRedirect, deleteRedirect, _toggleEnabled, fetchEvents, bulkImport } =
     useRedirects();
   const { toast } = useToast();
   const queryClient = useQueryClient();

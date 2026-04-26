@@ -125,6 +125,7 @@ export default {
       const meiliData: { results: MeiliResult[] } = await meiliResponse.json()
 
       // Merge results from all indexes
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const allHits: any[] = []
       const mergedFacets: Record<string, Record<string, number>> = {}
 
@@ -161,6 +162,7 @@ export default {
         facetDistribution: mergedFacets,
       }, 200, corsHeaders)
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Search proxy error:', error)
       return json({ error: 'Search failed', details: error.message }, 500, corsHeaders)
@@ -172,6 +174,7 @@ export default {
 
 interface MeiliResult {
   indexUid: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hits: any[]
   estimatedTotalHits?: number
   facetDistribution?: Record<string, Record<string, number>>
@@ -206,6 +209,7 @@ function esc(s: string): string {
   return s.replace(/"/g, '\\"')
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapHit(hit: any, indexUid: string): any {
   return {
     objectID: hit.id,
@@ -257,6 +261,7 @@ function getCorsHeaders(request: Request, env: Env): Record<string, string> {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function json(data: any, status: number, headers: Record<string, string>): Response {
   return new Response(JSON.stringify(data), {
     status,

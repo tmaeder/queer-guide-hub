@@ -135,4 +135,5 @@ Button.displayName = "Button"
 // Keep buttonVariants export for compatibility (some files import it)
 const buttonVariants = (() => "") as unknown as Record<string, unknown>;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }

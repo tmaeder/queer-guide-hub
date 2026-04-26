@@ -76,6 +76,7 @@ export function TrendingStrip({
 		return () => {
 			cancelled = true;
 		};
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [city, types.join(","), limit]);
 
 	if (error || items?.length === 0) return null;

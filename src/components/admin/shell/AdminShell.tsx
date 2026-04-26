@@ -38,11 +38,13 @@ interface AdminShellContextValue {
   closeEditor: () => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AdminShellContext = createContext<AdminShellContextValue>({
   openEditor: () => {},
   closeEditor: () => {},
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAdminShell(): AdminShellContextValue {
   return useContext(AdminShellContext);
 }

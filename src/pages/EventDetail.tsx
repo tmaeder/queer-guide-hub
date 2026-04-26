@@ -106,6 +106,7 @@ export default function EventDetail() {
     if (event?.id) {
       track({ eventType: 'page_view', entityType: 'event', entityId: event.id, metadata: { title: event.title } });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
 
   const fetchEventData = async () => {

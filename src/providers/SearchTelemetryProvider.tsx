@@ -43,6 +43,7 @@ async function resolveSlug(table: string, slug: string): Promise<string | null> 
 	if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.id;
 
 	const { data, error } = await supabase
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		.from(table as any)
 		.select("id")
 		.eq("slug", slug)
@@ -53,6 +54,7 @@ async function resolveSlug(table: string, slug: string): Promise<string | null> 
 }
 
 /** Hook variant — drop into any component with router context (e.g. AppRoutes). */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSearchTelemetry() {
 	const location = useLocation();
 	const { user } = useAuth();

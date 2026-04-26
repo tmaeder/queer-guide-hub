@@ -72,6 +72,7 @@ interface AiDraft {
   days: DraftDay[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadTripContext(supabase: any, tripId: string): Promise<TripContext | null> {
   const { data, error } = await supabase
     .from('trips')

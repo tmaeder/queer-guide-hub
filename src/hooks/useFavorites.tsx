@@ -115,6 +115,7 @@ export function useFavorites(type: FavoriteType) {
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, config, favoriteIds, toast],
   );
 

@@ -23,7 +23,7 @@ function getOrigin(req: Request) {
   }
 }
 
-function getClientIp(req: Request) {
+function _getClientIp(req: Request) {
   const xff = req.headers.get('x-forwarded-for');
   if (xff) return xff.split(',')[0].trim();
   const rip = req.headers.get('x-real-ip');
@@ -42,7 +42,7 @@ function buildCors(origin: string) {
 /**
  * Build a Mapbox-compatible place_name string from Nominatim properties.
  */
-function buildPlaceName(displayName: string, address: Record<string, unknown>): string {
+function _buildPlaceName(displayName: string, _address: Record<string, unknown>): string {
   return displayName || 'Unknown';
 }
 

@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const pipelineRunId = body.pipeline_run_id as string
+    const _pipelineRunId = body.pipeline_run_id as string
     const entityType = body.entityType as string
     const minScore = body.minScore ?? 40
     const batchSize = body.batch_size || 50

@@ -15,6 +15,7 @@ const categoryIcons: Record<string, typeof MapPin> = {
   event: CalendarDays,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function getPlaceName(place: TripPlace): string {
   if (place.venues?.name) return place.venues.name;
   if (place.events?.title) return place.events.title;
@@ -22,6 +23,7 @@ export function getPlaceName(place: TripPlace): string {
   return place.custom_name || 'Untitled Place';
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function getPlaceCategory(place: TripPlace): string {
   if (place.venue_id) return 'venue';
   if (place.event_id) return 'event';

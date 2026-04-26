@@ -54,7 +54,7 @@ export function AdminDataTable<TData extends { id: string }>({
     searchColumns = [],
     baseFilters,
     onBulkEditSuccess,
-    onBulkDeleteSuccess,
+    _onBulkDeleteSuccess,
   } = config;
 
   // Build default column visibility from meta

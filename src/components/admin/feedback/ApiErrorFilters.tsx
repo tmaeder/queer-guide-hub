@@ -13,6 +13,7 @@ export interface ApiErrorFilterState {
   hideResolved: boolean;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const DEFAULT_ERROR_FILTERS: ApiErrorFilterState = {
   q: '',
   sources: [],

@@ -70,6 +70,7 @@ interface HistoryMessage {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadTripContext(supabase: any, tripId: string): Promise<TripContext | null> {
   const { data, error } = await supabase
     .from('trips')
@@ -112,6 +113,7 @@ async function loadTripContext(supabase: any, tripId: string): Promise<TripConte
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadHistory(supabase: any, tripId: string): Promise<HistoryMessage[]> {
   const { data, error } = await supabase
     .from('trip_concierge_messages')

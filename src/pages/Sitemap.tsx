@@ -39,7 +39,7 @@ function slugify(input: string) {
 
 export default function Sitemap() {
   const [query, setQuery] = useState('');
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const [copied, setCopied] = useState<string | null>(null);
   const { data: routes = [], isLoading, error } = useDynamicSitemap();
 

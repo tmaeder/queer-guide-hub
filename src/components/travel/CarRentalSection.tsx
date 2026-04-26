@@ -23,7 +23,7 @@ function buildDiscoverCarsUrl(city: string, checkIn?: string, checkOut?: string)
   return `https://www.discovercars.com/search?${params.toString()}`;
 }
 
-function buildRentalcarsUrl(city: string, checkIn?: string, checkOut?: string): string {
+function buildRentalcarsUrl(city: string, checkIn?: string, _checkOut?: string): string {
   const params = new URLSearchParams();
   params.set('affiliateCode', 'travelpayouts');
   params.set('preflang', 'en');

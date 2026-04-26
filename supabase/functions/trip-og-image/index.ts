@@ -108,6 +108,7 @@ function buildSvg(args: {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadTrip(admin: any, params: URLSearchParams) {
   const tripId = params.get('trip_id');
   const token = params.get('token');

@@ -73,6 +73,7 @@ export function ThemeProvider({
   }, [resolvedMode]);
 
   const { i18n } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const direction: Direction = isSupportedLocale(i18n.language) && RTL_LOCALES.includes(i18n.language as any) ? 'rtl' : 'ltr';
   const muiTheme = React.useMemo(() => createAppTheme(resolvedMode, direction), [resolvedMode, direction]);
 
@@ -104,6 +105,7 @@ export function ThemeProvider({
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const context = React.useContext(ThemeProviderContext);
 

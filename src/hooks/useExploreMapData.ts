@@ -82,6 +82,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
       minLng: viewport.center[0] - lngDelta,
       maxLng: viewport.center[0] + lngDelta,
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldUseBounds, viewport.center[0], viewport.center[1], viewport.zoom]);
 
   // ── Venues ─────────────────────────────────────────────────────────────────

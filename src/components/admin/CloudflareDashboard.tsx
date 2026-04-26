@@ -68,6 +68,7 @@ export function CloudflareDashboard() {
           description: 'Latest statistics have been loaded successfully.',
         });
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error fetching Cloudflare data:', error);
 

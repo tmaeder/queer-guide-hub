@@ -52,7 +52,7 @@ export function GroupEventCard({
   isDeleting,
   canManage,
 }: GroupEventCardProps) {
-  const { user } = useAuth();
+  const { _user } = useAuth();
 
   const formatEventDate = (startDate: string, endDate?: string) => {
     return formatEventDateTime(startDate, endDate);

@@ -34,7 +34,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
   const [guestEmail, setGuestEmail] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [bookingId, setBookingId] = useState<string | null>(null);
+  const [_bookingId, setBookingId] = useState<string | null>(null);
 
   if (!hotel) return null;
 

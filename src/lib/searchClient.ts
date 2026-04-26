@@ -7,6 +7,7 @@
  */
 
 const SEARCH_URL =
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	(import.meta as any).env?.VITE_SEARCH_PROXY_URL ||
 	"https://queer-guide-search-proxy.maeder-tobiassimon.workers.dev";
 
@@ -21,6 +22,7 @@ export function getSessionId(): string {
 	return id;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function post<T = any>(path: string, body: object): Promise<T> {
 	const res = await fetch(`${SEARCH_URL}${path}`, {
 		method: "POST",
@@ -91,7 +93,9 @@ export async function submitOnboarding(
 export async function fetchSimilar(
 	entity: { type: string; id: string },
 	limit = 10,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const data = await post<{ results: any[] }>("/similar", {
 		entity_type: entity.type,
 		entity_id: entity.id,
@@ -106,7 +110,9 @@ export async function fetchTrending(
 	city?: string,
 	limit = 10,
 	userId?: string | null,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const data = await post<{ trending: any[] }>("/trending", {
 		types,
 		city,
@@ -122,8 +128,10 @@ export async function fetchAutocomplete(
 	query: string,
 	types?: string[],
 	limit = 6,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any[]> {
 	if (!query?.trim()) return [];
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const data = await post<{ suggestions: any[] }>("/autocomplete", {
 		query,
 		types,

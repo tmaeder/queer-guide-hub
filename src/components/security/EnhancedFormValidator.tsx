@@ -163,6 +163,7 @@ export function EnhancedFormValidator({
 }
 
 // Hook for imperative form validation
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFormValidation() {
   const { user } = useAuth();
   const { validateContent } = useContentValidation();

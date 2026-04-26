@@ -57,7 +57,7 @@ interface FavoriteItem {
 
 export default function Favorites() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
   const {

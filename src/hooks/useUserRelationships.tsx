@@ -70,6 +70,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error sending friend request:', error);
       toast({
@@ -104,6 +105,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error blocking user:', error);
       toast({
@@ -132,6 +134,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error accepting friend request:', error);
       toast({
@@ -160,6 +163,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error rejecting friend request:', error);
       toast({
@@ -191,6 +195,7 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error removing relationship:', error);
       toast({

@@ -287,5 +287,6 @@ export function StructuredFieldDisplay({
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { FIELD_DEFINITIONS, getFieldsForEntity };
 export type { FieldDef };

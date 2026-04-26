@@ -44,7 +44,7 @@ interface SimilarPersonality {
 }
 
 export default function PersonalityDetail() {
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const [personality, setPersonality] = useState<Personality | null>(null);

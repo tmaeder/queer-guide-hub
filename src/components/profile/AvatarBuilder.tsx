@@ -174,4 +174,5 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { generateRandomConfig };

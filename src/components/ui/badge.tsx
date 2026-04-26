@@ -47,4 +47,5 @@ function Badge({ className, variant = "default", children, ...props }: BadgeProp
 // Keep badgeVariants export for compatibility
 const badgeVariants = (() => "") as unknown as Record<string, unknown>;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Badge, badgeVariants }

@@ -75,7 +75,7 @@ const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSPr
 };
 
 export default function SearchResults() {
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useLocalizedNavigate();

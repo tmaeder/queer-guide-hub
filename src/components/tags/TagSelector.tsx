@@ -26,7 +26,7 @@ export const TagSelector = ({
   placeholder = "Select tags...",
   maxTags = 10,
   allowCustomTags = false,
-  categories,
+  _categories,
   className
 }: TagSelectorProps) => {
   const {

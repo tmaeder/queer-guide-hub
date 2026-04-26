@@ -24,7 +24,7 @@ export function SocialLinksList({
   customLinks,
   onCustomLinkChange,
   onRemoveCustomLink,
-  onValidateUrl,
+  _onValidateUrl,
 }: SocialLinksListProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

@@ -119,7 +119,7 @@ function ProtectionRow({
   const since = data?.so_since || data?.gi_since;
 
   // Determine overall status
-  const yesCount = [status.so, status.gi, status.ge, status.sc].filter((s) => s === 'Yes').length;
+  const _yesCount = [status.so, status.gi, status.ge, status.sc].filter((s) => s === 'Yes').length;
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
       <Icon style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />

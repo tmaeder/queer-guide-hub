@@ -135,7 +135,7 @@ export default function Travel() {
 
   // Personalized ranking: boost deals matching recommended destinations
   const { data: recs } = useRecommendations({ recType: 'destination', limit: 20 });
-  const { track } = useTrackEvent();
+  const { _track } = useTrackEvent();
 
   const recCityIds = new Set((recs || []).map((r) => r.entity_id));
   const usePersonalized = recCityIds.size > 0;

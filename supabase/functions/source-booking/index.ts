@@ -12,7 +12,7 @@ import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_sh
 //      hotel sitemap; needs human/scraper enrichment for full data.
 // ============================================================
 
-const SITEMAP_INDEX = 'https://www.booking.com/sitembk-hotel-index.xml'
+const _SITEMAP_INDEX = 'https://www.booking.com/sitembk-hotel-index.xml'
 const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide/bot)'
 const HOTEL_RX = /\/hotel\/[a-z]{2}\/([a-z0-9-]+)\.[a-z-]+\.html/i
 

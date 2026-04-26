@@ -316,6 +316,7 @@ export function useEvents(autoFetch: boolean = true) {
     if (autoFetch) {
       fetchEvents();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoFetch]);
 
   return {

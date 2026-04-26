@@ -90,7 +90,7 @@ export const UniversalSearchBar = () => {
     types: [],
   });
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [isFocused, setIsFocused] = useState(false);
+  const [_isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useLocalizedNavigate();
   const location = useLocation();

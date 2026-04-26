@@ -46,6 +46,7 @@ interface NudgeRow {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function activeTrips(admin: any, tripId?: string): Promise<TripRow[]> {
   const today = new Date().toISOString().slice(0, 10);
   const ninetyDaysOut = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
@@ -67,6 +68,7 @@ async function activeTrips(admin: any, tripId?: string): Promise<TripRow[]> {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function tripScope(admin: any, tripId: string) {
   const { data: places } = await admin
     .from('trip_places')
@@ -90,6 +92,7 @@ async function tripScope(admin: any, tripId: string) {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]> {
   if (!trip.start_date || !trip.end_date) return [];
   const { countryIds, cityIds } = await tripScope(admin, trip.id);
@@ -133,6 +136,7 @@ async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function newsAlertNudges(admin: any, trip: TripRow): Promise<NudgeRow[]> {
   const { countryIds } = await tripScope(admin, trip.id);
   if (countryIds.length === 0) return [];
@@ -171,6 +175,7 @@ async function newsAlertNudges(admin: any, trip: TripRow): Promise<NudgeRow[]> {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function bookingReminderNudges(admin: any, trip: TripRow): Promise<NudgeRow[]> {
   if (!trip.start_date) return [];
   const daysUntilStart = Math.floor(
@@ -191,6 +196,7 @@ async function bookingReminderNudges(admin: any, trip: TripRow): Promise<NudgeRo
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function scanOne(admin: any, trip: TripRow): Promise<number> {
   const [evs, news, book] = await Promise.all([
     eventOverlapNudges(admin, trip).catch(() => [] as NudgeRow[]),

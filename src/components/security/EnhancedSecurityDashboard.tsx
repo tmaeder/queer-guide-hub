@@ -69,7 +69,7 @@ export function EnhancedSecurityDashboard() {
         acc.totalEvents++;
 
         // Determine severity from event type
-        const severity = 'medium';
+        const _severity = 'medium';
         if (event.event_type.includes('CRITICAL') || event.event_type.includes('SECURITY_INCIDENT')) {
           _severity = 'critical';
           acc.criticalEvents++;

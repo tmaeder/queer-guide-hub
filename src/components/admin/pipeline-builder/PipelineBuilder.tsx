@@ -1337,7 +1337,7 @@ function PipelineBuilderInner() {
 }
 
 // Controlled variant used for programmatic open (empty state button)
-function QuickAddPaletteController({ nodeTypes, onAdd, onClose }: {
+function QuickAddPaletteController({ _nodeTypes, _onAdd, onClose }: {
   nodeTypes: PipelineNodeType[];
   onAdd: (nt: PipelineNodeType) => void;
   onClose: () => void;
