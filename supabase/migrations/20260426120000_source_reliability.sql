@@ -173,7 +173,7 @@ SELECT
     ELSE                                  'unreliable'
   END AS tier
 FROM public.source_reliability
-ORDER BY weight NULLS LAST DESC, source_slug, entity_type;
+ORDER BY weight DESC NULLS LAST, source_slug, entity_type;
 
 GRANT SELECT ON public.source_reliability_current TO authenticated, service_role;
 ALTER VIEW public.source_reliability_current SET (security_invoker=true);
