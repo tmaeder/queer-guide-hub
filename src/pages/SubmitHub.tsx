@@ -139,11 +139,11 @@ const SubmitHub = () => {
                 >
                   {type.description}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: type.color }}>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: 'inherit' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
                     Get started
                   </Typography>
-                  <ArrowRight style={{ width: 14, height: 14 }} />
+                  <ArrowRight style={{ width: 14, height: 14, color: type.color }} aria-hidden="true" />
                 </Box>
               </CardContent>
             </Card>

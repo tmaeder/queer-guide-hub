@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { formatCurrency } from '@/lib/currency';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -12,6 +13,15 @@ import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
+
+// 44×44 icon-link target so axe target-size (and WCAG 2.5.8) pass.
+const ICON_LINK_STYLE: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minWidth: 44,
+  minHeight: 44,
+};
 
 interface MarketplaceCardProps {
   listing?: MarketplaceListing & {
@@ -173,32 +183,33 @@ export function MarketplaceCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
+                  style={ICON_LINK_STYLE}
                 >
-                  <ExternalLink style={{ height: 12, width: 12 }} />
+                  <ExternalLink style={{ height: 16, width: 16 }} aria-hidden="true" />
                 </a>
               </Button>
             )}
             {listing.contact_phone && (
               <Button
-                size="sm"
+                size="default"
                 variant="ghost"
                 aria-label={`Call ${listing.contact_phone}`}
                 asChild
               >
-                <a href={`tel:${listing.contact_phone}`} onClick={(e) => e.stopPropagation()}>
-                  <Phone style={{ height: 12, width: 12 }} />
+                <a href={`tel:${listing.contact_phone}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
+                  <Phone style={{ height: 16, width: 16 }} aria-hidden="true" />
                 </a>
               </Button>
             )}
             {listing.contact_email && (
               <Button
-                size="sm"
+                size="default"
                 variant="ghost"
                 aria-label={`Email ${listing.contact_email}`}
                 asChild
               >
-                <a href={`mailto:${listing.contact_email}`} onClick={(e) => e.stopPropagation()}>
-                  <Mail style={{ height: 12, width: 12 }} />
+                <a href={`mailto:${listing.contact_email}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
+                  <Mail style={{ height: 16, width: 16 }} aria-hidden="true" />
                 </a>
               </Button>
             )}

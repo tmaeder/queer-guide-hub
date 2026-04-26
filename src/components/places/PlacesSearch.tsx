@@ -144,11 +144,12 @@ export const PlacesSearch = ({
               onClick={detectLocation}
               disabled={isDetectingLocation}
               size="icon"
+              aria-label={isDetectingLocation ? 'Detecting location' : 'Find places near me'}
             >
               {isDetectingLocation ? (
-                <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
+                <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} aria-hidden="true" />
               ) : (
-                <Navigation style={{ height: 16, width: 16 }} />
+                <Navigation style={{ height: 16, width: 16 }} aria-hidden="true" />
               )}
             </Button>
           )}
@@ -159,8 +160,10 @@ export const PlacesSearch = ({
             onClick={() => setShowFilters(!showFilters)}
             size="icon"
             style={{ position: 'relative' }}
+            aria-label={showFilters ? 'Hide filters' : 'Show filters'}
+            aria-expanded={showFilters}
           >
-            <Filter style={{ height: 16, width: 16 }} />
+            <Filter style={{ height: 16, width: 16 }} aria-hidden="true" />
             {getActiveFilterCount() > 0 && (
               <Badge variant="secondary" style={{ position: 'absolute', top: -8, right: -8, height: 20, width: 20, padding: 0, fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {getActiveFilterCount()}
