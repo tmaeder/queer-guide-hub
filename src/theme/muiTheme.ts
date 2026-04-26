@@ -73,7 +73,9 @@ const baseThemeOptions: ThemeOptions = {
     MuiButtonBase: {
       styleOverrides: {
         root: {
-          '&.Mui-focusVisible': {
+          // Cover both MUI's class (set by its focus listener) and the native
+          // :focus-visible pseudo so programmatic focus also gets a ring.
+          '&.Mui-focusVisible, &:focus-visible': {
             outline: `2px solid ${brandColors.main}`,
             outlineOffset: '2px',
           },
@@ -83,7 +85,7 @@ const baseThemeOptions: ThemeOptions = {
     MuiTab: {
       styleOverrides: {
         root: {
-          '&.Mui-focusVisible': {
+          '&.Mui-focusVisible, &:focus-visible': {
             outline: `2px solid ${brandColors.main}`,
             outlineOffset: '-2px',
           },
