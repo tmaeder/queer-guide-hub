@@ -28,6 +28,9 @@ import {
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { EditorHeader } from './EditorHeader';
 import { EditorSidebar } from './EditorSidebar';
+import { AIAssistDrawer } from '@/components/cms/AIAssistDrawer';
+import Button from '@mui/material/Button';
+import { Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { FieldGroup } from '@/types/cms';
@@ -165,18 +168,23 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
     }
   }, [save, onSaved, state.itemId]);
 
-  // Keyboard shortcut: Ctrl/Cmd+S to save
+  // Bridge global CMS shortcuts to local editor handlers (CMSShell dispatches
+  // these so it can own ⌘K/⌘S/⌘Enter without holding editor refs).
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        if (state.isDirty && !state.isSaving) {
-          handleSave();
-        }
-      }
+    const onSaveEvt = () => {
+      if (state.isDirty && !state.isSaving) handleSave();
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const onPublishEvt = () => {
+      // Fall back to save when no explicit publish action is wired here;
+      // the WorkflowPanel owns the actual state transition.
+      if (state.isDirty && !state.isSaving) handleSave();
+    };
+    window.addEventListener('cms:editor:save', onSaveEvt);
+    window.addEventListener('cms:editor:publish', onPublishEvt);
+    return () => {
+      window.removeEventListener('cms:editor:save', onSaveEvt);
+      window.removeEventListener('cms:editor:publish', onPublishEvt);
+    };
   }, [handleSave, state.isDirty, state.isSaving]);
 
   // Handle tab change
@@ -194,6 +202,17 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
   const handleFieldChange = useCallback(
     (fieldName: string) => (value: unknown) => {
       setField(fieldName, value);
+    },
+    [setField],
+  );
+
+  // ── AI Assist drawer ────────────────────────────────────────
+  const [aiOpen, setAiOpen] = useState(false);
+  const aiEnabled = Boolean(config?.aiAssist?.ops?.length);
+  const handleAiApply = useCallback(
+    (field: string, value: unknown) => {
+      setField(field, value);
+      toast.success(`AI applied to ${field}`);
     },
     [setField],
   );
@@ -511,6 +530,38 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
           />
         </Box>
       </Box>
+
+      {aiEnabled && (
+        <>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setAiOpen(true)}
+            startIcon={<Sparkles size={16} />}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              zIndex: 30,
+              textTransform: 'none',
+              fontWeight: 600,
+              boxShadow: 4,
+            }}
+          >
+            AI Assist
+          </Button>
+          {config && (
+            <AIAssistDrawer
+              open={aiOpen}
+              onClose={() => setAiOpen(false)}
+              config={config}
+              recordId={state.itemId ?? itemId ?? 'new'}
+              source={state.data}
+              onApply={handleAiApply}
+            />
+          )}
+        </>
+      )}
     </Box>
   );
 }

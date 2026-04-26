@@ -44,6 +44,9 @@ import { useContext, lazy, Suspense } from 'react';
 import type { ContentTypeConfig } from '@/types/cms';
 
 const BulkEnrichDialog = lazy(() => import('@/components/admin/BulkEnrichDialog'));
+const BulkActionsBar = lazy(() =>
+  import('./BulkActionsBar').then((m) => ({ default: m.BulkActionsBar })),
+);
 
 /** Safe hook: returns AdminShell context or no-op fallback (for use outside AdminShell) */
 function useAdminShellSafe() {
@@ -837,6 +840,20 @@ export function ContentListPanel({
           />
         )}
       </Paper>
+
+      {selected.size > 0 && config && (
+        <Suspense fallback={null}>
+          <BulkActionsBar
+            selections={Array.from(selected).map((id) => ({
+              contentType: config.id,
+              tableName: config.tableName,
+              id,
+            }))}
+            onClear={() => setSelected(new Set())}
+            onComplete={() => loadItems()}
+          />
+        </Suspense>
+      )}
     </Box>
   );
 }

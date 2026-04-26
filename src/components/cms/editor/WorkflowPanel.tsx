@@ -23,6 +23,8 @@ import { getStateColor, getStateLabel } from '@/config/workflowConfig';
 import { getContentType } from '@/config/contentTypeRegistry';
 import type { WorkflowState, VisibilityLevel, WorkflowTransition } from '@/types/cms';
 import { cn } from '@/lib/utils';
+import { CommentThread } from '@/components/cms/CommentThread';
+import { CalendarClock } from 'lucide-react';
 
 interface WorkflowPanelProps {
   contentType: string;
@@ -42,6 +44,9 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
 
   const [currentState, setCurrentState] = useState<WorkflowState>('draft');
   const [publishedAt, setPublishedAt] = useState<string | undefined>(undefined);
+  const [scheduledPublishAt, setScheduledPublishAt] = useState<string | undefined>(undefined);
+  const [scheduleDraft, setScheduleDraft] = useState<string>('');
+  const [savingSchedule, setSavingSchedule] = useState(false);
   const [visibility, setVisibility] = useState<VisibilityLevel>('public');
   const [_metadataLoaded, setMetadataLoaded] = useState(false);
 
@@ -69,7 +74,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       const { supabase } = await import('@/integrations/supabase/client');
       const { data } = await supabase
         .from('cms_content_metadata' as const)
-        .select('workflow_state, visibility_level, published_at')
+        .select('workflow_state, visibility_level, published_at, scheduled_publish_at')
         .eq('source_table', config.tableName)
         .eq('source_id', itemId)
         .maybeSingle();
@@ -78,6 +83,9 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
         setCurrentState((data.workflow_state as WorkflowState) || 'draft');
         setVisibility((data.visibility_level as VisibilityLevel) || 'public');
         setPublishedAt(data.published_at || undefined);
+        const sched = (data as { scheduled_publish_at?: string | null }).scheduled_publish_at;
+        setScheduledPublishAt(sched || undefined);
+        setScheduleDraft(sched ? toLocalInputValue(sched) : '');
       }
       setMetadataLoaded(true);
     } catch (err) {
@@ -121,6 +129,35 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       }
     },
     [handleTransition],
+  );
+
+  // Save scheduled publish timestamp
+  const handleSaveSchedule = useCallback(
+    async (next: string | null) => {
+      if (!itemId || !config) return;
+      setSavingSchedule(true);
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        await supabase
+          .from('cms_content_metadata' as const)
+          .upsert(
+            {
+              source_table: config.tableName,
+              source_id: itemId,
+              scheduled_publish_at: next,
+              updated_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+            },
+            { onConflict: 'source_table,source_id' },
+          );
+        setScheduledPublishAt(next || undefined);
+      } catch (err) {
+        console.error('Failed to save schedule:', err);
+      } finally {
+        setSavingSchedule(false);
+      }
+    },
+    [itemId, config],
   );
 
   // Handle visibility change
@@ -330,6 +367,67 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
 
       <Divider />
 
+      {/* Scheduled Publish */}
+      {!isNewItem && (
+        <Box>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              mb: 1,
+            }}
+          >
+            <CalendarClock style={{ width: 12, height: 12 }} />
+            Scheduled publish
+          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <TextField
+              type="datetime-local"
+              size="small"
+              value={scheduleDraft}
+              onChange={(e) => setScheduleDraft(e.target.value)}
+              fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { fontSize: '0.875rem' } }}
+              inputProps={{ 'aria-label': 'Scheduled publish at' }}
+            />
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={savingSchedule || !scheduleDraft}
+              onClick={() => handleSaveSchedule(new Date(scheduleDraft).toISOString())}
+              sx={{ textTransform: 'none' }}
+            >
+              {savingSchedule ? '…' : 'Set'}
+            </Button>
+            {scheduledPublishAt && (
+              <Button
+                size="small"
+                variant="text"
+                disabled={savingSchedule}
+                onClick={() => {
+                  setScheduleDraft('');
+                  handleSaveSchedule(null);
+                }}
+                sx={{ textTransform: 'none' }}
+              >
+                Clear
+              </Button>
+            )}
+          </Stack>
+          {scheduledPublishAt && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+              Will publish at {formatDatetime(scheduledPublishAt)}
+            </Typography>
+          )}
+        </Box>
+      )}
+
+      <Divider />
+
       {/* Visibility Level */}
       <Box>
         <Typography
@@ -409,8 +507,27 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
           Save the item first to manage workflow and visibility.
         </Typography>
       )}
+
+      {/* Threaded discussion */}
+      {!isNewItem && itemId && config && (
+        <>
+          <Divider />
+          <CommentThread
+            sourceTable={config.tableName}
+            sourceId={itemId}
+            emptyHint="No comments yet — leave one to flag changes or approvals."
+          />
+        </>
+      )}
     </Box>
   );
+}
+
+function toLocalInputValue(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 // ── Utility ──────────────────────────────────────────────────────────

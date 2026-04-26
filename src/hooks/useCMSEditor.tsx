@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentType } from '@/config/contentTypeRegistry';
+import { validateAgainstRegistry } from '@/lib/cms/zodFromFields';
 import type { EditorState, CMSContentMetadata, FieldGroup } from '@/types/cms';
 
 interface UseCMSEditorOptions {
@@ -142,17 +143,25 @@ export function useCMSEditor({
   const save = useCallback(async (): Promise<boolean> => {
     if (!config || !user) return false;
 
-    // Run validation
+    // Run validation — Zod schema (registry-derived) + legacy custom validate
+    const errorMap: Record<string, string> = {};
+    const zodResult = validateAgainstRegistry(config, state.data);
+    if (!zodResult.ok) {
+      for (const issue of zodResult.issues) {
+        if (!errorMap[issue.field]) errorMap[issue.field] = issue.message;
+      }
+    }
     if (config.validate) {
       const result = config.validate(state.data);
       if (!result.isValid) {
-        const errorMap: Record<string, string> = {};
         result.errors.forEach((e) => {
           errorMap[e.field] = e.message;
         });
-        setState((prev) => ({ ...prev, errors: errorMap }));
-        return false;
       }
+    }
+    if (Object.keys(errorMap).length > 0) {
+      setState((prev) => ({ ...prev, errors: errorMap }));
+      return false;
     }
 
     setState((prev) => ({ ...prev, isSaving: true, errors: {} }));
