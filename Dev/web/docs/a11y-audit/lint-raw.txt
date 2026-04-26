@@ -1,0 +1,540 @@
+
+> queer-guide@1.0.1 lint
+> eslint .
+
+
+/Users/tobiasmaeder/QG/Dev/web/e2e/trips-i18n.spec.ts
+  15:6  warning  'Locale' is defined but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/scripts/export-patroc-sql.ts
+  61:11  warning  'table' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/scripts/test-outsavvy-full.ts
+  19:7  warning  'batchCount' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/cli.ts
+  9:10  warning  'logger' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/db/queries.ts
+  47:29  warning  'sourceUrl' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/db/staging-publisher.ts
+  137:5  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/jobs/orchestrator.ts
+  340:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  355:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/normalize/normalize.ts
+  1:32  warning  'EntityType' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/sources/base.ts
+  1:27  warning  'SourceName' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/sources/iglta.ts
+  6:21  warning  'parseDateRange' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/sources/misterbnb.ts
+  6:10  warning  'cleanText' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/sources/travelgay.ts
+  6:30  warning  'stripHtml' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/src/sources/wikipedia.ts
+  116:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/scraper/tests/unit/wikipedia-parser.test.ts
+  19:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/CloudflareDashboard.tsx
+  71:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/data-table/AdminDataTable.tsx
+  57:5  warning  'onBulkDeleteSuccess' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/feedback/ApiErrorFilters.tsx
+  16:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/import-hub/StructuredFieldDisplay.tsx
+  290:29  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/pipeline-builder/PipelineBuilder.tsx
+  1340:38  warning  'nodeTypes' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  1340:49  warning  'onAdd' is defined but never used. Allowed unused args must match /^_/u      unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/pipeline-builder/nodes/CommentNode.tsx
+  94:7  warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/pipeline-builder/nodes/GroupNode.tsx
+  81:11  warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/pipeline-builder/panels/AccessDialog.tsx
+  125:15  warning  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  135:15  warning  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/pipeline-builder/panels/CronEditor.tsx
+  167:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  167:24  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/pipeline-builder/panels/FindNodePalette.tsx
+  18:11  warning  'fitView' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/pipeline-builder/panels/TemplateLibrary.tsx
+  222:21  warning  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  231:21  warning  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  240:21  warning  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/pipeline-builder/tabs/IntegrationsTab.tsx
+  138:19  warning  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  147:19  warning  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  158:19  warning  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+  167:19  warning  A form label must be associated with a control  jsx-a11y/label-has-associated-control
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/admin/shell/AdminShell.tsx
+  41:14  warning  Fast refresh only works when a file only exports components. Move your React context(s) to a separate file                      react-refresh/only-export-components
+  46:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/auth/ConsentBlock.tsx
+  20:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  22:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/booking/HotelBookingFlow.tsx
+  37:10  warning  'bookingId' is assigned a value but never used. Allowed unused elements of array destructuring must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/booking/HotelSearchForm.tsx
+  8:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/cms/TranslationPanel.tsx
+  51:6  warning  React Hook useEffect has a missing dependency: 'loadTranslations'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/country/LGBTJurisdictionInfo.tsx
+  122:9  warning  'yesCount' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/directory/DirectoryCard.tsx
+  17:20  warning  'setImageKey' is assigned a value but never used. Allowed unused elements of array destructuring must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/discovery/RecommendedForYou.tsx
+  17:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/discovery/SimilarItems.tsx
+  67:5  warning  React Hook useEffect has a missing dependency: 'entity'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/discovery/TrendingStrip.tsx
+  79:5   warning  React Hook useEffect has a missing dependency: 'types'. Either include it or remove the dependency array                                  react-hooks/exhaustive-deps
+  79:12  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/events/RecurrencePicker.tsx
+  152:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/groups/GroupEventCard.tsx
+  55:11  warning  'user' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/hotels/__tests__/HotelCard.leakguard.test.tsx
+  1:24  warning  'expect' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/map/ExploreMap.tsx
+  37:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/map/ExploreMapLayers.tsx
+  12:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  22:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/marketplace/MarketplaceCard.tsx
+  7:24  warning  'Globe' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/news/NewsCard.tsx
+  190:13  warning  Non-interactive elements should not be assigned mouse or keyboard event listeners  jsx-a11y/no-noninteractive-element-interactions
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/news/NewsFilters.tsx
+  1:44  warning  'useRef' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/news/__tests__/NewsCard.leakguard.test.tsx
+  1:24  warning  'expect' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/personalization/SimilarCities.tsx
+  19:41  warning  'cityName' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  19:77  warning  'latitude' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/profile/AvatarBuilder.tsx
+  177:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/profile/PhotoGallery.tsx
+  17:10  warning  'useAuth' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/profile/SecureProfileViewer.tsx
+  2:10  warning  'useAuth' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/profile/SocialLinksManager.tsx
+  29:23  warning  'setSocialLinks' is assigned a value but never used. Allowed unused elements of array destructuring must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/profile/social/SocialLinksList.tsx
+  27:3  warning  'onValidateUrl' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/pwa/PWAProvider.tsx
+  28:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/routing/LocaleRouter.tsx
+  76:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/search/SearchCategories.tsx
+  6:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/search/UniversalSearchBar.tsx
+  93:10  warning  'isFocused' is assigned a value but never used. Allowed unused elements of array destructuring must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/security/CredentialSecurityGuard.tsx
+  84:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/security/EnhancedFormValidator.tsx
+  166:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/security/EnhancedSecurityDashboard.tsx
+  72:15  warning  'severity' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/security/LocationPrivacyGuard.tsx
+  5:10  warning  'useAuth' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/security/SecurityAlert.tsx
+  11:60  warning  'sx' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/security/SecurityDashboard.tsx
+  7:10  warning  'useAuth' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/security/SecurityMonitoringDashboard.tsx
+  2:10  warning  'useAuth' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/tags/TagSelector.tsx
+  29:3  warning  'categories' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/theme/ThemeProvider.tsx
+   76:106  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  107:14   warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/travel/CarRentalSection.tsx
+  26:61  warning  'checkOut' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/trips/BundledCheckoutDialog.tsx
+  5:24  warning  'Circle' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/trips/SortablePlaceCard.tsx
+  18:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  25:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/trips/TripBookingAssistant.tsx
+   39:56  warning  'days' is defined but never used. Allowed unused args must match /^_/u                  unused-imports/no-unused-vars
+   44:23  warning  'originCity' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+  114:17  warning  'flightDeals' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/trips/TripDocExpiryBanner.tsx
+  140:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/ui/badge.tsx
+  50:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/ui/button.tsx
+  138:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/ui/card.tsx
+  4:8  warning  'MuiCardHeader' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/components/ui/sonner.tsx
+  28:19  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/config/__tests__/contentTypeRegistry.test.ts
+  58:13  warning  'fields' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useAccessibility.tsx
+  93:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useActiveTrip.tsx
+   31:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  125:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useAuth.tsx
+  419:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useConsolidatedStats.tsx
+  69:5  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useCookieConsent.tsx
+  115:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useCurrency.tsx
+  133:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useEvents.tsx
+  319:6  warning  React Hook useEffect has a missing dependency: 'fetchEvents'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useExploreMapData.ts
+  85:6   warning  React Hook useMemo has a missing dependency: 'viewport.center'. Either include it or remove the dependency array                        react-hooks/exhaustive-deps
+  85:24  warning  React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+  85:44  warning  React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useFavorites.tsx
+  118:5  warning  React Hook useCallback has missing dependencies: 'track' and 'type'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/usePersonalities.tsx
+  8:6  warning  'PersonalityInsert' is defined but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useSearch.tsx
+  38:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useSearchSuggestions.tsx
+  63:77  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useSecureRoleManagement.tsx
+   47:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/hooks/useUserRelationships.tsx
+   73:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  194:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/lib/booking/providers/travelpayouts-flights.ts
+  11:42  warning  'checkIn' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/lib/searchClient.ts
+   10:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   24:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   94:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  110:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/lib/uploadErrors.ts
+  159:3  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/AdminFeedback.tsx
+   46:10  warning  'ApiErrorsKanban' is defined but never used                                                                            unused-imports/no-unused-imports
+   71:3   warning  'ApiErrorFilters' is defined but never used                                                                            unused-imports/no-unused-imports
+   79:3   warning  'formatErrorClaudePrompt' is defined but never used                                                                    unused-imports/no-unused-imports
+  102:24  warning  'setErrorFilters' is assigned a value but never used. Allowed unused elements of array destructuring must match /^_/u  unused-imports/no-unused-vars
+  187:17  warning  'apiErrorDaily' is assigned a value but never used. Allowed unused vars must match /^_/u                               unused-imports/no-unused-vars
+  224:9   warning  'errorFacets' is assigned a value but never used. Allowed unused vars must match /^_/u                                 unused-imports/no-unused-vars
+  256:9   warning  'visibleApiErrors' is assigned a value but never used. Allowed unused vars must match /^_/u                            unused-imports/no-unused-vars
+  306:9   warning  'communityCount' is assigned a value but never used. Allowed unused vars must match /^_/u                              unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/AdminNewsSources.tsx
+  4:10  warning  'useAuth' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/AdminRedirects.tsx
+  98:59  warning  'toggleEnabled' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/AdminVenues.tsx
+  2:10  warning  'useNavigate' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/CityDetail.tsx
+  76:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u                                                unused-imports/no-unused-vars
+  92:6   warning  React Hook useEffect has missing dependencies: 'city.name' and 'track'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/CountryDetail.tsx
+  61:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u                                                   unused-imports/no-unused-vars
+  82:6   warning  React Hook useEffect has missing dependencies: 'country.name' and 'track'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/EventDetail.tsx
+  109:6  warning  React Hook useEffect has missing dependencies: 'event.title' and 'track'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/Favorites.tsx
+  60:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/FeedbackBoard.tsx
+  42:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/News.tsx
+  386:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  391:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  396:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/PatternLibrary/patterns.tsx
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/PersonalityDetail.tsx
+  47:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/Places.tsx
+  47:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/SearchResults.tsx
+  78:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/Sitemap.tsx
+  42:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/SubmitForm.tsx
+  28:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/Travel.tsx
+  138:11  warning  'track' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/UserDirectory.tsx
+  99:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/UserProfile.tsx
+  24:11  warning  't' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/VenueDetail.tsx
+  88:6  warning  React Hook useEffect has missing dependencies: 'track' and 'venue.name'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/Venues.tsx
+  6:10  warning  'useAuth' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/src/pages/onboarding/SearchPersonalization.tsx
+  49:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/src/providers/SearchTelemetryProvider.tsx
+  46:18  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  56:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/_tests/source-adapter.test.ts
+  1:42  warning  'assertRejects' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/activity-search/index.ts
+  13:7  warning  'GYG_API_BASE' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  14:7  warning  'GYG_WIDGET_BASE' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/ai-plan-trip/index.ts
+  75:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/analyze-flyer/index.ts
+  393:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  420:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  443:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/booking-confirmation/index.ts
+  2:10  warning  'getCorsHeaders' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/booking-webhook/index.ts
+  121:3  warning  'supabase' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  122:3  warning  'payload' is defined but never used. Allowed unused args must match /^_/u   unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/hotel-booking/index.ts
+  2:10  warning  'getCorsHeaders' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/mapbox-geocoding/index.ts
+   2:10  warning  'createClient' is defined but never used                                          unused-imports/no-unused-imports
+  27:10  warning  'getClientIp' is defined but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  46:10  warning  'buildPlaceName' is defined but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  46:46  warning  'address' is defined but never used. Allowed unused args must match /^_/u         unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/meilisearch-sync/index.ts
+    1:10  warning  'getCorsHeaders' is defined but never used                                   unused-imports/no-unused-imports
+   93:16  warning  'meiliPost' is defined but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  138:35  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  143:18  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  166:41  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  182:42  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  182:89  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  194:44  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  194:72  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  208:22  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  229:32  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  239:31  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  252:22  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  277:32  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  286:31  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  298:21  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  315:32  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  324:30  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  336:24  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  351:35  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  360:33  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  372:21  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  386:30  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  395:37  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  407:28  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  420:37  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  430:44  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  443:28  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  459:39  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  468:37  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  480:20  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  492:30  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  501:29  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  513:30  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  528:39  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  537:38  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  557:40  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/packing-suggestions-llm/index.ts
+  46:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/pipeline-commit/index.ts
+    5:26  warning  'CircuitOpenError' is defined but never used                                               unused-imports/no-unused-imports
+  156:28  warning  'circuitTripped' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/pipeline-normalize/index.ts
+  25:11  warning  'pipelineRunId' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/pipeline-quality-score/index.ts
+  16:11  warning  'pipelineRunId' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/pipeline-review-gate/index.ts
+  21:11  warning  'pipelineRunId' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/pipeline-validate/index.ts
+  25:11  warning  'pipelineRunId' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/price-drop-check/index.ts
+  18:14  warning  'req' is defined but never used. Allowed unused args must match /^_/u                 unused-imports/no-unused-vars
+  52:21  warning  'lastEvent' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  63:15  warning  'cacheKey' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/recommendation-engine/index.ts
+  2:10  warning  'getCorsHeaders' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/source-booking/index.ts
+  15:7  warning  'SITEMAP_INDEX' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/source-osm-venue/index.ts
+  2:10  warning  'writeToStaging' is defined but never used   unused-imports/no-unused-imports
+  2:26  warning  'skippedResponse' is defined but never used  unused-imports/no-unused-imports
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/trip-concierge/index.ts
+   73:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/trip-cost-estimate/index.ts
+   61:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   83:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/trip-nudges/index.ts
+   49:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   70:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  194:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/trip-og-image/index.ts
+  111:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/trip-recap/index.ts
+   40:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   77:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  106:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/supabase/functions/trip-safety-narrative/index.ts
+  76:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tobiasmaeder/QG/Dev/web/workers/search-proxy/src/index.ts
+  128:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  175:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  209:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  209:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  260:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 252 problems (1 error, 251 warnings)
+  0 errors and 35 warnings potentially fixable with the `--fix` option.
+
