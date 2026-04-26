@@ -46,7 +46,16 @@ export function Footer() {
                     ·
                   </Typography>
                 )}
-                <Link to={link.href} style={{ textDecoration: 'none' }}>
+                <Link
+                  to={link.href}
+                  style={{
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    minHeight: 24,
+                    padding: '4px 6px',
+                  }}
+                >
                   <Typography
                     variant="caption"
                     sx={{

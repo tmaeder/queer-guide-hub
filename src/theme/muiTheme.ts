@@ -70,6 +70,18 @@ const baseThemeOptions: ThemeOptions = {
         },
       },
     },
+    MuiTypography: {
+      defaultProps: {
+        // MUI's default maps subtitle1/2 → <h6>, which causes heading-order
+        // violations whenever subtitles are used decoratively without a
+        // preceding h2-h5. Render them as <p> instead — same visual,
+        // semantically neutral.
+        variantMapping: {
+          subtitle1: 'p',
+          subtitle2: 'p',
+        },
+      },
+    },
     MuiButtonBase: {
       styleOverrides: {
         root: {
