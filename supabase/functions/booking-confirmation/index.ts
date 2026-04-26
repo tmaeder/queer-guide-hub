@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, corsResponse, errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
+import { corsResponse, errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 
 /**

@@ -2,7 +2,6 @@ import React from 'react';
 import { Shield, MapPin, Clock, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
 import Box from '@mui/material/Box';
 
 interface LocationPrivacyGuardProps {

@@ -1,5 +1,4 @@
 import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { PrivacyGuard } from '@/components/security/PrivacyGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

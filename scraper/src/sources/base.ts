@@ -1,4 +1,4 @@
-import type { EntityType, SourceName, SourceRawEntity } from '../types/schemas.js';
+import type { EntityType, SourceRawEntity } from '../types/schemas.js';
 import type { SourceConfig, SourceConnector, DiscoveredUrl } from '../types/connector.js';
 import { isSourceDisabled } from '../config.js';
 import { fetchWithRetry, type FetchResult } from '../utils/fetch.js';

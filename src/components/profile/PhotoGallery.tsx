@@ -14,7 +14,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Upload, X, Edit3, Trash2, Camera, ImageIcon, Loader2, ZoomIn } from 'lucide-react';
 import { useUserPhotos } from '@/hooks/useUserPhotos';
-import { useAuth } from '@/hooks/useAuth';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 

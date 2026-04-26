@@ -66,7 +66,7 @@ export function useConsolidatedStats() {
   });
 
   if (query.error) {
-    // eslint-disable-next-line no-console
+     
     console.error('[homepage-stats] aggregation failed', query.error);
     Sentry.captureException(query.error, { tags: { area: 'homepage-stats' } });
   }

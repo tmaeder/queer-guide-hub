@@ -1,4 +1,4 @@
-import type { SourceRawEntity, EntityType } from '../types/schemas.js';
+import type { SourceRawEntity } from '../types/schemas.js';
 import { cleanText } from '../utils/text.js';
 import { parseDate, inferTimezone } from '../utils/dates.js';
 import { detectLanguage } from '../utils/language.js';

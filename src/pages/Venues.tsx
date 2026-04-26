@@ -3,7 +3,6 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
-import { useAuth } from '@/hooks/useAuth';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { VenueFilters } from '@/components/venues/VenueFilters';
 import { ExploreMap } from '@/components/map/ExploreMap';

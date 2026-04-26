@@ -2,7 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { logoUrlFromWebsite } from '../_shared/logo-enrichment.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
-import { rpcWithBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { rpcWithBreaker } from '../_shared/circuit-breaker.ts'
 
 // ============================================================
 // Pipeline Commit

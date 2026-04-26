@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { CheckCircle2, Circle, Hotel, Ticket, ExternalLink, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Hotel, Ticket, ExternalLink, ArrowRight } from 'lucide-react';
 import {
   Dialog,
   DialogContent,

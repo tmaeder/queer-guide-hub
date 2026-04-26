@@ -1,7 +1,6 @@
 import * as React from 'react';
 import MuiCard from '@mui/material/Card';
 import MuiCardContent from '@mui/material/CardContent';
-import MuiCardHeader from '@mui/material/CardHeader';
 import MuiCardActions from '@mui/material/CardActions';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';

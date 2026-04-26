@@ -43,7 +43,6 @@ import { FeedbackBulkBar } from '@/components/admin/feedback/FeedbackBulkBar';
 import { FeedbackCommandPalette } from '@/components/admin/feedback/FeedbackCommandPalette';
 import { FeedbackDetailDrawer } from '@/components/admin/feedback/FeedbackDetailDrawer';
 import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDialog';
-import { ApiErrorsKanban } from '@/components/admin/feedback/ApiErrorsKanban';
 import { StoriesKanban } from '@/components/admin/feedback/StoriesKanban';
 import { StoryDetailDrawer } from '@/components/admin/feedback/StoryDetailDrawer';
 import { StorySuggestionsPanel } from '@/components/admin/feedback/StorySuggestionsPanel';
@@ -68,7 +67,6 @@ import {
 } from '@/hooks/useFeedbackStories';
 import type { StoryStatus } from '@/components/admin/feedback/types';
 import {
-  ApiErrorFilters,
   DEFAULT_ERROR_FILTERS,
   type ApiErrorFilterState,
   type ErrorSource,
@@ -76,7 +74,6 @@ import {
 } from '@/components/admin/feedback/ApiErrorFilters';
 import {
   formatClaudePrompt,
-  formatErrorClaudePrompt,
   type ApiErrorSubmission,
 } from '@/components/admin/feedback/claudePrompts';
 

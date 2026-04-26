@@ -1,4 +1,4 @@
-import { assertEquals, assertInstanceOf, assertRejects } from 'jsr:@std/assert'
+import { assertEquals, assertInstanceOf } from 'jsr:@std/assert'
 import {
   MissingCredentialsError,
   skippedResponse,

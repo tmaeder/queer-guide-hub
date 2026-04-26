@@ -1,5 +1,4 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
-import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import type { RawItem, NormalizedItem } from '../_shared/source-adapter.ts'
 
 // Source: OpenStreetMap (Overpass API) — LGBTQ+ venues

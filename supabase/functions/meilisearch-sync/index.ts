@@ -1,4 +1,4 @@
-import { getCorsHeaders, getServiceClient, requireAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, requireAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 
 const MEILI_URL = Deno.env.get('MEILISEARCH_URL')!
 const MEILI_ADMIN_KEY = Deno.env.get('MEILISEARCH_ADMIN_KEY')!
