@@ -171,7 +171,7 @@ const Venues = () => {
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger style={{ width: 120, height: 34, fontSize: '0.8rem' }}>
+              <SelectTrigger aria-label={t('pages.venues.sortBy', 'Sort venues')} style={{ width: 120, height: 34, fontSize: '0.8rem' }}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

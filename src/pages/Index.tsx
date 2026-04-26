@@ -200,7 +200,8 @@ const Index = React.memo(() => {
                     fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' },
                     letterSpacing: '-0.03em',
                     lineHeight: 1.1,
-                    color: 'brand.main',
+                    // Use brand.light on dark text.primary bg — magenta on near-black is 2.9:1 (WCAG 1.4.3 fail).
+                    color: 'brand.light',
                   }}
                 >
                   {loading ? (
