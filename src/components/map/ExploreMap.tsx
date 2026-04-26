@@ -711,8 +711,9 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
             zIndex: 10,
             textTransform: 'none',
             fontSize: '0.8rem',
-            bgcolor: 'rgba(99,102,241,0.9)',
-            '&:hover': { bgcolor: 'rgba(99,102,241,1)' },
+            color: '#fff',
+            bgcolor: '#4f46e5',
+            '&:hover': { bgcolor: '#4338ca' },
           }}
         >
           Open Full Map

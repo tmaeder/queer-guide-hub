@@ -587,8 +587,8 @@ export default function About() {
                 <ArrowRight style={{ width: 18, height: 18, marginLeft: 8 }} aria-hidden="true" />
               </Button>
             </LocalizedLink>
-            <LocalizedLink to="/donate" style={{ textDecoration: 'none' }}>
-              <Button variant="outline" size="lg">
+            <LocalizedLink to="/donate" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Button variant="outline" size="lg" style={{ color: 'inherit' }}>
                 Support Us
               </Button>
             </LocalizedLink>
