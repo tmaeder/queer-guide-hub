@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, Component, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug, Bug, Bell, Merge, Activity, History, Webhook } from 'lucide-react';
+import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, MapPin, GitMerge, Plug, Bug, Bell, Merge, Activity, History, Webhook } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
@@ -13,6 +13,7 @@ const ReviewQueueTab = lazy(() => import('./tabs/ReviewQueueTab'));
 const DLQTab = lazy(() => import('./tabs/DLQTab'));
 const CoverageTab = lazy(() => import('./tabs/CoverageTab'));
 const GeoReviewTab = lazy(() => import('./tabs/GeoReviewTab'));
+const GeoMismatchTab = lazy(() => import('./tabs/GeoMismatchTab'));
 const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 const ErrorsTab = lazy(() => import('./tabs/ErrorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
@@ -24,6 +25,7 @@ const IntegrationsTab   = lazy(() => import('./tabs/IntegrationsTab'));
 type Tab =
   | 'overview' | 'builder' | 'monitor' | 'sources' | 'review' | 'dlq'
   | 'errors' | 'alerts' | 'coverage' | 'news' | 'health' | 'geo-review'
+  | 'geo-mismatch'
   | 'dedup' | 'scraper-health' | 'audit' | 'integrations';
 
 const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -34,6 +36,7 @@ const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: s
   { key: 'review',         label: 'Review',     icon: ClipboardCheck },
   { key: 'dedup',          label: 'Dedup',      icon: Merge },
   { key: 'geo-review',     label: 'Geo Review', icon: GitMerge },
+  { key: 'geo-mismatch',   label: 'Geo Mismatch', icon: MapPin },
   { key: 'dlq',            label: 'DLQ',        icon: AlertTriangle },
   { key: 'errors',         label: 'Errors',     icon: Bug },
   { key: 'alerts',         label: 'Alerts',     icon: Bell },
@@ -53,6 +56,7 @@ const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>
   review: ReviewQueueTab,
   dedup: DedupDecisionsTab,
   'geo-review': GeoReviewTab,
+  'geo-mismatch': GeoMismatchTab,
   dlq: DLQTab,
   errors: ErrorsTab,
   alerts: AlertsTab,

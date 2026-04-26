@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     // now have a quality_score and can be re-evaluated for auto-approval.
     const query = supabase
       .from('ingestion_staging')
-      .select('id, ai_confidence_score, ai_validation_status, review_status, enriched_data, target_table')
+      .select('id, ai_confidence_score, ai_validation_status, review_status, enriched_data, target_table, source_name, entity_type')
       .eq('ai_validation_status', 'approved')
       .in('review_status', ['auto', 'pending_review'])
       .eq('disposition', 'pending')
@@ -39,6 +39,24 @@ Deno.serve(async (req) => {
     if (error) return errorResponse(`Failed to load items: ${error.message}`, 500, req)
     if (!items || items.length === 0) {
       return jsonResponse({ success: true, items: 0, message: 'No items to review-gate' }, 200, req)
+    }
+
+    // Auto-downrank: load source_reliability for the (source, entity) pairs
+    // present in this batch. Items from sources with weight < UNRELIABLE_THRESHOLD
+    // are forced into review regardless of their combined score.
+    const UNRELIABLE_THRESHOLD = 0.40
+    const reliabilityKeys = Array.from(new Set(items
+      .map(i => `${i.source_name ?? ''}|${i.entity_type ?? ''}`)
+      .filter(k => k !== '|')))
+    const reliabilityMap = new Map<string, number | null>()
+    if (reliabilityKeys.length > 0) {
+      const { data: relRows } = await supabase
+        .from('source_reliability')
+        .select('source_slug, entity_type, weight')
+        .in('source_slug', Array.from(new Set(items.map(i => i.source_name).filter(Boolean) as string[])))
+      for (const r of relRows ?? []) {
+        reliabilityMap.set(`${r.source_slug}|${r.entity_type}`, r.weight)
+      }
     }
 
     let approved = 0
@@ -52,7 +70,10 @@ Deno.serve(async (req) => {
 
       const combinedScore = (confidence * 0.6) + (qualityScore / 100 * 0.4)
 
-      if (combinedScore >= autoApproveAbove) {
+      const relWeight = reliabilityMap.get(`${item.source_name ?? ''}|${item.entity_type ?? ''}`)
+      const lowReliability = typeof relWeight === 'number' && relWeight < UNRELIABLE_THRESHOLD
+
+      if (combinedScore >= autoApproveAbove && !lowReliability) {
         if (!dryRun) {
           const { error: e } = await supabase
             .from('ingestion_staging')
@@ -61,19 +82,20 @@ Deno.serve(async (req) => {
           if (e) { failed++; console.error(`approve ${item.id}: ${e.message}`); continue }
         }
         approved++
-      } else if (combinedScore < minConfidence) {
+      } else if (combinedScore < minConfidence || lowReliability) {
         if (!dryRun) {
           // Hard-fail review_queue insert: no swallowed errors. If the insert
           // fails, leave the row in 'auto' so the next run retries.
           const { error: rqErr } = await supabase.from('review_queue').insert({
             entity_type: 'ingestion_staging',
             entity_id:   item.id,
-            review_type: 'low_confidence',
+            review_type: lowReliability ? 'low_source_reliability' : 'low_confidence',
             status:      'pending',
             details: {
               combined_score: combinedScore,
               confidence,
               quality_score: qualityScore,
+              source_reliability_weight: relWeight ?? null,
               target_table: item.target_table,
               source: 'pipeline-review-gate',
             },
