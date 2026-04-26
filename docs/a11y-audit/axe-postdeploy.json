@@ -1,6 +1,6 @@
 {
   "baseUrl": "https://queer.guide",
-  "generatedAt": "2026-04-26T03:29:40.210Z",
+  "generatedAt": "2026-04-26T07:45:06.731Z",
   "results": [
     {
       "route": "/",
@@ -8,43 +8,7 @@
       "url": "https://queer.guide/",
       "status": 200,
       "error": null,
-      "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT",
-            "RGAAv4",
-            "RGAA-3.2.1"
-          ],
-          "nodes": 5,
-          "sample": [
-            {
-              "target": [
-                ".css-160uv7n"
-              ],
-              "html": "<button class=\"MuiButtonBase-root M...\" tabindex=\"0\" type=\"button\">",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.77 (foreground color: #ffffff, background color: #7375f2, font size: 9.6pt (12.8px), font weight: normal). Expected contrast ratio of 4.5:1"
-            },
-            {
-              "target": [
-                "div:nth-child(1) > .css-xi606m.MuiBox-root > .css-1428egz.MuiTypography-body1.MuiTypography-root > span"
-              ],
-              "html": "<span>0+</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.93 (foreground color: #b60d3d, background color: #0a0a0a, font size: 48.0pt (64px), font weight: bold). Expected contrast ratio of 3:1"
-            }
-          ]
-        }
-      ]
+      "violations": []
     },
     {
       "route": "/events",
@@ -60,36 +24,7 @@
       "url": "https://queer.guide/venues",
       "status": 200,
       "error": null,
-      "violations": [
-        {
-          "id": "aria-input-field-name",
-          "impact": "serious",
-          "help": "ARIA input fields must have an accessible name",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/aria-input-field-name?application=playwright",
-          "tags": [
-            "cat.aria",
-            "wcag2a",
-            "wcag412",
-            "TTv5",
-            "TT5.c",
-            "EN-301-549",
-            "EN-9.4.1.2",
-            "ACT",
-            "RGAAv4",
-            "RGAA-11.1.1"
-          ],
-          "nodes": 1,
-          "sample": [
-            {
-              "target": [
-                ".css-axw7ok.MuiBox-root > .MuiFormControl-root.css-1qk38wv > .MuiOutlinedInput-root.MuiInputBase-formControl.MuiSelect-root > .MuiSelect-select.MuiSelect-outlined.MuiOutlinedInput-input"
-              ],
-              "html": "<div tabindex=\"0\" role=\"combobox\" aria-expanded=\"false\" aria-haspopup=\"listbox\" class=\"MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-3qutmp\">Featured</div>",
-              "failureSummary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
-            }
-          ]
-        }
-      ]
+      "violations": []
     },
     {
       "route": "/hotels",
@@ -105,36 +40,7 @@
       "url": "https://queer.guide/marketplace",
       "status": 200,
       "error": null,
-      "violations": [
-        {
-          "id": "target-size",
-          "impact": "serious",
-          "help": "All touch targets must be 24px large, or leave sufficient space",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/target-size?application=playwright",
-          "tags": [
-            "cat.sensory-and-visual-cues",
-            "wcag22aa",
-            "wcag258"
-          ],
-          "nodes": 15,
-          "sample": [
-            {
-              "target": [
-                "a[href$=\"equalityevents.com/\"]"
-              ],
-              "html": "<a href=\"https://equalityevents.com/\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Visit website\" tabindex=\"0\">",
-              "failureSummary": "Fix any of the following:\n  Target has insufficient size (12px by 44px, should be at least 24px by 24px)\n  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 8px instead of at least 24px."
-            },
-            {
-              "target": [
-                "a[href=\"tel:+1-323-555-0444\"]"
-              ],
-              "html": "<a href=\"tel:+1-323-555-0444\" aria-label=\"Call +1-323-555-0444\" tabindex=\"0\">",
-              "failureSummary": "Fix any of the following:\n  Target has insufficient size (12px by 44px, should be at least 24px by 24px)\n  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 8px instead of at least 24px."
-            }
-          ]
-        }
-      ]
+      "violations": []
     },
     {
       "route": "/news",
@@ -166,45 +72,7 @@
       "url": "https://queer.guide/places",
       "status": 200,
       "error": null,
-      "violations": [
-        {
-          "id": "button-name",
-          "impact": "critical",
-          "help": "Buttons must have discernible text",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/button-name?application=playwright",
-          "tags": [
-            "cat.name-role-value",
-            "wcag2a",
-            "wcag412",
-            "section508",
-            "section508.22.a",
-            "TTv5",
-            "TT6.a",
-            "EN-301-549",
-            "EN-9.4.1.2",
-            "ACT",
-            "RGAAv4",
-            "RGAA-11.9.1"
-          ],
-          "nodes": 2,
-          "sample": [
-            {
-              "target": [
-                ".css-hsx2tj.MuiIconButton-root.MuiIconButton-sizeMedium:nth-child(2)"
-              ],
-              "html": "<button class=\"MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-hsx2tj\" tabindex=\"0\" type=\"button\">",
-              "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
-            },
-            {
-              "target": [
-                ".css-hsx2tj.MuiIconButton-root.MuiIconButton-sizeMedium:nth-child(3)"
-              ],
-              "html": "<button class=\"MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-hsx2tj\" tabindex=\"0\" type=\"button\" style=\"position: relative;\">",
-              "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
-            }
-          ]
-        }
-      ]
+      "violations": []
     },
     {
       "route": "/resources",
@@ -244,43 +112,7 @@
       "url": "https://queer.guide/submit",
       "status": 200,
       "error": null,
-      "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT",
-            "RGAAv4",
-            "RGAA-3.2.1"
-          ],
-          "nodes": 7,
-          "sample": [
-            {
-              "target": [
-                ".MuiPaper-root.MuiPaper-outlined.MuiPaper-rounded:nth-child(2) > .MuiCardContent-root.css-1u7q97m > .css-178zhy.MuiBox-root > .css-1ugiw37.MuiTypography-body2"
-              ],
-              "html": "<p class=\"MuiTypography-root MuiTypography-body2 css-1ugiw37\">Get started</p>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.21 (foreground color: #db2777, background color: #f5f5f5, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
-            },
-            {
-              "target": [
-                ".css-gzvx3g > .css-1ugiw37.MuiTypography-body2"
-              ],
-              "html": "<p class=\"MuiTypography-root MuiTypography-body2 css-1ugiw37\">Get started</p>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.23 (foreground color: #ec4899, background color: #f5f5f5, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        }
-      ]
+      "violations": []
     },
     {
       "route": "/about",
@@ -288,43 +120,7 @@
       "url": "https://queer.guide/about",
       "status": 200,
       "error": null,
-      "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT",
-            "RGAAv4",
-            "RGAA-3.2.1"
-          ],
-          "nodes": 5,
-          "sample": [
-            {
-              "target": [
-                "div:nth-child(1) > .css-xi606m.MuiBox-root > .css-1428egz.MuiTypography-body1.MuiTypography-root > span"
-              ],
-              "html": "<span style=\"opacity: 1;\">4,271+</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.93 (foreground color: #b60d3d, background color: #0a0a0a, font size: 48.0pt (64px), font weight: bold). Expected contrast ratio of 3:1"
-            },
-            {
-              "target": [
-                "div:nth-child(2) > .css-xi606m.MuiBox-root > .css-1428egz.MuiTypography-body1.MuiTypography-root > span"
-              ],
-              "html": "<span style=\"opacity: 1;\">2,043+</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.93 (foreground color: #b60d3d, background color: #0a0a0a, font size: 48.0pt (64px), font weight: bold). Expected contrast ratio of 3:1"
-            }
-          ]
-        }
-      ]
+      "violations": []
     },
     {
       "route": "/contact",
