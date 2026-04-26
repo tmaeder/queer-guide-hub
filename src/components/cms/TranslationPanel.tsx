@@ -13,8 +13,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, LANGUAGE_NAMES } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
+import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 
-const TRANSLATABLE_FIELDS = ['name', 'title', 'description', 'headline', 'body', 'biography', 'content', 'meta_description'];
+// Fallback heuristic when a content type hasn't declared `translatableFields` yet.
+// Prefer the registry-driven list — this is just a default during migration.
+const FALLBACK_TRANSLATABLE_FIELDS = [
+  'name', 'title', 'description', 'headline',
+  'body', 'biography', 'content', 'meta_description',
+];
+
+function resolveTranslatableFields(tableName: string, originalData: Record<string, unknown>): string[] {
+  const config = Object.values(contentTypeRegistry).find((c) => c.tableName === tableName);
+  const declared = config?.translatableFields;
+  const candidates = declared && declared.length > 0 ? declared : FALLBACK_TRANSLATABLE_FIELDS;
+  return candidates.filter(
+    (f) =>
+      originalData[f] && typeof originalData[f] === 'string' && (originalData[f] as string).trim().length > 0,
+  );
+}
 
 interface TranslationPanelProps {
   tableName: string;
@@ -40,9 +56,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
   const [saving, setSaving] = useState(false);
   const [autoTranslating, setAutoTranslating] = useState(false);
 
-  const translatableFields = TRANSLATABLE_FIELDS.filter(
-    (f) => originalData[f] && typeof originalData[f] === 'string' && (originalData[f] as string).trim().length > 0,
-  );
+  const translatableFields = resolveTranslatableFields(tableName, originalData);
 
   const nonDefaultLocales = SUPPORTED_LOCALES.filter((l) => l !== DEFAULT_LOCALE);
 

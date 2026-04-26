@@ -4,6 +4,7 @@
  */
 
 import type { LucideIcon } from 'lucide-react';
+import type { ZodTypeAny } from 'zod';
 
 // ── Workflow & Visibility ──────────────────────────────────────────
 
@@ -137,7 +138,50 @@ export interface ContentTypeConfig {
   hasRichText?: boolean;
   /** Default field groups order */
   fieldGroupOrder?: FieldGroup[];
+  /** Zod schema for validation; overrides field-level rules when present. Auto-generated from fields if absent. */
+  validation?: ZodTypeAny;
+  /** Field names that participate in i18n via content_translations sidecar. */
+  translatableFields?: string[];
+  /** AI authoring assist config — which ops are available for this type. */
+  aiAssist?: AIAssistConfig;
+  /** Per-type workflow defaults. */
+  workflow?: ContentTypeWorkflowConfig;
+  /** Whether this type supports threaded comments (review/moderation). */
+  commentable?: boolean;
+  /** Cross-type bulk operations enabled for this type. */
+  bulkOps?: BulkOpKind[];
 }
+
+export type AIAssistOp =
+  | 'summarize'
+  | 'translate'
+  | 'alt_text'
+  | 'seo_draft'
+  | 'auto_tag'
+  | 'fact_check';
+
+export interface AIAssistConfig {
+  ops: AIAssistOp[];
+  /** Fields the AI is allowed to write to. Output is Zod-validated before apply. */
+  writableFields?: string[];
+}
+
+export interface ContentTypeWorkflowConfig {
+  /** Skip review and publish directly when an admin saves. */
+  autoPublish?: boolean;
+  /** Force review even for admins (e.g. community-submitted types). */
+  requiresReview?: boolean;
+  /** Default visibility for newly created items. */
+  defaultVisibility?: VisibilityLevel;
+}
+
+export type BulkOpKind =
+  | 'publish'
+  | 'archive'
+  | 'unpublish'
+  | 'translate'
+  | 'tag'
+  | 'delete';
 
 // ── Content Items ──────────────────────────────────────────────────
 

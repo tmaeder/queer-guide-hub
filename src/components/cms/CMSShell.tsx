@@ -25,6 +25,8 @@ import { CMSOverview } from './CMSOverview';
 import { ContentListPanel } from './ContentListPanel';
 import { ReviewQueue } from './ReviewQueue';
 import { MediaLibrary } from './MediaLibrary';
+import { CommandPalette } from './CommandPalette';
+import { useCMSShortcuts } from '@/hooks/useCMSShortcuts';
 import { getContentType } from '@/config/contentTypeRegistry';
 
 // Lazy-load heavy panels
@@ -33,6 +35,12 @@ const CMSEditorLayout = lazy(() =>
 );
 const AuditLog = lazy(() =>
   import('./AuditLog').then((m) => ({ default: m.AuditLog })),
+);
+const DataQualityDashboard = lazy(() =>
+  import('./DataQualityDashboard').then((m) => ({ default: m.DataQualityDashboard })),
+);
+const ModerationQueue = lazy(() =>
+  import('./ModerationQueue').then((m) => ({ default: m.ModerationQueue })),
 );
 
 interface EditorContext {
@@ -102,6 +110,9 @@ export function CMSShell() {
 
   // Editor overlay state
   const [editor, setEditor] = useState<EditorContext | null>(null);
+
+  // Command palette state
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   // Transition animation state
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -174,6 +185,18 @@ export function CMSShell() {
     }
   }
 
+  // Global keyboard shortcuts. Save/Publish are scoped to the editor and
+  // dispatched via custom events the editor listens to (no shared state needed).
+  useCMSShortcuts({
+    onPalette: () => setPaletteOpen(true),
+    onSave: editor
+      ? () => window.dispatchEvent(new CustomEvent('cms:editor:save'))
+      : undefined,
+    onPublish: editor
+      ? () => window.dispatchEvent(new CustomEvent('cms:editor:publish'))
+      : undefined,
+  });
+
   // Sidebar component
   const sidebar = (
     <CMSSidebar
@@ -234,6 +257,20 @@ export function CMSShell() {
         return (
           <Suspense fallback={loadingFallback}>
             <AuditLog />
+          </Suspense>
+        );
+
+      case 'quality':
+        return (
+          <Suspense fallback={loadingFallback}>
+            <DataQualityDashboard />
+          </Suspense>
+        );
+
+      case 'moderation':
+        return (
+          <Suspense fallback={loadingFallback}>
+            <ModerationQueue />
           </Suspense>
         );
 
@@ -403,6 +440,13 @@ export function CMSShell() {
           {renderMainContent()}
         </Box>
       </Box>
+
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onNavigate={handleNavigate}
+        onEdit={handleEdit}
+      />
     </Box>
   );
 }

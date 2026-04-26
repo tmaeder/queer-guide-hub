@@ -965,6 +965,12 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     defaults: { featured: false, verified: false },
     validate: validateVenue,
     fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings', 'external'],
+    translatableFields: ['name', 'description', 'accessibility_notes'],
+    commentable: true,
+    aiAssist: {
+      ops: ['summarize', 'seo_draft', 'auto_tag', 'fact_check'],
+      writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
+    },
   },
   events: {
     id: 'events',
@@ -980,6 +986,12 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     defaults: { featured: false, is_free: false, is_public: true, status: 'active' },
     validate: validateEvent,
     fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings'],
+    translatableFields: ['title', 'description'],
+    commentable: true,
+    aiAssist: {
+      ops: ['summarize', 'seo_draft', 'auto_tag'],
+      writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
+    },
   },
   personalities: {
     id: 'personalities',
@@ -994,6 +1006,12 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     fields: personalityFields,
     defaults: { is_living: true, visibility: 'public', verification_status: 'pending' },
     fieldGroupOrder: ['basic', 'details', 'lgbtq', 'media', 'settings'],
+    translatableFields: ['name', 'profession', 'description', 'bio'],
+    commentable: true,
+    aiAssist: {
+      ops: ['summarize', 'seo_draft', 'fact_check'],
+      writableFields: ['bio', 'description', 'meta_title', 'meta_description'],
+    },
   },
   news_articles: {
     id: 'news_articles',
@@ -1009,6 +1027,12 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     defaults: { category: 'general', is_featured: false },
     validate: validateNewsArticle,
     fieldGroupOrder: ['basic', 'details', 'media', 'settings'],
+    translatableFields: ['title', 'excerpt', 'content'],
+    commentable: true,
+    aiAssist: {
+      ops: ['summarize', 'seo_draft', 'auto_tag'],
+      writableFields: ['excerpt', 'meta_title', 'meta_description', 'tags'],
+    },
   },
   cities: {
     id: 'cities',
@@ -1022,6 +1046,8 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     color: '#10b981',
     fields: cityFields,
     fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media'],
+    translatableFields: ['name', 'description'],
+    commentable: true,
   },
   countries: {
     id: 'countries',
@@ -1034,6 +1060,8 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     color: '#6366f1',
     fields: countryFields,
     fieldGroupOrder: ['basic', 'details', 'location', 'lgbtq'],
+    translatableFields: ['name', 'description', 'lgbt_rights_status'],
+    commentable: true,
   },
   unified_tags: {
     id: 'unified_tags',
@@ -1096,6 +1124,12 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     hasRichText: true,
     defaults: { page_type: 'blog_post', workflow_state: 'draft', visibility_level: 'private' },
     fieldGroupOrder: ['basic', 'seo', 'media'],
+    translatableFields: ['title', 'subtitle', 'excerpt', 'body_html', 'meta_title', 'meta_description'],
+    commentable: true,
+    aiAssist: {
+      ops: ['summarize', 'seo_draft', 'auto_tag'],
+      writableFields: ['excerpt', 'meta_title', 'meta_description', 'tags'],
+    },
   },
   hotels: {
     id: 'hotels',

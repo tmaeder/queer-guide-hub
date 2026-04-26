@@ -25,6 +25,8 @@ import {
   Image,
   ClipboardCheck,
   History,
+  Activity,
+  ShieldAlert,
   Settings,
   LogOut,
   Layers,
@@ -40,6 +42,8 @@ export type CMSView =
   | 'pages'
   | 'media'
   | 'review'
+  | 'quality'
+  | 'moderation'
   | 'audit'
   | 'settings';
 
@@ -481,6 +485,44 @@ export function CMSSidebar({
                 }}
               />
             )}
+          </ListItemButton>
+
+          {/* Data Quality */}
+          <ListItemButton
+            selected={activeView === 'quality'}
+            onClick={() => onNavigate('quality')}
+            sx={navItemSx(activeView === 'quality', '#10b981')}
+          >
+            <ListItemIcon sx={{ minWidth: 36 }}>
+              <IconBadge icon={Activity} color="#10b981" size={15} />
+            </ListItemIcon>
+            <ListItemText
+              primary="Data Quality"
+              primaryTypographyProps={{
+                variant: 'body2',
+                fontWeight: activeView === 'quality' ? 600 : 400,
+                fontSize: '0.85rem',
+              }}
+            />
+          </ListItemButton>
+
+          {/* Moderation */}
+          <ListItemButton
+            selected={activeView === 'moderation'}
+            onClick={() => onNavigate('moderation')}
+            sx={navItemSx(activeView === 'moderation', '#ef4444')}
+          >
+            <ListItemIcon sx={{ minWidth: 36 }}>
+              <IconBadge icon={ShieldAlert} color="#ef4444" size={15} />
+            </ListItemIcon>
+            <ListItemText
+              primary="Moderation"
+              primaryTypographyProps={{
+                variant: 'body2',
+                fontWeight: activeView === 'moderation' ? 600 : 400,
+                fontSize: '0.85rem',
+              }}
+            />
           </ListItemButton>
 
           {/* Audit Log */}
