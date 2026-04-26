@@ -10,8 +10,13 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 //
 // Run daily via cron OR manually with {batch_size, only_new} body.
 
-const NOMINATIM = 'https://nominatim.openstreetmap.org/reverse'
-const SLEEP_MS = 1100
+// Self-host: set NOMINATIM_URL=https://nominatim.queer.guide and
+// optional NOMINATIM_BASIC_AUTH=user:pass to bypass the 1 req/sec
+// public-Nominatim limit. With self-host we drop sleep to 50ms.
+const NOMINATIM_BASE = (Deno.env.get('NOMINATIM_URL') || 'https://nominatim.openstreetmap.org').replace(/\/$/, '')
+const NOMINATIM = `${NOMINATIM_BASE}/reverse`
+const NOMINATIM_AUTH = Deno.env.get('NOMINATIM_BASIC_AUTH') || ''
+const SLEEP_MS = Deno.env.get('NOMINATIM_URL') ? 50 : 1100
 
 interface VenueRow {
   id: string
@@ -83,12 +88,14 @@ Deno.serve(async (req) => {
       if (v.latitude == null || v.longitude == null) continue
       try {
         const url = `${NOMINATIM}?format=json&lat=${v.latitude}&lon=${v.longitude}&zoom=10&addressdetails=1`
-        const resp = await fetch(url, {
-          headers: {
-            'User-Agent': 'queer.guide geo-validator',
-            'Accept-Language': 'en',
-          },
-        })
+        const headers: Record<string, string> = {
+          'User-Agent': 'queer.guide geo-validator',
+          'Accept-Language': 'en',
+        }
+        if (NOMINATIM_AUTH) {
+          headers['Authorization'] = `Basic ${btoa(NOMINATIM_AUTH)}`
+        }
+        const resp = await fetch(url, { headers })
         if (!resp.ok) { errors++; await sleep(SLEEP_MS); continue }
         const json = await resp.json() as NominatimResult
         const addr = json.address || {}
