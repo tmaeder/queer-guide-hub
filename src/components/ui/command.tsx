@@ -207,7 +207,6 @@ const CommandSeparator = React.forwardRef<
     className={className}
     style={mergeStyles(cmdkStyles.separator, style)}
     role="none"
-    aria-hidden="true"
     {...props}
   />
 ))
