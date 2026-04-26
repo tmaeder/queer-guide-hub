@@ -24,7 +24,25 @@ Scope: full app (public + admin); fixes P0–P2.
 | Bare `<CircularProgress>` instances | ~50 (no a11y name) | 0 (Spinner default `aria-label`) |
 | Admin skip-link | missing | present (`#admin-main-content`) |
 
-Production axe re-scan against `https://queer.guide` is deferred until this branch is deployed (Cloudflare Pages auto-deploys on push to `main`). Re-run via:
+### Production axe delta (post-deploy `d576a976`)
+
+Captured 2026-04-26 against `https://queer.guide` over 17 routes. See [`axe-postdeploy.md`](./axe-postdeploy.md) for the full report.
+
+| Impact | Before (baseline) | After (post-deploy) | Δ |
+|---|---|---|---|
+| critical | 2 | 1 | −1 |
+| serious | 9 | 5 | −4 |
+| total | 11 | 6 | **−45%** |
+
+Closed: `aria-progressbar-name` (Spinner), `aria-input-field-name` on `/contact` + `/resources` (Select wrapper), `/places` partial.
+
+Remaining (P3 follow-up backlog):
+- `color-contrast` on `/` (5), `/submit` (7), `/about` (5) — token bumps cleared muted-text but specific component palettes still fail; needs per-surface audit.
+- `aria-input-field-name` on `/venues` (1) — one Select still missing label fallback; locate and fix.
+- `target-size` on `/marketplace` (15) — `MarketplaceCard` ghost buttons fixed but list/filter chips still small.
+- `button-name` on `/places` (2 critical) — pre-existing icon-only buttons; needs source isolation.
+
+Re-run anytime with:
 
 ```bash
 BASE_URL=https://queer.guide node scripts/a11y-axe-scan.mjs
