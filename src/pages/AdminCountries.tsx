@@ -38,10 +38,16 @@ interface CountryRow {
   gdp_usd: number | null;
   currency: string | null;
   lgbt_legal_status: string | null;
+  lgbt_rights_status: string | null;
   equality_score: number | null;
+  flag_emoji: string | null;
+  languages: string[] | null;
+  driving_side: string | null;
   continent_id: string | null;
+  region_id: string | null;
   created_at: string;
   continents: { name: string } | null;
+  regions: { name: string } | null;
   venues: { count: number }[] | null;
   events: { count: number }[] | null;
 }
@@ -73,6 +79,10 @@ export default function AdminCountries() {
     area_km2: '',
     gdp_usd: '',
     currency: '',
+    flag_emoji: '',
+    lgbt_legal_status: '',
+    lgbt_rights_status: '',
+    equality_score: '',
   });
 
   const invalidateTable = () =>
@@ -88,6 +98,10 @@ export default function AdminCountries() {
       area_km2: country.area_km2?.toString() || '',
       gdp_usd: country.gdp_usd?.toString() || '',
       currency: country.currency || '',
+      flag_emoji: country.flag_emoji || '',
+      lgbt_legal_status: country.lgbt_legal_status || '',
+      lgbt_rights_status: country.lgbt_rights_status || '',
+      equality_score: country.equality_score?.toString() || '',
     });
     setEditDialogOpen(true);
   };
@@ -116,6 +130,10 @@ export default function AdminCountries() {
         area_km2: formData.area_km2 ? parseFloat(formData.area_km2) : null,
         gdp_usd: formData.gdp_usd ? parseFloat(formData.gdp_usd) : null,
         currency: formData.currency,
+        flag_emoji: formData.flag_emoji || null,
+        lgbt_legal_status: formData.lgbt_legal_status || null,
+        lgbt_rights_status: formData.lgbt_rights_status || null,
+        equality_score: formData.equality_score ? parseFloat(formData.equality_score) : null,
       };
       const { error } = await supabase.from('countries').update(update).eq('id', editingCountry.id);
       if (error) throw error;
@@ -131,22 +149,27 @@ export default function AdminCountries() {
 
   const handleExportExcel = async () => {
     const cols: ExportColumnDef<Record<string, unknown>>[] = [
+      { header: 'Flag', accessor: (r) => r.flag_emoji },
       { header: 'Name', accessor: (r) => r.name },
       { header: 'Code', accessor: (r) => r.code },
       { header: 'Continent', accessor: (r) => (r.continents as { name?: string } | null)?.name },
+      { header: 'Region', accessor: (r) => (r.regions as { name?: string } | null)?.name },
       { header: 'Capital', accessor: (r) => r.capital },
       { header: 'Population', accessor: (r) => r.population },
       { header: 'Area (km2)', accessor: (r) => r.area_km2 },
       { header: 'GDP (USD)', accessor: (r) => r.gdp_usd },
       { header: 'Currency', accessor: (r) => r.currency },
+      { header: 'Languages', accessor: (r) => (r.languages as string[] | null)?.join(', ') },
+      { header: 'Driving side', accessor: (r) => r.driving_side },
       { header: 'LGBT legal status', accessor: (r) => r.lgbt_legal_status },
+      { header: 'LGBT rights status', accessor: (r) => r.lgbt_rights_status },
       { header: 'Equality score', accessor: (r) => r.equality_score },
       { header: 'Venues', accessor: (r) => (r.venues as { count: number }[] | null)?.[0]?.count ?? 0 },
       { header: 'Events', accessor: (r) => (r.events as { count: number }[] | null)?.[0]?.count ?? 0 },
     ];
     const allData = await fetchAllRows(
       'countries',
-      '*, continents(name), venues(count), events(count)',
+      '*, continents(name), regions(name), venues(count), events(count)',
       { column: 'name', ascending: true },
     );
     await exportToExcel(allData, cols, generateFilename('countries'));
@@ -157,13 +180,18 @@ export default function AdminCountries() {
       columnHelper.accessor('name', {
         header: 'Country',
         cell: (info) => (
-          <Box>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            {info.row.original.code && (
-              <Typography variant="body2" color="text.secondary">
-                {info.row.original.code}
-              </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {info.row.original.flag_emoji && (
+              <span style={{ fontSize: 18, lineHeight: 1 }}>{info.row.original.flag_emoji}</span>
             )}
+            <Box>
+              <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+              {info.row.original.code && (
+                <Typography variant="body2" color="text.secondary">
+                  {info.row.original.code}
+                </Typography>
+              )}
+            </Box>
           </Box>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -177,6 +205,12 @@ export default function AdminCountries() {
         },
         meta: { hideable: true } satisfies AdminColumnMeta,
       }),
+      columnHelper.display({
+        id: 'region',
+        header: 'Region',
+        cell: ({ row }) => row.original.regions?.name || '-',
+        meta: { defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('capital', {
         header: 'Capital',
         cell: (info) => info.getValue() || '-',
@@ -184,20 +218,43 @@ export default function AdminCountries() {
       }),
       columnHelper.accessor('lgbt_legal_status', {
         header: 'LGBT legal status',
-        cell: (info) => info.getValue() || '-',
-        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('equality_score', {
-        header: 'Equality score',
         cell: (info) => {
           const v = info.getValue();
-          return v == null ? '-' : v;
+          if (!v) return <span style={{ color: 'var(--muted-foreground)' }}>-</span>;
+          const lower = v.toLowerCase();
+          const tone =
+            lower.includes('legal') || lower.includes('protected') || lower.includes('marriage')
+              ? { backgroundColor: '#dcfce7', color: '#166534' }
+              : lower.includes('illegal') || lower.includes('criminal')
+                ? { backgroundColor: '#fee2e2', color: '#991b1b' }
+                : { backgroundColor: '#fef3c7', color: '#92400e' };
+          return <Badge style={tone}>{v}</Badge>;
         },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('lgbt_rights_status', {
+        header: 'LGBT rights status',
+        cell: (info) => info.getValue() || '-',
         meta: {
           serverSortable: true,
           defaultVisible: false,
           hideable: true,
         } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('equality_score', {
+        header: 'Equality score',
+        cell: (info) => {
+          const v = info.getValue();
+          if (v == null) return '-';
+          const tone =
+            v >= 70
+              ? { backgroundColor: '#dcfce7', color: '#166534' }
+              : v >= 40
+                ? { backgroundColor: '#fef3c7', color: '#92400e' }
+                : { backgroundColor: '#fee2e2', color: '#991b1b' };
+          return <Badge style={tone}>{v}</Badge>;
+        },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('population', {
         header: 'Population',
@@ -239,6 +296,21 @@ export default function AdminCountries() {
         cell: (info) => info.getValue() || '-',
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
+      columnHelper.display({
+        id: 'languages',
+        header: 'Languages',
+        cell: ({ row }) => row.original.languages?.join(', ') || '-',
+        meta: { defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('driving_side', {
+        header: 'Driving side',
+        cell: (info) => info.getValue() || '-',
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
+      }),
     ],
     [],
   );
@@ -247,7 +319,7 @@ export default function AdminCountries() {
     () => ({
       tableName: 'countries',
       select:
-        'id,name,code,capital,population,area_km2,gdp_usd,currency,lgbt_legal_status,equality_score,continent_id,created_at,continents(name),venues(count),events(count)',
+        'id,name,code,capital,population,area_km2,gdp_usd,currency,lgbt_legal_status,lgbt_rights_status,equality_score,flag_emoji,languages,driving_side,continent_id,region_id,created_at,continents(name),regions(name),venues(count),events(count)',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 50,
@@ -264,6 +336,14 @@ export default function AdminCountries() {
           dynamicSource: { table: 'continents', column: 'id', labelColumn: 'name' },
         },
         {
+          key: 'region_id',
+          label: 'Region',
+          type: 'select',
+          column: 'region_id',
+          options: 'dynamic',
+          dynamicSource: { table: 'regions', column: 'id', labelColumn: 'name' },
+        },
+        {
           key: 'lgbt_legal_status',
           label: 'LGBT legal status',
           type: 'select',
@@ -274,6 +354,36 @@ export default function AdminCountries() {
             column: 'lgbt_legal_status',
             labelColumn: 'lgbt_legal_status',
           },
+        },
+        {
+          key: 'lgbt_rights_status',
+          label: 'LGBT rights status',
+          type: 'select',
+          column: 'lgbt_rights_status',
+          options: 'dynamic',
+          dynamicSource: {
+            table: 'countries',
+            column: 'lgbt_rights_status',
+            labelColumn: 'lgbt_rights_status',
+          },
+        },
+        {
+          key: 'currency',
+          label: 'Currency',
+          type: 'select',
+          column: 'currency',
+          options: 'dynamic',
+          dynamicSource: { table: 'countries', column: 'currency', labelColumn: 'currency' },
+        },
+        {
+          key: 'driving_side',
+          label: 'Driving side',
+          type: 'select',
+          column: 'driving_side',
+          options: [
+            { value: 'left', label: 'Left' },
+            { value: 'right', label: 'Right' },
+          ],
         },
       ],
       rowActions: [
@@ -357,12 +467,46 @@ export default function AdminCountries() {
                 onChange={(e) => setFormData((p) => ({ ...p, area_km2: e.target.value }))}
               />
             </Box>
-            <Box sx={{ gridColumn: 'span 2' }}>
+            <Box>
               <Label>GDP (USD)</Label>
               <Input
                 type="number"
                 value={formData.gdp_usd}
                 onChange={(e) => setFormData((p) => ({ ...p, gdp_usd: e.target.value }))}
+              />
+            </Box>
+            <Box>
+              <Label>Flag emoji</Label>
+              <Input
+                value={formData.flag_emoji}
+                onChange={(e) => setFormData((p) => ({ ...p, flag_emoji: e.target.value }))}
+                maxLength={8}
+              />
+            </Box>
+            <Box>
+              <Label>LGBT legal status</Label>
+              <Input
+                value={formData.lgbt_legal_status}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, lgbt_legal_status: e.target.value }))
+                }
+              />
+            </Box>
+            <Box>
+              <Label>LGBT rights status</Label>
+              <Input
+                value={formData.lgbt_rights_status}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, lgbt_rights_status: e.target.value }))
+                }
+              />
+            </Box>
+            <Box>
+              <Label>Equality score</Label>
+              <Input
+                type="number"
+                value={formData.equality_score}
+                onChange={(e) => setFormData((p) => ({ ...p, equality_score: e.target.value }))}
               />
             </Box>
           </Box>
