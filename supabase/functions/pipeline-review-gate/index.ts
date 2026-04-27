@@ -23,6 +23,9 @@ Deno.serve(async (req) => {
     const autoApproveAbove = body.autoApproveAbove ?? 0.9
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
+    // Social pipeline forces every row through human review. Set via the
+    // node config { "force_review": true } in pipeline_definitions.
+    const forceReview = body.force_review === true
 
     // Process both 'auto' items (first pass) and 'pending_review' items that
     // now have a quality_score and can be re-evaluated for auto-approval.
@@ -73,7 +76,7 @@ Deno.serve(async (req) => {
       const relWeight = reliabilityMap.get(`${item.source_name ?? ''}|${item.entity_type ?? ''}`)
       const lowReliability = typeof relWeight === 'number' && relWeight < UNRELIABLE_THRESHOLD
 
-      if (combinedScore >= autoApproveAbove && !lowReliability) {
+      if (combinedScore >= autoApproveAbove && !lowReliability && !forceReview) {
         if (!dryRun) {
           const { error: e } = await supabase
             .from('ingestion_staging')
@@ -82,7 +85,7 @@ Deno.serve(async (req) => {
           if (e) { failed++; console.error(`approve ${item.id}: ${e.message}`); continue }
         }
         approved++
-      } else if (combinedScore < minConfidence || lowReliability) {
+      } else if (forceReview || combinedScore < minConfidence || lowReliability) {
         if (!dryRun) {
           // Hard-fail review_queue insert: no swallowed errors. If the insert
           // fails, leave the row in 'auto' so the next run retries.
