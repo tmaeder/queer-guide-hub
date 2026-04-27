@@ -20,7 +20,7 @@ const TRACKING_PARAMS = new Set([
  */
 export function canonicaliseImageUrl(raw: string): string | null {
   if (!raw) return null
-  let s = raw.trim()
+  const s = raw.trim()
   if (!/^https?:\/\//i.test(s)) return null
   try {
     const u = new URL(s)

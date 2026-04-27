@@ -64,7 +64,7 @@ export function MergeDuplicatesDialog({
     let cancelled = false;
     const run = async () => {
       setLoading(true);
-      let q = supabase
+      const q = supabase
         .from('community_submissions')
         .select('id, content_type, status, platform, data, submitted_at')
         .eq('content_type', contentType)
