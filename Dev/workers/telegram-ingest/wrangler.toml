@@ -1,0 +1,20 @@
+name = "telegram-ingest"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+SUPABASE_URL = "https://xqeacpakadqfxjxjcewc.supabase.co"
+
+# R2 bucket for media mirroring. Reuses the marketplace-images pattern
+# until a dedicated `ingestion-media` bucket is provisioned (then change
+# bucket_name below and rebind).
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "ingestion-media"
+
+# Required secrets (set via `wrangler secret put`):
+#   TELEGRAM_BOT_TOKEN          - Bot token from @BotFather
+#   TELEGRAM_WEBHOOK_SECRET     - Random string used in X-Telegram-Bot-Api-Secret-Token
+#   SUPABASE_SERVICE_ROLE_KEY   - Supabase service role key
+#   STATUS_TOKEN                - Bearer token for /status + /health admin endpoints
