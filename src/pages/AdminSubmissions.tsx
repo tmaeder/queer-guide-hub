@@ -23,6 +23,8 @@ import { submissionRegistry } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { SubmissionMediaSection } from '@/components/admin/SubmissionMediaSection';
+import { ActivityLog } from '@/components/admin/feedback/ActivityLog';
+import { useFeedbackAudit } from '@/hooks/useFeedbackAudit';
 import { CheckCircle, XCircle, Eye, ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface SubmissionRow {
@@ -492,6 +494,8 @@ function SubmissionsCore() {
                 })()}
               </Box>
 
+              <SubmissionActivityPanel submissionId={selectedSubmission.id} />
+
               <SubmissionMediaSection
                 platform={selectedSubmission.platform}
                 mediaProcessingStatus={selectedSubmission.media_processing_status}
@@ -618,5 +622,15 @@ function SubmissionsCore() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function SubmissionActivityPanel({ submissionId }: { submissionId: string }) {
+  const { data: entries } = useFeedbackAudit(submissionId);
+  if (!entries || entries.length === 0) return null;
+  return (
+    <Box sx={{ mb: 3, borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
+      <ActivityLog entries={entries} adminById={{}} />
+    </Box>
   );
 }
