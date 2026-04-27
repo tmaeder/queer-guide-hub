@@ -148,9 +148,30 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const submissionIds = Array.isArray(body.submission_ids)
+    const explicitIds = Array.isArray(body.submission_ids)
       ? (body.submission_ids as string[])
-      : []
+      : null
+    const batchSize = Number(body.batch_size) || 50
+
+    let submissionIds: string[]
+    if (explicitIds) {
+      submissionIds = explicitIds
+    } else {
+      // Pipeline mode: scan recent pending rows that have at least
+      // some text to evaluate against. Idempotent on re-run (actions
+      // are merge-safe).
+      const since = new Date(Date.now() - 24 * 3600_000).toISOString()
+      const { data: scan, error: scanErr } = await supabase
+        .from('community_submissions')
+        .select('id')
+        .eq('status', 'pending')
+        .gte('submitted_at', since)
+        .order('submitted_at', { ascending: false })
+        .limit(batchSize)
+      if (scanErr) return errorResponse(`scan: ${scanErr.message}`, 500, req)
+      submissionIds = (scan ?? []).map((r) => r.id as string)
+    }
+
     if (submissionIds.length === 0) {
       return jsonResponse({ success: true, processed: 0, hits: 0 }, 200, req)
     }
@@ -213,8 +234,15 @@ Deno.serve(async (req) => {
       }
     }
 
+    const processed = subs?.length ?? 0
     return jsonResponse(
-      { success: true, processed: subs?.length ?? 0, hits: hitCount },
+      {
+        success: true,
+        processed,
+        hits: hitCount,
+        items: processed,
+        items_processed: processed,
+      },
       200,
       req,
     )
