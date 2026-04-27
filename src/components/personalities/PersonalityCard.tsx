@@ -123,6 +123,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
             src={personality.image_url}
             alt={personality.name}
             loading="lazy"
+            decoding="async"
             draggable={false}
             onError={() => setImgError(true)}
             className="personality-card-image"
@@ -180,7 +181,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
               borderRadius: 999,
               bgcolor: 'background.paper',
               backdropFilter: 'blur(4px)',
-              fontSize: '11px',
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: 'text.primary',
               boxShadow: 1,

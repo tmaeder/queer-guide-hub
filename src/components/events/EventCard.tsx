@@ -223,6 +223,7 @@ export const EventCard = memo(function EventCard({
                   src={resolvedImage ?? ''}
                   alt={event.title}
                   loading="lazy"
+                  decoding="async"
                   onError={() => setImageError(true)}
                   sx={{
                     width: '100%',
@@ -315,6 +316,8 @@ export const EventCard = memo(function EventCard({
                     component="img"
                     src={event.logo_url}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     sx={{
                       position: 'absolute',
                       bottom: 12,

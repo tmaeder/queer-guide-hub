@@ -194,6 +194,7 @@ export const NewsCard = ({
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a non-interactive image lifecycle event */}
             <img
               loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
               src={article.image_url!}
               alt={safeTitle}
@@ -251,6 +252,7 @@ export const NewsCard = ({
           <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
             <img
               loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
               role="presentation"
               src={article.image_url!}
