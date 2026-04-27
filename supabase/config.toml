@@ -211,6 +211,27 @@ verify_jwt = false
 [functions.news-quality-backfill]
 verify_jwt = false
 
+# Pre-existing enrich nodes were missing from config.toml — they default to
+# verify_jwt=true and 401 the executor's service-role call. Adding them so
+# the news cron path works end-to-end.
+[functions.pipeline-enrich-news]
+verify_jwt = false
+
+[functions.pipeline-enrich-city]
+verify_jwt = false
+
+[functions.pipeline-enrich-country]
+verify_jwt = false
+
+[functions.pipeline-enrich-events]
+verify_jwt = false
+
+[functions.pipeline-enrich-venue]
+verify_jwt = false
+
+[functions.pipeline-enrich-village]
+verify_jwt = false
+
 [functions.pipeline-dlq-consumer]
 verify_jwt = false
 
