@@ -6,6 +6,7 @@ import { parseQualityDecision, QUALITY_PIPELINE_VERSION, type QualityDecision } 
 import { QUALITY_SYSTEM_PROMPT, buildQualityUserPrompt } from '../_shared/news-quality/prompts.ts'
 import { evaluatePublishGate } from '../_shared/news-quality/decision.ts'
 import { probeImage } from '../_shared/news-quality/image-check.ts'
+import { hashImageUrl } from '../_shared/news-quality/image-hash.ts'
 
 // News quality backfill — re-runs the quality pipeline over published / archived
 // news_articles rows. Two modes:
@@ -106,6 +107,7 @@ async function processJob(
       quality_status: gate.status,
       last_quality_run_at: new Date().toISOString(),
       auto_publish_blocked_reasons: gate.blockedReasons,
+      image_hash: article.image_url ? await hashImageUrl(article.image_url) : null,
     })
     .eq('id', article.id)
   if (upErr) return { status: 'failed', error: upErr.message }
