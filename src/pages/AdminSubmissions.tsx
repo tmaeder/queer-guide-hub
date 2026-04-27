@@ -307,6 +307,15 @@ function SubmissionsCore() {
         },
         meta: { serverSortable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
       }),
+      columnHelper.accessor('platform', {
+        header: 'Platform',
+        cell: (info) => {
+          const v = info.getValue();
+          if (!v) return <span style={{ color: 'var(--muted-foreground)' }}>—</span>;
+          return <Badge variant="outline">{v}</Badge>;
+        },
+        meta: { serverSortable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('feedback_status', {
         header: 'Board Status',
         cell: (info) => {
