@@ -81,6 +81,20 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, items: 0, message: 'nothing to quality-enhance' }, 200, req)
     }
 
+    // Honor the kill switch — short-circuit before any LLM call.
+    const { data: settings } = await supabase
+      .from('news_quality_settings')
+      .select('enabled')
+      .eq('id', 1)
+      .maybeSingle()
+    if (settings && (settings as { enabled: boolean }).enabled === false) {
+      return jsonResponse({
+        success: true, items: 0, items_total: items.length, items_processed: 0,
+        items_succeeded: 0, items_failed: 0,
+        skipped_reason: 'news_quality_disabled',
+      }, 200, req)
+    }
+
     const pools = await loadCandidatePools(supabase)
 
     let processed = 0, passed = 0, review = 0, rejected = 0, failed = 0
@@ -177,6 +191,9 @@ Deno.serve(async (req) => {
           auto_publish: gate.autoPublish,
           auto_publish_blocked_reasons: gate.blockedReasons,
           quality_image_probe: imageProbe,
+          // Top-level resolved IDs are what news_commit_staging_batch reads.
+          country_ids: countryRes.linked.map((c) => c.id),
+          city_ids:    cityRes.linked.map((c) => c.id),
           quality_resolved_links: {
             countries: countryRes.linked,
             cities: cityRes.linked,

@@ -126,6 +126,16 @@ Deno.serve(async (req) => {
     const action = (body.action ?? 'run') as 'enqueue' | 'run'
     const dryRunDefault = body.dry_run !== false
 
+    // Honor the kill switch — short-circuit before doing any LLM work.
+    const { data: settings } = await supabase
+      .from('news_quality_settings')
+      .select('enabled')
+      .eq('id', 1)
+      .maybeSingle()
+    if (settings && (settings as { enabled: boolean }).enabled === false) {
+      return jsonResponse({ success: true, items: 0, skipped_reason: 'news_quality_disabled' }, 200, req)
+    }
+
     if (action === 'enqueue') {
       const limit = Math.min(2000, body.limit ?? DEFAULT_ENQUEUE_BATCH)
       const onlyMissing = body.only_missing !== false

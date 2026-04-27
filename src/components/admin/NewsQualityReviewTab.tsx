@@ -68,6 +68,27 @@ interface ArticleRow {
 
 const STATUSES = ['review', 'rejected'] as const;
 
+function HealthStat({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number | string;
+  color: string;
+}) {
+  return (
+    <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider' }}>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+        {label}
+      </Typography>
+      <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color }}>
+        {typeof value === 'number' ? value.toLocaleString() : value}
+      </Typography>
+    </Box>
+  );
+}
+
 function ScoreChip({ label, value }: { label: string; value: number | null }) {
   const v = value ?? 0;
   const color = v >= 0.75 ? 'success' : v >= 0.5 ? 'warning' : 'default';
@@ -171,6 +192,44 @@ export default function NewsQualityReviewTab() {
     return out;
   }, [rows]);
 
+  const { data: health } = useQuery({
+    queryKey: ['news-quality-health'],
+    queryFn: async () => {
+      const { data, error: e } = await sb.from('news_quality_health').select('*').single();
+      if (e) throw e;
+      return data as {
+        passed: number; review: number; rejected: number; pending: number;
+        legacy_unprocessed: number; total: number;
+        avg_relevance: number | null; avg_quality_after: number | null;
+        avg_quality_delta: number | null; last_run_at: string | null;
+      };
+    },
+    refetchInterval: 60_000,
+  });
+
+  const { data: settings } = useQuery({
+    queryKey: ['news-quality-settings'],
+    queryFn: async () => {
+      const { data, error: e } = await sb.from('news_quality_settings').select('*').eq('id', 1).maybeSingle();
+      if (e) throw e;
+      return data as { enabled: boolean; auto_publish_enabled: boolean; image_replacement_enabled: boolean } | null;
+    },
+  });
+
+  const toggleEnabled = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const { error: e } = await sb.from('news_quality_settings')
+        .update({ enabled, updated_at: new Date().toISOString() })
+        .eq('id', 1);
+      if (e) throw e;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['news-quality-settings'] });
+      toast.success('Setting updated');
+    },
+    onError: (e: Error) => toast.error(`Toggle failed: ${e.message}`),
+  });
+
   if (isLoading) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -185,6 +244,56 @@ export default function NewsQualityReviewTab() {
 
   return (
     <Box>
+      {settings && (
+        <Box sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider' }}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              Pipeline status:
+            </Typography>
+            <Chip
+              size="small"
+              label={settings.enabled ? 'Enabled' : 'Disabled'}
+              color={settings.enabled ? 'success' : 'default'}
+            />
+            <Button
+              size="small"
+              variant={settings.enabled ? 'outlined' : 'contained'}
+              color={settings.enabled ? 'error' : 'success'}
+              onClick={() => toggleEnabled.mutate(!settings.enabled)}
+              disabled={toggleEnabled.isPending}
+            >
+              {settings.enabled ? 'Disable' : 'Enable'}
+            </Button>
+          </Stack>
+        </Box>
+      )}
+
+      {health && (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2,1fr)', md: 'repeat(6,1fr)' },
+            gap: 2,
+            mb: 3,
+          }}
+        >
+          <HealthStat label="Passed" value={health.passed} color="#22c55e" />
+          <HealthStat label="Review" value={health.review} color="#f59e0b" />
+          <HealthStat label="Rejected" value={health.rejected} color="#ef4444" />
+          <HealthStat label="Legacy" value={health.legacy_unprocessed} color="#6b7280" />
+          <HealthStat
+            label="Avg relevance"
+            value={health.avg_relevance != null ? `${(health.avg_relevance * 100).toFixed(0)}%` : '—'}
+            color="#3b82f6"
+          />
+          <HealthStat
+            label="Avg quality"
+            value={health.avg_quality_after != null ? `${(health.avg_quality_after * 100).toFixed(0)}%` : '—'}
+            color="#3b82f6"
+          />
+        </Box>
+      )}
+
       <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
         <Chip label={`Review: ${counts.review}`} color="warning" variant="outlined" />
         <Chip label={`Rejected: ${counts.rejected}`} color="error" variant="outlined" />
