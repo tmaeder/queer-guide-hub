@@ -35,6 +35,7 @@ import { TripContextBar } from '@/components/trips/TripContextBar';
 import Box from '@mui/material/Box';
 
 const Index = lazyRetry(() => import('./pages/Index'));
+const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
 const VenueDetail = lazyRetry(() => import('./pages/VenueDetail'));
 const Events = lazyRetry(() => import('./pages/Events'));
@@ -89,6 +90,7 @@ const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
+const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
 
 // New feature pages
@@ -362,6 +364,7 @@ const AppRoutes = () => {
                 <Route path="imports/history" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
                 <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
+                <Route path="ingestion-rules" element={<AdminIngestionRules />} />
                 <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 
@@ -490,7 +493,7 @@ const AppRoutes = () => {
                 <Route path="ressources" element={<Navigate to="/resources" replace />} />
                 <Route path="ressources/:tagName" element={<Navigate to="/resources" replace />} />
                 <Route path="tags" element={<Navigate to="/resources" replace />} />
-                <Route path="tags/:tagName" element={<Navigate to="/resources" replace />} />
+                <Route path="tags/:slug" element={<TagDetail />} />
                 <Route path="donate" element={<Donate />} />
                 <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
                 <Route path="about" element={<About />} />
