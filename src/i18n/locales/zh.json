@@ -1105,7 +1105,8 @@
       "myGroups": "我的群组",
       "accessibility": "无障碍",
       "bookings": "预订",
-      "tripInbox": "旅行收件箱"
+      "tripInbox": "旅行收件箱",
+      "extension": "浏览器扩展"
     },
     "modes": {
       "dating": "寻找爱情",
