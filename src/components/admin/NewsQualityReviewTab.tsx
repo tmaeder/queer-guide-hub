@@ -23,6 +23,7 @@ import Alert from '@mui/material/Alert';
 import { CheckCircle2, AlertTriangle, RotateCcw, EyeOff } from 'lucide-react';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
+import { diffWords, diffChangeRatio } from '@/lib/text-diff';
 
 // New news_articles columns + the news_articles_originals table aren't in the
 // generated Database types yet. Route writes/reads through a permissive client
@@ -86,6 +87,48 @@ function HealthStat({
         {typeof value === 'number' ? value.toLocaleString() : value}
       </Typography>
     </Box>
+  );
+}
+
+function InlineDiff({ before, after }: { before: string; after: string }) {
+  const segs = useMemo(() => diffWords(before, after), [before, after]);
+  return (
+    <Typography
+      variant="body2"
+      component="div"
+      sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}
+    >
+      {segs.map((s, i) => {
+        if (s.kind === 'eq') return <span key={i}>{s.text}</span>;
+        if (s.kind === 'add') {
+          return (
+            <span
+              key={i}
+              style={{
+                backgroundColor: 'rgba(34,197,94,0.18)',
+                color: 'rgb(21,128,61)',
+                padding: '0 2px',
+              }}
+            >
+              {s.text}
+            </span>
+          );
+        }
+        return (
+          <span
+            key={i}
+            style={{
+              backgroundColor: 'rgba(239,68,68,0.18)',
+              color: 'rgb(153,27,27)',
+              textDecoration: 'line-through',
+              padding: '0 2px',
+            }}
+          >
+            {s.text}
+          </span>
+        );
+      })}
+    </Typography>
   );
 }
 
@@ -216,6 +259,25 @@ export default function NewsQualityReviewTab() {
     },
   });
 
+  const { data: sourceHealth } = useQuery({
+    queryKey: ['news-quality-source-health'],
+    queryFn: async () => {
+      const { data, error: e } = await sb
+        .from('news_quality_source_health')
+        .select('source_id, source_name, total, passed, review, rejected, reject_rate, avg_quality')
+        .gte('total', 5) // ignore tiny samples
+        .order('reject_rate', { ascending: false, nullsFirst: false })
+        .limit(8);
+      if (e) throw e;
+      return (data ?? []) as Array<{
+        source_id: string; source_name: string; total: number;
+        passed: number; review: number; rejected: number;
+        reject_rate: number | null; avg_quality: number | null;
+      }>;
+    },
+    refetchInterval: 120_000,
+  });
+
   const toggleEnabled = useMutation({
     mutationFn: async (enabled: boolean) => {
       const { error: e } = await sb.from('news_quality_settings')
@@ -291,6 +353,47 @@ export default function NewsQualityReviewTab() {
             value={health.avg_quality_after != null ? `${(health.avg_quality_after * 100).toFixed(0)}%` : '—'}
             color="#3b82f6"
           />
+        </Box>
+      )}
+
+      {sourceHealth && sourceHealth.length > 0 && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+            Sources by reject rate
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1 }}>
+            {sourceHealth.map((s) => {
+              const pct = s.reject_rate != null ? Math.round(s.reject_rate * 100) : 0;
+              const tone = pct > 50 ? 'error' : pct > 25 ? 'warning' : 'default';
+              return (
+                <Box
+                  key={s.source_id}
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto auto',
+                    gap: 2,
+                    alignItems: 'center',
+                    p: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {s.source_name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {s.passed} passed · {s.review} review · {s.rejected} rejected ({s.total})
+                  </Typography>
+                  <Chip
+                    size="small"
+                    label={`${pct}% reject`}
+                    color={tone as 'error' | 'warning' | 'default'}
+                    variant="outlined"
+                  />
+                </Box>
+              );
+            })}
+          </Box>
         </Box>
       )}
 
@@ -373,35 +476,43 @@ export default function NewsQualityReviewTab() {
                   </Alert>
                 ) : null}
 
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                    gap: 2,
-                  }}
-                >
-                  <Box>
+                <Box>
+                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                     <Typography variant="overline" color="text.secondary">
-                      Original
+                      Title
                     </Typography>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                      {selected.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                      {selected.content?.slice(0, 4000)}
-                    </Typography>
+                    {selected.quality_decision?.title &&
+                      selected.quality_decision.title !== selected.title && (
+                        <Chip
+                          size="small"
+                          label={`${(diffChangeRatio(selected.title, selected.quality_decision.title) * 100).toFixed(0)}% rewritten`}
+                          variant="outlined"
+                        />
+                      )}
+                  </Stack>
+                  <Box sx={{ mb: 2 }}>
+                    <InlineDiff
+                      before={selected.title}
+                      after={selected.quality_decision?.title ?? selected.title}
+                    />
                   </Box>
-                  <Box>
+
+                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                     <Typography variant="overline" color="text.secondary">
-                      Cleaned
+                      Body
                     </Typography>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                      {selected.quality_decision?.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                      {selected.quality_decision?.cleanedBody.slice(0, 4000)}
-                    </Typography>
-                  </Box>
+                    {selected.quality_decision?.cleanedBody && (
+                      <Chip
+                        size="small"
+                        label={`${(diffChangeRatio(selected.content ?? '', selected.quality_decision.cleanedBody) * 100).toFixed(0)}% rewritten`}
+                        variant="outlined"
+                      />
+                    )}
+                  </Stack>
+                  <InlineDiff
+                    before={(selected.content ?? '').slice(0, 4000)}
+                    after={(selected.quality_decision?.cleanedBody ?? selected.content ?? '').slice(0, 4000)}
+                  />
                 </Box>
 
                 {selected.quality_decision?.removedArtifacts.length ? (
