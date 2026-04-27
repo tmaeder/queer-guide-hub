@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { sb } from '@/lib/supabase-untyped';
 import { ArrowLeft, Plus, Trash2, Pencil, Link2 } from 'lucide-react';
 
 interface Rule {
@@ -75,7 +74,7 @@ export default function AdminIngestionRules() {
   const { data: rules = [], isLoading } = useQuery<Rule[]>({
     queryKey: ['ingestion_rules'],
     queryFn: async () => {
-      const { data, error } = await sb
+      const { data, error } = await supabase
         .from('ingestion_rules')
         .select('*')
         .order('priority', { ascending: true });
@@ -87,21 +86,28 @@ export default function AdminIngestionRules() {
   const upsertMut = useMutation({
     mutationFn: async (rule: Partial<Rule>) => {
       if (rule.id) {
-        const { error } = await sb
+        const { error } = await supabase
           .from('ingestion_rules')
           .update({
-            name: rule.name,
+            name: rule.name ?? '',
             description: rule.description,
             enabled: rule.enabled,
             priority: rule.priority,
-            match: rule.match,
-            actions: rule.actions,
+            match: rule.match as never,
+            actions: rule.actions as never,
             updated_at: new Date().toISOString(),
           })
           .eq('id', rule.id);
         if (error) throw error;
       } else {
-        const { error } = await sb.from('ingestion_rules').insert(rule as never);
+        const { error } = await supabase.from('ingestion_rules').insert({
+          name: rule.name ?? '',
+          description: rule.description,
+          enabled: rule.enabled ?? true,
+          priority: rule.priority ?? 100,
+          match: (rule.match ?? {}) as never,
+          actions: (rule.actions ?? {}) as never,
+        });
         if (error) throw error;
       }
     },
@@ -116,7 +122,7 @@ export default function AdminIngestionRules() {
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await sb.from('ingestion_rules').delete().eq('id', id);
+      const { error } = await supabase.from('ingestion_rules').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
