@@ -45,3 +45,13 @@ Deno.test({ name: 'source-foursquare: never returns 500', ignore: skip, async fn
   const res = await invoke('source-foursquare', { dry_run: true })
   assertEquals(res.success, true)
 }})
+
+Deno.test({ name: 'pipeline-media-process: returns success shape', ignore: skip, async fn() {
+  const res = await invoke('pipeline-media-process', { pipeline_run_id: '00000000-0000-0000-0000-000000000001', node_id: 'media', dry_run: true, batch_size: 1 })
+  assertEquals(typeof res.success, 'boolean')
+}})
+
+Deno.test({ name: 'pipeline-safety-relevance: returns success shape', ignore: skip, async fn() {
+  const res = await invoke('pipeline-safety-relevance', { pipeline_run_id: '00000000-0000-0000-0000-000000000001', node_id: 'safety', dry_run: true, batch_size: 1 })
+  assertEquals(typeof res.success, 'boolean')
+}})

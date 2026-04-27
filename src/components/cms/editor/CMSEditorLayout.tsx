@@ -115,46 +115,44 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
     if (!state.itemId || !config) return;
     setIsEnriching(true);
     try {
-      const { data, error } = await supabase.functions.invoke('content-automation', {
-        body: {
-          module: 'ai-content-enhancer',
-          content_type: contentType,
-          content_id: state.itemId,
-        },
-      });
-      if (error) throw error;
-      if (!data?.suggestions || Object.keys(data.suggestions).length === 0) {
-        toast.info('No enrichment suggestions available for this item');
-        return;
-      }
-      const suggestions = data.suggestions as Record<string, unknown>;
+      const baseArgs = {
+        content_type: contentType,
+        record_id: state.itemId,
+        source: state.data as Record<string, unknown>,
+      };
+      const [summaryRes, seoRes] = await Promise.all([
+        supabase.functions.invoke('cms-ai', { body: { op: 'summarize', ...baseArgs } }),
+        supabase.functions.invoke('cms-ai', { body: { op: 'seo_draft', ...baseArgs } }),
+      ]);
+      if (summaryRes.error) throw summaryRes.error;
+      if (seoRes.error) throw seoRes.error;
+
       const updates: Record<string, unknown> = {};
-      let count = 0;
-      for (const [key, value] of Object.entries(suggestions)) {
-        if (key === 'suggested_tags') continue;
-        const field = config.fields.find((f) => f.name === key);
-        if (!field || field.readOnly || field.hidden) continue;
-        const current = state.data[key];
-        if (!current || String(current).trim() === '') {
-          updates[key] = value;
-          count++;
-        } else if (
-          typeof value === 'string' &&
-          typeof current === 'string' &&
-          value.length > current.length * 1.3
-        ) {
-          updates[key] = value;
-          count++;
-        }
-      }
+      const isEmpty = (v: unknown) => v == null || (typeof v === 'string' && v.trim() === '');
+      const summary = summaryRes.data?.output as string | undefined;
+      const seo = seoRes.data?.output as { meta_title?: string; meta_description?: string } | undefined;
+
+      const descField = config.fields.find((f) => f.name === 'description' && !f.readOnly && !f.hidden);
+      const excerptField = config.fields.find((f) => f.name === 'excerpt' && !f.readOnly && !f.hidden);
+      if (summary && descField && isEmpty(state.data.description)) updates.description = summary;
+      else if (summary && excerptField && isEmpty(state.data.excerpt)) updates.excerpt = summary;
+
+      const metaTitleField = config.fields.find((f) => f.name === 'meta_title' && !f.readOnly && !f.hidden);
+      const metaDescField = config.fields.find((f) => f.name === 'meta_description' && !f.readOnly && !f.hidden);
+      if (seo?.meta_title && metaTitleField && isEmpty(state.data.meta_title)) updates.meta_title = seo.meta_title;
+      if (seo?.meta_description && metaDescField && isEmpty(state.data.meta_description))
+        updates.meta_description = seo.meta_description;
+
+      const count = Object.keys(updates).length;
       if (count > 0) {
         setFields(updates);
-        toast.success(`AI suggested improvements for ${count} field${count > 1 ? 's' : ''}`);
+        toast.success(`AI filled ${count} field${count > 1 ? 's' : ''}`);
       } else {
         toast.info('Content already looks good — no changes suggested');
       }
     } catch (err: unknown) {
-      toast.error(`Enrichment failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      toast.error(`Enrichment failed: ${msg}`);
     } finally {
       setIsEnriching(false);
     }

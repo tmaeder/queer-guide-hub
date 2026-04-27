@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
+import { SubmissionMediaSection } from '@/components/admin/SubmissionMediaSection';
 import { CheckCircle, XCircle, Eye, ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface SubmissionRow {
@@ -37,7 +38,34 @@ interface SubmissionRow {
   reviewer_notes: string | null;
   promoted_to_id: string | null;
   promoted_to_table: string | null;
+  // Social-ingestion media-aware columns (nullable on legacy rows).
+  platform: string | null;
+  media_processing_status: string | null;
+  media_urls: string[] | null;
+  queer_relevance_score: number | null;
+  confidence_score: number | null;
+  safety_flags: Array<{ type: string; severity: string; reason?: string }> | null;
+  raw_text: string | null;
+  ocr_text: string | null;
+  vision_summary: string | null;
+  transcript_text: string | null;
 }
+
+const PLATFORM_OPTIONS = [
+  { label: 'Telegram', value: 'telegram' },
+  { label: 'TikTok', value: 'tiktok' },
+  { label: 'Instagram', value: 'instagram' },
+  { label: 'Facebook', value: 'facebook' },
+  { label: 'X / Twitter', value: 'x' },
+  { label: 'Bluesky', value: 'bluesky' },
+  { label: 'WhatsApp', value: 'whatsapp' },
+  { label: 'FetLife', value: 'fetlife' },
+  { label: 'Signal', value: 'signal' },
+  { label: 'Email', value: 'email' },
+  { label: 'Manual', value: 'manual' },
+  { label: 'Admin', value: 'admin' },
+  { label: 'Flyer', value: 'flyer' },
+];
 
 const feedbackStatusOptions = [
   { value: 'new', label: 'New', color: '#f59e0b' },
@@ -288,7 +316,7 @@ function SubmissionsCore() {
     () => ({
       tableName: 'community_submissions',
       select:
-        'id,content_type,status,feedback_status,data,submitted_by,submitted_at,reviewed_by,reviewed_at,reviewer_notes,promoted_to_id,promoted_to_table',
+        'id,content_type,status,feedback_status,data,submitted_by,submitted_at,reviewed_by,reviewed_at,reviewer_notes,promoted_to_id,promoted_to_table,platform,media_processing_status,media_urls,queer_relevance_score,confidence_score,safety_flags,raw_text,ocr_text,vision_summary,transcript_text',
       columns,
       defaultSort: { column: 'submitted_at', direction: 'desc' as const },
       defaultPageSize: 25,
@@ -313,6 +341,13 @@ function SubmissionsCore() {
           type: 'select' as const,
           column: 'content_type',
           options: contentTypeOptions,
+        },
+        {
+          key: 'platform',
+          label: 'Platform',
+          type: 'select' as const,
+          column: 'platform',
+          options: PLATFORM_OPTIONS,
         },
       ],
       bulkEditFields: [
@@ -427,6 +462,19 @@ function SubmissionsCore() {
                   });
                 })()}
               </Box>
+
+              <SubmissionMediaSection
+                platform={selectedSubmission.platform}
+                mediaProcessingStatus={selectedSubmission.media_processing_status}
+                mediaUrls={selectedSubmission.media_urls}
+                queerRelevanceScore={selectedSubmission.queer_relevance_score}
+                confidenceScore={selectedSubmission.confidence_score}
+                safetyFlags={selectedSubmission.safety_flags}
+                rawText={selectedSubmission.raw_text}
+                ocrText={selectedSubmission.ocr_text}
+                visionSummary={selectedSubmission.vision_summary}
+                transcriptText={selectedSubmission.transcript_text}
+              />
 
               {/* Feedback board status selector */}
               {selectedSubmission.content_type === 'feedback' && (
