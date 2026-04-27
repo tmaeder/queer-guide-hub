@@ -457,7 +457,14 @@ const newsArticleFields: FieldConfig[] = [
   { name: 'excerpt', label: 'Excerpt', type: 'textarea', group: 'basic' },
   { name: 'content', label: 'Content', type: 'richtext', group: 'basic', colSpan: 2 },
   { name: 'url', label: 'Source URL', type: 'url', required: true, group: 'basic' },
-  { name: 'author', label: 'Author', type: 'text', group: 'basic' },
+  {
+    name: 'author',
+    label: 'Source',
+    type: 'text',
+    group: 'basic',
+    filterable: true,
+    listColumn: true,
+  },
   {
     name: 'category',
     label: 'Category',
@@ -465,6 +472,7 @@ const newsArticleFields: FieldConfig[] = [
     required: true,
     group: 'basic',
     filterable: true,
+    listColumn: true,
     options: [
       { value: 'general', label: 'General' },
       { value: 'politics', label: 'Politics' },
@@ -476,7 +484,15 @@ const newsArticleFields: FieldConfig[] = [
       { value: 'entertainment', label: 'Entertainment' },
     ],
   },
-  { name: 'published_at', label: 'Published At', type: 'datetime', group: 'basic', sortable: true },
+  {
+    name: 'published_at',
+    label: 'Published',
+    type: 'datetime',
+    group: 'basic',
+    sortable: true,
+    filterable: true,
+    listColumn: true,
+  },
   {
     name: 'sentiment',
     label: 'Sentiment',
@@ -491,7 +507,7 @@ const newsArticleFields: FieldConfig[] = [
   },
   { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
   { name: 'image_url', label: 'Image', type: 'image', group: 'media' },
-  { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings', filterable: true },
 ];
 
 // ── City Fields ────────────────────────────────────────────────────
@@ -1026,6 +1042,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     fields: newsArticleFields,
     defaults: { category: 'general', is_featured: false },
     validate: validateNewsArticle,
+    defaultSort: { field: 'published_at', dir: 'desc' },
     fieldGroupOrder: ['basic', 'details', 'media', 'settings'],
     translatableFields: ['title', 'excerpt', 'content'],
     commentable: true,

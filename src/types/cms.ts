@@ -79,6 +79,8 @@ export interface FieldConfig {
   sortable?: boolean;
   /** Filterable in list view */
   filterable?: boolean;
+  /** Show as a column in the admin list view */
+  listColumn?: boolean;
   /** Max length for text fields */
   maxLength?: number;
   /** Min length for text fields */
@@ -150,6 +152,8 @@ export interface ContentTypeConfig {
   commentable?: boolean;
   /** Cross-type bulk operations enabled for this type. */
   bulkOps?: BulkOpKind[];
+  /** Initial sort for the admin list view (overridable by user). */
+  defaultSort?: { field: string; dir: 'asc' | 'desc' };
 }
 
 export type AIAssistOp =
