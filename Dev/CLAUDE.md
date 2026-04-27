@@ -49,6 +49,8 @@ Dev/
 
 **Payments:** Stripe via `create-checkout-session` + `stripe-webhook` edge functions.
 
+**User submissions (Chrome extension):** `extension/` (MV3, React 19) extracts venues/events/hotels/marketplace/news from any webpage via JSON-LD/microdata/OpenGraph/DOM heuristics. `worker-submit/` (CF Worker) verifies user Supabase JWTs and stages into the same `ingestion_staging` table the scraper uses, with `source_type='user_submission'` — submissions flow through the existing normalize → dedupe → quality-score → review-gate → commit pipeline. Migration `Dev/src/db/migrations/002_user_submissions.sql` adds submitter columns + RLS.
+
 **Note:** `web/supabase/` is the canonical location for functions and migrations. Root `supabase/` is a symlink/submodule — always work in `web/supabase/`.
 
 ## Infrastructure
