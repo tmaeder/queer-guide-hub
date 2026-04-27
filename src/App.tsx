@@ -91,7 +91,6 @@ const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
-const AdminUserSubmissions = lazy(() => import('./pages/AdminUserSubmissions'));
 const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
 
@@ -368,7 +367,6 @@ const AppRoutes = () => {
                 <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
                 <Route path="ingestion-rules" element={<AdminIngestionRules />} />
-                <Route path="user-submissions" element={<AdminUserSubmissions />} />
                 <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 

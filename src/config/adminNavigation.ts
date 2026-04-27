@@ -34,7 +34,6 @@ import {
   Home,
   History,
   MessageSquarePlus,
-  Inbox,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { brandColors } from '@/theme/muiTheme';
@@ -256,14 +255,6 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/ingestion-rules',
         adminOnly: true,
         color: '#8b5cf6',
-      },
-      {
-        id: 'user-submissions',
-        label: 'Extension Submissions',
-        icon: Inbox,
-        route: '/admin/user-submissions',
-        adminOnly: true,
-        color: '#d4007f',
       },
     ],
   },
