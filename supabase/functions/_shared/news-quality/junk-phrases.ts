@@ -66,7 +66,7 @@ export const PATTERN_PHRASES: ReadonlyArray<RegExp> = [
   /^\s*sponsored\s*$/gim,
   /^\s*\[?(photo|image|picture)\s*[:|–-]\s*[^\]\n]{0,80}\]?\s*$/gim,
   // Repeated source-name suffixes ("— The Source — The Source" / "| The Source | The Source")
-  /(?:\s*[—|\-]\s*[A-Z][^\n|—\-]{1,40}){2,}\s*$/gim,
+  /(?:\s*[—|-]\s*[A-Z][^\n|—-]{1,40}){2,}\s*$/gim,
   // Trailing tracking-pixel image markup left as text
   /<img[^>]*1x1[^>]*>/gi,
 ] as const
