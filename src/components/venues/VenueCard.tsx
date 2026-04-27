@@ -28,6 +28,7 @@ interface VenueCardProps {
   onTagClick?: (tag: string) => void;
 }
 
+// TODO(polish): no token match — category accent palette
 const categoryColors: Record<string, string> = {
   bar: '#7c3aed',
   restaurant: '#dc2626',
@@ -111,8 +112,8 @@ export function VenueCard({
                     position: 'absolute',
                     top: 8,
                     left: 8,
-                    bgcolor: 'rgba(0,0,0,0.6)',
-                    color: '#fff',
+                    bgcolor: 'hsl(var(--foreground) / 0.6)',
+                    color: 'hsl(var(--background))',
                     borderRadius: 1,
                     px: 1,
                     py: 0.25,

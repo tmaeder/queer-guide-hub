@@ -74,8 +74,8 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
       try {
         await navigator.share({ title, text, url });
         return;
-      } catch (error) {
-        console.log('Share cancelled or failed:', error);
+      } catch {
+        // share dismissed
       }
     }
 

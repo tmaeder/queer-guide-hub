@@ -331,11 +331,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('=== SUBMIT STARTED ===');
-    console.log('Form data:', formData);
-
     if (!formData.name.trim()) {
-      console.log('Name validation failed');
       toast({
         title: "Error",
         description: "Name is required",
@@ -347,7 +343,6 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     setLoading(true);
 
     try {
-      console.log('Calling createPersonality...');
       const personalityData: Record<string, unknown> = {
         ...formData,
         social_links: {},
@@ -355,11 +350,8 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
       // Attach resolved FK IDs
       if (resolvedCountryId) personalityData.country_id = resolvedCountryId;
       if (resolvedCityId) personalityData.city_id = resolvedCityId;
-      console.log('Personality data to create:', personalityData);
 
       await createPersonality(personalityData);
-
-      console.log('Personality created successfully');
 
       // Reset form
       setFormData({

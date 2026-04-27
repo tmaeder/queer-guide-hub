@@ -123,7 +123,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                   position: 'relative',
                 }}
               >
-                <Ticket style={{ height: 20, width: 20, color: '#16a34a' }} />
+                <Ticket style={{ height: 20, width: 20, color: 'hsl(var(--brand))' }} />
               </Box>
               <Box>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>
@@ -141,7 +141,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover', position: 'relative' }}>
-                <Star style={{ height: 20, width: 20, color: '#555555' }} />
+                <Star style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
               </Box>
               <Box>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
@@ -451,7 +451,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                               inset: 0,
                               borderRadius: 2,
                               background:
-                                'linear-gradient(to right, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.04))',
+                                'linear-gradient(to right, hsl(var(--foreground) / 0.02), hsl(var(--foreground) / 0.04))',
                               opacity: 0,
                               transition: 'opacity 0.2s',
                               pointerEvents: 'none',

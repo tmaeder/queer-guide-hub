@@ -189,7 +189,7 @@ export default function PersonalityDetail() {
     switch (personality?.verification_status) {
       case 'verified':
         return (
-          <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <Verified style={{ height: 12, width: 12 }} />
             Verified
           </Badge>
@@ -201,7 +201,8 @@ export default function PersonalityDetail() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '0.25rem',
+              // TODO(polish): no token match — disputed warning amber
               backgroundColor: '#fef9e7',
               color: '#a16207',
             }}
@@ -222,8 +223,8 @@ export default function PersonalityDetail() {
           text: personality?.description || `Learn about ${personality?.name}`,
           url: window.location.href,
         });
-      } catch (error) {
-        console.log('Error sharing:', error);
+      } catch {
+        // share dismissed
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
@@ -291,7 +292,7 @@ export default function PersonalityDetail() {
         <Button
           variant="ghost"
           onClick={() => navigate('/personalities')}
-          style={{ marginBottom: '16px' }}
+          style={{ marginBottom: '1rem' }}
         >
           <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
           Back to Personalities
@@ -330,7 +331,7 @@ export default function PersonalityDetail() {
                 {personality.is_featured && (
                   <Badge
                     variant="secondary"
-                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                   >
                     <Star style={{ height: 12, width: 12 }} />
                     Featured
@@ -624,7 +625,7 @@ export default function PersonalityDetail() {
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>
             </CardHeader>
-            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {personality.birth_date && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
@@ -729,7 +730,7 @@ export default function PersonalityDetail() {
           {personality.tags && personality.tags.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Tag style={{ height: 16, width: 16 }} />
                   Tags
                 </CardTitle>

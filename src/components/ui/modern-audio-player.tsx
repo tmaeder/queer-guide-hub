@@ -193,7 +193,7 @@ export function ModernAudioPlayer({
 
   return (
     <div style={{
-      backgroundColor: '#ffffff',
+      backgroundColor: 'hsl(var(--background))',
       overflow: 'hidden',
     }}>
       <audio
@@ -237,7 +237,7 @@ export function ModernAudioPlayer({
           {getBestQualityDownload() && (
             <a
               href={getAudioUrl(getBestQualityDownload()!.file_path)}
-              style={{ color: '#3b82f6', textDecoration: 'underline', marginLeft: 8 }}
+              style={{ color: 'hsl(var(--brand))', textDecoration: 'underline', marginLeft: 8 }}
               download
             >
               Download MP3
@@ -252,7 +252,7 @@ export function ModernAudioPlayer({
           <img
             src={getAudioUrl(audio.poster_image_path)}
             alt={`${audio.title} artwork`}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, boxShadow: '0 10px 15px -3px hsl(var(--foreground) / 0.1)' }}
           />
         </div>
       )}

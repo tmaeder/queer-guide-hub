@@ -164,6 +164,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto', pt: 1 }}>
             {hasNumericRating && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                {/* TODO(polish): no token match — star rating amber */}
                 <Star style={{ width: 14, height: 14, fill: '#f59e0b', color: '#f59e0b' }} />
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
                   {hotel.star_rating}

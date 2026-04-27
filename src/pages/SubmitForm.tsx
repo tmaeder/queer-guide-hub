@@ -182,7 +182,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         <Card>
           <CardContent>
             <CheckCircle
-              style={{ width: 48, height: 48, margin: '0 auto 16px', color: '#4caf50' }}
+              style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'hsl(var(--brand))' }}
             />
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
               Thank you!
@@ -295,7 +295,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                   cursor: i < currentStep ? 'pointer' : 'default',
                   flexShrink: 0,
                   ...(i === currentStep
-                    ? { bgcolor: config.color, color: '#fff' }
+                    ? { bgcolor: config.color, color: 'hsl(var(--background))' }
                     : i < currentStep
                       ? { bgcolor: `${config.color}25`, color: config.color }
                       : { bgcolor: 'action.hover', color: 'text.disabled' }),
@@ -411,12 +411,12 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                   sx={{
                     mb: 2,
                     p: 1.5,
-                    bgcolor: 'rgba(239,68,68,0.08)',
-                    border: '1px solid rgba(239,68,68,0.35)',
+                    bgcolor: 'hsl(var(--destructive) / 0.08)',
+                    border: '1px solid hsl(var(--destructive) / 0.35)',
                     borderRadius: 1,
                   }}
                 >
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, color: '#b91c1c' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, color: 'hsl(var(--destructive))' }}>
                     Please fix the following to continue:
                   </Typography>
                   <Box component="ul" sx={{ m: 0, pl: 2 }}>
@@ -433,7 +433,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                               el.scrollIntoView({ block: 'center', behavior: 'smooth' });
                             }
                           }}
-                          sx={{ color: '#b91c1c', textDecoration: 'underline', cursor: 'pointer' }}
+                          sx={{ color: 'hsl(var(--destructive))', textDecoration: 'underline', cursor: 'pointer' }}
                         >
                           {e.label}: {e.message}
                         </Box>
@@ -510,7 +510,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
-                  ...(isLastStep ? { backgroundColor: config.color, color: '#fff' } : {}),
+                  ...(isLastStep ? { backgroundColor: config.color, color: 'hsl(var(--background))' } : {}),
                 }}
               >
                 {isSubmitting ? (

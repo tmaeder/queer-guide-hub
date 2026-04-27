@@ -740,7 +740,7 @@ export function Header() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      style={{ width: '100%', justifyContent: 'flex-start', color: '#d32f2f' }}
+                      style={{ width: '100%', justifyContent: 'flex-start', color: 'hsl(var(--destructive))' }}
                       onClick={signOut}
                     >
                       <LogOut style={{ width: 16, height: 16, marginRight: 8 }} />

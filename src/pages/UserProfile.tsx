@@ -40,9 +40,8 @@ export default function UserProfile() {
       try {
         await navigator.share({ title, text, url });
         return;
-      } catch (error) {
+      } catch {
         // If share fails or is cancelled, fall back to clipboard
-        console.log('Share cancelled or failed:', error);
       }
     }
 

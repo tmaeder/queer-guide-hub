@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Calendar, Store, Tag, Users, User } from 'lucide-react';
+import type { SearchHit } from '@/lib/searchClient';
 
 const SEARCH_PROXY_URL = import.meta.env.VITE_SEARCH_PROXY_URL || 'https://queer-guide-search-proxy.maeder-tobiassimon.workers.dev';
 
@@ -60,10 +61,9 @@ export function useSearchSuggestions(query: string) {
       if (!res.ok) throw new Error(`Search failed: ${res.status}`);
       const data = await res.json();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mapped: SearchSuggestion[] = (data.suggestions || []).map((hit: any) => ({
-        id: hit.id || hit.objectID,
-        name: hit.title || hit.name,
+      const mapped: SearchSuggestion[] = (data.suggestions || []).map((hit: SearchHit) => ({
+        id: hit.id || hit.objectID || '',
+        name: hit.title || hit.name || '',
         type: hit.type as SearchSuggestion['type'],
         icon: TYPE_ICONS[hit.type] || Tag,
         subtitle: hit.category || hit.location || hit.city || hit.description?.substring(0, 60),

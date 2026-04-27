@@ -270,7 +270,7 @@ export default function About() {
 
             <Box
               sx={{
-                bgcolor: isDark ? 'background.paper' : '#f5f5f5',
+                bgcolor: isDark ? 'background.paper' : 'hsl(var(--surface-container-low))',
                 p: { xs: 3, md: 4 },
                 display: 'flex',
                 flexDirection: 'column',
@@ -307,7 +307,7 @@ export default function About() {
       <Box
         component="section"
         sx={{
-          bgcolor: isDark ? 'background.paper' : '#f5f5f5',
+          bgcolor: isDark ? 'background.paper' : 'hsl(var(--surface-container-low))',
           py: { xs: 8, md: 14 },
           px: { xs: 2, sm: 3, md: 4 },
         }}
@@ -440,7 +440,7 @@ export default function About() {
         <Box
           component="section"
           sx={{
-            bgcolor: isDark ? 'background.paper' : '#f5f5f5',
+            bgcolor: isDark ? 'background.paper' : 'hsl(var(--surface-container-low))',
             py: { xs: 8, md: 14 },
             px: { xs: 2, sm: 3, md: 4 },
           }}
