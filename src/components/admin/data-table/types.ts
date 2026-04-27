@@ -51,6 +51,11 @@ export interface RowActionConfig<TData> {
 
 export interface AdminTableConfig<TData> {
   tableName: string;
+  /**
+   * Optional table to target for mutations (bulk edit/delete) when `tableName`
+   * is a read-only view. Defaults to `tableName`.
+   */
+  mutationTable?: string;
   select?: string;
   columns: ColumnDef<TData, unknown>[];
   entityFilters?: EntityFilterConfig[];
