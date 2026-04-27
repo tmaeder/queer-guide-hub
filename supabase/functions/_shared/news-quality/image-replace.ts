@@ -3,7 +3,7 @@
 //
 // Strategy (in order):
 //   1. Open Graph / Twitter card scrape from the article URL itself
-//   2. Unsplash search keyed on the article tags + title nouns (if UNSPLASH_ACCESS_KEY set)
+//   2. Pexels search keyed on the article tags + title nouns (if PEXELS_API_KEY set)
 //
 // Returns null if nothing usable was found. Caller must respect the
 // `news_quality_settings.image_replacement_enabled` flag before invoking.
@@ -12,7 +12,7 @@ import { probeImage, type ImageProbe } from './image-check.ts'
 
 export interface ReplacementResult {
   imageUrl: string
-  source: 'og' | 'twitter' | 'unsplash'
+  source: 'og' | 'twitter' | 'pexels'
   attribution: string | null
   probe: ImageProbe
 }
@@ -74,39 +74,39 @@ export async function scrapeSocialCardImage(
   }
 }
 
-/** Search Unsplash for an article-relevant photo. Requires UNSPLASH_ACCESS_KEY. */
-export async function searchUnsplash(
+/** Search Pexels for an article-relevant photo. Requires PEXELS_API_KEY. */
+export async function searchPexels(
   query: string,
   signal?: AbortSignal,
 ): Promise<{ imageUrl: string; attribution: string } | null> {
-  const key = Deno.env.get('UNSPLASH_ACCESS_KEY')
+  const key = Deno.env.get('PEXELS_API_KEY')
   if (!key) return null
   const q = query.trim().slice(0, 100)
   if (!q) return null
   try {
-    const url = `https://api.unsplash.com/search/photos?per_page=3&orientation=landscape&content_filter=high&query=${encodeURIComponent(q)}`
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=3&orientation=landscape`
     const res = await fetch(url, {
       method: 'GET',
       signal,
       headers: {
-        Authorization: `Client-ID ${key}`,
-        'Accept-Version': 'v1',
+        Authorization: key,
       },
     })
     if (!res.ok) return null
     const data = (await res.json()) as {
-      results?: Array<{
-        urls?: { regular?: string }
-        user?: { name?: string; links?: { html?: string } }
-        links?: { html?: string }
+      photos?: Array<{
+        src?: { large?: string; large2x?: string; medium?: string; original?: string }
+        photographer?: string
+        photographer_url?: string
+        url?: string
       }>
     }
-    const hit = data.results?.[0]
-    const photoUrl = hit?.urls?.regular
+    const hit = data.photos?.[0]
+    const photoUrl = hit?.src?.large2x ?? hit?.src?.large ?? hit?.src?.medium ?? hit?.src?.original
     if (!photoUrl) return null
-    const author = hit?.user?.name ?? 'Unsplash'
-    const photoLink = hit?.links?.html ?? 'https://unsplash.com'
-    const attribution = `Photo by ${author} on Unsplash (${photoLink})`
+    const author = hit?.photographer ?? 'Pexels'
+    const photoLink = hit?.url ?? 'https://www.pexels.com'
+    const attribution = `Photo by ${author} on Pexels (${photoLink})`
     return { imageUrl: photoUrl, attribution }
   } catch {
     return null
@@ -115,11 +115,11 @@ export async function searchUnsplash(
 
 export interface ReplacementInput {
   articleUrl?: string
-  query: string // tags + title — used for Unsplash search
+  query: string // tags + title — used for Pexels search
   signal?: AbortSignal
 }
 
-/** Try OG card → Unsplash. Probes each candidate; returns the first usable result. */
+/** Try OG card → Pexels. Probes each candidate; returns the first usable result. */
 export async function findReplacementImage(
   input: ReplacementInput,
 ): Promise<ReplacementResult | null> {
@@ -134,12 +134,12 @@ export async function findReplacementImage(
     }
   }
 
-  // 2. Unsplash search.
-  const unsplash = await searchUnsplash(input.query, input.signal)
-  if (unsplash) {
-    const probe = await probeImage(unsplash.imageUrl, input.signal)
+  // 2. Pexels search.
+  const pexels = await searchPexels(input.query, input.signal)
+  if (pexels) {
+    const probe = await probeImage(pexels.imageUrl, input.signal)
     if (probe.ok) {
-      return { imageUrl: unsplash.imageUrl, source: 'unsplash', attribution: unsplash.attribution, probe }
+      return { imageUrl: pexels.imageUrl, source: 'pexels', attribution: pexels.attribution, probe }
     }
   }
 
@@ -147,4 +147,4 @@ export async function findReplacementImage(
 }
 
 // Exposed for tests.
-export const _internals = { pickMeta, scrapeSocialCardImage, searchUnsplash }
+export const _internals = { pickMeta, scrapeSocialCardImage, searchPexels }
