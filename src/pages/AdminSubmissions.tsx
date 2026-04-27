@@ -25,6 +25,7 @@ import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { SubmissionMediaSection } from '@/components/admin/SubmissionMediaSection';
 import { ActivityLog } from '@/components/admin/feedback/ActivityLog';
 import { useFeedbackAudit } from '@/hooks/useFeedbackAudit';
+import { useFeedbackAdmins, buildAdminMap } from '@/hooks/useFeedbackAdmins';
 import { CheckCircle, XCircle, Eye, ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface SubmissionRow {
@@ -627,10 +628,12 @@ function SubmissionsCore() {
 
 function SubmissionActivityPanel({ submissionId }: { submissionId: string }) {
   const { data: entries } = useFeedbackAudit(submissionId);
+  const { data: admins = [] } = useFeedbackAdmins();
+  const adminById = useMemo(() => buildAdminMap(admins), [admins]);
   if (!entries || entries.length === 0) return null;
   return (
     <Box sx={{ mb: 3, borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
-      <ActivityLog entries={entries} adminById={{}} />
+      <ActivityLog entries={entries} adminById={adminById} />
     </Box>
   );
 }
