@@ -72,7 +72,7 @@ CREATE INDEX IF NOT EXISTS idx_content_metadata_published_effective
 -- FK validation via trigger (we cannot FK to a polymorphic target).
 -- The allowlist mirrors contentTypeRegistry.ts. Keep in sync.
 CREATE OR REPLACE FUNCTION public.assert_content_metadata_target()
-RETURNS trigger LANGUAGE plpgsql AS $$
+RETURNS trigger LANGUAGE plpgsql SET search_path = '' AS $$
 DECLARE
   allowed text[] := ARRAY[
     'venues','events','personalities','news_articles','cities','countries',
@@ -175,7 +175,7 @@ CREATE INDEX IF NOT EXISTS idx_cms_scheduled_publish_due
 
 -- pg_cron job (every minute): flip due rows. Idempotent.
 CREATE OR REPLACE FUNCTION public.cms_run_scheduled_publish()
-RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE r record;
 BEGIN
   FOR r IN

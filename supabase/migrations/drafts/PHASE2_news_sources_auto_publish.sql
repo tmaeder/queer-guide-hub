@@ -23,6 +23,7 @@ COMMENT ON COLUMN public.news_sources.auto_publish_since IS
 CREATE OR REPLACE FUNCTION public.news_sources_track_auto_publish()
 RETURNS TRIGGER
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 BEGIN
   IF NEW.auto_publish = true AND (OLD.auto_publish IS DISTINCT FROM true) THEN
