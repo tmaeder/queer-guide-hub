@@ -180,6 +180,8 @@ export function VenueCard({
                   component="img"
                   src={venue.logo_url}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   sx={{
                     position: 'absolute',
                     bottom: 8,

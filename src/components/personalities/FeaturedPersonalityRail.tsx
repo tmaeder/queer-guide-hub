@@ -59,6 +59,7 @@ function FeaturedItem({ p }: { p: Personality }) {
             src={p.image_url}
             alt={p.name}
             loading="lazy"
+            decoding="async"
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
