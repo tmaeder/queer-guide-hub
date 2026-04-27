@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 # Per-user rate limit + idempotency cache.
 [[kv_namespaces]]
 binding = "RATE_LIMIT"
-id = "REPLACE_WITH_KV_ID"
+id = "0e86cd82248b4eeab138404ef1d6828a"
 
 [vars]
 # Comma-separated list of allowed origins. The Chrome extension's origin is
