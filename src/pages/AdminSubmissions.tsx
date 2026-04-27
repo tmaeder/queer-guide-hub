@@ -209,16 +209,25 @@ function SubmissionsCore() {
   const handleReject = async (submission: SubmissionRow) => {
     setActionLoading(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase.functions.invoke('submission-action', {
+        body: {
+          submission_id: submission.id,
+          action: 'reject',
+          reason: reviewerNotes || undefined,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // submission-action handles status + audit; sync reviewer_notes/by separately
+      // since it doesn't expose those columns.
+      await supabase
         .from('community_submissions' as const)
         .update({
-          status: 'rejected',
           reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString(),
           reviewer_notes: reviewerNotes || null,
         })
         .eq('id', submission.id);
-      if (error) throw error;
 
       toast({ title: 'Submission rejected' });
       setDialogOpen(false);
