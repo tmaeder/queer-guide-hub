@@ -1,6 +1,6 @@
 /**
  * Unit tests for the safety-relevance prompt parser. Pure logic — no env, no
- * network. Run with: cd Dev/web/supabase/functions && deno test _tests/safety-relevance.test.ts
+ * network. Run with: cd supabase/functions && deno test _tests/safety-relevance.test.ts
  */
 import { assertEquals, assertThrows } from 'jsr:@std/assert'
 import {
