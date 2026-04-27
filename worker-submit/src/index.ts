@@ -1,26 +1,33 @@
 /**
  * worker-submit — receives content suggestions from the queer.guide Chrome
- * extension (and potentially other authenticated clients) and stages them
- * into Supabase `ingestion_staging` for the existing pipeline to process.
+ * extension (and other authenticated clients) and writes them into Supabase
+ * `community_submissions` (the canonical user-submission table). The
+ * existing `source-community-submissions` edge function then promotes them
+ * into ingestion_staging for the rest of the pipeline (normalize → media
+ * → dedupe → quality → review-gate → commit).
  *
  *   POST /submit            — body: SubmitBody, header: Authorization: Bearer <supabase-jwt>
  *   GET  /submissions/:id   — status of own submission
  *   GET  /health
+ *
+ * The worker forwards the user's JWT to PostgREST so the existing RLS
+ * policy `Users can create submissions` (`submitted_by = auth.uid()`)
+ * authorizes the write. We still verify the JWT locally first to gate
+ * rate-limit + body validation, and to bail out fast on invalid tokens.
  */
 
 import { extractBearer, verifySupabaseJwt } from "./auth";
 import { getCorsHeaders, json } from "./cors";
-import { sha256Hex, stableStringify } from "./hash";
 import { rateLimit } from "./rate-limit";
-import { entityTypeToTargetTable, SubmitBody } from "./schema";
-import { getSubmissionStatus, insertStagingRow } from "./supabase";
+import { SubmitBody } from "./schema";
+import { getSubmissionStatus, insertSubmission } from "./supabase";
 
 export interface Env {
   RATE_LIMIT: KVNamespace;
   ALLOWED_ORIGINS: string;
   SUBMISSION_RATE_PER_MIN: string;
   SUPABASE_URL: string;
-  SUPABASE_SERVICE_KEY: string;
+  SUPABASE_ANON_KEY: string;
   SUPABASE_JWT_SECRET: string;
 }
 
@@ -58,17 +65,18 @@ async function authenticate(request: Request, env: Env) {
   const token = extractBearer(request);
   if (!token) throw new HttpError(401, "missing_bearer");
   try {
-    return await verifySupabaseJwt(token, env.SUPABASE_JWT_SECRET);
+    const user = await verifySupabaseJwt(token, env.SUPABASE_JWT_SECRET);
+    return { user, token };
   } catch {
     throw new HttpError(401, "invalid_token");
   }
 }
 
 async function handleSubmit(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
-  const user = await authenticate(request, env).catch((e) => e);
-  if (user instanceof HttpError) return json({ error: user.code }, user.status, cors);
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  const { user, token } = auth;
 
-  // Rate limit per user.
   const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
   const rl = await rateLimit(env.RATE_LIMIT, user.sub, perMin);
   if (!rl.ok) {
@@ -90,31 +98,19 @@ async function handleSubmit(request: Request, env: Env, cors: HeadersInit): Prom
   }
   const body = parsed.data;
 
-  // Compute payload hash + source_entity_id. source_entity_id is derived
-  // from the user-submitted URL so resubmitting the same page by the same
-  // user is idempotent (UNIQUE constraint on source_type+source_entity_id+
-  // payload_hash). Different users get different source_names which means
-  // their submissions are separate rows even for the same URL — intentional;
-  // moderators see who submitted what, dedup happens later in the pipeline.
-  const payloadHash = await sha256Hex(stableStringify(body.raw_data));
-  const sourceEntityId = await sha256Hex(`${user.sub}|${body.source_url}`);
-
-  const targetTable = body.target_table ?? entityTypeToTargetTable(body.entity_type) ?? "venues";
-
-  const inserted = await insertStagingRow({
+  const inserted = await insertSubmission({
     supabaseUrl: env.SUPABASE_URL,
-    serviceKey: env.SUPABASE_SERVICE_KEY,
+    userJwt: token,
+    anonKey: env.SUPABASE_ANON_KEY,
     userId: user.sub,
     body,
-    payloadHash,
-    sourceEntityId,
-    targetTable,
+    userAgent: request.headers.get("user-agent") ?? undefined,
   });
 
   return json(
     {
       submission_id: inserted.id,
-      disposition: inserted.disposition,
+      status: inserted.status,
       rate_limit_remaining: rl.remaining,
     },
     202,
@@ -128,13 +124,13 @@ async function handleStatus(
   id: string,
   cors: HeadersInit,
 ): Promise<Response> {
-  const user = await authenticate(request, env).catch((e) => e);
-  if (user instanceof HttpError) return json({ error: user.code }, user.status, cors);
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
 
   const row = await getSubmissionStatus({
     supabaseUrl: env.SUPABASE_URL,
-    serviceKey: env.SUPABASE_SERVICE_KEY,
-    userId: user.sub,
+    userJwt: auth.token,
+    anonKey: env.SUPABASE_ANON_KEY,
     id,
   });
   if (!row) return json({ error: "not_found" }, 404, cors);

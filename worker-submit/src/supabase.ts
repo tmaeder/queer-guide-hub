@@ -1,78 +1,84 @@
 import type { SubmitBody } from "./schema";
 
 export interface InsertResult {
-  id: number | string;
-  disposition: string;
+  id: string;
+  status: string;
 }
 
 /**
- * Insert a row into ingestion_staging via Supabase REST. Uses service-role
- * key so RLS does not apply on writes; the service role is only ever held
- * by this worker.
+ * Insert into community_submissions — the canonical user-submission table.
+ * The existing `source-community-submissions` edge function picks pending
+ * rows up and stages them into ingestion_staging, where the rest of the
+ * pipeline (normalize → media-process → dedupe → quality → review-gate →
+ * commit) takes over. We do not duplicate any of that here.
  *
- * Returns the inserted row (or the existing row on idempotent conflict).
+ * RLS handles authorization: the policy "Users can create submissions"
+ * requires `submitted_by = auth.uid()`, so the worker forwards the user's
+ * JWT instead of using the service role.
  */
-export async function insertStagingRow(opts: {
+export async function insertSubmission(opts: {
   supabaseUrl: string;
-  serviceKey: string;
+  userJwt: string;
+  anonKey: string;
   userId: string;
   body: SubmitBody;
-  payloadHash: string;
-  sourceEntityId: string;
-  targetTable: string;
+  userAgent?: string;
 }): Promise<InsertResult> {
+  const contentType = mapEntityToContentType(opts.body.entity_type);
+  const images = readImages(opts.body.raw_data);
+
   const row = {
-    raw_data: opts.body.raw_data,
-    source_type: "user_submission",
-    source_name: `extension:${opts.userId}`,
-    source_entity_id: opts.sourceEntityId,
-    payload_hash: opts.payloadHash,
-    target_table: opts.targetTable,
-    entity_type: opts.body.entity_type,
-    disposition: "pending",
-    ai_validation_status: "pending",
-    dedup_status: "pending",
-    submitted_by_user_id: opts.userId,
-    submission_url: opts.body.source_url,
-    submission_notes: opts.body.notes ?? null,
-    submission_client: opts.body.client ?? null,
+    content_type: contentType,
+    status: "pending",
+    feedback_status: "open",
+    data: opts.body.raw_data,
+    submitted_by: opts.userId,
+    source_url: opts.body.source_url,
+    media_urls: images.length ? images : null,
+    media_processing_status: images.length ? "pending" : "not_applicable",
+    sub_source_type: "extension",
+    submitter_metadata: {
+      client: opts.body.client ?? null,
+      extraction_method: opts.body.extraction_method ?? null,
+      field_confidence: opts.body.field_confidence ?? null,
+      user_notes: opts.body.notes ?? null,
+      ua: opts.userAgent ?? null,
+    },
   };
 
-  const url = `${opts.supabaseUrl}/rest/v1/ingestion_staging?on_conflict=source_type,source_entity_id,payload_hash`;
+  const url = `${opts.supabaseUrl}/rest/v1/community_submissions`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      apikey: opts.serviceKey,
-      Authorization: `Bearer ${opts.serviceKey}`,
+      apikey: opts.anonKey,
+      Authorization: `Bearer ${opts.userJwt}`,
       "Content-Type": "application/json",
-      Prefer: "return=representation,resolution=merge-duplicates",
+      Prefer: "return=representation",
     },
     body: JSON.stringify(row),
   });
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`supabase insert failed ${res.status}: ${text}`);
+    throw new Error(`supabase insert failed ${res.status}: ${await res.text()}`);
   }
-  const data = (await res.json()) as Array<{ id: number | string; disposition: string }>;
+  const data = (await res.json()) as Array<{ id: string; status: string }>;
   if (!data.length) throw new Error("supabase returned empty result");
   return data[0]!;
 }
 
 export async function getSubmissionStatus(opts: {
   supabaseUrl: string;
-  serviceKey: string;
-  userId: string;
+  userJwt: string;
+  anonKey: string;
   id: string;
 }): Promise<Record<string, unknown> | null> {
   const url =
-    `${opts.supabaseUrl}/rest/v1/ingestion_staging` +
+    `${opts.supabaseUrl}/rest/v1/community_submissions` +
     `?id=eq.${encodeURIComponent(opts.id)}` +
-    `&submitted_by_user_id=eq.${encodeURIComponent(opts.userId)}` +
-    `&select=id,disposition,ai_validation_status,dedup_status,target_table,entity_type,created_at,updated_at`;
+    `&select=id,content_type,status,feedback_status,media_processing_status,promoted_to_id,promoted_to_table,submitted_at,reviewed_at,reviewer_notes`;
   const res = await fetch(url, {
     headers: {
-      apikey: opts.serviceKey,
-      Authorization: `Bearer ${opts.serviceKey}`,
+      apikey: opts.anonKey,
+      Authorization: `Bearer ${opts.userJwt}`,
     },
   });
   if (!res.ok) {
@@ -80,4 +86,29 @@ export async function getSubmissionStatus(opts: {
   }
   const rows = (await res.json()) as Array<Record<string, unknown>>;
   return rows[0] ?? null;
+}
+
+function mapEntityToContentType(t: string): string {
+  switch (t) {
+    case "venue":
+      return "venue";
+    case "event":
+      return "event";
+    case "stay":
+      return "stay";
+    case "marketplace_item":
+      return "marketplace";
+    case "news_article":
+      return "news";
+    case "organization":
+      return "organization";
+    default:
+      return "place";
+  }
+}
+
+function readImages(raw: Record<string, unknown>): string[] {
+  const v = raw["images"];
+  if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string");
+  return [];
 }

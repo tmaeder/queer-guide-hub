@@ -17,8 +17,10 @@ SUBMISSION_RATE_PER_MIN = "10"
 
 # Secrets (set via `wrangler secret put NAME`):
 #   SUPABASE_URL          - https://<project>.supabase.co
-#   SUPABASE_SERVICE_KEY  - service-role key (writes ingestion_staging)
+#   SUPABASE_ANON_KEY     - publishable anon key (used as apikey header to PostgREST)
 #   SUPABASE_JWT_SECRET   - HS256 secret used by Supabase Auth, used to verify user JWTs
+# Writes go through PostgREST with the user's own JWT, so the existing RLS
+# policies on community_submissions authorize them. No service-role key.
 
 [observability]
 enabled = true
