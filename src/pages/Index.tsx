@@ -126,11 +126,11 @@ const Index = React.memo(() => {
             }}
           >
             <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/venues')}>
-              <MapPin style={{ width: 16, height: 16, marginRight: 6 }} aria-hidden="true" />
+              <MapPin size={16} aria-hidden="true" style={{ marginRight: 8 }} />
               {t('home.browseVenues', 'Browse Venues')}
             </Button>
             <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/events')}>
-              <Calendar style={{ width: 16, height: 16, marginRight: 6 }} aria-hidden="true" />
+              <Calendar size={16} aria-hidden="true" style={{ marginRight: 8 }} />
               {t('home.viewEvents', 'View Events')}
             </Button>
           </Box>
@@ -221,7 +221,7 @@ const Index = React.memo(() => {
                     fontWeight: 500,
                     letterSpacing: '0.02em',
                     textTransform: 'uppercase',
-                    fontSize: '0.7rem',
+                    fontSize: '0.75rem',
                   }}
                 >
                   {stat.label}
@@ -299,8 +299,9 @@ const Index = React.memo(() => {
                       }}
                     >
                       <Icon
-                        style={{ width: 18, height: 18, flexShrink: 0 }}
+                        size={20}
                         aria-hidden="true"
+                        style={{ flexShrink: 0 }}
                       />
                       {t(feature.titleKey)}
                     </Typography>
