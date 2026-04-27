@@ -261,6 +261,12 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
     if (amenities.length)                n.amenities          = amenities
     if (bookingUrl)                      n.booking_url        = String(bookingUrl).trim()
     if (markers.length)                  n.lgbtq_markers      = markers
+
+    if (raw.is_organizer === true) n.is_organizer = true
+    const handles = raw.organizer_handles
+    if (handles && typeof handles === 'object' && !Array.isArray(handles)) {
+      n.organizer_handles = handles
+    }
   }
 
   if (entityType === 'country') {
