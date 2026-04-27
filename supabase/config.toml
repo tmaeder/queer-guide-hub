@@ -15,6 +15,10 @@ jwt_expiry = 3600
 enable_signup = true
 enable_manual_linking = false
 
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/public/custom_access_token_hook"
+
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
