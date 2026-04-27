@@ -37,9 +37,13 @@ interface CountryRow {
   area_km2: number | null;
   gdp_usd: number | null;
   currency: string | null;
+  lgbt_legal_status: string | null;
+  equality_score: number | null;
   continent_id: string | null;
   created_at: string;
   continents: { name: string } | null;
+  venues: { count: number }[] | null;
+  events: { count: number }[] | null;
 }
 
 const columnHelper = createColumnHelper<CountryRow>();
@@ -129,17 +133,22 @@ export default function AdminCountries() {
     const cols: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Name', accessor: (r) => r.name },
       { header: 'Code', accessor: (r) => r.code },
-      { header: 'Continent', accessor: (r) => r.continents?.name },
+      { header: 'Continent', accessor: (r) => (r.continents as { name?: string } | null)?.name },
       { header: 'Capital', accessor: (r) => r.capital },
       { header: 'Population', accessor: (r) => r.population },
       { header: 'Area (km2)', accessor: (r) => r.area_km2 },
       { header: 'GDP (USD)', accessor: (r) => r.gdp_usd },
       { header: 'Currency', accessor: (r) => r.currency },
+      { header: 'LGBT legal status', accessor: (r) => r.lgbt_legal_status },
+      { header: 'Equality score', accessor: (r) => r.equality_score },
+      { header: 'Venues', accessor: (r) => (r.venues as { count: number }[] | null)?.[0]?.count ?? 0 },
+      { header: 'Events', accessor: (r) => (r.events as { count: number }[] | null)?.[0]?.count ?? 0 },
     ];
-    const allData = await fetchAllRows('countries', '*, continents(name)', {
-      column: 'name',
-      ascending: true,
-    });
+    const allData = await fetchAllRows(
+      'countries',
+      '*, continents(name), venues(count), events(count)',
+      { column: 'name', ascending: true },
+    );
     await exportToExcel(allData, cols, generateFilename('countries'));
   };
 
@@ -173,10 +182,39 @@ export default function AdminCountries() {
         cell: (info) => info.getValue() || '-',
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
+      columnHelper.accessor('lgbt_legal_status', {
+        header: 'LGBT legal status',
+        cell: (info) => info.getValue() || '-',
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('equality_score', {
+        header: 'Equality score',
+        cell: (info) => {
+          const v = info.getValue();
+          return v == null ? '-' : v;
+        },
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('population', {
         header: 'Population',
         cell: (info) => fmtNum(info.getValue()),
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.display({
+        id: 'venues_count',
+        header: 'Venues',
+        cell: ({ row }) => fmtNum(row.original.venues?.[0]?.count ?? 0),
+        meta: { hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.display({
+        id: 'events_count',
+        header: 'Events',
+        cell: ({ row }) => fmtNum(row.original.events?.[0]?.count ?? 0),
+        meta: { hideable: true } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('area_km2', {
         header: 'Area (km2)',
@@ -209,7 +247,7 @@ export default function AdminCountries() {
     () => ({
       tableName: 'countries',
       select:
-        'id,name,code,capital,population,area_km2,gdp_usd,currency,continent_id,created_at,continents(name)',
+        'id,name,code,capital,population,area_km2,gdp_usd,currency,lgbt_legal_status,equality_score,continent_id,created_at,continents(name),venues(count),events(count)',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 50,
@@ -224,6 +262,18 @@ export default function AdminCountries() {
           column: 'continent_id',
           options: 'dynamic',
           dynamicSource: { table: 'continents', column: 'id', labelColumn: 'name' },
+        },
+        {
+          key: 'lgbt_legal_status',
+          label: 'LGBT legal status',
+          type: 'select',
+          column: 'lgbt_legal_status',
+          options: 'dynamic',
+          dynamicSource: {
+            table: 'countries',
+            column: 'lgbt_legal_status',
+            labelColumn: 'lgbt_legal_status',
+          },
         },
       ],
       rowActions: [
