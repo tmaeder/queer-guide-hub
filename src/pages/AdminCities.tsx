@@ -41,6 +41,11 @@ interface CityRow {
   id: string;
   name: string;
   country_id: string;
+  country_name: string | null;
+  continent_id: string | null;
+  lgbt_legal_status: string | null;
+  lgbt_rights_status: string | null;
+  equality_score: number | null;
   region_name: string | null;
   population: number | null;
   latitude: number | null;
@@ -49,8 +54,9 @@ interface CityRow {
   is_capital: boolean;
   is_major_city: boolean;
   major_airport_code: string | null;
+  venue_count: number;
+  event_count: number;
   created_at: string;
-  countries: { name: string } | null;
 }
 
 const columnHelper = createColumnHelper<CityRow>();
@@ -75,6 +81,7 @@ export default function AdminCities() {
   const [editingCity, setEditingCity] = useState<CityRow | null>(null);
   const [formData, setFormData] = useState(emptyForm);
   const [countries, setCountries] = useState<{ id: string; name: string }[]>([]);
+  const [continents, setContinents] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     supabase
@@ -83,6 +90,13 @@ export default function AdminCities() {
       .order('name')
       .then(({ data }) => {
         if (data) setCountries(data);
+      });
+    supabase
+      .from('continents')
+      .select('id, name')
+      .order('name')
+      .then(({ data }) => {
+        if (data) setContinents(data);
       });
   }, []);
 
@@ -169,7 +183,12 @@ export default function AdminCities() {
   const handleExportExcel = async () => {
     const cols: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Name', accessor: (r) => r.name },
-      { header: 'Country', accessor: (r) => r.countries?.name },
+      { header: 'Country', accessor: (r) => r.country_name },
+      { header: 'LGBT Legal', accessor: (r) => r.lgbt_legal_status },
+      { header: 'LGBT Rights', accessor: (r) => r.lgbt_rights_status },
+      { header: 'Equality Score', accessor: (r) => r.equality_score },
+      { header: 'Venues', accessor: (r) => r.venue_count },
+      { header: 'Events', accessor: (r) => r.event_count },
       { header: 'Region', accessor: (r) => r.region_name },
       { header: 'Population', accessor: (r) => r.population },
       { header: 'Latitude', accessor: (r) => r.latitude },
@@ -179,7 +198,7 @@ export default function AdminCities() {
       { header: 'Is Major City', accessor: (r) => formatBoolean(r.is_major_city) },
       { header: 'Airport Code', accessor: (r) => r.major_airport_code },
     ];
-    const allData = await fetchAllRows('cities', '*, countries(name)', {
+    const allData = await fetchAllRows('cities_admin', '*', {
       column: 'name',
       ascending: true,
     });
@@ -196,19 +215,78 @@ export default function AdminCities() {
               <MapPin style={{ height: 13, width: 13 }} />
               <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
             </Box>
-            {info.row.original.countries?.name && (
+            {info.row.original.country_name && (
               <Typography variant="body2" color="text.secondary">
-                {info.row.original.countries.name}
+                {info.row.original.country_name}
               </Typography>
             )}
           </Box>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
+      columnHelper.accessor('country_name', {
+        header: 'Country',
+        cell: (info) => info.getValue() || '-',
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('lgbt_legal_status', {
+        header: 'LGBT Legal',
+        cell: (info) => {
+          const v = info.getValue();
+          if (!v) return <span style={{ color: 'var(--muted-foreground)' }}>-</span>;
+          const lower = v.toLowerCase();
+          const tone =
+            lower.includes('legal') || lower.includes('protected') || lower.includes('marriage')
+              ? { backgroundColor: '#dcfce7', color: '#166534' }
+              : lower.includes('illegal') || lower.includes('criminal')
+                ? { backgroundColor: '#fee2e2', color: '#991b1b' }
+                : { backgroundColor: '#fef3c7', color: '#92400e' };
+          return <Badge style={tone}>{v}</Badge>;
+        },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('equality_score', {
+        header: 'Equality',
+        cell: (info) => {
+          const v = info.getValue();
+          if (v == null) return '-';
+          const tone =
+            v >= 70
+              ? { backgroundColor: '#dcfce7', color: '#166534' }
+              : v >= 40
+                ? { backgroundColor: '#fef3c7', color: '#92400e' }
+                : { backgroundColor: '#fee2e2', color: '#991b1b' };
+          return <Badge style={tone}>{v}</Badge>;
+        },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('lgbt_rights_status', {
+        header: 'LGBT Rights',
+        cell: (info) => info.getValue() || '-',
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('venue_count', {
+        header: 'Venues',
+        cell: (info) => (info.getValue() ?? 0).toLocaleString(),
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('event_count', {
+        header: 'Events',
+        cell: (info) => (info.getValue() ?? 0).toLocaleString(),
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('region_name', {
         header: 'Region',
         cell: (info) => info.getValue() || '-',
-        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+        meta: {
+          serverSortable: true,
+          defaultVisible: false,
+          hideable: true,
+        } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('population', {
         header: 'Population',
@@ -269,15 +347,16 @@ export default function AdminCities() {
 
   const tableConfig: AdminTableConfig<CityRow> = useMemo(
     () => ({
-      tableName: 'cities',
+      tableName: 'cities_admin',
+      mutationTable: 'cities',
       select:
-        'id,name,country_id,region_name,population,latitude,longitude,timezone,is_capital,is_major_city,major_airport_code,created_at,countries(name)',
+        'id,name,country_id,country_name,continent_id,lgbt_legal_status,lgbt_rights_status,equality_score,region_name,population,latitude,longitude,timezone,is_capital,is_major_city,major_airport_code,venue_count,event_count,created_at',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 50,
       enableSelection: true,
       enableSearch: true,
-      searchColumns: ['name', 'region_name'],
+      searchColumns: ['name', 'region_name', 'country_name'],
       entityFilters: [
         {
           key: 'country_id',
@@ -286,6 +365,13 @@ export default function AdminCities() {
           column: 'country_id',
           options: 'dynamic',
           dynamicSource: { table: 'countries', column: 'id', labelColumn: 'name' },
+        },
+        {
+          key: 'continent_id',
+          label: 'Continent',
+          type: 'select',
+          column: 'continent_id',
+          options: continents.map((c) => ({ value: c.id, label: c.name })),
         },
         { key: 'is_capital', label: 'Capital', type: 'boolean', column: 'is_capital' },
         { key: 'is_major_city', label: 'Major City', type: 'boolean', column: 'is_major_city' },
@@ -321,7 +407,7 @@ export default function AdminCities() {
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete is stable in practice, adding would defeat memoization
-    [columns],
+    [columns, continents],
   );
 
   return (

@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { normalizeTagName } from '@/utils/tagNormalization';
 
 export interface TagCategoryInfo {
   id: string;
@@ -253,12 +254,14 @@ export const useCentralizedTags = () => {
     image_url?: string | null;
   }): Promise<CentralizedTag | null> => {
     try {
+      const normalizedName = normalizeTagName(tagData.name);
       const { data, error } = await supabase
         .from('unified_tags')
         .insert([
           {
             ...tagData,
-            slug: tagData.slug || tagData.name.toLowerCase().replace(/\s+/g, '-'),
+            name: normalizedName,
+            slug: tagData.slug || normalizedName.toLowerCase().replace(/\s+/g, '-'),
           },
         ])
         .select()
@@ -275,7 +278,11 @@ export const useCentralizedTags = () => {
 
   const updateTag = async (id: string, updates: Partial<CentralizedTag>): Promise<void> => {
     try {
-      const { error } = await supabase.from('unified_tags').update(updates).eq('id', id);
+      const finalUpdates =
+        typeof updates.name === 'string'
+          ? { ...updates, name: normalizeTagName(updates.name) }
+          : updates;
+      const { error } = await supabase.from('unified_tags').update(finalUpdates).eq('id', id);
 
       if (error) throw error;
       refreshTags();

@@ -41,6 +41,7 @@ export function AdminDataTable<TData extends { id: string }>({
 }: AdminDataTableProps<TData>) {
   const {
     tableName,
+    mutationTable,
     select,
     columns,
     entityFilters = [],
@@ -217,7 +218,7 @@ export function AdminDataTable<TData extends { id: string }>({
         <DataTableBulkActions
           selectedCount={state.selectedIds.size}
           selectedIds={state.selectedIds}
-          tableName={tableName}
+          tableName={mutationTable ?? tableName}
           onClearSelection={clearSelection}
           onSuccess={handleRefetch}
           bulkEditFields={bulkEditFields}
