@@ -1,4 +1,4 @@
-name: A11y gate
+name: Lint & a11y gate
 
 on:
   push:
@@ -35,7 +35,7 @@ concurrency:
 
 jobs:
   jsx-a11y-lint:
-    name: jsx-a11y lint
+    name: Lint (eslint .)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
