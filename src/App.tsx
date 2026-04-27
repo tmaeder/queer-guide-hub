@@ -53,6 +53,7 @@ const CMSRoutePage = lazyRetry(() => import('./pages/CMSRoutePage'));
 const About = lazyRetry(() => import('./pages/About'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
+const AuthCallback = lazyRetry(() => import('./pages/AuthCallback'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
 const SearchPersonalization = lazyRetry(() => import('./pages/onboarding/SearchPersonalization'));
 const PatternLibrary = lazyRetry(() => import('./pages/PatternLibrary'));
@@ -90,6 +91,7 @@ const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
+const AdminUserSubmissions = lazy(() => import('./pages/AdminUserSubmissions'));
 const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
 
@@ -328,6 +330,7 @@ const AppRoutes = () => {
             <Routes>
               {/* Auth routes — no locale prefix */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/pattern-library" element={<PatternLibrary />} />
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
               <Route path="/onboarding/search" element={<SearchPersonalization />} />
@@ -365,6 +368,7 @@ const AppRoutes = () => {
                 <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
                 <Route path="ingestion-rules" element={<AdminIngestionRules />} />
+                <Route path="user-submissions" element={<AdminUserSubmissions />} />
                 <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 
