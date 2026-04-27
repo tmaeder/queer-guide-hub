@@ -292,7 +292,7 @@ export default function Directory() {
         {/* Content based on view mode */}
         <Box>
           {viewMode === "overview" && (
-            <Tabs defaultValue="countries" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            <Tabs defaultValue="countries" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               {/* Enhanced Tab Navigation */}
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <TabsList>
@@ -323,7 +323,7 @@ export default function Directory() {
                 </Box>
               </Box>
 
-              <TabsContent value="countries" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <TabsContent value="countries" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {/* Section Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -404,7 +404,7 @@ export default function Directory() {
                </Box>
               </TabsContent>
 
-              <TabsContent value="cities" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <TabsContent value="cities" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {/* Section Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -489,7 +489,7 @@ export default function Directory() {
                 </Box>
               </TabsContent>
 
-              <TabsContent value="map" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <TabsContent value="map" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {/* Section Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>

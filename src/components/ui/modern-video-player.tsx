@@ -68,7 +68,6 @@ export function ModernVideoPlayer({
       hlsRef.current = hls;
       hls.loadSource(getVideoUrl(hlsRendition.file_path));
       hls.attachMedia(videoElement);
-      console.log('🎬 Using HLS adaptive streaming');
     } else {
       // Progressive fallback with codec preference - secure clearing
       while (videoElement.firstChild) {
@@ -140,7 +139,7 @@ export function ModernVideoPlayer({
   const posterUrl = video.poster_image_path ? getVideoUrl(video.poster_image_path) : undefined;
 
   return (
-    <div style={{ position: 'relative', backgroundColor: '#000000', borderRadius: 8, overflow: 'hidden' }}>
+    <div style={{ position: 'relative', backgroundColor: 'hsl(0 0% 2%)', borderRadius: 8, overflow: 'hidden' }}>
       <video
         ref={videoRef}
         style={{ width: '100%', height: '100%' }}
@@ -165,11 +164,12 @@ export function ModernVideoPlayer({
           onEnded?.();
         }}
       >
-        <p style={{ color: '#ffffff', padding: 16 }}>
+        <p style={{ color: 'hsl(0 0% 100%)', padding: 16 }}>
           Your browser doesn't support embedded videos.
           {video.renditions.find(r => r.codec === 'h264') && (
             <a
               href={getVideoUrl(video.renditions.find(r => r.codec === 'h264')!.file_path)}
+              // TODO(polish): no token match — link blue on dark video background
               style={{ color: '#60a5fa', textDecoration: 'underline', marginLeft: 8 }}
               download
             >
@@ -186,7 +186,7 @@ export function ModernVideoPlayer({
           bottom: 0,
           left: 0,
           right: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+          background: 'linear-gradient(to top, hsl(0 0% 0% / 0.8), transparent)',
           padding: 16,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -194,13 +194,13 @@ export function ModernVideoPlayer({
               variant="ghost"
               size="sm"
               onClick={togglePlay}
-              style={{ color: '#ffffff' }}
+              style={{ color: 'hsl(0 0% 100%)' }}
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? <Pause style={{ height: 20, width: 20 }} /> : <Play style={{ height: 20, width: 20 }} />}
             </Button>
 
-            <span style={{ color: '#ffffff', fontSize: '0.875rem' }}>
+            <span style={{ color: 'hsl(0 0% 100%)', fontSize: '0.875rem' }}>
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
 
@@ -208,7 +208,7 @@ export function ModernVideoPlayer({
               <Button
                 variant="ghost"
                 size="sm"
-                style={{ color: '#ffffff' }}
+                style={{ color: 'hsl(0 0% 100%)' }}
                 asChild
               >
                 <a
@@ -226,7 +226,7 @@ export function ModernVideoPlayer({
 
       {video.title && (
         <div style={{ position: 'absolute', top: 16, left: 16 }}>
-          <h3 style={{ color: '#ffffff', fontSize: '1.125rem', fontWeight: 600, textShadow: '0 2px 4px rgba(0,0,0,0.5)', margin: 0 }}>
+          <h3 style={{ color: 'hsl(0 0% 100%)', fontSize: '1.125rem', fontWeight: 600, textShadow: '0 2px 4px hsl(0 0% 0% / 0.5)', margin: 0 }}>
             {video.title}
           </h3>
         </div>

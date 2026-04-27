@@ -76,20 +76,20 @@ export default function Groups() {
           actions={<CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />}
         />
 
-        <Tabs defaultValue="discover" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <Tabs defaultValue="discover" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
-            <TabsTrigger value="discover" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
+            <TabsTrigger value="discover" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
               <Search style={{ height: 16, width: 16 }} /> {t('pages.groups.discover', 'Discover')}
             </TabsTrigger>
-            <TabsTrigger value="my-groups" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <TabsTrigger value="my-groups" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Users style={{ height: 16, width: 16 }} /> {t('pages.groups.myGroups', 'My Groups')} ({userGroups.length})
             </TabsTrigger>
-            <TabsTrigger value="popular" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <TabsTrigger value="popular" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <TrendingUp style={{ height: 16, width: 16 }} /> {t('pages.groups.popular', 'Popular')}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="discover" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <TabsContent value="discover" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <GroupFilters
               searchQuery={searchQuery} onSearchChange={setSearchQuery}
               activeFilters={activeFilters} onFilterChange={setActiveFilters}
@@ -135,7 +135,7 @@ export default function Groups() {
             )}
           </TabsContent>
 
-          <TabsContent value="my-groups" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <TabsContent value="my-groups" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {userGroups.length === 0 ? (
               <EmptyState
                 icon={Users}
@@ -153,10 +153,10 @@ export default function Groups() {
             )}
           </TabsContent>
 
-          <TabsContent value="popular" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <TabsContent value="popular" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <Card>
               <CardHeader>
-                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <TrendingUp style={{ height: 20, width: 20 }} />
                   Most Popular Groups
                 </CardTitle>

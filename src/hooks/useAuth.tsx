@@ -149,9 +149,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Log security event for sign-in attempt
-      console.log('Sign-in attempt for email:', email);
-      
       // Add retry logic for auth requests
       let attempts = 0;
       const maxAttempts = 3;

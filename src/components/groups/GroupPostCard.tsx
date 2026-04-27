@@ -232,7 +232,7 @@ export const GroupPostCard = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleLikeToggle}
-                  style={post.user_liked ? { color: '#ef4444' } : undefined}
+                  style={post.user_liked ? { color: 'hsl(var(--brand))' } : undefined}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Heart style={{ width: 16, height: 16, ...(post.user_liked && { fill: 'currentColor' }) }} />

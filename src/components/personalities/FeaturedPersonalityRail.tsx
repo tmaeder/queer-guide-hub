@@ -43,7 +43,7 @@ function FeaturedItem({ p }: { p: Personality }) {
           height: 160,
           borderRadius: '50%',
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(219,39,119,0.25) 0%, rgba(245,158,11,0.25) 100%)',
+          background: 'linear-gradient(135deg, hsl(var(--brand) / 0.25) 0%, hsl(var(--brand) / 0.15) 100%)',
           border: 2,
           borderColor: 'brand.main',
           display: 'flex',
@@ -115,7 +115,7 @@ export function FeaturedPersonalityRail() {
   return (
     <Box sx={{ mb: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-        <Star size={18} style={{ color: '#DB2777' }} fill="#DB2777" aria-hidden="true" />
+        <Star size={18} style={{ color: 'hsl(var(--brand))' }} fill="hsl(var(--brand))" aria-hidden="true" />
         <Typography
           component="h2"
           sx={{

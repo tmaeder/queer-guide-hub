@@ -114,7 +114,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
           width: '100%',
           pt: '133.33%',
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(219,39,119,0.18) 0%, rgba(245,158,11,0.18) 100%)',
+          background: 'linear-gradient(135deg, hsl(var(--brand) / 0.18) 0%, hsl(var(--brand) / 0.10) 100%)',
         }}
       >
         {showImage ? (
@@ -188,7 +188,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
               userSelect: 'none',
             }}
           >
-            <Star size={12} fill="#DB2777" color="#DB2777" aria-hidden="true" />
+            <Star size={12} fill="hsl(var(--brand))" color="hsl(var(--brand))" aria-hidden="true" />
             <span>Featured</span>
           </Box>
         )}

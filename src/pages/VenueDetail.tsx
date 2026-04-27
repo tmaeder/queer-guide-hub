@@ -281,7 +281,7 @@ export default function VenueDetail() {
         </LocalizedLink>
         {countryName && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
             {countryLink ? (
               <LocalizedLink to={countryLink} style={{ textDecoration: 'none' }}>
                 <Typography
@@ -301,7 +301,7 @@ export default function VenueDetail() {
         )}
         {cityName && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
             {cityLink ? (
               <LocalizedLink to={cityLink} style={{ textDecoration: 'none' }}>
                 <Typography
@@ -319,7 +319,7 @@ export default function VenueDetail() {
             )}
           </>
         )}
-        <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+        <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {venue.name}
         </Typography>
@@ -420,7 +420,7 @@ export default function VenueDetail() {
             )}
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-            <MapPin style={{ width: 14, height: 14, color: '#9ca3af', flexShrink: 0 }} />
+            <MapPin style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
             <Typography variant="body2" color="text.secondary">
               {cityLink ? (
                 <LocalizedLink to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
@@ -922,6 +922,7 @@ export default function VenueDetail() {
                                   width: 13,
                                   height: 13,
                                   fill: i < review.rating ? 'currentColor' : 'none',
+                                  // TODO(polish): no token match — star rating amber/gray
                                   color: i < review.rating ? '#f59e0b' : '#d1d5db',
                                 }}
                               />

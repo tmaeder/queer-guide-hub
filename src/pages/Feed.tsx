@@ -77,7 +77,7 @@ export default function Feed() {
               </Card>
               <Card>
                 <CardContent style={{ padding: 16, textAlign: 'center' }}>
-                  <Heart style={{ height: 24, width: 24, color: '#ef4444', margin: '0 auto 8px' }} />
+                  <Heart style={{ height: 24, width: 24, color: 'hsl(var(--brand))', margin: '0 auto 8px' }} />
                   <Typography variant="h5" sx={{ fontWeight: 700 }}>
                     {posts.reduce((sum, post) => sum + (post.likes_count || 0), 0)}
                   </Typography>
@@ -86,7 +86,7 @@ export default function Feed() {
               </Card>
               <Card>
                 <CardContent style={{ padding: 16, textAlign: 'center' }}>
-                  <MessageCircle style={{ height: 24, width: 24, color: '#3b82f6', margin: '0 auto 8px' }} />
+                  <MessageCircle style={{ height: 24, width: 24, color: 'hsl(var(--foreground))', margin: '0 auto 8px' }} />
                   <Typography variant="h5" sx={{ fontWeight: 700 }}>
                     {posts.reduce((sum, post) => sum + (post.comments_count || 0), 0)}
                   </Typography>

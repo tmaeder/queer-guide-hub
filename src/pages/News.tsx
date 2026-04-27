@@ -13,6 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { Newspaper, Search, Grid3X3, List, SortAsc, Filter, X, TrendingUp, ChevronLeft, ChevronRight, LayoutList, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
+
+type FeaturedArticle = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -75,7 +78,7 @@ export default function News() {
     getTrendingTags,
     loadingTimedOut
   } = useNews();
-  const [featuredArticles, setFeaturedArticles] = useState<Record<string, unknown>[]>([]);
+  const [featuredArticles, setFeaturedArticles] = useState<FeaturedArticle[]>([]);
   const [trendingTags, setTrendingTags] = useState<{ tag: string; count: number; }[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState('date-desc');
@@ -362,7 +365,7 @@ export default function News() {
                   variant={activeCategory === cat.slug ? 'default' : 'outline'}
                   style={{
                     cursor: 'pointer', whiteSpace: 'nowrap', padding: '6px 14px', fontSize: '0.8rem',
-                    ...(activeCategory === cat.slug ? { backgroundColor: cat.color, color: '#fff' } : {}),
+                    ...(activeCategory === cat.slug ? { backgroundColor: cat.color, color: 'hsl(var(--background))' } : {}),
                   }}
                   onClick={() => handleCategoryClick(cat.slug)}
                 >
@@ -383,20 +386,17 @@ export default function News() {
               {/* Hero featured article */}
               {featuredArticles[0] && (
                 <NewsCard
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  article={featuredArticles[0] as any}
+                  article={featuredArticles[0]}
                   variant="featured"
                   onViewArticle={handleViewArticle}
                   sourcesMap={sourcesMap}
                   categoriesMap={categoriesMap}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  tags={articleTags[(featuredArticles[0] as any).id] || []}
+                  tags={articleTags[featuredArticles[0].id] || []}
                 />
               )}
               {/* Secondary featured articles */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {featuredArticles.slice(1, 4).map((fa: any) => (
+                {featuredArticles.slice(1, 4).map((fa) => (
                   <NewsCard
                     key={fa.id}
                     article={fa}

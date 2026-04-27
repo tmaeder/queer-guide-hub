@@ -24,7 +24,7 @@ const NewsCardFixture = () => (
     <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem' }}>Sample News Headline</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Badge style={{ backgroundColor: '#1a73e8', color: '#fff' }}>Politics</Badge>
+        <Badge style={{ backgroundColor: 'hsl(var(--brand))', color: 'hsl(var(--background))' }}>Politics</Badge>
         <Badge variant="outline" style={{ fontSize: '0.75rem' }}>Source</Badge>
       </Box>
     </CardHeader>
@@ -95,6 +95,7 @@ export const NewsCard = ({
       c => c.slug === category || c.name.toLowerCase() === category.toLowerCase()
     );
     if (catEntry) return catEntry.color;
+    // TODO(polish): no token match — news category accent palette
     const fallback: Record<string, string> = {
       politics: '#3b82f6', 'human-rights': '#ef4444', entertainment: '#8b5cf6',
       culture: '#8b5cf6', health: '#10b981', sports: '#f97316', business: '#f59e0b',
@@ -154,7 +155,7 @@ export const NewsCard = ({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
           {displayCategory && (
             <Badge
-              style={{ backgroundColor: getCategoryColor(displayCategory), color: '#fff', fontSize: '0.65rem', padding: '1px 6px' }}
+              style={{ backgroundColor: getCategoryColor(displayCategory), color: 'hsl(var(--background))', fontSize: '0.65rem', padding: '1px 6px' }}
             >
               {getCategoryLabel(displayCategory)}
             </Badge>
@@ -204,7 +205,7 @@ export const NewsCard = ({
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {displayCategory && (
-              <Badge style={{ backgroundColor: getCategoryColor(displayCategory), color: '#fff' }}>
+              <Badge style={{ backgroundColor: getCategoryColor(displayCategory), color: 'hsl(var(--background))' }}>
                 {getCategoryLabel(displayCategory)}
               </Badge>
             )}
@@ -239,7 +240,7 @@ export const NewsCard = ({
       style={{
         boxShadow: 'var(--shadow-card)',
         transition: 'all 0.3s',
-        borderColor: 'rgba(var(--border-rgb, 0,0,0), 0.5)',
+        borderColor: 'hsl(var(--border))',
         cursor: 'pointer',
       }}
       onClick={() => navigate(`/news/${article.slug}`)}
@@ -290,7 +291,7 @@ export const NewsCard = ({
             <Badge
               style={{
                 backgroundColor: getCategoryColor(displayCategory),
-                color: '#ffffff', textTransform: 'capitalize',
+                color: 'hsl(var(--background))', textTransform: 'capitalize',
                 cursor: onFilterByCategory ? 'pointer' : 'default',
               }}
               onClick={(e) => { e.stopPropagation(); onFilterByCategory?.(displayCategory); }}
