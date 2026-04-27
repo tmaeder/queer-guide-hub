@@ -89,7 +89,7 @@ export function normalizeWhitespace(s: string): string {
 export function cleanTitle(raw: string): string {
   if (!raw) return ''
   let t = raw.trim()
-  t = t.replace(/^\[?(semi-satire|satire|parody|sponsored|advertorial)\]?\s*[:\-]?\s*/i, '')
+  t = t.replace(/^\[?(semi-satire|satire|parody|sponsored|advertorial)\]?\s*[:-]?\s*/i, '')
   t = t.replace(/\s+\|\s+[^|]+$/, '') // strip trailing " | Source Name"
   t = t.replace(/\s+[—–-]\s+[^—–-]+$/, '') // strip trailing " — Source"
   t = t.replace(/\s+/g, ' ').trim()
