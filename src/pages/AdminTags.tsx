@@ -39,6 +39,7 @@ import { TagImageUpload } from '@/components/admin/TagImageUpload';
 import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
 import BatchAutoTagDialog from '@/components/admin/BatchAutoTagDialog';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
+import { normalizeTagName } from '@/utils/tagNormalization';
 import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
@@ -88,7 +89,7 @@ export default function AdminTags() {
     e.preventDefault();
     try {
       const cleanData = {
-        name: formData.name.trim(),
+        name: normalizeTagName(formData.name),
         category: formData.category?.trim() || null,
         description: formData.description?.trim() || null,
         image_url: formData.image_url || null,
