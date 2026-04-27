@@ -4,8 +4,7 @@ import { CheckCircle2, Download, Puzzle, Wand2, ShieldCheck, Bug } from "lucide-
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
 
-const RELEASE_ZIP_URL =
-  "https://github.com/tmaeder/queer-guide-search/releases/latest/download/queer-guide-extension.zip";
+const RELEASE_ZIP_URL = "/extension/queer-guide-extension.zip";
 const DEV_BUILD_DOC =
   "https://github.com/tmaeder/queer-guide-search/tree/main/extension#build--install-developer-mode";
 
