@@ -177,6 +177,21 @@ Deno.serve(async (req) => {
         if (!n.lgbti_connection)       errors.push('E_NO_LGBTI_CONNECTION')
         if (!n.wikidata_qid)           warnings.push('W_NO_WIKIDATA_QID')
 
+        // Entity-type sanity check: reject rows that are clearly not persons.
+        // A previous CSV upload routed 10k venues/glossary/junk through this
+        // validator. The classifier was too lenient because rows had a
+        // pre-set lgbti_connection and just collected warnings. Hard-reject
+        // when name/bio match venue/place language AND no person markers
+        // (birth/death/qid/profession) are present. (Issue #113)
+        const personMarker = !!(n.birth_date || n.death_date || n.wikidata_qid || (n.profession && String(n.profession).trim()))
+        if (!personMarker) {
+          const haystack = `${name} ${String(n.bio ?? '')} ${String(n.description ?? '')}`.toLowerCase()
+          const looksLikePlace = /\b(bar|club|sauna|hotel|hostel|restaurant|cafe|café|bistro|cabaret|nightclub|disco|spa|gym|venue|store|shop|pride|center|centre|pub|tavern|bathhouse|brasserie|kneipe|gasthof|gasthaus|pizzeria|kebab|grill|salon|studio|boutique|kino|theatre|theater|gallery|library|bookshop|bookstore|cruise|cruising|darkroom|dance ?floor|drag show|karaoke|happy hour|entrance fee|located in|located at|located on|opening hours|open from)\b/.test(haystack)
+          const looksLikeJunk = /^[\d\s]+[a-z]?$/i.test(name) || /^[A-Z0-9]{2,4}\s+[A-Z0-9]{2,4}$/.test(name) || name.length <= 2
+          if (looksLikePlace) errors.push('E_LIKELY_NOT_PERSON_VENUE')
+          if (looksLikeJunk)  errors.push('E_LIKELY_NOT_PERSON_JUNK')
+        }
+
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 40)
       } else if (type === 'event' || item.target_table === 'events') {
         // Event-specific validation: title, dates, location, time sanity
