@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const _pipelineRunId = body.pipeline_run_id as string
+    const pipelineRunId = body.pipeline_run_id as string | undefined
     const entityType    = body.entityType as string
     const batchSize     = body.batch_size || 50
     const dryRun        = body.dry_run || false
@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
+    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (entityType)    query = query.eq('entity_type', entityType)
 
     const { data: items, error } = await query
