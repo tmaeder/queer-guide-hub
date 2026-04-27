@@ -23,10 +23,13 @@ const CF_VISION_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUN
 
 interface AnalyzeRequest {
   image_url?: string
+  image_urls?: string[]
   text?: string
   hint_city?: string
   hint_country?: string
 }
+
+const MAX_IMAGES_PER_SCAN = 5
 
 interface ExtractedField {
   value: unknown
@@ -508,29 +511,38 @@ serve(async (req) => {
     if (!withinLimit) return errorResponse('Rate limit exceeded (20 scans/hour)', 429)
 
     // Parse request
-    const { image_url, text, hint_city, hint_country }: AnalyzeRequest = await req.json()
-    if (!image_url && !text) return errorResponse('Either image_url or text is required', 400)
+    const { image_url, image_urls, text, hint_city, hint_country }: AnalyzeRequest = await req.json()
+    const urls: string[] = (Array.isArray(image_urls) ? image_urls : [])
+      .concat(image_url ? [image_url] : [])
+      .filter((u, i, arr) => typeof u === 'string' && u.length > 0 && arr.indexOf(u) === i)
+      .slice(0, MAX_IMAGES_PER_SCAN)
+    if (urls.length === 0 && !text) return errorResponse('image_url, image_urls, or text is required', 400)
 
-    const isTextMode = !!text && !image_url
-    console.log(`Analyzing flyer for user ${user.id} (${isTextMode ? 'text' : 'image'} mode)`)
+    const isTextMode = !!text && urls.length === 0
+    console.log(`Analyzing flyer for user ${user.id} (${isTextMode ? 'text' : `image x${urls.length}`} mode)`)
 
     // Step 1: Get content for structuring
     let contentForStructuring: string
 
     if (isTextMode) {
-      // Text mode — skip vision, use extracted text directly
       contentForStructuring = text!
       console.log(`Text input length: ${contentForStructuring.length}`)
     } else {
-      // Image mode — fetch + vision
-      console.log('Fetching image...')
-      const imageBase64 = await fetchImageAsBase64(image_url!)
-      console.log(`Image fetched, base64 length: ${imageBase64.length}`)
-
       console.log('Pass 1: CF AI Vision analysis...')
       await ensureMetaLicense(cfToken)
-      contentForStructuring = await visionDescribe(imageBase64, cfToken)
-      console.log('Vision description:', contentForStructuring.slice(0, 200))
+      const descriptions: string[] = []
+      for (let i = 0; i < urls.length; i++) {
+        try {
+          const b64 = await fetchImageAsBase64(urls[i])
+          const desc = await visionDescribe(b64, cfToken)
+          descriptions.push(urls.length > 1 ? `--- IMAGE ${i + 1}/${urls.length} ---\n${desc}` : desc)
+        } catch (e) {
+          console.error(`Vision failed for image ${i + 1}:`, e)
+          descriptions.push(`--- IMAGE ${i + 1}/${urls.length} (failed) ---`)
+        }
+      }
+      contentForStructuring = descriptions.join('\n\n')
+      console.log('Combined vision description length:', contentForStructuring.length)
     }
 
     // Step 2: gpt-4o-mini — structure into JSON (multi-item)
@@ -595,10 +607,11 @@ serve(async (req) => {
       .from('flyer_scans')
       .insert({
         user_id: user.id,
-        image_url: image_url || `text://${text!.slice(0, 60)}`,
+        image_url: urls[0] || `text://${text!.slice(0, 60)}`,
         detected_type: primaryItem.detected_type,
         raw_extraction: {
           vision_description: isTextMode ? null : contentForStructuring,
+          image_urls: urls,
           structured: extraction,
         },
         matched_venue_id: primaryItem.matches.venue_candidates[0]?.id || null,
@@ -636,6 +649,12 @@ serve(async (req) => {
           data:          { ...flat, _source: 'flyer_scan', _scan_id: scanRow.id },
           submitted_by:  user.id,
           flyer_scan_id: scanRow.id,
+          platform:      isTextMode ? 'manual' : 'flyer',
+          sub_source_type: isTextMode ? 'manual' : 'upload',
+          media_urls:    urls.length > 0 ? urls : null,
+          vision_summary: isTextMode ? null : contentForStructuring.slice(0, 8000),
+          raw_text:      extraction.raw_text || null,
+          media_processing_status: urls.length > 0 ? 'done' : 'not_applicable',
         })
         if (subErr) console.error('Failed to create community_submission:', subErr.message)
       }
