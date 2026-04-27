@@ -1,9 +1,8 @@
 /**
  * Service worker — message bus between popup and content script, plus the
- * OAuth/magic-link redirect handler. Most logic lives in shared/, this file
- * just wires Chrome APIs together.
+ * web→extension auth bridge.
  */
-import { exchangeCodeForSession } from "../shared/auth";
+import { persistSharedSession } from "../shared/auth";
 import type { DetectedItem } from "../shared/types";
 
 interface ExtractResult {
@@ -16,7 +15,7 @@ const lastResults = new Map<number, ExtractResult>();
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === "qg:extracted" && sender.tab?.id != null) {
     lastResults.set(sender.tab.id, { items: msg.items ?? [], error: msg.error });
-    return; // no response
+    return;
   }
   if (msg?.type === "qg:get-results") {
     chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
@@ -24,10 +23,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (tabId == null) return sendResponse({ items: [] });
       sendResponse(lastResults.get(tabId) ?? { items: [] });
     });
-    return true; // async response
+    return true;
   }
   if (msg?.type === "qg:extract") {
     runExtraction(msg.mode === "manual" ? "selection" : "auto").then(sendResponse);
+    return true;
+  }
+  if (msg?.type === "qg:store-session" && msg.session) {
+    persistSharedSession(msg.session)
+      .then(() => sendResponse({ ok: true }))
+      .catch((err) => sendResponse({ ok: false, error: String(err) }));
     return true;
   }
   return undefined;
@@ -47,15 +52,16 @@ async function runExtraction(mode: "auto" | "selection"): Promise<{ ok: boolean;
   return { ok: true };
 }
 
-// Magic-link redirect handling: Supabase redirects to a queer.guide URL with
-// `?code=…` after the user clicks the email link. The web app's auth-callback
-// page posts the code into this extension via chrome.runtime.sendMessage from
-// an externally_connectable origin (configured per deployment) OR — simpler
-// path used here — the user copy-pastes the code from the redirect page back
-// into the popup.
+// External messages from queer.guide (AuthCallback magic-link bridge) — kept
+// for backwards compat with the magic-link flow, though the page-bridge
+// content-script flow above is now the primary path.
 chrome.runtime.onMessageExternal.addListener((msg, _sender, sendResponse) => {
-  if (msg?.type === "qg:auth-code" && typeof msg.code === "string") {
-    exchangeCodeForSession(msg.code)
+  if (msg?.type === "qg:auth" && (msg.access_token || msg.code)) {
+    persistSharedSession({
+      access_token: msg.access_token,
+      refresh_token: msg.refresh_token,
+      expires_in: msg.expires_in,
+    })
       .then(() => sendResponse({ ok: true }))
       .catch((err) => sendResponse({ ok: false, error: String(err) }));
     return true;

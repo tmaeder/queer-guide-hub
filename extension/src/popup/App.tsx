@@ -2,10 +2,8 @@ import { useEffect, useState } from "react";
 import { submitItem } from "../shared/api";
 import {
   clearSession,
-  exchangeCodeForSession,
   getValidAccessToken,
   loadSession,
-  sendMagicLink,
 } from "../shared/auth";
 import type { AuthSession, DetectedItem } from "../shared/types";
 import { ItemCard } from "./ItemCard";
@@ -92,61 +90,36 @@ export function App() {
 }
 
 function Login({ onSignedIn }: { onSignedIn: (s: AuthSession) => void }) {
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [stage, setStage] = useState<"email" | "code">("email");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function doSendLink() {
-    setBusy(true); setErr(null);
-    try {
-      const extId = chrome.runtime.id;
-      const redirect = `https://queer.guide/auth/callback?ext=${encodeURIComponent(extId)}`;
-      await sendMagicLink(email, redirect);
-      setStage("code");
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "failed");
-    } finally { setBusy(false); }
-  }
-
-  async function doExchange() {
-    setBusy(true); setErr(null);
-    try {
-      const session = await exchangeCodeForSession(code.trim());
-      onSignedIn(session);
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "failed");
-    } finally { setBusy(false); }
-  }
+  // Poll chrome.storage every 800ms — when the user signs in on queer.guide
+  // the content-script bridge writes a session, and we want the popup to
+  // pick it up without needing a manual reopen.
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | null = null;
+    timer = setInterval(async () => {
+      const s = await loadSession();
+      if (s) {
+        if (timer) clearInterval(timer);
+        onSignedIn(s);
+      }
+    }, 800);
+    return () => { if (timer) clearInterval(timer); };
+  }, [onSignedIn]);
 
   return (
     <div className="qg-login">
       <h2 style={{ margin: 0 }}>Sign in to queer.guide</h2>
-      {stage === "email" ? (
-        <>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button className="primary" disabled={busy || !email.includes("@")} onClick={doSendLink}>
-            {busy ? "sending…" : "send magic link"}
-          </button>
-        </>
-      ) : (
-        <>
-          <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
-            We mailed you a link. Open it on this device — the redirect page will show a one-time code. Paste it here.
-          </p>
-          <input placeholder="paste code" value={code} onChange={(e) => setCode(e.target.value)} />
-          <button className="primary" disabled={busy || !code} onClick={doExchange}>
-            {busy ? "verifying…" : "verify"}
-          </button>
-        </>
-      )}
-      {err && <div className="qg-toast err">{err}</div>}
+      <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
+        Sign in on the website — the extension picks up your session automatically.
+      </p>
+      <button
+        className="primary"
+        onClick={() => chrome.tabs.create({ url: "https://queer.guide/extension" })}
+      >
+        Open queer.guide
+      </button>
+      <p style={{ margin: 0, fontSize: 11, color: "var(--muted)" }}>
+        Already signed in? Visit <code>queer.guide/extension</code> and click Connect.
+      </p>
     </div>
   );
 }

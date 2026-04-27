@@ -59,6 +59,48 @@ export async function clearSession(): Promise<void> {
   await chrome.storage.local.remove(STORAGE_KEY);
 }
 
+/**
+ * Persist a session forwarded from queer.guide (web bridge or AuthCallback).
+ * Tokens are stored as-is; the Supabase user id is decoded out of the JWT
+ * `sub` claim so the popup can show "Signed in as <email>" without an extra
+ * /auth/v1/user round-trip.
+ */
+export async function persistSharedSession(input: {
+  access_token: string;
+  refresh_token: string;
+  expires_in?: number;
+  user?: { id?: string; email?: string };
+}): Promise<AuthSession> {
+  const claims = decodeJwtClaims(input.access_token);
+  const session: AuthSession = {
+    access_token: input.access_token,
+    refresh_token: input.refresh_token,
+    expires_at:
+      typeof claims.exp === "number"
+        ? claims.exp
+        : Math.floor(Date.now() / 1000) + (input.expires_in ?? 3600),
+    user: {
+      id: input.user?.id ?? (typeof claims.sub === "string" ? claims.sub : ""),
+      email:
+        input.user?.email ??
+        (typeof claims.email === "string" ? claims.email : undefined),
+    },
+  };
+  await chrome.storage.local.set({ [STORAGE_KEY]: session });
+  return session;
+}
+
+function decodeJwtClaims(token: string): Record<string, unknown> {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return {};
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch {
+    return {};
+  }
+}
+
 async function persist(raw: unknown): Promise<AuthSession> {
   const r = raw as {
     access_token: string;
