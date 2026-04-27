@@ -17,24 +17,43 @@ export function App() {
   const [toast, setToast] = useState<Toast>(null);
 
   useEffect(() => {
+    let cancelled = false;
     void (async () => {
       setSession(await loadSession());
-      const result = await chrome.runtime.sendMessage({ type: "qg:get-results" });
-      if (result?.items?.length) {
-        setItems(result.items as DetectedItem[]);
+
+      // Cache hit?
+      const cached = await chrome.runtime.sendMessage({ type: "qg:get-results" });
+      if (cancelled) return;
+      if (cached?.items?.length) {
+        setItems(cached.items as DetectedItem[]);
         setLoading(false);
-      } else {
-        // No cached results — trigger a fresh extraction.
-        const r = await chrome.runtime.sendMessage({ type: "qg:extract", mode: "auto" });
-        if (!r?.ok) setToast({ kind: "err", msg: r?.error ?? "extraction failed" });
-        // Background pushes results back; poll briefly.
-        setTimeout(async () => {
-          const r2 = await chrome.runtime.sendMessage({ type: "qg:get-results" });
-          setItems((r2?.items as DetectedItem[]) ?? []);
-          setLoading(false);
-        }, 600);
+        return;
       }
+
+      // Kick off extraction in parallel, don't await.
+      void chrome.runtime.sendMessage({ type: "qg:extract", mode: "auto" });
+
+      // Poll every 80ms until items arrive or timeout (2s). The content
+      // script normally finishes in 50-150ms; the old fixed 600ms wait was
+      // pure overhead.
+      const start = Date.now();
+      while (!cancelled && Date.now() - start < 2000) {
+        await new Promise((r) => setTimeout(r, 80));
+        const r2 = await chrome.runtime.sendMessage({ type: "qg:get-results" });
+        if (cancelled) return;
+        if (r2?.items?.length) {
+          setItems(r2.items as DetectedItem[]);
+          setLoading(false);
+          return;
+        }
+        if (r2?.error) {
+          setToast({ kind: "err", msg: r2.error });
+          break;
+        }
+      }
+      if (!cancelled) setLoading(false);
     })();
+    return () => { cancelled = true; };
   }, []);
 
   async function onSubmit(item: DetectedItem, edited: Record<string, unknown>) {
