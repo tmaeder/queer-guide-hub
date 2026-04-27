@@ -22,3 +22,9 @@ SUBMISSION_RATE_PER_MIN = "10"
 
 [observability]
 enabled = true
+
+# Custom domain — added via dashboard. Listed here for reproducibility;
+# wrangler honours `routes` on subsequent deploys.
+[[routes]]
+pattern = "submit.queer.guide"
+custom_domain = true
