@@ -1,6 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
