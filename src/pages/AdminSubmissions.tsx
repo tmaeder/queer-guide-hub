@@ -178,6 +178,7 @@ function SubmissionsCore() {
         .single();
       if (insertError) throw insertError;
 
+      const oldStatus = submission.status;
       const { error: updateError } = await supabase
         .from('community_submissions' as const)
         .update({
@@ -190,6 +191,25 @@ function SubmissionsCore() {
         })
         .eq('id', submission.id);
       if (updateError) throw updateError;
+
+      // Audit trail — append-only, RLS-gated to admins/mods.
+      if (oldStatus !== 'approved' && user?.id) {
+        const auditRows = [
+          { submission_id: submission.id, actor_id: user.id, field: 'status',
+            old_value: oldStatus as unknown, new_value: 'approved' as unknown },
+          { submission_id: submission.id, actor_id: user.id, field: 'promoted_to',
+            old_value: null,
+            new_value: { id: promoted.id, table: config.targetTable } as unknown },
+        ];
+        if (reviewerNotes) {
+          auditRows.push({ submission_id: submission.id, actor_id: user.id,
+            field: 'review_note', old_value: null, new_value: reviewerNotes as unknown });
+        }
+        const { error: auditErr } = await supabase
+          .from('community_submissions_audit')
+          .insert(auditRows);
+        if (auditErr) console.error('Audit write failed:', auditErr.message);
+      }
 
       toast({
         title: 'Submission approved',
