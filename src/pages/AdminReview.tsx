@@ -76,6 +76,7 @@ const AdminSubmissionsContent = lazy(() =>
   })),
 );
 const NewsQualityReviewTab = lazy(() => import('@/components/admin/NewsQualityReviewTab'));
+const EntityLinkReviewTab = lazy(() => import('@/components/admin/EntityLinkReviewTab'));
 
 const VALID_TABS = [
   'staging',
@@ -86,6 +87,7 @@ const VALID_TABS = [
   'duplicates',
   'automation',
   'news-quality',
+  'entity-links',
 ] as const;
 type TabId = (typeof VALID_TABS)[number];
 
@@ -200,6 +202,21 @@ export default function AdminReview() {
         .from('news_articles')
         .select('id', { count: 'exact', head: true })
         .eq('quality_status', 'review');
+      if (error) return 0;
+      return count ?? 0;
+    },
+    refetchInterval: 60_000,
+  });
+
+  const { data: entityReviewCount = 0 } = useQuery({
+    queryKey: ['entity-link-review-count'],
+    queryFn: async () => {
+      // entity_link_review isn't in the generated types yet — go through any.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { count, error } = await (supabase as any)
+        .from('entity_link_review')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending');
       if (error) return 0;
       return count ?? 0;
     },
@@ -378,7 +395,7 @@ export default function AdminReview() {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(8, 1fr)' },
+          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(9, 1fr)' },
           gap: 2,
           mb: 3,
         }}
@@ -447,6 +464,14 @@ export default function AdminReview() {
           active={activeTab === 'news-quality'}
           onClick={() => handleTabChange('news-quality')}
         />
+        <StatCard
+          icon={GitMerge}
+          label="Entity Links"
+          count={entityReviewCount}
+          color="#0ea5e9"
+          active={activeTab === 'entity-links'}
+          onClick={() => handleTabChange('entity-links')}
+        />
       </Box>
 
       {/* Tab content — navigation via stat cards above */}
@@ -497,6 +522,12 @@ export default function AdminReview() {
         <TabsContent value="news-quality">
           <Suspense fallback={<Loading />}>
             <NewsQualityReviewTab />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="entity-links">
+          <Suspense fallback={<Loading />}>
+            <EntityLinkReviewTab />
           </Suspense>
         </TabsContent>
       </Tabs>
