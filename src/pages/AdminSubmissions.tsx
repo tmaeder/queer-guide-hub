@@ -23,10 +23,11 @@ import { submissionRegistry } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { SubmissionMediaSection } from '@/components/admin/SubmissionMediaSection';
+import { SubmissionsKanban } from '@/components/admin/SubmissionsKanban';
 import { ActivityLog } from '@/components/admin/feedback/ActivityLog';
 import { useFeedbackAudit } from '@/hooks/useFeedbackAudit';
 import { useFeedbackAdmins, buildAdminMap } from '@/hooks/useFeedbackAdmins';
-import { CheckCircle, XCircle, Eye, ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, ArrowLeft, ThumbsUp, ThumbsDown, LayoutGrid, Table as TableIcon } from 'lucide-react';
 
 interface SubmissionRow {
   id: string;
@@ -157,6 +158,7 @@ function SubmissionsCore() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [reviewerNotes, setReviewerNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [view, setView] = useState<'table' | 'kanban'>('table');
 
   const doRefresh = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['admin-table', 'community_submissions'] });
@@ -436,9 +438,38 @@ function SubmissionsCore() {
     [columns],
   );
 
+  const openReview = useCallback((row: SubmissionRow) => {
+    setSelectedSubmission(row);
+    setReviewerNotes(row.reviewer_notes || '');
+    setDialogOpen(true);
+  }, []);
+
   return (
     <>
-      <AdminDataTable config={tableConfig} />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1.5, gap: 0.5 }}>
+        <Button
+          variant={view === 'table' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('table')}
+          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <TableIcon style={{ width: 14, height: 14 }} /> Table
+        </Button>
+        <Button
+          variant={view === 'kanban' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('kanban')}
+          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <LayoutGrid style={{ width: 14, height: 14 }} /> Kanban
+        </Button>
+      </Box>
+
+      {view === 'table' ? (
+        <AdminDataTable config={tableConfig} />
+      ) : (
+        <SubmissionsKanban onCardClick={openReview} />
+      )}
 
       {/* Detail / Review Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
