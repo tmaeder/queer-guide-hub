@@ -44,7 +44,7 @@ async function processJob(
 ): Promise<{ status: 'completed' | 'failed' | 'skipped'; decision?: QualityDecision; error?: string; mutated?: boolean }> {
   const { data: article, error: artErr } = await supabase
     .from('news_articles')
-    .select('id, title, content, image_url, source_url, moderation_status')
+    .select('id, title, content, image_url, url, quality_status')
     .eq('id', job.article_id)
     .single()
   if (artErr || !article) return { status: 'skipped', error: artErr?.message ?? 'article_missing' }
@@ -57,7 +57,7 @@ async function processJob(
   const userPrompt = buildQualityUserPrompt({
     title: sani.title,
     body: sani.content,
-    url: article.source_url ?? undefined,
+    url: article.url ?? undefined,
     imageUrl: article.image_url ?? undefined,
     imageProbe: imageProbe.url ? imageProbe : undefined,
     alreadyRemoved: sani.removedArtifacts,
@@ -92,11 +92,6 @@ async function processJob(
     p_pipeline_version: QUALITY_PIPELINE_VERSION,
   })
 
-  const newStatus =
-    gate.status === 'rejected' ? 'archived'
-    : gate.status === 'review' ? 'pending'
-    : article.moderation_status
-
   const { error: upErr } = await supabase
     .from('news_articles')
     .update({
@@ -111,7 +106,6 @@ async function processJob(
       quality_status: gate.status,
       last_quality_run_at: new Date().toISOString(),
       auto_publish_blocked_reasons: gate.blockedReasons,
-      moderation_status: newStatus,
     })
     .eq('id', article.id)
   if (upErr) return { status: 'failed', error: upErr.message }

@@ -56,8 +56,7 @@ interface ArticleRow {
   title: string;
   content: string | null;
   image_url: string | null;
-  source_url: string | null;
-  moderation_status: string | null;
+  url: string | null;
   quality_status: string | null;
   quality_score: number | null;
   relevance_score: number | null;
@@ -91,7 +90,7 @@ export default function NewsQualityReviewTab() {
     queryFn: async () => {
       const { data, error: e } = await sb.from('news_articles')
         .select(
-          'id,title,content,image_url,source_url,moderation_status,quality_status,quality_score,relevance_score,sentiment,quality_decision,auto_publish_blocked_reasons,last_quality_run_at'
+          'id,title,content,image_url,url,quality_status,quality_score,relevance_score,sentiment,quality_decision,auto_publish_blocked_reasons,last_quality_run_at'
         )
         .in('quality_status', STATUSES as unknown as string[])
         .order('last_quality_run_at', { ascending: false, nullsFirst: false })
@@ -109,7 +108,6 @@ export default function NewsQualityReviewTab() {
           title: d?.title || row.title,
           content: d?.cleanedBody || row.content,
           quality_status: 'passed',
-          moderation_status: 'approved',
           auto_publish_blocked_reasons: [],
         })
         .eq('id', row.id);
@@ -126,7 +124,7 @@ export default function NewsQualityReviewTab() {
   const markIrrelevant = useMutation({
     mutationFn: async (row: ArticleRow) => {
       const { error: e } = await sb.from('news_articles')
-        .update({ quality_status: 'rejected', moderation_status: 'archived' })
+        .update({ quality_status: 'rejected' })
         .eq('id', row.id);
       if (e) throw e;
     },
@@ -141,7 +139,7 @@ export default function NewsQualityReviewTab() {
   const revert = useMutation({
     mutationFn: async (row: ArticleRow) => {
       const { data: orig, error: e } = await sb.from('news_articles_originals')
-        .select('original_title, original_content, original_image_url, original_status')
+        .select('original_title, original_content, original_image_url')
         .eq('article_id', row.id)
         .maybeSingle();
       if (e) throw e;
@@ -151,7 +149,6 @@ export default function NewsQualityReviewTab() {
           title: orig.original_title,
           content: orig.original_content,
           image_url: orig.original_image_url,
-          moderation_status: orig.original_status,
           quality_status: 'pending',
         })
         .eq('id', row.id);
