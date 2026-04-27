@@ -73,6 +73,9 @@ export const useNews = () => {
         `,
         )
         .not('published_at', 'is', null)
+        // Hide articles flagged or rejected by the news quality pipeline.
+        // Legacy rows (quality_status NULL) and approved ones (passed) stay visible.
+        .or('quality_status.is.null,quality_status.eq.passed')
         .order(sortField, { ascending: sortOrder });
 
       if (filters?.cityIds && filters.cityIds.length > 0) {
@@ -235,6 +238,7 @@ export const useNews = () => {
         )
         .eq('is_featured', true)
         .not('published_at', 'is', null)
+        .or('quality_status.is.null,quality_status.eq.passed')
         .order('published_at', { ascending: false })
         .limit(5);
 

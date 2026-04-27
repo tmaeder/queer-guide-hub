@@ -96,15 +96,23 @@ export default function NewsDetail() {
         });
 
       try {
+        // Hide articles flagged or rejected by the news quality pipeline.
+        // Legacy rows (quality_status NULL) and approved ones (passed) stay visible.
         let { data, error } = await supabase
           .from('news_articles')
           .select('*')
           .eq('slug', slug)
+          .or('quality_status.is.null,quality_status.eq.passed')
           .maybeSingle();
 
         // Fall back to ID lookup for backwards compatibility
         if (!data && !error) {
-          const fallback = await supabase.from('news_articles').select('*').eq('id', slug).maybeSingle();
+          const fallback = await supabase
+            .from('news_articles')
+            .select('*')
+            .eq('id', slug)
+            .or('quality_status.is.null,quality_status.eq.passed')
+            .maybeSingle();
           data = fallback.data;
           error = fallback.error;
         }
