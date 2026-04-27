@@ -45,6 +45,7 @@ export function NewsSourcesManager() {
     source_type: "",
     fetch_frequency: 120,
     is_active: true,
+    auto_publish: false,
     keywords: [] as string[]
   });
 
@@ -141,6 +142,7 @@ export function NewsSourcesManager() {
       source_type: "",
       fetch_frequency: 120,
       is_active: true,
+      auto_publish: false,
       keywords: []
     });
     setEditingSource(null);
@@ -155,6 +157,7 @@ export function NewsSourcesManager() {
       source_type: source.source_type,
       fetch_frequency: source.fetch_frequency,
       is_active: source.is_active,
+      auto_publish: (source as NewsSource & { auto_publish?: boolean }).auto_publish ?? false,
       keywords: source.keywords || []
     });
     setDialogOpen(true);
@@ -402,6 +405,18 @@ export function NewsSourcesManager() {
                 </Box>
               </Box>
 
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Switch
+                  id="auto_publish"
+                  checked={formData.auto_publish}
+                  onCheckedChange={(checked) => setFormData({...formData, auto_publish: checked})}
+                />
+                <Label htmlFor="auto_publish">Auto-publish (skip review queue)</Label>
+                <Typography variant="caption" sx={{ color: 'var(--muted-foreground)', ml: 1 }}>
+                  Trusted sources only — new sources are forced through review for the first 24 hours regardless.
+                </Typography>
+              </Box>
+
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
@@ -476,6 +491,12 @@ export function NewsSourcesManager() {
                           <Badge variant={source.is_active ? "default" : "secondary"}>
                             {source.is_active ? 'Active' : 'Inactive'}
                           </Badge>
+
+                          {(source as NewsSource & { auto_publish?: boolean }).auto_publish && (
+                            <Badge variant="default" style={{ background: '#b60d3d' }}>
+                              Auto-publish
+                            </Badge>
+                          )}
 
                           <Badge variant="outline">
                             {source.category}

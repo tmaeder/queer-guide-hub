@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Edit,
   Eye,
@@ -55,6 +55,11 @@ import {
 import { format } from 'date-fns';
 import { CMSAdvancedFilters } from './CMSAdvancedFilters';
 import { useCMSFilters } from '@/hooks/useCMSFilters';
+import { useCMSShortcuts } from '@/hooks/useCMSShortcuts';
+import { getContentType } from '@/config/contentTypeRegistry';
+import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/hooks/use-toast';
 
 interface CMSListViewProps {
   data: Record<string, unknown>[];
@@ -78,6 +83,10 @@ export function CMSListView({
   onViewModeChange,
 }: CMSListViewProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState('');
+  const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
 
   const {
     filters,
@@ -128,6 +137,47 @@ export function CMSListView({
       setSelectedItems((prev) => [...prev, id]);
     } else {
       setSelectedItems((prev) => prev.filter((item) => item !== id));
+    }
+  };
+
+  useCMSShortcuts({
+    onNext: () => setFocusedIndex((i) => Math.min(i + 1, Math.max(0, filteredData.length - 1))),
+    onPrev: () => setFocusedIndex((i) => Math.max(0, i - 1)),
+  });
+
+  useEffect(() => {
+    const item = filteredData[focusedIndex];
+    if (item) rowRefs.current[item.id as string]?.scrollIntoView({ block: 'nearest' });
+  }, [focusedIndex, filteredData]);
+
+  const startInlineEdit = (item: Record<string, unknown>) => {
+    setEditingId(item.id as string);
+    setEditingValue((item.title as string) ?? '');
+  };
+
+  const saveInlineEdit = async (item: Record<string, unknown>) => {
+    const cfg = getContentType(item.content_type as string);
+    const tableName = cfg?.tableName;
+    if (!tableName) {
+      setEditingId(null);
+      return;
+    }
+    const titleField = item.content_type === 'events' ? 'title' : (cfg?.titleField ?? 'title');
+    const newVal = editingValue.trim();
+    if (!newVal || newVal === (item.title as string)) {
+      setEditingId(null);
+      return;
+    }
+    const { error } = await supabase
+      .from(tableName)
+      .update({ [titleField]: newVal })
+      .eq('id', item.id);
+    setEditingId(null);
+    if (error) {
+      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Saved' });
+      onRefresh();
     }
   };
 
@@ -295,14 +345,20 @@ export function CMSListView({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredData.map((item) => (
+                  {filteredData.map((item, idx) => (
                     <TableRow
                       key={`${item.content_type}-${item.id}`}
-                      style={
-                        selectedItems.includes(item.id)
+                      ref={(el) => {
+                        rowRefs.current[item.id as string] = el;
+                      }}
+                      style={{
+                        ...(selectedItems.includes(item.id as string)
                           ? { backgroundColor: 'rgba(0,0,0,0.03)' }
-                          : undefined
-                      }
+                          : {}),
+                        ...(idx === focusedIndex
+                          ? { outline: '2px solid var(--primary)', outlineOffset: -2 }
+                          : {}),
+                      }}
                     >
                       <TableCell>
                         <Checkbox
@@ -322,28 +378,47 @@ export function CMSListView({
                             </Avatar>
                           )}
                           <Box>
-                            <Box
-                              component="button"
-                              onClick={() => onEdit(item)}
-                              sx={{
-                                fontWeight: 500,
-                                overflow: 'hidden',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                maxWidth: 320,
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                '&:hover': { color: 'primary.main', textDecoration: 'underline' },
-                                textDecorationOffset: '4px',
-                                background: 'none',
-                                border: 'none',
-                                p: 0,
-                                font: 'inherit',
-                              }}
-                            >
-                              {item.title || 'Untitled'}
-                            </Box>
+                            {editingId === (item.id as string) ? (
+                              <Input
+                                autoFocus
+                                value={editingValue}
+                                onChange={(e) => setEditingValue(e.target.value)}
+                                onBlur={() => saveInlineEdit(item)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveInlineEdit(item);
+                                  if (e.key === 'Escape') setEditingId(null);
+                                }}
+                                style={{ height: 28, maxWidth: 320 }}
+                              />
+                            ) : (
+                              <Box
+                                component="button"
+                                onClick={() => onEdit(item)}
+                                onDoubleClick={(e) => {
+                                  e.stopPropagation();
+                                  startInlineEdit(item);
+                                }}
+                                title="Double-click to rename"
+                                sx={{
+                                  fontWeight: 500,
+                                  overflow: 'hidden',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 1,
+                                  WebkitBoxOrient: 'vertical',
+                                  maxWidth: 320,
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                                  textDecorationOffset: '4px',
+                                  background: 'none',
+                                  border: 'none',
+                                  p: 0,
+                                  font: 'inherit',
+                                }}
+                              >
+                                {(item.title as string) || 'Untitled'}
+                              </Box>
+                            )}
                             {item.description && (
                               <Typography
                                 variant="body2"
