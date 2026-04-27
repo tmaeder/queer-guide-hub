@@ -7,6 +7,7 @@ import { QUALITY_SYSTEM_PROMPT, buildQualityUserPrompt } from '../_shared/news-q
 import { resolveEntities } from '../_shared/news-quality/entity-link.ts'
 import { evaluatePublishGate } from '../_shared/news-quality/decision.ts'
 import { probeImage } from '../_shared/news-quality/image-check.ts'
+import { findReplacementImage } from '../_shared/news-quality/image-replace.ts'
 
 // Pipeline Quality Enhance (News) — AI-assisted relevance + rewrite + entity linking + image probe.
 // Reads ingestion_staging rows post-enrich, writes a QualityDecision into enriched_data + applies
@@ -84,16 +85,18 @@ Deno.serve(async (req) => {
     // Honor the kill switch — short-circuit before any LLM call.
     const { data: settings } = await supabase
       .from('news_quality_settings')
-      .select('enabled')
+      .select('enabled, image_replacement_enabled')
       .eq('id', 1)
       .maybeSingle()
-    if (settings && (settings as { enabled: boolean }).enabled === false) {
+    const cfg = (settings ?? {}) as { enabled?: boolean; image_replacement_enabled?: boolean }
+    if (cfg.enabled === false) {
       return jsonResponse({
         success: true, items: 0, items_total: items.length, items_processed: 0,
         items_succeeded: 0, items_failed: 0,
         skipped_reason: 'news_quality_disabled',
       }, 200, req)
     }
+    const imageReplacementEnabled = cfg.image_replacement_enabled === true
 
     const pools = await loadCandidatePools(supabase)
 
@@ -171,12 +174,37 @@ Deno.serve(async (req) => {
           ...orgRes.needsReview.map((r) => ({ ...r, type: 'organisation' as const })),
         ]
 
+        // Image replacement: try OG card → Unsplash when the source image fails the probe
+        // OR the LLM judged it unusable. Gated by news_quality_settings.image_replacement_enabled.
+        let replacementImage: { url: string; source: string; attribution: string | null } | null = null
+        let effectiveImageOk = imageProbe.ok && decision.imageAssessment.isUsable
+        if (
+          imageReplacementEnabled &&
+          (!imageProbe.ok || decision.imageAssessment.needsReplacement)
+        ) {
+          const replaceQuery = [decision.title || sani.title, ...(decision.tags ?? [])]
+            .filter(Boolean).join(' ').slice(0, 100)
+          const found = await findReplacementImage({
+            articleUrl: String(n.url ?? n.source_url ?? '') || undefined,
+            query: replaceQuery,
+            signal: AbortSignal.timeout(10000),
+          })
+          if (found) {
+            replacementImage = {
+              url: found.imageUrl,
+              source: found.source,
+              attribution: found.attribution,
+            }
+            effectiveImageOk = true
+          }
+        }
+
         const gate = evaluatePublishGate({
           decision,
           criticalPaywall: sani.criticalPaywall,
           truncated: sani.truncated,
           hasEntityReviewItems: allReviewItems.length > 0,
-          imageProbeOk: imageProbe.ok,
+          imageProbeOk: effectiveImageOk,
         })
 
         const enrichedData = {
@@ -191,6 +219,12 @@ Deno.serve(async (req) => {
           auto_publish: gate.autoPublish,
           auto_publish_blocked_reasons: gate.blockedReasons,
           quality_image_probe: imageProbe,
+          // Replacement (if any) — commit RPC reads top-level image_url + image_attribution.
+          ...(replacementImage ? {
+            image_url: replacementImage.url,
+            image_attribution: replacementImage.attribution,
+            quality_image_replaced: { source: replacementImage.source, replaced_at: new Date().toISOString() },
+          } : {}),
           // Top-level resolved IDs are what news_commit_staging_batch reads.
           country_ids: countryRes.linked.map((c) => c.id),
           city_ids:    cityRes.linked.map((c) => c.id),
