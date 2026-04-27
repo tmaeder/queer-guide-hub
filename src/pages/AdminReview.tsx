@@ -35,6 +35,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useReviewCounts, type ReviewCounts } from '@/hooks/useReviewCounts';
 import { useReviewBulkActions, type BulkActionType } from '@/hooks/useReviewBulkActions';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 // Lazy-load tab contents to keep initial bundle small
 const ReviewQueueEnhanced = lazy(() =>
@@ -73,6 +75,7 @@ const AdminSubmissionsContent = lazy(() =>
     default: m.AdminSubmissionsContent,
   })),
 );
+const NewsQualityReviewTab = lazy(() => import('@/components/admin/NewsQualityReviewTab'));
 
 const VALID_TABS = [
   'staging',
@@ -82,6 +85,7 @@ const VALID_TABS = [
   'tags',
   'duplicates',
   'automation',
+  'news-quality',
 ] as const;
 type TabId = (typeof VALID_TABS)[number];
 
@@ -133,7 +137,7 @@ const Loading = () => (
   </Box>
 );
 
-const TAB_COUNT_KEY: Record<TabId, keyof ReviewCounts> = {
+const TAB_COUNT_KEY: Partial<Record<TabId, keyof ReviewCounts>> = {
   staging: 'staging',
   moderation: 'moderation',
   submissions: 'submissions',
@@ -141,6 +145,7 @@ const TAB_COUNT_KEY: Record<TabId, keyof ReviewCounts> = {
   tags: 'tagSuggestions',
   duplicates: 'duplicates',
   automation: 'automation',
+  // 'news-quality' is sourced separately via newsQualityCount
 };
 
 const TAB_PRIORITY: TabId[] = [
@@ -176,7 +181,7 @@ export default function AdminReview() {
   const { user } = useAuth();
 
   const { data: counts, refetch: refetchCounts } = useReviewCounts();
-  const c = counts ?? {
+  const c: ReviewCounts = counts ?? {
     staging: 0,
     cmsReview: 0,
     moderation: 0,
@@ -184,8 +189,22 @@ export default function AdminReview() {
     tagSuggestions: 0,
     duplicates: 0,
     automation: 0,
+    feedback: 0,
     total: 0,
   };
+
+  const { data: newsQualityCount = 0 } = useQuery({
+    queryKey: ['news-quality-review-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('news_articles')
+        .select('id', { count: 'exact', head: true })
+        .eq('quality_status', 'review');
+      if (error) return 0;
+      return count ?? 0;
+    },
+    refetchInterval: 60_000,
+  });
 
   const {
     bulkDialogOpen,
@@ -200,7 +219,10 @@ export default function AdminReview() {
 
   const defaultTab = useMemo(() => {
     if (!counts) return 'staging';
-    return TAB_PRIORITY.find((t) => (counts[TAB_COUNT_KEY[t]] ?? 0) > 0) ?? 'staging';
+    return TAB_PRIORITY.find((t) => {
+      const key = TAB_COUNT_KEY[t];
+      return key ? (counts[key] ?? 0) > 0 : false;
+    }) ?? 'staging';
   }, [counts]);
 
   const activeTab = isValidTab(tabParam) ? tabParam : defaultTab;
@@ -356,7 +378,7 @@ export default function AdminReview() {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(7, 1fr)' },
+          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(8, 1fr)' },
           gap: 2,
           mb: 3,
         }}
@@ -417,6 +439,14 @@ export default function AdminReview() {
           active={activeTab === 'automation'}
           onClick={() => handleTabChange('automation')}
         />
+        <StatCard
+          icon={Sparkles}
+          label="News Quality"
+          count={newsQualityCount}
+          color="#b60d3d"
+          active={activeTab === 'news-quality'}
+          onClick={() => handleTabChange('news-quality')}
+        />
       </Box>
 
       {/* Tab content — navigation via stat cards above */}
@@ -461,6 +491,12 @@ export default function AdminReview() {
           <Suspense fallback={<Loading />}>
             <AutoModerationQueue />
             <AutomationReviewTab />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="news-quality">
+          <Suspense fallback={<Loading />}>
+            <NewsQualityReviewTab />
           </Suspense>
         </TabsContent>
       </Tabs>
