@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "queer.guide capture",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Capture venues, events, hotels, marketplace items, and news from any webpage and submit them to queer.guide.",
   "action": {
     "default_title": "queer.guide capture",
@@ -13,6 +13,9 @@
   },
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [],
+  "externally_connectable": {
+    "matches": ["https://queer.guide/*", "https://www.queer.guide/*"]
+  },
   "icons": {
     "16": "icons/icon-16.png",
     "48": "icons/icon-48.png",

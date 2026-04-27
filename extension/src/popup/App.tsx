@@ -101,7 +101,9 @@ function Login({ onSignedIn }: { onSignedIn: (s: AuthSession) => void }) {
   async function doSendLink() {
     setBusy(true); setErr(null);
     try {
-      await sendMagicLink(email, "https://queer.guide/auth/callback");
+      const extId = chrome.runtime.id;
+      const redirect = `https://queer.guide/auth/callback?ext=${encodeURIComponent(extId)}`;
+      await sendMagicLink(email, redirect);
       setStage("code");
     } catch (e) {
       setErr(e instanceof Error ? e.message : "failed");
