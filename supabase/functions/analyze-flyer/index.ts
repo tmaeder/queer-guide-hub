@@ -13,11 +13,11 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { chatCompletion } from '../_shared/openai-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
 
 const CF_ACCOUNT_ID = '7aa3765cc5f50f2b681b782eb4a8d296'
 const CF_VISION_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.2-11b-vision-instruct`
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -193,7 +193,7 @@ Rules:
 
 async function structureExtraction(
   contentText: string,
-  openaiKey: string,
+  supabase: SupabaseClient,
   isTextMode: boolean,
   hintCity?: string,
   hintCountry?: string,
@@ -207,33 +207,17 @@ async function structureExtraction(
     ? `Here is text extracted from a document:\n\n${contentText}${hintText}`
     : `Here is a detailed description of a flyer/poster image:\n\n${contentText}${hintText}`
 
-  const response = await fetch(OPENAI_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: STRUCTURING_PROMPT },
-        { role: 'user', content: userMessage },
-      ],
-      temperature: 0.1,
-      max_tokens: 4000,
-      response_format: { type: 'json_object' },
-      store: false,
-    }),
+  const result = await chatCompletion(supabase, {
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: STRUCTURING_PROMPT },
+      { role: 'user', content: userMessage },
+    ],
+    temperature: 0.1,
+    max_tokens: 4000,
+    response_format: { type: 'json_object' },
   })
-
-  if (!response.ok) {
-    const err = await response.text()
-    console.error('OpenAI structuring error:', err)
-    throw new Error(`OpenAI API error: ${response.status}`)
-  }
-
-  const data = await response.json()
-  const content = data.choices[0].message.content
+  const content = result.content
   const source = isTextMode ? 'text+refinement' : 'vision+refinement'
 
   try {
@@ -510,10 +494,8 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const cfToken = Deno.env.get('CLOUDFLARE_API_TOKEN')
-    const openaiKey = Deno.env.get('OPENAI_API_KEY')
 
     if (!cfToken) return errorResponse('CLOUDFLARE_API_TOKEN not configured', 500)
-    if (!openaiKey) return errorResponse('OPENAI_API_KEY not configured', 500)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -553,7 +535,7 @@ serve(async (req) => {
 
     // Step 2: gpt-4o-mini — structure into JSON (multi-item)
     console.log('Pass 2: Structuring with gpt-4o-mini...')
-    const extraction = await structureExtraction(contentForStructuring, openaiKey, isTextMode, hint_city, hint_country)
+    const extraction = await structureExtraction(contentForStructuring, supabase, isTextMode, hint_city, hint_country)
     console.log(`Extracted ${extraction.items.length} item(s)`)
 
     // Step 3: Per-item entity matching
