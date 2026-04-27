@@ -337,11 +337,11 @@ export default function News() {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Newspaper style={{ width: 16, height: 16 }} />
+              <Newspaper size={16} />
               <Typography variant="body2" color="text.secondary">{articles.length} articles</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <TrendingUp style={{ width: 16, height: 16 }} />
+              <TrendingUp size={16} />
               <Typography variant="body2" color="text.secondary">{sources.length} sources</Typography>
             </Box>
           </Box>
@@ -420,7 +420,7 @@ export default function News() {
               <Input ref={searchInputRef} placeholder={t('pages.news.searchPlaceholder', 'Quick search articles...')} value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} aria-label="Search articles" />
               {quickSearch && (
                 <Button variant="ghost" size="sm" onClick={() => handleQuickSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', height: 24, width: 24, padding: 0 }}>
-                  <X style={{ width: 16, height: 16 }} />
+                  <X size={16} />
                 </Button>
               )}
             </Box>
@@ -441,21 +441,21 @@ export default function News() {
               {/* View Mode Buttons */}
               <Box sx={{ display: 'flex', alignItems: 'center', borderRadius: 2, p: 0.5 }}>
                 <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Grid view" title="Grid">
-                  <Grid3X3 style={{ width: 16, height: 16 }} />
+                  <Grid3X3 size={16} />
                 </Button>
                 <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} style={{ height: 32, width: 32, padding: 0 }} aria-label="List view" title="List">
-                  <List style={{ width: 16, height: 16 }} />
+                  <List size={16} />
                 </Button>
                 <Button variant={viewMode === 'headlines' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('headlines')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Headlines view" title="Headlines">
-                  <LayoutList style={{ width: 16, height: 16 }} />
+                  <LayoutList size={16} />
                 </Button>
                 <Button variant={viewMode === 'magazine' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('magazine')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Magazine view" title="Magazine">
-                  <BookOpen style={{ width: 16, height: 16 }} />
+                  <BookOpen size={16} />
                 </Button>
               </Box>
 
               <Button variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', gap: 8 }} aria-label="Toggle filters">
-                <Filter style={{ width: 16, height: 16 }} />
+                <Filter size={16} />
                 Filters
                 {hasActiveFilters && (
                   <Badge variant="secondary" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>!</Badge>
@@ -469,7 +469,7 @@ export default function News() {
         {hasActiveFilters && sortedArticles.length > 0 && (
           <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'background.paper' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Filter style={{ width: 16, height: 16 }} />
+              <Filter size={16} />
               <Typography variant="body2" color="text.secondary">{t('pages.news.activeFilters', 'Active filters')}</Typography>
               {quickSearch && <Badge variant="outline">Search: {quickSearch}</Badge>}
               {activeCategory && <Badge variant="outline">Category: {categoriesMap[activeCategory]?.name || activeCategory}</Badge>}
@@ -673,7 +673,7 @@ export default function News() {
                 {totalPages > 1 && (
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, pt: 2 }}>
                     <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <ChevronLeft style={{ width: 16, height: 16 }} /> {t('pages.news.previous', 'Previous')}
+                      <ChevronLeft size={16} /> {t('pages.news.previous', 'Previous')}
                     </Button>
                     <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
                       {getPageNumbers().map((page, i) =>
@@ -690,7 +690,7 @@ export default function News() {
                       {currentPage} / {totalPages}
                     </Typography>
                     <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      Next <ChevronRight style={{ width: 16, height: 16 }} />
+                      Next <ChevronRight size={16} />
                     </Button>
                   </Box>
                 )}

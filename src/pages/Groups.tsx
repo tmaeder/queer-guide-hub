@@ -70,7 +70,7 @@ export default function Groups() {
     <AuthGate title={t('pages.groups.title', 'Community Groups')} description="Please sign in to view and join community groups.">
       <Container sx={{ py: { xs: 6, md: 10 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
         <PageHeader
-          title="Community Groups"
+          title={t('pages.groups.title', 'Community Groups')}
           subtitle={t('pages.groups.subtitle', 'Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces.')}
           center
           actions={<CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />}
@@ -79,13 +79,13 @@ export default function Groups() {
         <Tabs defaultValue="discover" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <TabsTrigger value="discover" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
-              <Search style={{ height: 16, width: 16 }} /> {t('pages.groups.discover', 'Discover')}
+              <Search size={16} /> {t('pages.groups.discover', 'Discover')}
             </TabsTrigger>
             <TabsTrigger value="my-groups" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Users style={{ height: 16, width: 16 }} /> {t('pages.groups.myGroups', 'My Groups')} ({userGroups.length})
+              <Users size={16} /> {t('pages.groups.myGroups', 'My Groups')} ({userGroups.length})
             </TabsTrigger>
             <TabsTrigger value="popular" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <TrendingUp style={{ height: 16, width: 16 }} /> {t('pages.groups.popular', 'Popular')}
+              <TrendingUp size={16} /> {t('pages.groups.popular', 'Popular')}
             </TabsTrigger>
           </TabsList>
 
@@ -118,6 +118,7 @@ export default function Groups() {
                   }}
                 />
               ) : (
+                // TODO(polish): primary action is a no-op; wire to CreateGroupDialog open state
                 <EmptyState
                   icon={Users}
                   title={t('pages.groups.emptyTitle', 'No groups here yet')}
@@ -137,12 +138,13 @@ export default function Groups() {
 
           <TabsContent value="my-groups" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {userGroups.length === 0 ? (
+              // TODO(polish): primary action is a no-op; wire to CreateGroupDialog open state
               <EmptyState
                 icon={Users}
-                title="No groups here yet"
-                description="Be the spark — create the first group and bring people together."
+                title={t('pages.groups.emptyTitle', 'No groups here yet')}
+                description={t('pages.groups.emptyDescription', 'Be the spark — create the first group and bring people together.')}
                 mood="encouraging"
-                primaryAction={{ label: 'Create a Group', onClick: () => {} }}
+                primaryAction={{ label: t('pages.groups.createGroup', 'Create a Group'), onClick: () => {} }}
               />
             ) : (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
@@ -157,14 +159,14 @@ export default function Groups() {
             <Card>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <TrendingUp style={{ height: 20, width: 20 }} />
-                  Most Popular Groups
+                  <TrendingUp size={20} />
+                  {t('pages.groups.mostPopularGroups', 'Most Popular Groups')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {popularGroups.length === 0 ? (
                   <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }}>
-                    No popular groups available yet.
+                    {t('pages.groups.noPopularYet', 'No popular groups available yet.')}
                   </Typography>
                 ) : (
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>

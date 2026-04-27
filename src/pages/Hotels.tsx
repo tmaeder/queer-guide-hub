@@ -72,7 +72,7 @@ export default function Hotels() {
           </Typography>
         </Box>
         <Button onClick={() => navigate('/submit/hotel')} variant="outline" size="sm">
-          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          <Plus size={16} />
           {t('pages.hotels.submitHotel', 'Submit Hotel')}
         </Button>
       </Box>
