@@ -71,7 +71,8 @@ Deno.serve(async (req) => {
       .from('ingestion_staging')
       .select('id, normalized_data, enriched_data, target_table')
       .in('target_table', ['news_articles'])
-      .eq('enrichment_status', 'success')
+      // apply_enrichment() writes 'enriched' on success — not 'success'.
+      .eq('enrichment_status', 'enriched')
       .order('created_at', { ascending: true })
       .limit(batchSize)
     if (pipelineRunId) q = q.eq('pipeline_run_id', pipelineRunId)
