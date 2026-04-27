@@ -136,7 +136,7 @@ async function fetchImportSummary(): Promise<ImportSummary> {
       .from('import_jobs' as 'venues')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'completed')
-      .gte('completed_at', todayISO),
+      .gte('updated_at', todayISO),
     supabase
       .from('import_jobs' as 'venues')
       .select('id', { count: 'exact', head: true })
