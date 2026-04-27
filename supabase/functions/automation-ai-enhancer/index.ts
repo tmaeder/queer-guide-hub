@@ -6,8 +6,9 @@
  * so ALL changes go to the admin review queue.
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { chatCompletion } from '../_shared/openai-client.ts'
 import {
   loadModuleConfig, checkRateLimit, writeChanges, logRun, delay,
   getContentName, CONTENT_TYPE_CONFIG,
@@ -19,19 +20,14 @@ const MODULE_SLUG = 'ai-enhancer'
 // ── AI call helper ──────────────────────────────────────────────────────────
 
 async function callAI(
-  apiKey: string,
+  supabase: SupabaseClient,
   model: string,
   systemPrompt: string,
   userPrompt: string,
   maxTokens: number,
 ): Promise<string> {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  try {
+    const result = await chatCompletion(supabase, {
       model,
       messages: [
         { role: 'system', content: systemPrompt },
@@ -39,17 +35,13 @@ async function callAI(
       ],
       temperature: 0.3,
       max_tokens: maxTokens,
-      store: false,
-    }),
-  })
-
-  if (!response.ok) {
-    if (response.status === 429) throw new Error('RATE_LIMIT')
-    throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
+    })
+    return result.content
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes('429')) throw new Error('RATE_LIMIT')
+    throw err
   }
-
-  const data = await response.json()
-  return data.choices[0].message.content
 }
 
 // ── Enhancement prompts per rule type ───────────────────────────────────────
@@ -120,7 +112,7 @@ async function processItem(
   contentType: string,
   contentName: string,
   rules: AutomationRule[],
-  apiKey: string,
+  supabase: SupabaseClient,
   model: string,
   maxTokens: number,
 ): Promise<ProposedChange[]> {
@@ -141,7 +133,7 @@ async function processItem(
     if (!prompt) continue
 
     try {
-      const enhanced = await callAI(apiKey, model, SYSTEM_PROMPT, prompt, maxTokens)
+      const enhanced = await callAI(supabase, model, SYSTEM_PROMPT, prompt, maxTokens)
 
       if (!enhanced?.trim()) continue
 
@@ -192,9 +184,6 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
-
-  const apiKey = Deno.env.get('OPENAI_API_KEY')
-  if (!apiKey) return errorResponse('OPENAI_API_KEY not configured', 500)
 
   try {
     let payload: Record<string, unknown> = {}
@@ -257,7 +246,7 @@ Deno.serve(async (req) => {
           const itemChanges = await processItem(
             item as Record<string, unknown>,
             contentType, name, rulesForType,
-            apiKey, model, maxTokens,
+            supabase, model, maxTokens,
           )
           allChanges.push(...itemChanges)
 

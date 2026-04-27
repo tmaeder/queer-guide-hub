@@ -24,10 +24,10 @@
 // Deno edge function — runs in Supabase runtime, not in the app bundle.
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { anthropicMessages } from '../_shared/anthropic-shim.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
 const MEILISEARCH_URL = Deno.env.get('MEILISEARCH_URL') ?? '';
 const MEILISEARCH_KEY = Deno.env.get('MEILISEARCH_SEARCH_KEY') ?? '';
 
@@ -186,26 +186,12 @@ ${candidates.map((c) => `${c.id} | ${c.kind} | ${c.name} | ${c.city ?? '?'} | ${
 
 Return JSON: { "days": [ { "date": "YYYY-MM-DD", "places": [ { "venue_id": "...", "notes": "..." } | { "event_id": "...", "notes": "..." } | { "custom_name": "...", "notes": "..." } ] } ] }`;
 
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 4096,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }],
-    }),
+  const body = await anthropicMessages({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 4096,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userMessage }],
   });
-
-  if (!resp.ok) {
-    throw new Error(`anthropic ${resp.status}: ${await resp.text()}`);
-  }
-
-  const body = await resp.json();
   const text: string = body.content?.[0]?.text ?? '{}';
 
   // Claude usually wraps JSON in prose or fences — extract the first balanced object.

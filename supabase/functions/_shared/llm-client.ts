@@ -1,19 +1,16 @@
 /**
- * Self-hosted LLM client — OpenAI-compatible endpoint at ai.queer.guide.
+ * LLM client — OpenAI-compatible endpoint.
  *
- * Serves Gemma 4 26B MoE via vLLM on a dedicated Infomaniak GPU VPS.
- * Used to replace OpenAI `gpt-4o-mini` and Anthropic `claude-haiku-4.5`
- * calls for EU data residency.
+ * Backend resolution (first match wins):
+ *   1. Cloudflare Workers AI — set `CF_ACCOUNT_ID` + `CF_AI_API_TOKEN`.
+ *      Default model: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (override
+ *      with `CF_AI_MODEL`). Endpoint:
+ *      `https://api.cloudflare.com/client/v4/accounts/{ACCT}/ai/v1`
+ *   2. Self-hosted Gemma — set `QG_LLM_BASE_URL` + `QG_LLM_API_KEY`
+ *      (vLLM at ai.queer.guide; legacy/fallback).
  *
- * Env (set in Supabase project secrets):
- *   QG_LLM_BASE_URL  — e.g. https://ai.queer.guide/v1
- *   QG_LLM_API_KEY   — bearer token matching VLLM_API_KEY in infra/llm/.env
- *   QG_LLM_MODEL     — served model name (default: gemma-4-26b)
- *
- * Callers should gate migrations behind per-function feature flags
- * (USE_LOCAL_LLM_<scope>=1) and keep the original OpenAI/Anthropic client as
- * fallback. See .claude/plans/would-it-be-possible-cached-acorn.md for the
- * phased migration plan.
+ * Both backends speak the OpenAI chat-completions wire format, so callers
+ * stay identical. Set both and CF wins.
  */
 
 export interface LlmMessage {
@@ -53,6 +50,15 @@ export class LlmRequestError extends Error {
 }
 
 function readConfig() {
+  const cfAcct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
+  const cfToken = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
+  if (cfAcct && cfToken) {
+    return {
+      baseUrl: `https://api.cloudflare.com/client/v4/accounts/${cfAcct}/ai/v1`,
+      apiKey: cfToken,
+      defaultModel: Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+    }
+  }
   const baseUrl = Deno.env.get('QG_LLM_BASE_URL')
   const apiKey = Deno.env.get('QG_LLM_API_KEY')
   if (!baseUrl || !apiKey) throw new LlmNotConfiguredError()
@@ -64,7 +70,13 @@ function readConfig() {
 }
 
 export function isLlmConfigured(): boolean {
-  return Boolean(Deno.env.get('QG_LLM_BASE_URL') && Deno.env.get('QG_LLM_API_KEY'))
+  return (
+    Boolean(
+      (Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')) &&
+      (Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN'))
+    ) ||
+    Boolean(Deno.env.get('QG_LLM_BASE_URL') && Deno.env.get('QG_LLM_API_KEY'))
+  )
 }
 
 /**

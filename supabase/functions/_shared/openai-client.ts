@@ -213,8 +213,40 @@ export interface ChatCompletionResult {
 }
 
 /**
- * Make a chat completion request to OpenAI.
- * Handles token resolution, rate limiting (429), and retries.
+ * Map a legacy OpenAI model name to the CF Workers AI equivalent. Edge cases
+ * (e.g. embeddings, tool-calling) should opt out by passing a `@cf/...` model
+ * directly so this map is not consulted.
+ */
+function mapToCfModel(openaiModel: string): string {
+  if (openaiModel.startsWith('@cf/')) return openaiModel
+  // Anthropic models smuggled through (via shim) → big Llama
+  if (openaiModel.startsWith('claude-')) return '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+  // Default: route everything to the strongest production model. Override per
+  // call by passing model: '@cf/...'.
+  return Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+}
+
+function cfWorkersAiConfig(): { baseUrl: string; apiKey: string } | null {
+  const acct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
+  const token = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
+  if (!acct || !token) return null
+  return {
+    baseUrl: `https://api.cloudflare.com/client/v4/accounts/${acct}/ai/v1`,
+    apiKey: token,
+  }
+}
+
+/**
+ * Make a chat completion request.
+ *
+ * Backend resolution:
+ *  - If CF_ACCOUNT_ID + CF_AI_API_TOKEN (or the CLOUDFLARE_* aliases) are
+ *    set, the request is routed to Cloudflare Workers AI's OpenAI-compatible
+ *    endpoint and the model is mapped via mapToCfModel().
+ *  - Otherwise, the legacy OpenAI path is used (OAuth token from DB or
+ *    OPENAI_API_KEY env var).
+ *
+ * To force the legacy OpenAI path for a specific call, set USE_OPENAI=1.
  */
 export async function chatCompletion(
   supabase: SupabaseClient,
@@ -228,23 +260,30 @@ export async function chatCompletion(
     response_format,
   } = options
 
-  const accessToken = await getOpenAIAccessToken(supabase)
+  const cf = Deno.env.get('USE_OPENAI') === '1' ? null : cfWorkersAiConfig()
+
+  const endpoint = cf
+    ? `${cf.baseUrl}/chat/completions`
+    : 'https://api.openai.com/v1/chat/completions'
+  const accessToken = cf ? cf.apiKey : await getOpenAIAccessToken(supabase)
+  const effectiveModel = cf ? mapToCfModel(model) : model
 
   const body: Record<string, unknown> = {
-    model,
+    model: effectiveModel,
     messages,
     temperature,
     max_tokens,
-    // Privacy: opt out of OpenAI's 30-day retention; prompts + completions
-    // are not persisted. See docs/dependency-audit/migration-plan.md §1.5.
-    store: false,
+  }
+  if (!cf) {
+    // OpenAI-only: opt out of 30-day retention. CF Workers AI does not store.
+    body.store = false
   }
   if (response_format) body.response_format = response_format
 
   let lastError: Error | null = null
 
   for (let attempt = 0; attempt < 3; attempt++) {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -285,6 +324,8 @@ export async function chatCompletion(
  * Non-throwing — returns false if no credentials.
  */
 export async function isOpenAIAvailable(supabase: SupabaseClient): Promise<boolean> {
+  // CF Workers AI is treated as a valid backend for `chatCompletion()`.
+  if (cfWorkersAiConfig() && Deno.env.get('USE_OPENAI') !== '1') return true
   try {
     await getOpenAIAccessToken(supabase)
     return true
