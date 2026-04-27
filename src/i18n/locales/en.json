@@ -1103,7 +1103,8 @@
       "inbox": "Inbox",
       "friends": "Friends",
       "myGroups": "My Groups",
-      "accessibility": "Accessibility"
+      "accessibility": "Accessibility",
+      "extension": "Browser Extension"
     },
     "modes": {
       "dating": "Looking for Love",

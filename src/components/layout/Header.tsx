@@ -39,6 +39,7 @@ import {
   Building,
   Luggage,
   LifeBuoy,
+  Puzzle,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -108,6 +109,7 @@ const userMenuItems = [
   { to: '/inbox', icon: Mail, labelKey: 'header.userMenu.inbox' },
   { to: '/friends', icon: Users, labelKey: 'header.userMenu.friends' },
   { to: '/my-groups', icon: UsersRound, labelKey: 'header.userMenu.myGroups' },
+  { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },
 ];
 
 const userModes = [
