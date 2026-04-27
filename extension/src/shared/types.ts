@@ -3,7 +3,7 @@
  *
  * Field names mirror the scraper's normalized schema where possible so the
  * server-side normalize → dedupe → commit pipeline accepts them without a
- * translation layer. See Dev/web/scraper/src/normalize/normalize.ts.
+ * translation layer. See scraper/src/normalize/normalize.ts.
  */
 
 export type EntityType =

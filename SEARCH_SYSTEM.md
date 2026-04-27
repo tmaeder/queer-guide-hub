@@ -34,7 +34,7 @@ queer-guide-search-ingest (Cloudflare Worker)
 | Path | What |
 |---|---|
 | `worker/` | Search proxy (the read path) |
-| `worker-ingest/` | Ingest + backfill (the write path) |
+| `workers/ingest/` | Ingest + backfill (the write path) |
 | `client-sdk/qg-search.ts` | Drop-in client SDK (browser + node) |
 | `scripts/configure-meili.sh` | One-shot Meili settings (embedder, facets, synonyms) |
 | `scripts/setup-webhooks.sql` | Attach DB triggers that POST to ingest worker |

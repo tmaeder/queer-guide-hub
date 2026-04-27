@@ -12,7 +12,7 @@ import { test, expect } from '@playwright/test';
  * Auth is handled by e2e/auth.setup.ts (reads E2E_TEST_EMAIL / _PASSWORD).
  * Tests are skipped if the signed-in project has not run setup.
  *
- * Runbook: Dev/web/docs/qa-groups-fixtures.md
+ * Runbook: docs/qa-groups-fixtures.md
  */
 
 test.describe('Groups — QA fixtures', () => {

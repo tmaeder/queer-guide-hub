@@ -1,5 +1,5 @@
 // Unit tests for the ingestion-rules engine. Pure logic — no env, no network.
-// Run with: cd Dev/web/supabase/functions && deno test _tests/ingestion-rules.test.ts
+// Run with: cd supabase/functions && deno test _tests/ingestion-rules.test.ts
 import { assertEquals } from 'jsr:@std/assert'
 import {
   evaluateRule,

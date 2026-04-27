@@ -71,10 +71,10 @@ the merge precedence (jsonld > microdata > opengraph > dom), and the
 
 ## Server side
 
-- `worker-submit/` — Cloudflare Worker that verifies the user JWT, rate
+- `workers/submit/` — Cloudflare Worker that verifies the user JWT, rate
   limits per user, and inserts into `ingestion_staging` via Supabase REST
   with the service-role key. Hash algorithm matches
-  [Dev/web/scraper/src/db/staging-publisher.ts](../Dev/web/scraper/src/db/staging-publisher.ts)
+  [scraper/src/db/staging-publisher.ts](../scraper/src/db/staging-publisher.ts)
   so user submissions and scraper rows can dedupe against each other.
 - Migration: [Dev/src/db/migrations/002_user_submissions.sql](../Dev/src/db/migrations/002_user_submissions.sql)
   — adds `submitted_by_user_id`, `submission_url`, `submission_notes`,
@@ -84,7 +84,7 @@ the merge precedence (jsonld > microdata > opengraph > dom), and the
 ## Known gaps / follow-ups
 
 - **Web auth UI**: this checkout does not include the React frontend
-  (`Dev/web/src` is gitignored / external). The popup currently asks the
+  (`src` is gitignored / external). The popup currently asks the
   user to paste the magic-link code from the redirect page. Once the web
   app's auth-callback page can `chrome.runtime.sendMessage` (via
   `externally_connectable`), the manual paste step disappears.

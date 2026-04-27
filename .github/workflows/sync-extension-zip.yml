@@ -1,4 +1,4 @@
-name: Sync extension zip to queer-guide-hub
+name: Sync extension zip
 
 on:
   push:
@@ -9,15 +9,12 @@ on:
   workflow_dispatch: {}
 
 # When the extension changes on main, rebuild the production .zip and open a
-# PR in the queer-guide-hub repo that updates public/extension/queer-guide-extension.zip
-# so the /extension install page download stays current.
-#
-# Required secret: HUB_PR_TOKEN
-#   A fine-grained or classic PAT with these permissions on tmaeder/queer-guide-hub:
-#     - Contents: read & write
-#     - Pull requests: read & write
-#   Stored as the repo / org secret HUB_PR_TOKEN. Without it, this workflow
-#   only builds the artifact.
+# bot PR that updates public/extension/queer-guide-extension.zip so the
+# /extension install page download stays current.
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   sync:
@@ -44,20 +41,17 @@ jobs:
           path: queer-guide-extension.zip
           retention-days: 30
 
-      - name: Open PR in queer-guide-hub
-        if: ${{ secrets.HUB_PR_TOKEN != '' }}
+      - name: Open PR with refreshed zip
         env:
-          GH_TOKEN: ${{ secrets.HUB_PR_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           git config --global user.name "queer-guide-bot"
           git config --global user.email "bot@queer.guide"
 
-          tmp="$(mktemp -d)"
-          gh repo clone tmaeder/queer-guide-hub "$tmp/qgh" -- -q
-          branch="bot/extension-zip-sync-${SOURCE_SHA:0:7}"
-          cd "$tmp/qgh"
+          short="${SOURCE_SHA:0:7}"
+          branch="bot/extension-zip-sync-${short}"
           if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
             git fetch origin "$branch"
             git checkout "$branch"
@@ -67,15 +61,15 @@ jobs:
           mkdir -p public/extension
           cp "$GITHUB_WORKSPACE/queer-guide-extension.zip" public/extension/queer-guide-extension.zip
           if git diff --quiet -- public/extension/queer-guide-extension.zip; then
-            echo "Hub zip unchanged — nothing to sync."
+            echo "Zip unchanged — nothing to sync."
             exit 0
           fi
           git add public/extension/queer-guide-extension.zip
-          git commit -m "chore(extension): sync zip from queer-guide-search@${SOURCE_SHA:0:7}"
+          git commit -m "chore(extension): refresh extension zip from ${short}"
           git push -u origin "$branch"
           if ! gh pr view --json number >/dev/null 2>&1; then
             gh pr create \
               --title "chore(extension): refresh extension zip" \
-              --body "Auto-synced from queer-guide-search@${SOURCE_SHA}. Merge to publish the new build at https://queer.guide/extension/queer-guide-extension.zip." \
+              --body "Auto-built from ${SOURCE_SHA}. Merge to publish the new build at https://queer.guide/extension/queer-guide-extension.zip." \
               --head "$branch" --base main
           fi

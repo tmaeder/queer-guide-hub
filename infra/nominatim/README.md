@@ -63,10 +63,10 @@ docker run --rm caddy:2-alpine caddy hash-password --plaintext "$(openssl rand -
 ### 2.3 Caddyfile
 
 Append the contents of `Caddyfile.snippet` to the existing
-`/opt/plane/QG/Dev/web/meilisearch/Caddyfile` on the VPS, then reload Caddy:
+`/opt/plane/QG/meilisearch/Caddyfile` on the VPS, then reload Caddy:
 
 ```bash
-docker compose -f /opt/plane/QG/Dev/web/meilisearch/docker-compose.yml \
+docker compose -f /opt/plane/QG/meilisearch/docker-compose.yml \
   exec caddy caddy reload --config /etc/caddy/Caddyfile
 ```
 
