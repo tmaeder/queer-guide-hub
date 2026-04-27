@@ -202,6 +202,15 @@ verify_jwt = false
 [functions.pipeline-commit]
 verify_jwt = false
 
+[functions.pipeline-sanitize-news]
+verify_jwt = false
+
+[functions.pipeline-quality-enhance]
+verify_jwt = false
+
+[functions.news-quality-backfill]
+verify_jwt = false
+
 [functions.pipeline-dlq-consumer]
 verify_jwt = false
 
