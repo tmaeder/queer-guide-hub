@@ -1,0 +1,3 @@
+{$MEILI_DOMAIN:search.queer.guide} {
+	reverse_proxy meilisearch:7700
+}

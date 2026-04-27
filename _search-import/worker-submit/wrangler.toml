@@ -1,0 +1,32 @@
+name = "queer-guide-worker-submit"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Per-user rate limit + idempotency cache.
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "0e86cd82248b4eeab138404ef1d6828a"
+
+[vars]
+# Comma-separated list of allowed origins. The Chrome extension's origin is
+# chrome-extension://<extension-id>; add it here once published. Web app
+# origins (queer.guide, www.queer.guide) are also welcome to call /submit.
+ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide"
+SUBMISSION_RATE_PER_MIN = "10"
+
+# Secrets (set via `wrangler secret put NAME`):
+#   SUPABASE_URL          - https://<project>.supabase.co
+#   SUPABASE_ANON_KEY     - publishable anon key (used as apikey header to PostgREST)
+#   SUPABASE_JWT_SECRET   - HS256 secret used by Supabase Auth, used to verify user JWTs
+# Writes go through PostgREST with the user's own JWT, so the existing RLS
+# policies on community_submissions authorize them. No service-role key.
+
+[observability]
+enabled = true
+
+# Custom domain — added via dashboard. Listed here for reproducibility;
+# wrangler honours `routes` on subsequent deploys.
+[[routes]]
+pattern = "submit.queer.guide"
+custom_domain = true

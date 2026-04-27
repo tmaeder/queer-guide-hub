@@ -1,0 +1,31 @@
+name = "queer-guide-search-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "EMBED_CACHE"
+id = "f54d40f6d0fa4c5680857dbb21971a02"
+
+[[kv_namespaces]]
+binding = "SESSION_CACHE"
+id = "d3c4fcf5602545e28515d0a62ebea64c"
+
+[vars]
+MEILISEARCH_URL = "https://s.queer.guide"
+ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:3000"
+AI_GATEWAY_ACCOUNT_ID = "7aa3765cc5f50f2b681b782eb4a8d296"
+AI_GATEWAY_NAME = "qg-search"
+EMBED_MODEL = "@cf/baai/bge-m3"
+ENABLE_RERANKER = "1"
+
+# Secrets (set via: wrangler secret put NAME):
+#   MEILISEARCH_SEARCH_KEY
+#   SUPABASE_URL
+#   SUPABASE_SERVICE_KEY
+
+[observability]
+enabled = true

@@ -1,0 +1,144 @@
+import { useEffect, useState } from "react";
+import { submitItem } from "../shared/api";
+import {
+  clearSession,
+  getValidAccessToken,
+  loadSession,
+} from "../shared/auth";
+import type { AuthSession, DetectedItem } from "../shared/types";
+import { ItemCard } from "./ItemCard";
+
+type Toast = { kind: "ok" | "err"; msg: string } | null;
+
+export function App() {
+  const [session, setSession] = useState<AuthSession | null>(null);
+  const [items, setItems] = useState<DetectedItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<Toast>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      setSession(await loadSession());
+
+      // Cache hit?
+      const cached = await chrome.runtime.sendMessage({ type: "qg:get-results" });
+      if (cancelled) return;
+      if (cached?.items?.length) {
+        setItems(cached.items as DetectedItem[]);
+        setLoading(false);
+        return;
+      }
+
+      // Kick off extraction in parallel, don't await.
+      void chrome.runtime.sendMessage({ type: "qg:extract", mode: "auto" });
+
+      // Poll every 80ms until items arrive or timeout (2s). The content
+      // script normally finishes in 50-150ms; the old fixed 600ms wait was
+      // pure overhead.
+      const start = Date.now();
+      while (!cancelled && Date.now() - start < 2000) {
+        await new Promise((r) => setTimeout(r, 80));
+        const r2 = await chrome.runtime.sendMessage({ type: "qg:get-results" });
+        if (cancelled) return;
+        if (r2?.items?.length) {
+          setItems(r2.items as DetectedItem[]);
+          setLoading(false);
+          return;
+        }
+        if (r2?.error) {
+          setToast({ kind: "err", msg: r2.error });
+          break;
+        }
+      }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  async function onSubmit(item: DetectedItem, edited: Record<string, unknown>) {
+    const token = await getValidAccessToken();
+    if (!token) {
+      setToast({ kind: "err", msg: "not signed in" });
+      return;
+    }
+    try {
+      const merged: DetectedItem = { ...item, raw_data: { ...item.raw_data, ...edited } };
+      const res = await submitItem(merged, token);
+      setToast({ kind: "ok", msg: `submitted (#${res.submission_id})` });
+    } catch (err) {
+      setToast({ kind: "err", msg: err instanceof Error ? err.message : "submit failed" });
+    }
+  }
+
+  async function onPickSelection() {
+    const r = await chrome.runtime.sendMessage({ type: "qg:extract", mode: "manual" });
+    if (!r?.ok) setToast({ kind: "err", msg: r?.error ?? "selection mode failed" });
+    window.close();
+  }
+
+  if (!session) return <Login onSignedIn={setSession} />;
+
+  return (
+    <div>
+      <header className="qg-header">
+        <h1>queer.guide capture</h1>
+        <div className="qg-user">
+          {session.user.email}{" "}
+          <button onClick={async () => { await clearSession(); setSession(null); }}>sign out</button>
+        </div>
+      </header>
+      {toast && <div className={`qg-toast ${toast.kind}`}>{toast.msg}</div>}
+      {loading ? (
+        <div className="qg-empty">scanning page…</div>
+      ) : items.length === 0 ? (
+        <div className="qg-empty">
+          <p>nothing detected on this page</p>
+          <button onClick={onPickSelection}>pick selection</button>
+        </div>
+      ) : (
+        <div className="qg-list">
+          {items.map((item, i) => (
+            <ItemCard key={i} item={item} onSubmit={(e) => onSubmit(item, e)} />
+          ))}
+          <button onClick={onPickSelection}>pick selection instead</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Login({ onSignedIn }: { onSignedIn: (s: AuthSession) => void }) {
+  // Poll chrome.storage every 800ms — when the user signs in on queer.guide
+  // the content-script bridge writes a session, and we want the popup to
+  // pick it up without needing a manual reopen.
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | null = null;
+    timer = setInterval(async () => {
+      const s = await loadSession();
+      if (s) {
+        if (timer) clearInterval(timer);
+        onSignedIn(s);
+      }
+    }, 800);
+    return () => { if (timer) clearInterval(timer); };
+  }, [onSignedIn]);
+
+  return (
+    <div className="qg-login">
+      <h2 style={{ margin: 0 }}>Sign in to queer.guide</h2>
+      <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
+        Sign in on the website — the extension picks up your session automatically.
+      </p>
+      <button
+        className="primary"
+        onClick={() => chrome.tabs.create({ url: "https://queer.guide/extension" })}
+      >
+        Open queer.guide
+      </button>
+      <p style={{ margin: 0, fontSize: 11, color: "var(--muted)" }}>
+        Already signed in? Visit <code>queer.guide/extension</code> and click Connect.
+      </p>
+    </div>
+  );
+}
