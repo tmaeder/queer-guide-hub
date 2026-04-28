@@ -7,7 +7,7 @@ const CURRENCY_SYMBOL: Record<string, string> = {
 
 const PRICE_PATTERN = /(EUR|USD|GBP|CHF|JPY|INR|€|\$|£|¥|₹|₽|₩)\s?(\d{1,6}(?:[.,]\d{1,2})?)/i;
 const ISO_DATE_PATTERN = /\b(20\d{2})-(0[1-9]|1[0-2])-([0-2]\d|3[01])\b/;
-const POSTCODE_PATTERN = /\b\d{4,5}\b\s+[A-ZÄÖÜ][\p{L}\-]+/u;
+const POSTCODE_PATTERN = /\b\d{4,5}\b\s+[A-ZÄÖÜ][\p{L}-]+/u;
 
 /**
  * Last-resort DOM heuristics when no structured data is present. Pulls
