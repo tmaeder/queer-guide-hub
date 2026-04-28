@@ -140,11 +140,11 @@ async function enrichWithActors(entries: Record<string, unknown>[]): Promise<CMS
 
   const { data: profiles } = await supabase
     .from('profiles' as 'venues')
-    .select('id, display_name, email')
-    .in('id', actorIds);
+    .select('user_id, display_name, email')
+    .in('user_id', actorIds);
 
   const profileMap = new Map(
-    (profiles || []).map((p: Record<string, unknown>) => [p.id as string, { display_name: p.display_name, email: p.email }])
+    (profiles || []).map((p: Record<string, unknown>) => [p.user_id as string, { display_name: p.display_name, email: p.email }])
   );
 
   return entries.map(entry => ({
