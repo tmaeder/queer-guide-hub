@@ -702,22 +702,30 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       {linkToFullMap && (
         <Button
           size="small"
-          variant="contained"
-          startIcon={<ExternalLink size={14} />}
+          variant="text"
+          aria-label="Open full map"
           onClick={() => navigate(linkToFullMap)}
           sx={{
             position: 'absolute',
-            bottom: 36,
-            right: 12,
+            bottom: 12,
+            left: 12,
             zIndex: 10,
+            minWidth: 0,
+            px: { xs: 0.75, sm: 1 },
+            py: 0.5,
+            borderRadius: 0,
             textTransform: 'none',
-            fontSize: '0.8rem',
-            color: '#fff',
-            bgcolor: '#4f46e5',
-            '&:hover': { bgcolor: '#4338ca' },
+            fontSize: '0.75rem',
+            lineHeight: 1.2,
+            color: 'brand.main',
+            bgcolor: 'background.paper',
+            '&:hover': { bgcolor: 'background.paper', opacity: 0.85 },
           }}
         >
-          Open Full Map
+          <ExternalLink size={14} />
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, ml: 0.5 }}>
+            Full map
+          </Box>
         </Button>
       )}
 
