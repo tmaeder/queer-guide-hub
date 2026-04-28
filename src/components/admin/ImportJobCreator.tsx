@@ -33,6 +33,14 @@ import {
 import { VenueImportDialog } from './venues/VenueImportDialog';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import {
+  classifyEntityType,
+  expectedEntityTypeFor,
+  summarizeDetections,
+  type ClassifyResult,
+  type DetectionSummary,
+  type EntityType,
+} from '@/lib/entityTypeClassifier';
 
 /* ── Import types for CSV/API flows ── */
 const IMPORT_GROUPS = [
@@ -117,6 +125,9 @@ export const ImportJobCreator = () => {
     headers: string[];
     rows: Record<string, string>[];
   } | null>(null);
+  const [previewClassifications, setPreviewClassifications] = useState<ClassifyResult[]>([]);
+  const [detectionSummary, setDetectionSummary] = useState<DetectionSummary | null>(null);
+  const [routingAcknowledged, setRoutingAcknowledged] = useState(false);
   const [fileName, setFileName] = useState('');
   const [showVenueImportDialog, setShowVenueImportDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -163,6 +174,7 @@ export const ImportJobCreator = () => {
   }, []);
 
   const selected = findImportItem(importType);
+  const expectedType: EntityType | null = expectedEntityTypeFor(importType);
 
   /* ── CSV/API handlers ── */
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,11 +193,18 @@ export const ImportJobCreator = () => {
       return;
     }
     setFileName(file.name);
+    setRoutingAcknowledged(false);
     try {
       const text = await file.text();
       setCsvData(text);
       const preview = parseCSVPreview(text, 5);
       setCsvPreview(preview);
+      setPreviewClassifications(preview.rows.map((row) => classifyEntityType(row)));
+      // Full-file detection (capped at ~5000 rows for performance — same
+      // shape as parseCSVPreview but unbounded). The classifier is pure JS,
+      // a 5000-row scan with simple regex takes <100ms.
+      const fullPreview = parseCSVPreview(text, 5000);
+      setDetectionSummary(summarizeDetections(fullPreview.rows, expectedEntityTypeFor(importType)));
       if (selected?.requiredFields) {
         const suggested = selected.requiredFields.filter((f) =>
           preview.headers.some((h) => h.toLowerCase().includes(f.toLowerCase())),
@@ -201,6 +220,9 @@ export const ImportJobCreator = () => {
     setImportType('');
     setCsvData('');
     setCsvPreview(null);
+    setPreviewClassifications([]);
+    setDetectionSummary(null);
+    setRoutingAcknowledged(false);
     setFileName('');
     setUniqueKeyFields([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -255,6 +277,24 @@ export const ImportJobCreator = () => {
 
     if (!csvData) {
       toast({ title: 'Upload a CSV file', variant: 'destructive' });
+      return;
+    }
+
+    // Issue #113 guard: block submit when the CSV contains rows the
+    // classifier thinks belong elsewhere, until the user has explicitly
+    // acknowledged the routing. The legacy import-*-csv handlers stamp
+    // the whole batch with one target_table, so mismatches today silently
+    // ingest as the wrong entity type.
+    if (
+      detectionSummary &&
+      detectionSummary.mismatches > 0 &&
+      !routingAcknowledged
+    ) {
+      toast({
+        title: 'Mixed entity types detected',
+        description: `${detectionSummary.mismatches} row(s) look like a different entity type. Review the preview and check the acknowledgement box to continue.`,
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -362,6 +402,73 @@ export const ImportJobCreator = () => {
                       Preview (first 5 rows)
                     </Typography>
                   </Box>
+                  {detectionSummary && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.75,
+                        p: 1,
+                        border: 1,
+                        borderColor:
+                          detectionSummary.mismatches > 0 ? 'error.main' : 'divider',
+                        borderRadius: 1,
+                        bgcolor:
+                          detectionSummary.mismatches > 0 ? 'error.50' : 'action.hover',
+                      }}
+                    >
+                      <Typography sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                        Detected entity types ({detectionSummary.rows.length} rows scanned)
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {(['personality', 'venue', 'event', 'tag', 'unknown'] as const)
+                          .filter((t) => detectionSummary.byType[t] > 0)
+                          .map((t) => {
+                            const count = detectionSummary.byType[t];
+                            const isMismatch =
+                              expectedType !== null && t !== 'unknown' && t !== expectedType;
+                            return (
+                              <Badge
+                                key={t}
+                                variant={isMismatch ? 'destructive' : 'secondary'}
+                              >
+                                {t}: {count}
+                              </Badge>
+                            );
+                          })}
+                      </Box>
+                      {detectionSummary.mismatches > 0 && expectedType && (
+                        <Typography sx={{ fontSize: '0.75rem', color: 'error.main' }}>
+                          {detectionSummary.mismatches} row(s) don&apos;t look like{' '}
+                          <b>{expectedType}</b>. They will still be staged as{' '}
+                          <b>{expectedType}</b> by this import; the AI validator may reject
+                          them. To route per-row to the correct table, use the pipeline DAG
+                          with the <code>source-csv-upload</code> node instead.
+                        </Typography>
+                      )}
+                      {detectionSummary.unknownCount > 0 && (
+                        <Typography
+                          sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
+                        >
+                          {detectionSummary.unknownCount} row(s) couldn&apos;t be auto-classified
+                          and will fall back to <b>{expectedType ?? 'job-level type'}</b>.
+                        </Typography>
+                      )}
+                      {detectionSummary.mismatches > 0 && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 0.5 }}>
+                          <Checkbox
+                            id="ack-routing"
+                            checked={routingAcknowledged}
+                            onCheckedChange={(v) => setRoutingAcknowledged(!!v)}
+                          />
+                          <Label htmlFor="ack-routing" style={{ fontSize: '0.75rem' }}>
+                            I understand mixed-type rows will be staged as{' '}
+                            {expectedType ?? 'the selected type'}.
+                          </Label>
+                        </Box>
+                      )}
+                    </Box>
+                  )}
                   <Box
                     sx={{ overflowX: 'auto', border: 1, borderColor: 'divider', borderRadius: 1 }}
                   >
@@ -371,6 +478,19 @@ export const ImportJobCreator = () => {
                     >
                       <thead>
                         <Box component="tr" sx={{ bgcolor: 'action.hover' }}>
+                          <Box
+                            component="th"
+                            sx={{
+                              p: 0.75,
+                              textAlign: 'left',
+                              fontWeight: 600,
+                              borderBottom: 1,
+                              borderColor: 'divider',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            detected
+                          </Box>
                           {csvPreview.headers.map((h, i) => (
                             <Box
                               component="th"
@@ -389,19 +509,41 @@ export const ImportJobCreator = () => {
                         </Box>
                       </thead>
                       <tbody>
-                        {csvPreview.rows.map((row, i) => (
-                          <tr key={i}>
-                            {csvPreview.headers.map((h, j) => (
+                        {csvPreview.rows.map((row, i) => {
+                          const detected = previewClassifications[i];
+                          const detectedType = detected?.entityType ?? 'unknown';
+                          const isMismatch =
+                            !!expectedType &&
+                            detectedType !== 'unknown' &&
+                            detectedType !== expectedType;
+                          return (
+                            <tr key={i}>
                               <Box
                                 component="td"
-                                key={j}
-                                sx={{ p: 0.75, borderBottom: 1, borderColor: 'divider' }}
+                                sx={{
+                                  p: 0.75,
+                                  borderBottom: 1,
+                                  borderColor: 'divider',
+                                  whiteSpace: 'nowrap',
+                                }}
+                                title={detected?.reason}
                               >
-                                {row[h] || '-'}
+                                <Badge variant={isMismatch ? 'destructive' : 'secondary'}>
+                                  {detectedType}
+                                </Badge>
                               </Box>
-                            ))}
-                          </tr>
-                        ))}
+                              {csvPreview.headers.map((h, j) => (
+                                <Box
+                                  component="td"
+                                  key={j}
+                                  sx={{ p: 0.75, borderBottom: 1, borderColor: 'divider' }}
+                                >
+                                  {row[h] || '-'}
+                                </Box>
+                              ))}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </Box>
                   </Box>

@@ -93,14 +93,20 @@ export interface SourceAdapter {
 /**
  * Write fetched items to ingestion_staging in batch.
  * Returns the number of rows inserted.
+ *
+ * `config.entityType` overrides `adapter.entityType` for this batch — used
+ * by source-csv-upload to write per-row classified groups to staging
+ * without spawning a separate adapter per group. (Issue #113)
  */
 export async function writeToStaging(
   supabase: SupabaseClient,
   adapter: SourceAdapter,
   rawItems: RawItem[],
-  config: AdapterConfig & { targetTable: string }
+  config: AdapterConfig & { targetTable: string; entityType?: string }
 ): Promise<number> {
   if (rawItems.length === 0) return 0
+
+  const entityType = config.entityType || adapter.entityType
 
   // Deduplicate within the batch by sourceId to prevent duplicate staging rows
   const seen = new Set<string>()
@@ -113,7 +119,7 @@ export async function writeToStaging(
       source_type: adapter.name,
       source_name: adapter.name,
       source_entity_id: sid,
-      entity_type: adapter.entityType,
+      entity_type: entityType,
       target_table: config.targetTable,
       raw_data: raw.data,
       normalized_data: normalized,
