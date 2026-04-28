@@ -63,3 +63,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .qg-edit input, .qg-edit textarea {
   padding: 4px 6px; border: 1px solid var(--border); border-radius: 4px; font: inherit;
 }
+.qg-tabs { display: flex; border-bottom: 1px solid var(--border); }
+.qg-tabs button {
+  flex: 1; border: none; border-radius: 0; padding: 8px;
+  background: transparent; font-size: 12px; color: var(--muted);
+  border-bottom: 2px solid transparent;
+}
+.qg-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }

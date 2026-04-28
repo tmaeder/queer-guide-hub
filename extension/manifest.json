@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "queer.guide capture",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Capture venues, events, hotels, marketplace items, and news from any webpage and submit them to queer.guide.",
   "action": {
     "default_title": "queer.guide capture",
