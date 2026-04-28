@@ -24,10 +24,11 @@ import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { SubmissionMediaSection } from '@/components/admin/SubmissionMediaSection';
 import { SubmissionsKanban } from '@/components/admin/SubmissionsKanban';
+import { MergeDuplicatesDialog } from '@/components/admin/MergeDuplicatesDialog';
 import { ActivityLog } from '@/components/admin/feedback/ActivityLog';
 import { useFeedbackAudit } from '@/hooks/useFeedbackAudit';
 import { useFeedbackAdmins, buildAdminMap } from '@/hooks/useFeedbackAdmins';
-import { CheckCircle, XCircle, Eye, ArrowLeft, ThumbsUp, ThumbsDown, LayoutGrid, Table as TableIcon } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, ArrowLeft, ThumbsUp, ThumbsDown, LayoutGrid, Table as TableIcon, GitMerge } from 'lucide-react';
 
 interface SubmissionRow {
   id: string;
@@ -159,6 +160,7 @@ function SubmissionsCore() {
   const [reviewerNotes, setReviewerNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [view, setView] = useState<'table' | 'kanban'>('table');
+  const [mergeOpen, setMergeOpen] = useState(false);
 
   const doRefresh = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['admin-table', 'community_submissions'] });
@@ -613,6 +615,14 @@ function SubmissionsCore() {
                       Cancel
                     </Button>
                     <Button
+                      variant="outline"
+                      onClick={() => setMergeOpen(true)}
+                      disabled={actionLoading}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <GitMerge style={{ width: 14, height: 14 }} /> Merge…
+                    </Button>
+                    <Button
                       variant="destructive"
                       onClick={() => handleReject(selectedSubmission)}
                       disabled={actionLoading}
@@ -662,6 +672,21 @@ function SubmissionsCore() {
           )}
         </DialogContent>
       </Dialog>
+
+      {selectedSubmission && (
+        <MergeDuplicatesDialog
+          open={mergeOpen}
+          onOpenChange={setMergeOpen}
+          submissionId={selectedSubmission.id}
+          contentType={selectedSubmission.content_type}
+          currentDuplicateOf={null}
+          onMerged={() => {
+            setMergeOpen(false);
+            setDialogOpen(false);
+            doRefresh();
+          }}
+        />
+      )}
     </>
   );
 }
