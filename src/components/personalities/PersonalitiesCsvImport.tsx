@@ -14,6 +14,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Upload, FileText, Download, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  classifyEntity,
+  expectedKindForTargetTable,
+  type EntityKind,
+  type ClassifyResult,
+} from "@/lib/entityClassifier";
 
 interface ImportResult {
   success: boolean;
@@ -25,14 +31,60 @@ interface ImportResult {
   hint?: string;
 }
 
+interface PreviewRow {
+  rowNumber: number;
+  name: string;
+  classification: ClassifyResult;
+}
+
+interface Preview {
+  file: File;
+  totalRows: number;
+  rows: PreviewRow[];
+  histogram: Record<EntityKind, number>;
+  mismatchCount: number;
+}
+
+// RFC 4180-ish CSV parser — same shape the edge function uses, kept tiny so
+// we can run a per-row entity-type classification before commit.
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; continue; }
+      if (ch === '"') { inQuotes = false; continue; }
+      field += ch;
+    } else {
+      if (ch === '"') { inQuotes = true; continue; }
+      if (ch === ',') { row.push(field); field = ''; continue; }
+      if (ch === '\r') continue;
+      if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; continue; }
+      field += ch;
+    }
+  }
+  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.length > 0 && r.some(c => c.trim()));
+}
+
+const TARGET_TABLE = 'personalities';
+const EXPECTED_KIND = expectedKindForTargetTable(TARGET_TABLE)!;
+
 export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [preview, setPreview] = useState<Preview | null>(null);
+  const [acknowledgeMismatch, setAcknowledgeMismatch] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Stage 1: read the file, classify each row locally, surface a preview.
+  // The user must confirm before any data is staged — issue #113.
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -45,12 +97,67 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
       return;
     }
 
+    try {
+      const text = await file.text();
+      const rows = parseCsv(text);
+      if (rows.length < 2) {
+        toast({
+          title: "Empty CSV",
+          description: "The file has no data rows",
+          variant: "destructive"
+        });
+        return;
+      }
+      const headers = rows[0].map(h => h.trim().toLowerCase());
+      const histogram: Record<EntityKind, number> = {
+        person: 0, venue: 0, event: 0, glossary_term: 0, unknown: 0,
+      };
+      const previewRows: PreviewRow[] = [];
+      let mismatchCount = 0;
+
+      for (let i = 1; i < rows.length; i++) {
+        const obj: Record<string, string> = {};
+        headers.forEach((h, idx) => { obj[h] = (rows[i][idx] ?? '').trim(); });
+        const classification = classifyEntity(obj);
+        histogram[classification.classified_as]++;
+        if (
+          classification.classified_as !== EXPECTED_KIND &&
+          classification.classified_as !== 'unknown' &&
+          classification.confidence >= 0.45
+        ) {
+          mismatchCount++;
+        }
+        // Cap the preview list so a 10k-row CSV doesn't render 10k <li>s.
+        if (previewRows.length < 50) {
+          previewRows.push({
+            rowNumber: i + 1,
+            name: obj.name || '(no name)',
+            classification,
+          });
+        }
+      }
+
+      setPreview({ file, totalRows: rows.length - 1, rows: previewRows, histogram, mismatchCount });
+      setAcknowledgeMismatch(false);
+      setImportResult(null);
+    } catch (error) {
+      toast({
+        title: "Could not read CSV",
+        description: error instanceof Error ? error.message : "Parse failed",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Stage 2: actually upload after the user confirms.
+  const handleConfirmUpload = async () => {
+    if (!preview) return;
     setIsUploading(true);
     setImportResult(null);
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', preview.file);
 
       const { data, error } = await supabase.functions.invoke('import-personalities-csv', {
         body: formData
@@ -118,6 +225,8 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
 
   const resetImport = () => {
     setImportResult(null);
+    setPreview(null);
+    setAcknowledgeMismatch(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -164,8 +273,8 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
             </CardContent>
           </Card>
 
-          {/* File Upload */}
-          {!importResult && (
+          {/* File picker — stage 1: classify locally before commit */}
+          {!importResult && !preview && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box>
                 <Label htmlFor="csv-file">Select CSV File</Label>
@@ -174,20 +283,107 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                   type="file"
                   accept=".csv"
                   ref={fileInputRef}
-                  onChange={handleFileUpload}
+                  onChange={handleFileSelect}
                   disabled={isUploading}
                 />
               </Box>
-
-              {isUploading && (
-                <Box sx={{ textAlign: 'center', py: 2 }}>
-                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ animation: 'spin 1s linear infinite', borderRadius: '50%', height: '16px', width: '16px', border: 2, borderColor: 'primary.main', borderTopColor: 'transparent' }} />
-                    Uploading and processing CSV...
-                  </Box>
-                </Box>
-              )}
             </Box>
+          )}
+
+          {/* Preview — stage 2: show detected entity types per row */}
+          {!importResult && preview && (
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  Preview: detected entity types
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                  {preview.totalRows} rows in <strong>{preview.file.name}</strong>. The
+                  AI validator will reject any row whose detected type doesn't
+                  match <strong>{EXPECTED_KIND}</strong>.
+                </Typography>
+
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+                  {(Object.keys(preview.histogram) as EntityKind[]).map((k) => (
+                    <Box key={k} sx={{ minWidth: 100 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        {k.replace('_', ' ')}
+                      </Typography>
+                      <Typography variant="h5" sx={{
+                        fontWeight: 700,
+                        color: k === EXPECTED_KIND
+                          ? 'success.main'
+                          : (preview.histogram[k] > 0 ? 'warning.main' : 'text.disabled'),
+                      }}>
+                        {preview.histogram[k]}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+
+                {preview.mismatchCount > 0 && (
+                  <Box sx={{ p: 2, mb: 2, bgcolor: 'warning.light', color: 'warning.contrastText' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                      ⚠ {preview.mismatchCount} of {preview.totalRows} rows look like
+                      a different entity type than {EXPECTED_KIND}. The validator
+                      will reject these — they will not be inserted.
+                    </Typography>
+                    <Box component="label" sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={acknowledgeMismatch}
+                        onChange={(e) => setAcknowledgeMismatch(e.target.checked)}
+                      />
+                      <Typography variant="body2">
+                        I understand. Proceed and let the validator route mismatches.
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+
+                <Typography variant="caption" sx={{ color: 'text.secondary', mb: 0.5, display: 'block' }}>
+                  First {preview.rows.length} rows:
+                </Typography>
+                <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', maxHeight: 240, overflowY: 'auto', fontSize: '0.875rem' }}>
+                  {preview.rows.map((r) => {
+                    const mismatch = r.classification.classified_as !== EXPECTED_KIND &&
+                      r.classification.classified_as !== 'unknown' &&
+                      r.classification.confidence >= 0.45;
+                    return (
+                      <Box component="li" key={r.rowNumber} sx={{
+                        py: 0.5,
+                        display: 'grid',
+                        gridTemplateColumns: '60px 1fr 120px',
+                        gap: 1,
+                        color: mismatch ? 'error.main' : 'inherit',
+                      }}>
+                        <Typography variant="caption">#{r.rowNumber}</Typography>
+                        <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {r.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ textAlign: 'right' }}>
+                          {r.classification.classified_as}{' '}
+                          ({Math.round(r.classification.confidence * 100)}%)
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                  <Button
+                    onClick={handleConfirmUpload}
+                    disabled={isUploading || (preview.mismatchCount > 0 && !acknowledgeMismatch)}
+                    size="sm"
+                  >
+                    {isUploading ? 'Uploading…' : `Import ${preview.totalRows} rows`}
+                  </Button>
+                  <Button onClick={resetImport} variant="outline" size="sm" disabled={isUploading}>
+                    Cancel
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
           )}
 
           {/* Import Results */}
