@@ -69,6 +69,7 @@
     "@tiptap/extension-youtube": "^3.19.0",
     "@tiptap/react": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
+    "@vercel/analytics": "^2.0.1",
     "@xyflow/react": "^12.10.2",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
