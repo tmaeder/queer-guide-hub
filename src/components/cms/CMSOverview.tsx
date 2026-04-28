@@ -277,12 +277,12 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
       if (actorIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, email')
-          .in('id', actorIds);
+          .select('user_id, email')
+          .in('user_id', actorIds);
 
         if (profiles) {
           actorMap = Object.fromEntries(
-            (profiles as { id: string; email: string }[]).map((p) => [p.id, p.email]),
+            (profiles as { user_id: string; email: string }[]).map((p) => [p.user_id, p.email]),
           );
         }
       }
