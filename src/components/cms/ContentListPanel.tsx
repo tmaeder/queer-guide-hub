@@ -27,6 +27,9 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import { alpha } from '@mui/material/styles';
+import Menu from '@mui/material/Menu';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Divider from '@mui/material/Divider';
 import {
   Plus,
   Search,
@@ -37,6 +40,7 @@ import {
   ArrowUpDown,
   Inbox,
   X,
+  Columns3,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useParams } from 'react-router';
@@ -82,13 +86,16 @@ interface ListItem {
 type SortField = string;
 type SortDir = 'asc' | 'desc';
 
-type FilterValue = string | boolean | { from?: string; to?: string } | undefined;
+type DateRange = { from?: string; to?: string };
+type NumberRange = { min?: number; max?: number };
+type FilterValue = string | boolean | DateRange | NumberRange | undefined;
 type FilterState = Record<string, FilterValue>;
 
 function loadPersistedState(key: string): {
   sortField?: SortField;
   sortDir?: SortDir;
   filters?: FilterState;
+  hiddenColumns?: string[];
 } | null {
   try {
     const raw = sessionStorage.getItem(key);
@@ -98,7 +105,15 @@ function loadPersistedState(key: string): {
   }
 }
 
-function persistState(key: string, state: { sortField: SortField; sortDir: SortDir; filters: FilterState }) {
+function persistState(
+  key: string,
+  state: {
+    sortField: SortField;
+    sortDir: SortDir;
+    filters: FilterState;
+    hiddenColumns: string[];
+  },
+) {
   try {
     sessionStorage.setItem(key, JSON.stringify(state));
   } catch {
@@ -370,24 +385,30 @@ export function ContentListPanel({
   const [sortField, setSortField] = useState<SortField>(initialSortField);
   const [sortDir, setSortDir] = useState<SortDir>(initialSortDir);
   const [filters, setFilters] = useState<FilterState>(persisted?.filters ?? {});
+  const [hiddenColumns, setHiddenColumns] = useState<string[]>(persisted?.hiddenColumns ?? []);
+  const [columnsMenuAnchor, setColumnsMenuAnchor] = useState<HTMLElement | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dynamicOptions, setDynamicOptions] = useState<Record<string, SelectOption[]>>({});
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const extraColumns: FieldConfig[] = useMemo(
+  const allListColumns: FieldConfig[] = useMemo(
     () => (config?.fields ?? []).filter((f) => f.listColumn),
     [config],
+  );
+  const extraColumns: FieldConfig[] = useMemo(
+    () => allListColumns.filter((f) => !hiddenColumns.includes(f.name)),
+    [allListColumns, hiddenColumns],
   );
   const filterFields: FieldConfig[] = useMemo(
     () => (config?.fields ?? []).filter((f) => f.filterable),
     [config],
   );
 
-  // Persist filter+sort per content type
+  // Persist filter+sort+columns per content type
   useEffect(() => {
-    if (persistKey) persistState(persistKey, { sortField, sortDir, filters });
-  }, [persistKey, sortField, sortDir, filters]);
+    if (persistKey) persistState(persistKey, { sortField, sortDir, filters, hiddenColumns });
+  }, [persistKey, sortField, sortDir, filters, hiddenColumns]);
 
   // Load dynamic filter options (e.g. country/city dropdowns) for fields with
   // dynamicOptions config. Cached per (table, columns) tuple.
@@ -489,9 +510,13 @@ export function ContentListPanel({
       if (f.type === 'select' || f.type === 'boolean') {
         query = query.eq(f.name, val as string | boolean);
       } else if (f.type === 'datetime' || f.type === 'date') {
-        const range = val as { from?: string; to?: string };
+        const range = val as DateRange;
         if (range.from) query = query.gte(f.name, range.from);
         if (range.to) query = query.lte(f.name, range.to);
+      } else if (f.type === 'number') {
+        const range = val as NumberRange;
+        if (range.min !== undefined) query = query.gte(f.name, range.min);
+        if (range.max !== undefined) query = query.lte(f.name, range.max);
       } else if (f.type === 'text') {
         query = query.ilike(f.name, `%${val as string}%`);
       }
@@ -601,6 +626,7 @@ export function ContentListPanel({
     setSortField(p?.sortField ?? config?.defaultSort?.field ?? 'updated_at');
     setSortDir(p?.sortDir ?? config?.defaultSort?.dir ?? 'desc');
     setFilters(p?.filters ?? {});
+    setHiddenColumns(p?.hiddenColumns ?? []);
   }, [contentTypeId, persistKey, config]);
 
   // Clear selection on page change
@@ -724,6 +750,50 @@ export function ContentListPanel({
         </Typography>
       );
     }
+    if (field.type === 'number') {
+      const n = typeof v === 'number' ? v : Number(v);
+      if (Number.isNaN(n)) {
+        return (
+          <Typography variant="caption" color="text.disabled">
+            --
+          </Typography>
+        );
+      }
+      const formatted = n >= 0 && n <= 1 ? n.toFixed(2) : n.toLocaleString();
+      return (
+        <Typography variant="body2" sx={{ fontSize: '0.8rem', fontVariantNumeric: 'tabular-nums' }}>
+          {formatted}
+        </Typography>
+      );
+    }
+    if (field.type === 'tags' && Array.isArray(v)) {
+      if (v.length === 0) {
+        return (
+          <Typography variant="caption" color="text.disabled">
+            --
+          </Typography>
+        );
+      }
+      const shown = v.slice(0, 3);
+      const remaining = v.length - shown.length;
+      return (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          {shown.map((tag) => (
+            <Chip
+              key={String(tag)}
+              label={String(tag)}
+              size="small"
+              sx={{ height: 18, fontSize: '0.65rem' }}
+            />
+          ))}
+          {remaining > 0 && (
+            <Typography variant="caption" color="text.secondary">
+              +{remaining}
+            </Typography>
+          )}
+        </Box>
+      );
+    }
     return (
       <Typography variant="body2" sx={{ fontSize: '0.8rem' }} noWrap>
         {String(v)}
@@ -828,6 +898,77 @@ export function ContentListPanel({
             {selected.size} selected
           </Typography>
         )}
+        {contentTypeId && allListColumns.length > 0 && (
+          <Box sx={{ ml: 'auto' }}>
+            <Tooltip title="Columns">
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<Columns3 size={14} />}
+                onClick={(e) => setColumnsMenuAnchor(e.currentTarget)}
+                sx={{ textTransform: 'none' }}
+              >
+                Columns
+                {hiddenColumns.length > 0 && (
+                  <Typography
+                    component="span"
+                    variant="caption"
+                    sx={{ ml: 0.5, color: 'text.secondary' }}
+                  >
+                    ({allListColumns.length - hiddenColumns.length}/{allListColumns.length})
+                  </Typography>
+                )}
+              </Button>
+            </Tooltip>
+            <Menu
+              anchorEl={columnsMenuAnchor}
+              open={Boolean(columnsMenuAnchor)}
+              onClose={() => setColumnsMenuAnchor(null)}
+              slotProps={{ paper: { sx: { minWidth: 220 } } }}
+            >
+              <Box sx={{ px: 2, py: 1 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                  Visible columns
+                </Typography>
+              </Box>
+              <Divider />
+              {allListColumns.map((f) => {
+                const visible = !hiddenColumns.includes(f.name);
+                return (
+                  <MenuItem
+                    key={f.name}
+                    dense
+                    onClick={() =>
+                      setHiddenColumns((prev) =>
+                        visible ? [...prev, f.name] : prev.filter((n) => n !== f.name),
+                      )
+                    }
+                  >
+                    <FormControlLabel
+                      control={<Checkbox size="small" checked={visible} sx={{ p: 0.5 }} />}
+                      label={
+                        <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                          {f.label}
+                        </Typography>
+                      }
+                      sx={{ m: 0, pointerEvents: 'none' }}
+                    />
+                  </MenuItem>
+                );
+              })}
+              {hiddenColumns.length > 0 && (
+                <>
+                  <Divider />
+                  <MenuItem dense onClick={() => setHiddenColumns([])}>
+                    <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                      Show all
+                    </Typography>
+                  </MenuItem>
+                </>
+              )}
+            </Menu>
+          </Box>
+        )}
       </Box>
 
       {/* ── Entity filters ──────────────────────────────────────── */}
@@ -898,7 +1039,7 @@ export function ContentListPanel({
               );
             }
             if (f.type === 'datetime' || f.type === 'date') {
-              const range = (val as { from?: string; to?: string } | undefined) ?? {};
+              const range = (val as DateRange | undefined) ?? {};
               return (
                 <Box
                   key={f.name}
@@ -931,6 +1072,63 @@ export function ContentListPanel({
                       })
                     }
                     sx={{ width: 130 }}
+                  />
+                </Box>
+              );
+            }
+            if (f.type === 'number') {
+              const range = (val as NumberRange | undefined) ?? {};
+              const updateRange = (next: NumberRange) => {
+                const clean: NumberRange = {};
+                if (next.min !== undefined && !Number.isNaN(next.min)) clean.min = next.min;
+                if (next.max !== undefined && !Number.isNaN(next.max)) clean.max = next.max;
+                setFilter(
+                  f.name,
+                  clean.min === undefined && clean.max === undefined ? undefined : clean,
+                );
+              };
+              return (
+                <Box
+                  key={f.name}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}
+                >
+                  <TextField
+                    size="small"
+                    type="number"
+                    label={`${f.label} ≥`}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{
+                      min: f.min,
+                      max: f.max,
+                      step: f.max !== undefined && f.max <= 1 ? 0.05 : 1,
+                    }}
+                    value={range.min ?? ''}
+                    onChange={(e) =>
+                      updateRange({
+                        ...range,
+                        min: e.target.value === '' ? undefined : Number(e.target.value),
+                      })
+                    }
+                    sx={{ width: 130 }}
+                  />
+                  <TextField
+                    size="small"
+                    type="number"
+                    label="≤"
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{
+                      min: f.min,
+                      max: f.max,
+                      step: f.max !== undefined && f.max <= 1 ? 0.05 : 1,
+                    }}
+                    value={range.max ?? ''}
+                    onChange={(e) =>
+                      updateRange({
+                        ...range,
+                        max: e.target.value === '' ? undefined : Number(e.target.value),
+                      })
+                    }
+                    sx={{ width: 100 }}
                   />
                 </Box>
               );
