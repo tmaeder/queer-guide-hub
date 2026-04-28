@@ -22,17 +22,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "20" }
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: extension/package-lock.json
 
-      - name: Build extension
+      - name: Build & zip
         working-directory: extension
         run: |
-          npm install
+          set -euo pipefail
+          npm ci
           npm run build
-
-      - name: Zip dist
-        run: |
-          cd extension/dist
+          cd dist
           zip -rq "$GITHUB_WORKSPACE/queer-guide-extension.zip" .
 
       - uses: actions/upload-artifact@v4
