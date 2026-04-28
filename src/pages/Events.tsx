@@ -321,7 +321,7 @@ const Events = () => {
                   aria-label={t('pages.events.gridView', 'Grid view')}
                   onClick={() => setViewMode('grid')}
                 >
-                  <Grid style={{ width: 16, height: 16 }} />
+                  <Grid size={16} />
                 </Button>
                 <Button
                   variant={viewMode === 'calendar' ? 'default' : 'ghost'}
@@ -329,12 +329,12 @@ const Events = () => {
                   aria-label={t('pages.events.calendarView', 'Calendar view')}
                   onClick={() => setViewMode('calendar')}
                 >
-                  <CalendarIcon style={{ width: 16, height: 16 }} />
+                  <CalendarIcon size={16} />
                 </Button>
               </Box>
               <Button onClick={() => navigate('/submit/event')} style={{ display: 'flex', gap: 8 }}>
-                <Plus style={{ width: 16, height: 16 }} />
-                Submit Event
+                <Plus size={16} />
+                {t('pages.events.submitEvent', 'Submit Event')}
               </Button>
             </>
           }
@@ -415,11 +415,11 @@ const Events = () => {
               {locationLoading ? (
                 <Loader style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
               ) : (
-                <MapPin style={{ width: 16, height: 16 }} />
+                <MapPin size={16} />
               )}
             </Button>
             <Button onClick={handleFiltersChange} size="icon" aria-label="Search events">
-              <Search style={{ width: 16, height: 16 }} />
+              <Search size={16} />
             </Button>
             <Button
               variant="outline"
@@ -428,7 +428,7 @@ const Events = () => {
               aria-label={showFilters ? 'Hide filters' : 'Show filters'}
               aria-expanded={showFilters}
             >
-              <Filter style={{ width: 16, height: 16 }} />
+              <Filter size={16} />
             </Button>
             <Button
               variant={showPast ? 'default' : 'outline'}
@@ -664,7 +664,7 @@ const Events = () => {
                     onClick={clearFilters}
                     style={{ display: 'flex', gap: 8 }}
                   >
-                    <X style={{ width: 16, height: 16 }} />
+                    <X size={16} />
                     {t('pages.events.clearAll', 'Clear All')}
                   </Button>
                 )}

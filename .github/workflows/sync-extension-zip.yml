@@ -1,0 +1,91 @@
+name: Sync extension zip
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "extension/**"
+      - ".github/workflows/sync-extension-zip.yml"
+  workflow_dispatch: {}
+
+# When the extension changes on main, rebuild the production .zip and open a
+# bot PR that updates public/extension/queer-guide-extension.zip so the
+# /extension install page download stays current.
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+
+      - name: Build extension
+        working-directory: extension
+        run: |
+          npm install
+          npm run build
+
+      - name: Zip dist
+        run: |
+          cd extension/dist
+          zip -rq "$GITHUB_WORKSPACE/queer-guide-extension.zip" .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: queer-guide-extension
+          path: queer-guide-extension.zip
+          retention-days: 30
+
+      - name: Open PR with refreshed zip
+        env:
+          # Prefer a PAT (HUB_PR_TOKEN) so PR creation works even when
+          # "Allow GitHub Actions to create and approve pull requests" is
+          # disabled on the repo. Fall back to GITHUB_TOKEN otherwise.
+          GH_TOKEN: ${{ secrets.HUB_PR_TOKEN || secrets.GITHUB_TOKEN }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git config --global user.name "queer-guide-bot"
+          git config --global user.email "bot@queer.guide"
+
+          short="${SOURCE_SHA:0:7}"
+          branch="bot/extension-zip-sync-${short}"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            git fetch origin "$branch"
+            git checkout "$branch"
+          else
+            git checkout -b "$branch"
+          fi
+          mkdir -p public/extension
+          cp "$GITHUB_WORKSPACE/queer-guide-extension.zip" public/extension/queer-guide-extension.zip
+          git add public/extension/queer-guide-extension.zip
+          if git diff --cached --quiet -- public/extension/queer-guide-extension.zip; then
+            echo "Zip unchanged — nothing to sync."
+            exit 0
+          fi
+          git commit -m "chore(extension): refresh extension zip from ${short}"
+          git push -u origin "$branch"
+
+          # Skip PR creation if one already exists for this branch.
+          if [ -n "$(gh pr list --head "$branch" --base main --state open --json number --jq '.[0].number')" ]; then
+            echo "PR already open for $branch — nothing more to do."
+            exit 0
+          fi
+
+          if ! gh pr create \
+              --title "chore(extension): refresh extension zip" \
+              --body "Auto-built from ${SOURCE_SHA}. Merge to publish the new build at https://queer.guide/extension/queer-guide-extension.zip." \
+              --head "$branch" --base main; then
+            echo "::error::Failed to open PR for $branch."
+            echo "If the error above is 'GraphQL: GitHub Actions is not permitted to create or approve pull requests',"
+            echo "either enable Settings → Actions → General → Workflow permissions →"
+            echo "'Allow GitHub Actions to create and approve pull requests',"
+            echo "or add a repo secret HUB_PR_TOKEN (PAT with 'contents:write' + 'pull-requests:write')."
+            echo "Branch $branch has been pushed; you can open the PR manually in the meantime."
+            exit 1
+          fi

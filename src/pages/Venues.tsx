@@ -170,7 +170,7 @@ const Venues = () => {
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger aria-label={t('pages.venues.sortBy', 'Sort venues')} style={{ width: 120, height: 34, fontSize: '0.8rem' }}>
+              <SelectTrigger aria-label={t('pages.venues.sortBy', 'Sort venues')} className="w-32 h-9 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -197,7 +197,7 @@ const Venues = () => {
                 }}
                 aria-label={t('pages.venues.gridView', 'Grid view')}
               >
-                <Grid style={{ width: 16, height: 16 }} />
+                <Grid size={16} />
               </IconButton>
               <IconButton
                 size="small"
@@ -209,13 +209,13 @@ const Venues = () => {
                 }}
                 aria-label={t('pages.venues.mapView', 'Map view')}
               >
-                <Map style={{ width: 16, height: 16 }} />
+                <Map size={16} />
               </IconButton>
             </Box>
 
             <Button variant="outline" size="sm" onClick={() => navigate('/submit/venue')}>
-              <Plus style={{ width: 14, height: 14 }} />
-              Submit
+              <Plus size={14} />
+              {t('common.submit', 'Submit')}
             </Button>
           </Box>
         </Box>
@@ -314,7 +314,7 @@ const Venues = () => {
                   <Button
                     variant="outline"
                     size="lg"
-                    style={{ paddingLeft: 32, paddingRight: 32 }}
+                    className="px-8"
                     onClick={async () => {
                       setAutoLoadedCount(0);
                       const nextPage = page + 1;
@@ -326,7 +326,7 @@ const Venues = () => {
                       });
                     }}
                   >
-                    Load More
+                    {t('common.loadMore', 'Load more')}
                   </Button>
                 )}
                 <Box ref={sentinelRef} sx={{ height: '1px' }} />

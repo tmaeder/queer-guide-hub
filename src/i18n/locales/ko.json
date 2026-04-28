@@ -1105,7 +1105,8 @@
       "myGroups": "내 그룹",
       "accessibility": "접근성",
       "bookings": "예약",
-      "tripInbox": "여행 수신함"
+      "tripInbox": "여행 수신함",
+      "extension": "브라우저 확장 프로그램"
     },
     "modes": {
       "dating": "사랑을 찾아서",

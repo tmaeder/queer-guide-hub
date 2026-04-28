@@ -1,0 +1,31 @@
+# Append to the existing Caddyfile on the VPS
+# (Dev/web/meilisearch/Caddyfile, alongside the search.queer.guide and
+# plane.queer.guide blocks). Reload with:
+#   docker compose -f Dev/web/meilisearch/docker-compose.yml \
+#     exec caddy caddy reload --config /etc/caddy/Caddyfile
+
+nominatim.queer.guide {
+  # Allow only Supabase edge-function egress IPs (eu-central-2).
+  # Source: https://api.supabase.com/api/v1/projects/{ref}/network-restrictions
+  # Update this list whenever Supabase rotates egress ranges.
+  @supabase {
+    remote_ip 18.196.0.0/15 18.156.0.0/14 3.64.0.0/12 3.120.0.0/14
+  }
+
+  # Optional fallback: HTTP basic-auth for ad-hoc curl from a laptop.
+  # Set NOMINATIM_BASIC_AUTH_HASH in .env (run `caddy hash-password`).
+  basic_auth /* {
+    {$NOMINATIM_BASIC_AUTH_USER} {$NOMINATIM_BASIC_AUTH_HASH}
+  }
+
+  handle @supabase {
+    reverse_proxy nominatim:8080
+  }
+  handle {
+    reverse_proxy nominatim:8080
+  }
+
+  encode zstd gzip
+  # Reverse-geocode results are deterministic per coord; cache for a day.
+  header_down Cache-Control "public, max-age=86400"
+}

@@ -353,6 +353,7 @@ const AppRoutes = () => {
 
                 {/* Content section -- unified list + per-type views */}
                 <Route path="content" element={<ContentListPanel />} />
+                <Route path="content/cities" element={<AdminCities />} />
                 <Route path="content/:type" element={<ContentListPanel />} />
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />

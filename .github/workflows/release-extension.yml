@@ -1,0 +1,98 @@
+name: Release extension
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "extension/manifest.json"
+      - ".github/workflows/release-extension.yml"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional override tag (default: extension-v<manifest version>)"
+        required: false
+        type: string
+
+# Cuts a GitHub Release whenever the extension manifest version bumps.
+# - Reads version from extension/manifest.json
+# - Builds and zips dist/
+# - Tags as extension-v<version>
+# - Skips silently if a release for that tag already exists
+#
+# Uses the built-in GITHUB_TOKEN (no extra secrets needed). The token has
+# `contents: write` granted by the explicit permissions block below.
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read manifest version
+        id: ver
+        env:
+          OVERRIDE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          v="$(jq -r .version extension/manifest.json)"
+          tag="${OVERRIDE_TAG:-extension-v${v}}"
+          echo "version=${v}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}"   >> "$GITHUB_OUTPUT"
+
+      - name: Bail if release already exists
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.ver.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Release $TAG already exists — skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.existing.outputs.skip == 'false'
+        with: { node-version: "20" }
+
+      - name: Build extension
+        if: steps.existing.outputs.skip == 'false'
+        working-directory: extension
+        run: |
+          npm install
+          npm run build
+
+      - name: Zip dist
+        if: steps.existing.outputs.skip == 'false'
+        run: |
+          set -euo pipefail
+          cd extension/dist
+          zip -rq "$GITHUB_WORKSPACE/queer-guide-extension.zip" .
+
+      - name: Create release
+        if: steps.existing.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.ver.outputs.tag }}
+          VERSION: ${{ steps.ver.outputs.version }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          notes_file="$(mktemp)"
+          {
+            echo "# Extension v${VERSION}"
+            echo
+            echo "Built from commit ${SHA}."
+            echo
+            echo "Install: download queer-guide-extension.zip, unzip, then chrome://extensions → Developer mode → Load unpacked. Or open https://queer.guide/extension and click Connect."
+          } > "$notes_file"
+          gh release create "$TAG" "queer-guide-extension.zip" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Extension v${VERSION}" \
+            --notes-file "$notes_file" \
+            --latest

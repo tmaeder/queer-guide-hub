@@ -15,6 +15,10 @@ jwt_expiry = 3600
 enable_signup = true
 enable_manual_linking = false
 
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/public/custom_access_token_hook"
+
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
@@ -24,6 +28,29 @@ enable_confirmations = false
 enable_signup = false
 enable_confirmations = false
 template = "Your code is {{ .Code }}"
+
+# Multi-factor authentication. Supabase advisor flags
+# `auth_insufficient_mfa_options` (security/WARN) when fewer than two factor
+# types are enabled, so we expose TOTP, Phone (SMS), and WebAuthn. End users
+# opt in by enrolling — defaults stay safe (TOTP/WebAuthn enabled, Phone
+# verify-only so SMS is never required without an enrolled factor).
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.mfa.phone]
+enroll_enabled = true
+verify_enabled = true
+otp_length = 6
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
+[auth.mfa.web_authn]
+enroll_enabled = true
+verify_enabled = true
 
 [db]
 port = 54322
@@ -209,6 +236,24 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.news-quality-backfill]
+verify_jwt = false
+
+[functions.pipeline-enrich-news]
+verify_jwt = false
+
+[functions.pipeline-enrich-city]
+verify_jwt = false
+
+[functions.pipeline-enrich-country]
+verify_jwt = false
+
+[functions.pipeline-enrich-events]
+verify_jwt = false
+
+[functions.pipeline-enrich-venue]
+verify_jwt = false
+
+[functions.pipeline-enrich-village]
 verify_jwt = false
 
 [functions.pipeline-dlq-consumer]

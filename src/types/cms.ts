@@ -3,6 +3,7 @@
  * Central type definitions for the unified Content Management System.
  */
 
+import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import type { ZodTypeAny } from 'zod';
 
@@ -79,6 +80,30 @@ export interface FieldConfig {
   sortable?: boolean;
   /** Filterable in list view */
   filterable?: boolean;
+  /** Show as a column in the admin list view */
+  listColumn?: boolean;
+  /**
+   * Custom cell renderer for the list view. Receives the full row (incl. joined
+   * relations from `ContentTypeConfig.listSelect`). When omitted the default
+   * by-type renderer reads `row[field.name]`.
+   */
+  listRender?: (row: Record<string, unknown>) => ReactNode;
+  /**
+   * Marks a field as virtual (computed/joined, no backing DB column on the
+   * primary table). Virtual fields are skipped during server-side filter/sort
+   * even if `filterable`/`sortable` is true.
+   */
+  virtual?: boolean;
+  /**
+   * For `select`-typed filters: load options at runtime from a related table.
+   * Replaces the static `options` list at filter render time.
+   */
+  dynamicOptions?: {
+    table: string;
+    valueColumn: string;
+    labelColumn: string;
+    orderBy?: string;
+  };
   /** Max length for text fields */
   maxLength?: number;
   /** Min length for text fields */
@@ -128,6 +153,13 @@ export interface ContentTypeConfig {
   color: string;
   /** Field definitions for the editor */
   fields: FieldConfig[];
+  /**
+   * Postgres select string used by the list view (Supabase syntax). Defaults to
+   * `'*'`. Override to fetch joined relations and aggregate counts that virtual
+   * `listRender` columns can read from. Example:
+   * `'*,countries(name,lgbt_legal_status),venues(count)'`.
+   */
+  listSelect?: string;
   /** Default values for new items */
   defaults?: Record<string, unknown>;
   /** Custom validator function */
@@ -150,6 +182,8 @@ export interface ContentTypeConfig {
   commentable?: boolean;
   /** Cross-type bulk operations enabled for this type. */
   bulkOps?: BulkOpKind[];
+  /** Initial sort for the admin list view (overridable by user). */
+  defaultSort?: { field: string; dir: 'asc' | 'desc' };
 }
 
 export type AIAssistOp =

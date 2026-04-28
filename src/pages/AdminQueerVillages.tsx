@@ -40,11 +40,20 @@ interface VillageRow {
   tags: string[] | null;
   featured: boolean;
   created_at: string;
-  cities: { name: string } | null;
-  countries: { name: string } | null;
+  cities: { name: string; population: number | null } | null;
+  countries: {
+    name: string;
+    lgbt_legal_status: string | null;
+    population: number | null;
+  } | null;
+  venues: { count: number }[];
+  events: { count: number }[];
 }
 
 const columnHelper = createColumnHelper<VillageRow>();
+
+const fmtNum = (n: number | null | undefined) =>
+  n != null ? new Intl.NumberFormat().format(n) : '-';
 
 type CityOption = { id: string; name: string };
 type CountryOption = { id: string; name: string };
@@ -278,6 +287,52 @@ export default function AdminQueerVillages() {
         cell: (info) => (info.getValue() ? <Badge>Featured</Badge> : null),
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
+      columnHelper.display({
+        id: 'country',
+        header: 'Country',
+        cell: ({ row }) => {
+          const name = row.original.countries?.name;
+          return name ? <Badge variant="secondary">{name}</Badge> : '-';
+        },
+        meta: { hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.display({
+        id: 'lgbt_legal_status',
+        header: 'LGBT legal status',
+        cell: ({ row }) => row.original.countries?.lgbt_legal_status || '-',
+        meta: { hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.display({
+        id: 'population',
+        header: 'Population',
+        cell: ({ row }) => {
+          const cityPop = row.original.cities?.population;
+          const countryPop = row.original.countries?.population;
+          const value = cityPop ?? countryPop;
+          if (value == null) return '-';
+          return (
+            <Box>
+              <span>{fmtNum(value)}</span>
+              <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+                ({cityPop != null ? 'city' : 'country'})
+              </Typography>
+            </Box>
+          );
+        },
+        meta: { defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.display({
+        id: 'venues_count',
+        header: 'Venues',
+        cell: ({ row }) => fmtNum(row.original.venues?.[0]?.count ?? 0),
+        meta: { hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.display({
+        id: 'events_count',
+        header: 'Events',
+        cell: ({ row }) => fmtNum(row.original.events?.[0]?.count ?? 0),
+        meta: { hideable: true } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('created_at', {
         header: 'Created',
         cell: (info) => new Date(info.getValue()).toLocaleDateString(),
@@ -295,14 +350,32 @@ export default function AdminQueerVillages() {
     () => ({
       tableName: 'queer_villages',
       select:
-        'id,name,slug,description,history,image_url,website,latitude,longitude,city_id,country_id,notable_landmarks,tags,featured,created_at,cities(name),countries(name)',
+        'id,name,slug,description,history,image_url,website,latitude,longitude,city_id,country_id,notable_landmarks,tags,featured,created_at,cities(name,population),countries(name,lgbt_legal_status,population),venues(count),events(count)',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 25,
       enableSelection: true,
       enableSearch: true,
       searchColumns: ['name'],
-      entityFilters: [{ key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' }],
+      entityFilters: [
+        { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
+        {
+          key: 'country_id',
+          label: 'Country',
+          type: 'select',
+          column: 'country_id',
+          options: 'dynamic',
+          dynamicSource: { table: 'countries', column: 'id', labelColumn: 'name' },
+        },
+        {
+          key: 'city_id',
+          label: 'City',
+          type: 'select',
+          column: 'city_id',
+          options: 'dynamic',
+          dynamicSource: { table: 'cities', column: 'id', labelColumn: 'name' },
+        },
+      ],
       bulkEditFields: [{ key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' }],
       rowActions: [
         {

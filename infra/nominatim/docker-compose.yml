@@ -1,0 +1,39 @@
+services:
+  nominatim:
+    image: mediagis/nominatim:4.4
+    container_name: nominatim
+    restart: unless-stopped
+    environment:
+      # PBF source — Europe-only by default; expand by switching to a
+      # merged regional file (see README §3 "Add a region").
+      PBF_URL: https://download.geofabrik.de/europe-latest.osm.pbf
+      REPLICATION_URL: https://download.geofabrik.de/europe-updates/
+      # Container-internal sizing — these match a 4 vCPU / 8 GB VPS.
+      NOMINATIM_PASSWORD: ${NOMINATIM_DB_PASSWORD}
+      THREADS: 4
+      # Reverse-only flatnode for ~30% smaller DB & faster lookups.
+      IMPORT_STYLE: address
+      # Persist replication state inside the data volume.
+      FREEZE: false
+    volumes:
+      - nominatim-data:/var/lib/postgresql/14/main
+      - nominatim-flatnode:/nominatim/flatnode
+    networks: [default, web]
+    # No host port published — only Caddy on the shared `web` network
+    # reaches port 8080. Internal-only.
+    expose: ["8080"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/status?format=json"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 30m   # initial import can take hours; don't flap
+
+volumes:
+  nominatim-data:
+  nominatim-flatnode:
+
+networks:
+  default:
+  web:
+    external: true

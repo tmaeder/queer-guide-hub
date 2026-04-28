@@ -70,6 +70,7 @@ interface EventRow {
   max_attendees: number | null;
   age_restriction: string | null;
   featured: boolean;
+  status: string | null;
   organizer_name: string | null;
   organizer_contact: string | null;
   website: string | null;
@@ -78,6 +79,8 @@ interface EventRow {
   images: string[] | null;
   created_at: string;
 }
+
+const eventStatuses = ['active', 'cancelled', 'postponed', 'completed'];
 
 const columnHelper = createColumnHelper<EventRow>();
 
@@ -374,11 +377,42 @@ export default function AdminEvents() {
           return d ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <CalendarIcon style={{ height: 12, width: 12 }} />
-              {format(new Date(d), 'MMM d, yyyy')}
+              {format(new Date(d), 'MMM d, yyyy HH:mm')}
             </Box>
           ) : (
             '-'
           );
+        },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('end_date', {
+        header: 'End Date',
+        cell: (info) => {
+          const d = info.getValue();
+          return d ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CalendarIcon style={{ height: 12, width: 12 }} />
+              {format(new Date(d), 'MMM d, yyyy HH:mm')}
+            </Box>
+          ) : (
+            '-'
+          );
+        },
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
+      }),
+      columnHelper.accessor('status', {
+        header: 'Status',
+        cell: (info) => {
+          const s = info.getValue();
+          if (!s) return '-';
+          const colors: Record<string, { bg: string; fg: string }> = {
+            active: { bg: '#dcfce7', fg: '#166534' },
+            cancelled: { bg: '#fee2e2', fg: '#991b1b' },
+            postponed: { bg: '#fef3c7', fg: '#92400e' },
+            completed: { bg: '#e0e7ff', fg: '#3730a3' },
+          };
+          const c = colors[s] || { bg: '#f1f5f9', fg: '#475569' };
+          return <Badge style={{ backgroundColor: c.bg, color: c.fg }}>{s}</Badge>;
         },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
@@ -410,7 +444,6 @@ export default function AdminEvents() {
         cell: (info) => info.getValue() || '-',
         meta: {
           serverSortable: true,
-          defaultVisible: false,
           hideable: true,
         } satisfies AdminColumnMeta,
       }),
@@ -431,7 +464,7 @@ export default function AdminEvents() {
     () => ({
       tableName: 'events',
       select:
-        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,featured,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
+        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,featured,status,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
       columns,
       defaultSort: { column: 'start_date', direction: 'desc' },
       defaultPageSize: 50,
@@ -442,11 +475,31 @@ export default function AdminEvents() {
         {
           key: 'event_type',
           label: 'Type',
-          type: 'select',
+          type: 'multiselect',
           column: 'event_type',
           options: eventTypes.map((t) => ({
             value: t,
             label: t.charAt(0).toUpperCase() + t.slice(1),
+          })),
+        },
+        { key: 'start_date', label: 'Start', type: 'date-range', column: 'start_date' },
+        { key: 'end_date', label: 'End', type: 'date-range', column: 'end_date' },
+        {
+          key: 'organizer_name',
+          label: 'Organizer',
+          type: 'select',
+          column: 'organizer_name',
+          options: 'dynamic',
+          dynamicSource: { table: 'events', column: 'organizer_name' },
+        },
+        {
+          key: 'status',
+          label: 'Status',
+          type: 'select',
+          column: 'status',
+          options: eventStatuses.map((s) => ({
+            value: s,
+            label: s.charAt(0).toUpperCase() + s.slice(1),
           })),
         },
         { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
@@ -461,6 +514,16 @@ export default function AdminEvents() {
           options: eventTypes.map((t) => ({
             value: t,
             label: t.charAt(0).toUpperCase() + t.slice(1),
+          })),
+        },
+        {
+          key: 'status',
+          label: 'Status',
+          type: 'select',
+          column: 'status',
+          options: eventStatuses.map((s) => ({
+            value: s,
+            label: s.charAt(0).toUpperCase() + s.slice(1),
           })),
         },
         { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
