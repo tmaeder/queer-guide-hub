@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { submitItem } from "../shared/api";
+import { fetchMySubmissions, submitItem, type SubmissionRow } from "../shared/api";
 import {
   clearSession,
   getValidAccessToken,
@@ -9,12 +9,16 @@ import type { AuthSession, DetectedItem } from "../shared/types";
 import { ItemCard } from "./ItemCard";
 
 type Toast = { kind: "ok" | "err"; msg: string } | null;
+type Tab = "detect" | "history";
 
 export function App() {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [items, setItems] = useState<DetectedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<Toast>(null);
+  const [tab, setTab] = useState<Tab>("detect");
+  const [history, setHistory] = useState<SubmissionRow[] | null>(null);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,6 +81,24 @@ export function App() {
     window.close();
   }
 
+  async function loadHistory() {
+    setHistory(null);
+    setHistoryError(null);
+    const token = await getValidAccessToken();
+    if (!token) { setHistoryError("not signed in"); return; }
+    try {
+      setHistory(await fetchMySubmissions(token));
+    } catch (e) {
+      setHistoryError(e instanceof Error ? e.message : "failed");
+    }
+  }
+
+  useEffect(() => {
+    if (session && tab === "history" && history === null && !historyError) {
+      void loadHistory();
+    }
+  }, [session, tab, history, historyError]);
+
   if (!session) return <Login onSignedIn={setSession} />;
 
   return (
@@ -88,24 +110,88 @@ export function App() {
           <button onClick={async () => { await clearSession(); setSession(null); }}>sign out</button>
         </div>
       </header>
+      <div className="qg-tabs">
+        <button
+          className={tab === "detect" ? "active" : ""}
+          onClick={() => setTab("detect")}
+        >Detect</button>
+        <button
+          className={tab === "history" ? "active" : ""}
+          onClick={() => setTab("history")}
+        >My submissions</button>
+      </div>
       {toast && <div className={`qg-toast ${toast.kind}`}>{toast.msg}</div>}
-      {loading ? (
-        <div className="qg-empty">scanning page…</div>
-      ) : items.length === 0 ? (
-        <div className="qg-empty">
-          <p>nothing detected on this page</p>
-          <button onClick={onPickSelection}>pick selection</button>
-        </div>
+      {tab === "detect" ? (
+        loading ? (
+          <div className="qg-empty">scanning page…</div>
+        ) : items.length === 0 ? (
+          <div className="qg-empty">
+            <p>nothing detected on this page</p>
+            <button onClick={onPickSelection}>pick selection</button>
+          </div>
+        ) : (
+          <div className="qg-list">
+            {items.map((item, i) => (
+              <ItemCard key={i} item={item} onSubmit={(e) => onSubmit(item, e)} />
+            ))}
+            <button onClick={onPickSelection}>pick selection instead</button>
+          </div>
+        )
       ) : (
-        <div className="qg-list">
-          {items.map((item, i) => (
-            <ItemCard key={i} item={item} onSubmit={(e) => onSubmit(item, e)} />
-          ))}
-          <button onClick={onPickSelection}>pick selection instead</button>
-        </div>
+        <HistoryView rows={history} error={historyError} onReload={loadHistory} />
       )}
     </div>
   );
+}
+
+function HistoryView({
+  rows,
+  error,
+  onReload,
+}: {
+  rows: SubmissionRow[] | null;
+  error: string | null;
+  onReload: () => void;
+}) {
+  if (error) {
+    return (
+      <div className="qg-empty">
+        <p>could not load history: {error}</p>
+        <button onClick={onReload}>retry</button>
+      </div>
+    );
+  }
+  if (rows === null) return <div className="qg-empty">loading…</div>;
+  if (rows.length === 0) return <div className="qg-empty">no submissions yet.</div>;
+  return (
+    <div className="qg-list">
+      {rows.map((r) => (
+        <div key={r.id} className="qg-item">
+          <div className="qg-item-head">
+            <span className="qg-type">{r.content_type}</span>
+            <span className={`qg-confidence ${historyClass(r.status)}`}>{r.status}</span>
+          </div>
+          <div className="qg-name">
+            {String((r.data as { name?: string }).name ?? (r.data as { title?: string }).title ?? "(unnamed)")}
+          </div>
+          {r.source_url && (
+            <a className="qg-meta" href={r.source_url} target="_blank" rel="noreferrer">{shortUrl(r.source_url)}</a>
+          )}
+          <div className="qg-meta">{new Date(r.submitted_at).toLocaleString()}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function historyClass(status: string): string {
+  if (status === "promoted" || status === "approved") return "hi";
+  if (status === "rejected" || status === "spam") return "lo";
+  return "";
+}
+
+function shortUrl(u: string): string {
+  try { return new URL(u).host + new URL(u).pathname.slice(0, 30); } catch { return u; }
 }
 
 function Login({ onSignedIn }: { onSignedIn: (s: AuthSession) => void }) {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ type ConnectStatus = "idle" | "connecting" | "connected" | "error";
  */
 export default function ExtensionInstall() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const [ext, setExt] = useState<ExtMeta | null>(null);
   const [status, setStatus] = useState<ConnectStatus>("idle");
@@ -86,11 +88,11 @@ export default function ExtensionInstall() {
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-12 max-w-2xl text-center">
-        <h1 className="text-2xl font-semibold mb-3">Sign in to install the extension</h1>
+        <h1 className="text-2xl font-semibold mb-3">{t("extension.signInGate.title", "Sign in to install the extension")}</h1>
         <p className="text-muted-foreground mb-6">
-          The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.
+          {t("extension.signInGate.subtitle", "The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.")}
         </p>
-        <Button onClick={() => navigate("/auth")}>Sign in</Button>
+        <Button onClick={() => navigate("/auth")}>{t("extension.signInGate.cta", "Sign in")}</Button>
       </div>
     );
   }
@@ -100,13 +102,13 @@ export default function ExtensionInstall() {
       <div className="flex items-center gap-3 mb-6">
         <Puzzle className="h-8 w-8" />
         <div>
-          <h1 className="text-3xl font-bold">queer.guide capture</h1>
+          <h1 className="text-3xl font-bold">{t("extension.heading.title", "queer.guide capture")}</h1>
           <p className="text-muted-foreground">
-            Browser extension that turns any webpage into a structured suggestion for our moderators.
+            {t("extension.heading.subtitle", "Browser extension that turns any webpage into a structured suggestion for our moderators.")}
           </p>
         </div>
         <div className="ml-auto">
-          {ext && <Badge variant="default" className="gap-1"><CheckCircle2 className="h-4 w-4" /> Installed</Badge>}
+          {ext && <Badge variant="default" className="gap-1"><CheckCircle2 className="h-4 w-4" /> {t("extension.badge.installed", "Installed")}</Badge>}
         </div>
       </div>
 
@@ -125,14 +127,14 @@ export default function ExtensionInstall() {
       <Highlights />
 
       <div className="mt-10 text-sm text-muted-foreground">
-        Found a bug?{" "}
+        {t("extension.bug.label", "Found a bug?")}{" "}
         <a
           className="underline inline-flex items-center gap-1"
-          href="https://github.com/tmaeder/queer-guide-search/issues/new"
+          href="https://github.com/tmaeder/queer-guide-hub/issues/new"
           target="_blank"
           rel="noreferrer"
         >
-          <Bug className="h-3 w-3" /> open an issue
+          <Bug className="h-3 w-3" /> {t("extension.bug.cta", "open an issue")}
         </a>
         .
       </div>
@@ -153,32 +155,36 @@ function ConnectCard({
   errorMsg: string | null;
   userEmail: string | null;
 }) {
+  const { t } = useTranslation();
   return (
     <Card className="mb-6">
       <CardHeader>
         <CardTitle className="text-xl flex items-center gap-2">
           <Link2 className="h-5 w-5" />
-          Connect this browser
+          {t("extension.connect.title", "Connect this browser")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         <p>
-          Extension <code>{ext.id.slice(0, 6)}…</code>{ext.version ? ` v${ext.version}` : ""} is installed in this browser.
+          {t("extension.connect.detected", "Extension")} <code>{ext.id.slice(0, 6)}…</code>{ext.version ? ` v${ext.version}` : ""} {t("extension.connect.installed", "is installed in this browser.")}
         </p>
         {status === "connected" ? (
           <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 p-3">
-            <p className="font-medium">Connected.</p>
+            <p className="font-medium">{t("extension.connect.done.title", "Connected.")}</p>
             <p className="text-muted-foreground">
-              Open the extension popup on any page to capture content for queer.guide.
+              {t("extension.connect.done.body", "Open the extension popup on any page to capture content for queer.guide.")}
             </p>
           </div>
         ) : (
           <>
             <p className="text-muted-foreground">
-              Sign your queer.guide session into the extension so you can submit content from any webpage. {userEmail ? <>Signed in as <strong>{userEmail}</strong>.</> : null}
+              {t("extension.connect.body", "Sign your queer.guide session into the extension so you can submit content from any webpage.")}
+              {userEmail ? <> {t("extension.connect.signedInAs", "Signed in as")} <strong>{userEmail}</strong>.</> : null}
             </p>
             <Button onClick={onConnect} disabled={status === "connecting"}>
-              {status === "connecting" ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Connecting…</> : "Connect"}
+              {status === "connecting"
+                ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t("extension.connect.connecting", "Connecting…")}</>
+                : t("extension.connect.cta", "Connect")}
             </Button>
             {status === "error" && errorMsg && (
               <p className="text-xs text-destructive">{errorMsg}</p>
@@ -191,49 +197,50 @@ function ConnectCard({
 }
 
 function InstallSteps() {
+  const { t } = useTranslation();
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle className="text-xl">Install in 3 steps</CardTitle>
+        <CardTitle className="text-xl">{t("extension.steps.title", "Install in 3 steps")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        <Step n={1} title="Download the latest build">
+        <Step n={1} title={t("extension.steps.s1.title", "Download the latest build")}>
           <p className="text-sm text-muted-foreground mb-3">
-            We don&apos;t have the extension on the Chrome Web Store yet. For now, grab the latest signed build.
+            {t("extension.steps.s1.body", "We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.")}
           </p>
           <Button asChild>
             <a href={RELEASE_ZIP_URL} target="_blank" rel="noreferrer">
               <Download className="h-4 w-4 mr-2" />
-              Download .zip
+              {t("extension.steps.s1.download", "Download .zip")}
             </a>
           </Button>
           <p className="text-xs text-muted-foreground mt-2">
-            Unzip it somewhere you won&apos;t accidentally delete (e.g. <code>~/Applications/queer-guide-extension</code>).
+            {t("extension.steps.s1.note", "Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension).")}
           </p>
         </Step>
 
-        <Step n={2} title="Load it in Chrome">
+        <Step n={2} title={t("extension.steps.s2.title", "Load it in Chrome")}>
           <ol className="list-decimal pl-5 text-sm space-y-1">
-            <li>Open <code>chrome://extensions</code> in a new tab.</li>
-            <li>Toggle <strong>Developer mode</strong> on (top right).</li>
-            <li>Click <strong>Load unpacked</strong> and pick the unzipped folder.</li>
-            <li>The magenta puzzle icon shows up — pin it for one-click access.</li>
+            <li>{t("extension.steps.s2.l1", "Open chrome://extensions in a new tab.")}</li>
+            <li>{t("extension.steps.s2.l2", "Toggle Developer mode on (top right).")}</li>
+            <li>{t("extension.steps.s2.l3", "Click Load unpacked and pick the unzipped folder.")}</li>
+            <li>{t("extension.steps.s2.l4", "The magenta puzzle icon shows up — pin it for one-click access.")}</li>
           </ol>
           <p className="text-xs text-muted-foreground mt-2">
-            Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet.
+            {t("extension.steps.s2.note", "Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet.")}
           </p>
         </Step>
 
-        <Step n={3} title="Reload this page and Connect">
+        <Step n={3} title={t("extension.steps.s3.title", "Reload this page and Connect")}>
           <p className="text-sm">
-            Once Chrome confirms the extension loaded, refresh this page. A &ldquo;Connect&rdquo; button will appear and one click signs the extension into your queer.guide account.
+            {t("extension.steps.s3.body", "Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account.")}
           </p>
         </Step>
 
         <p className="text-xs text-muted-foreground">
-          Want to build it yourself or contribute?{" "}
+          {t("extension.steps.dev.label", "Want to build it yourself or contribute?")}{" "}
           <a className="underline" href={DEV_BUILD_DOC} target="_blank" rel="noreferrer">
-            Build instructions
+            {t("extension.steps.dev.cta", "Build instructions")}
           </a>
           .
         </p>
@@ -243,16 +250,17 @@ function InstallSteps() {
 }
 
 function Highlights() {
+  const { t } = useTranslation();
   return (
     <div className="grid sm:grid-cols-3 gap-3">
-      <Highlight icon={<Wand2 className="h-5 w-5" />} title="Smart capture">
-        Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work.
+      <Highlight icon={<Wand2 className="h-5 w-5" />} title={t("extension.highlights.smart.title", "Smart capture")}>
+        {t("extension.highlights.smart.body", "Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work.")}
       </Highlight>
-      <Highlight icon={<ShieldCheck className="h-5 w-5" />} title="Privacy-first">
-        Only runs when you click. No host permissions, no background tracking.
+      <Highlight icon={<ShieldCheck className="h-5 w-5" />} title={t("extension.highlights.privacy.title", "Privacy-first")}>
+        {t("extension.highlights.privacy.body", "Only runs when you click. No host permissions, no background tracking.")}
       </Highlight>
-      <Highlight icon={<CheckCircle2 className="h-5 w-5" />} title="Always reviewed">
-        Submissions land in a moderation queue, never live until approved.
+      <Highlight icon={<CheckCircle2 className="h-5 w-5" />} title={t("extension.highlights.review.title", "Always reviewed")}>
+        {t("extension.highlights.review.body", "Submissions land in a moderation queue, never live until approved.")}
       </Highlight>
     </div>
   );
