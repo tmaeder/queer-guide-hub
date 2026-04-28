@@ -31,9 +31,27 @@ export function Footer() {
       }}
     >
       <Box
-        sx={{ width: '100%', px: { xs: 2, sm: 3, md: 4 }, py: 2, position: 'relative' }}
+        sx={{
+          width: '100%',
+          px: { xs: 2, sm: 3, md: 4 },
+          py: 2,
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: 'center',
+          justifyContent: { xs: 'center', md: 'space-between' },
+          gap: { xs: 1, md: 2 },
+        }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.5,
+            order: { xs: 2, md: 1 },
+            flex: { md: 1 },
+          }}
+        >
           <Box
             component="nav"
             aria-label="Footer navigation"
@@ -78,13 +96,12 @@ export function Footer() {
 
         <Box
           sx={{
-            position: 'absolute',
-            right: { xs: 16, sm: 24 },
-            top: '50%',
-            transform: 'translateY(-50%)',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
             gap: 0.5,
+            order: { xs: 1, md: 2 },
           }}
         >
           <LanguageSwitcher />
