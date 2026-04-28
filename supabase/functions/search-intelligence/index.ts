@@ -134,6 +134,15 @@ function pickRoute(method: string, parts: string[]): Handler | null {
   ) {
     return listSettingsVersions
   }
+  // /indexes/:name/settings/rollback
+  if (
+    method === 'POST' &&
+    parts[0] === 'indexes' &&
+    parts[2] === 'settings' &&
+    parts[3] === 'rollback'
+  ) {
+    return rollbackIndexSettings
+  }
   // /search-debug
   if (method === 'POST' && parts[0] === 'search-debug') return searchDebug
   // /synonyms
@@ -391,12 +400,70 @@ async function listSettingsVersions(ctx: RouteContext): Promise<Response> {
   if (!name) return errorResponse('index name required', 400, ctx.req)
   const { data, error } = await ctx.service
     .from('search_settings_versions')
-    .select('id, version, channel, comment, created_at, created_by')
+    .select('id, version, channel, comment, settings, created_at, created_by')
     .eq('index_name', name)
     .order('version', { ascending: false })
     .limit(50)
   if (error) return errorResponse(error.message, 500, ctx.req)
   return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function rollbackIndexSettings(ctx: RouteContext): Promise<Response> {
+  const name = ctx.pathParts[1]
+  if (!name) return errorResponse('index name required', 400, ctx.req)
+  const body = await readJson<{ version: number; apply?: boolean; confirm?: boolean }>(ctx.req)
+  if (!Number.isFinite(body.version)) {
+    return errorResponse('version (numeric) required', 400, ctx.req)
+  }
+  if (!body.confirm) {
+    return errorResponse('confirm: true required for rollback', 400, ctx.req)
+  }
+  // Look up the target version
+  const { data: target, error: tErr } = await ctx.service
+    .from('search_settings_versions')
+    .select('id, version, settings, comment')
+    .eq('index_name', name)
+    .eq('version', body.version)
+    .maybeSingle()
+  if (tErr) return errorResponse(tErr.message, 500, ctx.req)
+  if (!target) return errorResponse(`version ${body.version} not found`, 404, ctx.req)
+  // Find next version number
+  const { data: latest } = await ctx.service
+    .from('search_settings_versions')
+    .select('version')
+    .eq('index_name', name)
+    .order('version', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const nextVersion = (latest?.version ?? 0) + 1
+  // Insert as new version (so history is preserved)
+  const { data: inserted, error: insErr } = await ctx.service
+    .from('search_settings_versions')
+    .insert({
+      index_name: name,
+      version: nextVersion,
+      channel: 'active' as const,
+      settings: target.settings,
+      comment: `rollback to v${target.version}${target.comment ? `: ${target.comment}` : ''}`,
+      created_by: ctx.actorId === 'service-role' ? null : ctx.actorId,
+    })
+    .select()
+    .single()
+  if (insErr) return errorResponse(insErr.message, 500, ctx.req)
+  let applyResult: unknown = null
+  if (body.apply) {
+    applyResult = await meili.patchIndexSettings(name, target.settings as Record<string, unknown>)
+  }
+  await recordAudit(ctx, 'settings.rollback', 'index', name, target, inserted, {
+    rolled_back_to_version: target.version,
+    new_version: nextVersion,
+    applied: Boolean(body.apply),
+  })
+  return jsonResponse(
+    { success: true, data: { version: inserted, applied: applyResult } },
+    200,
+    ctx.req,
+  )
 }
 
 async function searchDebug(ctx: RouteContext): Promise<Response> {

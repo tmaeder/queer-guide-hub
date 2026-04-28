@@ -9,6 +9,7 @@ import { SynonymsTab } from '@/components/admin/search-intelligence/SynonymsTab'
 import { AuditTab } from '@/components/admin/search-intelligence/AuditTab';
 import { IngestionQualityTab } from '@/components/admin/search-intelligence/IngestionQualityTab';
 import { ReindexTab } from '@/components/admin/search-intelligence/ReindexTab';
+import { SettingsTab } from '@/components/admin/search-intelligence/SettingsTab';
 import { PlaceholderTab } from '@/components/admin/search-intelligence/PlaceholderTab';
 
 const FEATURE_FLAG_ENABLED = import.meta.env.VITE_FEATURE_SEARCH_INTELLIGENCE === '1';
@@ -61,16 +62,7 @@ export default function AdminSearchIntelligence() {
             <SynonymsTab />
           </TabsContent>
           <TabsContent value="settings">
-            <PlaceholderTab
-              title="Settings"
-              description="Read and edit per-index Meilisearch settings (searchableAttributes, rankingRules, filterableAttributes, sortableAttributes, typoTolerance). Backed by search_settings_versions for audit + rollback. Version diff UI is staged for the Phase 1 follow-up."
-              bullets={[
-                'GET /indexes/:name/settings?source=desired or applied — wired',
-                'PATCH /indexes/:name/settings — wired (writes a version, optional Meili apply)',
-                'GET /indexes/:name/settings/versions — wired',
-                'Diff + rollback UI: ships in Phase 1 follow-up',
-              ]}
-            />
+            <SettingsTab />
           </TabsContent>
           <TabsContent value="reindex">
             <ReindexTab />
