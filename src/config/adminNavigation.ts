@@ -34,6 +34,7 @@ import {
   Home,
   History,
   MessageSquarePlus,
+  Search,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { brandColors } from '@/theme/muiTheme';
@@ -332,6 +333,14 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/audit',
         adminOnly: true,
         color: '#6366f1',
+      },
+      {
+        id: 'search-intelligence',
+        label: 'Search Intelligence',
+        icon: Search,
+        route: '/admin/search-intelligence',
+        adminOnly: true,
+        color: '#0ea5e9',
       },
       {
         id: 'settings',

@@ -96,6 +96,7 @@ const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
 const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
+const AdminSearchIntelligence = lazy(() => import('./pages/AdminSearchIntelligence'));
 
 // New feature pages
 const Hotels = lazyRetry(() => import('./pages/Hotels'));
@@ -384,6 +385,7 @@ const AppRoutes = () => {
                   element={<Navigate to="/admin/review?tab=moderation" replace />}
                 />
                 <Route path="audit" element={<AuditLog />} />
+                <Route path="search-intelligence" element={<AdminSearchIntelligence />} />
                 <Route
                   path="links"
                   element={<Navigate to="/admin/automation" replace />}
