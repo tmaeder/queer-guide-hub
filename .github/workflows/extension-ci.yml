@@ -17,31 +17,36 @@ on:
 jobs:
   worker-submit:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: workers/submit
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "20" }
-      - run: npm install
-        working-directory: workers/submit
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: workers/submit/package-lock.json
+      - run: npm ci
       - run: npx tsc --noEmit
-        working-directory: workers/submit
       - run: npm test
-        working-directory: workers/submit
 
   extension:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extension
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "20" }
-      - run: npm install
-        working-directory: extension
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: extension/package-lock.json
+      - run: npm ci
       - run: npx tsc --noEmit
-        working-directory: extension
       - run: npm test
-        working-directory: extension
       - run: npm run build
-        working-directory: extension
       - uses: actions/upload-artifact@v4
         with:
           name: extension-dist
