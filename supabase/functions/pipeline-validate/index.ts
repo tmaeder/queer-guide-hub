@@ -9,6 +9,12 @@ import {
 } from '../_shared/hotel-pipeline-utils.ts'
 import { validateMarketplaceNormalized } from '../_shared/marketplace-pipeline-utils.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import {
+  classifyEntity,
+  expectedKindForTargetTable,
+  isEntityTypeMismatch,
+  type ClassifyInput,
+} from '../_shared/entity-classifier.ts'
 
 // ============================================================
 // Pipeline Validate
@@ -177,21 +183,6 @@ Deno.serve(async (req) => {
         if (!n.lgbti_connection)       errors.push('E_NO_LGBTI_CONNECTION')
         if (!n.wikidata_qid)           warnings.push('W_NO_WIKIDATA_QID')
 
-        // Entity-type sanity check: reject rows that are clearly not persons.
-        // A previous CSV upload routed 10k venues/glossary/junk through this
-        // validator. The classifier was too lenient because rows had a
-        // pre-set lgbti_connection and just collected warnings. Hard-reject
-        // when name/bio match venue/place language AND no person markers
-        // (birth/death/qid/profession) are present. (Issue #113)
-        const personMarker = !!(n.birth_date || n.death_date || n.wikidata_qid || (n.profession && String(n.profession).trim()))
-        if (!personMarker) {
-          const haystack = `${name} ${String(n.bio ?? '')} ${String(n.description ?? '')}`.toLowerCase()
-          const looksLikePlace = /\b(bar|club|sauna|hotel|hostel|restaurant|cafe|café|bistro|cabaret|nightclub|disco|spa|gym|venue|store|shop|pride|center|centre|pub|tavern|bathhouse|brasserie|kneipe|gasthof|gasthaus|pizzeria|kebab|grill|salon|studio|boutique|kino|theatre|theater|gallery|library|bookshop|bookstore|cruise|cruising|darkroom|dance ?floor|drag show|karaoke|happy hour|entrance fee|located in|located at|located on|opening hours|open from)\b/.test(haystack)
-          const looksLikeJunk = /^[\d\s]+[a-z]?$/i.test(name) || /^[A-Z0-9]{2,4}\s+[A-Z0-9]{2,4}$/.test(name) || name.length <= 2
-          if (looksLikePlace) errors.push('E_LIKELY_NOT_PERSON_VENUE')
-          if (looksLikeJunk)  errors.push('E_LIKELY_NOT_PERSON_JUNK')
-        }
-
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 40)
       } else if (type === 'event' || item.target_table === 'events') {
         // Event-specific validation: title, dates, location, time sanity
@@ -269,6 +260,22 @@ Deno.serve(async (req) => {
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 50)
       }
 
+      // Per-row entity-type cross-check (issue #113). A CSV upload's
+      // target_table is a job-level constant, but each row can be a different
+      // kind of thing — we've seen real persons, venues, glossary terms, and
+      // postcodes all routed into `personalities`. Classify the normalized
+      // row and reject when the classification disagrees with the target.
+      // Low-confidence and 'unknown' results fall through (warning instead).
+      let classification: ReturnType<typeof classifyEntity> | null = null
+      if (expectedKindForTargetTable(item.target_table)) {
+        classification = classifyEntity(n as ClassifyInput)
+        if (isEntityTypeMismatch(classification, item.target_table)) {
+          errors.push('E_ENTITY_TYPE_MISMATCH')
+        } else if (classification.classified_as === 'unknown' && classification.confidence === 0) {
+          warnings.push('W_ENTITY_TYPE_UNCLEAR')
+        }
+      }
+
       let status: 'approved' | 'rejected' | 'needs_review'
       let confidence: number
 
@@ -292,7 +299,9 @@ Deno.serve(async (req) => {
         const update: Record<string, unknown> = {
           ai_validation_status: status,
           ai_confidence_score:  confidence,
-          ai_validation_result: { errors, warnings, quality },
+          ai_validation_result: classification
+            ? { errors, warnings, quality, classification }
+            : { errors, warnings, quality },
           ai_validated_at:      new Date().toISOString(),
           disposition:          status === 'rejected' ? 'rejected' : 'pending',
           review_status:        status === 'needs_review' ? 'pending_review' : 'auto',
