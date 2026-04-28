@@ -43,7 +43,7 @@ import { useParams } from 'react-router';
 import { getContentType } from '@/config/contentTypeRegistry';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';
 import { useContext, lazy, Suspense } from 'react';
-import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+import type { ContentTypeConfig, FieldConfig, SelectOption } from '@/types/cms';
 
 const BulkEnrichDialog = lazy(() => import('@/components/admin/BulkEnrichDialog'));
 const BulkActionsBar = lazy(() =>
@@ -371,6 +371,7 @@ export function ContentListPanel({
   const [sortDir, setSortDir] = useState<SortDir>(initialSortDir);
   const [filters, setFilters] = useState<FilterState>(persisted?.filters ?? {});
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [dynamicOptions, setDynamicOptions] = useState<Record<string, SelectOption[]>>({});
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -387,6 +388,44 @@ export function ContentListPanel({
   useEffect(() => {
     if (persistKey) persistState(persistKey, { sortField, sortDir, filters });
   }, [persistKey, sortField, sortDir, filters]);
+
+  // Load dynamic filter options (e.g. country/city dropdowns) for fields with
+  // dynamicOptions config. Cached per (table, columns) tuple.
+  useEffect(() => {
+    let cancelled = false;
+    const dynFields = filterFields.filter((f) => f.dynamicOptions);
+    if (dynFields.length === 0) return;
+
+    Promise.all(
+      dynFields.map(async (f) => {
+        const cfg = f.dynamicOptions!;
+        const { data, error } = await supabase
+          .from(cfg.table as 'cities')
+          .select(`${cfg.valueColumn},${cfg.labelColumn}`)
+          .order(cfg.orderBy ?? cfg.labelColumn);
+        if (error) {
+          console.error(`Failed to load options for ${f.name}:`, error);
+          return [f.name, [] as SelectOption[]] as const;
+        }
+        const opts: SelectOption[] = (data ?? []).map((row: Record<string, unknown>) => ({
+          value: String(row[cfg.valueColumn]),
+          label: String(row[cfg.labelColumn] ?? row[cfg.valueColumn]),
+        }));
+        return [f.name, opts] as const;
+      }),
+    ).then((entries) => {
+      if (cancelled) return;
+      setDynamicOptions((prev) => {
+        const next = { ...prev };
+        for (const [name, opts] of entries) next[name] = opts;
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filterFields]);
 
   // ── Debounced search ──────────────────────────────────────────
 
@@ -422,12 +461,19 @@ export function ContentListPanel({
     const from = page * rowsPerPage;
     const to = from + rowsPerPage - 1;
 
-    // Map sort field to actual DB column
-    const dbSortField = sortField === 'title' ? ct.titleField : sortField;
+    // Map sort field to actual DB column. Virtual fields are not sortable on
+    // the server — fall back to updated_at to avoid Postgrest errors.
+    const sortFieldDef = ct.fields.find((f) => f.name === sortField);
+    const dbSortField =
+      sortField === 'title'
+        ? ct.titleField
+        : sortFieldDef?.virtual
+          ? 'updated_at'
+          : sortField;
 
     let query = supabase
       .from(ct.tableName as 'events')
-      .select('*', { count: 'exact' })
+      .select(ct.listSelect ?? '*', { count: 'exact' })
       .order(dbSortField, { ascending: sortDir === 'asc' })
       .range(from, to);
 
@@ -435,8 +481,9 @@ export function ContentListPanel({
       query = query.ilike(ct.titleField, `%${debouncedSearch}%`);
     }
 
-    // Apply entity filters
-    for (const f of ct.fields.filter((x) => x.filterable)) {
+    // Apply entity filters. Virtual fields have no backing column on the
+    // primary table — skip them so Postgrest doesn't 400.
+    for (const f of ct.fields.filter((x) => x.filterable && !x.virtual)) {
       const val = filters[f.name];
       if (val === undefined || val === '' || val === null) continue;
       if (f.type === 'select' || f.type === 'boolean') {
@@ -624,6 +671,17 @@ export function ContentListPanel({
 
   function renderColumnValue(field: FieldConfig, row: Record<string, unknown> | undefined) {
     if (!row) return null;
+    if (field.listRender) {
+      const node = field.listRender(row);
+      if (node === null || node === undefined || node === '') {
+        return (
+          <Typography variant="caption" color="text.disabled">
+            --
+          </Typography>
+        );
+      }
+      return node;
+    }
     const v = row[field.name];
     if (v === null || v === undefined || v === '') {
       return (
@@ -786,6 +844,9 @@ export function ContentListPanel({
           {filterFields.map((f) => {
             const val = filters[f.name];
             if (f.type === 'select') {
+              const effectiveOptions = f.dynamicOptions
+                ? (dynamicOptions[f.name] ?? [])
+                : (f.options ?? []);
               return (
                 <Select
                   key={f.name}
@@ -796,14 +857,14 @@ export function ContentListPanel({
                   sx={{ minWidth: 140, fontSize: '0.85rem' }}
                   renderValue={(v) =>
                     v
-                      ? (f.options?.find((o) => o.value === v)?.label ?? String(v))
+                      ? (effectiveOptions.find((o) => o.value === v)?.label ?? String(v))
                       : `All ${f.label}`
                   }
                 >
                   <MenuItem value="">
                     <em>All {f.label}</em>
                   </MenuItem>
-                  {f.options?.map((opt) => (
+                  {effectiveOptions.map((opt) => (
                     <MenuItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </MenuItem>
