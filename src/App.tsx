@@ -14,6 +14,7 @@ import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { CookieConsentBanner } from '@/components/privacy/CookieConsentBanner';
 import { FeedbackButton } from '@/components/feedback/FeedbackButton';
 import { installErrorBuffer, installNetworkBuffer } from '@/utils/feedbackContext';
+import { Analytics } from '@vercel/analytics/react';
 
 // Install feedback context buffers at module load (idempotent)
 installErrorBuffer();
@@ -570,6 +571,7 @@ const App = () => {
                         <AppRoutes />
                       </ActiveTripProvider>
                     </BrowserRouter>
+                    <Analytics />
                   </TooltipProvider>
                 </CurrencyProvider>
               </AuthProvider>
