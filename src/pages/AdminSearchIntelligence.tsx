@@ -7,6 +7,7 @@ import { OverviewTab } from '@/components/admin/search-intelligence/OverviewTab'
 import { SearchDebuggerTab } from '@/components/admin/search-intelligence/SearchDebuggerTab';
 import { SynonymsTab } from '@/components/admin/search-intelligence/SynonymsTab';
 import { AuditTab } from '@/components/admin/search-intelligence/AuditTab';
+import { IngestionQualityTab } from '@/components/admin/search-intelligence/IngestionQualityTab';
 import { PlaceholderTab } from '@/components/admin/search-intelligence/PlaceholderTab';
 
 const FEATURE_FLAG_ENABLED = import.meta.env.VITE_FEATURE_SEARCH_INTELLIGENCE === '1';
@@ -83,16 +84,7 @@ export default function AdminSearchIntelligence() {
             />
           </TabsContent>
           <TabsContent value="quality">
-            <PlaceholderTab
-              title="Ingestion Quality"
-              description="Per-entity Search Visibility Score with axis breakdown (tags, geo, images, dates, text, synonyms, expected queries). The RPC ships in this PR with placeholder values; production per-axis logic is the next migration."
-              bullets={[
-                'GET /visibility/:entity_type/:id — wired',
-                'POST /visibility/:entity_type/:id/recompute — wired',
-                'compute_visibility_score returns the contracted JSONB shape',
-                'Per-axis scoring (tags/geo/images/dates/text) ships in Phase 1 follow-up',
-              ]}
-            />
+            <IngestionQualityTab />
           </TabsContent>
           <TabsContent value="consistency">
             <PlaceholderTab
