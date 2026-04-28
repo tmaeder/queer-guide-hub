@@ -29,6 +29,29 @@ enable_signup = false
 enable_confirmations = false
 template = "Your code is {{ .Code }}"
 
+# Multi-factor authentication. Supabase advisor flags
+# `auth_insufficient_mfa_options` (security/WARN) when fewer than two factor
+# types are enabled, so we expose TOTP, Phone (SMS), and WebAuthn. End users
+# opt in by enrolling — defaults stay safe (TOTP/WebAuthn enabled, Phone
+# verify-only so SMS is never required without an enrolled factor).
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.mfa.phone]
+enroll_enabled = true
+verify_enabled = true
+otp_length = 6
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
+[auth.mfa.web_authn]
+enroll_enabled = true
+verify_enabled = true
+
 [db]
 port = 54322
 shadow_port = 54320
