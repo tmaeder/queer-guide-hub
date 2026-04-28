@@ -15,6 +15,7 @@ import { CookieConsentBanner } from '@/components/privacy/CookieConsentBanner';
 import { FeedbackButton } from '@/components/feedback/FeedbackButton';
 import { installErrorBuffer, installNetworkBuffer } from '@/utils/feedbackContext';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Install feedback context buffers at module load (idempotent)
 installErrorBuffer();
@@ -572,6 +573,7 @@ const App = () => {
                       </ActiveTripProvider>
                     </BrowserRouter>
                     <Analytics />
+                    <SpeedInsights />
                   </TooltipProvider>
                 </CurrencyProvider>
               </AuthProvider>
