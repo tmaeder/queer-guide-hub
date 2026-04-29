@@ -25,7 +25,11 @@ function mergeByEntity(items: DetectedItem[]): DetectedItem[] {
   const groups = new Map<string, DetectedItem[]>();
   for (const item of items) {
     const name = String(item.raw_data.name ?? item.raw_data.title ?? "").toLowerCase().trim();
-    const key = `${item.entity_type}|${name}`;
+    // Include url in the merge key. On listing pages many items can share
+    // an entity_type with empty/duplicate names but distinct urls — without
+    // the url they would collapse into a single junk row.
+    const url = String(item.raw_data.url ?? "").toLowerCase().trim();
+    const key = `${item.entity_type}|${name}|${url}`;
     const arr = groups.get(key) ?? [];
     arr.push(item);
     groups.set(key, arr);

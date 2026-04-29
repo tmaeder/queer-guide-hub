@@ -31,14 +31,50 @@ function safeParse(text: string): unknown {
   }
 }
 
+/**
+ * Flatten a JSON-LD tree into the set of nodes worth scanning. The naive
+ * `@graph` unwrap is not enough: listing pages routinely use `ItemList` /
+ * `CollectionPage` / `ItemPage` wrappers around the real entities, and
+ * Festival/MusicFestival pages put each performance under `subEvent`.
+ * Without these recursions a list page returns 1 useless wrapper item
+ * instead of N concrete events.
+ */
 function flatten(node: unknown): Record<string, unknown>[] {
   if (!node) return [];
   if (Array.isArray(node)) return node.flatMap(flatten);
   if (typeof node !== "object") return [];
   const obj = node as Record<string, unknown>;
+
   if (Array.isArray(obj["@graph"])) {
     return (obj["@graph"] as unknown[]).flatMap(flatten);
   }
+
+  // ItemList / CollectionPage / SearchResultsPage — the real items live
+  // under itemListElement[].item (or sometimes itemListElement is the item
+  // itself when @type is omitted on the wrapper).
+  if (Array.isArray(obj["itemListElement"])) {
+    const out: Record<string, unknown>[] = [];
+    for (const el of obj["itemListElement"] as unknown[]) {
+      if (el && typeof el === "object") {
+        const e = el as Record<string, unknown>;
+        const inner = e["item"] ?? e;
+        out.push(...flatten(inner));
+      }
+    }
+    if (out.length) return out;
+  }
+
+  // Festival / Conference subEvent[]; news SiteNavigationElement.mainEntity.
+  for (const key of ["subEvent", "subEvents", "mainEntity", "mainEntityOfPage", "hasPart"]) {
+    const v = obj[key];
+    if (Array.isArray(v) && v.length) return v.flatMap(flatten);
+    if (v && typeof v === "object" && getTypeString(v as Record<string, unknown>).length) {
+      // single nested entity wrapped in a generic page node
+      const inner = flatten(v);
+      if (inner.length) return [obj, ...inner.filter((n) => n !== obj)];
+    }
+  }
+
   return [obj];
 }
 
