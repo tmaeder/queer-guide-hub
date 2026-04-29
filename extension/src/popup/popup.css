@@ -75,3 +75,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   background: #fff7e6; border: 1px solid #f5d680; color: var(--warn);
 }
 .qg-existing a { color: var(--accent); font-weight: 600; text-decoration: underline; }
+.qg-similar { font-size: 11px; padding: 6px 8px; border-radius: 6px; background: #f5f5f5; }
+.qg-similar.warn { background: #fee2e2; border: 1px solid #f5a5a5; color: var(--err); }
+.qg-similar-label { font-weight: 600; margin-bottom: 2px; }
+.qg-similar ul { margin: 0; padding-left: 16px; }
+.qg-similar li { margin: 2px 0; }
+.qg-similar a { color: var(--accent); }
+.qg-similar-score { color: var(--muted); font-variant-numeric: tabular-nums; }

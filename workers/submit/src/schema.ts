@@ -62,6 +62,13 @@ export const EnrichBody = z.object({
 });
 export type EnrichBody = z.infer<typeof EnrichBody>;
 
+export const FindSimilarBody = z.object({
+  text: z.string().min(2).max(2000),
+  content_types: z.array(z.string()).max(8).optional(),
+  limit: z.number().int().min(1).max(20).optional(),
+});
+export type FindSimilarBody = z.infer<typeof FindSimilarBody>;
+
 export function entityTypeToTargetTable(t: EntityType): "venues" | "events" | "stays" | "personalities" | null {
   switch (t) {
     case "venue":
