@@ -6,6 +6,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { applySuggestion, insertSuggestion } from './ai-suggestions.ts'
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -241,6 +242,103 @@ export async function checkRateLimit(
   return (count ?? 0) < limitPerHour
 }
 
+// ── Tag-suggestion routing ──────────────────────────────────────────────────
+//
+// Tag proposals (field_name='tags') used to flow through content_changes, but
+// the generic apply_content_change RPC can't handle them — entity tables have
+// no `tags` column, the M:N lives in unified_tag_assignments. Route them
+// through ai_suggestions instead, mirroring auto-tag-content (PR 5).
+//
+// Auto-apply for high-confidence rows uses the shared applySuggestion helper.
+// Idempotency is enforced by the partial unique index added in PR 5
+// (ai_suggestions_tag_idempotency_idx); we still select-first to avoid the
+// noisy 23505 on retries.
+
+async function routeTagsToAiSuggestions(
+  supabase: SupabaseClient,
+  module: AutomationModule,
+  batchId: string,
+  tagChanges: ProposedChange[],
+): Promise<{ autoApproved: number; pendingReview: number }> {
+  let autoApproved = 0
+  let pendingReview = 0
+
+  for (const c of tagChanges) {
+    let parsed: { tag_id?: string }
+    try {
+      parsed = typeof c.new_value === 'string'
+        ? JSON.parse(c.new_value)
+        : (c.new_value as { tag_id?: string })
+    } catch {
+      continue
+    }
+    if (!parsed?.tag_id) continue
+
+    const isHighConf = c.confidence >= module.auto_approve_threshold
+    const nowIso = new Date().toISOString()
+
+    const { data: existing } = await supabase
+      .from('ai_suggestions')
+      .select('id')
+      .eq('suggestion_type', 'tag')
+      .eq('entity_type', c.content_type)
+      .eq('entity_id', c.content_id)
+      .eq('proposed_value->>tag_id', parsed.tag_id)
+      .in('status', ['pending', 'approved'])
+      .maybeSingle()
+    if (existing) continue
+
+    let inserted
+    try {
+      inserted = await insertSuggestion(supabase, {
+        suggestion_type: 'tag',
+        entity_type: c.content_type,
+        entity_id: c.content_id,
+        proposed_value: { tag_id: parsed.tag_id },
+        source: 'workers-ai',
+        source_model: 'tag-similarity-bge-base-768',
+        source_run_id: batchId,
+        confidence: c.confidence,
+        status: isHighConf ? 'approved' : 'pending',
+        approved_at: isHighConf ? nowIso : null,
+        reviewer_id: null,
+      })
+    } catch (err) {
+      console.error(
+        `[automation] ai_suggestions insert failed for ${c.content_type}/${c.content_id}: ${(err as Error).message}`,
+      )
+      continue
+    }
+
+    if (!isHighConf) {
+      pendingReview++
+      continue
+    }
+
+    try {
+      const ok = await applySuggestion(supabase, inserted)
+      if (ok) {
+        await supabase
+          .from('ai_suggestions')
+          .update({ status: 'applied', applied_at: nowIso })
+          .eq('id', inserted.id)
+        autoApproved++
+      } else {
+        pendingReview++
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'unknown apply error'
+      await supabase
+        .from('ai_suggestions')
+        .update({ review_notes: `auto-apply failed: ${msg}` })
+        .eq('id', inserted.id)
+      pendingReview++
+    }
+  }
+
+  return { autoApproved, pendingReview }
+}
+
 // ── Write Changes ───────────────────────────────────────────────────────────────
 
 export async function writeChanges(
@@ -259,7 +357,16 @@ export async function writeChanges(
   let autoApproved = 0
   let pendingReview = 0
 
-  const rows = valid.map(c => ({
+  // Tag proposals route through ai_suggestions instead of content_changes.
+  const tagChanges = valid.filter(c => c.field_name === 'tags')
+  const otherChanges = valid.filter(c => c.field_name !== 'tags')
+  if (tagChanges.length > 0) {
+    const r = await routeTagsToAiSuggestions(supabase, module, batchId, tagChanges)
+    autoApproved += r.autoApproved
+    pendingReview += r.pendingReview
+  }
+
+  const rows = otherChanges.map(c => ({
     module_id: module.id,
     rule_id: c.rule_id || null,
     workflow_run_id: workflowRunId,
@@ -378,7 +485,23 @@ export async function writeChangesBatch(
   const valid = changes.filter(c => c.new_value != null)
   if (valid.length === 0) return { autoApproved: 0, pendingReview: 0 }
 
-  const rows = valid.map(c => ({
+  let autoApproved = 0
+  let pendingReview = 0
+
+  // Tag proposals route through ai_suggestions instead of content_changes.
+  const tagChanges = valid.filter(c => c.field_name === 'tags')
+  const otherChanges = valid.filter(c => c.field_name !== 'tags')
+  if (tagChanges.length > 0) {
+    const r = await routeTagsToAiSuggestions(supabase, module, batchId, tagChanges)
+    autoApproved += r.autoApproved
+    pendingReview += r.pendingReview
+  }
+
+  if (otherChanges.length === 0) {
+    return { autoApproved, pendingReview }
+  }
+
+  const rows = otherChanges.map(c => ({
     module_id: module.id,
     rule_id: c.rule_id || null,
     workflow_run_id: workflowRunId,
@@ -394,9 +517,6 @@ export async function writeChangesBatch(
     status: c.confidence >= module.auto_approve_threshold ? 'auto_approved' : 'pending',
     batch_id: batchId,
   }))
-
-  let autoApproved = 0
-  let pendingReview = 0
 
   // Insert in chunks of 100
   for (let i = 0; i < rows.length; i += 100) {
@@ -414,13 +534,15 @@ export async function writeChangesBatch(
     }
   }
 
-  // Batch-apply all auto_approved changes for this batch in one RPC call
+  // Batch-apply all auto_approved changes for this batch in one RPC call.
+  // (Tag rows live in ai_suggestions and were already applied inline above.)
+  let cAutoApproved = 0
   const { data: applied, error: applyErr } = await supabase.rpc('bulk_apply_batch_changes', {
     p_batch_id: batchId,
   })
 
   if (!applyErr && applied != null) {
-    autoApproved = Number(applied) || 0
+    cAutoApproved = Number(applied) || 0
   } else {
     if (applyErr) console.error(`[automation] bulk_apply_batch_changes error: ${applyErr.message}`)
     const { count: autoCount } = await supabase
@@ -428,7 +550,7 @@ export async function writeChangesBatch(
       .select('*', { count: 'exact', head: true })
       .eq('batch_id', batchId)
       .eq('status', 'auto_approved')
-    autoApproved = autoCount ?? 0
+    cAutoApproved = autoCount ?? 0
   }
 
   const { count: pendingCount } = await supabase
@@ -436,7 +558,9 @@ export async function writeChangesBatch(
     .select('*', { count: 'exact', head: true })
     .eq('batch_id', batchId)
     .eq('status', 'pending')
-  pendingReview = pendingCount ?? 0
+
+  autoApproved += cAutoApproved
+  pendingReview += pendingCount ?? 0
 
   return { autoApproved, pendingReview }
 }
