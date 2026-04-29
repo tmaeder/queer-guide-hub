@@ -18,8 +18,6 @@ export const ALLOWED = {
   sub_source_type: ["api", "webhook", "manual", "forwarded", "upload", "url_import", "scrape", "import"] as const,
   platform: ["instagram", "facebook", "x", "bluesky", "telegram", "whatsapp", "tiktok", "fetlife", "signal", "email", "manual", "admin", "flyer", "web", "other"] as const,
   media_processing_status: ["pending", "processing", "done", "partial", "failed", "skipped", "not_applicable"] as const,
-  sensitivity_level: ["public", "semi_public", "community", "private"] as const,
-  permission_level: ["public_share", "submitter_consent", "community_only", "do_not_publish"] as const,
 };
 
 export interface BuildRowOpts {
@@ -43,8 +41,7 @@ export function buildSubmissionRow(opts: BuildRowOpts) {
     submitted_by: opts.userId,
     source_url: opts.body.source_url,
     media_urls: images.length ? images : null,
-    media_processing_status: (images.length ? "pending" : "not_applicable") as
-      typeof ALLOWED.media_processing_status[number],
+    media_processing_status: images.length ? ("pending" as const) : ("not_applicable" as const),
     sub_source_type: "url_import" as const,
     platform: "web" as const,
     submitter_metadata: {
@@ -124,23 +121,18 @@ export async function getSubmissionStatus(opts: {
   return rows[0] ?? null;
 }
 
+const CONTENT_TYPE_BY_ENTITY: Record<string, string> = {
+  venue: "venue",
+  event: "event",
+  stay: "stay",
+  place: "place",
+  organization: "organization",
+  marketplace_item: "marketplace",
+  news_article: "news",
+};
+
 function mapEntityToContentType(t: string): string {
-  switch (t) {
-    case "venue":
-      return "venue";
-    case "event":
-      return "event";
-    case "stay":
-      return "stay";
-    case "marketplace_item":
-      return "marketplace";
-    case "news_article":
-      return "news";
-    case "organization":
-      return "organization";
-    default:
-      return "place";
-  }
+  return CONTENT_TYPE_BY_ENTITY[t] ?? "place";
 }
 
 function readImages(raw: Record<string, unknown>): string[] {
