@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
+import { ClusterTagPicker } from './ClusterTagPicker';
 
 interface Cluster {
   id: string;
@@ -41,6 +42,7 @@ export function TopicsTab() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // create form
   const [slug, setSlug] = useState('');
@@ -220,6 +222,15 @@ export function TopicsTab() {
                       </Typography>
                     </Box>
                     <Stack direction="row" spacing={1} alignItems="flex-start">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          setExpandedId(expandedId === c.id ? null : c.id)
+                        }
+                      >
+                        {expandedId === c.id ? 'Hide tags' : 'Manage tags'}
+                      </Button>
                       {c.status === 'draft' && (
                         <Button
                           size="sm"
@@ -251,6 +262,9 @@ export function TopicsTab() {
                       )}
                     </Stack>
                   </Stack>
+                  {expandedId === c.id && (
+                    <ClusterTagPicker clusterId={c.id} onChange={refresh} />
+                  )}
                 </CardContent>
               </Card>
             ))}
