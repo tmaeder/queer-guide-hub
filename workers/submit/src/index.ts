@@ -20,8 +20,9 @@ import { embedText, enrich } from "./ai";
 import { extractBearer, verifySupabaseJwt } from "./auth";
 import { getCorsHeaders, json } from "./cors";
 import { rateLimit } from "./rate-limit";
-import { EnrichBody, FindSimilarBody, SubmitBody } from "./schema";
+import { EnrichBody, FindSimilarBody, SubmitBody, WatchBody, WatchFeedBody } from "./schema";
 import { findSimilar, getSubmissionStatus, insertSubmission } from "./supabase";
+import { addNewsFeed, addWatch, deleteWatch, listWatched } from "./watch";
 
 export interface Env {
   AI: Ai;
@@ -56,6 +57,18 @@ export default {
 
       if (url.pathname === "/find-similar" && request.method === "POST") {
         return await handleFindSimilar(request, env, cors);
+      }
+
+      if (url.pathname === "/watch") {
+        if (request.method === "GET") return await handleListWatch(request, env, cors);
+        if (request.method === "POST") return await handleAddWatch(request, env, cors);
+      }
+      const delMatch = url.pathname.match(/^\/watch\/([^/]+)$/);
+      if (delMatch && request.method === "DELETE") {
+        return await handleDeleteWatch(request, env, delMatch[1]!, cors);
+      }
+      if (url.pathname === "/watch-feed" && request.method === "POST") {
+        return await handleAddFeed(request, env, cors);
       }
 
       const statusMatch = url.pathname.match(/^\/submissions\/([^/]+)$/);
@@ -204,6 +217,55 @@ async function handleFindSimilar(request: Request, env: Env, cors: HeadersInit):
     hits = hits.filter((h) => allow.has(h.content_type));
   }
   return json({ hits }, 200, cors);
+}
+
+async function handleListWatch(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  const rows = await listWatched({ env, userJwt: auth.token });
+  return json({ rows }, 200, cors);
+}
+
+async function handleAddWatch(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = WatchBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+  const row = await addWatch({
+    env,
+    userJwt: auth.token,
+    userId: auth.user.sub,
+    url: parsed.data.url,
+    frequencyMinutes: parsed.data.frequency_minutes ?? 360,
+  });
+  return json(row, 201, cors);
+}
+
+async function handleDeleteWatch(request: Request, env: Env, id: string, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  await deleteWatch({ env, userJwt: auth.token, id });
+  return json({ ok: true }, 200, cors);
+}
+
+async function handleAddFeed(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = WatchFeedBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+  const row = await addNewsFeed({
+    env,
+    userJwt: auth.token,
+    url: parsed.data.url,
+    name: parsed.data.name,
+    category: parsed.data.category ?? "general",
+    frequencyMinutes: parsed.data.frequency_minutes ?? 60,
+  });
+  return json(row, 201, cors);
 }
 
 class HttpError extends Error {
