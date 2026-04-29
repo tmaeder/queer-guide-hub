@@ -156,9 +156,12 @@ async function syncType(supabase: any, type: string): Promise<number> {
 
   if (!allDocs.length) return 0
 
-  // Upsert documents in batches of 500
+  // Augment each doc with cluster_ids[] / cluster_slugs[] from
+  // topic_clusters membership before pushing to Meili. Done in batches of 500
+  // to keep the IN clause manageable.
   for (let i = 0; i < allDocs.length; i += 500) {
     const batch = allDocs.slice(i, i + 500)
+    await enrichDocsWithClusters(supabase, type, batch)
     await meiliPut(`/indexes/${type}/documents`, batch)
   }
 
@@ -177,7 +180,70 @@ async function upsertDocument(supabase: any, type: string, id: string) {
     return
   }
 
+  await enrichDocsWithClusters(supabase, type, [doc])
   await meiliPut(`/indexes/${type}/documents`, [doc])
+}
+
+// Map Meilisearch index name -> unified_tag_assignments.entity_type. Indexes
+// without a mapping (cities, countries, queer_villages, hotels, festivals,
+// tags) don't carry tag assignments today, so cluster membership is empty
+// for them by definition.
+const INDEX_TO_ASSIGNMENT_TYPE: Record<string, string> = {
+  venues: 'venue',
+  events: 'event',
+  news: 'article',
+  marketplace: 'listing',
+  personalities: 'profile',
+}
+
+/**
+ * Enrich a batch of Meili docs with cluster_ids[] + cluster_slugs[] from the
+ * topic_clusters membership graph. Mutates docs in place. Fail-open: if the
+ * entity_cluster_membership view isn't available (migration not applied yet),
+ * each doc gets empty arrays and a console.warn — never blocks the sync.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function enrichDocsWithClusters(supabase: any, type: string, docs: any[]) {
+  if (!docs.length) return
+  const assignmentType = INDEX_TO_ASSIGNMENT_TYPE[type]
+  if (!assignmentType) {
+    for (const doc of docs) {
+      doc.cluster_ids = []
+      doc.cluster_slugs = []
+    }
+    return
+  }
+  const ids = docs.map((d) => d.id).filter((x) => typeof x === 'string')
+  if (!ids.length) {
+    for (const doc of docs) {
+      doc.cluster_ids = []
+      doc.cluster_slugs = []
+    }
+    return
+  }
+  const { data, error } = await supabase
+    .from('entity_cluster_membership')
+    .select('entity_id, cluster_ids, cluster_slugs')
+    .eq('entity_type', assignmentType)
+    .in('entity_id', ids)
+  if (error) {
+    console.warn(
+      'cluster enrichment failed (entity_cluster_membership view missing?); emitting empty arrays',
+      error.message,
+    )
+    for (const doc of docs) {
+      doc.cluster_ids = []
+      doc.cluster_slugs = []
+    }
+    return
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const byId = new Map<string, any>((data ?? []).map((r: any) => [r.entity_id, r]))
+  for (const doc of docs) {
+    const row = byId.get(doc.id)
+    doc.cluster_ids = row?.cluster_ids ?? []
+    doc.cluster_slugs = row?.cluster_slugs ?? []
+  }
 }
 
 // --- Data transformers ---
