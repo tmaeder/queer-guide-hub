@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const RELEASE_ZIP_URL = "/extension/queer-guide-extension.zip";
 const DEV_BUILD_DOC =
-  "https://github.com/tmaeder/queer-guide-search/tree/main/extension#build--install-developer-mode";
+  "https://github.com/tmaeder/queer-guide-hub/tree/main/extension#build--install-developer-mode";
 
 interface ExtMeta {
   id: string;
