@@ -126,6 +126,42 @@ export async function fetchStatus(
   return (await res.json()) as Record<string, unknown>;
 }
 
+export interface BulkResult {
+  submissions: Array<{ id: string; status: string }>;
+}
+
+export async function bulkSubmit(items: DetectedItem[], accessToken: string): Promise<BulkResult> {
+  const body = {
+    items: items.map((item) => ({
+      entity_type: item.entity_type,
+      raw_data: item.raw_data,
+      source_url: item.source_url,
+      client: `extension/${chrome.runtime.getManifest().version}`,
+      field_confidence: item.field_confidence,
+      extraction_method: item.extraction_method,
+    })),
+  };
+  const res = await fetch(`${API}/bulk-submit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`bulk-submit ${res.status}: ${await res.text()}`);
+  return (await res.json()) as BulkResult;
+}
+
+export interface SitemapEntry { loc: string; lastmod?: string; }
+export async function scanSitemap(url: string, accessToken: string): Promise<SitemapEntry[]> {
+  const res = await fetch(`${API}/scan-sitemap`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) throw new Error(`scan-sitemap ${res.status}`);
+  const body = (await res.json()) as { entries: SitemapEntry[] };
+  return body.entries;
+}
+
 export interface SubmissionRow {
   id: string;
   content_type: string;

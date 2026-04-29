@@ -83,6 +83,16 @@ export const WatchFeedBody = z.object({
 });
 export type WatchFeedBody = z.infer<typeof WatchFeedBody>;
 
+export const ScanSitemapBody = z.object({
+  url: z.string().url(),
+});
+export type ScanSitemapBody = z.infer<typeof ScanSitemapBody>;
+
+export const BulkSubmitBody = z.object({
+  items: z.array(SubmitBody).min(1).max(100),
+});
+export type BulkSubmitBody = z.infer<typeof BulkSubmitBody>;
+
 export function entityTypeToTargetTable(t: EntityType): "venues" | "events" | "stays" | "personalities" | null {
   switch (t) {
     case "venue":

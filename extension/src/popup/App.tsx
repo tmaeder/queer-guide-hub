@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { addWatched, findExisting, fetchMySubmissions, listWatched, removeWatched, submitItem, type ExistingMatch, type SubmissionRow, type WatchedRow } from "../shared/api";
+import { addWatched, bulkSubmit, findExisting, fetchMySubmissions, listWatched, removeWatched, submitItem, type ExistingMatch, type SubmissionRow, type WatchedRow } from "../shared/api";
 import {
   clearSession,
   getValidAccessToken,
@@ -99,6 +99,18 @@ export function App() {
     window.close();
   }
 
+  async function onBulkSubmit() {
+    if (items.length === 0) return;
+    const token = await getValidAccessToken();
+    if (!token) { setToast({ kind: "err", msg: "not signed in" }); return; }
+    try {
+      const res = await bulkSubmit(items, token);
+      setToast({ kind: "ok", msg: `submitted ${res.submissions.length} items` });
+    } catch (e) {
+      setToast({ kind: "err", msg: e instanceof Error ? e.message : "bulk submit failed" });
+    }
+  }
+
   async function loadHistory() {
     setHistory(null);
     setHistoryError(null);
@@ -168,6 +180,11 @@ export function App() {
           </div>
         ) : (
           <div className="qg-list">
+            {items.length > 1 && (
+              <button className="primary" onClick={onBulkSubmit}>
+                submit all {items.length} items
+              </button>
+            )}
             {items.map((item, i) => (
               <ItemCard key={i} item={item} existing={i === 0 ? existing : null} onSubmit={(e) => onSubmit(item, e)} />
             ))}
