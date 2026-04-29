@@ -122,17 +122,25 @@ export async function getSubmissionStatus(opts: {
 }
 
 const CONTENT_TYPE_BY_ENTITY: Record<string, string> = {
+  // Aligned with hub's submissionRegistry keys (src/config/submissionRegistry.ts):
+  // venue / event / hotel / product / personality / tag / feedback. Anything not
+  // in that map will throw on approve in AdminSubmissions, so the worker only
+  // emits values the hub knows about.
   venue: "venue",
   event: "event",
-  stay: "stay",
-  place: "place",
-  organization: "organization",
-  marketplace_item: "marketplace",
-  news_article: "news",
+  stay: "hotel",
+  marketplace_item: "product",
+  organization: "personality",
+  // news_article and place have no submissionRegistry entry yet; route them
+  // through "feedback" so moderators see + can triage them without the
+  // approve flow throwing. The submitter_metadata.client identifies the
+  // origin so they're easy to filter.
+  news_article: "feedback",
+  place: "venue",
 };
 
 function mapEntityToContentType(t: string): string {
-  return CONTENT_TYPE_BY_ENTITY[t] ?? "place";
+  return CONTENT_TYPE_BY_ENTITY[t] ?? "feedback";
 }
 
 function readImages(raw: Record<string, unknown>): string[] {

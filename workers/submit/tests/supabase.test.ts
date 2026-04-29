@@ -46,15 +46,15 @@ describe("buildSubmissionRow", () => {
     });
   });
 
-  it("maps entity_type onto the content_type taxonomy", () => {
+  it("maps entity_type onto the hub's submissionRegistry keys", () => {
     for (const [entity, content] of [
       ["venue", "venue"],
       ["event", "event"],
-      ["stay", "stay"],
-      ["marketplace_item", "marketplace"],
-      ["news_article", "news"],
-      ["organization", "organization"],
-      ["place", "place"],
+      ["stay", "hotel"],
+      ["marketplace_item", "product"],
+      ["organization", "personality"],
+      ["news_article", "feedback"],
+      ["place", "venue"],
     ] as const) {
       const row = buildSubmissionRow({
         userId: "u-1",
@@ -67,5 +67,16 @@ describe("buildSubmissionRow", () => {
   it("threads submitted_by from userId", () => {
     const row = buildSubmissionRow({ userId: "abc-123", body: venueBody });
     expect(row.submitted_by).toBe("abc-123");
+  });
+
+  it("emits content_type values that the hub's submissionRegistry knows about", () => {
+    // Mirrors keys in src/config/submissionRegistry.ts. Kept manually in sync;
+    // if a key is added/removed in the hub, update both.
+    const HUB_REGISTRY = ["venue", "event", "product", "personality", "hotel", "tag", "feedback"];
+    const entityTypes = ["venue", "event", "stay", "marketplace_item", "news_article", "organization", "place"] as const;
+    for (const e of entityTypes) {
+      const row = buildSubmissionRow({ userId: "u-1", body: { ...venueBody, entity_type: e } });
+      expect(HUB_REGISTRY).toContain(row.content_type);
+    }
   });
 });
