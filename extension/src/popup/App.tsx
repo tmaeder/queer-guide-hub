@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { addWatched, bulkSubmit, findExisting, fetchMySubmissions, listWatched, removeWatched, submitItem, type ExistingMatch, type SubmissionRow, type WatchedRow } from "../shared/api";
+import { addWatched, bulkSubmit, findExisting, fetchMySubmissions, listWatched, removeWatched, renderUrl, submitItem, uploadCapture, type ExistingMatch, type SubmissionRow, type WatchedRow } from "../shared/api";
 import {
   clearSession,
   getValidAccessToken,
@@ -9,7 +9,7 @@ import type { AuthSession, DetectedItem } from "../shared/types";
 import { ItemCard } from "./ItemCard";
 
 type Toast = { kind: "ok" | "err"; msg: string } | null;
-type Tab = "detect" | "history" | "watched";
+type Tab = "detect" | "history" | "watched" | "settings";
 
 export function App() {
   const [session, setSession] = useState<AuthSession | null>(null);
@@ -73,6 +73,26 @@ export function App() {
           break;
         }
       }
+      // Server-side render fallback for SPAs that don't expose JSON-LD on
+      // first paint. Fires only when client-side extraction came up empty
+      // and we have a current tab URL to send.
+      if (!cancelled) {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const tabUrl = tab?.url ?? "";
+        const useable = tabUrl.startsWith("http") && !tabUrl.includes("queer.guide/");
+        const token = useable ? await getValidAccessToken() : null;
+        if (token) {
+          try {
+            const fallback = await renderUrl(tabUrl, token);
+            if (!cancelled && fallback.length > 0) {
+              setItems(fallback);
+              setLoading(false);
+              void lookupForUrl(fallback[0]?.source_url);
+              return;
+            }
+          } catch { /* swallow */ }
+        }
+      }
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -97,6 +117,36 @@ export function App() {
     const r = await chrome.runtime.sendMessage({ type: "qg:extract", mode: "manual" });
     if (!r?.ok) setToast({ kind: "err", msg: r?.error ?? "selection mode failed" });
     window.close();
+  }
+
+  async function onCapture() {
+    const token = await getValidAccessToken();
+    if (!token) { setToast({ kind: "err", msg: "not signed in" }); return; }
+    if (!session) return;
+    try {
+      const dataUrl = await chrome.tabs.captureVisibleTab({ format: "png" });
+      const blob = await (await fetch(dataUrl)).blob();
+      const publicUrl = await uploadCapture(blob, session.user.id, token);
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const sourceUrl = tab?.url ?? "https://example.com/screenshot";
+      const host = (() => { try { return new URL(sourceUrl).host; } catch { return "page"; } })();
+      const item: DetectedItem = {
+        entity_type: "place",
+        raw_data: {
+          name: `Page capture from ${host}`,
+          description: "Screenshot uploaded for OCR.",
+          url: sourceUrl,
+          images: [publicUrl],
+        },
+        confidence: 0.4,
+        extraction_method: "manual",
+        source_url: sourceUrl,
+      };
+      const res = await submitItem(item, token);
+      setToast({ kind: "ok", msg: `captured (#${res.submission_id}) — OCR running` });
+    } catch (e) {
+      setToast({ kind: "err", msg: e instanceof Error ? e.message : "capture failed" });
+    }
   }
 
   async function onBulkSubmit() {
@@ -168,6 +218,10 @@ export function App() {
           className={tab === "watched" ? "active" : ""}
           onClick={() => setTab("watched")}
         >Watched</button>
+        <button
+          className={tab === "settings" ? "active" : ""}
+          onClick={() => setTab("settings")}
+        >Settings</button>
       </div>
       {toast && <div className={`qg-toast ${toast.kind}`}>{toast.msg}</div>}
       {tab === "detect" && (
@@ -197,8 +251,14 @@ export function App() {
               catch (e) { setToast({ kind: "err", msg: e instanceof Error ? e.message : "failed" }); }
             }}>watch this page</button>
             <button onClick={onPickSelection}>pick selection instead</button>
+            <button onClick={onCapture}>📷 capture page (OCR)</button>
           </div>
         )
+      )}
+      {tab === "detect" && !loading && items.length === 0 && (
+        <div className="qg-empty">
+          <button onClick={onCapture}>📷 capture page (OCR)</button>
+        </div>
       )}
       {tab === "history" && (
         <HistoryView rows={history} error={historyError} onReload={loadHistory} />
@@ -211,6 +271,62 @@ export function App() {
           catch (e) { setToast({ kind: "err", msg: e instanceof Error ? e.message : "failed" }); }
         }} />
       )}
+      {tab === "settings" && <SettingsView />}
+    </div>
+  );
+}
+
+function SettingsView() {
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      const out = await chrome.storage.local.get("qg_overlay_enabled");
+      const flagged = out["qg_overlay_enabled"] === true;
+      const has = await chrome.permissions.contains({ origins: ["<all_urls>"] });
+      setEnabled(flagged && has);
+    })();
+  }, []);
+
+  async function toggle(next: boolean) {
+    setBusy(true); setErr(null);
+    try {
+      if (next) {
+        const granted = await chrome.permissions.request({ origins: ["<all_urls>"] });
+        if (!granted) { setErr("permission denied"); setEnabled(false); return; }
+        await chrome.storage.local.set({ qg_overlay_enabled: true });
+        setEnabled(true);
+      } else {
+        await chrome.storage.local.set({ qg_overlay_enabled: false });
+        await chrome.permissions.remove({ origins: ["<all_urls>"] }).catch(() => false);
+        setEnabled(false);
+      }
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "failed");
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="qg-settings">
+      <div className="qg-setting">
+        <div>
+          <div style={{ fontWeight: 600 }}>Inline link overlay</div>
+          <div className="qg-meta">
+            Decorates links to known queer.guide entities on every page you visit.
+            Requires permission to read all sites you visit. Off by default.
+          </div>
+        </div>
+        <button
+          className={enabled ? "primary" : ""}
+          disabled={busy || enabled === null}
+          onClick={() => toggle(!enabled)}
+        >
+          {enabled ? "On" : "Off"}
+        </button>
+      </div>
+      {err && <div className="qg-toast err">{err}</div>}
     </div>
   );
 }

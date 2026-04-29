@@ -55,6 +55,20 @@ export const SubmitBody = z.object({
 });
 export type SubmitBody = z.infer<typeof SubmitBody>;
 
+export interface DetectedItem {
+  entity_type: EntityType;
+  raw_data: Record<string, unknown>;
+  confidence: number;
+  field_confidence?: Record<string, number>;
+  extraction_method: "jsonld" | "opengraph" | "microdata" | "dom" | "manual";
+  source_url: string;
+}
+
+export const RenderBody = z.object({
+  url: z.string().url(),
+});
+export type RenderBody = z.infer<typeof RenderBody>;
+
 export const EnrichBody = z.object({
   url: z.string().url(),
   title: z.string().max(500).optional(),
