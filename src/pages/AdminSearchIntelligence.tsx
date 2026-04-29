@@ -9,6 +9,7 @@ import { SynonymsTab } from '@/components/admin/search-intelligence/SynonymsTab'
 import { AuditTab } from '@/components/admin/search-intelligence/AuditTab';
 import { IngestionQualityTab } from '@/components/admin/search-intelligence/IngestionQualityTab';
 import { ReindexTab } from '@/components/admin/search-intelligence/ReindexTab';
+import { SuggestionsTab } from '@/components/admin/search-intelligence/SuggestionsTab';
 import { PlaceholderTab } from '@/components/admin/search-intelligence/PlaceholderTab';
 
 const FEATURE_FLAG_ENABLED = import.meta.env.VITE_FEATURE_SEARCH_INTELLIGENCE === '1';
@@ -47,6 +48,7 @@ export default function AdminSearchIntelligence() {
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="reindex">Reindexing</TabsTrigger>
           <TabsTrigger value="quality">Ingestion Quality</TabsTrigger>
+          <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
           <TabsTrigger value="consistency">Consistency</TabsTrigger>
           <TabsTrigger value="audit">Audit</TabsTrigger>
         </TabsList>
@@ -77,6 +79,9 @@ export default function AdminSearchIntelligence() {
           </TabsContent>
           <TabsContent value="quality">
             <IngestionQualityTab />
+          </TabsContent>
+          <TabsContent value="suggestions">
+            <SuggestionsTab />
           </TabsContent>
           <TabsContent value="consistency">
             <PlaceholderTab
