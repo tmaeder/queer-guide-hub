@@ -29,3 +29,9 @@ ENABLE_RERANKER = "1"
 
 [observability]
 enabled = true
+
+# Custom domain — exposes the search-proxy as search.queer.guide so client
+# code never references the historical workers.dev hostname.
+[[routes]]
+pattern = "search.queer.guide"
+custom_domain = true
