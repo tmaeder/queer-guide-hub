@@ -16,19 +16,22 @@
  * rate-limit + body validation, and to bail out fast on invalid tokens.
  */
 
+import { enrich } from "./ai";
 import { extractBearer, verifySupabaseJwt } from "./auth";
 import { getCorsHeaders, json } from "./cors";
 import { rateLimit } from "./rate-limit";
-import { SubmitBody } from "./schema";
+import { EnrichBody, SubmitBody } from "./schema";
 import { getSubmissionStatus, insertSubmission } from "./supabase";
 
 export interface Env {
+  AI: Ai;
   RATE_LIMIT: KVNamespace;
   ALLOWED_ORIGINS: string;
   SUBMISSION_RATE_PER_MIN: string;
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
   SUPABASE_JWT_SECRET: string;
+  AI_GATEWAY_NAME?: string;
 }
 
 export default {
@@ -45,6 +48,10 @@ export default {
 
       if (url.pathname === "/submit" && request.method === "POST") {
         return await handleSubmit(request, env, cors);
+      }
+
+      if (url.pathname === "/enrich" && request.method === "POST") {
+        return await handleEnrich(request, env, cors);
       }
 
       const statusMatch = url.pathname.match(/^\/submissions\/([^/]+)$/);
@@ -135,6 +142,30 @@ async function handleStatus(
   });
   if (!row) return json({ error: "not_found" }, 404, cors);
   return json(row, 200, cors);
+}
+
+async function handleEnrich(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  const { user } = auth;
+
+  // Same rate-limit bucket as /submit so users can't spam Workers AI for free.
+  const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
+  const rl = await rateLimit(env.RATE_LIMIT, user.sub, perMin);
+  if (!rl.ok) {
+    return json({ error: "rate_limited", retry_after: rl.retryAfter }, 429, {
+      ...cors,
+      "Retry-After": String(rl.retryAfter),
+    });
+  }
+
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = EnrichBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+
+  const out = await enrich(env, parsed.data);
+  return json(out, 200, cors);
 }
 
 class HttpError extends Error {

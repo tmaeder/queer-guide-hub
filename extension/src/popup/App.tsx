@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchMySubmissions, submitItem, type SubmissionRow } from "../shared/api";
+import { findExisting, fetchMySubmissions, submitItem, type ExistingMatch, type SubmissionRow } from "../shared/api";
 import {
   clearSession,
   getValidAccessToken,
@@ -19,9 +19,21 @@ export function App() {
   const [tab, setTab] = useState<Tab>("detect");
   const [history, setHistory] = useState<SubmissionRow[] | null>(null);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [existing, setExisting] = useState<ExistingMatch | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
+    async function lookupForUrl(url: string | undefined) {
+      if (!url) return;
+      try {
+        const match = await findExisting(url);
+        if (!cancelled) setExisting(match);
+      } catch {
+        // best-effort; silent
+      }
+    }
+
     void (async () => {
       setSession(await loadSession());
 
@@ -29,8 +41,10 @@ export function App() {
       const cached = await chrome.runtime.sendMessage({ type: "qg:get-results" });
       if (cancelled) return;
       if (cached?.items?.length) {
-        setItems(cached.items as DetectedItem[]);
+        const cachedItems = cached.items as DetectedItem[];
+        setItems(cachedItems);
         setLoading(false);
+        void lookupForUrl(cachedItems[0]?.source_url);
         return;
       }
 
@@ -46,8 +60,10 @@ export function App() {
         const r2 = await chrome.runtime.sendMessage({ type: "qg:get-results" });
         if (cancelled) return;
         if (r2?.items?.length) {
-          setItems(r2.items as DetectedItem[]);
+          const fresh = r2.items as DetectedItem[];
+          setItems(fresh);
           setLoading(false);
+          void lookupForUrl(fresh[0]?.source_url);
           return;
         }
         if (r2?.error) {
@@ -132,7 +148,7 @@ export function App() {
         ) : (
           <div className="qg-list">
             {items.map((item, i) => (
-              <ItemCard key={i} item={item} onSubmit={(e) => onSubmit(item, e)} />
+              <ItemCard key={i} item={item} existing={i === 0 ? existing : null} onSubmit={(e) => onSubmit(item, e)} />
             ))}
             <button onClick={onPickSelection}>pick selection instead</button>
           </div>

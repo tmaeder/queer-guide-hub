@@ -55,6 +55,13 @@ export const SubmitBody = z.object({
 });
 export type SubmitBody = z.infer<typeof SubmitBody>;
 
+export const EnrichBody = z.object({
+  url: z.string().url(),
+  title: z.string().max(500).optional(),
+  description: z.string().max(8000).optional(),
+});
+export type EnrichBody = z.infer<typeof EnrichBody>;
+
 export function entityTypeToTargetTable(t: EntityType): "venues" | "events" | "stays" | "personalities" | null {
   switch (t) {
     case "venue":
