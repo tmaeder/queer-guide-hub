@@ -16,19 +16,24 @@
  * rate-limit + body validation, and to bail out fast on invalid tokens.
  */
 
+import { embedText, enrich, suggestTagsFromNeighbours } from "./ai";
 import { extractBearer, verifySupabaseJwt } from "./auth";
 import { getCorsHeaders, json } from "./cors";
 import { rateLimit } from "./rate-limit";
-import { SubmitBody } from "./schema";
-import { getSubmissionStatus, insertSubmission } from "./supabase";
+import { BulkSubmitBody, EnrichBody, FindSimilarBody, ScanSitemapBody, SubmitBody, WatchBody, WatchFeedBody } from "./schema";
+import { fetchSitemap } from "./sitemap";
+import { findSimilar, getSubmissionStatus, insertSubmission, insertSubmissionBatch } from "./supabase";
+import { addNewsFeed, addWatch, deleteWatch, listWatched } from "./watch";
 
 export interface Env {
+  AI: Ai;
   RATE_LIMIT: KVNamespace;
   ALLOWED_ORIGINS: string;
   SUBMISSION_RATE_PER_MIN: string;
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
   SUPABASE_JWT_SECRET: string;
+  AI_GATEWAY_NAME?: string;
 }
 
 export default {
@@ -45,6 +50,33 @@ export default {
 
       if (url.pathname === "/submit" && request.method === "POST") {
         return await handleSubmit(request, env, cors);
+      }
+
+      if (url.pathname === "/enrich" && request.method === "POST") {
+        return await handleEnrich(request, env, cors);
+      }
+
+      if (url.pathname === "/find-similar" && request.method === "POST") {
+        return await handleFindSimilar(request, env, cors);
+      }
+
+      if (url.pathname === "/watch") {
+        if (request.method === "GET") return await handleListWatch(request, env, cors);
+        if (request.method === "POST") return await handleAddWatch(request, env, cors);
+      }
+      const delMatch = url.pathname.match(/^\/watch\/([^/]+)$/);
+      if (delMatch && request.method === "DELETE") {
+        return await handleDeleteWatch(request, env, delMatch[1]!, cors);
+      }
+      if (url.pathname === "/watch-feed" && request.method === "POST") {
+        return await handleAddFeed(request, env, cors);
+      }
+
+      if (url.pathname === "/scan-sitemap" && request.method === "POST") {
+        return await handleScanSitemap(request, env, cors);
+      }
+      if (url.pathname === "/bulk-submit" && request.method === "POST") {
+        return await handleBulkSubmit(request, env, cors);
       }
 
       const statusMatch = url.pathname.match(/^\/submissions\/([^/]+)$/);
@@ -135,6 +167,168 @@ async function handleStatus(
   });
   if (!row) return json({ error: "not_found" }, 404, cors);
   return json(row, 200, cors);
+}
+
+async function handleEnrich(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  const { user } = auth;
+
+  // Same rate-limit bucket as /submit so users can't spam Workers AI for free.
+  const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
+  const rl = await rateLimit(env.RATE_LIMIT, user.sub, perMin);
+  if (!rl.ok) {
+    return json({ error: "rate_limited", retry_after: rl.retryAfter }, 429, {
+      ...cors,
+      "Retry-After": String(rl.retryAfter),
+    });
+  }
+
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = EnrichBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+
+  const text = `${parsed.data.title ?? ""}. ${parsed.data.description ?? ""}`.trim();
+  const [summaryOut, tags] = await Promise.all([
+    enrich(env, parsed.data),
+    text.length > 6
+      ? embedText(env, text).then((vec) => suggestTagsFromNeighbours(env, vec, auth.token, 5)).catch(() => [])
+      : Promise.resolve<string[]>([]),
+  ]);
+
+  return json({ summary: summaryOut.summary, suggested_tags: tags }, 200, cors);
+}
+
+async function handleFindSimilar(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  const { user, token } = auth;
+
+  const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
+  const rl = await rateLimit(env.RATE_LIMIT, user.sub, perMin);
+  if (!rl.ok) {
+    return json({ error: "rate_limited", retry_after: rl.retryAfter }, 429, {
+      ...cors,
+      "Retry-After": String(rl.retryAfter),
+    });
+  }
+
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = FindSimilarBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+
+  const embedding = await embedText(env, parsed.data.text);
+  let hits = await findSimilar({
+    supabaseUrl: env.SUPABASE_URL,
+    anonKey: env.SUPABASE_ANON_KEY,
+    userJwt: token,
+    embedding,
+    limit: parsed.data.limit ?? 5,
+  });
+  if (parsed.data.content_types?.length) {
+    const allow = new Set(parsed.data.content_types);
+    hits = hits.filter((h) => allow.has(h.content_type));
+  }
+  return json({ hits }, 200, cors);
+}
+
+async function handleListWatch(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  const rows = await listWatched({ env, userJwt: auth.token });
+  return json({ rows }, 200, cors);
+}
+
+async function handleAddWatch(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = WatchBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+  const row = await addWatch({
+    env,
+    userJwt: auth.token,
+    userId: auth.user.sub,
+    url: parsed.data.url,
+    frequencyMinutes: parsed.data.frequency_minutes ?? 360,
+  });
+  return json(row, 201, cors);
+}
+
+async function handleDeleteWatch(request: Request, env: Env, id: string, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  await deleteWatch({ env, userJwt: auth.token, id });
+  return json({ ok: true }, 200, cors);
+}
+
+async function handleAddFeed(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = WatchFeedBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+  const row = await addNewsFeed({
+    env,
+    userJwt: auth.token,
+    url: parsed.data.url,
+    name: parsed.data.name,
+    category: parsed.data.category ?? "general",
+    frequencyMinutes: parsed.data.frequency_minutes ?? 60,
+  });
+  return json(row, 201, cors);
+}
+
+async function handleScanSitemap(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+
+  // Sitemap fetch is heavier than a regular submit — same per-user bucket.
+  const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
+  const rl = await rateLimit(env.RATE_LIMIT, auth.user.sub, perMin);
+  if (!rl.ok) return json({ error: "rate_limited", retry_after: rl.retryAfter }, 429, cors);
+
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = ScanSitemapBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+
+  const entries = await fetchSitemap(parsed.data.url);
+  return json({ entries }, 200, cors);
+}
+
+async function handleBulkSubmit(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = BulkSubmitBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+
+  // Counts as N submissions toward the rate limiter.
+  const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
+  const ip = request.headers.get("CF-Connecting-IP") ?? "";
+  for (let i = 0; i < parsed.data.items.length; i++) {
+    const rl = await rateLimit(env.RATE_LIMIT, auth.user.sub, perMin);
+    if (!rl.ok) return json({ error: "rate_limited", retry_after: rl.retryAfter, completed: i }, 429, cors);
+  }
+  void ip;
+
+  const inserted = await insertSubmissionBatch({
+    supabaseUrl: env.SUPABASE_URL,
+    userJwt: auth.token,
+    anonKey: env.SUPABASE_ANON_KEY,
+    userId: auth.user.sub,
+    bodies: parsed.data.items,
+    userAgent: request.headers.get("user-agent") ?? undefined,
+  });
+
+  return json({ submissions: inserted.map((r) => ({ id: r.id, status: r.status })) }, 202, cors);
 }
 
 class HttpError extends Error {

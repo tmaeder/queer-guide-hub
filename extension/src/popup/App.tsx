@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchMySubmissions, submitItem, type SubmissionRow } from "../shared/api";
+import { addWatched, bulkSubmit, findExisting, fetchMySubmissions, listWatched, removeWatched, submitItem, type ExistingMatch, type SubmissionRow, type WatchedRow } from "../shared/api";
 import {
   clearSession,
   getValidAccessToken,
@@ -9,7 +9,7 @@ import type { AuthSession, DetectedItem } from "../shared/types";
 import { ItemCard } from "./ItemCard";
 
 type Toast = { kind: "ok" | "err"; msg: string } | null;
-type Tab = "detect" | "history";
+type Tab = "detect" | "history" | "watched";
 
 export function App() {
   const [session, setSession] = useState<AuthSession | null>(null);
@@ -19,9 +19,23 @@ export function App() {
   const [tab, setTab] = useState<Tab>("detect");
   const [history, setHistory] = useState<SubmissionRow[] | null>(null);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [existing, setExisting] = useState<ExistingMatch | null>(null);
+  const [watched, setWatched] = useState<WatchedRow[] | null>(null);
+  const [watchError, setWatchError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
+    async function lookupForUrl(url: string | undefined) {
+      if (!url) return;
+      try {
+        const match = await findExisting(url);
+        if (!cancelled) setExisting(match);
+      } catch {
+        // best-effort; silent
+      }
+    }
+
     void (async () => {
       setSession(await loadSession());
 
@@ -29,8 +43,10 @@ export function App() {
       const cached = await chrome.runtime.sendMessage({ type: "qg:get-results" });
       if (cancelled) return;
       if (cached?.items?.length) {
-        setItems(cached.items as DetectedItem[]);
+        const cachedItems = cached.items as DetectedItem[];
+        setItems(cachedItems);
         setLoading(false);
+        void lookupForUrl(cachedItems[0]?.source_url);
         return;
       }
 
@@ -46,8 +62,10 @@ export function App() {
         const r2 = await chrome.runtime.sendMessage({ type: "qg:get-results" });
         if (cancelled) return;
         if (r2?.items?.length) {
-          setItems(r2.items as DetectedItem[]);
+          const fresh = r2.items as DetectedItem[];
+          setItems(fresh);
           setLoading(false);
+          void lookupForUrl(fresh[0]?.source_url);
           return;
         }
         if (r2?.error) {
@@ -81,6 +99,18 @@ export function App() {
     window.close();
   }
 
+  async function onBulkSubmit() {
+    if (items.length === 0) return;
+    const token = await getValidAccessToken();
+    if (!token) { setToast({ kind: "err", msg: "not signed in" }); return; }
+    try {
+      const res = await bulkSubmit(items, token);
+      setToast({ kind: "ok", msg: `submitted ${res.submissions.length} items` });
+    } catch (e) {
+      setToast({ kind: "err", msg: e instanceof Error ? e.message : "bulk submit failed" });
+    }
+  }
+
   async function loadHistory() {
     setHistory(null);
     setHistoryError(null);
@@ -93,11 +123,26 @@ export function App() {
     }
   }
 
+  async function loadWatched() {
+    setWatched(null);
+    setWatchError(null);
+    const token = await getValidAccessToken();
+    if (!token) { setWatchError("not signed in"); return; }
+    try {
+      setWatched(await listWatched(token));
+    } catch (e) {
+      setWatchError(e instanceof Error ? e.message : "failed");
+    }
+  }
+
   useEffect(() => {
     if (session && tab === "history" && history === null && !historyError) {
       void loadHistory();
     }
-  }, [session, tab, history, historyError]);
+    if (session && tab === "watched" && watched === null && !watchError) {
+      void loadWatched();
+    }
+  }, [session, tab, history, historyError, watched, watchError]);
 
   if (!session) return <Login onSignedIn={setSession} />;
 
@@ -118,10 +163,14 @@ export function App() {
         <button
           className={tab === "history" ? "active" : ""}
           onClick={() => setTab("history")}
-        >My submissions</button>
+        >Submissions</button>
+        <button
+          className={tab === "watched" ? "active" : ""}
+          onClick={() => setTab("watched")}
+        >Watched</button>
       </div>
       {toast && <div className={`qg-toast ${toast.kind}`}>{toast.msg}</div>}
-      {tab === "detect" ? (
+      {tab === "detect" && (
         loading ? (
           <div className="qg-empty">scanning page…</div>
         ) : items.length === 0 ? (
@@ -131,18 +180,78 @@ export function App() {
           </div>
         ) : (
           <div className="qg-list">
+            {items.length > 1 && (
+              <button className="primary" onClick={onBulkSubmit}>
+                submit all {items.length} items
+              </button>
+            )}
             {items.map((item, i) => (
-              <ItemCard key={i} item={item} onSubmit={(e) => onSubmit(item, e)} />
+              <ItemCard key={i} item={item} existing={i === 0 ? existing : null} onSubmit={(e) => onSubmit(item, e)} />
             ))}
+            <button onClick={async () => {
+              const token = await getValidAccessToken();
+              if (!token) return;
+              const url = items[0]?.source_url;
+              if (!url) return;
+              try { await addWatched(url, token); setToast({ kind: "ok", msg: "watching this URL" }); }
+              catch (e) { setToast({ kind: "err", msg: e instanceof Error ? e.message : "failed" }); }
+            }}>watch this page</button>
             <button onClick={onPickSelection}>pick selection instead</button>
           </div>
         )
-      ) : (
+      )}
+      {tab === "history" && (
         <HistoryView rows={history} error={historyError} onReload={loadHistory} />
+      )}
+      {tab === "watched" && (
+        <WatchedView rows={watched} error={watchError} onReload={loadWatched} onRemove={async (id) => {
+          const token = await getValidAccessToken();
+          if (!token) return;
+          try { await removeWatched(id, token); await loadWatched(); }
+          catch (e) { setToast({ kind: "err", msg: e instanceof Error ? e.message : "failed" }); }
+        }} />
       )}
     </div>
   );
 }
+
+function WatchedView({
+  rows,
+  error,
+  onReload,
+  onRemove,
+}: {
+  rows: WatchedRow[] | null;
+  error: string | null;
+  onReload: () => void;
+  onRemove: (id: string) => void;
+}) {
+  if (error) return (
+    <div className="qg-empty">
+      <p>{error}</p>
+      <button onClick={onReload}>retry</button>
+    </div>
+  );
+  if (rows === null) return <div className="qg-empty">loading…</div>;
+  if (rows.length === 0) return <div className="qg-empty">no watched URLs.</div>;
+  return (
+    <div className="qg-list">
+      {rows.map((r) => (
+        <div key={r.id} className="qg-item">
+          <div className="qg-name" style={{ wordBreak: "break-all" }}>{shortUrl(r.url)}</div>
+          <div className="qg-meta">
+            checks every {r.frequency_minutes} min ·{" "}
+            {r.last_checked_at ? `last ${new Date(r.last_checked_at).toLocaleString()}` : "never checked"}
+          </div>
+          <div className="qg-actions">
+            <button onClick={() => onRemove(r.id)}>remove</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 
 function HistoryView({
   rows,

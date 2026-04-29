@@ -1,4 +1,5 @@
 import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
+import { upsertImageAsset } from '../_shared/image-assets.ts'
 
 interface ImageResult {
   url: string
@@ -182,6 +183,16 @@ async function processVillage(
     .update({ image_url: url, image_metadata: md, updated_at: new Date().toISOString() })
     .eq('id', id)
   if (ue) return { success: false, error: ue.message }
+  // Dual-write to image_assets registry (Wave B.1).
+  await upsertImageAsset(supabase as never, {
+    url,
+    source: 'scraper',
+    attribution: best.photographer ?? null,
+    license: best.source ?? null,
+    entity_type: 'queer_village',
+    entity_id: id,
+    role: 'cover',
+  })
   return { success: true, image_url: url, image_metadata: md }
 }
 

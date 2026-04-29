@@ -27,6 +27,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 	});
 }
 import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities } from "./supabase";
+import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
 import { getCorsHeaders, json } from "./util";
 
@@ -135,7 +136,17 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// Parallel: embed q + load personalization signal + seen-recently set.
 	const embedModel = env.EMBED_MODEL || DEFAULT_EMBED_MODEL;
 	const sessionKey = user_id ? `u:${user_id}` : session_id ? `s:${session_id}` : null;
-	const embedText = rewrite?.synonyms?.length ? `${effectiveQ} ${rewrite.synonyms.join(" ")}` : effectiveQ;
+
+	// Postgres-backed synonyms (search_synonyms WHERE status='active'),
+	// cached in Worker KV (5 min). Augments the LLM rewrite synonyms.
+	// Fail-open on KV / Supabase errors — empty list is fine.
+	const pgSyns = await loadActiveSynonyms(env);
+	const pgExpansionTerms = expandWithPgSynonyms(effectiveQ, pgSyns, { locale: lang });
+	const allSynonyms = Array.from(
+		new Set<string>([...(rewrite?.synonyms ?? []), ...pgExpansionTerms]),
+	);
+
+	const embedText = allSynonyms.length ? `${effectiveQ} ${allSynonyms.join(" ")}` : effectiveQ;
 	const [qVec, signal, recent] = await Promise.all([
 		embed(env, embedText, { cacheKey: `q:${embedModel}:${lang}:${embedText}` }),
 		loadSignal(env, { user_id, session_id }),
@@ -151,8 +162,10 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		.map((i) => INDEX_TO_PG_TYPE[i])
 		.filter(Boolean) as string[];
 
-	// Search with rewritten query if available — preserves original q for lexical match by OR-ing synonyms into Meili query string.
-	const meiliQ = rewrite?.synonyms?.length ? `${q} ${rewrite.synonyms.join(" ")}` : q;
+	// Search with rewritten query if available — preserves original q for lexical
+	// match by OR-ing synonyms (LLM rewrite + Postgres-backed) into the Meili
+	// query string.
+	const meiliQ = allSynonyms.length ? `${q} ${allSynonyms.join(" ")}` : q;
 	const useHybrid = meiliQ.split(/\s+/).length >= 3;
 	const [meili, sem] = await Promise.all([
 		meiliMultiSearch(env, {
