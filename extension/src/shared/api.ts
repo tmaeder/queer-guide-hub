@@ -30,6 +30,29 @@ export async function submitItem(
   return (await res.json()) as SubmitResponse;
 }
 
+export interface EnrichResponse {
+  summary: string;
+  suggested_tags: string[];
+}
+
+export async function enrichItem(
+  url: string,
+  title: string | undefined,
+  description: string | undefined,
+  accessToken: string,
+): Promise<EnrichResponse> {
+  const res = await fetch(`${API}/enrich`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ url, title, description }),
+  });
+  if (!res.ok) throw new Error(`enrich ${res.status}: ${await res.text()}`);
+  return (await res.json()) as EnrichResponse;
+}
+
 export async function fetchStatus(
   id: string | number,
   accessToken: string,
@@ -70,4 +93,61 @@ export async function fetchMySubmissions(accessToken: string, limit = 10): Promi
   });
   if (!res.ok) throw new Error(`history ${res.status}: ${await res.text()}`);
   return (await res.json()) as SubmissionRow[];
+}
+
+export interface ExistingMatch {
+  table: "venues" | "events" | "news_articles";
+  id: string;
+  slug: string | null;
+  title: string;
+}
+
+/**
+ * Reverse lookup — is this URL already a known entity in queer.guide?
+ * Reads the public RLS-allowed canonical tables directly via PostgREST.
+ * Uses `venues.website_domain` (computed + indexed) for venues, exact
+ * `website` / `url` matches for events and news.
+ */
+export async function findExisting(sourceUrl: string): Promise<ExistingMatch | null> {
+  let host = "";
+  try { host = new URL(sourceUrl).host.replace(/^www\./, ""); } catch { return null; }
+  if (!host) return null;
+  const headers = { apikey: ANON_KEY };
+  const enc = encodeURIComponent;
+  const url = enc(sourceUrl);
+  const queries = [
+    {
+      table: "venues" as const,
+      url: `${SUPABASE_URL}/rest/v1/venues?website_domain=eq.${enc(host)}&select=id,slug,name&limit=1`,
+      titleField: "name" as const,
+    },
+    {
+      table: "events" as const,
+      url: `${SUPABASE_URL}/rest/v1/events?website=eq.${url}&select=id,slug,title&limit=1`,
+      titleField: "title" as const,
+    },
+    {
+      table: "news_articles" as const,
+      url: `${SUPABASE_URL}/rest/v1/news_articles?url=eq.${url}&select=id,slug,title&limit=1`,
+      titleField: "title" as const,
+    },
+  ];
+  const responses = await Promise.allSettled(
+    queries.map((q) => fetch(q.url, { headers }).then((r) => (r.ok ? r.json() : []))),
+  );
+  for (let i = 0; i < responses.length; i++) {
+    const r = responses[i];
+    if (!r || r.status !== "fulfilled") continue;
+    const rows = r.value as Array<Record<string, unknown>>;
+    if (rows.length === 0) continue;
+    const row = rows[0]!;
+    const q = queries[i]!;
+    return {
+      table: q.table,
+      id: String(row.id),
+      slug: typeof row.slug === "string" ? row.slug : null,
+      title: String(row[q.titleField] ?? "(unnamed)"),
+    };
+  }
+  return null;
 }

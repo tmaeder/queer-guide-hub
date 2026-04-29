@@ -2,7 +2,8 @@
  * Service worker — message bus between popup and content script, plus the
  * web→extension auth bridge.
  */
-import { persistSharedSession } from "../shared/auth";
+import { submitItem } from "../shared/api";
+import { getValidAccessToken, persistSharedSession } from "../shared/auth";
 import type { DetectedItem } from "../shared/types";
 
 interface ExtractResult {
@@ -12,9 +13,23 @@ interface ExtractResult {
 
 const lastResults = new Map<number, ExtractResult>();
 
+const BADGE_COLOR = "#d4007f";
+
+function updateBadge(tabId: number, items: DetectedItem[]): void {
+  const text = items.length > 0 ? String(items.length) : "";
+  void chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_COLOR }).catch(() => {});
+  void chrome.action.setBadgeText({ tabId, text }).catch(() => {});
+}
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  lastResults.delete(tabId);
+});
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === "qg:extracted" && sender.tab?.id != null) {
-    lastResults.set(sender.tab.id, { items: msg.items ?? [], error: msg.error });
+    const items = (msg.items ?? []) as DetectedItem[];
+    lastResults.set(sender.tab.id, { items, error: msg.error });
+    updateBadge(sender.tab.id, items);
     return;
   }
   if (msg?.type === "qg:get-results") {
@@ -51,6 +66,50 @@ async function runExtraction(mode: "auto" | "selection"): Promise<{ ok: boolean;
   });
   return { ok: true };
 }
+
+/**
+ * Keyboard-shortcut path: cmd/ctrl+shift+Q runs the manual selection
+ * extractor and submits the first detected item without opening the popup.
+ * The user gets a Chrome notification when it lands. Requires an active
+ * Supabase session — silent failure if not signed in.
+ */
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command !== "qg-submit-selection") return;
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return;
+  if (tab.url?.startsWith("chrome://") || tab.url?.startsWith("chrome-extension://")) return;
+
+  const token = await getValidAccessToken();
+  if (!token) {
+    void chrome.action.setBadgeText({ tabId: tab.id, text: "?" });
+    void chrome.action.setBadgeBackgroundColor({ tabId: tab.id, color: "#b91c1c" });
+    return;
+  }
+
+  lastResults.delete(tab.id);
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["src/content/selection.ts"],
+  });
+
+  const start = Date.now();
+  while (Date.now() - start < 8000) {
+    await new Promise((r) => setTimeout(r, 150));
+    const cached = lastResults.get(tab.id);
+    if (!cached?.items?.length) continue;
+    const item = cached.items[0]!;
+    try {
+      await submitItem(item, token);
+      void chrome.action.setBadgeText({ tabId: tab.id, text: "✓" });
+      void chrome.action.setBadgeBackgroundColor({ tabId: tab.id, color: BADGE_COLOR });
+      setTimeout(() => updateBadge(tab.id!, lastResults.get(tab.id!)?.items ?? []), 2500);
+    } catch {
+      void chrome.action.setBadgeText({ tabId: tab.id, text: "!" });
+      void chrome.action.setBadgeBackgroundColor({ tabId: tab.id, color: "#b91c1c" });
+    }
+    return;
+  }
+});
 
 // External messages from queer.guide (AuthCallback magic-link bridge) — kept
 // for backwards compat with the magic-link flow, though the page-bridge
