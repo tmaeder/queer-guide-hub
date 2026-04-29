@@ -16,7 +16,7 @@
  * rate-limit + body validation, and to bail out fast on invalid tokens.
  */
 
-import { embedText, enrich } from "./ai";
+import { embedText, enrich, suggestTagsFromNeighbours } from "./ai";
 import { extractBearer, verifySupabaseJwt } from "./auth";
 import { getCorsHeaders, json } from "./cors";
 import { rateLimit } from "./rate-limit";
@@ -189,8 +189,15 @@ async function handleEnrich(request: Request, env: Env, cors: HeadersInit): Prom
   const parsed = EnrichBody.safeParse(raw);
   if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
 
-  const out = await enrich(env, parsed.data);
-  return json(out, 200, cors);
+  const text = `${parsed.data.title ?? ""}. ${parsed.data.description ?? ""}`.trim();
+  const [summaryOut, tags] = await Promise.all([
+    enrich(env, parsed.data),
+    text.length > 6
+      ? embedText(env, text).then((vec) => suggestTagsFromNeighbours(env, vec, auth.token, 5)).catch(() => [])
+      : Promise.resolve<string[]>([]),
+  ]);
+
+  return json({ summary: summaryOut.summary, suggested_tags: tags }, 200, cors);
 }
 
 async function handleFindSimilar(request: Request, env: Env, cors: HeadersInit): Promise<Response> {

@@ -82,3 +82,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .qg-similar li { margin: 2px 0; }
 .qg-similar a { color: var(--accent); }
 .qg-similar-score { color: var(--muted); font-variant-numeric: tabular-nums; }
+.qg-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.qg-tag {
+  font-size: 10px; padding: 2px 6px; border-radius: 999px;
+  background: #f0e7ff; color: #6d28d9; border: 1px solid #ddd6fe;
+}
