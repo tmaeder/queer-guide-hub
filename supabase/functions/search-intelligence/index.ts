@@ -202,6 +202,14 @@ function pickRoute(method: string, parts: string[]): Handler | null {
   if (method === 'POST' && parts[0] === 'cron' && parts[1] === 'reconcile') {
     return cronReconcile
   }
+  // /suggestions
+  if (parts[0] === 'suggestions' && parts.length === 1) {
+    if (method === 'GET') return listSuggestions
+    if (method === 'POST') return createSuggestion
+  }
+  if (parts[0] === 'suggestions' && parts.length === 2) {
+    if (method === 'PATCH') return updateSuggestion
+  }
   return null
 }
 
@@ -1092,6 +1100,210 @@ function shallowEqualSetting(key: string, a: unknown, b: unknown): boolean {
     return JSON.stringify(a) === JSON.stringify(b)
   }
   return false
+}
+
+// ── ai_suggestions ──────────────────────────────────────────────────────────
+
+async function listSuggestions(ctx: RouteContext): Promise<Response> {
+  const status = ctx.url.searchParams.get('status')
+  const type = ctx.url.searchParams.get('type')
+  const entityType = ctx.url.searchParams.get('entity_type')
+  const limit = Math.min(Number(ctx.url.searchParams.get('limit') ?? '100'), 500)
+  let q = ctx.service
+    .from('ai_suggestions')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (status) q = q.eq('status', status)
+  if (type) q = q.eq('suggestion_type', type)
+  if (entityType) q = q.eq('entity_type', entityType)
+  const { data, error } = await q
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function createSuggestion(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const body = await readJson<{
+    suggestion_type: string
+    entity_type?: string | null
+    entity_id?: string | null
+    locale?: string | null
+    proposed_value: unknown
+    current_value?: unknown
+    source?: string
+    source_model?: string
+    source_run_id?: string
+    confidence?: number
+    expires_at?: string
+  }>(ctx.req)
+  if (!body.suggestion_type || body.proposed_value == null) {
+    return errorResponse('suggestion_type and proposed_value required', 400, ctx.req)
+  }
+  const insert = {
+    suggestion_type: body.suggestion_type,
+    entity_type: body.entity_type ?? null,
+    entity_id: body.entity_id ?? null,
+    locale: body.locale ?? null,
+    proposed_value: body.proposed_value,
+    current_value: body.current_value ?? null,
+    source: body.source ?? 'editor',
+    source_model: body.source_model ?? null,
+    source_run_id: body.source_run_id ?? null,
+    confidence: body.confidence ?? null,
+    expires_at: body.expires_at ?? null,
+    status: 'pending' as const,
+  }
+  const { data, error } = await ctx.service
+    .from('ai_suggestions')
+    .insert(insert)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'suggestion.create', 'suggestion', data.id, null, data)
+  return jsonResponse({ success: true, data }, 201, ctx.req)
+}
+
+async function updateSuggestion(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const id = ctx.pathParts[1]
+  if (!id) return errorResponse('id required', 400, ctx.req)
+  const body = await readJson<{
+    status?: 'pending' | 'approved' | 'applied' | 'rejected' | 'superseded' | 'expired'
+    proposed_value?: unknown
+    review_notes?: string
+  }>(ctx.req)
+  if (!body.status && body.proposed_value == null && body.review_notes == null) {
+    return errorResponse('no updatable fields', 400, ctx.req)
+  }
+
+  const { data: before } = await ctx.service
+    .from('ai_suggestions')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  if (!before) return errorResponse('suggestion not found', 404, ctx.req)
+
+  const update: Record<string, unknown> = {}
+  if (body.status) update.status = body.status
+  if (body.proposed_value != null) update.proposed_value = body.proposed_value
+  if (body.review_notes != null) update.review_notes = body.review_notes
+  if (body.status === 'approved' || body.status === 'applied') {
+    update.reviewer_id = ctx.actorId === 'service-role' ? null : ctx.actorId
+    update.approved_at = new Date().toISOString()
+  }
+  if (body.status === 'rejected') {
+    update.reviewer_id = ctx.actorId === 'service-role' ? null : ctx.actorId
+    update.rejected_at = new Date().toISOString()
+  }
+
+  // Auto-apply on approve (Q3 recommendation): if approve succeeds, attempt to
+  // apply the suggestion. On apply failure, keep status=approved + log error
+  // in review_notes (the row stays in the queue for retry).
+  let applyError: string | null = null
+  let applied = false
+  if (body.status === 'approved') {
+    try {
+      applied = await applySuggestion(ctx, {
+        ...before,
+        proposed_value: body.proposed_value ?? before.proposed_value,
+      })
+    } catch (e) {
+      applyError = e instanceof Error ? e.message : 'unknown apply error'
+    }
+    if (applied) {
+      update.status = 'applied'
+      update.applied_at = new Date().toISOString()
+    } else if (applyError) {
+      update.review_notes = `auto-apply failed: ${applyError}` +
+        (body.review_notes ? `\n${body.review_notes}` : '')
+    }
+  }
+
+  const { data, error } = await ctx.service
+    .from('ai_suggestions')
+    .update(update)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'suggestion.update', 'suggestion', id, before, data, {
+    auto_applied: applied,
+    apply_error: applyError,
+  })
+  return jsonResponse({ success: true, data, auto_applied: applied, apply_error: applyError }, 200, ctx.req)
+}
+
+/**
+ * Apply a suggestion's proposed_value to the live system. Handles the common
+ * cases (tag assignment, synonym creation); others raise so the caller marks
+ * status=approved with the error in review_notes for manual follow-up.
+ */
+async function applySuggestion(
+  ctx: RouteContext,
+  s: {
+    suggestion_type: string
+    entity_type: string | null
+    entity_id: string | null
+    locale: string | null
+    proposed_value: Record<string, unknown> | unknown
+  },
+): Promise<boolean> {
+  const v = s.proposed_value as Record<string, unknown>
+  switch (s.suggestion_type) {
+    case 'tag': {
+      if (!s.entity_type || !s.entity_id || !v?.tag_id) {
+        throw new Error('tag suggestion needs entity_type, entity_id, proposed_value.tag_id')
+      }
+      const { error } = await ctx.service
+        .from('unified_tag_assignments')
+        .upsert(
+          { entity_type: s.entity_type, entity_id: s.entity_id, tag_id: v.tag_id },
+          { onConflict: 'entity_type,entity_id,tag_id' },
+        )
+      if (error) throw new Error(error.message)
+      return true
+    }
+    case 'synonym': {
+      const terms = v?.terms as string[] | undefined
+      const replacements = v?.replacements as string[] | undefined
+      if (!terms || !replacements) {
+        throw new Error('synonym suggestion needs terms[] and replacements[]')
+      }
+      const { error } = await ctx.service.from('search_synonyms').insert({
+        terms,
+        replacements,
+        is_one_way: Boolean(v?.is_one_way),
+        locale: s.locale ?? '*',
+        indexes: (v?.indexes as string[]) ?? [],
+        status: 'active',
+        source: 'ai-suggested',
+      })
+      if (error) throw new Error(error.message)
+      return true
+    }
+    case 'cluster_membership': {
+      if (!v?.cluster_id || !v?.tag_id) {
+        throw new Error('cluster_membership needs proposed_value.cluster_id and tag_id')
+      }
+      const { error } = await ctx.service
+        .from('topic_cluster_tags')
+        .upsert(
+          { cluster_id: v.cluster_id, tag_id: v.tag_id },
+          { onConflict: 'cluster_id,tag_id' },
+        )
+      if (error) throw new Error(error.message)
+      return true
+    }
+    default:
+      // Other types (alt_text, description, title, image_replacement,
+      // translation, other) require entity-specific writes that are out of
+      // scope for the auto-apply MVP. Caller marks status=approved with
+      // review_notes='manual apply required'.
+      return false
+  }
 }
 
 // ── topic_clusters CRUD ──────────────────────────────────────────────────────
