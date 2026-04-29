@@ -126,6 +126,44 @@ export async function fetchStatus(
   return (await res.json()) as Record<string, unknown>;
 }
 
+/**
+ * Upload a captured screenshot to the flyer-scans bucket. RLS requires
+ * the path's first folder = auth.uid(), so we always prefix with userId.
+ * Returns the public URL the pipeline-media-process function can fetch.
+ */
+export async function uploadCapture(
+  blob: Blob,
+  userId: string,
+  accessToken: string,
+): Promise<string> {
+  const filename = `screen-${Date.now()}.png`;
+  const path = `${userId}/${filename}`;
+  const url = `${SUPABASE_URL}/storage/v1/object/flyer-scans/${path}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: ANON_KEY,
+      "Content-Type": "image/png",
+      "x-upsert": "true",
+    },
+    body: blob,
+  });
+  if (!res.ok) throw new Error(`upload ${res.status}: ${await res.text()}`);
+  return `${SUPABASE_URL}/storage/v1/object/public/flyer-scans/${path}`;
+}
+
+export async function renderUrl(url: string, accessToken: string): Promise<DetectedItem[]> {
+  const res = await fetch(`${API}/render`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) throw new Error(`render ${res.status}`);
+  const body = (await res.json()) as { items: DetectedItem[] };
+  return body.items;
+}
+
 export interface BulkResult {
   submissions: Array<{ id: string; status: string }>;
 }

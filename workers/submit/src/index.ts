@@ -20,7 +20,8 @@ import { embedText, enrich, suggestTagsFromNeighbours } from "./ai";
 import { extractBearer, verifySupabaseJwt } from "./auth";
 import { getCorsHeaders, json } from "./cors";
 import { rateLimit } from "./rate-limit";
-import { BulkSubmitBody, EnrichBody, FindSimilarBody, ScanSitemapBody, SubmitBody, WatchBody, WatchFeedBody } from "./schema";
+import { BulkSubmitBody, EnrichBody, FindSimilarBody, RenderBody, ScanSitemapBody, SubmitBody, WatchBody, WatchFeedBody } from "./schema";
+import { renderAndExtract } from "./render";
 import { fetchSitemap } from "./sitemap";
 import { findSimilar, getSubmissionStatus, insertSubmission, insertSubmissionBatch } from "./supabase";
 import { addNewsFeed, addWatch, deleteWatch, listWatched } from "./watch";
@@ -77,6 +78,12 @@ export default {
       }
       if (url.pathname === "/bulk-submit" && request.method === "POST") {
         return await handleBulkSubmit(request, env, cors);
+      }
+      if (url.pathname === "/render" && request.method === "POST") {
+        return await handleRender(request, env, cors);
+      }
+      if (url.pathname === "/known-urls" && request.method === "GET") {
+        return await handleKnownUrls(env, cors);
       }
 
       const statusMatch = url.pathname.match(/^\/submissions\/([^/]+)$/);
@@ -329,6 +336,72 @@ async function handleBulkSubmit(request: Request, env: Env, cors: HeadersInit): 
   });
 
   return json({ submissions: inserted.map((r) => ({ id: r.id, status: r.status })) }, 202, cors);
+}
+
+/**
+ * M9.1 — known-URL list for the inline overlay content_script. Returns a
+ * compact JSON of (domain | url, slug, type) tuples covering all
+ * publicly-listed venues, events and news. Edge-cached 1h via the Cache
+ * API so the per-tab content_script just hits CF cache, not Supabase.
+ */
+async function handleKnownUrls(env: Env, cors: HeadersInit): Promise<Response> {
+  const cacheKey = new Request("https://known-urls.queer.guide/v1");
+  const cache = caches.default;
+  const hit = await cache.match(cacheKey);
+  if (hit) {
+    const body = await hit.text();
+    return new Response(body, { status: 200, headers: { ...cors, "Content-Type": "application/json", "X-Cache": "HIT" } });
+  }
+
+  const sb = (path: string) => fetch(`${env.SUPABASE_URL}${path}`, {
+    headers: { apikey: env.SUPABASE_ANON_KEY },
+  }).then((r) => (r.ok ? r.json() : []));
+
+  const [venues, events, news] = (await Promise.all([
+    sb("/rest/v1/venues?select=website_domain,slug&website_domain=not.is.null&limit=5000"),
+    sb("/rest/v1/events?select=website,slug&website=not.is.null&limit=5000"),
+    sb("/rest/v1/news_articles?select=url,slug&url=not.is.null&limit=5000"),
+  ])) as [
+    Array<{ website_domain: string; slug: string }>,
+    Array<{ website: string; slug: string }>,
+    Array<{ url: string; slug: string }>,
+  ];
+
+  const payload = {
+    domains: venues.filter((v) => v.website_domain && v.slug).map((v) => [v.website_domain, v.slug]),
+    eventUrls: events.filter((e) => e.website && e.slug).map((e) => [e.website, e.slug]),
+    newsUrls: news.filter((n) => n.url && n.slug).map((n) => [n.url, n.slug]),
+  };
+
+  const body = JSON.stringify(payload);
+  const res = new Response(body, {
+    status: 200,
+    headers: {
+      ...cors,
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=3600",
+      "X-Cache": "MISS",
+    },
+  });
+  await cache.put(cacheKey, res.clone());
+  return res;
+}
+
+async function handleRender(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+
+  const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
+  const rl = await rateLimit(env.RATE_LIMIT, auth.user.sub, perMin);
+  if (!rl.ok) return json({ error: "rate_limited", retry_after: rl.retryAfter }, 429, cors);
+
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = RenderBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+
+  const items = await renderAndExtract(parsed.data.url);
+  return json({ items }, 200, cors);
 }
 
 class HttpError extends Error {
