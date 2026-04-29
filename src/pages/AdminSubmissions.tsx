@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Badge } from '@/components/ui/badge';
@@ -168,10 +169,28 @@ export default function AdminSubmissions() {
   );
 }
 
+interface ReputationRow { user_id: string; approved: number; rejected: number }
+
+function useReputation() {
+  return useQuery<Record<string, ReputationRow>>({
+    queryKey: ['user-submission-reputation'],
+    queryFn: async () => {
+      const { data, error } = await untypedFrom('user_submission_reputation')
+        .select('user_id,approved,rejected');
+      if (error) throw error;
+      const map: Record<string, ReputationRow> = {};
+      for (const r of (data ?? []) as ReputationRow[]) map[r.user_id] = r;
+      return map;
+    },
+    staleTime: 60_000,
+  });
+}
+
 function SubmissionsCore() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { data: reputation = {} } = useReputation();
 
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionRow | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -359,6 +378,26 @@ function SubmissionsCore() {
         cell: (info) => formatDate(info.getValue()),
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
+      columnHelper.accessor('submitted_by', {
+        id: 'submitter',
+        header: 'Submitter',
+        cell: (info) => {
+          const uid = info.getValue();
+          if (!uid) return '—';
+          const r = reputation[uid];
+          if (!r) return <span style={{ fontFamily: 'monospace', fontSize: 11 }}>{uid.slice(0, 6)}…</span>;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12 }}>
+              <span style={{ fontFamily: 'monospace' }}>{uid.slice(0, 6)}…</span>
+              <Badge variant="default" style={{ background: '#d1fadf', color: '#198754' }}>✓ {r.approved}</Badge>
+              {r.rejected > 0 && (
+                <Badge variant="destructive">✗ {r.rejected}</Badge>
+              )}
+            </Box>
+          );
+        },
+        meta: { hideable: true } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('reviewed_at', {
         header: 'Reviewed',
         cell: (info) => {
@@ -372,7 +411,7 @@ function SubmissionsCore() {
         } satisfies AdminColumnMeta,
       }),
     ],
-    [],
+    [reputation],
   );
 
   const tableConfig: AdminTableConfig<SubmissionRow> = useMemo(
