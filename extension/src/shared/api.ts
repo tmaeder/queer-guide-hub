@@ -127,30 +127,46 @@ export async function fetchStatus(
 }
 
 /**
- * Upload a captured screenshot to the flyer-scans bucket. RLS requires
- * the path's first folder = auth.uid(), so we always prefix with userId.
- * Returns the public URL the pipeline-media-process function can fetch.
+ * Upload a captured screenshot to the public feedback-screenshots bucket.
+ * Its RLS policy allows any authenticated client to insert without a
+ * path constraint, so we can use it for extension-captured page images
+ * even though the original use-case is bug-report screenshots.
+ *
+ * Path is prefixed with the JWT sub for traceability. Returns the public
+ * URL the pipeline-media-process function can fetch.
  */
-export async function uploadCapture(
-  blob: Blob,
-  userId: string,
-  accessToken: string,
-): Promise<string> {
+export async function uploadCapture(blob: Blob, accessToken: string): Promise<string> {
+  const sub = jwtSub(accessToken) ?? "anon";
   const filename = `screen-${Date.now()}.png`;
-  const path = `${userId}/${filename}`;
-  const url = `${SUPABASE_URL}/storage/v1/object/flyer-scans/${path}`;
+  const path = `${sub}/${filename}`;
+  const url = `${SUPABASE_URL}/storage/v1/object/feedback-screenshots/${path}`;
+  // Supabase storage REST expects multipart/form-data with a `file` part —
+  // a raw body produces a misleading 403 RLS error rather than a 415.
+  const fd = new FormData();
+  fd.append("file", blob, filename);
+  fd.append("cacheControl", "3600");
   const res = await fetch(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
       apikey: ANON_KEY,
-      "Content-Type": "image/png",
-      "x-upsert": "true",
     },
-    body: blob,
+    body: fd,
   });
   if (!res.ok) throw new Error(`upload ${res.status}: ${await res.text()}`);
-  return `${SUPABASE_URL}/storage/v1/object/public/flyer-scans/${path}`;
+  return `${SUPABASE_URL}/storage/v1/object/public/feedback-screenshots/${path}`;
+}
+
+function jwtSub(token: string): string | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const claims = JSON.parse(json) as { sub?: unknown };
+    return typeof claims.sub === "string" ? claims.sub : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function renderUrl(url: string, accessToken: string): Promise<DetectedItem[]> {

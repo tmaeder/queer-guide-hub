@@ -126,7 +126,7 @@ export function App() {
     try {
       const dataUrl = await chrome.tabs.captureVisibleTab({ format: "png" });
       const blob = await (await fetch(dataUrl)).blob();
-      const publicUrl = await uploadCapture(blob, session.user.id, token);
+      const publicUrl = await uploadCapture(blob, token);
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const sourceUrl = tab?.url ?? "https://example.com/screenshot";
       const host = (() => { try { return new URL(sourceUrl).host; } catch { return "page"; } })();
