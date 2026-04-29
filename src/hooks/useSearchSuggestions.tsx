@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Calendar, Store, Tag, Users, User } from 'lucide-react';
 import type { SearchHit } from '@/lib/searchClient';
 
-const SEARCH_PROXY_URL = import.meta.env.VITE_SEARCH_PROXY_URL || 'https://queer-guide-search-proxy.maeder-tobiassimon.workers.dev';
+const SEARCH_PROXY_URL = import.meta.env.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
 
 export interface SearchSuggestion {
   id: string;

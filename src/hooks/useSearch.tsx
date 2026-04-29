@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "./useDebounce";
 
-const SEARCH_PROXY_URL = import.meta.env.VITE_SEARCH_PROXY_URL || 'https://queer-guide-search-proxy.maeder-tobiassimon.workers.dev';
+const SEARCH_PROXY_URL = import.meta.env.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 

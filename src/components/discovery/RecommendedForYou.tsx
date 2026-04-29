@@ -16,7 +16,7 @@ import { Sparkles } from "lucide-react";
 const SEARCH_URL =
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	(import.meta as any).env?.VITE_SEARCH_PROXY_URL ||
-	"https://queer-guide-search-proxy.maeder-tobiassimon.workers.dev";
+	"https://search.queer.guide";
 
 const TYPE_PATH: Record<string, string> = {
 	venue: "/venues",
