@@ -156,16 +156,24 @@ async function syncType(supabase: any, type: string): Promise<number> {
 
   if (!allDocs.length) return 0
 
+  // For events: expand each master to one Meili doc per active occurrence.
+  // Falls back to a single doc when there are no occurrences (common for
+  // one-off events). See expandEventDocsToOccurrences below.
+  let toIndex = allDocs
+  if (type === 'events') {
+    toIndex = await expandEventDocsToOccurrences(supabase, allDocs)
+  }
+
   // Augment each doc with cluster_ids[] / cluster_slugs[] from
   // topic_clusters membership before pushing to Meili. Done in batches of 500
   // to keep the IN clause manageable.
-  for (let i = 0; i < allDocs.length; i += 500) {
-    const batch = allDocs.slice(i, i + 500)
+  for (let i = 0; i < toIndex.length; i += 500) {
+    const batch = toIndex.slice(i, i + 500)
     await enrichDocsWithClusters(supabase, type, batch)
     await meiliPut(`/indexes/${type}/documents`, batch)
   }
 
-  return allDocs.length
+  return toIndex.length
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -180,8 +188,90 @@ async function upsertDocument(supabase: any, type: string, id: string) {
     return
   }
 
-  await enrichDocsWithClusters(supabase, type, [doc])
-  await meiliPut(`/indexes/${type}/documents`, [doc])
+  let toIndex = [doc]
+  if (type === 'events') {
+    toIndex = await expandEventDocsToOccurrences(supabase, [doc])
+    // Single-row trigger sync: also delete any stale per-occurrence docs that
+    // may exist from a previous expansion. We don't know the old occurrence
+    // ids; rely on the reconcile sweep + future expansion to overwrite.
+  }
+  await enrichDocsWithClusters(supabase, type, toIndex)
+  await meiliPut(`/indexes/${type}/documents`, toIndex)
+}
+
+/**
+ * Expand a batch of master event docs into per-occurrence Meili docs.
+ *
+ * Reads event_occurrences (status='active') for each master event in
+ * `docs`. For each active occurrence, emits a copy of the master doc with:
+ *   id                = `evt-{master_id}-{occurrence_start_iso}`
+ *   master_event_id   = master row id
+ *   occurrence_id     = event_occurrences.id
+ *   start_date        = occurrence_start (overrides master)
+ *   end_date          = occurrence_end (or master end_date)
+ *   title             = override_title ?? master title
+ *   description       = override_description ?? master description
+ *
+ * Master docs without any active occurrence pass through unchanged with
+ * `master_event_id = id` for storefront grouping consistency.
+ *
+ * Storefront usage: set `distinctAttribute = 'master_event_id'` so list
+ * pages show one card per series; date-window queries filter on the
+ * occurrence's start_date directly.
+ *
+ * Returns the new docs array. Does not mutate the input.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function expandEventDocsToOccurrences(supabase: any, docs: any[]): Promise<any[]> {
+  if (!docs.length) return docs
+  const ids = docs.map((d) => d.id).filter((x) => typeof x === 'string')
+  if (!ids.length) return docs
+
+  const { data: occurrences, error } = await supabase
+    .from('event_occurrences')
+    .select(
+      'id, master_event_id, occurrence_start, occurrence_end, override_title, override_description, status',
+    )
+    .in('master_event_id', ids)
+    .eq('status', 'active')
+  if (error) {
+    console.warn(
+      'expandEventDocsToOccurrences: event_occurrences fetch failed; falling back to master docs',
+      error.message,
+    )
+    return docs.map((d) => ({ ...d, master_event_id: d.id }))
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const byMaster = new Map<string, any[]>()
+  for (const o of occurrences ?? []) {
+    const arr = byMaster.get(o.master_event_id) ?? []
+    arr.push(o)
+    byMaster.set(o.master_event_id, arr)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const out: any[] = []
+  for (const d of docs) {
+    const occ = byMaster.get(d.id)
+    if (!occ || occ.length === 0) {
+      out.push({ ...d, master_event_id: d.id })
+      continue
+    }
+    for (const o of occ) {
+      out.push({
+        ...d,
+        id: `evt-${d.id}-${o.occurrence_start}`,
+        master_event_id: d.id,
+        occurrence_id: o.id,
+        start_date: o.occurrence_start,
+        end_date: o.occurrence_end ?? d.end_date ?? null,
+        title: o.override_title ?? d.title,
+        description: o.override_description ?? d.description,
+      })
+    }
+  }
+  return out
 }
 
 // Map Meilisearch index name -> unified_tag_assignments.entity_type. Indexes
