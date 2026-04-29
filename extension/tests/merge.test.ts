@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractAll } from "../src/shared/extractors";
+import { extractAllItems as extractAll } from "../src/shared/extractors";
 
 describe("extractAll merge logic", () => {
   it("falls back to dom heuristics when no structured data", () => {

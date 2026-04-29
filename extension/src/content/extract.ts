@@ -8,8 +8,8 @@ import { extractAll } from "../shared/extractors";
 
 (async function run() {
   try {
-    const items = extractAll(document, location.href);
-    chrome.runtime.sendMessage({ type: "qg:extracted", items });
+    const { items, diagnostics } = extractAll(document, location.href);
+    chrome.runtime.sendMessage({ type: "qg:extracted", items, diagnostics });
   } catch (err) {
     chrome.runtime.sendMessage({
       type: "qg:extracted",

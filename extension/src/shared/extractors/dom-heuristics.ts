@@ -1,4 +1,4 @@
-import type { DetectedItem } from "../types";
+import type { DetectedItem, EntityType } from "../types";
 
 const CURRENCY_SYMBOL: Record<string, string> = {
   "€": "EUR", "$": "USD", "£": "GBP", "CHF": "CHF",
@@ -32,9 +32,12 @@ export function extractDomHeuristics(doc: Document, sourceUrl: string): Detected
 
   raw.url = sourceUrl;
 
+  const entityType = inferEntityType(h1, raw, sourceUrl);
+  if (!entityType) return [];
+
   return [
     {
-      entity_type: "place",
+      entity_type: entityType,
       raw_data: raw,
       confidence: 0.3,
       field_confidence: fc,
@@ -42,6 +45,46 @@ export function extractDomHeuristics(doc: Document, sourceUrl: string): Detected
       source_url: sourceUrl,
     },
   ];
+}
+
+/**
+ * Infer entity_type from the signals we just collected. Replaces the old
+ * hardcoded `place` — emitting `place` for every plain page produced more
+ * noise than value in admin moderation. Now we only emit when we have
+ * actual evidence; otherwise return null so the page surfaces as
+ * "nothing detected" and the user can use pick-selection or capture.
+ *
+ * Rules in priority order:
+ *   - explicit hotel/lodging signals → stay
+ *   - date + price → event
+ *   - product noun in H1 + price → marketplace_item
+ *   - postcode + no date → venue
+ *   - bare postcode/address with no other signal → place
+ *   - none of the above → null (drop)
+ */
+export function inferEntityType(
+  h1: string,
+  raw: Record<string, unknown>,
+  sourceUrl: string,
+): EntityType | null {
+  const h1Lower = h1.toLowerCase();
+  const url = sourceUrl.toLowerCase();
+  const hasDate = typeof raw.start_date === "string";
+  const hasPrice = typeof raw.price === "number";
+  const hasAddress = typeof raw.address === "string";
+  const hasContact = typeof raw.phone === "string" || typeof raw.email === "string";
+
+  if (
+    /\b(rooms?|check[- ]?in|suite|king bed|amenities|hostel|bed ?and ?breakfast)\b/i.test(h1Lower) ||
+    /\/(?:hotels?|stays?|rooms?|lodging)\//i.test(url)
+  ) {
+    return "stay";
+  }
+  if (hasDate) return "event";
+  if (hasPrice) return "marketplace_item";
+  if (hasAddress) return "venue";
+  if (hasContact) return "venue";
+  return null;
 }
 
 function pickAddress(doc: Document, raw: Record<string, unknown>, fc: Record<string, number>) {

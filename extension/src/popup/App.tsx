@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { addWatched, bulkSubmit, removeWatched, submitItem, uploadCapture, type SubmissionRow, type WatchedRow } from "../shared/api";
 import { clearSession, getValidAccessToken, loadSession } from "../shared/auth";
+import type { ExtractDiagnostics } from "../shared/extractors";
 import type { AuthSession, DetectedItem } from "../shared/types";
 import { ItemCard } from "./ItemCard";
 import { useDetectedItems } from "./hooks/useDetectedItems";
@@ -17,7 +18,7 @@ export function App() {
 
   useEffect(() => { void (async () => setSession(await loadSession()))(); }, []);
 
-  const { items, loading } = useDetectedItems();
+  const { items, diagnostics, loading } = useDetectedItems();
   const existing = useExisting(items[0]?.source_url);
   const history = useHistory(!!session && tab === "history");
   const watched = useWatched(!!session && tab === "watched");
@@ -129,11 +130,11 @@ export function App() {
         loading ? (
           <div className="qg-empty">scanning page…</div>
         ) : items.length === 0 ? (
-          <div className="qg-empty">
-            <p>nothing detected on this page</p>
-            <button onClick={onPickSelection}>pick selection</button>
-            <button onClick={onCapture}>📷 capture page (OCR)</button>
-          </div>
+          <EmptyState
+            diagnostics={diagnostics}
+            onPickSelection={onPickSelection}
+            onCapture={onCapture}
+          />
         ) : (
           <div className="qg-list">
             {items.length > 1 && (
@@ -157,6 +158,56 @@ export function App() {
         <WatchedView rows={watched.rows} error={watched.error} onReload={watched.reload} onRemove={onRemoveWatched} />
       )}
       {tab === "settings" && <SettingsView />}
+    </div>
+  );
+}
+
+/**
+ * Empty-state diagnostic. Instead of just "nothing detected", inspect what
+ * the extractors saw on the page and describe it: did the page have any
+ * structured data at all? Which schema types were present but unmapped?
+ * Did OG describe an article? This turns "we don't know what to do with
+ * this page" into actionable info — user can pick selection, capture for
+ * OCR, or report an unsupported type.
+ */
+function EmptyState({
+  diagnostics,
+  onPickSelection,
+  onCapture,
+}: {
+  diagnostics: ExtractDiagnostics | null;
+  onPickSelection: () => void;
+  onCapture: () => void;
+}) {
+  const d = diagnostics;
+  let summary = "nothing detected on this page";
+  let detail: string | null = null;
+  if (d) {
+    if (d.jsonld_unrecognized_types.length > 0 && d.jsonld_recognized_types.length === 0) {
+      summary = "structured data found, but unsupported type";
+      detail = `JSON-LD: ${d.jsonld_unrecognized_types.slice(0, 3).join(", ")}`;
+    } else if (d.og_type === "article" || d.og_type === "news") {
+      summary = "OpenGraph article detected — submit as news?";
+      detail = d.og_site_name ? `from ${d.og_site_name}` : null;
+    } else if (d.jsonld_blocks > 0 && d.jsonld_recognized_types.length === 0) {
+      summary = "JSON-LD present but no entity recognised";
+      detail = `${d.jsonld_blocks} block(s)`;
+    } else if (d.microdata_scopes > 0) {
+      summary = "microdata scopes found but unmapped";
+      detail = `${d.microdata_scopes} scope(s)`;
+    } else if (d.og_type) {
+      summary = `OG type "${d.og_type}" not mapped to an entity`;
+    } else {
+      summary = "no structured data on this page";
+      detail = d.h1 ? `H1: "${d.h1.slice(0, 60)}"` : null;
+    }
+  }
+  return (
+    <div className="qg-empty">
+      <p>{summary}</p>
+      {detail && <p className="qg-meta">{detail}</p>}
+      <button onClick={onPickSelection}>pick selection</button>
+      <button onClick={onCapture}>📷 capture page (OCR)</button>
     </div>
   );
 }

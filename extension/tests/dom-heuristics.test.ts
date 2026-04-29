@@ -61,4 +61,36 @@ describe("dom heuristics", () => {
     )[0]!;
     expect(item.raw_data.address).toContain("Berlin");
   });
+
+  it("infers entity_type=event when both date and price are present", () => {
+    // Note: surround the date with whitespace so the textContent concat
+    // across block elements doesn't run "Concert" into "2026" (which
+    // breaks the `\b` boundary in ISO_DATE_PATTERN).
+    const doc = html("<h1>Pride Concert</h1><p>On 2026-07-25 — €25</p>");
+    const item = extractDomHeuristics(doc, "https://x")[0]!;
+    expect(item.entity_type).toBe("event");
+  });
+
+  it("infers entity_type=marketplace_item when price is present without a date", () => {
+    const doc = html("<h1>Pride Pin</h1><p>€12.50</p>");
+    const item = extractDomHeuristics(doc, "https://x")[0]!;
+    expect(item.entity_type).toBe("marketplace_item");
+  });
+
+  it("infers entity_type=venue when address is present without a date", () => {
+    const doc = html("<h1>Café SchwuZ</h1><address>Rollbergstr 26, Berlin</address>");
+    const item = extractDomHeuristics(doc, "https://x")[0]!;
+    expect(item.entity_type).toBe("venue");
+  });
+
+  it("infers entity_type=stay from hotel slug in URL", () => {
+    const doc = html("<h1>Axel Hotel</h1><address>Lietzenburger Str. Berlin</address>");
+    const item = extractDomHeuristics(doc, "https://example.com/hotels/axel-berlin")[0]!;
+    expect(item.entity_type).toBe("stay");
+  });
+
+  it("returns nothing when only an h1 + description are present (no real signals)", () => {
+    const doc = html(`<h1>Hello</h1><meta name="description" content="A page">`);
+    expect(extractDomHeuristics(doc, "https://x")).toHaveLength(0);
+  });
 });

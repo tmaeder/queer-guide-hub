@@ -1,36 +1,48 @@
 /**
- * M6.2 — server-side fallback for pages where the in-page content_script
- * extractor finds nothing. Many SPA-rendered sites still emit JSON-LD via
- * SSR (Eventbrite, Booking.com, ra.co, …) so a plain fetch + regex over
- * <script type="application/ld+json"> blocks recovers them without
- * spinning up Browser Rendering.
+ * Server-side fallback for pages where the in-page extractor finds nothing.
  *
- * This intentionally only mirrors the JSON-LD extractor; it doesn't try
- * to do OG/microdata/heuristics. If JSON-LD isn't present the page is
- * truly client-rendered and we'd need puppeteer — out of scope for now.
+ * Strategy: plain `fetch` (no Browser Rendering — separate path) + two
+ * extraction passes against the response body:
+ *
+ *   1. Every `<script type="application/ld+json">` block goes through the
+ *      shared client-sdk JSON-LD core, which already handles @graph,
+ *      ItemList unwrap, subEvent, @id resolution, and full per-type field
+ *      mapping (telephone, instagram, ticket_url, …). Server stays at
+ *      parity with the extension automatically.
+ *   2. If JSON-LD yielded nothing, run an OpenGraph/Twitter pass via
+ *      Cloudflare's built-in HTMLRewriter — feeds the shared og-core.
+ *
+ * Covers Eventbrite/Outsavvy listings, festival subEvent pages,
+ * Substack/Medium posts (OG-only), and most SSR'd marketplace + venue
+ * pages. Does NOT cover client-rendered SPAs without SSR — those need
+ * Browser Rendering, which is a separate explicit upgrade path.
  */
 
-import type { DetectedItem } from "./schema";
-import { SCHEMA_TYPE_MAP } from "../../../client-sdk/entity-types";
+import type { DetectedItem as SchemaDetectedItem } from "./schema";
+import { extractFromJsonLd, parseLdJson } from "../../../client-sdk/jsonld-core";
+import { buildOgItem, type MetaMap } from "../../../client-sdk/og-core";
 
 const FETCH_TIMEOUT_MS = 8000;
 
-export async function renderAndExtract(url: string): Promise<DetectedItem[]> {
-  const html = await fetchHtml(url);
-  const blocks = extractJsonLdBlocks(html);
-  const items: DetectedItem[] = [];
-  for (const block of blocks) {
-    const parsed = safeJsonParse(block);
-    if (!parsed) continue;
-    for (const node of flatten(parsed)) {
-      const item = nodeToItem(node, url);
-      if (item) items.push(item);
-    }
+export async function renderAndExtract(url: string): Promise<SchemaDetectedItem[]> {
+  const res = await fetchHtml(url);
+  const html = await res.text();
+
+  const jsonLdItems: SchemaDetectedItem[] = [];
+  for (const block of extractJsonLdBlocks(html)) {
+    const parsed = parseLdJson(block);
+    if (parsed == null) continue;
+    const out = extractFromJsonLd(parsed, url);
+    jsonLdItems.push(...(out.items as SchemaDetectedItem[]));
   }
-  return items;
+  if (jsonLdItems.length > 0) return jsonLdItems;
+
+  const meta = await readMetaFromHtml(html);
+  const ogItem = buildOgItem(meta, url);
+  return ogItem ? [ogItem as SchemaDetectedItem] : [];
 }
 
-async function fetchHtml(url: string): Promise<string> {
+async function fetchHtml(url: string): Promise<Response> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -45,7 +57,7 @@ async function fetchHtml(url: string): Promise<string> {
       redirect: "follow",
     });
     if (!res.ok) throw new Error(`fetch ${res.status}`);
-    return await res.text();
+    return res;
   } finally {
     clearTimeout(t);
   }
@@ -61,108 +73,23 @@ function extractJsonLdBlocks(html: string): string[] {
   return out;
 }
 
-function safeJsonParse(text: string): unknown {
-  try { return JSON.parse(text); } catch { return null; }
-}
-
-function flatten(node: unknown): Record<string, unknown>[] {
-  if (!node) return [];
-  if (Array.isArray(node)) return node.flatMap(flatten);
-  if (typeof node !== "object") return [];
-  const obj = node as Record<string, unknown>;
-  if (Array.isArray(obj["@graph"])) {
-    return (obj["@graph"] as unknown[]).flatMap(flatten);
-  }
-  return [obj];
-}
-
-function getTypeString(node: Record<string, unknown>): string[] {
-  const t = node["@type"];
-  if (typeof t === "string") return [t];
-  if (Array.isArray(t)) return t.filter((v): v is string => typeof v === "string");
-  return [];
-}
-
-function nodeToItem(node: Record<string, unknown>, sourceUrl: string): DetectedItem | null {
-  const types = getTypeString(node);
-  const matched = types.map((t) => SCHEMA_TYPE_MAP[t]).find(Boolean);
-  if (!matched) return null;
-
-  const raw: Record<string, unknown> = {};
-  copyString(node, raw, "name");
-  copyString(node, raw, "description");
-  copyString(node, raw, "url");
-
-  const addr = node["address"];
-  if (addr && typeof addr === "object") {
-    const a = addr as Record<string, unknown>;
-    if (typeof a.streetAddress === "string") raw.address = a.streetAddress;
-    if (typeof a.addressLocality === "string") raw.city = a.addressLocality;
-    if (typeof a.addressCountry === "string") raw.country = a.addressCountry;
-  } else if (typeof addr === "string") {
-    raw.address = addr;
-  }
-
-  const geo = node["geo"];
-  if (geo && typeof geo === "object") {
-    const g = geo as Record<string, unknown>;
-    const lat = parseFloat(String(g.latitude ?? ""));
-    const lng = parseFloat(String(g.longitude ?? ""));
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-      raw.latitude = lat;
-      raw.longitude = lng;
-    }
-  }
-
-  if (matched === "event") {
-    if (typeof node.startDate === "string") raw.start_date = node.startDate;
-    if (typeof node.endDate === "string") raw.end_date = node.endDate;
-    const loc = node["location"];
-    if (loc && typeof loc === "object" && typeof (loc as { name?: unknown }).name === "string") {
-      raw.venue_name = (loc as { name: string }).name;
-    }
-  }
-
-  if (matched === "marketplace_item") {
-    const offers = node["offers"];
-    const offer = Array.isArray(offers) ? offers[0] : offers;
-    if (offer && typeof offer === "object") {
-      const o = offer as Record<string, unknown>;
-      const price = parseFloat(String(o.price ?? ""));
-      if (Number.isFinite(price)) raw.price = price;
-      if (typeof o.priceCurrency === "string") raw.currency = o.priceCurrency;
-    }
-  }
-
-  if (matched === "news_article") {
-    if (typeof node.headline === "string") raw.title = node.headline;
-    if (typeof node.description === "string") raw.summary = node.description;
-    if (typeof node.datePublished === "string") raw.published_at = node.datePublished;
-    delete raw.description;
-  }
-
-  const image = node["image"];
-  const imgs = Array.isArray(image)
-    ? image.filter((i): i is string => typeof i === "string")
-    : typeof image === "string"
-    ? [image]
-    : image && typeof image === "object" && typeof (image as { url?: unknown }).url === "string"
-    ? [(image as { url: string }).url]
-    : [];
-  if (imgs.length) raw.images = imgs;
-
-  if (!raw.url) raw.url = sourceUrl;
-
-  return {
-    entity_type: matched,
-    raw_data: raw,
-    confidence: 0.85,
-    extraction_method: "jsonld",
-    source_url: sourceUrl,
-  };
-}
-
-function copyString(src: Record<string, unknown>, dst: Record<string, unknown>, key: string) {
-  const v = src[key];
-  if (typeof v === "string" && v.trim()) dst[key] = v.trim();
+/**
+ * Cloudflare's HTMLRewriter reads every `<meta>` tag's `property`/`name`/
+ * `itemprop` + `content` into a Map. Streaming, built into the runtime —
+ * zero new deps, no full-DOM parse.
+ */
+async function readMetaFromHtml(html: string): Promise<MetaMap> {
+  const meta: MetaMap = new Map();
+  const rewriter = new HTMLRewriter().on("meta", {
+    element(el) {
+      const key =
+        el.getAttribute("property") ||
+        el.getAttribute("name") ||
+        el.getAttribute("itemprop");
+      const value = el.getAttribute("content");
+      if (key && value && !meta.has(key)) meta.set(key, value);
+    },
+  });
+  await rewriter.transform(new Response(html)).text();
+  return meta;
 }

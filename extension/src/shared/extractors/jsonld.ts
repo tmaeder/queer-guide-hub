@@ -1,11 +1,10 @@
-import { SCHEMA_TYPE_MAP } from "@qg/sdk/entity-types";
+import { extractFromJsonLd, parseLdJson } from "@qg/sdk/jsonld-core";
 import type { DetectedItem } from "../types";
 
 /**
- * Extract structured items from JSON-LD blocks. Schema.org coverage is the
- * single highest-value signal a webpage can give us; if a site emits JSON-LD
- * we trust it heavily (confidence 0.9 baseline). Multi-item @graph arrays
- * and nested types are flattened.
+ * In-page wrapper around the canonical JSON-LD core (client-sdk/jsonld-core).
+ * Walks every `<script type="application/ld+json">` block in the parsed
+ * document, hands each to `extractFromJsonLd`, and concatenates the items.
  */
 export function extractJsonLd(doc: Document, sourceUrl: string): DetectedItem[] {
   const blocks = doc.querySelectorAll<HTMLScriptElement>(
@@ -13,198 +12,10 @@ export function extractJsonLd(doc: Document, sourceUrl: string): DetectedItem[] 
   );
   const items: DetectedItem[] = [];
   for (const block of Array.from(blocks)) {
-    const parsed = safeParse(block.textContent || "");
-    if (!parsed) continue;
-    for (const node of flatten(parsed)) {
-      const item = nodeToItem(node, sourceUrl);
-      if (item) items.push(item);
-    }
+    const parsed = parseLdJson(block.textContent || "");
+    if (parsed == null) continue;
+    const out = extractFromJsonLd(parsed, sourceUrl);
+    items.push(...out.items);
   }
   return items;
-}
-
-function safeParse(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Flatten a JSON-LD tree into the set of nodes worth scanning. The naive
- * `@graph` unwrap is not enough: listing pages routinely use `ItemList` /
- * `CollectionPage` / `ItemPage` wrappers around the real entities, and
- * Festival/MusicFestival pages put each performance under `subEvent`.
- * Without these recursions a list page returns 1 useless wrapper item
- * instead of N concrete events.
- */
-function flatten(node: unknown): Record<string, unknown>[] {
-  if (!node) return [];
-  if (Array.isArray(node)) return node.flatMap(flatten);
-  if (typeof node !== "object") return [];
-  const obj = node as Record<string, unknown>;
-
-  if (Array.isArray(obj["@graph"])) {
-    return (obj["@graph"] as unknown[]).flatMap(flatten);
-  }
-
-  // ItemList / CollectionPage / SearchResultsPage — the real items live
-  // under itemListElement[].item (or sometimes itemListElement is the item
-  // itself when @type is omitted on the wrapper).
-  if (Array.isArray(obj["itemListElement"])) {
-    const out: Record<string, unknown>[] = [];
-    for (const el of obj["itemListElement"] as unknown[]) {
-      if (el && typeof el === "object") {
-        const e = el as Record<string, unknown>;
-        const inner = e["item"] ?? e;
-        out.push(...flatten(inner));
-      }
-    }
-    if (out.length) return out;
-  }
-
-  // Festival / Conference subEvent[]; news SiteNavigationElement.mainEntity.
-  for (const key of ["subEvent", "subEvents", "mainEntity", "mainEntityOfPage", "hasPart"]) {
-    const v = obj[key];
-    if (Array.isArray(v) && v.length) return v.flatMap(flatten);
-    if (v && typeof v === "object" && getTypeString(v as Record<string, unknown>).length) {
-      // single nested entity wrapped in a generic page node
-      const inner = flatten(v);
-      if (inner.length) return [obj, ...inner.filter((n) => n !== obj)];
-    }
-  }
-
-  return [obj];
-}
-
-function getTypeString(node: Record<string, unknown>): string[] {
-  const t = node["@type"];
-  if (typeof t === "string") return [t];
-  if (Array.isArray(t)) return t.filter((v): v is string => typeof v === "string");
-  return [];
-}
-
-function nodeToItem(node: Record<string, unknown>, sourceUrl: string): DetectedItem | null {
-  const types = getTypeString(node);
-  const matchedType = types.map((t) => SCHEMA_TYPE_MAP[t]).find(Boolean);
-  if (!matchedType) return null;
-
-  const raw: Record<string, unknown> = {};
-  const fc: Record<string, number> = {};
-
-  copyString(node, raw, fc, "name");
-  copyString(node, raw, fc, "description");
-  copyString(node, raw, fc, "url");
-
-  // Address
-  const addr = node["address"];
-  if (addr && typeof addr === "object") {
-    const a = addr as Record<string, unknown>;
-    if (typeof a.streetAddress === "string") raw.address = a.streetAddress;
-    if (typeof a.addressLocality === "string") raw.city = a.addressLocality;
-    if (typeof a.addressCountry === "string") raw.country = a.addressCountry;
-    fc.address = 0.9;
-  } else if (typeof addr === "string") {
-    raw.address = addr;
-    fc.address = 0.7;
-  }
-
-  // Geo
-  const geo = node["geo"];
-  if (geo && typeof geo === "object") {
-    const g = geo as Record<string, unknown>;
-    const lat = parseFloat(String(g.latitude ?? ""));
-    const lng = parseFloat(String(g.longitude ?? ""));
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-      raw.latitude = lat;
-      raw.longitude = lng;
-      fc.latitude = 0.95;
-      fc.longitude = 0.95;
-    }
-  }
-
-  // Event-specific
-  if (matchedType === "event") {
-    if (typeof node.startDate === "string") {
-      raw.start_date = node.startDate;
-      fc.start_date = 0.95;
-    }
-    if (typeof node.endDate === "string") {
-      raw.end_date = node.endDate;
-      fc.end_date = 0.9;
-    }
-    const loc = node["location"];
-    if (loc && typeof loc === "object") {
-      const l = loc as Record<string, unknown>;
-      if (typeof l.name === "string") raw.venue_name = l.name;
-    }
-  }
-
-  // Product / marketplace
-  if (matchedType === "marketplace_item") {
-    const offers = node["offers"];
-    const offer = Array.isArray(offers) ? offers[0] : offers;
-    if (offer && typeof offer === "object") {
-      const o = offer as Record<string, unknown>;
-      const price = parseFloat(String(o.price ?? ""));
-      if (Number.isFinite(price)) {
-        raw.price = price;
-        fc.price = 0.9;
-      }
-      if (typeof o.priceCurrency === "string") raw.currency = o.priceCurrency;
-    }
-  }
-
-  // Article-specific — never copy articleBody verbatim (copyright).
-  if (matchedType === "news_article") {
-    if (typeof node.headline === "string") raw.title = node.headline;
-    if (typeof node.description === "string") raw.summary = node.description;
-    if (typeof node.datePublished === "string") raw.published_at = node.datePublished;
-    const author = node["author"];
-    if (author && typeof author === "object" && typeof (author as { name?: unknown }).name === "string") {
-      raw.author = (author as { name: string }).name;
-    } else if (typeof author === "string") {
-      raw.author = author;
-    }
-    delete raw.description; // collapsed into summary
-  }
-
-  // Image(s)
-  const image = node["image"];
-  const imgs = Array.isArray(image)
-    ? image.filter((i): i is string => typeof i === "string")
-    : typeof image === "string"
-    ? [image]
-    : image && typeof image === "object" && typeof (image as { url?: unknown }).url === "string"
-    ? [(image as { url: string }).url]
-    : [];
-  if (imgs.length) {
-    raw.images = imgs;
-    fc.images = 0.9;
-  }
-
-  if (!raw.url) raw.url = sourceUrl;
-
-  return {
-    entity_type: matchedType,
-    raw_data: raw,
-    confidence: 0.9,
-    field_confidence: fc,
-    extraction_method: "jsonld",
-    source_url: sourceUrl,
-  };
-}
-
-function copyString(
-  src: Record<string, unknown>,
-  dst: Record<string, unknown>,
-  fc: Record<string, number>,
-  key: string,
-) {
-  const v = src[key];
-  if (typeof v === "string" && v.trim()) {
-    dst[key] = v.trim();
-    fc[key] = 0.95;
-  }
 }

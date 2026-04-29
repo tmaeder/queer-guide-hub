@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { extractAll } from "../src/shared/extractors";
+import { extractAllItems as extractAll } from "../src/shared/extractors";
 
 function load(name: string): Document {
   const path = join(__dirname, "fixtures", name);
