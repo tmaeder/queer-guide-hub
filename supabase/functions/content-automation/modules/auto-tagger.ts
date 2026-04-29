@@ -173,16 +173,20 @@ export async function processAutoTagger(
       existingTagsByItem.get(a.entity_id)!.add(a.tag_id)
     }
 
-    // Count already-pending proposals toward the tag budget to avoid re-proposing
+    // Count already-pending proposals toward the tag budget to avoid re-proposing.
+    // Tag suggestions live in ai_suggestions (PR 5/6 cutover); content_changes
+    // is for non-tag fields only. The producer doesn't filter by module_id here
+    // because ai_suggestions is shared across producers — pending rows from any
+    // producer count toward the budget.
     const { data: pendingTags } = await supabase
-      .from('content_changes')
-      .select('content_id')
-      .eq('module_id', config.module.id)
-      .in('content_id', itemIds)
-      .eq('field_name', 'tags')
-      .in('status', ['pending', 'auto_approved'])
+      .from('ai_suggestions')
+      .select('entity_id')
+      .eq('suggestion_type', 'tag')
+      .eq('entity_type', contentType)
+      .in('entity_id', itemIds)
+      .in('status', ['pending', 'approved'])
     for (const pt of pendingTags || []) {
-      tagCounts.set(pt.content_id, (tagCounts.get(pt.content_id) ?? 0) + 1)
+      tagCounts.set(pt.entity_id, (tagCounts.get(pt.entity_id) ?? 0) + 1)
     }
 
     // Items that still need more tags
