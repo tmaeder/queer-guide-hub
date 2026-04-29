@@ -130,11 +130,14 @@ export function App() {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const sourceUrl = tab?.url ?? "https://example.com/screenshot";
       const host = (() => { try { return new URL(sourceUrl).host; } catch { return "page"; } })();
+      // entity_type=venue so the social/community media pipeline picks the
+      // row up (pipeline-media-process only fires for event/venue rows).
+      // Moderator can re-classify in AdminSubmissions before promotion.
       const item: DetectedItem = {
-        entity_type: "place",
+        entity_type: "venue",
         raw_data: {
           name: `Page capture from ${host}`,
-          description: "Screenshot uploaded for OCR.",
+          description: "Screenshot uploaded for OCR — needs reclassification.",
           url: sourceUrl,
           images: [publicUrl],
         },
