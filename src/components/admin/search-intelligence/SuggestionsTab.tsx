@@ -103,6 +103,7 @@ export function SuggestionsTab() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [editing, setEditing] = useState<{ id: string; draft: string; parseError: string | null } | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -125,14 +126,20 @@ export function SuggestionsTab() {
     refresh();
   }, [refresh]);
 
-  const setStatus = async (id: string, status: SuggestionStatus) => {
+  const setStatus = async (
+    id: string,
+    status: SuggestionStatus,
+    proposedOverride?: unknown,
+  ) => {
     setBusy(id);
     setInfo(null);
+    const body: Record<string, unknown> = { status };
+    if (proposedOverride !== undefined) body.proposed_value = proposedOverride;
     const res = await callSearchIntelligence<{ data: AiSuggestion; auto_applied?: boolean; apply_error?: string }>(
       `suggestions/${id}`,
       {
         method: 'PATCH',
-        body: { status },
+        body,
       },
     );
     if (!res.success) {
@@ -274,13 +281,47 @@ export function SuggestionsTab() {
                         </Typography>
                       </Alert>
                     )}
+                    {editing?.id === s.id && (
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          Edit proposed_value (JSON):
+                        </Typography>
+                        <textarea
+                          style={{
+                            width: '100%',
+                            minHeight: 140,
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                            padding: 8,
+                            background: 'rgba(0,0,0,0.04)',
+                            border: '1px solid rgba(0,0,0,0.2)',
+                          }}
+                          value={editing.draft}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            let parseError: string | null = null;
+                            try {
+                              JSON.parse(val);
+                            } catch (err) {
+                              parseError = (err as Error).message;
+                            }
+                            setEditing({ id: s.id, draft: val, parseError });
+                          }}
+                        />
+                        {editing.parseError && (
+                          <Typography variant="caption" color="error">
+                            JSON parse error: {editing.parseError}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
                     <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
                       {s.source_model && <>model: {s.source_model} · </>}
                       created {new Date(s.created_at).toLocaleString()}
                       {s.applied_at && <> · applied {new Date(s.applied_at).toLocaleString()}</>}
                     </Typography>
                   </Box>
-                  {s.status === 'pending' && (
+                  {s.status === 'pending' && editing?.id !== s.id && (
                     <Stack direction="row" spacing={1}>
                       <Button
                         size="sm"
@@ -291,11 +332,59 @@ export function SuggestionsTab() {
                       </Button>
                       <Button
                         size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          setEditing({
+                            id: s.id,
+                            draft: JSON.stringify(s.proposed_value, null, 2),
+                            parseError: null,
+                          })
+                        }
+                        disabled={busy === s.id}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
                         variant="destructive"
                         onClick={() => setStatus(s.id, 'rejected')}
                         disabled={busy === s.id}
                       >
                         Reject
+                      </Button>
+                    </Stack>
+                  )}
+                  {editing?.id === s.id && (
+                    <Stack direction="row" spacing={1}>
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          if (!editing) return;
+                          if (editing.parseError) return;
+                          let parsed: unknown;
+                          try {
+                            parsed = JSON.parse(editing.draft);
+                          } catch (err) {
+                            setEditing({
+                              ...editing,
+                              parseError: (err as Error).message,
+                            });
+                            return;
+                          }
+                          await setStatus(s.id, 'approved', parsed);
+                          setEditing(null);
+                        }}
+                        disabled={busy === s.id || !!editing.parseError}
+                      >
+                        Save &amp; Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditing(null)}
+                        disabled={busy === s.id}
+                      >
+                        Cancel
                       </Button>
                     </Stack>
                   )}
