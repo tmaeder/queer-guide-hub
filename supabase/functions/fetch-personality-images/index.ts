@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { upsertImageAsset } from '../_shared/image-assets.ts'
 
 // Batch image enricher for personalities missing image_url.
 // Tries Wikipedia REST API first (free), then Pexels as fallback.
@@ -73,7 +74,16 @@ Deno.serve(async (req) => {
         .eq('id', p.id)
 
       if (upErr) { console.error(`personality ${p.id}:`, upErr.message); skipped++ }
-      else updated++
+      else {
+        updated++
+        await upsertImageAsset(supabase, {
+          url: imageUrl,
+          source: 'scraper',
+          entity_type: 'personality',
+          entity_id: p.id,
+          role: 'cover',
+        })
+      }
 
       await new Promise(r => setTimeout(r, 300))
     }
