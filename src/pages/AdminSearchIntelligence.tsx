@@ -12,6 +12,7 @@ import { ReindexTab } from '@/components/admin/search-intelligence/ReindexTab';
 import { SuggestionsTab } from '@/components/admin/search-intelligence/SuggestionsTab';
 import { SettingsTab } from '@/components/admin/search-intelligence/SettingsTab';
 import { TopicsTab } from '@/components/admin/search-intelligence/TopicsTab';
+import { SetupTab } from '@/components/admin/search-intelligence/SetupTab';
 import { PlaceholderTab } from '@/components/admin/search-intelligence/PlaceholderTab';
 
 const FEATURE_FLAG_ENABLED = import.meta.env.VITE_FEATURE_SEARCH_INTELLIGENCE === '1';
@@ -44,6 +45,7 @@ export default function AdminSearchIntelligence() {
       </Box>
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
+          <TabsTrigger value="setup">Setup</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="debug">Search Debugger</TabsTrigger>
           <TabsTrigger value="synonyms">Synonyms</TabsTrigger>
@@ -56,6 +58,9 @@ export default function AdminSearchIntelligence() {
           <TabsTrigger value="audit">Audit</TabsTrigger>
         </TabsList>
         <Box sx={{ mt: 3 }}>
+          <TabsContent value="setup">
+            <SetupTab />
+          </TabsContent>
           <TabsContent value="overview">
             <OverviewTab />
           </TabsContent>

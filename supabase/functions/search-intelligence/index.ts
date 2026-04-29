@@ -202,6 +202,10 @@ function pickRoute(method: string, parts: string[]): Handler | null {
   if (method === 'POST' && parts[0] === 'cron' && parts[1] === 'reconcile') {
     return cronReconcile
   }
+  // /setup-status — admin-only health/readiness rollup
+  if (method === 'GET' && parts[0] === 'setup-status' && parts.length === 1) {
+    return setupStatus
+  }
   // /suggestions
   if (parts[0] === 'suggestions' && parts.length === 1) {
     if (method === 'GET') return listSuggestions
@@ -1509,4 +1513,87 @@ async function unlinkClusterTag(ctx: RouteContext): Promise<Response> {
   if (error) return errorResponse(error.message, 500, ctx.req)
   await recordAudit(ctx, 'cluster.tag.unlink', 'cluster', clusterId, { tag_id: tagId }, null)
   return jsonResponse({ success: true, data: { cluster_id: clusterId, tag_id: tagId } }, 200, ctx.req)
+}
+
+// ── /setup-status ───────────────────────────────────────────────────────────
+//
+// Read-only rollup of install state. Calls verify_search_intelligence_install()
+// (DB function from 20260429250000), then layers on a few runtime probes the
+// SQL function can't see (Meili reachability, env vars on the function).
+//
+// Returns:
+//   {
+//     summary: { ok, warn, fail },
+//     checks:  [{ category, name, status, detail }, ...],
+//     runtime: { meili_configured, function_env: { ... } }
+//   }
+
+async function setupStatus(ctx: RouteContext): Promise<Response> {
+  // 1. DB-side checks via the verify function.
+  const { data: rows, error } = await ctx.service.rpc('verify_search_intelligence_install')
+  if (error) {
+    return errorResponse(`verify_search_intelligence_install failed: ${error.message}`, 500, ctx.req)
+  }
+  type Row = { category: string; name: string; status: string; detail: string }
+  const checks = (rows ?? []) as Row[]
+
+  // 2. Runtime probes the SQL function can't see.
+  const runtime = {
+    meili_configured: meiliConfigured(),
+    function_env: {
+      SEARCH_INTELLIGENCE_WEBHOOK_SECRET: Boolean(
+        Deno.env.get('SEARCH_INTELLIGENCE_WEBHOOK_SECRET'),
+      ),
+      WEBHOOK_SECRET: Boolean(Deno.env.get('WEBHOOK_SECRET')),
+      MEILISEARCH_URL: Boolean(Deno.env.get('MEILISEARCH_URL')),
+      MEILISEARCH_ADMIN_KEY: Boolean(Deno.env.get('MEILISEARCH_ADMIN_KEY')),
+      SUPABASE_URL: Boolean(Deno.env.get('SUPABASE_URL')),
+      SUPABASE_SERVICE_ROLE_KEY: Boolean(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')),
+    },
+  }
+
+  // Inject runtime checks as virtual rows so the UI can render uniformly.
+  if (!runtime.meili_configured) {
+    checks.push({
+      category: 'env',
+      name: 'meili reachable from edge function',
+      status: 'fail',
+      detail: 'MEILISEARCH_URL or MEILISEARCH_ADMIN_KEY missing',
+    })
+  } else {
+    checks.push({
+      category: 'env',
+      name: 'meili reachable from edge function',
+      status: 'ok',
+      detail: 'configured',
+    })
+  }
+
+  if (
+    !runtime.function_env.SEARCH_INTELLIGENCE_WEBHOOK_SECRET &&
+    !runtime.function_env.WEBHOOK_SECRET
+  ) {
+    checks.push({
+      category: 'env',
+      name: 'SEARCH_INTELLIGENCE_WEBHOOK_SECRET on function',
+      status: 'fail',
+      detail: 'set on the deployed function (Supabase Functions dashboard)',
+    })
+  } else {
+    checks.push({
+      category: 'env',
+      name: 'SEARCH_INTELLIGENCE_WEBHOOK_SECRET on function',
+      status: 'ok',
+      detail: 'set',
+    })
+  }
+
+  const summary = {
+    ok: checks.filter((c) => c.status === 'ok').length,
+    warn: checks.filter((c) => c.status === 'warn').length,
+    fail: checks.filter((c) => c.status === 'fail').length,
+    na: checks.filter((c) => c.status === 'na').length,
+  }
+
+  return jsonResponse({ success: true, data: { summary, checks, runtime } }, 200, ctx.req)
 }
