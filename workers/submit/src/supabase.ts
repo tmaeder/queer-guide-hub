@@ -55,6 +55,38 @@ export function buildSubmissionRow(opts: BuildRowOpts) {
 }
 
 /**
+ * Batch insert. Builds rows with the same shape as `insertSubmission` and
+ * sends one PostgREST POST with an array body. PostgREST `Prefer: return=
+ * representation` returns inserted rows.
+ */
+export async function insertSubmissionBatch(opts: {
+  supabaseUrl: string;
+  userJwt: string;
+  anonKey: string;
+  userId: string;
+  bodies: SubmitBody[];
+  userAgent?: string;
+}): Promise<InsertResult[]> {
+  if (opts.bodies.length === 0) return [];
+  const rows = opts.bodies.map((body) =>
+    buildSubmissionRow({ userId: opts.userId, body, userAgent: opts.userAgent }),
+  );
+  const url = `${opts.supabaseUrl}/rest/v1/community_submissions`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      apikey: opts.anonKey,
+      Authorization: `Bearer ${opts.userJwt}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(rows),
+  });
+  if (!res.ok) throw new Error(`batch insert ${res.status}: ${await res.text()}`);
+  return (await res.json()) as InsertResult[];
+}
+
+/**
  * Insert into community_submissions — the canonical user-submission table.
  * The existing `source-community-submissions` edge function picks pending
  * rows up and stages them into ingestion_staging, where the rest of the

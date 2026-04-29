@@ -20,8 +20,9 @@ import { embedText, enrich } from "./ai";
 import { extractBearer, verifySupabaseJwt } from "./auth";
 import { getCorsHeaders, json } from "./cors";
 import { rateLimit } from "./rate-limit";
-import { EnrichBody, FindSimilarBody, SubmitBody, WatchBody, WatchFeedBody } from "./schema";
-import { findSimilar, getSubmissionStatus, insertSubmission } from "./supabase";
+import { BulkSubmitBody, EnrichBody, FindSimilarBody, ScanSitemapBody, SubmitBody, WatchBody, WatchFeedBody } from "./schema";
+import { fetchSitemap } from "./sitemap";
+import { findSimilar, getSubmissionStatus, insertSubmission, insertSubmissionBatch } from "./supabase";
 import { addNewsFeed, addWatch, deleteWatch, listWatched } from "./watch";
 
 export interface Env {
@@ -69,6 +70,13 @@ export default {
       }
       if (url.pathname === "/watch-feed" && request.method === "POST") {
         return await handleAddFeed(request, env, cors);
+      }
+
+      if (url.pathname === "/scan-sitemap" && request.method === "POST") {
+        return await handleScanSitemap(request, env, cors);
+      }
+      if (url.pathname === "/bulk-submit" && request.method === "POST") {
+        return await handleBulkSubmit(request, env, cors);
       }
 
       const statusMatch = url.pathname.match(/^\/submissions\/([^/]+)$/);
@@ -266,6 +274,54 @@ async function handleAddFeed(request: Request, env: Env, cors: HeadersInit): Pro
     frequencyMinutes: parsed.data.frequency_minutes ?? 60,
   });
   return json(row, 201, cors);
+}
+
+async function handleScanSitemap(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+
+  // Sitemap fetch is heavier than a regular submit — same per-user bucket.
+  const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
+  const rl = await rateLimit(env.RATE_LIMIT, auth.user.sub, perMin);
+  if (!rl.ok) return json({ error: "rate_limited", retry_after: rl.retryAfter }, 429, cors);
+
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = ScanSitemapBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+
+  const entries = await fetchSitemap(parsed.data.url);
+  return json({ entries }, 200, cors);
+}
+
+async function handleBulkSubmit(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = BulkSubmitBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+
+  // Counts as N submissions toward the rate limiter.
+  const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
+  const ip = request.headers.get("CF-Connecting-IP") ?? "";
+  for (let i = 0; i < parsed.data.items.length; i++) {
+    const rl = await rateLimit(env.RATE_LIMIT, auth.user.sub, perMin);
+    if (!rl.ok) return json({ error: "rate_limited", retry_after: rl.retryAfter, completed: i }, 429, cors);
+  }
+  void ip;
+
+  const inserted = await insertSubmissionBatch({
+    supabaseUrl: env.SUPABASE_URL,
+    userJwt: auth.token,
+    anonKey: env.SUPABASE_ANON_KEY,
+    userId: auth.user.sub,
+    bodies: parsed.data.items,
+    userAgent: request.headers.get("user-agent") ?? undefined,
+  });
+
+  return json({ submissions: inserted.map((r) => ({ id: r.id, status: r.status })) }, 202, cors);
 }
 
 class HttpError extends Error {
