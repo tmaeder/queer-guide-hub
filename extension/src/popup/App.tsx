@@ -1,116 +1,43 @@
 import { useEffect, useState } from "react";
-import { addWatched, bulkSubmit, findExisting, fetchMySubmissions, listWatched, removeWatched, renderUrl, submitItem, uploadCapture, type ExistingMatch, type SubmissionRow, type WatchedRow } from "../shared/api";
-import {
-  clearSession,
-  getValidAccessToken,
-  loadSession,
-} from "../shared/auth";
+import { addWatched, bulkSubmit, removeWatched, submitItem, uploadCapture, type SubmissionRow, type WatchedRow } from "../shared/api";
+import { clearSession, getValidAccessToken, loadSession } from "../shared/auth";
 import type { AuthSession, DetectedItem } from "../shared/types";
 import { ItemCard } from "./ItemCard";
+import { useDetectedItems } from "./hooks/useDetectedItems";
+import { useExisting } from "./hooks/useExisting";
+import { useHistory, useWatched } from "./hooks/useLazyTab";
 
 type Toast = { kind: "ok" | "err"; msg: string } | null;
 type Tab = "detect" | "history" | "watched" | "settings";
 
 export function App() {
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [items, setItems] = useState<DetectedItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<Toast>(null);
   const [tab, setTab] = useState<Tab>("detect");
-  const [history, setHistory] = useState<SubmissionRow[] | null>(null);
-  const [historyError, setHistoryError] = useState<string | null>(null);
-  const [existing, setExisting] = useState<ExistingMatch | null>(null);
-  const [watched, setWatched] = useState<WatchedRow[] | null>(null);
-  const [watchError, setWatchError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  useEffect(() => { void (async () => setSession(await loadSession()))(); }, []);
 
-    async function lookupForUrl(url: string | undefined) {
-      if (!url) return;
-      try {
-        const match = await findExisting(url);
-        if (!cancelled) setExisting(match);
-      } catch {
-        // best-effort; silent
-      }
-    }
+  const { items, loading } = useDetectedItems();
+  const existing = useExisting(items[0]?.source_url);
+  const history = useHistory(!!session && tab === "history");
+  const watched = useWatched(!!session && tab === "watched");
 
-    void (async () => {
-      setSession(await loadSession());
-
-      // Cache hit?
-      const cached = await chrome.runtime.sendMessage({ type: "qg:get-results" });
-      if (cancelled) return;
-      if (cached?.items?.length) {
-        const cachedItems = cached.items as DetectedItem[];
-        setItems(cachedItems);
-        setLoading(false);
-        void lookupForUrl(cachedItems[0]?.source_url);
-        return;
-      }
-
-      // Kick off extraction in parallel, don't await.
-      void chrome.runtime.sendMessage({ type: "qg:extract", mode: "auto" });
-
-      // Poll every 80ms until items arrive or timeout (2s). The content
-      // script normally finishes in 50-150ms; the old fixed 600ms wait was
-      // pure overhead.
-      const start = Date.now();
-      while (!cancelled && Date.now() - start < 2000) {
-        await new Promise((r) => setTimeout(r, 80));
-        const r2 = await chrome.runtime.sendMessage({ type: "qg:get-results" });
-        if (cancelled) return;
-        if (r2?.items?.length) {
-          const fresh = r2.items as DetectedItem[];
-          setItems(fresh);
-          setLoading(false);
-          void lookupForUrl(fresh[0]?.source_url);
-          return;
-        }
-        if (r2?.error) {
-          setToast({ kind: "err", msg: r2.error });
-          break;
-        }
-      }
-      // Server-side render fallback for SPAs that don't expose JSON-LD on
-      // first paint. Fires only when client-side extraction came up empty
-      // and we have a current tab URL to send.
-      if (!cancelled) {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        const tabUrl = tab?.url ?? "";
-        const useable = tabUrl.startsWith("http") && !tabUrl.includes("queer.guide/");
-        const token = useable ? await getValidAccessToken() : null;
-        if (token) {
-          try {
-            const fallback = await renderUrl(tabUrl, token);
-            if (!cancelled && fallback.length > 0) {
-              setItems(fallback);
-              setLoading(false);
-              void lookupForUrl(fallback[0]?.source_url);
-              return;
-            }
-          } catch { /* swallow */ }
-        }
-      }
-      if (!cancelled) setLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, []);
+  async function withToken<T>(fn: (token: string) => Promise<T>, errMsg = "not signed in"): Promise<T | undefined> {
+    const token = await getValidAccessToken();
+    if (!token) { setToast({ kind: "err", msg: errMsg }); return; }
+    return fn(token);
+  }
 
   async function onSubmit(item: DetectedItem, edited: Record<string, unknown>) {
-    const token = await getValidAccessToken();
-    if (!token) {
-      setToast({ kind: "err", msg: "not signed in" });
-      return;
-    }
-    try {
-      const merged: DetectedItem = { ...item, raw_data: { ...item.raw_data, ...edited } };
-      const res = await submitItem(merged, token);
-      setToast({ kind: "ok", msg: `submitted (#${res.submission_id})` });
-    } catch (err) {
-      setToast({ kind: "err", msg: err instanceof Error ? err.message : "submit failed" });
-    }
+    await withToken(async (token) => {
+      try {
+        const merged: DetectedItem = { ...item, raw_data: { ...item.raw_data, ...edited } };
+        const res = await submitItem(merged, token);
+        setToast({ kind: "ok", msg: `submitted (#${res.submission_id})` });
+      } catch (err) {
+        setToast({ kind: "err", msg: err instanceof Error ? err.message : "submit failed" });
+      }
+    });
   }
 
   async function onPickSelection() {
@@ -120,82 +47,65 @@ export function App() {
   }
 
   async function onCapture() {
-    const token = await getValidAccessToken();
-    if (!token) { setToast({ kind: "err", msg: "not signed in" }); return; }
     if (!session) return;
-    try {
-      const dataUrl = await chrome.tabs.captureVisibleTab({ format: "png" });
-      const blob = await (await fetch(dataUrl)).blob();
-      const publicUrl = await uploadCapture(blob, token);
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const sourceUrl = tab?.url ?? "https://example.com/screenshot";
-      const host = (() => { try { return new URL(sourceUrl).host; } catch { return "page"; } })();
-      // entity_type=venue so the social/community media pipeline picks the
-      // row up (pipeline-media-process only fires for event/venue rows).
-      // Moderator can re-classify in AdminSubmissions before promotion.
-      const item: DetectedItem = {
-        entity_type: "venue",
-        raw_data: {
-          name: `Page capture from ${host}`,
-          description: "Screenshot uploaded for OCR — needs reclassification.",
-          url: sourceUrl,
-          images: [publicUrl],
-        },
-        confidence: 0.4,
-        extraction_method: "manual",
-        source_url: sourceUrl,
-      };
-      const res = await submitItem(item, token);
-      setToast({ kind: "ok", msg: `captured (#${res.submission_id}) — OCR running` });
-    } catch (e) {
-      setToast({ kind: "err", msg: e instanceof Error ? e.message : "capture failed" });
-    }
+    await withToken(async (token) => {
+      try {
+        const dataUrl = await chrome.tabs.captureVisibleTab({ format: "png" });
+        const blob = await (await fetch(dataUrl)).blob();
+        const publicUrl = await uploadCapture(blob, token);
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const sourceUrl = tab?.url ?? "https://example.com/screenshot";
+        const host = (() => { try { return new URL(sourceUrl).host; } catch { return "page"; } })();
+        // entity_type=venue so the social/community media pipeline picks the
+        // row up (pipeline-media-process only fires for event/venue rows).
+        // Moderator can re-classify in AdminSubmissions before promotion.
+        const item: DetectedItem = {
+          entity_type: "venue",
+          raw_data: {
+            name: `Page capture from ${host}`,
+            description: "Screenshot uploaded for OCR — needs reclassification.",
+            url: sourceUrl,
+            images: [publicUrl],
+          },
+          confidence: 0.4,
+          extraction_method: "manual",
+          source_url: sourceUrl,
+        };
+        const res = await submitItem(item, token);
+        setToast({ kind: "ok", msg: `captured (#${res.submission_id}) — OCR running` });
+      } catch (e) {
+        setToast({ kind: "err", msg: e instanceof Error ? e.message : "capture failed" });
+      }
+    });
   }
 
   async function onBulkSubmit() {
     if (items.length === 0) return;
-    const token = await getValidAccessToken();
-    if (!token) { setToast({ kind: "err", msg: "not signed in" }); return; }
-    try {
-      const res = await bulkSubmit(items, token);
-      setToast({ kind: "ok", msg: `submitted ${res.submissions.length} items` });
-    } catch (e) {
-      setToast({ kind: "err", msg: e instanceof Error ? e.message : "bulk submit failed" });
-    }
+    await withToken(async (token) => {
+      try {
+        const res = await bulkSubmit(items, token);
+        setToast({ kind: "ok", msg: `submitted ${res.submissions.length} items` });
+      } catch (e) {
+        setToast({ kind: "err", msg: e instanceof Error ? e.message : "bulk submit failed" });
+      }
+    });
   }
 
-  async function loadHistory() {
-    setHistory(null);
-    setHistoryError(null);
-    const token = await getValidAccessToken();
-    if (!token) { setHistoryError("not signed in"); return; }
-    try {
-      setHistory(await fetchMySubmissions(token));
-    } catch (e) {
-      setHistoryError(e instanceof Error ? e.message : "failed");
-    }
+  async function onWatchThis() {
+    const url = items[0]?.source_url;
+    if (!url) return;
+    await withToken(async (token) => {
+      try { await addWatched(url, token); setToast({ kind: "ok", msg: "watching this URL" }); }
+      catch (e) { setToast({ kind: "err", msg: e instanceof Error ? e.message : "failed" }); }
+    });
   }
 
-  async function loadWatched() {
-    setWatched(null);
-    setWatchError(null);
-    const token = await getValidAccessToken();
-    if (!token) { setWatchError("not signed in"); return; }
-    try {
-      setWatched(await listWatched(token));
-    } catch (e) {
-      setWatchError(e instanceof Error ? e.message : "failed");
-    }
+  async function onRemoveWatched(id: string) {
+    await withToken(async (token) => {
+      try { await removeWatched(id, token); await watched.reload(); }
+      catch (e) { setToast({ kind: "err", msg: e instanceof Error ? e.message : "failed" }); }
+    });
   }
-
-  useEffect(() => {
-    if (session && tab === "history" && history === null && !historyError) {
-      void loadHistory();
-    }
-    if (session && tab === "watched" && watched === null && !watchError) {
-      void loadWatched();
-    }
-  }, [session, tab, history, historyError, watched, watchError]);
 
   if (!session) return <Login onSignedIn={setSession} />;
 
@@ -209,22 +119,10 @@ export function App() {
         </div>
       </header>
       <div className="qg-tabs">
-        <button
-          className={tab === "detect" ? "active" : ""}
-          onClick={() => setTab("detect")}
-        >Detect</button>
-        <button
-          className={tab === "history" ? "active" : ""}
-          onClick={() => setTab("history")}
-        >Submissions</button>
-        <button
-          className={tab === "watched" ? "active" : ""}
-          onClick={() => setTab("watched")}
-        >Watched</button>
-        <button
-          className={tab === "settings" ? "active" : ""}
-          onClick={() => setTab("settings")}
-        >Settings</button>
+        <button className={tab === "detect" ? "active" : ""} onClick={() => setTab("detect")}>Detect</button>
+        <button className={tab === "history" ? "active" : ""} onClick={() => setTab("history")}>Submissions</button>
+        <button className={tab === "watched" ? "active" : ""} onClick={() => setTab("watched")}>Watched</button>
+        <button className={tab === "settings" ? "active" : ""} onClick={() => setTab("settings")}>Settings</button>
       </div>
       {toast && <div className={`qg-toast ${toast.kind}`}>{toast.msg}</div>}
       {tab === "detect" && (
@@ -234,6 +132,7 @@ export function App() {
           <div className="qg-empty">
             <p>nothing detected on this page</p>
             <button onClick={onPickSelection}>pick selection</button>
+            <button onClick={onCapture}>📷 capture page (OCR)</button>
           </div>
         ) : (
           <div className="qg-list">
@@ -245,34 +144,17 @@ export function App() {
             {items.map((item, i) => (
               <ItemCard key={i} item={item} existing={i === 0 ? existing : null} onSubmit={(e) => onSubmit(item, e)} />
             ))}
-            <button onClick={async () => {
-              const token = await getValidAccessToken();
-              if (!token) return;
-              const url = items[0]?.source_url;
-              if (!url) return;
-              try { await addWatched(url, token); setToast({ kind: "ok", msg: "watching this URL" }); }
-              catch (e) { setToast({ kind: "err", msg: e instanceof Error ? e.message : "failed" }); }
-            }}>watch this page</button>
+            <button onClick={onWatchThis}>watch this page</button>
             <button onClick={onPickSelection}>pick selection instead</button>
             <button onClick={onCapture}>📷 capture page (OCR)</button>
           </div>
         )
       )}
-      {tab === "detect" && !loading && items.length === 0 && (
-        <div className="qg-empty">
-          <button onClick={onCapture}>📷 capture page (OCR)</button>
-        </div>
-      )}
       {tab === "history" && (
-        <HistoryView rows={history} error={historyError} onReload={loadHistory} />
+        <HistoryView rows={history.rows} error={history.error} onReload={history.reload} />
       )}
       {tab === "watched" && (
-        <WatchedView rows={watched} error={watchError} onReload={loadWatched} onRemove={async (id) => {
-          const token = await getValidAccessToken();
-          if (!token) return;
-          try { await removeWatched(id, token); await loadWatched(); }
-          catch (e) { setToast({ kind: "err", msg: e instanceof Error ? e.message : "failed" }); }
-        }} />
+        <WatchedView rows={watched.rows} error={watched.error} onReload={watched.reload} onRemove={onRemoveWatched} />
       )}
       {tab === "settings" && <SettingsView />}
     </div>
@@ -370,7 +252,6 @@ function WatchedView({
     </div>
   );
 }
-
 
 function HistoryView({
   rows,

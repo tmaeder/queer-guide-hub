@@ -10,36 +10,10 @@
  * truly client-rendered and we'd need puppeteer — out of scope for now.
  */
 
-import type { DetectedItem, EntityType } from "./schema";
+import type { DetectedItem } from "./schema";
+import { SCHEMA_TYPE_MAP } from "../../../client-sdk/entity-types";
 
 const FETCH_TIMEOUT_MS = 8000;
-
-const TYPE_MAP: Record<string, EntityType> = {
-  Event: "event",
-  MusicEvent: "event",
-  Festival: "event",
-  TheaterEvent: "event",
-  ComedyEvent: "event",
-  SocialEvent: "event",
-  Restaurant: "venue",
-  BarOrPub: "venue",
-  NightClub: "venue",
-  CafeOrCoffeeShop: "venue",
-  LocalBusiness: "venue",
-  Hotel: "stay",
-  LodgingBusiness: "stay",
-  BedAndBreakfast: "stay",
-  Hostel: "stay",
-  Resort: "stay",
-  Product: "marketplace_item",
-  NewsArticle: "news_article",
-  Article: "news_article",
-  BlogPosting: "news_article",
-  Organization: "organization",
-  NGO: "organization",
-  Place: "place",
-  TouristAttraction: "place",
-};
 
 export async function renderAndExtract(url: string): Promise<DetectedItem[]> {
   const html = await fetchHtml(url);
@@ -111,7 +85,7 @@ function getTypeString(node: Record<string, unknown>): string[] {
 
 function nodeToItem(node: Record<string, unknown>, sourceUrl: string): DetectedItem | null {
   const types = getTypeString(node);
-  const matched = types.map((t) => TYPE_MAP[t]).find(Boolean);
+  const matched = types.map((t) => SCHEMA_TYPE_MAP[t]).find(Boolean);
   if (!matched) return null;
 
   const raw: Record<string, unknown> = {};

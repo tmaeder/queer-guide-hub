@@ -12,7 +12,11 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@qg/sdk/*": ["../client-sdk/*"]
+    }
   },
-  "include": ["src/**/*", "manifest.json", "vite.config.ts"]
+  "include": ["src/**/*", "manifest.json", "vite.config.ts", "../client-sdk/entity-types.ts"]
 }
