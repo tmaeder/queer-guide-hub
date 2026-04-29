@@ -30,13 +30,14 @@ export async function insertSubmission(opts: {
   const row = {
     content_type: contentType,
     status: "pending",
-    feedback_status: "open",
+    feedback_status: "new",
     data: opts.body.raw_data,
     submitted_by: opts.userId,
     source_url: opts.body.source_url,
     media_urls: images.length ? images : null,
     media_processing_status: images.length ? "pending" : "not_applicable",
-    sub_source_type: "extension",
+    sub_source_type: "url_import",
+    platform: "web",
     submitter_metadata: {
       client: opts.body.client ?? null,
       extraction_method: opts.body.extraction_method ?? null,
