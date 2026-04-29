@@ -40,6 +40,7 @@
 - **Image_assets backfill** (#178) — one-shot SQL backfill across 7 entity tables; URL-hash dedup; tag alt + attribution carried over.
 - **Suggestions tab — AI review queue + auto-apply** (#180) — list / approve / reject / retry pending `ai_suggestions`. Auto-apply for `tag` / `synonym` / `cluster_membership`; other types remain `approved` for manual application.
 - **Anthropic-Claude translation backfill** (#183) — `translate-i18n-batch` edge function + 15-job pg_cron rotation Mon-Thu populates `*_i18n` columns with LGBTQ+-domain context prompts.
+- **AI suggestion producer cutover — `auto-tag-content`** — the auto-tagger no longer writes directly to `tag_suggestions` / `unified_tag_assignments`; instead it routes through the `ai_suggestions` queue. High-confidence rows insert as `approved` and auto-apply via the shared `applySuggestion` helper (lifted to `_shared/ai-suggestions.ts`); low-confidence rows land as `pending` for the SuggestionsTab. Partial unique index on `ai_suggestions(entity_type, entity_id, (proposed_value->>'tag_id')) where suggestion_type='tag' and status in ('pending','approved')` enforces idempotency. Other producers (`automation-auto-tagger`, etc.) still write directly — separate PR per producer.
 
 ### Infrastructure
 - **CI Node 22 bump** (#158) — `.github/workflows/a11y.yml` aligned with `engines.node: >=22`.
@@ -60,7 +61,7 @@
 | **`fetch-city-images` / `fetch-country-images` `image_assets` integration** | These use Storage uploads (decode + size + license known). Different shape from third-party URL mirroring; deserves its own helper. |
 | **Reviewer queue for translations** | Translations from #183 land directly in `*_i18n` columns. If quality issues emerge, route through `ai_suggestions` instead. |
 | **Settings (`master_event_id` distinctAttribute, `cluster_ids` filterable)** | Manual one-time apply via the Settings tab once #181 has reindexed events. Intentionally not auto-applied from a migration. |
-| **AI suggestion *producer* cutover** | Existing `auto-tag-content` etc. still write tags directly. The Suggestions tab (#180) is consumer-ready; producer cutover is its own PR per producer. |
+| **AI suggestion *producer* cutover (other producers)** | `auto-tag-content` shipped above. Remaining producers (`automation-auto-tagger`, etc.) still write tags directly. The Suggestions tab (#180) is consumer-ready; producer cutover is its own PR per producer. |
 | **Edit-then-approve UI for Suggestions** | Endpoint accepts a new `proposed_value`; UI doesn't expose an edit form yet. |
 | **Tag-picker for cluster-tag linking** | Endpoints exist (`POST /clusters/:id/tags`); UI is curl-only today. |
 

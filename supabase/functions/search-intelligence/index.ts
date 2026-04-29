@@ -9,6 +9,7 @@ import {
   corsResponse,
   requireAdmin,
 } from '../_shared/supabase-client.ts'
+import { applySuggestion } from '../_shared/ai-suggestions.ts'
 import { meili, MeiliError, isConfigured as meiliConfigured } from './meili.ts'
 import { validateSynonym, buildMeilisearchSynonymMap, SynonymInput } from './synonyms.ts'
 
@@ -1210,7 +1211,7 @@ async function updateSuggestion(ctx: RouteContext): Promise<Response> {
   let applied = false
   if (body.status === 'approved') {
     try {
-      applied = await applySuggestion(ctx, {
+      applied = await applySuggestion(ctx.service, {
         ...before,
         proposed_value: body.proposed_value ?? before.proposed_value,
       })
@@ -1238,76 +1239,6 @@ async function updateSuggestion(ctx: RouteContext): Promise<Response> {
     apply_error: applyError,
   })
   return jsonResponse({ success: true, data, auto_applied: applied, apply_error: applyError }, 200, ctx.req)
-}
-
-/**
- * Apply a suggestion's proposed_value to the live system. Handles the common
- * cases (tag assignment, synonym creation); others raise so the caller marks
- * status=approved with the error in review_notes for manual follow-up.
- */
-async function applySuggestion(
-  ctx: RouteContext,
-  s: {
-    suggestion_type: string
-    entity_type: string | null
-    entity_id: string | null
-    locale: string | null
-    proposed_value: Record<string, unknown> | unknown
-  },
-): Promise<boolean> {
-  const v = s.proposed_value as Record<string, unknown>
-  switch (s.suggestion_type) {
-    case 'tag': {
-      if (!s.entity_type || !s.entity_id || !v?.tag_id) {
-        throw new Error('tag suggestion needs entity_type, entity_id, proposed_value.tag_id')
-      }
-      const { error } = await ctx.service
-        .from('unified_tag_assignments')
-        .upsert(
-          { entity_type: s.entity_type, entity_id: s.entity_id, tag_id: v.tag_id },
-          { onConflict: 'entity_type,entity_id,tag_id' },
-        )
-      if (error) throw new Error(error.message)
-      return true
-    }
-    case 'synonym': {
-      const terms = v?.terms as string[] | undefined
-      const replacements = v?.replacements as string[] | undefined
-      if (!terms || !replacements) {
-        throw new Error('synonym suggestion needs terms[] and replacements[]')
-      }
-      const { error } = await ctx.service.from('search_synonyms').insert({
-        terms,
-        replacements,
-        is_one_way: Boolean(v?.is_one_way),
-        locale: s.locale ?? '*',
-        indexes: (v?.indexes as string[]) ?? [],
-        status: 'active',
-        source: 'ai-suggested',
-      })
-      if (error) throw new Error(error.message)
-      return true
-    }
-    case 'cluster_membership': {
-      if (!v?.cluster_id || !v?.tag_id) {
-        throw new Error('cluster_membership needs proposed_value.cluster_id and tag_id')
-      }
-      const { error } = await ctx.service
-        .from('topic_cluster_tags')
-        .upsert(
-          { cluster_id: v.cluster_id, tag_id: v.tag_id },
-          { onConflict: 'cluster_id,tag_id' },
-        )
-      if (error) throw new Error(error.message)
-      return true
-    }
-    default:
-      // Other types (alt_text, description, title, image_replacement,
-      // translation, other) require entity-specific writes that are out of
-      // scope for the auto-apply MVP. Caller marks status=approved with
-      // review_notes='manual apply required'.
-      return false
-  }
 }
 
 // ── topic_clusters CRUD ──────────────────────────────────────────────────────

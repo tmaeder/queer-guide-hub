@@ -1,5 +1,6 @@
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { chatCompletion } from '../_shared/openai-client.ts';
+import { applySuggestion, insertSuggestion, type AiSuggestionRow } from '../_shared/ai-suggestions.ts';
 
 const supabase = getServiceClient();
 
@@ -114,6 +115,7 @@ Deno.serve(async (req) => {
     // SECURITY: Require admin — this function calls OpenAI (costs money)
     const authResult = await requireAdmin(req, supabase);
     if (authResult instanceof Response) return authResult;
+    const actorId = authResult.userId;
 
     const body = await req.json();
     const {
@@ -371,49 +373,72 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
           }
         }
 
-        // Upsert into tag_suggestions
-        const rows = suggestions
-          .filter(s => s.tag_id)
-          .map(s => ({
-            entity_id: entityId,
-            entity_type: content_type,
-            tag_id: s.tag_id!,
-            suggested_tag_name: s.name,
-            confidence: s.confidence,
-            source: 'auto_tag',
-            status: 'pending',
-            batch_id: batchId,
-            ai_model: 'gpt-4o-mini',
-          }));
+        // Write to ai_suggestions queue. High-confidence rows are inserted as
+        // 'approved' and immediately apply (mirrors the prior auto-approve UX);
+        // lower-confidence rows land as 'pending' for the SuggestionsTab.
+        const taggable = suggestions.filter(s => s.tag_id);
 
-        if (rows.length > 0) {
-          const { data: inserted, error: insertErr } = await supabase
-            .from('tag_suggestions')
-            .upsert(rows, { onConflict: 'entity_id,entity_type,suggested_tag_name' })
-            .select('id, confidence');
+        for (const s of taggable) {
+          const isHighConf = s.confidence >= auto_approve_threshold;
+          const nowIso = new Date().toISOString();
 
-          if (insertErr) {
-            console.error(`Failed to upsert suggestions for ${entityName}:`, insertErr.message);
+          // Idempotency: skip if a non-terminal suggestion already exists for
+          // this (entity, tag) pair. Matches the partial unique index on
+          // ai_suggestions for (entity_type, entity_id, proposed_value->>tag_id)
+          // where suggestion_type='tag' and status in ('pending','approved').
+          const { data: existing } = await supabase
+            .from('ai_suggestions')
+            .select('id, status')
+            .eq('suggestion_type', 'tag')
+            .eq('entity_type', content_type)
+            .eq('entity_id', entityId)
+            .eq('proposed_value->>tag_id', s.tag_id!)
+            .in('status', ['pending', 'approved'])
+            .maybeSingle();
+          if (existing) continue;
+
+          let inserted: AiSuggestionRow;
+          try {
+            inserted = await insertSuggestion(supabase, {
+              suggestion_type: 'tag',
+              entity_type: content_type,
+              entity_id: entityId,
+              proposed_value: { tag_id: s.tag_id! },
+              source: 'openai',
+              source_model: 'gpt-4o-mini',
+              source_run_id: batchId,
+              confidence: s.confidence,
+              status: isHighConf ? 'approved' : 'pending',
+              approved_at: isHighConf ? nowIso : null,
+              reviewer_id: null,
+            });
+          } catch (err) {
+            console.error(`Failed to insert ai_suggestion for ${entityName}:`, (err as Error).message);
+            continue;
           }
 
-          // Auto-approve high confidence
-          if (inserted && inserted.length > 0) {
-            const highConfIds = inserted
-              .filter(r => Number(r.confidence) >= auto_approve_threshold)
-              .map(r => r.id);
+          if (!isHighConf) continue;
 
-            if (highConfIds.length > 0) {
-              const { data: approvedCount } = await supabase
-                .rpc('approve_tag_suggestions', {
-                  p_suggestion_ids: highConfIds,
-                  p_reviewer_id: null,
-                });
-
-              autoApproved = Number(approvedCount) || highConfIds.length;
-              totalAutoApproved += autoApproved;
+          try {
+            const ok = await applySuggestion(supabase, inserted);
+            if (ok) {
+              await supabase
+                .from('ai_suggestions')
+                .update({ status: 'applied', applied_at: nowIso })
+                .eq('id', inserted.id);
+              autoApproved++;
             }
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : 'unknown apply error';
+            await supabase
+              .from('ai_suggestions')
+              .update({ review_notes: `auto-apply failed: ${msg}` })
+              .eq('id', inserted.id);
+            console.error(`Apply failed for ${entityName}:`, msg);
           }
         }
+
+        totalAutoApproved += autoApproved;
       }
 
       totalSuggestions += suggestions.length;
@@ -430,6 +455,29 @@ Return ONLY JSON: {"tags":[{"name":"tag name","confidence":0.95,"is_new":false},
       // Rate limiting between items
       if (i < items.length - 1) {
         await new Promise(r => setTimeout(r, 500));
+      }
+    }
+
+    // Best-effort audit row for the batch. Mirrors the search-intelligence
+    // route's recordAudit pattern but emitted once per batch to avoid spam.
+    if (!dry_run && allResults.length > 0) {
+      try {
+        await supabase.from('search_audit_log').insert({
+          actor_id: actorId === 'service-role' ? null : actorId,
+          action: 'auto_tag.batch_created',
+          resource_type: 'auto_tag_batch',
+          resource_id: batchId,
+          metadata: {
+            content_type,
+            items_processed: allResults.length,
+            total_suggestions: totalSuggestions,
+            total_auto_approved: totalAutoApproved,
+            new_tags_created: newTagsCreated,
+            auto_approve_threshold,
+          },
+        });
+      } catch (err) {
+        console.warn('audit insert failed', err);
       }
     }
 
