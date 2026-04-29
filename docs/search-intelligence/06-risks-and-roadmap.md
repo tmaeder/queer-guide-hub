@@ -18,7 +18,6 @@
 | Image embeddings + perceptual hash | Storage + cost decisions outstanding | Phase 3 |
 | RRULE / `event_occurrences` | Touches the events ingestion pipeline | Phase 2 |
 | Settings drift auto-resolver | Today the UI shows drift; resolution is one-click, but a daily reconcile cron is not yet wired | Phase 1 follow-up |
-| Rate limit on edge function writes | `search_audit_log` already records every write; in-function counter is one query away | Phase 1 follow-up |
 | Backfill from `meilisearch/configure-indexes.sh` synonyms | Script exists in the plan; running it requires production access | Phase 1 follow-up |
 
 ## Risks
@@ -39,7 +38,7 @@
 
 ## Roadmap
 
-**Phase 1 (next)**: production `compute_visibility_score` per axis; settings drift one-click resolver; Reindex tab live with progress; Ingestion Quality tab live for at least venues + events; rate-limit on writes.
+**Phase 1 (next)**: settings drift one-click resolver (in-flight as #149); daily reconcile cron for drift detection.
 
 **Phase 2**: `topic_clusters`; `unified_tags.name_i18n`; bridge `tag_aliases` ⇄ `search_synonyms`; `event_occurrences` + recurrence-aware indexing; geo polygons in PostGIS; route-based search.
 
