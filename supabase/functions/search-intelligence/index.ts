@@ -69,14 +69,32 @@ Deno.serve(async (req) => {
     }
 
     const service = getServiceClient()
-    const auth = await requireAdmin(req, service)
-    if (auth instanceof Response) return auth
+
+    // Cron / webhook bypass for /cron/* routes. Matches the meilisearch-sync
+    // pattern: pg_cron sets X-Webhook-Secret to the value of WEBHOOK_SECRET.
+    // Treated as service-role for audit purposes.
+    let actorId: string
+    if (parts[0] === 'cron') {
+      const provided = req.headers.get('x-webhook-secret') ?? ''
+      const expected =
+        Deno.env.get('SEARCH_INTELLIGENCE_WEBHOOK_SECRET') ??
+        Deno.env.get('WEBHOOK_SECRET') ??
+        ''
+      if (!expected || provided !== expected) {
+        return errorResponse('Invalid webhook secret', 401, req)
+      }
+      actorId = 'service-role'
+    } else {
+      const auth = await requireAdmin(req, service)
+      if (auth instanceof Response) return auth
+      actorId = auth.userId
+    }
 
     const ctx: RouteContext = {
       req,
       url,
       pathParts: parts,
-      actorId: auth.userId,
+      actorId,
       service,
     }
 
@@ -153,6 +171,10 @@ function pickRoute(method: string, parts: string[]): Handler | null {
     parts[3] === 'recompute'
   ) {
     return recomputeVisibility
+  }
+  // /cron/reconcile (webhook-secret only, see Deno.serve gate above)
+  if (method === 'POST' && parts[0] === 'cron' && parts[1] === 'reconcile') {
+    return cronReconcile
   }
   return null
 }
@@ -833,4 +855,157 @@ async function recomputeVisibility(ctx: RouteContext): Promise<Response> {
   if (error) return errorResponse(error.message, 500, ctx.req)
   await recordAudit(ctx, 'visibility.recompute', entityType, entityId, null, data)
   return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+// ── cron handlers ────────────────────────────────────────────────────────────
+
+/**
+ * Daily settings drift reconcile. For each managed index:
+ *   1. Read latest desired settings from search_settings_versions.
+ *   2. Read applied settings from Meilisearch.
+ *   3. Compare the keys we manage (synonyms, ranking, filterable, sortable,
+ *      searchable, displayedAttributes, stopWords, typoTolerance).
+ *   4. Write one audit row per index with `drift.scan` action and a
+ *      drift summary in metadata.
+ *
+ * Webhook-secret authenticated only (see Deno.serve guard). Returns a per-index
+ * summary so monitoring can alert on totals. Best-effort: a per-index error
+ * is recorded in metadata but doesn't fail the whole run.
+ */
+async function cronReconcile(ctx: RouteContext): Promise<Response> {
+  if (!meiliConfigured()) {
+    return errorResponse('Meilisearch not configured', 503, ctx.req)
+  }
+  const monitored = [
+    'searchableAttributes',
+    'filterableAttributes',
+    'sortableAttributes',
+    'displayedAttributes',
+    'rankingRules',
+    'stopWords',
+    'synonyms',
+    'typoTolerance',
+  ] as const
+
+  const result: Record<
+    string,
+    { drifted_keys: string[]; has_drift: boolean; desired_version: number | null; error?: string }
+  > = {}
+
+  for (const indexName of ALL_INDEXES) {
+    try {
+      const { data: latest } = await ctx.service
+        .from('search_settings_versions')
+        .select('version, settings')
+        .eq('index_name', indexName)
+        .eq('channel', 'active')
+        .order('version', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (!latest) {
+        // No desired version on file. Not drift; just unanchored.
+        result[indexName] = {
+          drifted_keys: [],
+          has_drift: false,
+          desired_version: null,
+        }
+        continue
+      }
+      const desired = latest.settings as Record<string, unknown>
+
+      let applied: Record<string, unknown>
+      try {
+        applied = (await meili.indexSettings(indexName)) as Record<string, unknown>
+      } catch (err) {
+        // Missing index in Meili counts as drift but we record the cause.
+        result[indexName] = {
+          drifted_keys: [...monitored],
+          has_drift: true,
+          desired_version: latest.version,
+          error: err instanceof Error ? err.message : 'meili read failed',
+        }
+        continue
+      }
+
+      const driftedKeys: string[] = []
+      for (const k of monitored) {
+        if (!shallowEqualSetting(k, applied[k], desired[k])) {
+          driftedKeys.push(k)
+        }
+      }
+
+      result[indexName] = {
+        drifted_keys: driftedKeys,
+        has_drift: driftedKeys.length > 0,
+        desired_version: latest.version,
+      }
+    } catch (err) {
+      result[indexName] = {
+        drifted_keys: [],
+        has_drift: false,
+        desired_version: null,
+        error: err instanceof Error ? err.message : 'unknown error',
+      }
+    }
+  }
+
+  // Record per-index audit rows so the Audit tab shows drift history.
+  for (const [name, summary] of Object.entries(result)) {
+    await recordAudit(
+      ctx,
+      'drift.scan',
+      'index',
+      name,
+      null,
+      summary,
+      { source: 'cron.reconcile' },
+    )
+  }
+
+  // Summary audit row (one per cron run).
+  const driftCount = Object.values(result).filter((r) => r.has_drift).length
+  await recordAudit(
+    ctx,
+    'cron.reconcile.complete',
+    'cron',
+    null,
+    null,
+    { drift_count: driftCount, total: Object.keys(result).length },
+    { source: 'cron.reconcile' },
+  )
+
+  return jsonResponse(
+    {
+      success: true,
+      data: { drift_count: driftCount, results: result },
+    },
+    200,
+    ctx.req,
+  )
+}
+
+/**
+ * Setting-aware shallow equality. rankingRules is order-sensitive; arrays of
+ * attributes are treated as sets; objects (synonyms, typoTolerance) compare
+ * via JSON serialisation. Mirrors src/lib/settingsDiff.ts but Deno-side and
+ * returns boolean only (no per-element diff).
+ */
+function shallowEqualSetting(key: string, a: unknown, b: unknown): boolean {
+  if (a === b) return true
+  if (a == null || b == null) return false
+  if (key === 'rankingRules') {
+    if (!Array.isArray(a) || !Array.isArray(b)) return false
+    if (a.length !== b.length) return false
+    return a.every((x, i) => x === b[i])
+  }
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false
+    const setA = new Set(a.map((x) => JSON.stringify(x)))
+    return b.every((x) => setA.has(JSON.stringify(x)))
+  }
+  if (typeof a === 'object' && typeof b === 'object') {
+    return JSON.stringify(a) === JSON.stringify(b)
+  }
+  return false
 }
