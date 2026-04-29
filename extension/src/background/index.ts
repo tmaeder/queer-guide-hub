@@ -4,10 +4,12 @@
  */
 import { submitItem } from "../shared/api";
 import { getValidAccessToken, persistSharedSession } from "../shared/auth";
+import type { ExtractDiagnostics } from "../shared/extractors";
 import type { DetectedItem } from "../shared/types";
 
 interface ExtractResult {
   items: DetectedItem[];
+  diagnostics?: ExtractDiagnostics;
   error?: string;
 }
 
@@ -70,7 +72,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === "qg:extracted" && sender.tab?.id != null) {
     const items = (msg.items ?? []) as DetectedItem[];
-    lastResults.set(sender.tab.id, { items, error: msg.error });
+    const diagnostics = msg.diagnostics as ExtractDiagnostics | undefined;
+    lastResults.set(sender.tab.id, { items, diagnostics, error: msg.error });
     updateBadge(sender.tab.id, items);
     return;
   }

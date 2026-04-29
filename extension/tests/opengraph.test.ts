@@ -52,4 +52,45 @@ describe("opengraph extractor", () => {
     expect(item.raw_data.summary).toBe("Lead text");
     expect(item.raw_data.description).toBeUndefined();
   });
+
+  it("platform fallback: Substack post (og:type=website) → news_article", () => {
+    const doc = html({
+      "og:type": "website",
+      "og:site_name": "QueerStack",
+      "og:title": "Why Berlin queer scene is shifting",
+    });
+    const item = extractOpenGraph(doc, "https://queerstack.substack.com/p/why-berlin")[0]!;
+    expect(item.entity_type).toBe("news_article");
+  });
+
+  it("platform fallback: Bandcamp release → marketplace_item", () => {
+    const doc = html({
+      "og:type": "website",
+      "og:site_name": "Bandcamp",
+      "og:title": "Pride Anthem EP",
+    });
+    const item = extractOpenGraph(doc, "https://artist.bandcamp.com/album/pride-anthem-ep")[0]!;
+    expect(item.entity_type).toBe("marketplace_item");
+  });
+
+  it("platform fallback: Airbnb listing → stay", () => {
+    const doc = html({
+      "og:type": "website",
+      "og:site_name": "Airbnb",
+      "og:title": "Cosy loft in Kreuzberg",
+    });
+    const item = extractOpenGraph(doc, "https://www.airbnb.com/rooms/12345")[0]!;
+    expect(item.entity_type).toBe("stay");
+  });
+
+  it("platform fallback only fires for generic og:type=website, not specific types", () => {
+    const doc = html({
+      "og:type": "article",
+      "og:site_name": "Substack",
+      "og:title": "X",
+    });
+    const item = extractOpenGraph(doc, "https://x.substack.com/p/y")[0]!;
+    // og:type=article wins → news_article (not platform inference)
+    expect(item.entity_type).toBe("news_article");
+  });
 });

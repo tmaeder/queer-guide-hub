@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { renderUrl } from "../../shared/api";
 import { getValidAccessToken } from "../../shared/auth";
+import type { ExtractDiagnostics } from "../../shared/extractors";
 import type { DetectedItem } from "../../shared/types";
 
 interface State {
   items: DetectedItem[];
+  diagnostics: ExtractDiagnostics | null;
   loading: boolean;
   error: string | null;
 }
@@ -20,6 +22,7 @@ interface State {
  */
 export function useDetectedItems(): State {
   const [items, setItems] = useState<DetectedItem[]>([]);
+  const [diagnostics, setDiagnostics] = useState<ExtractDiagnostics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +31,7 @@ export function useDetectedItems(): State {
     void (async () => {
       const cached = await chrome.runtime.sendMessage({ type: "qg:get-results" });
       if (cancelled) return;
+      if (cached?.diagnostics) setDiagnostics(cached.diagnostics);
       if (cached?.items?.length) {
         setItems(cached.items as DetectedItem[]);
         setLoading(false);
@@ -39,6 +43,7 @@ export function useDetectedItems(): State {
         await new Promise((r) => setTimeout(r, 80));
         const r2 = await chrome.runtime.sendMessage({ type: "qg:get-results" });
         if (cancelled) return;
+        if (r2?.diagnostics) setDiagnostics(r2.diagnostics);
         if (r2?.items?.length) {
           setItems(r2.items as DetectedItem[]);
           setLoading(false);
@@ -61,7 +66,7 @@ export function useDetectedItems(): State {
     return () => { cancelled = true; };
   }, []);
 
-  return { items, loading, error };
+  return { items, diagnostics, loading, error };
 }
 
 async function renderFallback(): Promise<DetectedItem[]> {
