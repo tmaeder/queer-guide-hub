@@ -113,7 +113,7 @@ Paces ~100 docs / batch. Full rebuild of 13k takes ~20 min at Workers AI free ti
 ### 7. Verify
 
 ```bash
-curl -X POST https://queer-guide-search-proxy.workers.dev/search \
+curl -X POST https://search.queer.guide/search \
   -H 'content-type: application/json' \
   -d '{"query":"gay bar berlin","session_id":"t1","debug":true}' | jq
 ```
