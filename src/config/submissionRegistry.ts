@@ -4,7 +4,7 @@
  * Fields reference names from contentTypeRegistry — looked up at render time.
  */
 
-import { Building, Calendar, ShoppingBag, Tag, Users, Hotel, MessageSquarePlus } from 'lucide-react';
+import { Building, Calendar, ShoppingBag, Tag, Users, Hotel, MessageSquarePlus, Newspaper, MapPin } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -193,6 +193,48 @@ const feedbackSubmission: SubmissionTypeConfig = {
   ],
 };
 
+// ── News article (1 step — title + lead, full body never copied) ─
+
+const newsSubmission: SubmissionTypeConfig = {
+  id: 'news',
+  contentType: 'news_articles',
+  targetTable: 'news_articles',
+  label: 'News article',
+  description: 'Share a news piece relevant to the community.',
+  icon: Newspaper,
+  color: '#0f766e',
+  titleField: 'title',
+  defaults: {},
+  steps: [
+    {
+      id: 'basics',
+      label: 'Basics',
+      fields: ['title', 'summary', 'author', 'published_at', 'url', 'tags'],
+    },
+  ],
+};
+
+// ── Place (1 step — neighbourhood / city ) ───────────────────────
+
+const placeSubmission: SubmissionTypeConfig = {
+  id: 'place',
+  contentType: 'places',
+  targetTable: 'places',
+  label: 'Place',
+  description: 'Add a neighbourhood, queer village, or other locality.',
+  icon: MapPin,
+  color: '#7c3aed',
+  titleField: 'name',
+  defaults: {},
+  steps: [
+    {
+      id: 'basics',
+      label: 'Basics',
+      fields: ['name', 'description', 'city', 'country', 'latitude', 'longitude', 'url'],
+    },
+  ],
+};
+
 // ── Registry ─────────────────────────────────────────────────────
 
 export const submissionRegistry: Record<string, SubmissionTypeConfig> = {
@@ -203,6 +245,8 @@ export const submissionRegistry: Record<string, SubmissionTypeConfig> = {
   hotel: hotelSubmission,
   tag: tagSubmission,
   feedback: feedbackSubmission,
+  news: newsSubmission,
+  place: placeSubmission,
 };
 
 /** Ordered array for hub page display */
@@ -212,6 +256,8 @@ export const submissionTypes: SubmissionTypeConfig[] = [
   productSubmission,
   personalitySubmission,
   hotelSubmission,
+  newsSubmission,
+  placeSubmission,
   tagSubmission,
   feedbackSubmission,
 ];
