@@ -8,6 +8,7 @@ import { SearchDebuggerTab } from '@/components/admin/search-intelligence/Search
 import { SynonymsTab } from '@/components/admin/search-intelligence/SynonymsTab';
 import { AuditTab } from '@/components/admin/search-intelligence/AuditTab';
 import { IngestionQualityTab } from '@/components/admin/search-intelligence/IngestionQualityTab';
+import { ReindexTab } from '@/components/admin/search-intelligence/ReindexTab';
 import { PlaceholderTab } from '@/components/admin/search-intelligence/PlaceholderTab';
 
 const FEATURE_FLAG_ENABLED = import.meta.env.VITE_FEATURE_SEARCH_INTELLIGENCE === '1';
@@ -72,16 +73,7 @@ export default function AdminSearchIntelligence() {
             />
           </TabsContent>
           <TabsContent value="reindex">
-            <PlaceholderTab
-              title="Reindexing"
-              description="Persistent reindex jobs with progress + Meili task UIDs. Job rows are written; the worker that drives meilisearch-sync from a job is staged for Phase 1 follow-up."
-              bullets={[
-                'POST /reindex — creates a job row, returns jobId',
-                'GET /reindex/:id — job progress',
-                'GET /tasks/:uid — Meili task pass-through',
-                'Background worker that consumes pending jobs: Phase 1 follow-up',
-              ]}
-            />
+            <ReindexTab />
           </TabsContent>
           <TabsContent value="quality">
             <IngestionQualityTab />

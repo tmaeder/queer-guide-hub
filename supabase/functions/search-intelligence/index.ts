@@ -133,6 +133,7 @@ function pickRoute(method: string, parts: string[]): Handler | null {
   }
   // /reindex
   if (method === 'POST' && parts[0] === 'reindex' && parts.length === 1) return startReindex
+  if (method === 'GET' && parts[0] === 'reindex' && parts.length === 1) return listReindex
   if (method === 'GET' && parts[0] === 'reindex' && parts.length === 2) return getReindex
   // /tasks/:uid
   if (method === 'GET' && parts[0] === 'tasks' && parts.length === 2) return getTask
@@ -510,24 +511,116 @@ async function startReindex(ctx: RouteContext): Promise<Response> {
     index: string
     scope?: Record<string, unknown>
     confirm?: boolean
+    async?: boolean
   }>(ctx.req)
   if (!body.index) return errorResponse('index required', 400, ctx.req)
   if (!body.confirm) {
     return errorResponse('confirm: true required for destructive operation', 400, ctx.req)
   }
-  const { data, error } = await ctx.service
+  if (!ALL_INDEXES.includes(body.index as (typeof ALL_INDEXES)[number])) {
+    return errorResponse(`unknown index: ${body.index}`, 400, ctx.req)
+  }
+  const startedAt = new Date().toISOString()
+  const { data: job, error } = await ctx.service
     .from('search_reindex_jobs')
     .insert({
       index_name: body.index,
       scope: body.scope ?? { full: true },
-      status: 'pending',
+      status: 'running',
+      started_at: startedAt,
       triggered_by: ctx.actorId === 'service-role' ? null : ctx.actorId,
     })
     .select()
     .single()
   if (error) return errorResponse(error.message, 500, ctx.req)
-  await recordAudit(ctx, 'reindex.start', 'reindex_job', data.id, null, data)
-  return jsonResponse({ success: true, data: { jobId: data.id } }, 202, ctx.req)
+  await recordAudit(ctx, 'reindex.start', 'reindex_job', job.id, null, job)
+
+  // Drive the existing meilisearch-sync edge function. Synchronous: small
+  // indexes return in seconds, large ones may approach the function timeout.
+  // For very large reindexes, pass async=true to get a job row and poll.
+  if (body.async) {
+    return jsonResponse({ success: true, data: { jobId: job.id, status: 'running' } }, 202, ctx.req)
+  }
+
+  const finalJob = await driveSyncTypeAndUpdate(ctx, job.id, body.index)
+  return jsonResponse({ success: true, data: finalJob }, 200, ctx.req)
+}
+
+async function driveSyncTypeAndUpdate(
+  ctx: RouteContext,
+  jobId: string,
+  indexName: string,
+): Promise<unknown> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (!supabaseUrl || !serviceKey) {
+    return await failJob(ctx, jobId, ['SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing'])
+  }
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/meilisearch-sync`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'sync-type', type: indexName }),
+    })
+    const text = await res.text()
+    let parsed: unknown = text
+    try {
+      parsed = text ? JSON.parse(text) : null
+    } catch {
+      // leave as raw text
+    }
+    if (!res.ok) {
+      return await failJob(ctx, jobId, [
+        `meilisearch-sync ${res.status}: ${typeof parsed === 'string' ? parsed : JSON.stringify(parsed)}`,
+      ])
+    }
+    const body = parsed as { success?: boolean; count?: number; error?: string }
+    if (body.error || body.success === false) {
+      return await failJob(ctx, jobId, [body.error ?? 'meilisearch-sync reported failure'])
+    }
+    const total = typeof body.count === 'number' ? body.count : 0
+    const finishedAt = new Date().toISOString()
+    const { data: updated } = await ctx.service
+      .from('search_reindex_jobs')
+      .update({
+        status: 'completed',
+        total,
+        processed: total,
+        finished_at: finishedAt,
+      })
+      .eq('id', jobId)
+      .select()
+      .single()
+    await recordAudit(ctx, 'reindex.complete', 'reindex_job', jobId, null, updated, {
+      processed: total,
+    })
+    return updated
+  } catch (err) {
+    return await failJob(ctx, jobId, [err instanceof Error ? err.message : 'unknown error'])
+  }
+}
+
+async function failJob(
+  ctx: RouteContext,
+  jobId: string,
+  errors: string[],
+): Promise<unknown> {
+  const finishedAt = new Date().toISOString()
+  const { data } = await ctx.service
+    .from('search_reindex_jobs')
+    .update({
+      status: 'failed',
+      errors,
+      finished_at: finishedAt,
+    })
+    .eq('id', jobId)
+    .select()
+    .single()
+  await recordAudit(ctx, 'reindex.fail', 'reindex_job', jobId, null, data, { errors })
+  return data
 }
 
 async function getReindex(ctx: RouteContext): Promise<Response> {
@@ -540,6 +633,22 @@ async function getReindex(ctx: RouteContext): Promise<Response> {
     .maybeSingle()
   if (error) return errorResponse(error.message, 500, ctx.req)
   if (!data) return errorResponse('not found', 404, ctx.req)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function listReindex(ctx: RouteContext): Promise<Response> {
+  const limit = Math.min(Number(ctx.url.searchParams.get('limit') ?? '50'), 200)
+  const indexFilter = ctx.url.searchParams.get('index')
+  const statusFilter = ctx.url.searchParams.get('status')
+  let q = ctx.service
+    .from('search_reindex_jobs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (indexFilter) q = q.eq('index_name', indexFilter)
+  if (statusFilter) q = q.eq('status', statusFilter)
+  const { data, error } = await q
+  if (error) return errorResponse(error.message, 500, ctx.req)
   return jsonResponse({ success: true, data }, 200, ctx.req)
 }
 
