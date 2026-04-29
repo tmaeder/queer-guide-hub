@@ -80,6 +80,41 @@ export async function enrichItem(
   return (await res.json()) as EnrichResponse;
 }
 
+export interface WatchedRow {
+  id: string;
+  url: string;
+  frequency_minutes: number;
+  is_active: boolean;
+  last_checked_at: string | null;
+  last_fingerprint?: string | null;
+  created_at: string;
+}
+
+export async function listWatched(accessToken: string): Promise<WatchedRow[]> {
+  const res = await fetch(`${API}/watch`, { headers: { Authorization: `Bearer ${accessToken}` } });
+  if (!res.ok) throw new Error(`watch list ${res.status}`);
+  const body = (await res.json()) as { rows: WatchedRow[] };
+  return body.rows;
+}
+
+export async function addWatched(url: string, accessToken: string): Promise<WatchedRow> {
+  const res = await fetch(`${API}/watch`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) throw new Error(`watch add ${res.status}`);
+  return (await res.json()) as WatchedRow;
+}
+
+export async function removeWatched(id: string, accessToken: string): Promise<void> {
+  const res = await fetch(`${API}/watch/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error(`watch del ${res.status}`);
+}
+
 export async function fetchStatus(
   id: string | number,
   accessToken: string,

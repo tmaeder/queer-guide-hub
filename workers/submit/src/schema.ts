@@ -69,6 +69,20 @@ export const FindSimilarBody = z.object({
 });
 export type FindSimilarBody = z.infer<typeof FindSimilarBody>;
 
+export const WatchBody = z.object({
+  url: z.string().url(),
+  frequency_minutes: z.number().int().min(15).max(60 * 24 * 7).optional(),
+});
+export type WatchBody = z.infer<typeof WatchBody>;
+
+export const WatchFeedBody = z.object({
+  url: z.string().url(),
+  name: z.string().min(2).max(120),
+  category: z.string().min(2).max(60).optional(),
+  frequency_minutes: z.number().int().min(15).max(60 * 24).optional(),
+});
+export type WatchFeedBody = z.infer<typeof WatchFeedBody>;
+
 export function entityTypeToTargetTable(t: EntityType): "venues" | "events" | "stays" | "personalities" | null {
   switch (t) {
     case "venue":
