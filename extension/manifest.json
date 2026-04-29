@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "queer.guide capture",
-  "version": "0.5.0",
+  "version": "0.9.0",
   "description": "Capture venues, events, hotels, marketplace items, and news from any webpage and submit them to queer.guide.",
   "action": {
     "default_title": "queer.guide capture",
@@ -11,15 +11,27 @@
     "service_worker": "src/background/index.ts",
     "type": "module"
   },
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
   "host_permissions": [],
   "externally_connectable": {
-    "matches": ["https://queer.guide/*", "https://www.queer.guide/*"]
+    "matches": [
+      "https://queer.guide/*",
+      "https://www.queer.guide/*"
+    ]
   },
   "content_scripts": [
     {
-      "matches": ["https://queer.guide/*", "https://www.queer.guide/*"],
-      "js": ["src/content/qg-bridge.ts"],
+      "matches": [
+        "https://queer.guide/*",
+        "https://www.queer.guide/*"
+      ],
+      "js": [
+        "src/content/qg-bridge.ts"
+      ],
       "run_at": "document_idle"
     }
   ],

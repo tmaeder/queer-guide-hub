@@ -49,6 +49,68 @@ export async function enrich(env: Env, input: { url: string; title?: string; des
   return { summary, suggested_tags: [] };
 }
 
+/**
+ * Pull tags from the metadata of nearby entities in content_embeddings.
+ * Best-effort: returns at most `count` tags ranked by frequency × similarity.
+ * Empty if the RPC call fails or no neighbours found.
+ */
+export async function suggestTagsFromNeighbours(
+  env: Env,
+  embedding: number[],
+  userJwt: string | undefined,
+  count = 5,
+): Promise<string[]> {
+  try {
+    const headers: Record<string, string> = {
+      apikey: env.SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+    };
+    if (userJwt) headers["Authorization"] = `Bearer ${userJwt}`;
+    const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/match_content_embeddings`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        query_embedding: `[${embedding.join(",")}]`,
+        similarity_threshold: 0.3,
+        match_count: 25,
+      }),
+    });
+    if (!res.ok) return [];
+    const hits = (await res.json()) as Array<{ similarity: number; metadata: { tags?: unknown } | null }>;
+    const score = new Map<string, number>();
+    for (const h of hits) {
+      const tags = (h.metadata?.tags as unknown[] | undefined) ?? [];
+      if (!Array.isArray(tags)) continue;
+      for (const t of tags) {
+        if (typeof t !== "string") continue;
+        const key = t.toLowerCase().trim();
+        if (!key) continue;
+        score.set(key, (score.get(key) ?? 0) + h.similarity);
+      }
+    }
+    return [...score.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, count)
+      .map(([k]) => k);
+  } catch {
+    return [];
+  }
+}
+
+const EMBED_MODEL = "@cf/baai/bge-m3";
+
+export async function embedText(env: Env, text: string): Promise<number[]> {
+  const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME, cacheTtl: 60 * 60 * 24 * 7 } : undefined;
+  const res = (await env.AI.run(
+    EMBED_MODEL as Parameters<Ai["run"]>[0],
+    { text: [text] } as Parameters<Ai["run"]>[1],
+    gateway ? { gateway } : undefined,
+  )) as { data?: unknown[][] } | { data?: unknown[] };
+  const data = (res as { data?: unknown[][] }).data;
+  if (!Array.isArray(data) || !Array.isArray(data[0])) throw new Error("embed: no vector");
+  return data[0] as number[];
+}
+
 function extractText(raw: unknown): string {
   if (typeof raw === "string") return raw.trim();
   if (raw && typeof raw === "object") {

@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { upsertImageAsset } from '../_shared/image-assets.ts'
 
 // Batch image enricher for events with empty images array.
 // Searches Pexels and Unsplash using event title + city.
@@ -77,7 +78,16 @@ Deno.serve(async (req) => {
         .eq('id', e.id)
 
       if (upErr) { console.error(`event ${e.id}:`, upErr.message); skipped++ }
-      else updated++
+      else {
+        updated++
+        await upsertImageAsset(supabase, {
+          url: imageUrl,
+          source: 'scraper',
+          entity_type: 'event',
+          entity_id: e.id,
+          role: 'cover',
+        })
+      }
 
       await new Promise(r => setTimeout(r, 200))
     }

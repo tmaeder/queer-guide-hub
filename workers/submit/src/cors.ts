@@ -8,7 +8,7 @@ export function getCorsHeaders(request: Request, allowedOrigins: string): Header
   return {
     "Access-Control-Allow-Origin": ok ? origin : "",
     "Access-Control-Allow-Headers": "content-type, authorization",
-    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+    "Access-Control-Allow-Methods": "POST, GET, DELETE, OPTIONS",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };

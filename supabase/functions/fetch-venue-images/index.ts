@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { upsertImageAsset } from '../_shared/image-assets.ts'
 
 // Batch image enricher for venues with empty images array.
 // Searches Pexels and Unsplash; updates venues.images on success.
@@ -74,7 +75,17 @@ Deno.serve(async (req) => {
         .eq('id', v.id)
 
       if (upErr) { console.error(`venue ${v.id}:`, upErr.message); skipped++ }
-      else updated++
+      else {
+        updated++
+        // Dual-write to image_assets registry (Wave B.1).
+        await upsertImageAsset(supabase, {
+          url: imageUrl,
+          source: 'scraper',
+          entity_type: 'venue',
+          entity_id: v.id,
+          role: 'cover',
+        })
+      }
 
       await new Promise(r => setTimeout(r, 200))
     }

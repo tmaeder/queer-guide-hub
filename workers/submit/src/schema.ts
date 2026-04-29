@@ -62,6 +62,37 @@ export const EnrichBody = z.object({
 });
 export type EnrichBody = z.infer<typeof EnrichBody>;
 
+export const FindSimilarBody = z.object({
+  text: z.string().min(2).max(2000),
+  content_types: z.array(z.string()).max(8).optional(),
+  limit: z.number().int().min(1).max(20).optional(),
+});
+export type FindSimilarBody = z.infer<typeof FindSimilarBody>;
+
+export const WatchBody = z.object({
+  url: z.string().url(),
+  frequency_minutes: z.number().int().min(15).max(60 * 24 * 7).optional(),
+});
+export type WatchBody = z.infer<typeof WatchBody>;
+
+export const WatchFeedBody = z.object({
+  url: z.string().url(),
+  name: z.string().min(2).max(120),
+  category: z.string().min(2).max(60).optional(),
+  frequency_minutes: z.number().int().min(15).max(60 * 24).optional(),
+});
+export type WatchFeedBody = z.infer<typeof WatchFeedBody>;
+
+export const ScanSitemapBody = z.object({
+  url: z.string().url(),
+});
+export type ScanSitemapBody = z.infer<typeof ScanSitemapBody>;
+
+export const BulkSubmitBody = z.object({
+  items: z.array(SubmitBody).min(1).max(100),
+});
+export type BulkSubmitBody = z.infer<typeof BulkSubmitBody>;
+
 export function entityTypeToTargetTable(t: EntityType): "venues" | "events" | "stays" | "personalities" | null {
   switch (t) {
     case "venue":

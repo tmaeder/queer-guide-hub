@@ -149,6 +149,23 @@ function pickRoute(method: string, parts: string[]): Handler | null {
   if (method === 'POST' && parts[0] === 'synonyms' && parts[1] === 'sync') {
     return syncSynonyms
   }
+  // /clusters
+  if (parts[0] === 'clusters' && parts.length === 1) {
+    if (method === 'GET') return listClusters
+    if (method === 'POST') return createCluster
+  }
+  if (parts[0] === 'clusters' && parts.length === 2) {
+    if (method === 'GET') return getCluster
+    if (method === 'PATCH') return updateCluster
+    if (method === 'DELETE') return archiveCluster
+  }
+  // /clusters/:id/tags  (link)
+  if (parts[0] === 'clusters' && parts[2] === 'tags' && parts.length === 3) {
+    if (method === 'POST') return linkClusterTag
+  }
+  if (parts[0] === 'clusters' && parts[2] === 'tags' && parts.length === 4) {
+    if (method === 'DELETE') return unlinkClusterTag
+  }
   // /reindex
   if (method === 'POST' && parts[0] === 'reindex' && parts.length === 1) return startReindex
   if (method === 'GET' && parts[0] === 'reindex' && parts.length === 1) return listReindex
@@ -1220,4 +1237,209 @@ async function applySuggestion(
       // review_notes='manual apply required'.
       return false
   }
+}
+
+// ── topic_clusters CRUD ──────────────────────────────────────────────────────
+
+async function listClusters(ctx: RouteContext): Promise<Response> {
+  const status = ctx.url.searchParams.get('status')
+  const limit = Math.min(Number(ctx.url.searchParams.get('limit') ?? '100'), 500)
+  let q = ctx.service
+    .from('topic_clusters')
+    .select(
+      'id, slug, name, description, parent_cluster_id, is_featured, status, starts_at, ends_at, cover_image_url, cover_image_alt, metadata, created_at, updated_at',
+    )
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (status) q = q.eq('status', status)
+  const { data: clusters, error } = await q
+  if (error) return errorResponse(error.message, 500, ctx.req)
+
+  // Attach tag counts in one query.
+  const { data: tagCounts } = await ctx.service
+    .from('topic_cluster_tags')
+    .select('cluster_id')
+  const counts = new Map<string, number>()
+  for (const r of tagCounts ?? []) {
+    const id = (r as { cluster_id: string }).cluster_id
+    counts.set(id, (counts.get(id) ?? 0) + 1)
+  }
+  const enriched = (clusters ?? []).map((c: { id: string }) => ({
+    ...c,
+    tag_count: counts.get(c.id) ?? 0,
+  }))
+  return jsonResponse({ success: true, data: enriched }, 200, ctx.req)
+}
+
+async function getCluster(ctx: RouteContext): Promise<Response> {
+  const id = ctx.pathParts[1]
+  if (!id) return errorResponse('id required', 400, ctx.req)
+  const { data: cluster, error } = await ctx.service
+    .from('topic_clusters')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  if (!cluster) return errorResponse('not found', 404, ctx.req)
+  // Tags + entity counts
+  const { data: tags } = await ctx.service
+    .from('topic_cluster_tags')
+    .select('tag_id, weight, added_at, unified_tags(id, name, slug)')
+    .eq('cluster_id', id)
+  const { data: entityCounts } = await ctx.service
+    .from('cluster_entity_counts')
+    .select('entity_type, entity_count')
+    .eq('cluster_id', id)
+  return jsonResponse(
+    { success: true, data: { cluster, tags: tags ?? [], entity_counts: entityCounts ?? [] } },
+    200,
+    ctx.req,
+  )
+}
+
+async function createCluster(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const body = await readJson<{
+    slug: string
+    name: string
+    description?: string
+    parent_cluster_id?: string | null
+    is_featured?: boolean
+    starts_at?: string | null
+    ends_at?: string | null
+    cover_image_url?: string | null
+    cover_image_alt?: string | null
+    metadata?: Record<string, unknown>
+  }>(ctx.req)
+  if (!body.slug || !body.name) {
+    return errorResponse('slug and name required', 400, ctx.req)
+  }
+  const insert = {
+    slug: body.slug.toLowerCase().trim(),
+    name: body.name.trim(),
+    description: body.description ?? null,
+    parent_cluster_id: body.parent_cluster_id ?? null,
+    is_featured: Boolean(body.is_featured),
+    starts_at: body.starts_at ?? null,
+    ends_at: body.ends_at ?? null,
+    cover_image_url: body.cover_image_url ?? null,
+    cover_image_alt: body.cover_image_alt ?? null,
+    metadata: body.metadata ?? {},
+    curator_user_id: ctx.actorId === 'service-role' ? null : ctx.actorId,
+    status: 'active' as const,
+  }
+  const { data, error } = await ctx.service
+    .from('topic_clusters')
+    .insert(insert)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'cluster.create', 'cluster', data.id, null, data)
+  return jsonResponse({ success: true, data }, 201, ctx.req)
+}
+
+async function updateCluster(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const id = ctx.pathParts[1]
+  if (!id) return errorResponse('id required', 400, ctx.req)
+  const body = await readJson<Record<string, unknown>>(ctx.req)
+  const allowed = [
+    'slug',
+    'name',
+    'description',
+    'parent_cluster_id',
+    'is_featured',
+    'status',
+    'starts_at',
+    'ends_at',
+    'cover_image_url',
+    'cover_image_alt',
+    'metadata',
+  ] as const
+  const update: Record<string, unknown> = {}
+  for (const k of allowed) {
+    if (k in body) update[k] = body[k]
+  }
+  if (typeof update.status === 'string' && !['draft', 'active', 'archived'].includes(update.status)) {
+    return errorResponse('invalid status', 400, ctx.req)
+  }
+  if (Object.keys(update).length === 0) {
+    return errorResponse('no updatable fields provided', 400, ctx.req)
+  }
+  const { data: before } = await ctx.service
+    .from('topic_clusters')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  const { data, error } = await ctx.service
+    .from('topic_clusters')
+    .update(update)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'cluster.update', 'cluster', id, before, data)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function archiveCluster(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const id = ctx.pathParts[1]
+  if (!id) return errorResponse('id required', 400, ctx.req)
+  const { data: before } = await ctx.service
+    .from('topic_clusters')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  const { data, error } = await ctx.service
+    .from('topic_clusters')
+    .update({ status: 'archived' })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'cluster.archive', 'cluster', id, before, data)
+  return jsonResponse({ success: true, data }, 200, ctx.req)
+}
+
+async function linkClusterTag(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const clusterId = ctx.pathParts[1]
+  if (!clusterId) return errorResponse('cluster id required', 400, ctx.req)
+  const body = await readJson<{ tag_id: string; weight?: number }>(ctx.req)
+  if (!body.tag_id) return errorResponse('tag_id required', 400, ctx.req)
+  const insert = {
+    cluster_id: clusterId,
+    tag_id: body.tag_id,
+    weight: body.weight ?? 1.0,
+    added_by: ctx.actorId === 'service-role' ? null : ctx.actorId,
+  }
+  const { data, error } = await ctx.service
+    .from('topic_cluster_tags')
+    .upsert(insert, { onConflict: 'cluster_id,tag_id' })
+    .select()
+    .single()
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'cluster.tag.link', 'cluster', clusterId, null, data)
+  return jsonResponse({ success: true, data }, 201, ctx.req)
+}
+
+async function unlinkClusterTag(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
+  const clusterId = ctx.pathParts[1]
+  const tagId = ctx.pathParts[3]
+  if (!clusterId || !tagId) return errorResponse('cluster id and tag id required', 400, ctx.req)
+  const { error } = await ctx.service
+    .from('topic_cluster_tags')
+    .delete()
+    .eq('cluster_id', clusterId)
+    .eq('tag_id', tagId)
+  if (error) return errorResponse(error.message, 500, ctx.req)
+  await recordAudit(ctx, 'cluster.tag.unlink', 'cluster', clusterId, { tag_id: tagId }, null)
+  return jsonResponse({ success: true, data: { cluster_id: clusterId, tag_id: tagId } }, 200, ctx.req)
 }

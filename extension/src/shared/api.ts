@@ -30,6 +30,33 @@ export async function submitItem(
   return (await res.json()) as SubmitResponse;
 }
 
+export interface SimilarHit {
+  content_id: string;
+  content_type: string;
+  content_text: string;
+  similarity: number;
+  metadata: { slug?: string; city?: string; tags?: string[] } | null;
+}
+
+export async function findSimilarItems(
+  text: string,
+  contentTypes: string[],
+  accessToken: string,
+  limit = 3,
+): Promise<SimilarHit[]> {
+  const res = await fetch(`${API}/find-similar`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ text, content_types: contentTypes, limit }),
+  });
+  if (!res.ok) throw new Error(`find-similar ${res.status}`);
+  const body = (await res.json()) as { hits: SimilarHit[] };
+  return body.hits;
+}
+
 export interface EnrichResponse {
   summary: string;
   suggested_tags: string[];
@@ -53,6 +80,41 @@ export async function enrichItem(
   return (await res.json()) as EnrichResponse;
 }
 
+export interface WatchedRow {
+  id: string;
+  url: string;
+  frequency_minutes: number;
+  is_active: boolean;
+  last_checked_at: string | null;
+  last_fingerprint?: string | null;
+  created_at: string;
+}
+
+export async function listWatched(accessToken: string): Promise<WatchedRow[]> {
+  const res = await fetch(`${API}/watch`, { headers: { Authorization: `Bearer ${accessToken}` } });
+  if (!res.ok) throw new Error(`watch list ${res.status}`);
+  const body = (await res.json()) as { rows: WatchedRow[] };
+  return body.rows;
+}
+
+export async function addWatched(url: string, accessToken: string): Promise<WatchedRow> {
+  const res = await fetch(`${API}/watch`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) throw new Error(`watch add ${res.status}`);
+  return (await res.json()) as WatchedRow;
+}
+
+export async function removeWatched(id: string, accessToken: string): Promise<void> {
+  const res = await fetch(`${API}/watch/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error(`watch del ${res.status}`);
+}
+
 export async function fetchStatus(
   id: string | number,
   accessToken: string,
@@ -62,6 +124,42 @@ export async function fetchStatus(
   });
   if (!res.ok) throw new Error(`status ${res.status}`);
   return (await res.json()) as Record<string, unknown>;
+}
+
+export interface BulkResult {
+  submissions: Array<{ id: string; status: string }>;
+}
+
+export async function bulkSubmit(items: DetectedItem[], accessToken: string): Promise<BulkResult> {
+  const body = {
+    items: items.map((item) => ({
+      entity_type: item.entity_type,
+      raw_data: item.raw_data,
+      source_url: item.source_url,
+      client: `extension/${chrome.runtime.getManifest().version}`,
+      field_confidence: item.field_confidence,
+      extraction_method: item.extraction_method,
+    })),
+  };
+  const res = await fetch(`${API}/bulk-submit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`bulk-submit ${res.status}: ${await res.text()}`);
+  return (await res.json()) as BulkResult;
+}
+
+export interface SitemapEntry { loc: string; lastmod?: string; }
+export async function scanSitemap(url: string, accessToken: string): Promise<SitemapEntry[]> {
+  const res = await fetch(`${API}/scan-sitemap`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) throw new Error(`scan-sitemap ${res.status}`);
+  const body = (await res.json()) as { entries: SitemapEntry[] };
+  return body.entries;
 }
 
 export interface SubmissionRow {
