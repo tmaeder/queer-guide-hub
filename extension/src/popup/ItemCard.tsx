@@ -74,6 +74,7 @@ export function ItemCard({
   const [enriching, setEnriching] = useState(false);
   const [enrichError, setEnrichError] = useState<string | null>(null);
   const [similar, setSimilar] = useState<SimilarHit[] | null>(null);
+  const [showRaw, setShowRaw] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -133,9 +134,14 @@ export function ItemCard({
           <a href={existingUrl(existing)} target="_blank" rel="noreferrer">{existing.title}</a>
         </div>
       )}
-      <div className="qg-name">{String(display.name ?? display.title ?? "(unnamed)")}</div>
-      <div className="qg-meta">
-        {String(display.address ?? display.city ?? display.summary ?? "").slice(0, 120)}
+      <div className="qg-preview">
+        {firstImage(display) && (
+          <img className="qg-thumb" src={firstImage(display)!} alt="" loading="lazy" />
+        )}
+        <div className="qg-preview-body">
+          <div className="qg-name">{String(display.name ?? display.title ?? "(unnamed)")}</div>
+          <PreviewFields data={display} entityType={item.entity_type} />
+        </div>
       </div>
       {Array.isArray(display.tags) && display.tags.length > 0 && (
         <div className="qg-tags">
@@ -177,9 +183,13 @@ export function ItemCard({
         </div>
       )}
       {enrichError && <div className="qg-toast err">{enrichError}</div>}
+      {showRaw && <RawJson data={display} />}
       <div className="qg-actions">
         <button onClick={runEnrich} disabled={enriching} title="AI summary + tags">
           {enriching ? "✨ …" : "✨ AI"}
+        </button>
+        <button onClick={() => setShowRaw((v) => !v)} title="show every captured field">
+          {showRaw ? "hide raw" : "raw"}
         </button>
         <button onClick={() => setOpen((v) => !v)}>{open ? "close" : "edit"}</button>
         <button
@@ -194,5 +204,107 @@ export function ItemCard({
         </button>
       </div>
     </div>
+  );
+}
+
+const PREVIEW_FIELDS_BY_TYPE: Record<string, string[]> = {
+  venue: ["address", "city", "country", "latitude", "longitude", "url", "description"],
+  event: ["start_date", "end_date", "venue_name", "city", "url", "description"],
+  stay: ["address", "city", "country", "url", "description"],
+  marketplace_item: ["price", "currency", "url", "description"],
+  news_article: ["author", "published_at", "url", "summary"],
+  place: ["address", "city", "country", "latitude", "longitude", "url", "description"],
+  organization: ["url", "description"],
+};
+
+const FIELD_LABEL: Record<string, string> = {
+  address: "Address",
+  city: "City",
+  country: "Country",
+  latitude: "Lat",
+  longitude: "Lng",
+  url: "URL",
+  description: "Description",
+  summary: "Summary",
+  start_date: "Starts",
+  end_date: "Ends",
+  venue_name: "Venue",
+  price: "Price",
+  currency: "Currency",
+  author: "Author",
+  published_at: "Published",
+};
+
+/**
+ * Inline preview of every captured field for the entity type. Replaces the
+ * old single-line meta blob so users can see what was actually scraped
+ * (and notice missing/wrong values) without opening the edit form.
+ */
+function PreviewFields({
+  data,
+  entityType,
+}: {
+  data: Record<string, unknown>;
+  entityType: string;
+}) {
+  const keys = PREVIEW_FIELDS_BY_TYPE[entityType] ?? ["url", "description"];
+  const rows: Array<[string, string]> = [];
+  for (const k of keys) {
+    const v = data[k];
+    if (v === undefined || v === null || v === "") continue;
+    rows.push([FIELD_LABEL[k] ?? k, formatPreviewValue(k, v)]);
+  }
+  if (rows.length === 0) return null;
+  return (
+    <dl className="qg-fields">
+      {rows.map(([label, value]) => (
+        <div key={label} className="qg-field">
+          <dt>{label}</dt>
+          <dd>{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function formatPreviewValue(key: string, v: unknown): string {
+  if (typeof v === "number") {
+    if (key === "latitude" || key === "longitude") return v.toFixed(4);
+    if (key === "price") return v.toFixed(2);
+    return String(v);
+  }
+  const s = String(v);
+  if (key === "url" && s.length > 60) {
+    try { return new URL(s).host + new URL(s).pathname.slice(0, 30); } catch { return s.slice(0, 80); }
+  }
+  if (key === "start_date" || key === "end_date" || key === "published_at") {
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d.toLocaleString();
+  }
+  return s.length > 220 ? s.slice(0, 220) + "…" : s;
+}
+
+function firstImage(data: Record<string, unknown>): string | null {
+  const imgs = data["images"];
+  if (Array.isArray(imgs)) {
+    const first = imgs.find((x): x is string => typeof x === "string" && /^https?:/.test(x));
+    return first ?? null;
+  }
+  return null;
+}
+
+/**
+ * Raw-data dump for power users / debugging. Skips internal fields and
+ * the images array (already shown as thumbnail) so the JSON stays scannable.
+ */
+function RawJson({ data }: { data: Record<string, unknown> }) {
+  const filtered: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (k === "images") continue;
+    if (v === undefined || v === null || v === "") continue;
+    filtered[k] = v;
+  }
+  return (
+    <pre className="qg-raw">{JSON.stringify(filtered, null, 2)}</pre>
   );
 }
