@@ -137,6 +137,13 @@ export function ItemCard({
       <div className="qg-meta">
         {String(display.address ?? display.city ?? display.summary ?? "").slice(0, 120)}
       </div>
+      {Array.isArray(display.tags) && display.tags.length > 0 && (
+        <div className="qg-tags">
+          {(display.tags as string[]).map((t) => (
+            <span key={t} className="qg-tag">{t}</span>
+          ))}
+        </div>
+      )}
       {similar && similar.length > 0 && (
         <div className={`qg-similar ${similar[0]!.similarity > 0.85 ? "warn" : ""}`}>
           <div className="qg-similar-label">
