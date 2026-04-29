@@ -102,6 +102,24 @@ const getTitle = (s: SubmissionRow) => {
   return String(s.data?.[config?.titleField || 'name'] || 'Untitled');
 };
 
+/**
+ * supabase-js / PostgREST errors are plain `{ message, code, details, hint }`
+ * objects, not Error instances. The default `err instanceof Error` fallback
+ * therefore swallowed every PostgREST failure into a generic toast. Pull the
+ * message out of whatever shape we got.
+ */
+function errorMessage(err: unknown, fallback = 'Unknown error'): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === 'object') {
+    const r = err as { message?: unknown; details?: unknown; hint?: unknown };
+    if (typeof r.message === 'string' && r.message) return r.message;
+    if (typeof r.details === 'string' && r.details) return r.details;
+    if (typeof r.hint === 'string' && r.hint) return r.hint;
+  }
+  if (typeof err === 'string') return err;
+  return fallback;
+}
+
 const formatDate = (iso: string) => {
   try {
     return new Date(iso).toLocaleDateString('en-US', {
@@ -227,7 +245,7 @@ function SubmissionsCore() {
       setReviewerNotes('');
       doRefresh();
     } catch (err: unknown) {
-      toast({ title: 'Approval failed', description: err instanceof Error ? err.message : 'Approval failed', variant: 'destructive' });
+      toast({ title: 'Approval failed', description: errorMessage(err), variant: 'destructive' });
     } finally {
       setActionLoading(false);
     }
@@ -262,7 +280,7 @@ function SubmissionsCore() {
       setReviewerNotes('');
       doRefresh();
     } catch (err: unknown) {
-      toast({ title: 'Rejection failed', description: err instanceof Error ? err.message : 'Rejection failed', variant: 'destructive' });
+      toast({ title: 'Rejection failed', description: errorMessage(err), variant: 'destructive' });
     } finally {
       setActionLoading(false);
     }
