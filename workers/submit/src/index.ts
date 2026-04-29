@@ -16,12 +16,12 @@
  * rate-limit + body validation, and to bail out fast on invalid tokens.
  */
 
-import { enrich } from "./ai";
+import { embedText, enrich } from "./ai";
 import { extractBearer, verifySupabaseJwt } from "./auth";
 import { getCorsHeaders, json } from "./cors";
 import { rateLimit } from "./rate-limit";
-import { EnrichBody, SubmitBody } from "./schema";
-import { getSubmissionStatus, insertSubmission } from "./supabase";
+import { EnrichBody, FindSimilarBody, SubmitBody } from "./schema";
+import { findSimilar, getSubmissionStatus, insertSubmission } from "./supabase";
 
 export interface Env {
   AI: Ai;
@@ -52,6 +52,10 @@ export default {
 
       if (url.pathname === "/enrich" && request.method === "POST") {
         return await handleEnrich(request, env, cors);
+      }
+
+      if (url.pathname === "/find-similar" && request.method === "POST") {
+        return await handleFindSimilar(request, env, cors);
       }
 
       const statusMatch = url.pathname.match(/^\/submissions\/([^/]+)$/);
@@ -166,6 +170,40 @@ async function handleEnrich(request: Request, env: Env, cors: HeadersInit): Prom
 
   const out = await enrich(env, parsed.data);
   return json(out, 200, cors);
+}
+
+async function handleFindSimilar(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
+  const auth = await authenticate(request, env).catch((e) => e);
+  if (auth instanceof HttpError) return json({ error: auth.code }, auth.status, cors);
+  const { user, token } = auth;
+
+  const perMin = parseInt(env.SUBMISSION_RATE_PER_MIN || "10", 10);
+  const rl = await rateLimit(env.RATE_LIMIT, user.sub, perMin);
+  if (!rl.ok) {
+    return json({ error: "rate_limited", retry_after: rl.retryAfter }, 429, {
+      ...cors,
+      "Retry-After": String(rl.retryAfter),
+    });
+  }
+
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return json({ error: "invalid_json" }, 400, cors); }
+  const parsed = FindSimilarBody.safeParse(raw);
+  if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400, cors);
+
+  const embedding = await embedText(env, parsed.data.text);
+  let hits = await findSimilar({
+    supabaseUrl: env.SUPABASE_URL,
+    anonKey: env.SUPABASE_ANON_KEY,
+    userJwt: token,
+    embedding,
+    limit: parsed.data.limit ?? 5,
+  });
+  if (parsed.data.content_types?.length) {
+    const allow = new Set(parsed.data.content_types);
+    hits = hits.filter((h) => allow.has(h.content_type));
+  }
+  return json({ hits }, 200, cors);
 }
 
 class HttpError extends Error {

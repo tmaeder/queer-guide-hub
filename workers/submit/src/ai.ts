@@ -49,6 +49,20 @@ export async function enrich(env: Env, input: { url: string; title?: string; des
   return { summary, suggested_tags: [] };
 }
 
+const EMBED_MODEL = "@cf/baai/bge-m3";
+
+export async function embedText(env: Env, text: string): Promise<number[]> {
+  const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME, cacheTtl: 60 * 60 * 24 * 7 } : undefined;
+  const res = (await env.AI.run(
+    EMBED_MODEL as Parameters<Ai["run"]>[0],
+    { text: [text] } as Parameters<Ai["run"]>[1],
+    gateway ? { gateway } : undefined,
+  )) as { data?: unknown[][] } | { data?: unknown[] };
+  const data = (res as { data?: unknown[][] }).data;
+  if (!Array.isArray(data) || !Array.isArray(data[0])) throw new Error("embed: no vector");
+  return data[0] as number[];
+}
+
 function extractText(raw: unknown): string {
   if (typeof raw === "string") return raw.trim();
   if (raw && typeof raw === "object") {

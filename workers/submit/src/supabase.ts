@@ -121,6 +121,47 @@ export async function getSubmissionStatus(opts: {
   return rows[0] ?? null;
 }
 
+export interface SimilarHit {
+  content_id: string;
+  content_type: string;
+  content_text: string;
+  similarity: number;
+  metadata: Record<string, unknown> | null;
+}
+
+/**
+ * Vector similarity search via the existing `match_content_embeddings`
+ * RPC. RLS on content_embeddings is `USING (true)` so anon can read; the
+ * RPC inherits that. We forward the user's JWT but a missing token would
+ * also work — kept consistent for rate-limit attribution + future RLS.
+ */
+export async function findSimilar(opts: {
+  supabaseUrl: string;
+  anonKey: string;
+  userJwt?: string;
+  embedding: number[];
+  threshold?: number;
+  limit?: number;
+}): Promise<SimilarHit[]> {
+  const body = {
+    query_embedding: `[${opts.embedding.join(",")}]`,
+    similarity_threshold: opts.threshold ?? 0.5,
+    match_count: opts.limit ?? 5,
+  };
+  const headers: Record<string, string> = {
+    apikey: opts.anonKey,
+    "Content-Type": "application/json",
+  };
+  if (opts.userJwt) headers["Authorization"] = `Bearer ${opts.userJwt}`;
+  const res = await fetch(`${opts.supabaseUrl}/rest/v1/rpc/match_content_embeddings`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`match rpc ${res.status}: ${await res.text()}`);
+  return (await res.json()) as SimilarHit[];
+}
+
 const CONTENT_TYPE_BY_ENTITY: Record<string, string> = {
   // Keys must exist in the hub's submissionRegistry (src/config/submissionRegistry.ts).
   venue: "venue",

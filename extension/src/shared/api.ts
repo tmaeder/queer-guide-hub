@@ -30,6 +30,33 @@ export async function submitItem(
   return (await res.json()) as SubmitResponse;
 }
 
+export interface SimilarHit {
+  content_id: string;
+  content_type: string;
+  content_text: string;
+  similarity: number;
+  metadata: { slug?: string; city?: string; tags?: string[] } | null;
+}
+
+export async function findSimilarItems(
+  text: string,
+  contentTypes: string[],
+  accessToken: string,
+  limit = 3,
+): Promise<SimilarHit[]> {
+  const res = await fetch(`${API}/find-similar`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ text, content_types: contentTypes, limit }),
+  });
+  if (!res.ok) throw new Error(`find-similar ${res.status}`);
+  const body = (await res.json()) as { hits: SimilarHit[] };
+  return body.hits;
+}
+
 export interface EnrichResponse {
   summary: string;
   suggested_tags: string[];
