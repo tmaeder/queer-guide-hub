@@ -1,4 +1,5 @@
-import type { DetectedItem, EntityType } from "../types";
+import { SCHEMA_TYPE_MAP, type EntityType } from "@qg/sdk/entity-types";
+import type { DetectedItem } from "../types";
 
 /**
  * Microdata extractor (itemscope / itemtype / itemprop). Produces the same
@@ -6,21 +7,6 @@ import type { DetectedItem, EntityType } from "../types";
  * mapping. Confidence baseline 0.75 — slightly below JSON-LD because itemprop
  * trees are routinely sloppy (missing closes, ambiguous nesting).
  */
-
-const TYPE_MAP: Record<string, EntityType> = {
-  Event: "event",
-  MusicEvent: "event",
-  Restaurant: "venue",
-  BarOrPub: "venue",
-  NightClub: "venue",
-  LocalBusiness: "venue",
-  Hotel: "stay",
-  LodgingBusiness: "stay",
-  Product: "marketplace_item",
-  NewsArticle: "news_article",
-  Article: "news_article",
-  Place: "place",
-};
 
 export function extractMicrodata(doc: Document, sourceUrl: string): DetectedItem[] {
   const scopes = doc.querySelectorAll<HTMLElement>("[itemscope][itemtype]");
@@ -51,7 +37,7 @@ function mapType(itemtype: string): EntityType | null {
   const m = itemtype.match(/schema\.org\/(\w+)/i);
   if (!m) return null;
   const t = m[1] ?? "";
-  return TYPE_MAP[t] ?? null;
+  return SCHEMA_TYPE_MAP[t] ?? null;
 }
 
 function readPropValue(el: HTMLElement): string {

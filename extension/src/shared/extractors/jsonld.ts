@@ -1,4 +1,5 @@
-import type { DetectedItem, EntityType } from "../types";
+import { SCHEMA_TYPE_MAP } from "@qg/sdk/entity-types";
+import type { DetectedItem } from "../types";
 
 /**
  * Extract structured items from JSON-LD blocks. Schema.org coverage is the
@@ -41,33 +42,6 @@ function flatten(node: unknown): Record<string, unknown>[] {
   return [obj];
 }
 
-const TYPE_MAP: Record<string, EntityType> = {
-  Event: "event",
-  MusicEvent: "event",
-  Festival: "event",
-  TheaterEvent: "event",
-  ComedyEvent: "event",
-  SocialEvent: "event",
-  Restaurant: "venue",
-  BarOrPub: "venue",
-  NightClub: "venue",
-  CafeOrCoffeeShop: "venue",
-  LocalBusiness: "venue",
-  Hotel: "stay",
-  LodgingBusiness: "stay",
-  BedAndBreakfast: "stay",
-  Hostel: "stay",
-  Resort: "stay",
-  Product: "marketplace_item",
-  NewsArticle: "news_article",
-  Article: "news_article",
-  BlogPosting: "news_article",
-  Organization: "organization",
-  NGO: "organization",
-  Place: "place",
-  TouristAttraction: "place",
-};
-
 function getTypeString(node: Record<string, unknown>): string[] {
   const t = node["@type"];
   if (typeof t === "string") return [t];
@@ -77,7 +51,7 @@ function getTypeString(node: Record<string, unknown>): string[] {
 
 function nodeToItem(node: Record<string, unknown>, sourceUrl: string): DetectedItem | null {
   const types = getTypeString(node);
-  const matchedType = types.map((t) => TYPE_MAP[t]).find(Boolean);
+  const matchedType = types.map((t) => SCHEMA_TYPE_MAP[t]).find(Boolean);
   if (!matchedType) return null;
 
   const raw: Record<string, unknown> = {};

@@ -1,6 +1,12 @@
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@qg/sdk": path.resolve(__dirname, "../client-sdk"),
+    },
+  },
   test: {
     environment: "happy-dom",
     globals: true,

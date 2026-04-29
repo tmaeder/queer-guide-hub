@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import path from "node:path";
 import { crx } from "@crxjs/vite-plugin";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
@@ -6,6 +7,11 @@ import manifest from "./manifest.json";
 
 export default defineConfig({
   plugins: [react(), crx({ manifest })],
+  resolve: {
+    alias: {
+      "@qg/sdk": path.resolve(__dirname, "../client-sdk"),
+    },
+  },
   build: {
     target: "esnext",
     rollupOptions: {
