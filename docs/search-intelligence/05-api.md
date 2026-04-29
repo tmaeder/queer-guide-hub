@@ -48,7 +48,7 @@ Errors:
 
 - `requireAdmin` enforces admin role (same helper as other functions).
 - Service-role tokens are also accepted (matching project convention) so internal cron jobs can hit `/reindex`.
-- Rate limit (Phase 1+): 60 admin writes / minute / actor.
+- **Rate limit**: 60 mutations / minute / actor. Counts rows in `search_audit_log` whose `actor_id` matches the caller and whose `action` starts with `synonym.`, `synonyms.`, `settings.`, `reindex.start`, `reindex.complete`, `reindex.fail`, or `visibility.recompute`, written within the last 60 seconds. Reads are not rate-limited. Service role bypasses. On hit: HTTP 429 with `code: "rate_limited"`.
 
 ## Selected schemas
 

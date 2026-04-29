@@ -192,6 +192,60 @@ async function readJson<T = unknown>(req: Request): Promise<T> {
   }
 }
 
+// ── rate limit ───────────────────────────────────────────────────────────────
+// Applied to mutation handlers only (writes to DB or Meilisearch). Service
+// role tokens bypass — internal cron / workflow-dispatcher calls are trusted.
+//
+// Implementation: counts mutation rows the actor has produced in
+// search_audit_log within the last 60 seconds. Mutation actions follow a
+// predictable naming convention (resource.verb where verb in
+// {create,update,archive,sync,start,fail,complete,rollback,recompute}), so
+// the prefix list below is the source of truth.
+
+const RATE_LIMIT_PER_MINUTE = 60
+const MUTATION_ACTION_PREFIXES = [
+  'synonym.',
+  'synonyms.',
+  'settings.',
+  'reindex.start',
+  'reindex.complete',
+  'reindex.fail',
+  'visibility.recompute',
+] as const
+
+async function checkRateLimit(ctx: RouteContext): Promise<Response | null> {
+  // Service role + missing actor are not rate-limited.
+  if (ctx.actorId === 'service-role') return null
+  const since = new Date(Date.now() - 60_000).toISOString()
+  // Match any of our mutation action prefixes via OR.
+  const orFilter = MUTATION_ACTION_PREFIXES
+    .map((p) => `action.like.${p}*`)
+    .join(',')
+  const { count, error } = await ctx.service
+    .from('search_audit_log')
+    .select('id', { count: 'exact', head: true })
+    .eq('actor_id', ctx.actorId)
+    .gte('created_at', since)
+    .or(orFilter)
+  if (error) {
+    // Don't block on a counter failure; log and allow.
+    console.warn('rate limit check failed; allowing request', error)
+    return null
+  }
+  if ((count ?? 0) >= RATE_LIMIT_PER_MINUTE) {
+    return jsonResponse(
+      {
+        success: false,
+        error: `Rate limit: max ${RATE_LIMIT_PER_MINUTE} mutation(s) per minute per actor`,
+        code: 'rate_limited',
+      },
+      429,
+      ctx.req,
+    )
+  }
+  return null
+}
+
 // ── handlers ─────────────────────────────────────────────────────────────────
 
 async function listIndexes(ctx: RouteContext): Promise<Response> {
@@ -260,6 +314,8 @@ async function getIndexSettings(ctx: RouteContext): Promise<Response> {
 }
 
 async function patchIndexSettings(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
   const name = ctx.pathParts[1]
   if (!name) return errorResponse('index name required', 400, ctx.req)
   const body = await readJson<{
@@ -389,6 +445,8 @@ async function listSynonyms(ctx: RouteContext): Promise<Response> {
 }
 
 async function createSynonym(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
   const body = await readJson<Partial<SynonymInput>>(ctx.req)
   const v = validateSynonym(body)
   if (!v.ok || !v.cleaned) {
@@ -410,6 +468,8 @@ async function createSynonym(ctx: RouteContext): Promise<Response> {
 }
 
 async function updateSynonym(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
   const id = ctx.pathParts[1]
   if (!id) return errorResponse('id required', 400, ctx.req)
   const body = await readJson<Partial<SynonymInput> & { status?: string }>(ctx.req)
@@ -455,6 +515,8 @@ async function updateSynonym(ctx: RouteContext): Promise<Response> {
 }
 
 async function archiveSynonym(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
   const id = ctx.pathParts[1]
   if (!id) return errorResponse('id required', 400, ctx.req)
   const { data: before } = await ctx.service
@@ -474,6 +536,8 @@ async function archiveSynonym(ctx: RouteContext): Promise<Response> {
 }
 
 async function syncSynonyms(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
   const body = await readJson<{ indexes?: string[]; apply?: boolean }>(ctx.req)
   const targetIndexes = body.indexes && body.indexes.length > 0 ? body.indexes : [...ALL_INDEXES]
   const { data: rows, error } = await ctx.service
@@ -507,6 +571,8 @@ async function syncSynonyms(ctx: RouteContext): Promise<Response> {
 }
 
 async function startReindex(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
   const body = await readJson<{
     index: string
     scope?: Record<string, unknown>
@@ -736,6 +802,8 @@ async function getVisibility(ctx: RouteContext): Promise<Response> {
 }
 
 async function recomputeVisibility(ctx: RouteContext): Promise<Response> {
+  const rl = await checkRateLimit(ctx)
+  if (rl) return rl
   const [, entityType, entityId] = ctx.pathParts
   if (!entityType || !entityId) return errorResponse('entity_type and id required', 400, ctx.req)
   const { data: rpcResult, error: rpcErr } = await ctx.service.rpc('compute_visibility_score', {
