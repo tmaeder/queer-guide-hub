@@ -39,6 +39,8 @@ import {
   formatErrorClaudePrompt,
   formatCombinedStoryPrompt,
 } from './claudePrompts';
+import { RoutineLoopSection } from './RoutineLoopSection';
+import { StoryActivityLog } from './StoryActivityLog';
 
 interface Props {
   open: boolean;
@@ -384,6 +386,15 @@ export function StoryDetailDrawer({
             />
           </Box>
         </Box>
+
+        <RoutineLoopSection
+          story={story}
+          feedbackMembers={feedbackMembers}
+          errorMembers={errorMembers}
+          memberCount={members.length}
+        />
+
+        <StoryActivityLog storyId={story.id} adminById={adminById} />
 
         <Box>
           <Typography variant="subtitle2" sx={{ mb: 1 }}>

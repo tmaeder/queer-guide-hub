@@ -124,7 +124,104 @@ export interface FeedbackStory {
   resolved_at: string | null;
   origin: StoryOrigin;
   handoffs: FeedbackHandoff[];
+  approved_for_claude_at: string | null;
+  approved_by: string | null;
+  needs_followup_reason: string | null;
+  archived_at: string | null;
+  archived_by: string | null;
+  archive_reason: string | null;
 }
+
+// ── Routine + Retest ───────────────────────────────────────────
+export type RoutineRunStatus =
+  | 'queued'
+  | 'dispatched'
+  | 'in_progress'
+  | 'fix_proposed'
+  | 'failed'
+  | 'cancelled';
+
+export type RoutineRunner = 'mock' | 'github_actions' | 'webhook' | 'api';
+
+export interface FeedbackRoutineRun {
+  id: string;
+  story_id: string;
+  status: RoutineRunStatus;
+  runner: RoutineRunner;
+  prompt: string;
+  prompt_hash: string;
+  external_ref: string | null;
+  pr_url: string | null;
+  commit_sha: string | null;
+  files_changed: string[] | null;
+  fix_summary: string | null;
+  confidence: 'low' | 'medium' | 'high' | null;
+  risks: string | null;
+  error: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  finished_at: string | null;
+}
+
+export type RetestStatus = 'queued' | 'running' | 'passed' | 'failed' | 'error';
+export type RetestKind = 'typecheck' | 'lint' | 'unit' | 'e2e' | 'targeted';
+
+export interface FeedbackRetestRun {
+  id: string;
+  routine_run_id: string;
+  status: RetestStatus;
+  kind: RetestKind;
+  runner: 'mock' | 'github_actions' | 'webhook';
+  external_ref: string | null;
+  result: Record<string, unknown> | null;
+  created_by: string | null;
+  created_at: string;
+  finished_at: string | null;
+}
+
+export type StoryEventKind =
+  | 'status_changed'
+  | 'approved_for_claude'
+  | 'needs_followup'
+  | 'routine_dispatched'
+  | 'routine_progress'
+  | 'fix_proposed'
+  | 'routine_failed'
+  | 'routine_cancelled'
+  | 'retest_started'
+  | 'retest_finished'
+  | 'verified'
+  | 'reopened'
+  | 'archived'
+  | 'unarchived'
+  | 'note'
+  | 'legacy_handoff';
+
+export interface FeedbackStoryEvent {
+  id: number;
+  story_id: string;
+  kind: StoryEventKind;
+  payload: Record<string, unknown>;
+  actor_id: string | null;
+  actor_kind: 'user' | 'system' | 'runner';
+  routine_run_id: string | null;
+  retest_run_id: string | null;
+  created_at: string;
+}
+
+export type StoryPhase =
+  | 'new'
+  | 'awaiting_review'
+  | 'needs_more_context'
+  | 'approved'
+  | 'fix_in_progress'
+  | 'fix_proposed'
+  | 'retesting'
+  | 'needs_manual_followup'
+  | 'ready_to_verify'
+  | 'resolved'
+  | 'archived';
 
 export interface StoryMember {
   story_id: string;
