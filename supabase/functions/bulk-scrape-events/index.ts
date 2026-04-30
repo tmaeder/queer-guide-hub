@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { DOMParser } from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+import { inferTimezone } from '../_shared/infer-timezone.ts'
 
 interface FirecrawlPage {
   url: string;
@@ -87,17 +88,20 @@ function mapJsonLdToEvent(e: unknown) {
   const title = e.name || e.headline || 'Untitled Event';
   const description = e.description || e.about || null;
 
+  const countryStr = typeof country === 'string' ? country : (country?.name || 'US');
+
   return {
     title,
     description,
     event_type: 'other',
     start_date: start ? new Date(start).toISOString() : new Date().toISOString(),
     end_date: end ? new Date(end).toISOString() : null,
+    timezone: inferTimezone(city, countryStr),
     venue_name: locName,
     address: street,
     city: city || 'Unknown',
     state: region,
-    country: typeof country === 'string' ? country : (country?.name || 'US'),
+    country: countryStr,
     website: e.url || null,
     ticket_url: offers?.url || e.url || null,
     price_min: price,
