@@ -74,6 +74,7 @@ export default function VenueDetail() {
   const [reviews, setReviews] = useState<VenueReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+  const [notFound, setNotFound] = useState(false);
   const [checkinRefresh, setCheckinRefresh] = useState(0);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
@@ -95,6 +96,7 @@ export default function VenueDetail() {
     try {
       setLoading(true);
       setFetchError(false);
+      setNotFound(false);
 
       // Try slug first, fall back to ID for backwards compatibility
       const selectFields = '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization)';
@@ -129,7 +131,13 @@ export default function VenueDetail() {
         }
       }
 
-      if (venueError) throw venueError;
+      if (venueError) {
+        if (/no rows|not found|0 rows/i.test(venueError.message || '') || venueError.code === 'PGRST116') {
+          setNotFound(true);
+          return;
+        }
+        throw venueError;
+      }
       setVenue(venueData);
 
       const { data: reviewsData, error: reviewsError } = await supabase
@@ -187,6 +195,25 @@ export default function VenueDetail() {
             <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 2 }} />
           </Box>
         </Box>
+      </Container>
+    );
+  }
+
+  if (notFound && !venue) {
+    return (
+      <Container sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          {t('pages.venueDetail.notFoundTitle', 'Venue not found')}
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          {t('pages.venueDetail.notFoundBody', 'No venue matches this URL. It may have been removed or the link is incorrect.')}
+        </Typography>
+        <LocalizedLink to="/venues">
+          <Button variant="outline">
+            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            {t('pages.venueDetail.backToVenues', 'Back to Venues')}
+          </Button>
+        </LocalizedLink>
       </Container>
     );
   }
