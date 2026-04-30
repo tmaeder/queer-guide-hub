@@ -110,6 +110,25 @@ export default function VenueDetail() {
         venueError = fallback.error;
       }
 
+      // Last-ditch fallback: param looks like a website hostname (e.g. user typed
+      // /venues/www.example.com). Match against the website column and redirect
+      // to the canonical slug URL.
+      if (venueError && /\./.test(slug) && !/\s/.test(slug)) {
+        const host = slug.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0];
+        if (host) {
+          const { data: byWebsite } = await supabase
+            .from('venues')
+            .select('slug, id')
+            .or(`website.ilike.%${host}%,website.ilike.%www.${host}%`)
+            .limit(1)
+            .maybeSingle();
+          if (byWebsite?.slug || byWebsite?.id) {
+            navigate(`/venues/${byWebsite.slug || byWebsite.id}`, { replace: true });
+            return;
+          }
+        }
+      }
+
       if (venueError) throw venueError;
       setVenue(venueData);
 
