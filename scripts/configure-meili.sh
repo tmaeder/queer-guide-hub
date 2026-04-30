@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
-# Configure Meili `default` embedder to use Workers AI via REST,
-# set searchable/filterable/sortable attributes per index, and load synonyms.
+# Configure Meili `default` embedder to use Workers AI via REST and set
+# searchable/filterable/sortable attributes per index.
+#
+# Synonyms are no longer applied here — the search-proxy worker (PR #175)
+# loads `search_synonyms` from Postgres on a 5-minute KV cache and merges
+# them with the LLM-rewrite synonyms before sending the query to Meili.
+# Postgres is the source of truth. To clear the legacy static synonyms
+# from the live `venues` index, run once:
+#   curl -X PATCH "$MEILI_URL/indexes/venues/settings/synonyms" \
+#        -H "Authorization: Bearer $MEILI_ADMIN_KEY" \
+#        -H "Content-Type: application/json" -d '{}'
 #
 # Usage: MEILI_URL=https://meili.queer.guide MEILI_ADMIN_KEY=xxx \
 #        CF_ACCOUNT=xxx CF_TOKEN=xxx bash scripts/configure-meili.sh
@@ -68,18 +77,5 @@ apply news '["type","category","is_featured"]' '["is_featured","updated_at"]' '[
 apply marketplace '["type","category","featured"]' '["featured"]' '["title","description","category"]'
 apply tags '["type","category"]' '[]' '["title","description","category"]'
 apply queer_villages '["type","city","country","featured"]' '["featured"]' '["title","description","city","country"]'
-
-# Synonyms EN/DE
-curl -sS -X PATCH "$MEILI_URL/indexes/venues/settings/synonyms" \
-	-H "Authorization: Bearer $MEILI_ADMIN_KEY" \
-	-H "Content-Type: application/json" \
-	-d '{
-	  "gay": ["queer","lgbt","lgbtq","schwul"],
-	  "queer": ["lgbt","lgbtq","gay","schwul","lesbian","lesbisch"],
-	  "lesbian": ["lesbisch","sapphic"],
-	  "bar": ["kneipe","pub"],
-	  "club": ["diskothek","disco"],
-	  "sauna": ["sauna","steam"]
-	}' >/dev/null
 
 echo "Meili configured."
