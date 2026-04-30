@@ -32,7 +32,10 @@ test.describe('Packing tab — empty/fresh-trip resilience', () => {
         !/sentry|posthog|google|umami|cloudflare/i.test(e) &&
         !/failed to fetch dynamically imported module/i.test(e) &&
         !/manifest\.webmanifest/i.test(e) &&
-        !/401|403|404|not found/i.test(e),
+        !/401|403|404|not found/i.test(e) &&
+        // Network/cert errors are infrastructure, not application code.
+        // Sandboxed CI runners may not trust the public CA chain.
+        !/net::ERR_(CERT|DNS|NAME|CONNECTION|NETWORK|INTERNET)_/i.test(e),
     );
     expect(ours, `Unexpected errors:\n${ours.join('\n')}`).toHaveLength(0);
   });
