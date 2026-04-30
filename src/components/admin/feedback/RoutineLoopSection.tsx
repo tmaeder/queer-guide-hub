@@ -71,7 +71,6 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
     [story, feedbackMembers, errorMembers],
   );
 
-  const promptToUse = editing ? promptDraft : generatedPrompt;
   const dispatching = dispatch.isPending;
   const approving = approve.isPending;
   const cancelling = cancel.isPending;
@@ -94,7 +93,13 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
   };
 
   const handleDispatch = () =>
-    dispatch.mutate({ storyId: story.id, prompt: promptToUse, runner });
+    dispatch.mutate({
+      storyId: story.id,
+      runner,
+      // Server builds + redacts the prompt by default; only send override
+      // when the admin actively edited it.
+      promptOverride: editing ? promptDraft : undefined,
+    });
 
   const handleCancel = () => {
     if (!latestRun) return;

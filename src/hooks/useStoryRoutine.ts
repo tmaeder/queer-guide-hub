@@ -109,45 +109,24 @@ export function useMarkStoryNeedsFollowup() {
   });
 }
 
-async function sha256Hex(input: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
 export function useDispatchClaudeRoutine() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: {
       storyId: string;
-      prompt: string;
       runner?: 'mock' | 'github_actions' | 'webhook' | 'api';
+      /** When set, the admin's edited prompt overrides the server-built one. */
+      promptOverride?: string;
     }) => {
-      const promptHash = await sha256Hex(args.prompt);
-      const runner = args.runner ?? 'mock';
-
-      // 1. Reserve the run row via RPC (rate limit + dedup + permission check).
-      const { data: run, error: rpcErr } = await supabase.rpc('dispatch_claude_routine', {
-        p_story_id: args.storyId,
-        p_runner: runner,
-        p_prompt: args.prompt,
-        p_prompt_hash: promptHash,
+      const { data, error } = await supabase.functions.invoke('claude-routine-dispatch', {
+        body: {
+          story_id: args.storyId,
+          runner: args.runner,
+          prompt_override: args.promptOverride,
+        },
       });
-      if (rpcErr) throw rpcErr;
-      const reserved = (Array.isArray(run) ? run[0] : run) as FeedbackRoutineRun | null;
-      if (!reserved) throw new Error('dispatch_claude_routine returned no row');
-
-      // 2. If the run is already past 'queued' (idempotent re-dispatch), skip
-      // calling the edge function.
-      if (reserved.status !== 'queued') return reserved;
-
-      const { data: dispatched, error: fnErr } = await supabase.functions.invoke(
-        'claude-routine-dispatch',
-        { body: { run_id: reserved.id, runner } },
-      );
-      if (fnErr) throw fnErr;
-      return { ...reserved, ...(dispatched ?? {}) } as FeedbackRoutineRun;
+      if (error) throw error;
+      return data as { run_id: string; runner: string; external_ref?: string; sync?: boolean };
     },
     onSuccess: (_d, args) => invalidateStory(qc, args.storyId),
   });
