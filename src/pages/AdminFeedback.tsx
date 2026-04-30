@@ -46,6 +46,7 @@ import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDial
 import { StoriesKanban } from '@/components/admin/feedback/StoriesKanban';
 import { StoryDetailDrawer } from '@/components/admin/feedback/StoryDetailDrawer';
 import { StorySuggestionsPanel } from '@/components/admin/feedback/StorySuggestionsPanel';
+import { ArchivedStoriesPanel } from '@/components/admin/feedback/ArchivedStoriesPanel';
 import {
   useStories,
   useStory,
@@ -940,11 +941,37 @@ export default function AdminFeedback() {
             }
             onDismiss={(id) => dismissStorySuggestion.mutate(id)}
           />
-          <StoriesKanban
-            grouped={groupedStories}
-            adminById={adminMap}
-            onStoryClick={(s) => update({ story: s.id })}
-          />
+          <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+            <Button
+              size="small"
+              variant={state.archived ? 'outlined' : 'contained'}
+              onClick={() => update({ archived: false })}
+              data-testid="stories-active-toggle"
+            >
+              Active ({groupedStories.open.length + groupedStories.planned.length + groupedStories.in_progress.length + groupedStories.resolved.length})
+            </Button>
+            <Button
+              size="small"
+              variant={state.archived ? 'contained' : 'outlined'}
+              onClick={() => update({ archived: true })}
+              data-testid="stories-archived-toggle"
+            >
+              Archived ({groupedStories.archived.length})
+            </Button>
+          </Box>
+          {state.archived ? (
+            <ArchivedStoriesPanel
+              archived={groupedStories.archived}
+              adminById={adminMap}
+              onOpen={(storyId) => update({ story: storyId })}
+            />
+          ) : (
+            <StoriesKanban
+              grouped={groupedStories}
+              adminById={adminMap}
+              onStoryClick={(s) => update({ story: s.id })}
+            />
+          )}
         </>
       )}
 

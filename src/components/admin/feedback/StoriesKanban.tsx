@@ -1,10 +1,19 @@
+import { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import { MessageSquare, AlertTriangle } from 'lucide-react';
 import { storyColumns, priorityFor } from './constants';
-import type { AdminProfile, StoryStatus, StoryWithCounts } from './types';
+import type {
+  AdminProfile,
+  FeedbackRetestRun,
+  FeedbackRoutineRun,
+  StoryStatus,
+  StoryWithCounts,
+} from './types';
+import { getStoryPhase, PHASE_COLORS, PHASE_LABELS } from './storyPhase';
+import { useLatestRunsByStory } from '@/hooks/useStoryRoutine';
 
 interface Props {
   grouped: Record<StoryStatus, StoryWithCounts[]>;
@@ -22,6 +31,15 @@ interface Props {
  * yet, so cards never look broken on first render.
  */
 export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
+  const allStoryIds = useMemo(
+    () =>
+      Object.values(grouped)
+        .flat()
+        .map((s) => s.id),
+    [grouped],
+  );
+  const { data: latest } = useLatestRunsByStory(allStoryIds);
+
   return (
     <Box
       sx={{
@@ -69,14 +87,20 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
                   —
                 </Typography>
               )}
-              {items.map((story) => (
-                <StoryCard
-                  key={story.id}
-                  story={story}
-                  assignee={story.assignee_id ? adminById[story.assignee_id] ?? null : null}
-                  onClick={() => onStoryClick(story)}
-                />
-              ))}
+              {items.map((story) => {
+                const run = latest?.runByStory[story.id] ?? null;
+                const retest = run ? latest?.retestByRun[run.id] ?? null : null;
+                return (
+                  <StoryCard
+                    key={story.id}
+                    story={story}
+                    assignee={story.assignee_id ? adminById[story.assignee_id] ?? null : null}
+                    latestRun={run}
+                    latestRetest={retest}
+                    onClick={() => onStoryClick(story)}
+                  />
+                );
+              })}
             </Box>
           </Box>
         );
@@ -88,10 +112,14 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
 function StoryCard({
   story,
   assignee,
+  latestRun,
+  latestRetest,
   onClick,
 }: {
   story: StoryWithCounts;
   assignee: AdminProfile | null;
+  latestRun: FeedbackRoutineRun | null;
+  latestRetest: FeedbackRetestRun | null;
   onClick: () => void;
 }) {
   const prio = priorityFor(story.priority);
@@ -99,6 +127,8 @@ function StoryCard({
   const stripeWidth = story.priority === 0 ? 4 : story.priority === 1 ? 2 : 0;
   const displayTitle = story.brief_title || story.title;
   const narrative = story.narrative;
+  const phase = getStoryPhase(story, latestRun, latestRetest, story.member_count);
+  const showPhaseChip = phase !== 'awaiting_review' && phase !== 'resolved';
 
   return (
     <Box
@@ -259,6 +289,30 @@ function StoryCard({
               }}
             >
               AI
+            </Box>
+          </Tooltip>
+        )}
+
+        {showPhaseChip && (
+          <Tooltip title={`Phase: ${PHASE_LABELS[phase]}`}>
+            <Box
+              component="span"
+              data-testid="story-phase-chip"
+              data-phase={phase}
+              sx={{
+                px: 0.5,
+                py: 0.125,
+                fontSize: '0.55rem',
+                fontWeight: 700,
+                color: PHASE_COLORS[phase],
+                bgcolor: `color-mix(in srgb, ${PHASE_COLORS[phase]} 14%, transparent)`,
+                border: `1px solid ${PHASE_COLORS[phase]}`,
+                borderRadius: 0.5,
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {PHASE_LABELS[phase]}
             </Box>
           </Tooltip>
         )}
