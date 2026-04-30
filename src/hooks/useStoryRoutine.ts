@@ -37,6 +37,49 @@ export function useStoryRoutineRuns(storyId: string | null) {
   });
 }
 
+/**
+ * Batched: latest routine run + latest retest for every story the admin is
+ * looking at, so the kanban can render a phase chip per card without N+1
+ * queries. Re-run when the kanban data changes.
+ */
+export function useLatestRunsByStory(storyIds: string[]) {
+  const ids = storyIds.slice().sort().join(',');
+  return useQuery<{
+    runByStory: Record<string, FeedbackRoutineRun>;
+    retestByRun: Record<string, FeedbackRetestRun>;
+  }>({
+    queryKey: ['feedback-latest-runs', ids],
+    enabled: storyIds.length > 0,
+    staleTime: 15_000,
+    queryFn: async () => {
+      const { data: runs, error } = await supabase
+        .from('feedback_routine_runs')
+        .select(RUN_COLS)
+        .in('story_id', storyIds)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      const runByStory: Record<string, FeedbackRoutineRun> = {};
+      for (const r of (runs as unknown as FeedbackRoutineRun[]) ?? []) {
+        if (!runByStory[r.story_id]) runByStory[r.story_id] = r;
+      }
+      const runIds = Object.values(runByStory).map((r) => r.id);
+      const retestByRun: Record<string, FeedbackRetestRun> = {};
+      if (runIds.length > 0) {
+        const { data: retests, error: rErr } = await supabase
+          .from('feedback_retest_runs')
+          .select(RETEST_COLS)
+          .in('routine_run_id', runIds)
+          .order('created_at', { ascending: false });
+        if (rErr) throw rErr;
+        for (const t of (retests as unknown as FeedbackRetestRun[]) ?? []) {
+          if (!retestByRun[t.routine_run_id]) retestByRun[t.routine_run_id] = t;
+        }
+      }
+      return { runByStory, retestByRun };
+    },
+  });
+}
+
 export function useRoutineRetests(routineRunId: string | null) {
   return useQuery<FeedbackRetestRun[]>({
     queryKey: ['feedback-retest-runs', routineRunId],

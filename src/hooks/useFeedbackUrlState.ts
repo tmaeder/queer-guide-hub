@@ -19,6 +19,7 @@ export interface FeedbackUrlState extends FeedbackFiltersState {
   story: string | null;
   showSpam: boolean;
   showDuplicates: boolean;
+  archived: boolean;
 }
 
 const defaults: FeedbackUrlState = {
@@ -36,6 +37,7 @@ const defaults: FeedbackUrlState = {
   story: null,
   showSpam: false,
   showDuplicates: false,
+  archived: false,
 };
 
 function parseNum(v: string | null): number | null {
@@ -70,6 +72,7 @@ export function useFeedbackUrlState() {
       story: params.get('story'),
       showSpam: params.get('showSpam') === '1',
       showDuplicates: params.get('showDuplicates') === '1',
+      archived: params.get('archived') === '1',
     };
   }, [params]);
 
