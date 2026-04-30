@@ -86,15 +86,28 @@
 
 ## Open questions
 
-- Should `search_synonyms.locale` join to a future `locales` table, or stay as a free-form BCP-47 string? *(Current: free-form with regex check.)*
+- ~~Should `search_synonyms.locale` join to a future `locales` table, or stay as a free-form BCP-47 string? *(Current: free-form with regex check.)*~~ Resolved: stay free-form. BCP-47 is itself a globally-recognized standard; introducing a `locales` join table creates curation overhead (which locales are supported? who maintains it?) for no real lookup benefit. The regex check `^(\*|[a-z]{2}(-[A-Z]{2})?)$` already enforces well-formedness.
 - ~~Visibility score axis weights belong in code or in `search_settings_versions`? Doc 02 says configurable; current migration ships them as constants for reproducibility.~~ Resolved: migration `20260429280000` moves them into `search_settings_versions`, with the TS const kept as a reference default + fallback.
-- Where does `image_assets.embedding` go — `vector(768)` (current text embedder), `vector(1024)` (post bge-m3), or stay as `jsonb` until a vision model is selected?
+- ~~Where does `image_assets.embedding` go — `vector(768)` (current text embedder), `vector(1024)` (post bge-m3), or stay as `jsonb` until a vision model is selected?~~ Resolved: stay `jsonb`. Vision models have incompatible dims (CLIP=512, bge-vision=1024, SigLIP=768/1024); committing to a `vector(N)` type before a model is selected forces an `ALTER COLUMN` later regardless. `jsonb` is forward-compatible — convert when a vision model + budget exist.
 
 ## Roadmap (forward)
 
 **Phase 4 (optional, when justified):**
-- Multilingual embedder migration (Q7).
-- A/B ranking harness (Q8).
-- Production-data-driven follow-ups: AI producer cutover, image-reader cutover, perceptual hash backfill, edit-then-approve UI, tag-picker UI.
+- Multilingual embedder migration (Q7) — needs budget + clear semantic-multilingual gap.
+- A/B ranking harness (Q8) — needs a concrete ranking-rule hypothesis to test.
+- Image-reader cutover — storefront switches reads from `entity.images[]` / `image_url` to `image_assets` joins, after dual-write (#176) has been in production ~1 month. Substantial frontend refactor.
+- Perceptual hash backfill — compute pHash for existing `image_assets` rows so visual dedup works across entities. Substantial: per-row image fetch + decode + hash. Needs a Deno-compatible image-decode lib.
 
-The core Search Intelligence system (Phases 0–3) is **complete and shipped**. Future work is incremental — no foundational pieces remain.
+**Shipped in the rollup follow-up (Apr 30):**
+- AI suggestion producer cutover across all four producers (`auto-tag-content`, `automation-auto-tagger`, `content-automation/modules/auto-tagger`, `translate-i18n-batch`) — see PRs #206, #208, #209.
+- Translation-aware SuggestionsTab with value-only edit form — PRs #210, #212.
+- Visibility-score axis weights → `search_settings_versions` — PR #211.
+- `events.timezone` wired into commit RPC + all event ingestion paths (Eventbrite, Ticketmaster, bulk-scrape) — PRs #213, #215.
+- Marketplace `image_hashes` → `image_assets` crosslink trigger — PR #214.
+- `fetch-city/country-images` → `image_assets` registry — PR #216.
+- Doc cleanup — PR #219.
+- Legacy Meili synonyms map removed; Postgres is the source of truth — PR #221.
+- Legacy `fetch-news` automated cron disabled in favour of `wf-news-pipeline` (manual admin trigger preserved) — PR #224.
+- `master_event_id` distinctAttribute + `cluster_ids` filterable baked into `configure-meili.sh` — PR #225.
+
+The core Search Intelligence system (Phases 0–3) and all of its actionable Phase 3.5 polish are **complete and shipped**. Remaining Phase 4 items are decision-gated.
