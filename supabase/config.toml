@@ -363,3 +363,21 @@ verify_jwt = false
 
 [functions.pipeline-geo-validate]
 verify_jwt = false
+
+# source-* functions referenced as pipeline node types — invoked by
+# pipeline-executor with service-role bearer, so JWT verification must
+# be off (same reasoning as pipeline-* siblings).
+[functions.source-tags-extract]
+verify_jwt = false
+
+[functions.source-queer-villages]
+verify_jwt = false
+
+[functions.source-etsy]
+verify_jwt = false
+
+[functions.source-osm-venue]
+verify_jwt = false
+
+[functions.source-email-ingestions]
+verify_jwt = false
