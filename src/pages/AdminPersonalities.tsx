@@ -142,6 +142,19 @@ export default function AdminPersonalities() {
       { header: 'Nationality', accessor: (r) => r.nationality },
       { header: 'Birth Place', accessor: (r) => r.birth_place },
       { header: 'Birth Date', accessor: (r) => formatDate(r.birth_date) },
+      {
+        header: 'Age',
+        accessor: (r) => {
+          if (!r.birth_date) return '';
+          const birth = new Date(r.birth_date as string);
+          const end =
+            !r.is_living && r.death_date ? new Date(r.death_date as string) : new Date();
+          let age = end.getFullYear() - birth.getFullYear();
+          const m = end.getMonth() - birth.getMonth();
+          if (m < 0 || (m === 0 && end.getDate() < birth.getDate())) age--;
+          return age >= 0 && Number.isFinite(age) ? age : '';
+        },
+      },
       { header: 'Death Date', accessor: (r) => formatDate(r.death_date) },
       { header: 'Is Living', accessor: (r) => formatBoolean(r.is_living) },
       { header: 'Verification', accessor: (r) => r.verification_status },
@@ -234,6 +247,22 @@ export default function AdminPersonalities() {
           defaultVisible: false,
           hideable: true,
         } satisfies AdminColumnMeta,
+      }),
+      columnHelper.display({
+        id: 'age',
+        header: 'Age',
+        cell: ({ row }) => {
+          const p = row.original;
+          if (!p.birth_date) return '-';
+          const birth = new Date(p.birth_date);
+          const end = !p.is_living && p.death_date ? new Date(p.death_date) : new Date();
+          let age = end.getFullYear() - birth.getFullYear();
+          const m = end.getMonth() - birth.getMonth();
+          if (m < 0 || (m === 0 && end.getDate() < birth.getDate())) age--;
+          if (age < 0 || !Number.isFinite(age)) return '-';
+          return !p.is_living && p.death_date ? `${age} (†)` : age;
+        },
+        meta: { hideable: true } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('visibility', {
         header: 'Visibility',
