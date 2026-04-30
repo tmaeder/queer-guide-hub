@@ -32,11 +32,15 @@ jobs:
           RUN_ID=$(jq -r    '.client_payload.routine_run_id' "$GITHUB_EVENT_PATH")
           KIND=$(jq -r      '.client_payload.kind'           "$GITHUB_EVENT_PATH")
           CALLBACK=$(jq -r  '.client_payload.callback_url'   "$GITHUB_EVENT_PATH")
+          # files_changed: array of source paths from the routine run; only
+          # populated when kind=targeted. Space-joined for downstream shell use.
+          FILES=$(jq -r '.client_payload.files_changed // [] | join(" ")' "$GITHUB_EVENT_PATH")
           {
             echo "retest_id=$RETEST_ID"
             echo "routine_run_id=$RUN_ID"
             echo "kind=$KIND"
             echo "callback_url=$CALLBACK"
+            echo "files=$FILES"
           } >> "$GITHUB_OUTPUT"
 
       - name: Pick branch (fix branch if exists, else main)
@@ -80,6 +84,7 @@ jobs:
         id: run
         env:
           KIND: ${{ steps.payload.outputs.kind }}
+          FILES: ${{ steps.payload.outputs.files }}
         run: |
           set -euo pipefail
           mkdir -p .retest
@@ -89,7 +94,18 @@ jobs:
             lint)      npm run lint      > .retest/log 2>&1 ;;
             unit)      npm test          > .retest/log 2>&1 ;;
             e2e)       npx playwright test --reporter=line > .retest/log 2>&1 ;;
-            targeted)  npm test          > .retest/log 2>&1 ;;
+            targeted)
+              # Targeted: ask Vitest which test files relate to the changed
+              # source files. If no files_changed were supplied, fall back to
+              # the full unit suite so the retest is never silently empty.
+              if [ -n "$FILES" ]; then
+                # shellcheck disable=SC2086
+                npx vitest run --related $FILES --reporter=verbose > .retest/log 2>&1
+              else
+                echo "no files_changed provided; running full unit suite" > .retest/log
+                npm test >> .retest/log 2>&1
+              fi
+              ;;
             *)
               echo "unknown kind: $KIND" > .retest/log
               echo "passed=false" >> "$GITHUB_OUTPUT"

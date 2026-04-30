@@ -35,7 +35,9 @@ serve(async (req) => {
 
   const { data: retest, error } = await service
     .from('feedback_retest_runs')
-    .select('id,routine_run_id,kind,status,runner, routine:feedback_routine_runs(story_id)')
+    .select(
+      'id,routine_run_id,kind,status,runner, routine:feedback_routine_runs(story_id, files_changed)',
+    )
     .eq('id', body.retest_id)
     .single<{
       id: string;
@@ -43,7 +45,7 @@ serve(async (req) => {
       kind: 'typecheck' | 'lint' | 'unit' | 'e2e' | 'targeted';
       status: string;
       runner: string;
-      routine: { story_id: string } | null;
+      routine: { story_id: string; files_changed: string[] | null } | null;
     }>();
   if (error || !retest) return errorResponse('retest_not_found', 404, req);
   if (retest.status !== 'queued') {
@@ -81,6 +83,8 @@ serve(async (req) => {
       callbackUrl,
       hmacSecret,
       service,
+      filesChanged:
+        retest.kind === 'targeted' ? retest.routine?.files_changed ?? [] : undefined,
     });
   } catch (e) {
     const msg = (e as Error).message;
