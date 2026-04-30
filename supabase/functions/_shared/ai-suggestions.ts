@@ -99,9 +99,9 @@ export async function insertSuggestion(
 
 /**
  * Apply a suggestion's proposed_value to the live system. Handles the common
- * cases (tag, synonym, cluster_membership). Other suggestion_types require
- * entity-specific writes that are out of scope here — caller marks status as
- * 'approved' with review_notes='manual apply required'.
+ * cases (tag, synonym, cluster_membership, translation). Other suggestion_types
+ * require entity-specific writes that are out of scope here — caller marks
+ * status as 'approved' with review_notes='manual apply required'.
  *
  * @returns true if the suggestion was applied to the live system,
  *          false if the suggestion_type is unsupported (caller should leave
@@ -164,7 +164,56 @@ export async function applySuggestion(
       if (error) throw new Error(error.message)
       return true
     }
+    case 'translation': {
+      if (!s.entity_type || !s.entity_id || !s.locale) {
+        throw new Error('translation suggestion needs entity_type, entity_id, locale')
+      }
+      const field = v?.field as string | undefined
+      const value = v?.value as string | undefined
+      if (!field || typeof value !== 'string') {
+        throw new Error('translation needs proposed_value.field and string proposed_value.value')
+      }
+      if (!TRANSLATION_FIELDS[s.entity_type]?.has(field)) {
+        throw new Error(`translation: ${s.entity_type} does not support i18n field '${field}'`)
+      }
+      const i18nCol = `${field}_i18n`
+      // Read-merge-write the JSONB column. The merge preserves locales the
+      // producer didn't touch — we only set the target locale's slot.
+      const { data: row, error: readErr } = await client
+        .from(s.entity_type)
+        .select(i18nCol)
+        .eq('id', s.entity_id)
+        .single()
+      if (readErr) throw new Error(`translation read failed: ${readErr.message}`)
+      const current = ((row as Record<string, unknown>)[i18nCol] as Record<string, unknown> | null) ?? {}
+      const next = { ...current, [s.locale]: value }
+      const { error: writeErr } = await client
+        .from(s.entity_type)
+        .update({ [i18nCol]: next, updated_at: new Date().toISOString() })
+        .eq('id', s.entity_id)
+      if (writeErr) throw new Error(`translation write failed: ${writeErr.message}`)
+      return true
+    }
     default:
       return false
   }
+}
+
+/**
+ * Per-entity allowlist of i18n source fields. The corresponding JSONB column
+ * is `${field}_i18n` (e.g. 'name' → 'name_i18n'). Mirrors the table in
+ * supabase/functions/translate-i18n-batch/index.ts so the apply path stays in
+ * sync with the producer's accepted shape.
+ */
+const TRANSLATION_FIELDS: Record<string, Set<string>> = {
+  unified_tags: new Set(['name', 'description']),
+  venues: new Set(['name', 'description']),
+  personalities: new Set(['name', 'description']),
+  queer_villages: new Set(['name', 'description']),
+  hotels: new Set(['name', 'description']),
+  cities: new Set(['name']),
+  countries: new Set(['name']),
+  events: new Set(['title', 'description']),
+  news_articles: new Set(['title']),
+  marketplace_listings: new Set(['title', 'description']),
 }

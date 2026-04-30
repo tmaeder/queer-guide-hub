@@ -31,6 +31,7 @@ import {
   requireAdmin,
 } from '../_shared/supabase-client.ts'
 import { anthropicMessages } from '../_shared/anthropic-shim.ts'
+import { applySuggestion, insertSuggestion } from '../_shared/ai-suggestions.ts'
 
 interface BatchInput {
   table: string
@@ -166,14 +167,32 @@ Deno.serve(async (req) => {
     if (fetchErr) return errorResponse(fetchErr.message, 500, req)
 
     type Row = Record<string, unknown>
-    const pending = (rows ?? [])
-      .filter((r: Row) => {
-        const source = r[field]
-        if (!source || typeof source !== 'string' || source.trim() === '') return false
-        const i18n = (r[i18nCol] as Record<string, unknown> | null) ?? {}
-        return !i18n[body.locale]
-      })
-      .slice(0, batchLimit)
+    const candidates = (rows ?? []).filter((r: Row) => {
+      const source = r[field]
+      if (!source || typeof source !== 'string' || source.trim() === '') return false
+      const i18n = (r[i18nCol] as Record<string, unknown> | null) ?? {}
+      return !i18n[body.locale]
+    })
+
+    // Skip items that already have a non-terminal translation suggestion for
+    // this (locale, field). Avoids burning LLM tokens on items the reviewer
+    // hasn't touched yet (also enforced at DB level by the partial unique
+    // index from migration 20260429270000).
+    let pending: Row[] = candidates
+    if (candidates.length > 0) {
+      const ids = candidates.map((r: Row) => r[cfg.id_field] as string)
+      const { data: existing } = await supabase
+        .from('ai_suggestions')
+        .select('entity_id')
+        .eq('suggestion_type', 'translation')
+        .eq('entity_type', body.table)
+        .eq('locale', body.locale)
+        .eq('proposed_value->>field', field)
+        .in('entity_id', ids)
+        .in('status', ['pending', 'approved'])
+      const skipIds = new Set((existing ?? []).map(r => r.entity_id))
+      pending = candidates.filter((r: Row) => !skipIds.has(r[cfg.id_field] as string)).slice(0, batchLimit)
+    }
 
     if (pending.length === 0) {
       return jsonResponse(
@@ -217,6 +236,7 @@ Deno.serve(async (req) => {
 
     let written = 0
     const errors: Array<{ id: string; error: string }> = []
+    const sourceRunId = crypto.randomUUID()
     for (const row of pending as Row[]) {
       const id = row[cfg.id_field] as string
       const source = String(row[field])
@@ -229,16 +249,54 @@ Deno.serve(async (req) => {
         written++
         continue
       }
-      const i18n = (row[i18nCol] as Record<string, unknown> | null) ?? {}
-      const next = { ...i18n, [body.locale]: t }
-      const { error: upErr } = await supabase
-        .from(body.table)
-        .update({ [i18nCol]: next, updated_at: new Date().toISOString() })
-        .eq(cfg.id_field, id)
-      if (upErr) {
-        errors.push({ id, error: upErr.message })
-      } else {
-        written++
+
+      // Route through ai_suggestions (PR 7 cutover). High-confidence rows
+      // auto-apply via the shared applySuggestion helper, which performs the
+      // JSONB merge into <table>.<field>_i18n. The merge preserves locales
+      // we didn't touch — only the target locale's slot is set.
+      let inserted
+      try {
+        inserted = await insertSuggestion(supabase, {
+          suggestion_type: 'translation',
+          entity_type: body.table,
+          entity_id: id,
+          locale: body.locale,
+          proposed_value: { field, value: t },
+          current_value: { value: source },
+          source: 'anthropic',
+          source_model: 'claude-sonnet-4-6',
+          source_run_id: sourceRunId,
+          confidence: 0.9,
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+        })
+      } catch (e) {
+        // 23505 from the partial unique index = a concurrent run already
+        // inserted a non-terminal row for this tuple. Skip silently.
+        const msg = e instanceof Error ? e.message : 'unknown insert error'
+        if (msg.includes('ai_suggestions_translation_idempotency_idx')) continue
+        errors.push({ id, error: msg })
+        continue
+      }
+
+      try {
+        const ok = await applySuggestion(supabase, inserted)
+        if (ok) {
+          await supabase
+            .from('ai_suggestions')
+            .update({ status: 'applied', applied_at: new Date().toISOString() })
+            .eq('id', inserted.id)
+          written++
+        } else {
+          errors.push({ id, error: 'translation apply unsupported' })
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'unknown apply error'
+        await supabase
+          .from('ai_suggestions')
+          .update({ review_notes: `auto-apply failed: ${msg}` })
+          .eq('id', inserted.id)
+        errors.push({ id, error: msg })
       }
     }
 
