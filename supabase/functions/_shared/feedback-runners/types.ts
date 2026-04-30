@@ -49,6 +49,8 @@ export interface RetestDispatchInput {
   callbackUrl: string;
   hmacSecret: string;
   service: SupabaseClient;
+  /** Files changed by the routine run; only populated when kind='targeted'. */
+  filesChanged?: string[];
 }
 
 export interface RetestDispatchResult {

@@ -7,7 +7,7 @@ import type { RetestRunner } from './types.ts';
 
 export const githubActionsRetestRunner: RetestRunner = {
   name: 'github_actions',
-  async dispatch({ retestId, routineRunId, storyId, kind, callbackUrl, hmacSecret }) {
+  async dispatch({ retestId, routineRunId, storyId, kind, callbackUrl, hmacSecret, filesChanged }) {
     const repo = Deno.env.get('FEEDBACK_FIX_GH_REPO');
     const token = Deno.env.get('FEEDBACK_FIX_GH_TOKEN');
     const eventType = Deno.env.get('FEEDBACK_RETEST_GH_EVENT') ?? 'feedback-retest';
@@ -32,6 +32,7 @@ export const githubActionsRetestRunner: RetestRunner = {
           kind,
           callback_url: callbackUrl,
           hmac_secret: hmacSecret,
+          files_changed: filesChanged ?? [],
         },
       }),
     });
