@@ -4,24 +4,25 @@ LGBTQ+ travel & community platform at queer.guide
 
 ## Commands
 
-| Task | Root (scraper) | Web (frontend) |
-|------|---------------|----------------|
-| Install | `npm install` | `npm install --legacy-peer-deps` |
-| Dev | `npm run server` | `npm run dev` (port 8080) |
-| Build | — | `npm run build` |
-| Test | `npm test` | `cd web && npm test` |
-| Lint | `npm run lint` | `cd web && npm run lint` |
-| Typecheck | `npm run typecheck` | `cd web && npm run typecheck` |
-| Format | — | `cd web && npm run format` |
+| Task | Command |
+|------|---------|
+| Install | `npm install --legacy-peer-deps` |
+| Dev | `npm run dev` (port 8080) |
+| Build | `npm run build` |
+| Test | `npm test` |
+| Lint | `npm run lint` |
+| Typecheck | `npm run typecheck` |
+| Format | `npm run format` |
 
-Workers (each from their own directory): `wrangler dev` / `wrangler deploy`
+The scraper has its own `package.json` under `scraper/` — `cd scraper && npm install`, then `npm test` etc. there. Workers each from their own directory: `wrangler dev` / `wrangler deploy`.
 
 ## Architecture
 
 ```
-Dev/
-├── web/                  # React 19 + Vite + TS + Tailwind + MUI + shadcn/ui
-├── scraper/              # Node.js scraping pipeline (Cheerio + Playwright)
+queer-guide-hub/
+├── src/                  # React 19 + Vite + TS + Tailwind + MUI + shadcn/ui (frontend)
+├── scraper/              # Node.js scraping pipeline (Cheerio + Playwright) — own package.json,
+│                         # has its own src/, tests/, docs/, scripts/ inside
 ├── supabase/
 │   ├── functions/        # 118 Deno edge functions
 │   └── migrations/       # 435+ PostgreSQL migrations
@@ -30,9 +31,9 @@ Dev/
 │   └── scraper-api/      # CF Worker: scraper orchestration
 ├── geo-boundaries-worker/ # CF Worker: GeoJSON from R2
 ├── tiles-worker/          # CF Worker: PMTiles map tiles (git submodule)
-├── src/                   # Scraper source code
-├── tests/                 # Scraper tests (vitest)
-└── docs/                  # Scraper documentation
+├── docs/                  # Project-wide docs (a11y-audit, architecture, search-intelligence, …)
+├── scripts/               # One-shot operator scripts (configure-meili.sh, …)
+└── e2e/                   # Playwright e2e specs
 ```
 
 **Frontend stack:** React 19, Vite 6, TypeScript 5.8, Tailwind, MUI 7, TanStack Query/Router/Table, MapLibre GL, Tiptap editor, i18next (11 langs), Recharts, react-force-graph-2d
@@ -51,7 +52,7 @@ Dev/
 
 **User submissions (Chrome extension):** `extension/` (MV3, React 19) extracts venues/events/hotels/marketplace/news from any webpage via JSON-LD/microdata/OpenGraph/DOM heuristics. `workers/submit/` (CF Worker) verifies user Supabase JWTs and stages into the same `ingestion_staging` table the scraper uses, with `source_type='user_submission'` — submissions flow through the existing normalize → dedupe → quality-score → review-gate → commit pipeline. Migration `Dev/src/db/migrations/002_user_submissions.sql` adds submitter columns + RLS.
 
-**Note:** `web/supabase/` is the canonical location for functions and migrations. Root `supabase/` is a symlink/submodule — always work in `web/supabase/`.
+**Note:** `supabase/functions/` and `supabase/migrations/` at the repo root are the canonical locations.
 
 ## Infrastructure
 
@@ -67,8 +68,8 @@ Dev/
 
 ## Environment
 
-- Root: see `.env.example` (DATABASE_URL, scraper config)
-- Web: Supabase URL + anon key, Mapbox token, service API keys
+- Frontend (root): see `.env.example` — Supabase URL + anon key, Mapbox token, feature flags
+- Scraper (`scraper/`): `DATABASE_URL`, source-specific API keys (see `scraper/.env.example`)
 - Workers: each has `.dev.vars` for local dev
 
 ## Deployment
@@ -81,9 +82,9 @@ Dev/
 
 ## Testing
 
-- **Scraper:** `npm test` — vitest, `tests/**/*.test.ts`, 30s timeout, v8 coverage
-- **Web unit:** `cd web && npm test` — vitest + jsdom, `src/**/*.{test,spec}.{ts,tsx}`
-- **Web E2E:** Playwright config exists (`web/playwright.config.ts`) but tests are not actively maintained
+- **Frontend unit (root):** `npm test` — vitest + jsdom, `src/**/*.{test,spec}.{ts,tsx}`
+- **Scraper:** `cd scraper && npm test` — vitest, `tests/**/*.test.ts`, 30s timeout, v8 coverage
+- **E2E:** Playwright config at `playwright.config.ts`; specs in `e2e/`. Run via `npm run test:e2e` (not actively maintained).
 
 ## Gotchas
 
@@ -91,7 +92,7 @@ Dev/
 The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git commands hang or fail, run `brctl download .git` first.
 
 ### Install
-`npm install --legacy-peer-deps` is required in `web/` (date-fns v4 vs react-day-picker v8 peer conflict).
+`npm install --legacy-peer-deps` is required at the repo root (date-fns v4 vs react-day-picker v8 peer conflict).
 
 ### DB Column Names (common traps)
 - `news_articles.is_featured` (NOT `featured`) — but `venues.featured` and `events.featured` ARE correct
@@ -104,7 +105,7 @@ The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git co
 
 ### Migrations
 - Cannot use `CONCURRENTLY` (migrations run inside transactions)
-- `web/supabase/migrations/` has 435+ files — check for conflicts before adding new ones
+- `supabase/migrations/` has 435+ files — check for conflicts before adding new ones
 
 ### Frontend
 - Path alias: `@/*` → `src/*`
