@@ -26,7 +26,7 @@ set -euo pipefail
 ai_gw="https://gateway.ai.cloudflare.com/v1/${CF_ACCOUNT}/${CF_AI_GATEWAY}/workers-ai/@cf/baai/bge-base-en-v1.5"
 
 apply() {
-	local index=$1 filterable=$2 sortable=$3 searchable=$4
+	local index=$1 filterable=$2 sortable=$3 searchable=$4 distinct=${5:-}
 	echo "== $index =="
 
 	curl -sS -X PATCH "$MEILI_URL/indexes/$index/settings/embedders" \
@@ -58,24 +58,37 @@ apply() {
 		-H "Authorization: Bearer $MEILI_ADMIN_KEY" \
 		-H "Content-Type: application/json" \
 		-d "$searchable" >/dev/null
+
+	if [ -n "$distinct" ]; then
+		curl -sS -X PATCH "$MEILI_URL/indexes/$index/settings/distinct-attribute" \
+			-H "Authorization: Bearer $MEILI_ADMIN_KEY" \
+			-H "Content-Type: application/json" \
+			-d "$distinct" >/dev/null
+	fi
 }
 
+# `cluster_ids` is filterable on every index — PR #174 emits the field on every
+# Meili doc; storefront uses it for cluster-scoped browse pages.
+# `master_event_id` is the events-only distinctAttribute (PR #181) — collapses
+# the per-occurrence docs back to one row per series in storefront list views.
+
 apply venues \
-	'["type","city","country","category","featured","tags","_geo"]' \
+	'["type","city","country","category","featured","tags","cluster_ids","_geo"]' \
 	'["featured","_geo","updated_at"]' \
 	'["title","description","tags","city","country","category"]'
 
 apply events \
-	'["type","city","country","event_type","featured","tags","start_date","end_date","_geo"]' \
+	'["type","city","country","event_type","featured","tags","start_date","end_date","cluster_ids","master_event_id","_geo"]' \
 	'["start_date","featured","_geo"]' \
-	'["title","description","tags","city","country","event_type","venue_name"]'
+	'["title","description","tags","city","country","event_type","venue_name"]' \
+	'"master_event_id"'
 
-apply cities '["type","country"]' '[]' '["title","description","country"]'
-apply countries '["type","continent"]' '[]' '["title","description","continent"]'
-apply personalities '["type","profession","nationality"]' '[]' '["title","name","description","profession","nationality"]'
-apply news '["type","category","is_featured"]' '["is_featured","updated_at"]' '["title","description","category"]'
-apply marketplace '["type","category","featured"]' '["featured"]' '["title","description","category"]'
-apply tags '["type","category"]' '[]' '["title","description","category"]'
-apply queer_villages '["type","city","country","featured"]' '["featured"]' '["title","description","city","country"]'
+apply cities '["type","country","cluster_ids"]' '[]' '["title","description","country"]'
+apply countries '["type","continent","cluster_ids"]' '[]' '["title","description","continent"]'
+apply personalities '["type","profession","nationality","cluster_ids"]' '[]' '["title","name","description","profession","nationality"]'
+apply news '["type","category","is_featured","cluster_ids"]' '["is_featured","updated_at"]' '["title","description","category"]'
+apply marketplace '["type","category","featured","cluster_ids"]' '["featured"]' '["title","description","category"]'
+apply tags '["type","category","cluster_ids"]' '[]' '["title","description","category"]'
+apply queer_villages '["type","city","country","featured","cluster_ids"]' '["featured"]' '["title","description","city","country"]'
 
 echo "Meili configured."
