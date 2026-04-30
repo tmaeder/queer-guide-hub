@@ -1,9 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
-import { MessageSquare, AlertTriangle } from 'lucide-react';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import { MessageSquare, AlertTriangle, Archive, CheckSquare } from 'lucide-react';
 import { storyColumns, priorityFor } from './constants';
 import type {
   AdminProfile,
@@ -13,7 +15,7 @@ import type {
   StoryWithCounts,
 } from './types';
 import { getStoryPhase, PHASE_COLORS, PHASE_LABELS } from './storyPhase';
-import { useLatestRunsByStory } from '@/hooks/useStoryRoutine';
+import { useArchiveStory, useLatestRunsByStory } from '@/hooks/useStoryRoutine';
 
 interface Props {
   grouped: Record<StoryStatus, StoryWithCounts[]>;
@@ -40,7 +42,73 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
   );
   const { data: latest } = useLatestRunsByStory(allStoryIds);
 
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const archive = useArchiveStory();
+
+  const toggleSelected = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleArchiveSelected = async () => {
+    if (selected.size === 0) return;
+    if (!window.confirm(`Archive ${selected.size} story${selected.size === 1 ? '' : 'ies'}?`)) return;
+    const ids = Array.from(selected);
+    for (const id of ids) {
+      await archive.mutateAsync({ storyId: id, reason: 'Bulk archive' }).catch(() => null);
+    }
+    setSelected(new Set());
+    setSelectMode(false);
+  };
+
+  const exitSelectMode = () => {
+    setSelected(new Set());
+    setSelectMode(false);
+  };
+
   return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        data-testid="stories-kanban-toolbar"
+      >
+        {!selectMode ? (
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<CheckSquare size={14} />}
+            onClick={() => setSelectMode(true)}
+            data-testid="enter-select-mode"
+          >
+            Select
+          </Button>
+        ) : (
+          <>
+            <Typography variant="caption" sx={{ fontWeight: 600 }}>
+              {selected.size} selected
+            </Typography>
+            <Button
+              size="small"
+              variant="contained"
+              color="warning"
+              startIcon={<Archive size={14} />}
+              disabled={selected.size === 0 || archive.isPending}
+              onClick={handleArchiveSelected}
+              data-testid="bulk-archive"
+            >
+              {archive.isPending ? 'Archiving…' : 'Archive selected'}
+            </Button>
+            <Button size="small" variant="text" onClick={exitSelectMode}>
+              Cancel
+            </Button>
+          </>
+        )}
+      </Box>
     <Box
       sx={{
         display: 'grid',
@@ -90,6 +158,7 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
               {items.map((story) => {
                 const run = latest?.runByStory[story.id] ?? null;
                 const retest = run ? latest?.retestByRun[run.id] ?? null : null;
+                const isSelected = selected.has(story.id);
                 return (
                   <StoryCard
                     key={story.id}
@@ -97,7 +166,12 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
                     assignee={story.assignee_id ? adminById[story.assignee_id] ?? null : null}
                     latestRun={run}
                     latestRetest={retest}
-                    onClick={() => onStoryClick(story)}
+                    selectMode={selectMode}
+                    selected={isSelected}
+                    onClick={() => {
+                      if (selectMode) toggleSelected(story.id);
+                      else onStoryClick(story);
+                    }}
                   />
                 );
               })}
@@ -105,6 +179,7 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
           </Box>
         );
       })}
+    </Box>
     </Box>
   );
 }
@@ -114,12 +189,16 @@ function StoryCard({
   assignee,
   latestRun,
   latestRetest,
+  selectMode,
+  selected,
   onClick,
 }: {
   story: StoryWithCounts;
   assignee: AdminProfile | null;
   latestRun: FeedbackRoutineRun | null;
   latestRetest: FeedbackRetestRun | null;
+  selectMode: boolean;
+  selected: boolean;
   onClick: () => void;
 }) {
   const prio = priorityFor(story.priority);
@@ -133,16 +212,17 @@ function StoryCard({
   return (
     <Box
       onClick={onClick}
+      data-testid={selectMode ? `selectable-story-${story.id}` : undefined}
       sx={{
         position: 'relative',
         py: 0.875,
         pl: stripeWidth ? 1.25 : 1,
         pr: 1,
         border: 1,
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
+        borderColor: selected ? 'primary.main' : 'divider',
+        bgcolor: selected ? 'action.selected' : 'background.paper',
         cursor: 'pointer',
-        transition: 'border-color 0.15s',
+        transition: 'border-color 0.15s, background-color 0.15s',
         '&:hover': { borderColor: 'primary.main' },
         ...(stripeWidth && {
           '&::before': {
@@ -159,6 +239,16 @@ function StoryCard({
     >
       {/* Title row */}
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, mb: narrative ? 0.5 : 0 }}>
+        {selectMode && (
+          <Checkbox
+            checked={selected}
+            tabIndex={-1}
+            size="small"
+            sx={{ p: 0, mr: 0.25, '& .MuiSvgIcon-root': { fontSize: 16 } }}
+            onClick={(e) => e.stopPropagation()}
+            onChange={() => onClick()}
+          />
+        )}
         {isUrgent && (
           <Tooltip title={prio.label}>
             <Box
