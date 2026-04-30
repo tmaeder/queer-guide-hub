@@ -46,4 +46,5 @@ infra/terraform/.terraform.lock.hcl
 # Playwright
 playwright-report/
 test-results/
+.playwright-mcp/
 .claude/settings.local.json
