@@ -34,7 +34,7 @@ import {
 } from '@/hooks/useStoryRoutine';
 
 const RETEST_KINDS: RetestKind[] = ['typecheck', 'lint', 'unit', 'e2e', 'targeted'];
-const RUNNERS: RoutineRunner[] = ['mock', 'github_actions', 'webhook', 'api'];
+const RUNNERS: RoutineRunner[] = ['mock', 'local', 'github_actions', 'webhook', 'api'];
 
 interface Props {
   story: FeedbackStory;
