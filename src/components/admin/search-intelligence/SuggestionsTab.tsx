@@ -341,35 +341,59 @@ export function SuggestionsTab() {
                     )}
                     {editing?.id === s.id && (
                       <Box sx={{ mt: 1 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          Edit proposed_value (JSON):
-                        </Typography>
-                        <textarea
-                          style={{
-                            width: '100%',
-                            minHeight: 140,
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                            padding: 8,
-                            background: 'rgba(0,0,0,0.04)',
-                            border: '1px solid rgba(0,0,0,0.2)',
-                          }}
-                          value={editing.draft}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            let parseError: string | null = null;
-                            try {
-                              JSON.parse(val);
-                            } catch (err) {
-                              parseError = (err as Error).message;
-                            }
-                            setEditing({ id: s.id, draft: val, parseError });
-                          }}
-                        />
-                        {editing.parseError && (
-                          <Typography variant="caption" color="error">
-                            JSON parse error: {editing.parseError}
-                          </Typography>
+                        {s.suggestion_type === 'translation' ? (
+                          <>
+                            <Typography variant="caption" color="text.secondary">
+                              Edit translation ({s.locale ?? '?'}):
+                            </Typography>
+                            <textarea
+                              style={{
+                                width: '100%',
+                                minHeight: 100,
+                                fontSize: 14,
+                                padding: 8,
+                                background: 'rgba(0,0,0,0.04)',
+                                border: '1px solid rgba(0,0,0,0.2)',
+                              }}
+                              value={editing.draft}
+                              onChange={(e) =>
+                                setEditing({ id: s.id, draft: e.target.value, parseError: null })
+                              }
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <Typography variant="caption" color="text.secondary">
+                              Edit proposed_value (JSON):
+                            </Typography>
+                            <textarea
+                              style={{
+                                width: '100%',
+                                minHeight: 140,
+                                fontFamily: 'monospace',
+                                fontSize: 12,
+                                padding: 8,
+                                background: 'rgba(0,0,0,0.04)',
+                                border: '1px solid rgba(0,0,0,0.2)',
+                              }}
+                              value={editing.draft}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                let parseError: string | null = null;
+                                try {
+                                  JSON.parse(val);
+                                } catch (err) {
+                                  parseError = (err as Error).message;
+                                }
+                                setEditing({ id: s.id, draft: val, parseError });
+                              }}
+                            />
+                            {editing.parseError && (
+                              <Typography variant="caption" color="error">
+                                JSON parse error: {editing.parseError}
+                              </Typography>
+                            )}
+                          </>
                         )}
                       </Box>
                     )}
@@ -391,13 +415,22 @@ export function SuggestionsTab() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() =>
-                          setEditing({
-                            id: s.id,
-                            draft: JSON.stringify(s.proposed_value, null, 2),
-                            parseError: null,
-                          })
-                        }
+                        onClick={() => {
+                          if (s.suggestion_type === 'translation') {
+                            const proposed = (s.proposed_value ?? {}) as { value?: string };
+                            setEditing({
+                              id: s.id,
+                              draft: proposed.value ?? '',
+                              parseError: null,
+                            });
+                          } else {
+                            setEditing({
+                              id: s.id,
+                              draft: JSON.stringify(s.proposed_value, null, 2),
+                              parseError: null,
+                            });
+                          }
+                        }}
                         disabled={busy === s.id}
                       >
                         Edit
@@ -418,6 +451,15 @@ export function SuggestionsTab() {
                         size="sm"
                         onClick={async () => {
                           if (!editing) return;
+                          if (s.suggestion_type === 'translation') {
+                            const original = (s.proposed_value ?? {}) as { field?: string };
+                            await setStatus(s.id, 'approved', {
+                              field: original.field,
+                              value: editing.draft,
+                            });
+                            setEditing(null);
+                            return;
+                          }
                           if (editing.parseError) return;
                           let parsed: unknown;
                           try {
