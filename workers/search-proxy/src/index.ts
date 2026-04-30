@@ -29,7 +29,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
-import { getCorsHeaders, json } from "./util";
+import { getCorsHeaders, json, readJsonBody } from "./util";
 
 export interface Env {
 	AI: Ai;
@@ -105,7 +105,7 @@ export default {
 async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
 	const started = Date.now();
-	const body = (await request.json()) as SearchBody;
+	const body = await readJsonBody<SearchBody>(request);
 	const { query, filters = {}, hitsPerPage = 20, user_id, session_id, lang = "en" } = body;
 
 	if (!query?.trim()) {
@@ -285,14 +285,14 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 // ─────────────────────────────────────────────
 async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const body = (await request.json()) as {
+	const body = await readJsonBody<{
 		user_id?: string;
 		session_id?: string;
 		event_type: string;
 		entity_type: string;
 		entity_id: string;
 		metadata?: Record<string, unknown>;
-	};
+	}>(request);
 	if (!body.event_type || !body.entity_type || !body.entity_id) {
 		return json({ error: "missing fields" }, 400, cors);
 	}
@@ -329,12 +329,12 @@ async function appendRecentSeen(env: Env, key: string, entityId: string): Promis
 // ─────────────────────────────────────────────
 async function handleOnboarding(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const body = (await request.json()) as {
+	const body = await readJsonBody<{
 		user_id: string;
 		vibes?: string[];
 		home_city?: string;
 		languages?: string[];
-	};
+	}>(request);
 	if (!body.user_id) return json({ error: "user_id required" }, 400, cors);
 
 	// Upsert minimal fields on profiles table.
@@ -362,7 +362,7 @@ async function handleOnboarding(request: Request, env: Env, cors: HeadersInit): 
 // ─────────────────────────────────────────────
 async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { entity_type, entity_id, limit = 10, content_types } = (await request.json()) as any;
+	const { entity_type, entity_id, limit = 10, content_types } = await readJsonBody<any>(request);
 	if (!entity_type || !entity_id) return json({ error: "missing" }, 400, cors);
 
 	// Fetch vector of seed.
@@ -513,7 +513,7 @@ function parsePgVector(raw: any): number[] {
 // ─────────────────────────────────────────────
 async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { query, limit = 6, types } = (await request.json()) as { query: string; limit?: number; types?: string[] };
+	const { query, limit = 6, types } = await readJsonBody<{ query: string; limit?: number; types?: string[] }>(request);
 	const q = query?.trim();
 	if (!q) return json({ suggestions: [] }, 200, cors);
 
@@ -545,7 +545,7 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 // ─────────────────────────────────────────────
 async function handleTrending(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { types = ["venue", "event"], city, limit = 10, user_id, session_id } = (await request.json()) as any;
+	const { types = ["venue", "event"], city, limit = 10, user_id, session_id } = await readJsonBody<any>(request);
 
 	// Query aggregate of user_events in last 7d by entity, weighted by action.
 	const filterT = types.map((t: string) => `"${t}"`).join(",");
@@ -588,7 +588,7 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 // ─────────────────────────────────────────────
 async function handleFeedback(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { user_id, session_id, query, entity_type, entity_id, vote } = (await request.json()) as any;
+	const { user_id, session_id, query, entity_type, entity_id, vote } = await readJsonBody<any>(request);
 	if (!entity_type || !entity_id || !["up", "down"].includes(vote)) {
 		return json({ error: "missing fields" }, 400, cors);
 	}

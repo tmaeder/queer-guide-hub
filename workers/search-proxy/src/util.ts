@@ -18,6 +18,16 @@ export function json(data: unknown, status = 200, headers: HeadersInit = {}): Re
 	});
 }
 
+export async function readJsonBody<T = unknown>(request: Request): Promise<T> {
+	const text = await request.text();
+	if (!text.trim()) return {} as T;
+	try {
+		return JSON.parse(text) as T;
+	} catch {
+		return {} as T;
+	}
+}
+
 export async function sha256(text: string): Promise<string> {
 	const buf = new TextEncoder().encode(text);
 	const hash = await crypto.subtle.digest("SHA-256", buf);
