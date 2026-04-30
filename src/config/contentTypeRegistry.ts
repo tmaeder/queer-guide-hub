@@ -422,7 +422,7 @@ const personalityFields: FieldConfig[] = [
     placeholder: 'City, Country',
   },
   { name: 'website_url', label: 'Website', type: 'url', group: 'details' },
-  { name: 'social_links', label: 'Social Links', type: 'json', group: 'details' },
+  { name: 'social_links', label: 'Social Links', type: 'social_links', group: 'details', colSpan: 2 },
   { name: 'fields', label: 'Fields/Disciplines', type: 'json', group: 'details' },
   { name: 'achievements', label: 'Achievements', type: 'json', group: 'details' },
   { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },

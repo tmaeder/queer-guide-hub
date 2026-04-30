@@ -33,6 +33,7 @@ export type FieldType =
   | 'location'
   | 'tags'
   | 'json'
+  | 'social_links'
   | 'city_autocomplete'
   | 'country_autocomplete';
 
