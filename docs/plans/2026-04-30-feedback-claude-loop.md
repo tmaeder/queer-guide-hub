@@ -1,6 +1,6 @@
 # Feedback → Claude Fix → Retest → Archive Loop
 
-Status: Phase 1 shipped (schema + RPCs + mock runner + UI). Real `github_actions` runner pending workflow YAML wiring.
+Status: Phase 1 shipped (schema + RPCs + mock runner + UI). Phase 2 shipped (`github_actions` runner workflows + callback scripts) — needs secrets + env vars set to flip the runner over.
 
 ## Why
 
@@ -50,34 +50,31 @@ GitHub repo secrets (used by the workflow itself):
 - `ANTHROPIC_API_KEY` — for Claude Code in the runner
 - `FEEDBACK_RUNNER_HMAC_SECRET` — must match the Supabase secret (used to sign callbacks)
 
-Workflow template lives at `.github/workflows/claude-fix.yml` (TBD — to be added when the GH-Actions runner is enabled). Outline:
+Workflows are in the repo:
 
-```yaml
-on:
-  repository_dispatch:
-    types: [claude-fix]
-jobs:
-  fix:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: anthropics/claude-code-action@v1
-        with:
-          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: ${{ github.event.client_payload.prompt }}
-      - name: Open PR
-        # …
-      - name: Callback
-        run: |
-          BODY=$(jq -c -n --arg run "${{ github.event.client_payload.run_id }}" \
-            --arg pr "$PR_URL" --arg sha "$COMMIT_SHA" \
-            '{run_id:$run, kind:"fix_proposed", pr_url:$pr, commit_sha:$sha, summary:"…"}')
-          SIG="sha256=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "${{ secrets.FEEDBACK_RUNNER_HMAC_SECRET }}" -binary | xxd -p -c 256)"
-          curl -fsS -X POST "${{ github.event.client_payload.callback_url }}" \
-            -H "Content-Type: application/json" -H "X-Feedback-Signature: $SIG" -d "$BODY"
+- [`.github/workflows/claude-fix.yml`](../../.github/workflows/claude-fix.yml) — runs `anthropics/claude-code-action@v1` with the dispatched prompt, opens a PR if Claude produced a diff, and POSTs `fix_proposed` (or `failed`) to `claude-routine-callback`.
+- [`.github/workflows/feedback-retest.yml`](../../.github/workflows/feedback-retest.yml) — checks out the fix branch (`feat/claude-fix-<run_id>`), runs the requested check (`typecheck`/`lint`/`unit`/`e2e`/`targeted`), and POSTs the result to `feedback-retest-callback`.
+- Shared callback scripts: [`.github/scripts/feedback-callback.sh`](../../.github/scripts/feedback-callback.sh) and [`.github/scripts/feedback-retest-callback.sh`](../../.github/scripts/feedback-retest-callback.sh) — HMAC-sign the body via `openssl dgst -sha256 -hmac` and POST it.
+
+To flip the runner over from `mock` to `github_actions` at the Supabase end:
+
+```bash
+supabase secrets set --project-ref xqeacpakadqfxjxjcewc \
+  FEEDBACK_FIX_RUNNER=github_actions \
+  FEEDBACK_RETEST_RUNNER=github_actions \
+  FEEDBACK_FIX_GH_REPO=tmaeder/queer-guide-hub \
+  FEEDBACK_FIX_GH_TOKEN=<gh PAT with workflow scope> \
+  FEEDBACK_RUNNER_HMAC_SECRET=<random 32+ bytes>
 ```
 
-A parallel workflow (`feedback-retest`) handles retest dispatches the same way, calling `feedback-retest-callback`.
+Mirror the HMAC secret + the Anthropic API key in the GitHub repo:
+
+```bash
+gh secret set FEEDBACK_RUNNER_HMAC_SECRET --body '<same value>'
+gh secret set ANTHROPIC_API_KEY --body 'sk-ant-...'
+```
+
+After that the next "Approve for Claude routine" → "Dispatch" in the admin UI will fire the real workflow.
 
 ### Webhook runner — wiring
 
@@ -151,4 +148,4 @@ All migrations are additive. To roll back the loop without data loss:
 - Add `Archived` view to `StoriesKanban` + bulk archive in `FeedbackBulkBar`.
 - Phase chip on kanban cards (`getStoryPhase` already pure).
 - pgTAP tests for the RPC state machine.
-- Wire `github_actions` runner end-to-end with the YAML template above.
+- Targeted retest routing: instead of always running the full unit suite for `kind=targeted`, derive a Vitest filter from `files_changed`.
