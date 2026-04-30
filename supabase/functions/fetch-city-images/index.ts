@@ -1,5 +1,6 @@
 import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { scoreImage as sharedScoreImage, pickBest, isAcceptable, MIN_ACCEPTANCE_SCORE } from '../_shared/scoreImage.ts'
+import { upsertImageAsset, deriveImageFormat } from '../_shared/image-assets.ts'
 
 interface ImageResult {
   url: string
@@ -314,6 +315,26 @@ async function processSingleCity(
   if (updateError) {
     return { success: false, error: updateError.message }
   }
+
+  // Mirror into the image_assets registry. Best-effort — failures here log
+  // but don't fail the city update. Producer-side metadata (dimensions, alt,
+  // license, attribution) is richer here than for URL-mirroring producers
+  // because we just decoded + scored the image.
+  await upsertImageAsset(supabase, {
+    url: storedUrl,
+    source: 'scraper',
+    source_ref: `${best.source}:${best.source_id}`,
+    license: best.license ?? null,
+    attribution: best.photographer ?? null,
+    alt_text: best.alt ?? null,
+    alt_provenance: 'imported',
+    width: best.width ?? null,
+    height: best.height ?? null,
+    format: deriveImageFormat(storedUrl) ?? deriveImageFormat(best.url),
+    entity_type: 'city',
+    entity_id: cityId,
+    role: 'cover',
+  })
 
   return { success: true, image_url: storedUrl, image_metadata: metadata, cached: false }
 }
