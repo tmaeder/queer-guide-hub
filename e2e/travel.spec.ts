@@ -18,7 +18,7 @@ test.describe('Travel page (/travel)', () => {
     // Search form elements should exist
     await expect(page.getByPlaceholder(/from/i)).toBeVisible();
     await expect(page.getByPlaceholder(/to/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /search/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Search', exact: true })).toBeVisible();
   });
 
   test('shows popular deals section', async ({ page }) => {
@@ -72,7 +72,7 @@ test.describe('Travel page (/travel)', () => {
     await page.locator('text=LHR').first().click();
 
     // Click search
-    await page.getByRole('button', { name: /search/i }).click();
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
 
     // Should show results or "No deals found" (both valid)
     const resultOrEmpty = page.locator('text=Book Flight, text=No deals found').first();

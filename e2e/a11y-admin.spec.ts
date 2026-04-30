@@ -42,7 +42,9 @@ test.describe('Admin shell — automated a11y', () => {
 
   test('admin shell exposes a skip link to main content', async ({ page }) => {
     await page.goto('/admin');
-    await page.waitForLoadState('domcontentloaded');
+    // networkidle, not domcontentloaded — AdminRouteGuard redirects unauthenticated
+    // sessions away via a useEffect that fires after DOMContentLoaded.
+    await page.waitForLoadState('networkidle').catch(() => {});
     if (!new URL(page.url()).pathname.startsWith('/admin')) {
       test.skip(true, 'Admin requires auth; run with a signed-in session to assert skip link.');
       return;
