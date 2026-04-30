@@ -336,3 +336,18 @@ verify_jwt = false
 
 [functions.sync-supabase-advisors]
 verify_jwt = true
+
+[functions.pipeline-media-process]
+verify_jwt = false
+
+[functions.pipeline-safety-relevance]
+verify_jwt = false
+
+[functions.source-community-submissions]
+verify_jwt = false
+
+[functions.source-shopify]
+verify_jwt = false
+
+[functions.source-personality-staging]
+verify_jwt = false
