@@ -69,7 +69,7 @@
 ### Polish
 - ~~Visibility score axis weights: code constants today, could be in `search_settings_versions` per doc 02.~~ Shipped: migration `20260429280000` seeds the initial active weights row and replaces `compute_visibility_score` to load weights from `search_settings_versions(index_name='visibility_score', channel='active', latest version)` at function entry. Operators tune relevance by inserting a new version row; the TS const at `src/lib/visibilityScore.ts` now documents the seeded defaults and serves as a fallback if the active row is deleted.
 - `image_assets.embedding`: jsonb placeholder. Pick a vision model + dimensions before populating.
-- `events.timezone` adapter usage — column exists (#172); ingestion adapters need to opt in.
+- ~~`events.timezone` adapter usage — column exists (#172); ingestion adapters need to opt in.~~ Mostly shipped: migration `20260429290000` updates `commit_event_staging_item` to read `timezone` from the normalized JSONB and write it on INSERT/UPDATE; `import-eventbrite-events` and `import-ticketmaster-events` thread their API timezone fields into `eventData`. Remaining: `bulk-scrape-events` doesn't extract timezone from scraped HTML (needs `inferTimezone(city, country)` integration) — separate follow-up.
 - Remove the legacy Meili `synonyms` map once #175 has been in production for ~1 week.
 
 ## Risks (current)

@@ -172,6 +172,7 @@ serve(async (req) => {
               event_type: eventType,
               start_date: event.start.utc,
               end_date: event.end.utc,
+              timezone: event.start.timezone || null,
               venue_name: event.venue?.name || null,
               address: fullAddress || null,
               city: city,
