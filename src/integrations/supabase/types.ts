@@ -7841,12 +7841,14 @@ export type Database = {
           bio: string | null
           birth_date: string | null
           birth_place: string | null
+          cause_of_death: string | null
           city_id: string | null
           classified_at: string | null
           country_id: string | null
           created_at: string
           created_by: string | null
           death_date: string | null
+          death_place: string | null
           description: string | null
           duplicate_of_id: string | null
           enrichment_status: Json | null
@@ -7891,12 +7893,14 @@ export type Database = {
           bio?: string | null
           birth_date?: string | null
           birth_place?: string | null
+          cause_of_death?: string | null
           city_id?: string | null
           classified_at?: string | null
           country_id?: string | null
           created_at?: string
           created_by?: string | null
           death_date?: string | null
+          death_place?: string | null
           description?: string | null
           duplicate_of_id?: string | null
           enrichment_status?: Json | null
@@ -7941,12 +7945,14 @@ export type Database = {
           bio?: string | null
           birth_date?: string | null
           birth_place?: string | null
+          cause_of_death?: string | null
           city_id?: string | null
           classified_at?: string | null
           country_id?: string | null
           created_at?: string
           created_by?: string | null
           death_date?: string | null
+          death_place?: string | null
           description?: string | null
           duplicate_of_id?: string | null
           enrichment_status?: Json | null

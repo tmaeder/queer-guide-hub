@@ -44,6 +44,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     bio: string;
     birth_date: string;
     death_date: string;
+    death_place: string;
     is_living: boolean;
     profession: string;
     fields: string[];
@@ -63,6 +64,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     bio: '',
     birth_date: '',
     death_date: '',
+    death_place: '',
     is_living: true,
     profession: '',
     fields: [],
@@ -305,6 +307,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
       bio: personalityData.bio || prev.bio,
       birth_date: personalityData.birth_date || prev.birth_date,
       death_date: personalityData.death_date || prev.death_date,
+      death_place: personalityData.death_place || prev.death_place,
       is_living: personalityData.is_living !== undefined ? personalityData.is_living : prev.is_living,
       profession: personalityData.profession || prev.profession,
       nationality: personalityData.nationality || prev.nationality,
@@ -361,6 +364,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         bio: '',
         birth_date: '',
         death_date: '',
+        death_place: '',
         is_living: true,
         profession: '',
         fields: [],
@@ -548,15 +552,26 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 </Box>
 
                 {!formData.is_living && (
-                  <Box>
-                    <Label htmlFor="death_date">Death Date</Label>
-                    <Input
-                      id="death_date"
-                      type="date"
-                      value={formData.death_date}
-                      onChange={(e) => setFormData(prev => ({ ...prev, death_date: e.target.value }))}
-                    />
-                  </Box>
+                  <>
+                    <Box>
+                      <Label htmlFor="death_date">Death Date</Label>
+                      <Input
+                        id="death_date"
+                        type="date"
+                        value={formData.death_date}
+                        onChange={(e) => setFormData(prev => ({ ...prev, death_date: e.target.value }))}
+                      />
+                    </Box>
+                    <Box>
+                      <Label htmlFor="death_place">Death Place</Label>
+                      <Input
+                        id="death_place"
+                        value={formData.death_place}
+                        onChange={(e) => setFormData(prev => ({ ...prev, death_place: e.target.value }))}
+                        placeholder="City, Country"
+                      />
+                    </Box>
+                  </>
                 )}
 
                 <Box>
