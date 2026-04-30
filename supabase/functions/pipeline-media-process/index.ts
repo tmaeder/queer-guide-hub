@@ -93,7 +93,7 @@ async function runVision(imageUrl: string): Promise<VisionResult> {
   }
   const data = await res.json()
   const content = data?.result?.response ?? data?.choices?.[0]?.message?.content ?? ''
-  const cleaned = String(content).trim().replace(/^```json\s*|```$/g, '')
+  const cleaned = String(content).trim().replace(/^```(?:json)?\s*|\s*```$/g, '')
   const parsed = JSON.parse(cleaned)
   return {
     ocr_text: String(parsed.ocr_text ?? '').slice(0, 8000),
