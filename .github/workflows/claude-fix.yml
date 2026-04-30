@@ -1,0 +1,143 @@
+name: Claude fix routine
+
+# Triggered by claude-routine-dispatch (Supabase edge function) when an admin
+# approves a feedback story for an automated fix and the project is configured
+# with FEEDBACK_FIX_RUNNER=github_actions.
+#
+# Required repo secrets:
+#   ANTHROPIC_API_KEY               — used by claude-code-action
+#   FEEDBACK_RUNNER_HMAC_SECRET     — must match the Supabase secret of the
+#                                     same name; used to sign the callback.
+#
+# Permissions: needs contents:write + pull-requests:write so Claude can push
+# a branch and open a PR.
+#
+# Security: all dispatch payload values come from $GITHUB_EVENT_PATH via jq
+# rather than ${{ }} templating to avoid script injection vectors.
+
+on:
+  repository_dispatch:
+    types: [claude-fix]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HMAC_SECRET: ${{ secrets.FEEDBACK_RUNNER_HMAC_SECRET }}
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract dispatch payload
+        id: payload
+        run: |
+          set -euo pipefail
+          RUN_ID=$(jq -r '.client_payload.run_id'      "$GITHUB_EVENT_PATH")
+          STORY_ID=$(jq -r '.client_payload.story_id'  "$GITHUB_EVENT_PATH")
+          CALLBACK=$(jq -r '.client_payload.callback_url' "$GITHUB_EVENT_PATH")
+          PROMPT=$(jq -r '.client_payload.prompt'      "$GITHUB_EVENT_PATH")
+          {
+            echo "run_id=$RUN_ID"
+            echo "story_id=$STORY_ID"
+            echo "callback_url=$CALLBACK"
+            echo "branch=feat/claude-fix-$RUN_ID"
+            echo "prompt<<EOF"
+            echo "$PROMPT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Configure git
+        env:
+          BRANCH: ${{ steps.payload.outputs.branch }}
+        run: |
+          git config user.name "claude-fix-bot"
+          git config user.email "noreply@anthropic.com"
+          git checkout -b "$BRANCH"
+
+      - name: Notify Supabase — in_progress
+        env:
+          KIND: progress
+          STATUS: in_progress
+          RUN_ID: ${{ steps.payload.outputs.run_id }}
+          CALLBACK_URL: ${{ steps.payload.outputs.callback_url }}
+        run: ./.github/scripts/feedback-callback.sh
+
+      - name: Run Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: ${{ steps.payload.outputs.prompt }}
+
+      - name: Detect changes
+        id: diff
+        run: |
+          set -euo pipefail
+          if git diff --quiet HEAD --; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "files=[]"      >> "$GITHUB_OUTPUT"
+          else
+            FILES_JSON=$(git diff --name-only HEAD -- | jq -R . | jq -s -c .)
+            echo "changed=true"        >> "$GITHUB_OUTPUT"
+            echo "files=$FILES_JSON"   >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push + open PR
+        id: pr
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.payload.outputs.branch }}
+          STORY_ID: ${{ steps.payload.outputs.story_id }}
+          RUN_ID: ${{ steps.payload.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          git add -A
+          git commit -m "feat(claude-fix): automated fix for feedback story $STORY_ID" \
+                     -m "Run: $RUN_ID"
+          git push -u origin "$BRANCH"
+          PR_URL=$(gh pr create \
+            --title "Claude fix: feedback story ${STORY_ID:0:8}" \
+            --body  "Automated fix produced by Claude Code in response to feedback story \`$STORY_ID\` (routine run \`$RUN_ID\`). Review the diff before merging." \
+            --base main --head "$BRANCH")
+          SHA=$(git rev-parse HEAD)
+          echo "pr_url=$PR_URL"     >> "$GITHUB_OUTPUT"
+          echo "commit_sha=$SHA"    >> "$GITHUB_OUTPUT"
+
+      - name: Notify Supabase — fix_proposed
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          KIND: fix_proposed
+          RUN_ID: ${{ steps.payload.outputs.run_id }}
+          CALLBACK_URL: ${{ steps.payload.outputs.callback_url }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+          COMMIT_SHA: ${{ steps.pr.outputs.commit_sha }}
+          FILES_JSON: ${{ steps.diff.outputs.files }}
+          SUMMARY: "Claude landed a fix and opened a PR. Review before merging."
+          CONFIDENCE: medium
+        run: ./.github/scripts/feedback-callback.sh
+
+      - name: Notify Supabase — failed (no diff)
+        if: steps.diff.outputs.changed == 'false'
+        env:
+          KIND: failed
+          RUN_ID: ${{ steps.payload.outputs.run_id }}
+          CALLBACK_URL: ${{ steps.payload.outputs.callback_url }}
+          REASON: "Claude produced no diff — manual investigation required."
+        run: ./.github/scripts/feedback-callback.sh
+
+      - name: Notify Supabase — failed (job error)
+        if: failure()
+        env:
+          KIND: failed
+          RUN_ID: ${{ steps.payload.outputs.run_id }}
+          CALLBACK_URL: ${{ steps.payload.outputs.callback_url }}
+          REASON: "GitHub Actions job failed; check the run for details."
+        run: ./.github/scripts/feedback-callback.sh
