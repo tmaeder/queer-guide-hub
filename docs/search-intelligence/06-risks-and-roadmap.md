@@ -67,7 +67,7 @@
 | **Tag-picker for cluster-tag linking** | Endpoints exist (`POST /clusters/:id/tags`); UI is curl-only today. |
 
 ### Polish
-- Visibility score axis weights: code constants today, could be in `search_settings_versions` per doc 02.
+- ~~Visibility score axis weights: code constants today, could be in `search_settings_versions` per doc 02.~~ Shipped: migration `20260429280000` seeds the initial active weights row and replaces `compute_visibility_score` to load weights from `search_settings_versions(index_name='visibility_score', channel='active', latest version)` at function entry. Operators tune relevance by inserting a new version row; the TS const at `src/lib/visibilityScore.ts` now documents the seeded defaults and serves as a fallback if the active row is deleted.
 - `image_assets.embedding`: jsonb placeholder. Pick a vision model + dimensions before populating.
 - `events.timezone` adapter usage — column exists (#172); ingestion adapters need to opt in.
 - Remove the legacy Meili `synonyms` map once #175 has been in production for ~1 week.
@@ -87,7 +87,7 @@
 ## Open questions
 
 - Should `search_synonyms.locale` join to a future `locales` table, or stay as a free-form BCP-47 string? *(Current: free-form with regex check.)*
-- Visibility score axis weights belong in code or in `search_settings_versions`? Doc 02 says configurable; current migration ships them as constants for reproducibility.
+- ~~Visibility score axis weights belong in code or in `search_settings_versions`? Doc 02 says configurable; current migration ships them as constants for reproducibility.~~ Resolved: migration `20260429280000` moves them into `search_settings_versions`, with the TS const kept as a reference default + fallback.
 - Where does `image_assets.embedding` go — `vector(768)` (current text embedder), `vector(1024)` (post bge-m3), or stay as `jsonb` until a vision model is selected?
 
 ## Roadmap (forward)

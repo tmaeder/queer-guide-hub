@@ -2,6 +2,13 @@
 // The authoritative computation lives in compute_visibility_score (Postgres);
 // this module describes the contract clients see and validates the response
 // shape so UI code can fail fast on drift.
+//
+// As of migration 20260429280000, the axis weights live in
+// search_settings_versions (index_name='visibility_score', channel='active',
+// latest version). The const below is a reference default that must mirror
+// the active DB row — the response's breakdown.<axis>.weight is the live
+// truth, not this const. Operators who tune weights via the Settings tab
+// should re-deploy with this const updated to keep tests honest.
 
 export const VISIBILITY_AXIS_WEIGHTS = {
   tags: 0.20,
