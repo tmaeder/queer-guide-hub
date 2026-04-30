@@ -141,7 +141,7 @@ export type RoutineRunStatus =
   | 'failed'
   | 'cancelled';
 
-export type RoutineRunner = 'mock' | 'github_actions' | 'webhook' | 'api';
+export type RoutineRunner = 'mock' | 'github_actions' | 'webhook' | 'api' | 'local';
 
 export interface FeedbackRoutineRun {
   id: string;
@@ -172,7 +172,7 @@ export interface FeedbackRetestRun {
   routine_run_id: string;
   status: RetestStatus;
   kind: RetestKind;
-  runner: 'mock' | 'github_actions' | 'webhook';
+  runner: 'mock' | 'github_actions' | 'webhook' | 'local';
   external_ref: string | null;
   result: Record<string, unknown> | null;
   created_by: string | null;

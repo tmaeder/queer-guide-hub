@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Template launchd plist for the local feedback routine runner.
+
+  Install:
+    cp scripts/feedback-runner-local.launchd.plist \
+       ~/Library/LaunchAgents/guide.queer.feedback-runner.plist
+    # Edit the copy to fill in YOUR_*_HERE placeholders.
+    launchctl load ~/Library/LaunchAgents/guide.queer.feedback-runner.plist
+
+  Inspect / control:
+    launchctl list | grep feedback-runner
+    tail -f /tmp/feedback-runner.log
+
+  Uninstall:
+    launchctl unload ~/Library/LaunchAgents/guide.queer.feedback-runner.plist
+    rm ~/Library/LaunchAgents/guide.queer.feedback-runner.plist
+
+  Secrets (SUPABASE_SERVICE_ROLE_KEY) sit in this plist in plain text — keep
+  it under your user-only ~/Library/LaunchAgents and don't commit your
+  edited copy.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>guide.queer.feedback-runner</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/env</string>
+        <string>node</string>
+        <string>/Users/tobiasmaeder/QG/Dev/web/scripts/feedback-runner-local.mjs</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/tobiasmaeder/QG/Dev/web</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>SUPABASE_URL</key>
+        <string>https://xqeacpakadqfxjxjcewc.supabase.co</string>
+        <key>SUPABASE_SERVICE_ROLE_KEY</key>
+        <string>YOUR_SERVICE_ROLE_KEY_HERE</string>
+        <key>FEEDBACK_RUNNER_REPO_PATH</key>
+        <string>/Users/tobiasmaeder/QG/Dev/web</string>
+        <key>FEEDBACK_RUNNER_REMOTE</key>
+        <string>origin</string>
+        <key>FEEDBACK_RUNNER_BASE_BRANCH</key>
+        <string>main</string>
+        <key>FEEDBACK_RUNNER_POLL_MS</key>
+        <string>30000</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/feedback-runner.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/feedback-runner.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
