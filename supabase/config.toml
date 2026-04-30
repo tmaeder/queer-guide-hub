@@ -351,3 +351,15 @@ verify_jwt = false
 
 [functions.source-personality-staging]
 verify_jwt = false
+
+[functions.pipeline-apply-rules]
+verify_jwt = false
+
+[functions.pipeline-geocode]
+verify_jwt = false
+
+[functions.pipeline-ai-suggest]
+verify_jwt = false
+
+[functions.pipeline-geo-validate]
+verify_jwt = false
