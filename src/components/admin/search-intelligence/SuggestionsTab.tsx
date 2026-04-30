@@ -95,6 +95,61 @@ function PrettyJson({ value, label }: { value: unknown; label: string }) {
   );
 }
 
+/**
+ * Specialized view for translation suggestions. The producer stores
+ *   proposed_value: { field: 'name'|'title'|'description', value: string }
+ *   current_value:  { value: source_text }
+ *   locale:         target locale (BCP-47)
+ * Falls back to PrettyJson if the shape is unexpected.
+ */
+function TranslationDiff({ s }: { s: AiSuggestion }) {
+  const proposed = (s.proposed_value ?? {}) as { field?: string; value?: string };
+  const current = (s.current_value ?? {}) as { value?: string };
+  const field = proposed.field;
+  const proposedText = proposed.value;
+  const sourceText = current.value;
+  const targetLocale = s.locale ?? '?';
+
+  if (typeof proposedText !== 'string' || typeof sourceText !== 'string' || !field) {
+    return (
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <Box sx={{ flex: 1 }}>
+          <PrettyJson value={s.current_value} label="Current" />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <PrettyJson value={s.proposed_value} label="Proposed" />
+        </Box>
+      </Stack>
+    );
+  }
+
+  return (
+    <Box>
+      <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 0.5 }}>
+        {field} · source → {targetLocale}
+      </Typography>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="caption" color="text.secondary">
+            Source
+          </Typography>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+            {sourceText || <em>(empty)</em>}
+          </Typography>
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="caption" color="text.secondary">
+            {targetLocale}
+          </Typography>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+            {proposedText || <em>(empty)</em>}
+          </Typography>
+        </Box>
+      </Stack>
+    </Box>
+  );
+}
+
 export function SuggestionsTab() {
   const [items, setItems] = useState<AiSuggestion[]>([]);
   const [statusFilter, setStatusFilter] = useState('pending');
@@ -173,10 +228,11 @@ export function SuggestionsTab() {
             AI suggestion review queue
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Producers (auto-tag-content, future Claude-driven suggesters) write to{' '}
-            <code>ai_suggestions</code> with <code>status='pending'</code>. Approving here
-            auto-applies for <code>tag</code>, <code>synonym</code>, and{' '}
-            <code>cluster_membership</code>; other types are flagged for manual application.
+            Producers (auto-tag-content, automation taggers, translate-i18n-batch, future
+            Claude-driven suggesters) write to <code>ai_suggestions</code>. Approving here
+            auto-applies for <code>tag</code>, <code>synonym</code>,{' '}
+            <code>cluster_membership</code>, and <code>translation</code>; other types are
+            flagged for manual application.
           </Typography>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mt: 2 }}>
             <TextField
@@ -262,18 +318,20 @@ export function SuggestionsTab() {
                         <Badge variant="secondary">conf {s.confidence.toFixed(2)}</Badge>
                       )}
                     </Stack>
-                    <Stack
-                      direction={{ xs: 'column', sm: 'row' }}
-                      spacing={2}
-                      sx={{ mt: 1.5 }}
-                    >
-                      <Box sx={{ flex: 1 }}>
-                        <PrettyJson value={s.current_value} label="Current" />
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <PrettyJson value={s.proposed_value} label="Proposed" />
-                      </Box>
-                    </Stack>
+                    <Box sx={{ mt: 1.5 }}>
+                      {s.suggestion_type === 'translation' ? (
+                        <TranslationDiff s={s} />
+                      ) : (
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                          <Box sx={{ flex: 1 }}>
+                            <PrettyJson value={s.current_value} label="Current" />
+                          </Box>
+                          <Box sx={{ flex: 1 }}>
+                            <PrettyJson value={s.proposed_value} label="Proposed" />
+                          </Box>
+                        </Stack>
+                      )}
+                    </Box>
                     {s.review_notes && (
                       <Alert severity="warning" sx={{ mt: 1 }}>
                         <Typography variant="caption" component="div">
