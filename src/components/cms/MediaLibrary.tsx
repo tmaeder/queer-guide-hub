@@ -372,16 +372,6 @@ export function MediaLibrary() {
       }
 
       const allMedia = [...processCmsMedia, ...allStorageFiles];
-
-      console.log(`Found ${allMedia.length} media items:`, {
-        cms: processCmsMedia.length,
-        storage: allStorageFiles.length,
-        bucketBreakdown: buckets.map(bucket => ({
-          bucket,
-          count: allStorageFiles.filter(f => f.bucket === bucket).length
-        }))
-      });
-
       setMedia(allMedia);
     } catch (error) {
       console.error('Error fetching media:', error);

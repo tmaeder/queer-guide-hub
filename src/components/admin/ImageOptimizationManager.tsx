@@ -80,22 +80,18 @@ export function ImageOptimizationManager() {
   // Check job status
   const checkJobStatus = async (jobId: string) => {
     try {
-      console.log('🔍 Checking job status for:', jobId);
       const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
         body: { action: 'status', jobId }
       });
-      
-      console.log('📡 Status check response:', { data, error });
-      
+
       if (error) throw error;
-      
+
       const job = data?.job;
       if (!job) {
-        console.warn('⚠️ No job data received for jobId:', jobId);
+        console.warn('No job data received for jobId:', jobId);
         return null;
       }
-      
-      console.log('✅ Job status updated:', job);
+
       setCurrentJob(job);
       
       // If job is completed or failed, reload the jobs list
@@ -105,7 +101,7 @@ export function ImageOptimizationManager() {
       
       return job;
     } catch (error) {
-      console.error('💥 Failed to check job status:', error);
+      console.error('Failed to check job status:', error);
       return null;
     }
   };
@@ -165,21 +161,16 @@ export function ImageOptimizationManager() {
   };
 
   const startOptimizationJob = async () => {
-    console.log('🚀 Starting optimization job...');
-    
     try {
-      console.log('📡 Calling optimize-images-batch edge function...');
       const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
         body: { action: 'start', batchSize: 10 }
       });
-      
-      console.log('📡 Edge function response:', { data, error });
-      
+
       if (error) {
-        console.error('❌ Edge function error:', error);
+        console.error('Edge function error:', error);
         throw error;
       }
-      
+
       const job = {
         id: data.jobId,
         status: 'pending' as const,
@@ -190,19 +181,17 @@ export function ImageOptimizationManager() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
-      
-      console.log('✅ Job created:', job);
-      
+
       setCurrentJob(job);
       setSelectedTab('jobs');
-      
+
       toast({
         title: "Optimization Started!",
         description: `Background optimization job started for ${data.totalImages} images. You can close this page and it will continue processing.`,
       });
-      
+
     } catch (error) {
-      console.error('💥 Failed to start optimization job:', error);
+      console.error('Failed to start optimization job:', error);
       toast({
         title: "Failed to Start Optimization",
         description: `Could not start the optimization job: ${error.message}`,
