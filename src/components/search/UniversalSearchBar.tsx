@@ -155,6 +155,10 @@ export const UniversalSearchBar = () => {
         filters.categories.length > 0 && {
           categories: filters.categories.join(','),
         }),
+      ...(filters.cluster_ids &&
+        filters.cluster_ids.length > 0 && {
+          clusters: filters.cluster_ids.join(','),
+        }),
     });
     navigate(`/search?${params}`);
     setIsOpen(false);

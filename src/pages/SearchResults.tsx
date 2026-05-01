@@ -91,6 +91,7 @@ export default function SearchResults() {
   const initialTypes = searchParams.get('types')?.split(',') || [];
   const initialLocation = searchParams.get('location') || undefined;
   const initialCategories = searchParams.get('categories')?.split(',') || [];
+  const initialClusterIds = searchParams.get('clusters')?.split(',') || [];
 
   useEffect(() => {
     setSearchQuery(query);
@@ -100,6 +101,7 @@ export default function SearchResults() {
     types: initialTypes,
     location: initialLocation,
     categories: initialCategories.length > 0 ? initialCategories : undefined,
+    cluster_ids: initialClusterIds.length > 0 ? initialClusterIds : undefined,
   });
 
   const { results, loading } = useSearch(query, {
@@ -124,6 +126,11 @@ export default function SearchResults() {
       params.set('categories', newFilters.categories.join(','));
     } else {
       params.delete('categories');
+    }
+    if (newFilters.cluster_ids && newFilters.cluster_ids.length > 0) {
+      params.set('clusters', newFilters.cluster_ids.join(','));
+    } else {
+      params.delete('clusters');
     }
     setSearchParams(params);
   };

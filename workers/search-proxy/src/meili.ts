@@ -86,6 +86,13 @@ export function buildFilters(filters: any): string | undefined {
 		const t = filters.tags.map((c: string) => `tags = "${esc(c)}"`).join(" OR ");
 		parts.push(`(${t})`);
 	}
+	// Topic-cluster scoping (#171, #225). cluster_ids is filterable on every
+	// Meili index per scripts/configure-meili.sh; PR #174 emits the field on
+	// every doc.
+	if (filters.cluster_ids?.length) {
+		const c = filters.cluster_ids.map((id: string) => `cluster_ids = "${esc(id)}"`).join(" OR ");
+		parts.push(`(${c})`);
+	}
 	if (filters.lat != null && filters.lng != null && filters.radius) {
 		parts.push(`_geoRadius(${filters.lat}, ${filters.lng}, ${filters.radius * 1000})`);
 	}
