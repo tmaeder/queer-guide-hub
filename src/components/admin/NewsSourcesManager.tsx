@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { validateNewsSource } from "@/utils/contentValidation";
+import { LEGACY_NEWS_TRIGGER_ENABLED } from "@/lib/featureFlags";
 
 type NewsSource = Tables<'news_sources'>;
 
@@ -524,15 +525,17 @@ export function NewsSourcesManager() {
                             onCheckedChange={() => handleToggleActive(source.id, source.is_active)}
                           />
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => triggerFetch(source.id)}
-                            disabled={!source.is_active}
-                            aria-label={`Fetch news from ${source.name}`}
-                          >
-                            <Play style={{ height: 12, width: 12 }} aria-hidden="true" />
-                          </Button>
+                          {LEGACY_NEWS_TRIGGER_ENABLED && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => triggerFetch(source.id)}
+                              disabled={!source.is_active}
+                              aria-label={`Fetch news from ${source.name} (legacy path)`}
+                            >
+                              <Play style={{ height: 12, width: 12 }} aria-hidden="true" />
+                            </Button>
+                          )}
 
                           <Button
                             variant="outline"

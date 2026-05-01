@@ -43,6 +43,7 @@ import Typography from '@mui/material/Typography';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
+import { LEGACY_NEWS_TRIGGER_ENABLED } from '@/lib/featureFlags';
 
 interface NewsSourceRow {
   id: string;
@@ -342,7 +343,13 @@ export default function AdminNewsSources() {
       ],
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEdit },
-        { key: 'fetch', label: 'Fetch Now', icon: RefreshCw, onClick: triggerFetch },
+        {
+          key: 'fetch',
+          label: 'Fetch Now (legacy)',
+          icon: RefreshCw,
+          onClick: triggerFetch,
+          visible: () => LEGACY_NEWS_TRIGGER_ENABLED,
+        },
         {
           key: 'open',
           label: 'Open URL',
