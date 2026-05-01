@@ -1,8 +1,19 @@
 # Declutter Candidates
 
-Generated: 2026-03-03 | Updated: 2026-03-05
-Branch: `chore/declutter-20260303`
-Baseline: Build passes, 183 tests pass, typecheck clean
+Generated: 2026-03-03 | Last audit: 2026-04-30
+Branch (original): `chore/declutter-20260303`
+Baseline: Build passes, 2197 tests pass, typecheck clean
+
+**Status (2026-04-30):** Batches 1–8 are all done — every file enumerated below
+has been deleted; every dep flagged as unused has been removed (or is now
+imported and shouldn't be). Batch 9 partial: `scripts/tmp/` is gone;
+`scripts/output/` remains because its `.geojson` files are committed build
+artifacts deployed to R2 by the boundaries pipeline (see
+`scripts/process-boundaries.mjs`). The "Future Candidates" section at the
+bottom is the only block that needs human judgment.
+
+If you're a future contributor: this document is mostly historical. The next
+declutter pass should re-survey from scratch, not work from this list.
 
 ## Batch 1 — Dead Files (0 imports, safe to delete)
 

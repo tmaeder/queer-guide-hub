@@ -27,13 +27,13 @@ queer-guide-hub/
 │   ├── functions/        # 118 Deno edge functions
 │   └── migrations/       # 435+ PostgreSQL migrations
 ├── workers/
-│   ├── email-ingest/     # CF Worker: email processing
-│   └── scraper-api/      # CF Worker: scraper orchestration
-├── geo-boundaries-worker/ # CF Worker: GeoJSON from R2
-├── tiles-worker/          # CF Worker: PMTiles map tiles (git submodule)
-├── docs/                  # Project-wide docs (a11y-audit, architecture, search-intelligence, …)
-├── scripts/               # One-shot operator scripts (configure-meili.sh, …)
-└── e2e/                   # Playwright e2e specs
+│   ├── ingest/           # CF Worker: search-intelligence ingest pipeline
+│   ├── search-proxy/     # CF Worker: Meilisearch proxy with Postgres-driven synonyms
+│   ├── snapshot-archiver/ # CF Worker: archives admin/editorial snapshots
+│   └── submit/           # CF Worker: extension submissions → ingestion_staging
+├── docs/                 # Project-wide docs (a11y-audit, architecture, search-intelligence, …)
+├── scripts/              # One-shot operator scripts (configure-meili.sh, …)
+└── e2e/                  # Playwright e2e specs
 ```
 
 **Frontend stack:** React 19, Vite 6, TypeScript 5.8, Tailwind, MUI 7, TanStack Query/Router/Table, MapLibre GL, Tiptap editor, i18next (11 langs), Recharts, react-force-graph-2d
