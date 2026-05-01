@@ -24,6 +24,8 @@ export interface SearchFilters {
   types?: string[];
   location?: string;
   categories?: string[];
+  /** Topic-cluster UUIDs (#171 / #225). Meili `cluster_ids` filterable. */
+  cluster_ids?: string[];
   priceRange?: [number, number];
   dateRange?: [Date, Date];
   rating?: number;
