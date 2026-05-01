@@ -736,7 +736,6 @@ const ROUTE_MAP: Record<string, string> = {
   'bulk-create-ai-tags': 'imports/bulk-ai-tags',
   'bulk-scrape-events': 'imports/bulk-scrape-events',
   // Ingestion
-  'ingestion-pipeline': 'ingestion/pipeline',
   'ingestion-review-api': 'ingestion/review',
   // Scraping
   'scrape-web-sources': 'scraping/web-sources',

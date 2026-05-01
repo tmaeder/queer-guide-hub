@@ -22,7 +22,6 @@ const FUNCTION_REGISTRY: FunctionMeta[] = [
   { name: 'send-bulk-email', category: 'workflow', description: 'Templated bulk email via Resend', envVars: ['RESEND_API_KEY'] },
   { name: 'send-group-notifications', category: 'workflow', description: 'Group activity notifications', envVars: ['RESEND_API_KEY'] },
   { name: 'generate-sitemap', category: 'workflow', description: 'Generate sitemap.xml', envVars: [] },
-  { name: 'ingestion-pipeline', category: 'workflow', description: 'Multi-stage import pipeline', envVars: [] },
   { name: 'workflow-dispatcher', category: 'workflow', description: 'pgmq-based job dispatcher', envVars: [] },
 
   // ── API functions (invoked from frontend) ──
