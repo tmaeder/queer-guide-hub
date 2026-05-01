@@ -6,7 +6,7 @@ LGBTQ+ travel & community platform at queer.guide
 
 | Task | Command |
 |------|---------|
-| Install | `npm install --legacy-peer-deps` |
+| Install | `npm install` |
 | Dev | `npm run dev` (port 8080) |
 | Build | `npm run build` |
 | Test | `npm test` |
@@ -95,9 +95,6 @@ queer-guide-hub/
 
 ### iCloud & Git
 The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git commands hang or fail, run `brctl download .git` first.
-
-### Install
-`npm install --legacy-peer-deps` is required at the repo root (date-fns v4 vs react-day-picker v8 peer conflict).
 
 ### DB Column Names (common traps)
 - `news_articles.is_featured` (NOT `featured`) — but `venues.featured` and `events.featured` ARE correct

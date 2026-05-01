@@ -269,7 +269,7 @@ async function handleRetest(retest) {
       return;
     }
 
-    spawnSync('npm', ['ci', '--legacy-peer-deps'], { cwd: wt, stdio: 'inherit' });
+    spawnSync('npm', ['ci'], { cwd: wt, stdio: 'inherit' });
 
     const cmd = pickRetestCommand(retest.kind, run.files_changed ?? []);
     const r = spawnSync(cmd.bin, cmd.args, { cwd: wt, encoding: 'utf8' });
