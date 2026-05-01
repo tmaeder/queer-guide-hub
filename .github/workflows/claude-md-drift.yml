@@ -1,0 +1,15 @@
+name: claude-md-drift
+on: [pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: verify CLAUDE.md repo stats are current
+        run: |
+          actual_fns=$(ls supabase/functions/ | grep -v '^_' | wc -l | tr -d ' ')
+          actual_mig=$(ls supabase/migrations/ | wc -l | tr -d ' ')
+          grep -E "^- \*\*Edge functions:\*\* $actual_fns$" CLAUDE.md \
+            || (echo "::error::CLAUDE.md edge-function count is stale ($actual_fns expected)" && exit 1)
+          grep -E "^- \*\*Migrations:\*\* $actual_mig$" CLAUDE.md \
+            || (echo "::error::CLAUDE.md migration count is stale ($actual_mig expected)" && exit 1)
