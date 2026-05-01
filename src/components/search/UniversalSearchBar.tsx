@@ -114,7 +114,7 @@ export const UniversalSearchBar = () => {
     }
   }, [location.pathname]);
 
-  const { suggestions: searchResults, loading } = useSearch(query, filters);
+  const { suggestions: searchResults, loading, error: searchError } = useSearch(query, filters);
 
   const { suggestions, loading: suggestionsLoading } = useSearchSuggestions(query);
 
@@ -649,7 +649,9 @@ export const UniversalSearchBar = () => {
                 </CommandGroup>
               ))}
 
-              {/* Empty state */}
+              {/* Empty / error state. Distinguishes proxy/network failure
+                  from a genuine zero-hit query so users can tell whether to
+                  retry vs change their query (#UX-1 from the QA sweep). */}
               {suggestions.length === 0 &&
                 searchResults.length === 0 &&
                 query.length >= 2 &&
@@ -664,11 +666,30 @@ export const UniversalSearchBar = () => {
                         gap: 1,
                       }}
                     >
-                      <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
-                      <Typography>No results found for "{query}"</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Try different keywords or adjust your filters
-                      </Typography>
+                      {searchError ? (
+                        <>
+                          <Search
+                            style={{
+                              height: 32,
+                              width: 32,
+                              opacity: 0.5,
+                              color: 'var(--mui-palette-error-main, #d32f2f)',
+                            }}
+                          />
+                          <Typography color="error">Couldn't reach search</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {searchError}
+                          </Typography>
+                        </>
+                      ) : (
+                        <>
+                          <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
+                          <Typography>No results found for "{query}"</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Try different keywords or adjust your filters
+                          </Typography>
+                        </>
+                      )}
                     </Box>
                   </CommandEmpty>
                 )}
