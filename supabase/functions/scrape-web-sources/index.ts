@@ -1318,8 +1318,15 @@ async function processSource(
 
     // ── Trigger ingestion pipeline ───────────────────────────
     if (itemsStaged > 0) {
-      supabase.functions.invoke('ingestion-pipeline', {
-        body: { job_id: job.id, stage: 'ai_validation' },
+      const pipelineName = source.target_table === 'events'
+        ? 'events-ingestion-bulletproof'
+        : 'venue-ingestion-unified'
+      supabase.functions.invoke('pipeline-executor', {
+        body: {
+          action: 'start',
+          pipeline_name: pipelineName,
+          context: { triggered_by: `scrape-web-sources:${source.slug}`, job_id: job.id, target_table: source.target_table },
+        },
       }).catch(err => console.error(`[${source.slug}] Pipeline trigger failed:`, err))
     }
 

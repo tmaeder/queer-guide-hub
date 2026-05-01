@@ -18,12 +18,10 @@ const FUNCTION_REGISTRY: FunctionMeta[] = [
   { name: 'import-airports-data', category: 'workflow', description: 'Seed airports from Travelpayouts', envVars: [] },
   { name: 'scrape-gaycities-events', category: 'workflow', description: 'Scrape events from gaytravel4u.com', envVars: [] },
   { name: 'bulk-scrape-events', category: 'workflow', description: 'Multi-source event scraping', envVars: [] },
-  { name: 'background-import-manager', category: 'workflow', description: 'Central import orchestrator', envVars: [] },
   { name: 'optimize-images-batch', category: 'workflow', description: 'Image compression and resize', envVars: [] },
   { name: 'send-bulk-email', category: 'workflow', description: 'Templated bulk email via Resend', envVars: ['RESEND_API_KEY'] },
   { name: 'send-group-notifications', category: 'workflow', description: 'Group activity notifications', envVars: ['RESEND_API_KEY'] },
   { name: 'generate-sitemap', category: 'workflow', description: 'Generate sitemap.xml', envVars: [] },
-  { name: 'ingestion-pipeline', category: 'workflow', description: 'Multi-stage import pipeline', envVars: [] },
   { name: 'workflow-dispatcher', category: 'workflow', description: 'pgmq-based job dispatcher', envVars: [] },
 
   // ── API functions (invoked from frontend) ──
