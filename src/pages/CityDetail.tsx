@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
@@ -89,8 +89,7 @@ export default function CityDetail() {
     if (city?.id) {
       track({ eventType: 'page_view', entityType: 'city', entityId: city.id, metadata: { name: city.name } });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city?.id]);
+  }, [city?.id, city?.name, track]);
 
   const hasAirport = !!(city?.major_airport_code || (city?.airport_codes && city.airport_codes.length > 0));
   const { nearestAirport, loading: _nearestAirportLoading } = useNearestAirport({
@@ -102,49 +101,39 @@ export default function CityDetail() {
 
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
   const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+  const fetchVenuesRef = useRef(fetchVenues);
+  fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {
-    fetchVenues({ city: city?.name, limit: 12 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchVenuesRef.current({ city: city?.name, limit: 12 });
   }, [city?.name]);
 
   useEffect(() => {
     fetchEvents({ city: city?.name, limit: 12 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city?.name]);
+  }, [city?.name, fetchEvents]);
   const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(
     city?.countries?.slug || city?.countries?.id || '',
   );
   const { villages, loading: villagesLoading, fetchVillages } = useQueerVillages(false);
 
   useEffect(() => {
-    if (city) {
-      loadCityImage();
-      loadRelatedContent();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadCityImage/loadRelatedContent defined below, re-run on city change
-  }, [city]);
-  useEffect(() => {
-    if (city?.id) fetchVillages({ cityId: city.id });
-  }, [city?.id, fetchVillages]);
-
-  const loadRelatedContent = async () => {
     if (!city) return;
-    await fetchArticles({
+    (async () => {
+      try {
+        const result = await fetchCityImage(city.id, city.name, city.countries?.name || '');
+        setImageUrl(result.image_url || '');
+      } catch {
+        // Image loading failure is non-critical, fallback to no image
+      }
+    })();
+    fetchArticles({
       cityIds: [city.id],
       countryIds: city.countries?.id ? [city.countries.id] : undefined,
     });
-  };
-
-  const loadCityImage = async () => {
-    if (!city) return;
-    try {
-      const result = await fetchCityImage(city.id, city.name, city.countries?.name || '');
-      setImageUrl(result.image_url || '');
-    } catch (_error) {
-      // Image loading failure is non-critical, fallback to no image
-    }
-  };
+  }, [city, fetchCityImage, fetchArticles]);
+  useEffect(() => {
+    if (city?.id) fetchVillages({ cityId: city.id });
+  }, [city?.id, fetchVillages]);
 
   const handleFavoriteToggle = async () => {
     if (!city) return;
