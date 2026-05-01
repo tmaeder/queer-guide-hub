@@ -213,22 +213,30 @@ export function NewsSourcesManager() {
     }
   };
 
-  const triggerFetch = async (sourceId: string) => {
+  const triggerFetch = async (_sourceId: string) => {
+    // Manual trigger now enqueues the canonical news-ingestion pipeline run
+    // instead of calling the legacy fetch-news direct-upsert path.
+    // Per-source scoping is not yet supported by source-rss-news; the run
+    // processes every active source.
     try {
-      const { error } = await supabase.functions.invoke('fetch-news', {
-        body: { sourceId }
+      const { error } = await supabase.functions.invoke('pipeline-executor', {
+        body: {
+          action: 'start',
+          pipeline_name: 'news-ingestion',
+          context: { triggered_by: 'admin-news-sources-manual' },
+        },
       });
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "News fetch triggered successfully",
+        title: "Manual ingestion enqueued",
+        description: "Run progress visible at /admin/pipelines?tab=news",
       });
     } catch (_error) {
       toast({
         title: "Error",
-        description: "Failed to trigger news fetch",
+        description: "Failed to enqueue news ingestion",
         variant: "destructive",
       });
     }
