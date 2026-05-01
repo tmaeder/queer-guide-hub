@@ -242,8 +242,10 @@ export function CMSDuplicateManager() {
     return intersection.length / allWords.size;
   };
 
-  const handleDecision = (candidateId: string, decision: string) => {
-    console.log(`Decision for ${candidateId}: ${decision}`);
+  const handleDecision = (_candidateId: string, _decision: string) => {
+    // TODO: wire to a mutation that records the reviewer decision and
+    // applies the merge / split / dismiss action. Was a debug-only
+    // console.log.
   };
 
   const CandidateComparison = ({ candidate }: { candidate: { id: string; type: string; item1: Record<string, unknown>; item2: Record<string, unknown>; similarity_score: number } }) => (

@@ -149,8 +149,10 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
       {/* Social Links */}
       <SocialLinksManager
         initialSocialLinks={profile?.social_links || {}}
-        onUpdate={(socialLinks) => {
-          console.log('Social links updated:', socialLinks);
+        onUpdate={() => {
+          // TODO: persist updates to profile.social_links via the profile
+          // mutation hook. Component currently emits but the parent doesn't
+          // catch — was a debug-only console.log.
         }}
       />
     </Box>
