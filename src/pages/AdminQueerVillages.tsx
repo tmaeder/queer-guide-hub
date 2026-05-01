@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { supabase } from '@/integrations/supabase/client';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -407,20 +407,15 @@ export default function AdminQueerVillages() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Queer Villages
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage LGBTQ+ neighborhoods and districts
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <AdminEntityTable
+      title="Queer Villages"
+      subtitle="Manage LGBTQ+ neighborhoods and districts"
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <>
+          {/* Create/Edit Dialog */}
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ maxWidth: 640, maxHeight: '80vh', overflow: 'auto' }}>
           <DialogHeader>
             <DialogTitle>{editingId ? 'Edit Village' : 'Create Village'}</DialogTitle>
@@ -570,6 +565,8 @@ export default function AdminQueerVillages() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+        </>
+      }
+    />
   );
 }
