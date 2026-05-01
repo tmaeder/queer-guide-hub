@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
@@ -64,42 +64,42 @@ export default function QueerVillageDetail() {
   const cityName = village?.cities?.name;
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
   const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+  const fetchVenuesRef = useRef(fetchVenues);
+  const toastRef = useRef(toast);
+  fetchVenuesRef.current = fetchVenues;
+  toastRef.current = toast;
 
   useEffect(() => {
-    fetchVenues({ city: cityName, limit: 8 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchVenuesRef.current({ city: cityName, limit: 8 });
   }, [cityName]);
 
   useEffect(() => {
     fetchEvents({ city: cityName, limit: 8 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cityName]);
+  }, [cityName, fetchEvents]);
 
   useEffect(() => {
-    if (slug) fetchVillage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVillage defined below, re-run on slug change
+    if (!slug) return;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('queer_villages')
+          .select('*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, flag_emoji)')
+          .eq('slug', slug)
+          .single();
+        if (error) throw error;
+        setVillage(data);
+      } catch (err) {
+        console.error('Error fetching village:', err);
+        toastRef.current({
+          title: 'Error',
+          description: 'Failed to load village details',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [slug]);
-
-  const fetchVillage = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('queer_villages')
-        .select('*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, flag_emoji)')
-        .eq('slug', slug)
-        .single();
-      if (error) throw error;
-      setVillage(data);
-    } catch (err) {
-      console.error('Error fetching village:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to load village details',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleFavoriteToggle = async () => {
     if (!village) return;

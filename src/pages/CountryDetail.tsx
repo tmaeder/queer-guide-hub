@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -75,21 +75,23 @@ export default function CountryDetail() {
     fetchVenues: fetchCityVenues,
   } = useVenues(false);
 
+  const fetchCountryVenuesRef = useRef(fetchCountryVenues);
+  const fetchCityVenuesRef = useRef(fetchCityVenues);
+  fetchCountryVenuesRef.current = fetchCountryVenues;
+  fetchCityVenuesRef.current = fetchCityVenues;
+
   useEffect(() => {
     if (country?.id) {
       track({ eventType: 'page_view', entityType: 'country', entityId: country.id, metadata: { name: country.name } });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [country?.id]);
+  }, [country?.id, country?.name, track]);
 
   useEffect(() => {
-    fetchCountryVenues({ city: country?.name, limit: 12 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchCountryVenuesRef.current({ city: country?.name, limit: 12 });
   }, [country?.name]);
 
   useEffect(() => {
-    fetchCityVenues({ limit: 12 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchCityVenuesRef.current({ limit: 12 });
   }, []);
 
   const cityNames = cities.map((city) => city.name);
@@ -117,8 +119,7 @@ export default function CountryDetail() {
 
   useEffect(() => {
     fetchEvents({ city: country?.name, limit: 12 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [country?.name]);
+  }, [country?.name, fetchEvents]);
 
   const { articles: localNews, loading: newsLoading, incrementViews } = useNews();
   const countryNews = useMemo(() => {
