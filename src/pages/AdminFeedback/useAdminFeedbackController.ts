@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,7 +19,6 @@ import { useReplyToFeedback } from '@/hooks/useFeedbackReply';
 import { useNotifyFeedbackStatus } from '@/hooks/useFeedbackNotify';
 import { useRecordHandoff, useUpdateHandoff } from '@/hooks/useFeedbackHandoff';
 import { useApiErrorDailySeries } from '@/hooks/useFeedbackAnalytics';
-import { AnalyticsTab } from '@/components/admin/feedback/analytics/AnalyticsTab';
 import type { FeedbackResolution } from '@/components/admin/feedback/types';
 import {
   kanbanColumns,
@@ -37,17 +29,6 @@ import type {
   AdminProfile,
   FeedbackSubmission,
 } from '@/components/admin/feedback/types';
-import { FeedbackKanban } from '@/components/admin/feedback/FeedbackKanban';
-import { FeedbackFilters } from '@/components/admin/feedback/FeedbackFilters';
-import { FeedbackPresets } from '@/components/admin/feedback/FeedbackPresets';
-import { FeedbackBulkBar } from '@/components/admin/feedback/FeedbackBulkBar';
-import { FeedbackCommandPalette } from '@/components/admin/feedback/FeedbackCommandPalette';
-import { FeedbackDetailDrawer } from '@/components/admin/feedback/FeedbackDetailDrawer';
-import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDialog';
-import { StoriesKanban } from '@/components/admin/feedback/StoriesKanban';
-import { StoryDetailDrawer } from '@/components/admin/feedback/StoryDetailDrawer';
-import { StorySuggestionsPanel } from '@/components/admin/feedback/StorySuggestionsPanel';
-import { ArchivedStoriesPanel } from '@/components/admin/feedback/ArchivedStoriesPanel';
 import {
   useStories,
   useStory,
@@ -67,7 +48,6 @@ import {
   useSetStoryNarrative,
   useRenarrateStory,
 } from '@/hooks/useFeedbackStories';
-import type { StoryStatus } from '@/components/admin/feedback/types';
 import {
   DEFAULT_ERROR_FILTERS,
   type ApiErrorFilterState,
@@ -84,7 +64,14 @@ const FEEDBACK_COLUMNS =
 const API_ERROR_COLUMNS =
   'id,data,fingerprint,occurrence_count,last_seen_at,submitted_at,feedback_status,reviewer_notes,github_issue_url,github_issue_number,forwarded_at,priority,labels,assignee_id,duplicate_of,is_spam,resolution,resolved_at,notify_submitter';
 
-export default function AdminFeedback() {
+/**
+ * Single shared controller for AdminFeedback. Returns every piece of state,
+ * derived data, and mutation handler the page + tab components need.
+ *
+ * Lives outside the page component so the index stays a thin shell, but the
+ * hook order is fixed in one place — Rules of Hooks stay intact.
+ */
+export function useAdminFeedbackController() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -102,12 +89,9 @@ export default function AdminFeedback() {
     useState<ApiErrorFilterState>(DEFAULT_ERROR_FILTERS);
   const drawerOpen = !!state.sel;
 
-  // Tickets submitted after page-load count as "new since session start"
-  // (pulse indicator on the card). Opening the drawer marks them seen.
   const sessionStartRef = useRef<string>(new Date().toISOString());
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
 
-  // ── Queries ─────────────────────────────────────────────────
   const { data: items = [], isLoading } = useQuery<FeedbackSubmission[]>({
     queryKey: ['admin-feedback-board'],
     queryFn: async () => {
@@ -145,7 +129,6 @@ export default function AdminFeedback() {
     [items, state.sel],
   );
 
-  // Realtime: invalidate queries + track which admins view which submission.
   const { online } = useFeedbackRealtime(state.sel);
   const watchersByItem = useMemo(() => {
     const map: Record<string, AdminProfile[]> = {};
@@ -185,8 +168,6 @@ export default function AdminFeedback() {
   const updateHandoff = useUpdateHandoff();
   const { data: _apiErrorDaily = [] } = useApiErrorDailySeries();
 
-  // Stories — loaded on all tabs so the story chip on individual cards can
-  // render without a second round trip when the admin switches tabs.
   const { data: stories = [] } = useStories();
   const groupedStories = useGroupedStories(stories);
   const { data: storySuggestions = [] } = useStorySuggestions();
@@ -216,10 +197,7 @@ export default function AdminFeedback() {
     return map;
   }, [apiErrors]);
 
-  // ── API error filtering ───────────────────────────────────────
-  // Derive source + severity from the existing row shape so we can narrow
-  // 100s of rows to the one the admin wants to triage without adding new
-  // columns.
+  // Derived API error facets — kept for future filter UI parity.
   const _errorFacets = useMemo(() => {
     const bySource: Record<ErrorSource, number> = {
       runtime: 0,
@@ -304,12 +282,10 @@ export default function AdminFeedback() {
   const spamCount = useMemo(() => items.filter((it) => it.is_spam).length, [items]);
   const _communityCount = useMemo(() => items.filter((it) => !it.is_spam).length, [items]);
 
-  // ── Filtering + grouping ────────────────────────────────────
   const filteredItems = useMemo(() => {
     const q = state.q.trim().toLowerCase();
     const viewingSpam = state.tab === 'spam';
     return items.filter((it) => {
-      // Spam/duplicate visibility rules vary by tab.
       if (viewingSpam) {
         if (!it.is_spam) return false;
       } else {
@@ -335,8 +311,6 @@ export default function AdminFeedback() {
       if (state.hasScreenshot && !d.screenshot_url) return false;
       if (state.hasErrors && !(d.context?.errors && d.context.errors.length > 0)) return false;
       if (state.withClaude) {
-        // Matches either path: an open Claude handoff (copy/paste workflow)
-        // or a forwarded GitHub issue still being worked on.
         const handoffs = it.data.handoffs ?? [];
         const hasOpenHandoff = handoffs.some(
           (h) => h.status === 'sent' || h.status === 'in_progress',
@@ -371,7 +345,6 @@ export default function AdminFeedback() {
     return map;
   }, [filteredItems, votesMap]);
 
-  // ── Mutations ───────────────────────────────────────────────
   const updateRow = useCallback(
     async (ids: string[], patch: Record<string, unknown>) => {
       if (ids.length === 0) return;
@@ -557,8 +530,6 @@ export default function AdminFeedback() {
         ),
       );
       queryClient.invalidateQueries({ queryKey: ['admin-api-errors'] });
-      // Notify submitter that their ticket went to Claude — only for community
-      // feedback rows (api_error rows have no submitter).
       const it = items.find((i) => i.id === id);
       if (
         it &&
@@ -575,13 +546,11 @@ export default function AdminFeedback() {
     },
   });
 
-  // ── Selection helpers ───────────────────────────────────────
   const toggleSelect = useCallback(
     (id: string, shift: boolean) => {
       setSelectedIds((prev) => {
         const next = new Set(prev);
         if (shift && lastSelectedId) {
-          // Range select within current focused column.
           const col = kanbanColumns[focusedColumnIdx];
           const colIds = grouped[col.id].map((i) => i.id);
           const aIdx = colIds.indexOf(lastSelectedId);
@@ -618,14 +587,12 @@ export default function AdminFeedback() {
     [grouped],
   );
 
-  // Keep focus valid as cards get filtered out.
   useEffect(() => {
     if (focusedId && !filteredItems.some((it) => it.id === focusedId)) {
       setFocusedId(null);
     }
   }, [filteredItems, focusedId]);
 
-  // ── Keyboard navigation ─────────────────────────────────────
   const moveFocus = useCallback(
     (dir: 'up' | 'down' | 'left' | 'right') => {
       if (dir === 'left' || dir === 'right') {
@@ -635,21 +602,21 @@ export default function AdminFeedback() {
             : Math.min(kanbanColumns.length - 1, focusedColumnIdx + 1);
         setFocusedColumnIdx(nextIdx);
         const col = kanbanColumns[nextIdx];
-        const items = grouped[col.id];
-        setFocusedId(items[0]?.id ?? null);
+        const colItems = grouped[col.id];
+        setFocusedId(colItems[0]?.id ?? null);
         return;
       }
       const col = kanbanColumns[focusedColumnIdx];
-      const items = grouped[col.id];
-      if (items.length === 0) return;
-      const idx = focusedId ? items.findIndex((i) => i.id === focusedId) : -1;
+      const colItems = grouped[col.id];
+      if (colItems.length === 0) return;
+      const idx = focusedId ? colItems.findIndex((i) => i.id === focusedId) : -1;
       const nextIdx =
         dir === 'down'
-          ? Math.min(items.length - 1, idx + 1)
+          ? Math.min(colItems.length - 1, idx + 1)
           : idx < 0
             ? 0
             : Math.max(0, idx - 1);
-      setFocusedId(items[nextIdx]?.id ?? null);
+      setFocusedId(colItems[nextIdx]?.id ?? null);
     },
     [focusedColumnIdx, focusedId, grouped],
   );
@@ -758,442 +725,90 @@ export default function AdminFeedback() {
     [selectedIds, addStoryMembers, toast, clearSelection],
   );
 
-  // ── Render ──────────────────────────────────────────────────
-  if (isLoading || errorsLoading) {
-    return (
-      <Box sx={{ p: 6, textAlign: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  return {
+    user,
+    toast,
+    queryClient,
 
-  // Stories is the primary surface. Spam + Analytics are the only escape
-  // hatches; Community + API Errors tabs folded into Stories (1-member solo
-  // stories auto-created for every item).
-  const tabIdx =
-    state.tab === 'spam' ? 1 : state.tab === 'analytics' ? 2 : 0;
-  const tabValue: 'stories' | 'spam' | 'analytics' =
-    tabIdx === 1 ? 'spam' : tabIdx === 2 ? 'analytics' : 'stories';
+    state,
+    update,
+    clearFilters,
+    activeFilterCount,
+    searchInputRef,
 
-  return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1 }}>
-        <Box sx={{ flex: 1 }}>
-          <PageHeader
-            title="Feedback & Errors"
-            subtitle="Community feedback and automated API error reports"
-          />
-        </Box>
-        <Box
-          component="button"
-          onClick={() => setHelpOpen(true)}
-          aria-label="Keyboard shortcuts"
-          title="Keyboard shortcuts (?)"
-          sx={{
-            // Flat inline hint matching the project design system
-            // (0 radius / 0 borders / 0 shadows) — the "?" is a scanable
-            // cue, not a chrome-heavy button.
-            border: 0,
-            bgcolor: 'transparent',
-            p: 0,
-            cursor: 'pointer',
-            fontSize: '0.75rem',
-            color: 'text.secondary',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.5,
-            mt: 1.25,
-            letterSpacing: 0.3,
-            transition: 'color 0.15s, opacity 0.15s',
-            '&:hover': { color: 'primary.main' },
-            '&:active': { opacity: 0.7 },
-          }}
-        >
-          press <strong style={{ fontWeight: 700 }}>?</strong> for shortcuts
-        </Box>
-      </Box>
+    paletteOpen,
+    setPaletteOpen,
+    helpOpen,
+    setHelpOpen,
+    selectedIds,
+    focusedId,
+    setFocusedId,
+    setFocusedColumnIdx,
+    forwardingIds,
+    drawerOpen,
+    sessionStartIso: sessionStartRef.current,
+    seenIds,
+    setSeenIds,
 
-      <Tabs
-        value={tabIdx}
-        onChange={(_, v) =>
-          update({
-            tab: v === 1 ? 'spam' : v === 2 ? 'analytics' : 'stories',
-          })
-        }
-        sx={{ mb: 2 }}
-      >
-        <Tab label={`Stories (${stories.length})`} />
-        <Tab label={`Spam (${spamCount})`} />
-        <Tab label="Analytics" />
-      </Tabs>
+    items,
+    apiErrors,
+    isLoading,
+    errorsLoading,
+    admins,
+    adminMap,
+    votesMap,
+    selected,
+    watchersByItem,
+    availableLabels,
+    itemsById,
+    feedbackById,
+    errorsById,
 
-      {tabValue === 'spam' && (
-        <>
-          <FeedbackPresets
-            state={state}
-            update={update}
-            clearFilters={clearFilters}
-            currentUserId={user?.id ?? null}
-          />
-          <FeedbackFilters
-            state={state}
-            update={update}
-            clearFilters={clearFilters}
-            activeFilterCount={activeFilterCount}
-            admins={admins}
-            labels={availableLabels}
-            searchInputRef={searchInputRef}
-          />
+    duplicateMap,
+    dismissSuggestion,
+    mergeDuplicate,
+    auditEntries,
+    replyMutation,
+    recordHandoff,
+    updateHandoff,
 
-          {totalVisibleCount === 0 ? (
-            <Typography variant="body2" color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>
-              {activeFilterCount > 0
-                ? 'No submissions match the current filters.'
-                : 'No submissions yet.'}
-            </Typography>
-          ) : (
-            <FeedbackKanban
-              grouped={grouped}
-              voteCounts={votesMap}
-              selectedIds={selectedIds}
-              focusedId={focusedId}
-              watchersByItem={watchersByItem}
-              adminById={adminMap}
-              storyByItem={submissionStoryMap}
-              onStoryClick={(storyId) => update({ tab: 'stories', story: storyId })}
-              isNew={(id, submittedAt) =>
-                submittedAt > sessionStartRef.current && !seenIds.has(id)
-              }
-              onCardClick={(item) => {
-                setFocusedId(item.id);
-                const colIdx = kanbanColumns.findIndex((c) => c.id === (item.feedback_status as KanbanStatus));
-                if (colIdx >= 0) setFocusedColumnIdx(colIdx);
-                setSeenIds((prev) => {
-                  if (prev.has(item.id)) return prev;
-                  const next = new Set(prev);
-                  next.add(item.id);
-                  return next;
-                });
-                update({ sel: item.id });
-              }}
-              onToggleSelect={toggleSelect}
-              onStatusDrop={(id, status) => statusMutation.mutate({ ids: [id], status })}
-            />
-          )}
+    stories,
+    groupedStories,
+    storySuggestions,
+    submissionStoryMap,
+    activeStoryBundle,
+    updateStory,
+    resolveStory,
+    removeStoryMembers,
+    cascadeToMembers,
+    setStoryNarrative,
+    renarrateStory,
+    storyDivergence,
+    acceptStorySuggestion,
+    dismissStorySuggestion,
+    suggestStoryFromIds,
 
-          <FeedbackBulkBar
-            selectedCount={selectedIds.size}
-            totalCount={totalVisibleCount}
-            onSelectAll={selectAllVisible}
-            onClear={clearSelection}
-            onSetStatus={(status) =>
-              statusMutation.mutate({ ids: Array.from(selectedIds), status })
-            }
-            onSetPriority={(priority) =>
-              priorityMutation.mutate({ ids: Array.from(selectedIds), priority })
-            }
-            onAssign={(assigneeId) =>
-              assignMutation.mutate({ ids: Array.from(selectedIds), assigneeId })
-            }
-            onAddLabel={(label) => {
-              for (const id of selectedIds) {
-                const it = items.find((i) => i.id === id);
-                if (!it) continue;
-                const next = Array.from(new Set([...(it.labels ?? []), label]));
-                labelsMutation.mutate({ id, labels: next });
-              }
-            }}
-            onForward={() => {
-              for (const id of selectedIds) forwardMutation.mutate(id);
-            }}
-            onCreateStory={handleCreateStoryFromSelection}
-            onAddToStory={handleAddSelectionToStory}
-            onAutoTitle={async () => {
-              const ids = Array.from(selectedIds);
-              if (ids.length < 2) return null;
-              const res = await suggestStoryFromIds.mutateAsync(ids).catch(() => null);
-              return res?.proposed_title ?? null;
-            }}
-            stories={stories}
-            admins={admins}
-            loading={
-              statusMutation.isPending || priorityMutation.isPending || assignMutation.isPending
-            }
-          />
-        </>
-      )}
+    spamCount,
+    grouped,
+    totalVisibleCount,
+    actionTargetIds,
 
-      {tabValue === 'stories' && (
-        <>
-          <StorySuggestionsPanel
-            suggestions={storySuggestions}
-            onAccept={(id, overrideTitle) =>
-              acceptStorySuggestion.mutate(
-                { suggestionId: id, overrideTitle },
-                {
-                  onSuccess: (storyId) => {
-                    toast({ title: 'Story created from suggestion' });
-                    update({ story: storyId });
-                  },
-                  onError: (e: Error) =>
-                    toast({ title: 'Accept failed', description: e.message, variant: 'destructive' }),
-                },
-              )
-            }
-            onDismiss={(id) => dismissStorySuggestion.mutate(id)}
-          />
-          <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-            <Button
-              size="small"
-              variant={state.archived ? 'outlined' : 'contained'}
-              onClick={() => update({ archived: false })}
-              data-testid="stories-active-toggle"
-            >
-              Active ({groupedStories.open.length + groupedStories.planned.length + groupedStories.in_progress.length + groupedStories.resolved.length})
-            </Button>
-            <Button
-              size="small"
-              variant={state.archived ? 'contained' : 'outlined'}
-              onClick={() => update({ archived: true })}
-              data-testid="stories-archived-toggle"
-            >
-              Archived ({groupedStories.archived.length})
-            </Button>
-          </Box>
-          {state.archived ? (
-            <ArchivedStoriesPanel
-              archived={groupedStories.archived}
-              adminById={adminMap}
-              onOpen={(storyId) => update({ story: storyId })}
-            />
-          ) : (
-            <StoriesKanban
-              grouped={groupedStories}
-              adminById={adminMap}
-              onStoryClick={(s) => update({ story: s.id })}
-            />
-          )}
-        </>
-      )}
+    statusMutation,
+    priorityMutation,
+    assignMutation,
+    labelsMutation,
+    resolutionMutation,
+    notesMutation,
+    forwardMutation,
 
-      {tabValue === 'analytics' && (
-        <AnalyticsTab items={items} voteCounts={votesMap} />
-      )}
+    toggleSelect,
+    clearSelection,
+    selectAllVisible,
 
-      <StoryDetailDrawer
-        open={!!state.story}
-        story={activeStoryBundle?.story ?? null}
-        members={activeStoryBundle?.members ?? []}
-        feedbackById={feedbackById}
-        errorsById={errorsById}
-        admins={admins}
-        adminById={adminMap}
-        onClose={() => update({ story: null })}
-        onRename={(title, summary) =>
-          state.story &&
-          updateStory.mutate({ storyId: state.story, patch: { title, summary: summary || null } })
-        }
-        onStatusChange={(status, closeItems) => {
-          if (!state.story) return;
-          if (status === 'resolved') {
-            resolveStory.mutate(
-              { storyId: state.story, closeItems: !!closeItems },
-              {
-                onSuccess: (n) =>
-                  toast({
-                    title: 'Story resolved',
-                    description: closeItems ? `${n} item(s) marked done` : 'Items left untouched',
-                  }),
-              },
-            );
-          } else {
-            updateStory.mutate({
-              storyId: state.story,
-              patch: { status: status as StoryStatus },
-            });
-            // Story wins on conflict — cascade to members automatically.
-            cascadeToMembers.mutate({ storyId: state.story, status });
-          }
-        }}
-        onPriorityChange={(priority) => {
-          if (!state.story) return;
-          updateStory.mutate({ storyId: state.story, patch: { priority } });
-          cascadeToMembers.mutate({ storyId: state.story, priority });
-        }}
-        onAssign={(assigneeId) => {
-          if (!state.story) return;
-          updateStory.mutate({ storyId: state.story, patch: { assignee_id: assigneeId } });
-          cascadeToMembers.mutate({ storyId: state.story, assigneeId });
-        }}
-        onSaveNarrative={(briefTitle, narrative) =>
-          state.story &&
-          setStoryNarrative.mutate({
-            storyId: state.story,
-            briefTitle: briefTitle || null,
-            narrative: narrative || null,
-          })
-        }
-        onRenarrate={() =>
-          state.story &&
-          renarrateStory.mutate(
-            { storyId: state.story, force: true },
-            {
-              onSuccess: (r) =>
-                toast({
-                  title: r?.skipped ? 'Skipped (edited)' : 'Narrative refreshed',
-                }),
-              onError: (e: Error) =>
-                toast({ title: 'Re-narrate failed', description: e.message, variant: 'destructive' }),
-            },
-          )
-        }
-        divergence={storyDivergence ?? null}
-        renarrating={renarrateStory.isPending}
-        onAddLabel={(label) => {
-          if (!state.story || !activeStoryBundle) return;
-          const next = Array.from(new Set([...(activeStoryBundle.story.labels ?? []), label]));
-          updateStory.mutate({ storyId: state.story, patch: { labels: next } });
-        }}
-        onRemoveLabel={(label) => {
-          if (!state.story || !activeStoryBundle) return;
-          const next = (activeStoryBundle.story.labels ?? []).filter((l) => l !== label);
-          updateStory.mutate({ storyId: state.story, patch: { labels: next } });
-        }}
-        onRemoveMember={(submissionId) =>
-          state.story &&
-          removeStoryMembers.mutate({ storyId: state.story, submissionIds: [submissionId] })
-        }
-        onOpenMember={(id, ctype) => {
-          // Feedback members open in the feedback drawer on top of the story
-          // drawer. api_error members have no dedicated item viewer under
-          // the Stories-first model; they live inside their parent story.
-          if (ctype === 'feedback') {
-            update({ sel: id });
-          }
-        }}
-      />
-
-      <FeedbackDetailDrawer
-        open={drawerOpen}
-        item={selected}
-        voteCount={selected ? votesMap[selected.id]?.count ?? 0 : 0}
-        admins={admins}
-        availableLabels={availableLabels}
-        watchers={selected ? watchersByItem[selected.id] ?? [] : []}
-        isForwarding={selected ? forwardingIds.has(selected.id) : false}
-        duplicateSuggestions={selected ? duplicateMap[selected.id] ?? [] : []}
-        itemsById={itemsById}
-        canonical={
-          selected?.duplicate_of ? itemsById[selected.duplicate_of] ?? null : null
-        }
-        parentStory={selected ? submissionStoryMap[selected.id] ?? null : null}
-        onOpenStory={(storyId) => update({ tab: 'stories', story: storyId, sel: null })}
-        onOpenPartner={(id) => update({ sel: id })}
-        onMergeDuplicate={(args) => mergeDuplicate.mutate(args)}
-        onDismissDuplicate={(id) => dismissSuggestion.mutate(id)}
-        onToggleSpam={(isSpam) =>
-          selected &&
-          supabase
-            .from('community_submissions')
-            .update({ is_spam: isSpam })
-            .eq('id', selected.id)
-            .then(() =>
-              queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
-            )
-        }
-        onToggleNotify={(notify) =>
-          selected &&
-          supabase
-            .from('community_submissions')
-            .update({ notify_submitter: notify })
-            .eq('id', selected.id)
-            .then(() =>
-              queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
-            )
-        }
-        auditEntries={auditEntries}
-        adminById={adminMap}
-        onSendReply={(body, notify) =>
-          selected &&
-          replyMutation.mutate({ submissionId: selected.id, body, notify })
-        }
-        isSendingReply={replyMutation.isPending}
-        onResolutionChange={(resolution) =>
-          selected && resolutionMutation.mutate({ id: selected.id, resolution })
-        }
-        onClose={() => update({ sel: null })}
-        onStatusChange={(status) =>
-          selected && statusMutation.mutate({ ids: [selected.id], status })
-        }
-        onPriorityChange={(priority) =>
-          selected && priorityMutation.mutate({ ids: [selected.id], priority })
-        }
-        onAssign={(assigneeId) =>
-          selected && assignMutation.mutate({ ids: [selected.id], assigneeId })
-        }
-        onAddLabel={(label) => {
-          if (!selected) return;
-          const next = Array.from(new Set([...(selected.labels ?? []), label]));
-          labelsMutation.mutate({ id: selected.id, labels: next });
-        }}
-        onRemoveLabel={(label) => {
-          if (!selected) return;
-          const next = (selected.labels ?? []).filter((l) => l !== label);
-          labelsMutation.mutate({ id: selected.id, labels: next });
-        }}
-        onSaveNotes={(notes) => selected && notesMutation.mutate({ id: selected.id, notes })}
-        onForward={() => selected && forwardMutation.mutate(selected.id)}
-        onCopyPrompt={() => selected && handleCopyPrompt(selected)}
-        onRecordHandoff={(target) => {
-          if (!selected) return;
-          recordHandoff.mutate({
-            submissionId: selected.id,
-            target,
-            promptPreview: formatClaudePrompt(selected).slice(0, 160),
-          });
-        }}
-        onUpdateHandoff={(handoffId, status) => {
-          if (!selected) return;
-          updateHandoff.mutate({ submissionId: selected.id, handoffId, status });
-          // Auto-close ticket when the handoff is marked resolved, unless it's
-          // already closed. Saves the admin a second click and keeps the kanban
-          // aligned with Claude's outcome.
-          if (status === 'resolved' && selected.feedback_status !== 'done') {
-            statusMutation.mutate({ ids: [selected.id], status: 'done' });
-            if (!selected.resolution) {
-              resolutionMutation.mutate({ id: selected.id, resolution: 'fixed' });
-            }
-          }
-        }}
-        isRecordingHandoff={recordHandoff.isPending}
-      />
-
-      <FeedbackCommandPalette
-        open={paletteOpen}
-        onOpenChange={setPaletteOpen}
-        selectedCount={selectedIds.size || (focusedId ? 1 : 0)}
-        admins={admins}
-        onJumpToColumn={(status) => {
-          const idx = kanbanColumns.findIndex((c) => c.id === status);
-          if (idx >= 0) {
-            setFocusedColumnIdx(idx);
-            setFocusedId(grouped[status][0]?.id ?? null);
-          }
-        }}
-        onSetPriority={(priority) =>
-          actionTargetIds.length && priorityMutation.mutate({ ids: actionTargetIds, priority })
-        }
-        onAssign={(assigneeId) =>
-          actionTargetIds.length && assignMutation.mutate({ ids: actionTargetIds, assigneeId })
-        }
-        onForwardSelected={() => {
-          for (const id of actionTargetIds) forwardMutation.mutate(id);
-        }}
-        onFocusSearch={() => searchInputRef.current?.focus()}
-        onOpenHelp={() => setHelpOpen(true)}
-      />
-
-      <ShortcutHelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
-    </Box>
-  );
+    handleCopyPrompt,
+    handleCreateStoryFromSelection,
+    handleAddSelectionToStory,
+  };
 }
+
+export type AdminFeedbackController = ReturnType<typeof useAdminFeedbackController>;
