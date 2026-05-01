@@ -169,9 +169,6 @@ verify_jwt = true
 [functions.mapbox-geocoding]
 verify_jwt = false
 
-[functions.fetch-ilga-data]
-verify_jwt = false
-
 [functions.import-ilga-data]
 verify_jwt = true
 

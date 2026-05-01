@@ -27,8 +27,6 @@ const FUNCTION_REGISTRY: FunctionMeta[] = [
   { name: 'workflow-dispatcher', category: 'workflow', description: 'pgmq-based job dispatcher', envVars: [] },
 
   // ── API functions (invoked from frontend) ──
-  { name: 'algolia-search', category: 'api', description: 'Search via Algolia', envVars: ['ALGOLIA_APP_ID', 'ALGOLIA_SEARCH_KEY'] },
-  { name: 'algolia-sync', category: 'api', description: 'Sync content to Algolia index', envVars: ['ALGOLIA_APP_ID', 'ALGOLIA_ADMIN_KEY'] },
   { name: 'bulk-create-ai-tags', category: 'api', description: 'Batch AI tag creation', envVars: ['OPENAI_API_KEY'] },
   { name: 'bulk-create-personalities', category: 'api', description: 'Batch personality creation', envVars: [] },
   { name: 'calendar-export', category: 'api', description: 'Export events as iCal', envVars: [] },
@@ -37,7 +35,6 @@ const FUNCTION_REGISTRY: FunctionMeta[] = [
   { name: 'cloudflare-api', category: 'api', description: 'Cloudflare API proxy', envVars: ['CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN'] },
   { name: 'enrich-venue', category: 'api', description: 'Venue data enrichment', envVars: [] },
   { name: 'fetch-city-images', category: 'api', description: 'Fetch city hero images', envVars: ['PEXELS_API_KEY'] },
-  { name: 'fetch-ilga-data', category: 'api', description: 'Fetch ILGA data for single country', envVars: [] },
   { name: 'fetch-personality-data', category: 'api', description: 'Fetch personality data from Wikidata', envVars: [] },
   { name: 'fetch-wikipedia-data', category: 'api', description: 'Fetch Wikipedia extracts', envVars: [] },
   { name: 'get-api-key', category: 'api', description: 'Retrieve API key for client', envVars: [] },
