@@ -24,8 +24,18 @@ export async function embed(
 		? { id: env.AI_GATEWAY_NAME, cacheTtl: 60 * 60 * 24 * 7 }
 		: undefined;
 
-	const res: any = await env.AI.run(model as any, { text: [text] } as any, gateway ? { gateway } : undefined);
-	const vec: number[] = res?.data?.[0] ?? res?.data ?? res?.[0];
+	const res = (await env.AI.run(
+		model as Parameters<typeof env.AI.run>[0],
+		{ text: [text] } as Parameters<typeof env.AI.run>[1],
+		gateway ? { gateway } : undefined,
+	)) as unknown;
+
+	const candidate =
+		(res as { data?: unknown })?.data ??
+		(res as { [n: number]: unknown })?.[0];
+	const vec: number[] = Array.isArray(candidate) && Array.isArray(candidate[0])
+		? (candidate[0] as number[])
+		: (candidate as number[]);
 	if (!Array.isArray(vec)) throw new Error("embed: no vector");
 	// Cache 30 days — best-effort, KV quota may be exhausted.
 	try {
@@ -43,11 +53,11 @@ export async function rerank(
 ): Promise<{ index: number; score: number }[]> {
 	if (!contexts.length) return [];
 	const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME } : undefined;
-	const res: any = await env.AI.run(
-		"@cf/baai/bge-reranker-base" as any,
-		{ query, contexts: contexts.map((text) => ({ text })), top_n: contexts.length } as any,
+	const res = (await env.AI.run(
+		"@cf/baai/bge-reranker-base" as Parameters<typeof env.AI.run>[0],
+		{ query, contexts: contexts.map((text) => ({ text })), top_n: contexts.length } as Parameters<typeof env.AI.run>[1],
 		gateway ? { gateway } : undefined,
-	);
+	)) as { response?: Array<{ id?: number; index?: number; score?: number }>; data?: Array<{ id?: number; index?: number; score?: number }> };
 	const ranked = res?.response ?? res?.data ?? [];
-	return ranked.map((r: any) => ({ index: r.id ?? r.index, score: r.score ?? 0 }));
+	return ranked.map((r) => ({ index: (r.id ?? r.index) as number, score: r.score ?? 0 }));
 }

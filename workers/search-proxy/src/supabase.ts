@@ -4,7 +4,7 @@
 
 import type { Env } from "./index";
 
-async function rpc<T = any>(env: Env, fn: string, args: Record<string, unknown>): Promise<T> {
+async function rpc<T = unknown>(env: Env, fn: string, args: Record<string, unknown>): Promise<T> {
 	const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
 		method: "POST",
 		headers: {
@@ -21,8 +21,8 @@ async function rpc<T = any>(env: Env, fn: string, args: Record<string, unknown>)
 	return (await res.json()) as T;
 }
 
-function parsePgVector(raw: any): number[] {
-	if (Array.isArray(raw)) return raw;
+function parsePgVector(raw: unknown): number[] {
+	if (Array.isArray(raw)) return raw.map(Number);
 	if (typeof raw === "string") {
 		// "[0.1,0.2,...]"
 		return raw.replace(/^\[|\]$/g, "").split(",").map(Number);
@@ -35,11 +35,15 @@ export async function getBiasVector(
 	who: { user_id?: string; session_id?: string },
 ): Promise<{ embedding: number[]; event_type: string; age_days: number }[] | null> {
 	if (!who.user_id && !who.session_id) return null;
-	const rows = await rpc<any[]>(env, "get_bias_signal", {
-		p_user_id: who.user_id ?? null,
-		p_session_id: who.session_id ?? null,
-		p_window: 30,
-	});
+	const rows = await rpc<Array<{ embedding: unknown; event_type: string; age_days: number | string }>>(
+		env,
+		"get_bias_signal",
+		{
+			p_user_id: who.user_id ?? null,
+			p_session_id: who.session_id ?? null,
+			p_window: 30,
+		},
+	);
 	if (!rows?.length) return null;
 	return rows.map((r) => ({
 		embedding: parsePgVector(r.embedding),
@@ -48,10 +52,21 @@ export async function getBiasVector(
 	}));
 }
 
-export async function getUserSignal(env: Env, who: { user_id?: string; session_id?: string }) {
+export interface UserSignal {
+	interests?: string[];
+	languages?: string[];
+	home_city?: string | null;
+	recent_cities?: string[];
+	recent_tags?: string[];
+}
+
+export async function getUserSignal(
+	env: Env,
+	who: { user_id?: string; session_id?: string },
+): Promise<UserSignal | null> {
 	if (!who.user_id && !who.session_id) return null;
 	try {
-		return await rpc(env, "get_user_signal", {
+		return await rpc<UserSignal>(env, "get_user_signal", {
 			p_user_id: who.user_id ?? null,
 			p_session_id: who.session_id ?? null,
 		});
@@ -85,15 +100,19 @@ export async function trackEvent(
 export async function semanticSearch(
 	env: Env,
 	opts: { queryVec: number[]; contentTypes?: string[] | null; biasWeight?: number; limit?: number },
-): Promise<Array<{ content_type: string; content_id: string; score: number; metadata: any }>> {
+): Promise<Array<{ content_type: string; content_id: string; score: number; metadata: Record<string, unknown> }>> {
 	const pg = formatVec(opts.queryVec);
-	return await rpc(env, "personalized_semantic_search", {
-		p_query_vec: pg,
-		p_bias_vec: null, // bias already blended in worker
-		p_bias_weight: 0,
-		p_content_types: opts.contentTypes ?? null,
-		p_limit: opts.limit ?? 100,
-	});
+	return await rpc<Array<{ content_type: string; content_id: string; score: number; metadata: Record<string, unknown> }>>(
+		env,
+		"personalized_semantic_search",
+		{
+			p_query_vec: pg,
+			p_bias_vec: null, // bias already blended in worker
+			p_bias_weight: 0,
+			p_content_types: opts.contentTypes ?? null,
+			p_limit: opts.limit ?? 100,
+		},
+	);
 }
 
 export async function popularEntities(env: Env, contentTypes: string[], limit = 30) {

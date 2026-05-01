@@ -32,6 +32,31 @@ export interface Env {
 
 const DEFAULT_EMBED_MODEL = "@cf/baai/bge-m3"; // 1024-dim, multilingual
 
+// Minimal row shape — Supabase REST returns arbitrary table columns; we only
+// reach for a handful of fields. Use index-signature for unknown extras.
+type TableRow = {
+	id: string;
+	title?: string;
+	name?: string;
+	description?: string;
+	bio?: string;
+	summary?: string;
+	tags?: string[];
+	category?: string;
+	event_type?: string;
+	profession?: string;
+	city?: string;
+	country?: string;
+	slug?: string;
+	image_url?: string;
+	logo_url?: string;
+	featured?: boolean;
+	is_featured?: boolean;
+	start_date?: string | number;
+	end_date?: string | number;
+	[key: string]: unknown;
+};
+
 // table → {pg content_type, meili index}
 const TABLE_MAP: Record<string, { contentType: string; index: string }> = {
 	venues: { contentType: "venue", index: "venues" },
@@ -69,7 +94,7 @@ export default {
 				return jres({ ok: true });
 			}
 			return jres({ error: "not found" }, 404);
-		} catch (e: any) {
+		} catch (e) {
 			console.error("ingest error", e);
 			try {
 				if (env.SENTRY_DSN) {
@@ -84,7 +109,7 @@ export default {
 			} catch {
 				/* best-effort */
 			}
-			return jres({ error: "internal", details: String(e?.message ?? e) }, 500);
+			return jres({ error: "internal", details: String((e as Error)?.message ?? e) }, 500);
 		}
 	},
 	async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
@@ -95,7 +120,7 @@ export default {
 	},
 	async queue(batch: MessageBatch, env: Env): Promise<void> {
 		for (const m of batch.messages) {
-			const { table, id, op } = m.body as any;
+			const { table, id, op } = m.body as { table: string; id: string; op?: string };
 			try {
 				if (op === "DELETE") {
 					await deleteRow(env, table, id);
@@ -178,7 +203,7 @@ async function handleBackfill(request: Request, env: Env, ctx: ExecutionContext)
 				authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
 			},
 		})
-	).json()) as any[];
+	).json()) as Array<TableRow>;
 
 	// Advance cursor synchronously so caller can immediately page next.
 	const lastIdSync = rows.length ? rows[rows.length - 1].id : cursor;
@@ -206,7 +231,7 @@ async function handleBackfill(request: Request, env: Env, ctx: ExecutionContext)
 	return jres({ accepted: rows.length, cursor: lastIdSync, done: rows.length < batchSize });
 }
 
-async function indexRow(env: Env, table: string, row: any): Promise<void> {
+async function indexRow(env: Env, table: string, row: TableRow): Promise<void> {
 	const tm = TABLE_MAP[table];
 	if (!tm) return;
 
@@ -244,7 +269,7 @@ async function deleteRow(env: Env, table: string, id?: string): Promise<void> {
 	]);
 }
 
-async function fetchRow(env: Env, table: string, id: string): Promise<any | null> {
+async function fetchRow(env: Env, table: string, id: string): Promise<TableRow | null> {
 	const r = await fetch(
 		`${env.SUPABASE_URL}/rest/v1/${table}?id=eq.${id}&limit=1`,
 		{
@@ -254,12 +279,12 @@ async function fetchRow(env: Env, table: string, id: string): Promise<any | null
 			},
 		},
 	);
-	const rows = (await r.json()) as any[];
+	const rows = (await r.json()) as TableRow[];
 	return rows?.[0] ?? null;
 }
 
 // ─── text composition ─────────────────────────
-function composeEmbedText(table: string, r: any): string {
+function composeEmbedText(_table: string, r: TableRow): string {
 	const parts: string[] = [];
 	const title = r.title || r.name || "";
 	if (title) parts.push(title);
@@ -273,13 +298,15 @@ function composeEmbedText(table: string, r: any): string {
 	if (r.country) parts.push("Country: " + r.country);
 	// news_articles multilingual: fields like title_de, content_de may exist.
 	for (const lang of ["de", "es", "fr"]) {
-		if (r[`title_${lang}`]) parts.push(r[`title_${lang}`]);
-		if (r[`description_${lang}`]) parts.push(r[`description_${lang}`]);
+		const t = r[`title_${lang}`];
+		if (typeof t === "string" && t) parts.push(t);
+		const d = r[`description_${lang}`];
+		if (typeof d === "string" && d) parts.push(d);
 	}
 	return parts.filter(Boolean).join(". ").slice(0, 2000);
 }
 
-function extractMetadata(table: string, r: any): Record<string, unknown> {
+function extractMetadata(_table: string, r: TableRow): Record<string, unknown> {
 	return {
 		city: r.city,
 		country: r.country,
@@ -290,8 +317,10 @@ function extractMetadata(table: string, r: any): Record<string, unknown> {
 	};
 }
 
-function toMeiliDoc(table: string, r: any): any {
-	const base = {
+type MeiliDoc = Record<string, unknown> & { id: string };
+
+function toMeiliDoc(table: string, r: TableRow): MeiliDoc {
+	const base: MeiliDoc = {
 		id: r.id,
 		type: TABLE_MAP[table].contentType,
 		title: r.title || r.name,
@@ -308,7 +337,7 @@ function toMeiliDoc(table: string, r: any): any {
 		updated_at: r.updated_at,
 	};
 	if (r.latitude != null && r.longitude != null) {
-		(base as any)._geo = { lat: Number(r.latitude), lng: Number(r.longitude) };
+		base._geo = { lat: Number(r.latitude), lng: Number(r.longitude) };
 	}
 	if (table === "events") {
 		return {
@@ -333,8 +362,17 @@ async function embedText(env: Env, text: string): Promise<number[]> {
 	if (Array.isArray(cached)) return cached;
 
 	const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME, cacheTtl: 86400 * 7 } : undefined;
-	const res: any = await env.AI.run(model as any, { text: [text] } as any, gateway ? { gateway } : undefined);
-	const vec: number[] = res?.data?.[0] ?? res?.data ?? res?.[0];
+	const res = (await env.AI.run(
+		model as Parameters<typeof env.AI.run>[0],
+		{ text: [text] } as Parameters<typeof env.AI.run>[1],
+		gateway ? { gateway } : undefined,
+	)) as unknown;
+	const candidate =
+		(res as { data?: unknown })?.data ??
+		(res as { [n: number]: unknown })?.[0];
+	const vec: number[] = Array.isArray(candidate) && Array.isArray(candidate[0])
+		? (candidate[0] as number[])
+		: (candidate as number[]);
 	if (!Array.isArray(vec)) throw new Error("embed: no vector");
 	try {
 		await env.EMBED_CACHE.put(key, JSON.stringify(vec), { expirationTtl: 86400 * 30 });
@@ -378,7 +416,7 @@ async function upsertEmbedding(
 }
 
 // ─── Meilisearch upsert ───────────────────────
-async function meiliUpsert(env: Env, index: string, docs: any[]): Promise<void> {
+async function meiliUpsert(env: Env, index: string, docs: MeiliDoc[]): Promise<void> {
 	const res = await fetch(`${env.MEILISEARCH_URL}/indexes/${index}/documents?primaryKey=id`, {
 		method: "POST",
 		headers: {
@@ -412,6 +450,6 @@ type SupabaseWebhookPayload = {
 	type: "INSERT" | "UPDATE" | "DELETE";
 	table: string;
 	schema: string;
-	record?: any;
-	old_record?: any;
+	record?: TableRow;
+	old_record?: TableRow;
 };

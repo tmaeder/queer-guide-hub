@@ -2,8 +2,20 @@
  * Personalized rerank nudges on top of RRF-fused list.
  */
 
+export interface RankableHit {
+	id?: string;
+	content_id?: string;
+	content_type?: string;
+	city?: string;
+	tags?: string[];
+	featured?: boolean;
+	_fused?: number;
+	_personalScore?: number;
+	[key: string]: unknown;
+}
+
 export function personalizedRank(
-	fused: any[],
+	fused: RankableHit[],
 	signal: {
 		interests?: string[];
 		recent_tags?: string[];
@@ -11,7 +23,7 @@ export function personalizedRank(
 		home_city?: string | null;
 	},
 	seenRecently: Set<string>,
-): any[] {
+): RankableHit[] {
 	const interestSet = new Set((signal.interests || []).map(normalize));
 	const tagSet = new Set((signal.recent_tags || []).map(normalize));
 	const citySet = new Set(

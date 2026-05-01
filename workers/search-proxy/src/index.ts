@@ -87,14 +87,14 @@ export default {
 				default:
 					return json({ error: "not found" }, 404, cors);
 			}
-		} catch (e: any) {
+		} catch (e) {
 			console.error("handler error", e);
 			try {
 				sentry(env, request, ctx)?.captureException(e);
 			} catch {
 				/* sentry best-effort */
 			}
-			return json({ error: "internal", details: e?.message ?? String(e) }, 500, cors);
+			return json({ error: "internal", details: (e as Error)?.message ?? String(e) }, 500, cors);
 		}
 	},
 };
@@ -185,7 +185,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	]);
 
 	// Fuse: Meili rankingScore + pgvector score via RRF.
-	const meiliHits = meili.hits.map((h: any, i: number) => ({ ...h, _source: "meili", _rank: i }));
+	const meiliHits = meili.hits.map((h, i: number) => ({ ...h, _source: "meili", _rank: i }));
 	const semHits = sem.map((s, i) => ({
 		...s,
 		id: s.content_id,
@@ -221,7 +221,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		const rrkd = await rerank(env, q, hydrated.map((h) => h._snippet || h.title || "")).catch(() => null);
 		if (rrkd) {
 			final = rrkd
-				.map((r, i) => ({ ...pool[r.index], _rerank: r.score }))
+				.map((r) => ({ ...pool[r.index], _rerank: r.score }))
 				.sort((a, b) => (b._rerank || 0) - (a._rerank || 0))
 				.slice(0, hitsPerPage);
 		}
@@ -362,14 +362,19 @@ async function handleOnboarding(request: Request, env: Env, cors: HeadersInit): 
 // ─────────────────────────────────────────────
 async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { entity_type, entity_id, limit = 10, content_types } = await readJsonBody<any>(request);
+	const { entity_type, entity_id, limit = 10, content_types } = await readJsonBody<{
+		entity_type?: string;
+		entity_id?: string;
+		limit?: number;
+		content_types?: string[] | null;
+	}>(request);
 	if (!entity_type || !entity_id) return json({ error: "missing" }, 400, cors);
 
 	// Fetch vector of seed.
-	const seed = await fetch(
+	const seed = (await fetch(
 		`${env.SUPABASE_URL}/rest/v1/content_embeddings?content_type=eq.${entity_type}&content_id=eq.${entity_id}&select=embedding&limit=1`,
 		{ headers: { apikey: env.SUPABASE_SERVICE_KEY, authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}` } },
-	).then((r) => r.json()) as any[];
+	).then((r) => r.json())) as Array<{ embedding: unknown }>;
 	if (!seed?.[0]?.embedding) return json({ error: "no seed" }, 404, cors);
 
 	const vec = parsePgVector(seed[0].embedding);
@@ -381,9 +386,11 @@ async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Pro
 // helpers (local to file)
 // ─────────────────────────────────────────────
 
+import type { SearchFilters } from "./meili";
+
 type SearchBody = {
 	query: string;
-	filters?: any;
+	filters?: SearchFilters;
 	hitsPerPage?: number;
 	user_id?: string;
 	session_id?: string;
@@ -444,30 +451,39 @@ function l2Normalize(v: number[]): number[] {
 	return v.map((x) => x / s);
 }
 
-function rrfFuse(lists: any[][], k = 60): any[] {
-	const scores = new Map<string, any>();
+type FuseItem = {
+	id?: string;
+	content_id?: string;
+	type?: string;
+	content_type?: string;
+	_fused?: number;
+	[key: string]: unknown;
+};
+
+function rrfFuse(lists: FuseItem[][], k = 60): FuseItem[] {
+	const scores = new Map<string, FuseItem>();
 	for (const list of lists) {
 		list.forEach((item, i) => {
 			const id = itemId(item);
 			if (!id) return;
 			const prev = scores.get(id);
 			const add = 1 / (k + i + 1);
-			if (prev) prev._fused += add;
+			if (prev) prev._fused = (prev._fused ?? 0) + add;
 			else scores.set(id, { ...item, _fused: add });
 		});
 	}
-	return [...scores.values()].sort((a, b) => b._fused - a._fused);
+	return [...scores.values()].sort((a, b) => (b._fused ?? 0) - (a._fused ?? 0));
 }
 
-function itemId(h: any): string | null {
+function itemId(h: FuseItem): string | null {
 	if (h.id) return `${h.type || h.content_type || "x"}:${h.id}`;
 	if (h.content_id) return `${h.content_type}:${h.content_id}`;
 	return null;
 }
 
-function dedupeById(list: any[]): any[] {
+function dedupeById(list: FuseItem[]): FuseItem[] {
 	const seen = new Set<string>();
-	const out: any[] = [];
+	const out: FuseItem[] = [];
 	for (const it of list) {
 		const id = itemId(it);
 		if (!id || seen.has(id)) continue;
@@ -497,13 +513,24 @@ function reorderFacets(
 	return out;
 }
 
-async function hydrateTitles(env: Env, list: any[]): Promise<any[]> {
+type HydratableHit = {
+	title?: string;
+	description?: string;
+	content_text?: string;
+	_snippet?: string;
+	[key: string]: unknown;
+};
+
+async function hydrateTitles(_env: Env, list: HydratableHit[]): Promise<HydratableHit[]> {
 	// Meili hits already have title. pgvector hits may not — batch fetch missing.
-	return list.map((h) => ({ ...h, _snippet: `${h.title ?? ""}. ${h.description ?? h.content_text ?? ""}`.slice(0, 400) }));
+	return list.map((h) => ({
+		...h,
+		_snippet: `${h.title ?? ""}. ${h.description ?? h.content_text ?? ""}`.slice(0, 400),
+	}));
 }
 
-function parsePgVector(raw: any): number[] {
-	if (Array.isArray(raw)) return raw;
+function parsePgVector(raw: unknown): number[] {
+	if (Array.isArray(raw)) return raw.map(Number);
 	if (typeof raw === "string") return raw.replace(/^\[|\]$/g, "").split(",").map(Number);
 	return [];
 }
@@ -529,7 +556,7 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 		useHybrid: false, // lexical only — autocomplete must be < 40ms
 	});
 
-	const out = meili.hits.slice(0, limit).map((h: any) => ({
+	const out = meili.hits.slice(0, limit).map((h) => ({
 		id: h.id,
 		type: h.type,
 		title: h.title,
@@ -545,11 +572,14 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 // ─────────────────────────────────────────────
 async function handleTrending(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { types = ["venue", "event"], city, limit = 10, user_id, session_id } = await readJsonBody<any>(request);
+	const { types = ["venue", "event"], city, limit = 10, user_id, session_id } = await readJsonBody<{
+		types?: string[];
+		city?: string;
+		limit?: number;
+		user_id?: string;
+		session_id?: string;
+	}>(request);
 
-	// Query aggregate of user_events in last 7d by entity, weighted by action.
-	const filterT = types.map((t: string) => `"${t}"`).join(",");
-	const cityFilter = city ? `&city=eq.${encodeURIComponent(city)}` : "";
 	const url = `${env.SUPABASE_URL}/rest/v1/rpc/get_trending_entities`;
 	const res = await fetch(url, {
 		method: "POST",
@@ -565,13 +595,15 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 		const pop = await popularEntities(env, types, limit);
 		return json({ trending: pop }, 200, cors);
 	}
-	const list = (await res.json()) as any[];
+	const list = (await res.json()) as Array<{ city?: string; score?: number; [k: string]: unknown }>;
 
 	// Soft personalization: if we have signal, boost items in user cities / interests.
 	if (user_id || session_id) {
 		const sig = await getUserSignal(env, { user_id, session_id });
 		const citySet = new Set(
-			[sig?.home_city, ...(sig?.recent_cities || [])].filter(Boolean).map((x: string) => x.toLowerCase()),
+			[sig?.home_city, ...(sig?.recent_cities || [])]
+				.filter((x): x is string => Boolean(x))
+				.map((x) => x.toLowerCase()),
 		);
 		list.sort((a, b) => {
 			const ab = citySet.has((a.city || "").toLowerCase()) ? 1 : 0;
@@ -588,8 +620,15 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 // ─────────────────────────────────────────────
 async function handleFeedback(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { user_id, session_id, query, entity_type, entity_id, vote } = await readJsonBody<any>(request);
-	if (!entity_type || !entity_id || !["up", "down"].includes(vote)) {
+	const { user_id, session_id, query, entity_type, entity_id, vote } = await readJsonBody<{
+		user_id?: string;
+		session_id?: string;
+		query?: string;
+		entity_type?: string;
+		entity_id?: string;
+		vote?: "up" | "down";
+	}>(request);
+	if (!entity_type || !entity_id || !vote || !["up", "down"].includes(vote)) {
 		return json({ error: "missing fields" }, 400, cors);
 	}
 	// Stored as user_events so it feeds bias vector naturally.
