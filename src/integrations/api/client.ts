@@ -732,7 +732,6 @@ const ROUTE_MAP: Record<string, string> = {
   'import-ticketmaster-events': 'imports/ticketmaster',
   'import-ilga-data': 'imports/ilga-data',
   'import-awin-products': 'imports/awin-products',
-  'background-import-manager': 'imports/background',
   'bulk-create-personalities': 'imports/bulk-personalities',
   'bulk-create-ai-tags': 'imports/bulk-ai-tags',
   'bulk-scrape-events': 'imports/bulk-scrape-events',
