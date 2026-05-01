@@ -1,7 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { useAuth } from '@/hooks/useAuth';
 import { useCentralizedTags } from '@/hooks/useCentralizedTags';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
@@ -41,7 +38,7 @@ import BatchAutoTagDialog from '@/components/admin/BatchAutoTagDialog';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
 import { normalizeTagName } from '@/utils/tagNormalization';
 import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import Box from '@mui/material/Box';
@@ -63,9 +60,6 @@ interface TagRow {
 const columnHelper = createColumnHelper<TagRow>();
 
 export default function AdminTags() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { canManageContent, loading: rolesLoading } = useAdminRoles();
   const { categoriesTree, createTag, updateTag, deleteTag, allTags: tags } = useCentralizedTags();
   const { toast } = useToast();
 
@@ -163,7 +157,6 @@ export default function AdminTags() {
     }
   };
 
-  // Column definitions
   const columns = useMemo(
     () => [
       columnHelper.accessor('name', {
@@ -292,12 +285,7 @@ export default function AdminTags() {
         },
       ],
       bulkEditFields: [
-        {
-          key: 'category',
-          label: 'Category',
-          type: 'text',
-          column: 'category',
-        },
+        { key: 'category', label: 'Category', type: 'text', column: 'category' },
         {
           key: 'status',
           label: 'Status',
@@ -427,99 +415,73 @@ export default function AdminTags() {
     [columns, categoriesTree, isCreateDialogOpen, editingTag, formData],
   );
 
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
-  if (rolesLoading) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography>Loading...</Typography>
-      </Box>
-    );
-  }
-  if (!canManageContent()) {
-    navigate('/');
-    return null;
-  }
-
   return (
-    <Box sx={{ width: '100%', p: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <Button variant="outline" onClick={() => navigate('/admin')}>
-          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
-          Back
-        </Button>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Tags Management
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Create and manage content tags
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* Tag Categorizer */}
-      <Box sx={{ mb: 3 }}>
-        <TagCategorizer />
-      </Box>
-
-      {/* Near-duplicate tag merge (find_unified_tag_duplicates + merge_unified_tag) */}
-      <TagMergeCandidates />
-
-      {/* Data Table */}
-      <AdminDataTable config={tableConfig} />
-
-      {/* Bulk Edit Descriptions Dialog */}
-      <Dialog open={isBulkEditOpen} onOpenChange={setIsBulkEditOpen}>
-        <DialogContent style={{ maxWidth: 896, maxHeight: '80vh', overflowY: 'auto' }}>
-          <DialogHeader>
-            <DialogTitle>Bulk Edit Tag Descriptions</DialogTitle>
-            <Typography variant="body2" color="text.secondary">
-              Add descriptions to tags that don't have them.
-            </Typography>
-          </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {Object.entries(bulkEditTags).map(([tagId, description]) => {
-              const tag = tags.find((t) => t.id === tagId);
-              if (!tag) return null;
-              return (
-                <Box key={tagId} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <span style={{ fontWeight: 500 }}>{tag.name}</span>
-                    <Badge variant="outline">{tag.category}</Badge>
-                  </Box>
-                  <Textarea
-                    value={description}
-                    onChange={(e) => setBulkEditTags((p) => ({ ...p, [tagId]: e.target.value }))}
-                    placeholder="Enter description..."
-                    rows={2}
-                  />
-                </Box>
-              );
-            })}
-            {Object.keys(bulkEditTags).length === 0 && (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body2" color="text.secondary">
-                  All tags have descriptions!
-                </Typography>
-              </Box>
-            )}
-            {Object.keys(bulkEditTags).length > 0 && (
-              <Box sx={{ display: 'flex', gap: 1, pt: 2 }}>
-                <Button onClick={saveBulkDescriptions} style={{ flex: 1 }}>
-                  Save All ({Object.keys(bulkEditTags).length} tags)
-                </Button>
-                <Button variant="outline" onClick={() => setIsBulkEditOpen(false)}>
-                  Cancel
-                </Button>
-              </Box>
-            )}
+    <AdminEntityTable
+      title="Tags Management"
+      subtitle="Create and manage content tags"
+      config={tableConfig}
+      beforeTable={
+        <>
+          <Box sx={{ mb: 3 }}>
+            <TagCategorizer />
           </Box>
-        </DialogContent>
-      </Dialog>
-    </Box>
+          <TagMergeCandidates />
+        </>
+      }
+      afterTable={
+        <Dialog open={isBulkEditOpen} onOpenChange={setIsBulkEditOpen}>
+          <DialogContent style={{ maxWidth: 896, maxHeight: '80vh', overflowY: 'auto' }}>
+            <DialogHeader>
+              <DialogTitle>Bulk Edit Tag Descriptions</DialogTitle>
+              <Typography variant="body2" color="text.secondary">
+                Add descriptions to tags that don't have them.
+              </Typography>
+            </DialogHeader>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {Object.entries(bulkEditTags).map(([tagId, description]) => {
+                const tag = tags.find((t) => t.id === tagId);
+                if (!tag) return null;
+                return (
+                  <Box
+                    key={tagId}
+                    sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <span style={{ fontWeight: 500 }}>{tag.name}</span>
+                      <Badge variant="outline">{tag.category}</Badge>
+                    </Box>
+                    <Textarea
+                      value={description}
+                      onChange={(e) =>
+                        setBulkEditTags((p) => ({ ...p, [tagId]: e.target.value }))
+                      }
+                      placeholder="Enter description..."
+                      rows={2}
+                    />
+                  </Box>
+                );
+              })}
+              {Object.keys(bulkEditTags).length === 0 && (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    All tags have descriptions!
+                  </Typography>
+                </Box>
+              )}
+              {Object.keys(bulkEditTags).length > 0 && (
+                <Box sx={{ display: 'flex', gap: 1, pt: 2 }}>
+                  <Button onClick={saveBulkDescriptions} style={{ flex: 1 }}>
+                    Save All ({Object.keys(bulkEditTags).length} tags)
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsBulkEditOpen(false)}>
+                    Cancel
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </DialogContent>
+        </Dialog>
+      }
+    />
   );
 }
