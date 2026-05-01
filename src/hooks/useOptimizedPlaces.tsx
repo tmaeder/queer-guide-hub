@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Database, Tables } from '@/integrations/supabase/types';
+import type { Database, Tables } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 
 type Country = Database['public']['Tables']['countries']['Row'];

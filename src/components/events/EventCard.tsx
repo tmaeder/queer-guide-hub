@@ -19,7 +19,7 @@ import {
   Share2,
   Luggage,
 } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatEventTime } from '@/lib/event-time';

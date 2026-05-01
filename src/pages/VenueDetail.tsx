@@ -33,7 +33,7 @@ import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useEvents } from '@/hooks/useEvents';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { EntityMap } from '@/components/map/EntityMap';

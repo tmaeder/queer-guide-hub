@@ -34,7 +34,7 @@ import {
   Grid,
   MapPin,
 } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
