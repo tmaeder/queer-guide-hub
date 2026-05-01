@@ -1,0 +1,596 @@
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import {
+  ExternalLink,
+  Calendar,
+  MapPin,
+  Briefcase,
+  Star,
+  Share2,
+  Heart,
+  Verified,
+  Tag,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ReportButton } from '@/components/moderation/ReportButton';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
+import type { Personality } from '@/hooks/usePersonalities';
+import { supabase } from '@/integrations/supabase/client';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+
+export interface SimilarPersonality {
+  id: string;
+  slug?: string | null;
+  name: string;
+  profession: string | null;
+  nationality: string | null;
+  image_url: string | null;
+  is_living: boolean;
+  birth_date: string | null;
+  death_date: string | null;
+  description: string | null;
+  similarity: number;
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function transformPersonality(data: Record<string, unknown>): Personality {
+  return {
+    ...(data as unknown as Personality),
+    fields: Array.isArray(data.fields) ? (data.fields as string[]) : [],
+    achievements: Array.isArray(data.achievements) ? (data.achievements as string[]) : [],
+    social_links: (data.social_links as Record<string, unknown>) || {},
+    tags: (data.tags as string[]) || [],
+    verification_status:
+      (data.verification_status as 'pending' | 'verified' | 'disputed') || 'pending',
+    visibility: (data.visibility as 'public' | 'private' | 'draft') || 'public',
+  };
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export async function fetchPersonalityBySlug(slug: string): Promise<Personality | null> {
+  let { data, error } = await supabase
+    .from('personalities')
+    .select('*')
+    .eq('slug', slug)
+    .eq('visibility', 'public')
+    .maybeSingle();
+
+  if (!data && !error) {
+    const fallback = await supabase
+      .from('personalities')
+      .select('*')
+      .eq('id', slug)
+      .eq('visibility', 'public')
+      .maybeSingle();
+    data = fallback.data;
+    error = fallback.error;
+  }
+
+  if (error) throw error;
+  if (!data) return null;
+  return transformPersonality(data as unknown as Record<string, unknown>);
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function calculateAge(birthDate: string, deathDate?: string) {
+  const birth = new Date(birthDate);
+  const end = deathDate ? new Date(deathDate) : new Date();
+  const age = end.getFullYear() - birth.getFullYear();
+  const monthDiff = end.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && end.getDate() < birth.getDate())) {
+    return age - 1;
+  }
+  return age;
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function VerificationBadge({ status }: { status: Personality['verification_status'] }) {
+  if (status === 'verified') {
+    return (
+      <Badge
+        variant="secondary"
+        style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+      >
+        <Verified style={{ height: 12, width: 12 }} />
+        Verified
+      </Badge>
+    );
+  }
+  if (status === 'disputed') {
+    return (
+      <Badge
+        variant="secondary"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.25rem',
+          backgroundColor: '#fef9e7',
+          color: '#a16207',
+        }}
+      >
+        Disputed
+      </Badge>
+    );
+  }
+  return null;
+}
+
+interface PersonalityHeroProps {
+  personality: Personality;
+  countryId: string | null;
+  onShare: () => void;
+  onProfessionClick: (profession: string) => void;
+}
+
+export function PersonalityHero({
+  personality,
+  countryId,
+  onShare,
+  onProfessionClick,
+}: PersonalityHeroProps) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        alignItems: { md: 'flex-start' },
+        justifyContent: { md: 'space-between' },
+        gap: 2,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+        <Avatar style={{ height: 96, width: 96 }}>
+          <AvatarImage
+            src={personality.image_url || ''}
+            alt={personality.name}
+            style={{ objectFit: 'cover' }}
+          />
+          <AvatarFallback style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+            {getInitials(personality.name)}
+          </AvatarFallback>
+        </Avatar>
+
+        <div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+            <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
+              {personality.name}
+            </Typography>
+            {personality.is_featured && (
+              <Badge
+                variant="secondary"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                <Star style={{ height: 12, width: 12 }} />
+                Featured
+              </Badge>
+            )}
+            <VerificationBadge status={personality.verification_status} />
+          </Box>
+
+          {personality.pronouns && (
+            <Typography sx={{ color: 'text.secondary', mb: 1 }}>
+              ({personality.pronouns})
+            </Typography>
+          )}
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              color: 'text.secondary',
+              mb: 1.5,
+              flexWrap: 'wrap',
+            }}
+          >
+            {personality.profession && (
+              <Box
+                component="a"
+                href={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  onProfessionClick(personality.profession!);
+                }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  color: 'primary.main',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
+                <Briefcase style={{ height: 16, width: 16 }} />
+                <span>{personality.profession}</span>
+              </Box>
+            )}
+            {personality.nationality &&
+              (countryId ? (
+                <Box
+                  component={LocalizedLink}
+                  to={`/country/${countryId}`}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    color: 'primary.main',
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                >
+                  <MapPin style={{ height: 16, width: 16 }} />
+                  <span>{personality.nationality}</span>
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <MapPin style={{ height: 16, width: 16 }} />
+                  <span>{personality.nationality}</span>
+                </Box>
+              ))}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              {personality.is_living ? (
+                <>
+                  <Heart style={{ height: 16, width: 16, color: '#16a34a' }} />
+                  <span>Living</span>
+                </>
+              ) : (
+                <>
+                  <Calendar style={{ height: 16, width: 16 }} />
+                  <span>Historical</span>
+                </>
+              )}
+            </Box>
+          </Box>
+
+          {personality.birth_date && (
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5 }}>
+              Age: {calculateAge(personality.birth_date, personality.death_date || undefined)}
+              {personality.is_living ? ' years old' : ' years'}
+            </Typography>
+          )}
+
+          {personality.fields.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {personality.fields.map((field, index) => (
+                <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
+                  {field}
+                </Badge>
+              ))}
+            </Box>
+          )}
+        </div>
+      </Box>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ReportButton
+          contentType="personalities"
+          contentId={personality.id}
+          contentName={personality.name}
+        />
+        <AdminEditButton
+          contentType="personalities"
+          contentId={personality.id}
+          contentName={personality.name}
+          currentData={personality as unknown as Record<string, unknown>}
+          onSaved={() => window.location.reload()}
+        />
+        <Button variant="outline" size="sm" onClick={onShare}>
+          <Share2 style={{ height: 16, width: 16, marginRight: 8 }} />
+          Share
+        </Button>
+        {personality.website_url && (
+          <Button variant="outline" size="sm" asChild>
+            <a href={personality.website_url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink style={{ height: 16, width: 16, marginRight: 8 }} />
+              Website
+            </a>
+          </Button>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
+export function PersonalityOverview({
+  personality,
+  similarPersonalities,
+}: {
+  personality: Personality;
+  similarPersonalities: SimilarPersonality[];
+}) {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+      {personality.description && (
+        <Card>
+          <CardHeader>
+            <CardTitle>About</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p style={{ color: 'hsl(var(--muted-foreground))' }}>{personality.description}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {personality.bio && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Biography</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {personality.bio.split('\n').map(
+                (paragraph, index) =>
+                  paragraph.trim() && (
+                    <p key={index} style={{ color: 'hsl(var(--muted-foreground))' }}>
+                      {paragraph}
+                    </p>
+                  ),
+              )}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
+      {personality.achievements.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Notable Achievements</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {personality.achievements.map((achievement, index) => (
+                <Box
+                  component="li"
+                  key={index}
+                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
+                >
+                  <Box
+                    sx={{
+                      height: 8,
+                      width: 8,
+                      bgcolor: 'primary.main',
+                      borderRadius: '50%',
+                      mt: 1,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ color: 'hsl(var(--muted-foreground))' }}>{achievement}</span>
+                </Box>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
+      {similarPersonalities.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Similar Personalities</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                gap: 2,
+              }}
+            >
+              {similarPersonalities.map((similar) => (
+                <Box
+                  key={similar.id}
+                  component={LocalizedLink}
+                  to={`/personalities/${similar.slug || similar.id}`}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    p: 1.5,
+                    borderRadius: 1,
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    transition: 'all 0.2s',
+                    '&:hover': { bgcolor: 'action.hover' },
+                  }}
+                >
+                  <Avatar style={{ height: 40, width: 40, flexShrink: 0 }}>
+                    <AvatarImage
+                      src={similar.image_url || ''}
+                      alt={similar.name}
+                      style={{ objectFit: 'cover' }}
+                    />
+                    <AvatarFallback style={{ fontSize: '0.75rem' }}>
+                      {getInitials(similar.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {similar.name}
+                    </Typography>
+                    {similar.profession && (
+                      <Typography
+                        sx={{
+                          fontSize: '0.75rem',
+                          color: 'text.secondary',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {similar.profession}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+    </Box>
+  );
+}
+
+export function PersonalitySidebar({
+  personality,
+  countryId,
+  onTagClick,
+}: {
+  personality: Personality;
+  countryId: string | null;
+  onTagClick: (tag: string) => void;
+}) {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Personal Information</CardTitle>
+        </CardHeader>
+        <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {personality.birth_date && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <div>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  Born
+                </Typography>
+                <Typography sx={{ fontWeight: 500 }}>
+                  {new Date(personality.birth_date).toLocaleDateString()}
+                </Typography>
+              </div>
+            </Box>
+          )}
+          {personality.death_date && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <div>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  Died
+                </Typography>
+                <Typography sx={{ fontWeight: 500 }}>
+                  {new Date(personality.death_date).toLocaleDateString()}
+                </Typography>
+              </div>
+            </Box>
+          )}
+          {personality.nationality && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <div>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  Nationality
+                </Typography>
+                {countryId ? (
+                  <Typography
+                    component={LocalizedLink}
+                    to={`/country/${countryId}`}
+                    sx={{
+                      fontWeight: 500,
+                      color: 'primary.main',
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
+                  >
+                    {personality.nationality}
+                  </Typography>
+                ) : (
+                  <Typography sx={{ fontWeight: 500 }}>{personality.nationality}</Typography>
+                )}
+              </div>
+            </Box>
+          )}
+          {personality.profession && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Briefcase style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <div>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  Profession
+                </Typography>
+                <Typography
+                  component={LocalizedLink}
+                  to={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
+                  sx={{
+                    fontWeight: 500,
+                    color: 'primary.main',
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                >
+                  {personality.profession}
+                </Typography>
+              </div>
+            </Box>
+          )}
+          {personality.birth_place && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+              <div>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  Birth Place
+                </Typography>
+                <Typography sx={{ fontWeight: 500 }}>{personality.birth_place}</Typography>
+              </div>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      {personality.social_links && Object.keys(personality.social_links).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Social Links</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SocialLinksDisplay socialLinks={personality.social_links} size="sm" />
+          </CardContent>
+        </Card>
+      )}
+
+      {personality.tags && personality.tags.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Tag style={{ height: 16, width: 16 }} />
+              Tags
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {personality.tags.map((tag, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  style={{ fontSize: '0.75rem', cursor: 'pointer' }}
+                  onClick={() => onTagClick(tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+    </Box>
+  );
+}
