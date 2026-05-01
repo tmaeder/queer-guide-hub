@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 
 export type Festival = Database['public']['Tables']['festivals']['Row'];
 type FestivalInsert = Database['public']['Tables']['festivals']['Insert'];

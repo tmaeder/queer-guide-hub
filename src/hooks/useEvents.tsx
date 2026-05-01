@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
 

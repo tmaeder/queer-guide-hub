@@ -25,7 +25,7 @@ import {
   addMonths,
   subMonths,
 } from 'date-fns';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';

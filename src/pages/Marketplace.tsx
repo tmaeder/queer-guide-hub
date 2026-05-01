@@ -16,7 +16,7 @@ import {
 import { Store, Plus, Grid, List } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/layout/PageHeader';

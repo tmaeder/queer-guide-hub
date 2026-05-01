@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag } from 'lucide-react';
-import { Tables } from '@/integrations/supabase/types';
+import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { NewsCategory } from '@/hooks/useNews';

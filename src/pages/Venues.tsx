@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { MapPin, Plus, Grid, Map } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';

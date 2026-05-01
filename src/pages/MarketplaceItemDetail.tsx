@@ -26,7 +26,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import Container from '@mui/material/Container';
