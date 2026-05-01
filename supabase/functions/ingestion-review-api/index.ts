@@ -9,6 +9,8 @@ const COMMIT_RPC_BY_TARGET: Record<string, string> = {
   personalities: 'commit_personality_staging_item',
   cities: 'commit_city_staging_item',
   countries: 'commit_country_staging_item',
+  marketplace_listings: 'commit_marketplace_staging_item',
+  news_articles: 'commit_news_staging_item',
 }
 
 Deno.serve(async (req) => {
