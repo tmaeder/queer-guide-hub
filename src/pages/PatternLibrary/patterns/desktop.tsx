@@ -282,7 +282,7 @@ function FilterBar() {
         ["Type ▾", false], ["Open now", true], ["Lesbian-owned", false], ["Trans-friendly", true],
         ["Wheelchair", false], ["Outdoor", false], ["DJ tonight", false], ["Price ▾", false],
       ].map(([t, on]) => <span key={t} className={on ? "pill pill--solid" : "pill"}>{t}</span>)}
-      <span style={{ marginLeft: "auto" }} className="mono" style={{ color: "var(--muted)" }}>412 results · sort: relevance ▾</span>
+      <span style={{ marginLeft: "auto", color: "var(--muted)" }} className="mono">412 results · sort: relevance ▾</span>
     </div>
   );
 }
@@ -950,7 +950,7 @@ export function PatternGroupDetail() {
                   <div style={{ fontWeight: 500, fontSize: 13 }}>{who}</div>
                   <div className="mono" style={{ color: "var(--muted)" }}>{when}</div>
                 </div>
-                <span style={{ marginLeft: "auto" }} className="mono" style={{ color: "var(--muted)" }}>···</span>
+                <span style={{ marginLeft: "auto", color: "var(--muted)" }} className="mono">···</span>
               </div>
               <div style={{ color: "var(--ink-2)" }}>{body}</div>
               <div className="row" style={{ marginTop: 10, color: "var(--muted)", fontSize: 12 }}>
@@ -1228,7 +1228,7 @@ export function PatternMarketplace() {
         {["All", "Apparel", "Art", "Books", "Home", "Tours", "Lessons", "Stays", "Services"].map((t, i) => (
           <span key={t} className={i === 0 ? "pill pill--solid" : "pill"}>{t}</span>
         ))}
-        <span style={{ marginLeft: "auto" }} className="mono" style={{ color: "var(--muted)" }}>2,140 listings · sort: newest ▾</span>
+        <span style={{ marginLeft: "auto", color: "var(--muted)" }} className="mono">2,140 listings · sort: newest ▾</span>
       </div>
       <div style={{ padding: "20px 28px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, flex: 1 }}>
         {[
