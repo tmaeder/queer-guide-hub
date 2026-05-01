@@ -57,7 +57,10 @@ test.describe('Public dialogs — automated a11y', () => {
     await expect(dialog).not.toBeVisible();
   });
 
-  test('search command palette (cmd+k)', async ({ page }) => {
+  // Despite the historical name, this isn't a separate ⌘K palette — it
+  // exercises the header search input's suggestions popover for a11y.
+  // No standalone command palette exists in the codebase today.
+  test('search suggestions popover', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);

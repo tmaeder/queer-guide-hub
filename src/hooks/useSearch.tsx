@@ -72,6 +72,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const [facets, setFacets] = useState<FacetDistribution>({});
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -101,6 +102,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
 
     setLoading(true);
     setLoadingTimedOut(false);
+    setError(null);
     try {
       const data = await searchWithRetry({
         query: searchQuery,
@@ -111,11 +113,12 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
       setResults(data?.hits || []);
       setSuggestions(data?.suggestions || []);
       setFacets(data?.facetDistribution || {});
-    } catch (error) {
-      console.error('Search error:', error);
+    } catch (err) {
+      console.error('Search error:', err);
       setResults([]);
       setSuggestions([]);
       setFacets({});
+      setError(err instanceof Error ? err.message : 'Search failed');
     } finally {
       setLoading(false);
     }
@@ -137,6 +140,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
     facets,
     loading,
     loadingTimedOut,
+    error,
     performSearch,
   };
 };
