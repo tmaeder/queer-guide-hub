@@ -1,0 +1,82 @@
+import { ShoppingBag } from 'lucide-react';
+import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+
+export const marketplaceFields: FieldConfig[] = [
+  {
+    name: 'title',
+    label: 'Title',
+    type: 'text',
+    required: true,
+    group: 'basic',
+    searchable: true,
+    sortable: true,
+  },
+  { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
+  {
+    name: 'category',
+    label: 'Category',
+    type: 'text',
+    required: true,
+    group: 'basic',
+    filterable: true,
+  },
+  { name: 'subcategory', label: 'Subcategory', type: 'text', group: 'basic' },
+  { name: 'business_name', label: 'Business Name', type: 'text', required: true, group: 'basic' },
+  { name: 'business_type', label: 'Business Type', type: 'text', group: 'basic' },
+  { name: 'price', label: 'Price', type: 'number', group: 'details', min: 0 },
+  {
+    name: 'price_type',
+    label: 'Price Type',
+    type: 'select',
+    group: 'details',
+    options: [
+      { value: 'fixed', label: 'Fixed' },
+      { value: 'negotiable', label: 'Negotiable' },
+      { value: 'free', label: 'Free' },
+      { value: 'contact', label: 'Contact for Price' },
+    ],
+  },
+  { name: 'currency', label: 'Currency', type: 'text', group: 'details' },
+  { name: 'contact_email', label: 'Contact Email', type: 'email', group: 'details' },
+  { name: 'contact_phone', label: 'Contact Phone', type: 'phone', group: 'details' },
+  { name: 'website', label: 'Website', type: 'url', group: 'details' },
+  { name: 'location', label: 'Location', type: 'text', group: 'location' },
+  { name: 'shipping_available', label: 'Shipping Available', type: 'boolean', group: 'details' },
+  { name: 'shipping_info', label: 'Shipping Info', type: 'text', group: 'details' },
+  { name: 'images', label: 'Images', type: 'images', group: 'media' },
+  { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  {
+    name: 'status',
+    label: 'Status',
+    type: 'select',
+    group: 'settings',
+    filterable: true,
+    options: [
+      { value: 'active', label: 'Active' },
+      { value: 'sold', label: 'Sold' },
+      { value: 'expired', label: 'Expired' },
+      { value: 'draft', label: 'Draft' },
+    ],
+  },
+];
+
+export const marketplaceContentType: ContentTypeConfig = {
+  id: 'marketplace_listings',
+  tableName: 'marketplace_listings',
+  primaryKey: 'id',
+  titleField: 'title',
+  descriptionField: 'description',
+  imageField: 'images',
+  icon: ShoppingBag,
+  label: { singular: 'Listing', plural: 'Marketplace Listings' },
+  color: '#f97316',
+  fields: marketplaceFields,
+  defaults: {
+    status: 'active',
+    featured: false,
+    shipping_available: false,
+    currency: 'USD',
+    price_type: 'fixed',
+  },
+  fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
+};

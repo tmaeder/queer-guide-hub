@@ -1,0 +1,128 @@
+import { Users } from 'lucide-react';
+import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+
+export const personalityFields: FieldConfig[] = [
+  {
+    name: 'name',
+    label: 'Name',
+    type: 'text',
+    required: true,
+    group: 'basic',
+    searchable: true,
+    sortable: true,
+    maxLength: 255,
+  },
+  { name: 'pronouns', label: 'Pronouns', type: 'text', group: 'basic' },
+  { name: 'profession', label: 'Profession', type: 'text', group: 'basic', searchable: true },
+  { name: 'description', label: 'Short Description', type: 'textarea', group: 'basic', colSpan: 2 },
+  { name: 'bio', label: 'Biography', type: 'richtext', group: 'basic', colSpan: 2 },
+  { name: 'birth_date', label: 'Birth Date', type: 'date', group: 'details' },
+  { name: 'death_date', label: 'Death Date', type: 'date', group: 'details' },
+  {
+    name: 'death_place',
+    label: 'Death Place',
+    type: 'text',
+    group: 'details',
+    placeholder: 'City, Country',
+  },
+  {
+    name: 'cause_of_death',
+    label: 'Cause of Death',
+    type: 'select',
+    group: 'details',
+    options: [
+      { value: 'natural', label: 'Natural causes' },
+      { value: 'illness', label: 'Illness' },
+      { value: 'hiv_aids', label: 'HIV/AIDS' },
+      { value: 'suicide', label: 'Suicide' },
+      { value: 'homicide', label: 'Homicide / violent death' },
+      { value: 'accident', label: 'Accident' },
+      { value: 'overdose', label: 'Overdose' },
+      { value: 'execution', label: 'Execution' },
+      { value: 'unknown', label: 'Unknown' },
+      { value: 'other', label: 'Other' },
+    ],
+  },
+  { name: 'is_living', label: 'Living', type: 'boolean', group: 'details' },
+  {
+    name: 'nationality',
+    label: 'Nationality',
+    type: 'text',
+    group: 'details',
+    resolverType: 'nationality',
+    relatedFields: { country_id: 'country_id' },
+  },
+  {
+    name: 'birth_place',
+    label: 'Birth Place',
+    type: 'text',
+    group: 'details',
+    resolverType: 'birthplace',
+    relatedFields: { city_id: 'city_id', country_id: 'country_id' },
+    placeholder: 'City, Country',
+  },
+  { name: 'website_url', label: 'Website', type: 'url', group: 'details' },
+  { name: 'social_links', label: 'Social Links', type: 'social_links', group: 'details', colSpan: 2 },
+  { name: 'fields', label: 'Fields/Disciplines', type: 'json', group: 'details' },
+  { name: 'achievements', label: 'Achievements', type: 'json', group: 'details' },
+  { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
+  // LGBTQ
+  {
+    name: 'lgbti_connection',
+    label: 'LGBTQ+ Connection',
+    type: 'textarea',
+    group: 'lgbtq',
+    colSpan: 2,
+  },
+  { name: 'lgbti_details', label: 'LGBTQ+ Details', type: 'textarea', group: 'lgbtq', colSpan: 2 },
+  // Media
+  { name: 'image_url', label: 'Profile Image', type: 'image', group: 'media' },
+  // Settings
+  { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  {
+    name: 'verification_status',
+    label: 'Verification',
+    type: 'select',
+    group: 'settings',
+    options: [
+      { value: 'pending', label: 'Pending' },
+      { value: 'verified', label: 'Verified' },
+      { value: 'rejected', label: 'Rejected' },
+    ],
+  },
+  {
+    name: 'visibility',
+    label: 'Visibility',
+    type: 'select',
+    group: 'settings',
+    options: [
+      { value: 'public', label: 'Public' },
+      { value: 'private', label: 'Private' },
+      { value: 'restricted', label: 'Restricted' },
+    ],
+  },
+  // External (hidden FKs — auto-populated by address resolver)
+  { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
+  { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+];
+
+export const personalityContentType: ContentTypeConfig = {
+  id: 'personalities',
+  tableName: 'personalities',
+  primaryKey: 'id',
+  titleField: 'name',
+  descriptionField: 'description',
+  imageField: 'image_url',
+  icon: Users,
+  label: { singular: 'Personality', plural: 'Personalities' },
+  color: '#f59e0b',
+  fields: personalityFields,
+  defaults: { is_living: true, visibility: 'public', verification_status: 'pending' },
+  fieldGroupOrder: ['basic', 'details', 'lgbtq', 'media', 'settings'],
+  translatableFields: ['name', 'profession', 'description', 'bio'],
+  commentable: true,
+  aiAssist: {
+    ops: ['summarize', 'seo_draft', 'fact_check'],
+    writableFields: ['bio', 'description', 'meta_title', 'meta_description'],
+  },
+};
