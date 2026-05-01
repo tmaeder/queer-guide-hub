@@ -1,0 +1,57 @@
+import { MapPin } from 'lucide-react';
+import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+
+export const cityFields: FieldConfig[] = [
+  {
+    name: 'name',
+    label: 'City Name',
+    type: 'text',
+    required: true,
+    group: 'basic',
+    searchable: true,
+    sortable: true,
+  },
+  { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
+  { name: 'region_name', label: 'Region', type: 'text', group: 'basic' },
+  { name: 'population', label: 'Population', type: 'number', group: 'details', sortable: true },
+  { name: 'is_capital', label: 'Capital City', type: 'boolean', group: 'details' },
+  { name: 'is_major_city', label: 'Major City', type: 'boolean', group: 'details' },
+  { name: 'latitude', label: 'Latitude', type: 'number', group: 'location', min: -90, max: 90 },
+  { name: 'longitude', label: 'Longitude', type: 'number', group: 'location', min: -180, max: 180 },
+  { name: 'timezone', label: 'Timezone', type: 'text', group: 'location' },
+  { name: 'elevation_m', label: 'Elevation (m)', type: 'number', group: 'details' },
+  { name: 'climate_type', label: 'Climate', type: 'text', group: 'details' },
+  { name: 'founded_year', label: 'Founded Year', type: 'number', group: 'details' },
+  { name: 'area_km2', label: 'Area (km²)', type: 'number', group: 'details' },
+  { name: 'local_language', label: 'Local Language', type: 'text', group: 'details' },
+  { name: 'official_website', label: 'Official Website', type: 'url', group: 'details' },
+  { name: 'major_airport_code', label: 'Airport Code', type: 'text', group: 'details' },
+  { name: 'best_time_to_visit', label: 'Best Time to Visit', type: 'text', group: 'details' },
+  { name: 'local_customs', label: 'Local Customs', type: 'textarea', group: 'details' },
+  {
+    name: 'lgbt_friendly_rating',
+    label: 'LGBTQ+ Friendly Rating',
+    type: 'number',
+    group: 'lgbtq',
+    min: 0,
+    max: 10,
+  },
+  { name: 'image_url', label: 'City Image', type: 'image', group: 'media' },
+  { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+];
+
+export const cityContentType: ContentTypeConfig = {
+  id: 'cities',
+  tableName: 'cities',
+  primaryKey: 'id',
+  titleField: 'name',
+  descriptionField: 'description',
+  imageField: 'image_url',
+  icon: MapPin,
+  label: { singular: 'City', plural: 'Cities' },
+  color: '#10b981',
+  fields: cityFields,
+  fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media'],
+  translatableFields: ['name', 'description'],
+  commentable: true,
+};
