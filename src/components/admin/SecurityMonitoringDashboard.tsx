@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom, countRows } from '@/hooks/usePageFetchers';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,65 +19,43 @@ interface SecurityEvent {
 export function SecurityMonitoringDashboard() {
   const { data: recentEvents = [], isLoading } = useQuery({
     queryKey: ['security-events'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('security_events')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
-        console.error('Error fetching security events:', error);
-        throw error;
-      }
-      return data as SecurityEvent[];
-    },
+    queryFn: () =>
+      listFrom<SecurityEvent>('security_events', '*', { col: 'created_at', ascending: false }, 50),
     refetchInterval: 30000,
   });
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_role_audit_log')
-        .select('id, admin_user_id, target_user_id, action, role_name, timestamp')
-        .order('timestamp', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () =>
+      listFrom<unknown>(
+        'user_role_audit_log',
+        'id, admin_user_id, target_user_id, action, role_name, timestamp',
+        { col: 'timestamp', ascending: false },
+        20,
+      ),
   });
 
   const { data: systemStats } = useQuery({
     queryKey: ['system-stats'],
     queryFn: async () => {
-      const [failedLogins, captchaVerifications, accessLogs] = await Promise.all([
-        supabase.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
-        supabase.from('captcha_verifications').select('*', { count: 'exact', head: true }),
-        supabase.from('access_logs').select('*', { count: 'exact', head: true }),
+      const [totalFailedLogins, totalCaptchaVerifications, totalAccessLogs] = await Promise.all([
+        countRows('failed_login_attempts'),
+        countRows('captcha_verifications'),
+        countRows('access_logs'),
       ]);
-
-      return {
-        totalFailedLogins: failedLogins.count || 0,
-        totalCaptchaVerifications: captchaVerifications.count || 0,
-        totalAccessLogs: accessLogs.count || 0,
-      };
+      return { totalFailedLogins, totalCaptchaVerifications, totalAccessLogs };
     },
   });
 
   const { data: recentFailedLogins = [] } = useQuery({
     queryKey: ['recent-failed-logins'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('failed_login_attempts')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () =>
+      listFrom<unknown>(
+        'failed_login_attempts',
+        '*',
+        { col: 'created_at', ascending: false },
+        10,
+      ),
   });
 
   const getSeverityColor = (severity: string) => {

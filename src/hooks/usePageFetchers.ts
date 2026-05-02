@@ -524,11 +524,36 @@ export async function listFrom<T = unknown>(
   table: string,
   select = '*',
   order?: { col: string; ascending?: boolean },
+  limit?: number,
 ): Promise<T[]> {
   let q = supabase.from(table as never).select(select as never);
   if (order) q = (q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }).order(order.col, { ascending: order.ascending ?? true });
+  if (limit) q = (q as unknown as { limit: (n: number) => typeof q }).limit(limit);
   const { data, error } = await q;
   if (error) throw error;
+  return (data ?? []) as T[];
+}
+
+/** Count rows in a table — used by data-viz dashboards. */
+export async function countRows(table: string, filter?: { col: string; val: unknown }): Promise<number> {
+  let q = supabase.from(table as never).select('*', { count: 'exact', head: true });
+  if (filter) q = (q as unknown as { eq: (c: string, v: unknown) => typeof q }).eq(filter.col, filter.val);
+  const { count, error } = await q;
+  return error ? 0 : (count ?? 0);
+}
+
+/** Like listFrom but with an `.in(col, values)` filter. */
+export async function listFromIn<T = unknown>(
+  table: string,
+  select: string,
+  col: string,
+  values: unknown[],
+): Promise<T[]> {
+  if (values.length === 0) return [];
+  const { data } = await supabase
+    .from(table as never)
+    .select(select as never)
+    .in(col as never, values as never);
   return (data ?? []) as T[];
 }
 
