@@ -2,6 +2,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Activity, BarChart3, Trash2, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -62,11 +63,7 @@ export default function ScraperHealthTab() {
 
   const { data: coverage = [], isLoading: covLoading } = useQuery<CoverageRow[]>({
     queryKey: ['scraper-coverage'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('scraper_ingest_coverage').select('*').limit(200);
-      if (error) throw error;
-      return (data ?? []) as CoverageRow[];
-    },
+    queryFn: () => listFrom<CoverageRow>('scraper_ingest_coverage', '*', undefined, 200),
     refetchInterval: 120_000,
   });
 
@@ -82,11 +79,7 @@ export default function ScraperHealthTab() {
 
   const { data: quality = [] } = useQuery<QualityRow[]>({
     queryKey: ['pipeline-quality-dist'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('pipeline_quality_distribution').select('*').limit(200);
-      if (error) throw error;
-      return (data ?? []) as QualityRow[];
-    },
+    queryFn: () => listFrom<QualityRow>('pipeline_quality_distribution', '*', undefined, 200),
     refetchInterval: 5 * 60_000,
   });
 
