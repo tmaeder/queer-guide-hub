@@ -2,7 +2,7 @@ import { useState, useMemo, Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useOptimizedCountries, useOptimizedCities } from "@/hooks/useOptimizedPlaces";
 import { useDirectory } from "@/hooks/useDirectory";
-import { supabase } from "@/integrations/supabase/client";
+import { useContinents } from "@/hooks/useContinents";
 import { DirectoryCard } from "@/components/directory/DirectoryCard";
 import { DirectorySearch, type DirectoryFilters } from "@/components/directory/DirectorySearch";
 import { WeatherForecast } from "@/components/weather/WeatherForecast";
@@ -30,26 +30,8 @@ export default function Directory() {
   const loading = countriesLoading || citiesLoading;
   const error = null;
 
-  // Fetch continents for grouping countries
-  const [continents, setContinents] = useState<Record<string, unknown>[]>([]);
-
-  useEffect(() => {
-    const fetchContinents = async () => {
-      try {
-        const { data: continentsData, error } = await supabase
-          .from('continents')
-          .select('*')
-          .order('name');
-
-        if (error) throw error;
-        setContinents(continentsData || []);
-      } catch (error) {
-        console.error('Error fetching continents:', error);
-      }
-    };
-
-    fetchContinents();
-  }, []);
+  // Fetch continents for grouping countries (DUP-4)
+  const { data: continents = [] } = useContinents();
 
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [selectedCountry, setSelectedCountry] = useState<Record<string, unknown> | null>(null);
