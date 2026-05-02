@@ -35,6 +35,7 @@ export const ExploreMapFiltersPanel: React.FC<ExploreMapFiltersProps> = ({
         <TextField
           size="small"
           placeholder="Search map…"
+          aria-label="Search map locations"
           value={filters.search ?? ''}
           onChange={(e) => updateFilter('search', e.target.value || undefined)}
           slotProps={{
