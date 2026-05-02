@@ -1,9 +1,7 @@
-import Box from '@mui/material/Box';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
 import { Hotel, Ticket } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   buildPlaceBookableLinks,
   type BookableLink,
@@ -22,12 +20,6 @@ interface Props {
 const iconFor = (link: BookableLink) =>
   link.vertical === 'hotel' ? Hotel : Ticket;
 
-/**
- * Inline affiliate booking links shown next to a trip place. Tiny icon
- * row — opens the deep search in a new tab and logs the click to
- * `trip_booking_clicks` for funnel analytics. Click logging is fire-
- * and-forget; navigation never waits on it.
- */
 export function PlaceBookableLinks({
   tripId,
   tripPlaceId,
@@ -60,31 +52,32 @@ export function PlaceBookableLinks({
   };
 
   return (
-    <Box sx={{ display: 'flex', gap: 0.25, alignItems: 'center', flexShrink: 0 }}>
-      {links.map((link) => {
-        const Icon = iconFor(link);
-        return (
-          <Tooltip key={link.provider + link.vertical} title={link.label}>
-            <IconButton
-              size="small"
-              component="a"
-              href={link.url}
-              target="_blank"
-              rel="noopener sponsored noreferrer"
-              onClick={() => onClick(link)}
-              aria-label={link.label}
-              sx={{
-                p: 0.5,
-                opacity: 0.55,
-                color: 'text.secondary',
-                '&:hover': { opacity: 1, color: 'brand.main' },
-              }}
-            >
-              <Icon style={{ width: 13, height: 13 }} />
-            </IconButton>
-          </Tooltip>
-        );
-      })}
-    </Box>
+    <TooltipProvider>
+      <div className="flex items-center gap-0.5 flex-shrink-0">
+        {links.map((link) => {
+          const Icon = iconFor(link);
+          return (
+            <Tooltip key={link.provider + link.vertical}>
+              <TooltipTrigger asChild>
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener sponsored noreferrer"
+                  onClick={() => onClick(link)}
+                  aria-label={link.label}
+                  className="inline-flex items-center justify-center p-1 text-muted-foreground transition-colors hover:text-[hsl(var(--brand))]"
+                  style={{ opacity: 0.55 }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.55')}
+                >
+                  <Icon style={{ width: 13, height: 13 }} />
+                </a>
+              </TooltipTrigger>
+              <TooltipContent>{link.label}</TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </div>
+    </TooltipProvider>
   );
 }

@@ -67,6 +67,7 @@ export default function Places() {
     };
   }, [loading]);
 
+  // Fetch continents for grouping countries
   // Fetch continents for grouping countries (DUP-4)
   const { data: continents = [] } = useContinents();
 

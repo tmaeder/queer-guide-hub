@@ -249,7 +249,7 @@ export default function AdminNewsSources() {
                 <AlertCircle style={{ height: 14, width: 14, color: '#ef4444' }} />
               ) : (
                 <CheckCircle
-                  style={{ height: 14, width: 14, color: active ? '#22c55e' : '#94a3b8' }}
+                  style={{ height: 14, width: 14, color: active ? '#22c55e' : 'hsl(var(--muted-foreground))' }}
                 />
               )}
               <Badge

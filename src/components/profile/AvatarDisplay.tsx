@@ -3,13 +3,11 @@ import { User } from 'lucide-react';
 import { BigHead } from '@bigheads/core';
 import type { AvatarConfig } from './AvatarBuilder';
 import { generateAvatarUrl } from '@/lib/avatar';
-import Box from '@mui/material/Box';
 
 interface AvatarDisplayProps {
   avatarUrl?: string;
   avatarConfig?: AvatarConfig;
   email?: string;
-  sx?: object;
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -29,28 +27,28 @@ export const AvatarDisplay = ({
   avatarUrl,
   avatarConfig,
   email,
-  sx,
   size = 'md',
 }: AvatarDisplayProps) => {
   const initialsUrl = generateAvatarUrl(email, sizePixels[size]);
+  const dims = sizeStyles[size];
 
   // Priority: avatarUrl > avatarConfig > initials > fallback
   if (avatarUrl) {
     return (
       <Avatar>
-        <Box component="span" sx={{ ...sizeStyles[size], display: 'inline-flex', ...sx }}>
+        <span style={{ ...dims, display: 'inline-flex' }}>
           <AvatarImage src={avatarUrl} alt="User avatar" />
           <AvatarFallback>
             <User style={{ width: 16, height: 16 }} />
           </AvatarFallback>
-        </Box>
+        </span>
       </Avatar>
     );
   }
 
   if (avatarConfig) {
     return (
-      <Box sx={{ ...sizeStyles[size], ...sx }}>
+      <div style={dims}>
         <BigHead
           accessory={avatarConfig.accessory}
           body={avatarConfig.body}
@@ -71,7 +69,7 @@ export const AvatarDisplay = ({
           skinTone={avatarConfig.skinTone}
           circleColor={avatarConfig.circleColor}
         />
-      </Box>
+      </div>
     );
   }
 
@@ -79,23 +77,23 @@ export const AvatarDisplay = ({
   if (initialsUrl) {
     return (
       <Avatar>
-        <Box component="span" sx={{ ...sizeStyles[size], display: 'inline-flex', ...sx }}>
+        <span style={{ ...dims, display: 'inline-flex' }}>
           <AvatarImage src={initialsUrl} alt="User avatar" />
           <AvatarFallback>
             <User style={{ width: 16, height: 16 }} />
           </AvatarFallback>
-        </Box>
+        </span>
       </Avatar>
     );
   }
 
   return (
     <Avatar>
-      <Box component="span" sx={{ ...sizeStyles[size], display: 'inline-flex', ...sx }}>
+      <span style={{ ...dims, display: 'inline-flex' }}>
         <AvatarFallback>
           <User style={{ width: 16, height: 16 }} />
         </AvatarFallback>
-      </Box>
+      </span>
     </Avatar>
   );
 };

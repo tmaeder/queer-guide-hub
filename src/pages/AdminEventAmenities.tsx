@@ -88,6 +88,12 @@ export default function AdminEventAmenities() {
       return;
     }
     try {
+      const { error } = await crud.upsert(form, editingId);
+      if (error) throw error;
+      toast({
+        title: 'Success',
+        description: editingId ? 'Event amenity updated' : 'Event amenity created',
+      });
       if (editingId) {
         const { error } = await crud.upsert(form, editingId);
         if (error) throw error;

@@ -1,8 +1,6 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
 import { Heart, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { VenueSocialSignal } from '@/hooks/useVenueSocialSignals';
 
 interface Props {
@@ -11,13 +9,6 @@ interface Props {
   tripUsageThreshold?: number;
 }
 
-/**
- * Inline social-proof chips for a venue. Renders nothing when both
- * counts are below threshold — noise should stay off the UI.
- *
- * - `friends_saved > 0` → ❤ N friends
- * - `trip_usage >= threshold` → 👥 in N trips
- */
 export function SocialSignalBadges({ signal, tripUsageThreshold = 3 }: Props) {
   const { t } = useTranslation();
   if (!signal) return null;
@@ -26,59 +17,48 @@ export function SocialSignalBadges({ signal, tripUsageThreshold = 3 }: Props) {
   if (!showFriends && !showTrips) return null;
 
   return (
-    <Box sx={{ display: 'inline-flex', gap: 0.5, alignItems: 'center', flexWrap: 'wrap' }}>
-      {showFriends && (
-        <Tooltip title={t('places.social.friendsSavedTooltip', { defaultValue: 'Saved by people you follow' })}>
-          <Box
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.25,
-              px: 0.75,
-              py: 0.25,
-              bgcolor: 'rgba(244, 63, 94, 0.12)',
-              color: '#e11d48',
-              borderRadius: 0.5,
-              fontSize: 11,
-              fontWeight: 600,
-            }}
-          >
-            <Heart size={10} fill="currentColor" />
-            <Typography component="span" sx={{ fontSize: 11, fontWeight: 600 }}>
-              {t('places.social.friendsSaved', {
-                defaultValue: '{{count}} friend(s) saved',
-                count: signal.friends_saved,
-              })}
-            </Typography>
-          </Box>
-        </Tooltip>
-      )}
-      {showTrips && (
-        <Tooltip title={t('places.social.tripUsageTooltip', { defaultValue: 'Added to public trips' })}>
-          <Box
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.25,
-              px: 0.75,
-              py: 0.25,
-              bgcolor: 'action.hover',
-              color: 'text.secondary',
-              borderRadius: 0.5,
-              fontSize: 11,
-              fontWeight: 600,
-            }}
-          >
-            <Users size={10} />
-            <Typography component="span" sx={{ fontSize: 11, fontWeight: 600 }}>
-              {t('places.social.tripUsage', {
-                defaultValue: 'in {{count}} trip(s)',
-                count: signal.trip_usage,
-              })}
-            </Typography>
-          </Box>
-        </Tooltip>
-      )}
-    </Box>
+    <TooltipProvider delayDuration={300}>
+      <div className="inline-flex gap-1 items-center flex-wrap">
+        {showFriends && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold"
+                style={{ backgroundColor: 'rgba(244, 63, 94, 0.12)', color: '#e11d48' }}
+              >
+                <Heart size={10} fill="currentColor" />
+                <span className="text-[11px] font-semibold">
+                  {t('places.social.friendsSaved', {
+                    defaultValue: '{{count}} friend(s) saved',
+                    count: signal.friends_saved,
+                  })}
+                </span>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t('places.social.friendsSavedTooltip', { defaultValue: 'Saved by people you follow' })}
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {showTrips && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-muted/40 text-muted-foreground">
+                <Users size={10} />
+                <span className="text-[11px] font-semibold">
+                  {t('places.social.tripUsage', {
+                    defaultValue: 'in {{count}} trip(s)',
+                    count: signal.trip_usage,
+                  })}
+                </span>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t('places.social.tripUsageTooltip', { defaultValue: 'Added to public trips' })}
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    </TooltipProvider>
   );
 }

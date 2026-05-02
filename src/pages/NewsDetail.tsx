@@ -172,9 +172,9 @@ export default function NewsDetail() {
       culture: '#8b5cf6', health: '#10b981', sports: '#f97316', business: '#f59e0b',
       technology: '#6366f1', lifestyle: '#ec4899', education: '#06b6d4',
       legislation: '#3b82f6', transgender: '#8b5cf6', rights: '#ef4444',
-      advocacy: '#f97316', news: '#64748b', community: '#ec4899',
+      advocacy: '#f97316', news: 'hsl(var(--muted-foreground))', community: '#ec4899',
     };
-    return fallback[category?.toLowerCase()] || '#64748b';
+    return fallback[category?.toLowerCase()] || 'hsl(var(--muted-foreground))';
   };
 
   const getCategoryLabel = (category: string) => {
@@ -272,7 +272,7 @@ export default function NewsDetail() {
         </LocalizedLink>
         {article.category && article.category !== 'general' && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
             <Typography
               variant="body2"
               color="text.secondary"
@@ -287,7 +287,7 @@ export default function NewsDetail() {
             </Typography>
           </>
         )}
-        <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+        <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
         <Typography
           variant="body2"
           sx={{

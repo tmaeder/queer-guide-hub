@@ -259,7 +259,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
           <Button
             variant="ghost"
             size="sm"
-            style={{ fontSize: '0.75rem', color: '#ef4444' }}
+            style={{ fontSize: '0.75rem', color: 'hsl(var(--destructive))' }}
             onClick={clearAllFilters}
           >
             Clear All

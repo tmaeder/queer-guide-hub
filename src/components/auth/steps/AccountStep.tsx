@@ -3,7 +3,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff } from 'lucide-react';
-import Box from '@mui/material/Box';
 import { useTranslation } from 'react-i18next';
 import { PasswordStrengthMeter } from '../PasswordStrengthMeter';
 import { ConsentBlock } from '../ConsentBlock';
@@ -22,8 +21,8 @@ export default function AccountStep({ data, updateData }: Props) {
   const emailValid = !emailTouched || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-2">
         <Label htmlFor="signup-email">{t('auth.fields.email', 'Email')}</Label>
         <Input
           id="signup-email"
@@ -37,15 +36,15 @@ export default function AccountStep({ data, updateData }: Props) {
           required
         />
         {!emailValid && (
-          <span style={{ fontSize: 12, color: 'var(--mui-palette-error-main)' }}>
+          <span className="text-xs text-destructive">
             {t('auth.errors.emailInvalid', 'Please enter a valid email address')}
           </span>
         )}
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="signup-password">{t('auth.fields.password', 'Password')}</Label>
-        <Box sx={{ position: 'relative' }}>
+        <div className="relative">
           <Input
             id="signup-password"
             type={showPassword ? 'text' : 'password'}
@@ -60,21 +59,20 @@ export default function AccountStep({ data, updateData }: Props) {
             type="button"
             variant="ghost"
             size="sm"
-
             onClick={() => setShowPassword((s) => !s)}
             aria-label={showPassword ? t('auth.hidePassword', 'Hide password') : t('auth.showPassword', 'Show password')}
           >
             {showPassword ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
           </Button>
-        </Box>
+        </div>
         <PasswordStrengthMeter
           password={data.password}
           email={data.email}
           onScoreChange={(score) => updateData({ passwordScore: score })}
         />
-      </Box>
+      </div>
 
       <ConsentBlock value={data.consent} onChange={(c) => updateData({ consent: c })} />
-    </Box>
+    </div>
   );
 }

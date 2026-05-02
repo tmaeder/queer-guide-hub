@@ -173,7 +173,7 @@ const BULK_BUTTONS: Array<{
   { action: 'enrich', label: 'Apply Enrichments', icon: Zap, variant: 'outlined', color: 'hsl(var(--brand))' },
   { action: 'dedup', label: 'Resolve Duplicates', icon: Inbox, variant: 'outlined', color: '#ea580c' },
   { action: 'dismiss_low', label: 'Dismiss Low-Severity', icon: VolumeX, variant: 'outlined', color: '#a855f7' },
-  { action: 'reject_stale', label: 'Reject Stale', icon: Clock, variant: 'outlined', color: '#6b7280' },
+  { action: 'reject_stale', label: 'Reject Stale', icon: Clock, variant: 'outlined', color: 'hsl(var(--muted-foreground))' },
   { action: 'reject_all', label: 'Reject All', icon: XCircle, variant: 'outlined', muiColor: 'error' },
 ];
 

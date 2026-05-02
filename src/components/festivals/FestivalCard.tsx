@@ -2,9 +2,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Calendar, MapPin, Music } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardImage } from '@/components/ui/card';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import { format } from 'date-fns';
 import type { FestivalWithRelations } from '@/hooks/useFestivals';
 
@@ -18,6 +15,15 @@ const TYPE_LABELS: Record<string, string> = {
 
 interface FestivalCardProps {
   festival: FestivalWithRelations;
+}
+
+function MetaChip({ icon: Icon, label }: { icon: React.ComponentType<{ style?: React.CSSProperties }>; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-muted-foreground border border-border">
+      <Icon style={{ width: 12, height: 12 }} />
+      {label}
+    </span>
+  );
 }
 
 export function FestivalCard({ festival }: FestivalCardProps) {
@@ -45,45 +51,29 @@ export function FestivalCard({ festival }: FestivalCardProps) {
           fallbackIcon={Music}
           height={160}
         />
-        <Box sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ flex: 1 }}>
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <p className="flex-1 truncate text-base font-bold">
               {festival.name}
-            </Typography>
+            </p>
             {festival.featured && (
               <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>Featured</Badge>
             )}
-          </Box>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
-            <Chip
-              size="small"
-              icon={<Music style={{ width: 12, height: 12 }} />}
-              label={TYPE_LABELS[festival.festival_type] || festival.festival_type}
-              variant="outlined"
-            />
-            <Chip
-              size="small"
-              icon={<Calendar style={{ width: 12, height: 12 }} />}
-              label={dateRange}
-              variant="outlined"
-            />
-            {location && (
-              <Chip
-                size="small"
-                icon={<MapPin style={{ width: 12, height: 12 }} />}
-                label={location}
-                variant="outlined"
-              />
-            )}
+          </div>
+          <div className="flex flex-wrap gap-1 mb-2">
+            <MetaChip icon={Music} label={TYPE_LABELS[festival.festival_type] || festival.festival_type} />
+            <MetaChip icon={Calendar} label={dateRange} />
+            {location && <MetaChip icon={MapPin} label={location} />}
             {festival.is_recurring && (
-              <Chip size="small" label="Recurring" color="info" variant="outlined" />
+              <span className="inline-flex items-center px-2 py-0.5 text-xs border border-border text-muted-foreground">
+                Recurring
+              </span>
             )}
-          </Box>
+          </div>
           {festival.description && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
+            <p
+              className="text-sm text-muted-foreground"
+              style={{
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
@@ -91,9 +81,9 @@ export function FestivalCard({ festival }: FestivalCardProps) {
               }}
             >
               {festival.description}
-            </Typography>
+            </p>
           )}
-        </Box>
+        </div>
       </Card>
     </LocalizedLink>
   );
