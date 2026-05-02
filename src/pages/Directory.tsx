@@ -1,4 +1,4 @@
-import { useState, useMemo, Suspense, lazy, useEffect } from "react";
+import { useState, useMemo, Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
 import { useOptimizedCountries, useOptimizedCities } from "@/hooks/useOptimizedPlaces";
 import { useDirectory } from "@/hooks/useDirectory";
