@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface LoadingListProps {
@@ -20,15 +19,12 @@ export function LoadingList({
   itemHeight = 280,
 }: LoadingListProps) {
   return (
-    <Box
+    <div
       role="status"
       aria-live="polite"
       aria-label="Loading"
-      sx={{
-        display: 'grid',
-        gap: 3,
-        gridTemplateColumns: `repeat(auto-fill, minmax(${minItemWidth}px, 1fr))`,
-      }}
+      className="grid gap-6"
+      style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${minItemWidth}px, 1fr))` }}
     >
       {Array.from({ length: count }).map((_, i) => (
         <Skeleton
@@ -37,6 +33,6 @@ export function LoadingList({
           style={{ height: itemHeight }}
         />
       ))}
-    </Box>
+    </div>
   );
 }
