@@ -36,6 +36,12 @@ const rule = {
     if (file.includes('/__tests__/') || file.endsWith('.test.tsx') || file.endsWith('.test.ts')) {
       return {};
     }
+    // Co-located controller hooks (use*Controller.{ts,tsx}) are real hooks
+    // kept next to the page or component they drive — same precedent applied
+    // for pages in eslint.config.js.
+    if (/\/use[A-Z][A-Za-z0-9]*Controller\.(ts|tsx)$/.test(file)) {
+      return {};
+    }
     return {
       CallExpression(node) {
         const callee = node.callee;

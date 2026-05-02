@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,121 +9,18 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { supabase } from '@/integrations/supabase/client';
-
-interface StatsRow {
-  day: string;
-  source: string;
-  staged: number;
-  validated: number;
-  unique_items: number;
-  duplicates: number;
-  inserted: number;
-  updated: number;
-  rejected: number;
-  pending_review: number;
-}
-
-interface EventRow {
-  id: number;
-  stage: string;
-  new_status: string;
-  actor: string;
-  created_at: string;
-  payload: Record<string, unknown> | null;
-}
-
-interface DuplicatesRow {
-  slug: string;
-  duplicates: number;
-}
-
-function useVenueStats() {
-  return useQuery({
-    queryKey: ['venue-ingest-stats'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('venue_ingest_stats')
-        .select('*')
-        .order('day', { ascending: false })
-        .limit(60);
-      if (error) throw error;
-      return (data ?? []) as StatsRow[];
-    },
-    refetchInterval: 30_000,
-  });
-}
-
-function useRecentEvents() {
-  return useQuery({
-    queryKey: ['ingestion-events-recent'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ingestion_events')
-        .select('id, stage, new_status, actor, created_at, payload')
-        .order('created_at', { ascending: false })
-        .limit(25);
-      if (error) throw error;
-      return (data ?? []) as EventRow[];
-    },
-    refetchInterval: 15_000,
-  });
-}
-
-interface HealthRow {
-  target_table: string;
-  total: number;
-  pending: number;
-  rejected: number;
-  review_pending: number;
-  stuck_normalize: number;
-  stuck_validate: number;
-  stuck_dedup: number;
-  stuck_commit: number;
-  review_stale: number;
-}
-
-function useHealthSnapshot() {
-  return useQuery({
-    queryKey: ['pipeline-health-snapshot'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('pipeline_health_snapshot');
-      if (error) throw error;
-      return (data ?? []) as HealthRow[];
-    },
-    refetchInterval: 20_000,
-  });
-}
-
-function useDuplicateSummary() {
-  return useQuery({
-    queryKey: ['venue-duplicates-by-source'],
-    queryFn: async () => {
-      // Aggregate duplicates per source slug via venue_sources join
-      const { data, error } = await supabase.rpc('venue_duplicate_summary');
-      if (error) {
-        // Fallback: count in JS
-        const { data: dups } = await supabase
-          .from('venues')
-          .select('data_source')
-          .not('duplicate_of_id', 'is', null);
-        const counts: Record<string, number> = {};
-        for (const v of dups ?? []) {
-          const k = (v as { data_source: string | null }).data_source ?? 'unknown';
-          counts[k] = (counts[k] ?? 0) + 1;
-        }
-        return Object.entries(counts).map(([slug, c]) => ({ slug, duplicates: c }));
-      }
-      return (data ?? []) as DuplicatesRow[];
-    },
-    staleTime: 60_000,
-  });
-}
+import {
+  useVenueIngestStats,
+  useVenueIngestRecentEvents,
+  useVenueIngestHealthSnapshot,
+  useVenueIngestDuplicateSummary,
+} from '@/hooks/useVenueIngestStats';
 
 export function VenueIngestStatsPanel() {
-  const stats = useVenueStats();
-  const events = useRecentEvents();
-  const dupes = useDuplicateSummary();
-  const health = useHealthSnapshot();
+  const stats = useVenueIngestStats();
+  const events = useVenueIngestRecentEvents();
+  const dupes = useVenueIngestDuplicateSummary();
+  const health = useVenueIngestHealthSnapshot();
   const [replayPattern, setReplayPattern] = useState('');
   const [replayBusy, setReplayBusy] = useState(false);
   const { toast } = useToast();
