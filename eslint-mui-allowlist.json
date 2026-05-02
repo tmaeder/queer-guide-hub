@@ -115,7 +115,6 @@
   "src/components/cms/fields/CityAutocompleteField.tsx",
   "src/components/cms/media/ExternalImageSearch.tsx",
   "src/components/cms/media/MediaPickerDialog.tsx",
-  "src/components/cms/revisions/RevisionDiff.tsx",
   "src/components/cms/revisions/RevisionHistory.tsx",
   "src/components/country/LGBTJurisdictionInfo.tsx",
   "src/components/country/WorldBankDataPanel.tsx",
