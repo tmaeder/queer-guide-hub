@@ -3,8 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 
@@ -45,22 +43,22 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
   return (
     <Card>
       <CardHeader>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <Mail size={48} color="var(--mui-palette-primary-main)" />
-        </Box>
+        <div className="flex justify-center mb-4">
+          <Mail size={48} color="hsl(var(--primary))" />
+        </div>
         <CardTitle>{t('auth.verifyEmail.title', 'Check your email')}</CardTitle>
         <CardDescription>
           {t('auth.verifyEmail.description', 'We sent a verification link to')} <strong>{email}</strong>
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-muted-foreground text-center">
             {t(
               'auth.verifyEmail.instructions',
               'Click the link in the email to activate your account. The link expires in 24 hours.'
             )}
-          </Typography>
+          </p>
 
           {status === 'sent' && (
             <Alert>
@@ -95,7 +93,7 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
           <Button type="button" variant="ghost" onClick={onBackToLogin}>
             {t('auth.verifyEmail.backToLogin', 'Back to sign in')}
           </Button>
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );
