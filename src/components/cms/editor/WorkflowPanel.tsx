@@ -19,6 +19,7 @@ import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import { Clock, Eye, EyeOff, Lock, Globe } from 'lucide-react';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
+import { loadCMSContentMetadata, upsertCMSContentMetadata } from '@/hooks/useCMSContentMetadata';
 import { getStateColor, getStateLabel } from '@/config/workflowConfig';
 import { getContentType } from '@/config/contentTypeRegistry';
 import type { WorkflowState, VisibilityLevel, WorkflowTransition } from '@/types/cms';
@@ -71,19 +72,12 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
   const loadMetadata = useCallback(async () => {
     if (!itemId || !config) return;
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { data } = await supabase
-        .from('cms_content_metadata' as const)
-        .select('workflow_state, visibility_level, published_at, scheduled_publish_at')
-        .eq('source_table', config.tableName)
-        .eq('source_id', itemId)
-        .maybeSingle();
-
+      const data = await loadCMSContentMetadata(config.tableName, itemId);
       if (data) {
         setCurrentState((data.workflow_state as WorkflowState) || 'draft');
         setVisibility((data.visibility_level as VisibilityLevel) || 'public');
         setPublishedAt(data.published_at || undefined);
-        const sched = (data as { scheduled_publish_at?: string | null }).scheduled_publish_at;
+        const sched = data.scheduled_publish_at;
         setScheduledPublishAt(sched || undefined);
         setScheduleDraft(sched ? toLocalInputValue(sched) : '');
       }
@@ -137,19 +131,9 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       if (!itemId || !config) return;
       setSavingSchedule(true);
       try {
-        const { supabase } = await import('@/integrations/supabase/client');
-        await supabase
-          .from('cms_content_metadata' as const)
-          .upsert(
-            {
-              source_table: config.tableName,
-              source_id: itemId,
-              scheduled_publish_at: next,
-              updated_at: new Date().toISOString(),
-              created_at: new Date().toISOString(),
-            },
-            { onConflict: 'source_table,source_id' },
-          );
+        await upsertCMSContentMetadata(config.tableName, itemId, {
+          scheduled_publish_at: next,
+        });
         setScheduledPublishAt(next || undefined);
       } catch (err) {
         console.error('Failed to save schedule:', err);
@@ -167,19 +151,9 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       setVisibility(newVisibility);
 
       try {
-        const { supabase } = await import('@/integrations/supabase/client');
-        await supabase
-          .from('cms_content_metadata' as const)
-          .upsert(
-            {
-              source_table: config.tableName,
-              source_id: itemId,
-              visibility_level: newVisibility,
-              updated_at: new Date().toISOString(),
-              created_at: new Date().toISOString(),
-            },
-            { onConflict: 'source_table,source_id' },
-          );
+        await upsertCMSContentMetadata(config.tableName, itemId, {
+          visibility_level: newVisibility,
+        });
       } catch (err) {
         console.error('Failed to update visibility:', err);
       }

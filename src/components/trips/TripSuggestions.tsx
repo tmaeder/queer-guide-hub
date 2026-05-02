@@ -5,44 +5,18 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/material/styles';
 import { Plus, MapPin, Star, Shield, Calendar } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations, type TripPlace, type TripDay } from '@/hooks/useTrips';
-
-interface SuggestedVenue {
-  id: string;
-  name: string;
-  category: string | null;
-  address: string | null;
-  foursquare_rating: number | null;
-  featured: boolean | null;
-  latitude: number | null;
-  longitude: number | null;
-  city_id: string | null;
-  country_id: string | null;
-}
-
-interface SuggestedEvent {
-  id: string;
-  title: string;
-  event_type: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  city_id: string | null;
-  country_id: string | null;
-}
-
-interface CityInfo {
-  id: string;
-  name: string;
-  country_id: string | null;
-  countries?: { equality_score: number | null; name: string } | null;
-}
+import {
+  fetchTripSuggestionCities,
+  fetchTripSuggestionVenues,
+  fetchTripSuggestionEvents,
+  type TripSuggestionVenue as SuggestedVenue,
+  type TripSuggestionEvent as SuggestedEvent,
+} from '@/hooks/useTripSuggestions';
 
 const NIGHTLIFE_CATEGORIES = ['bar', 'club', 'nightclub', 'pub', 'lounge', 'nightlife'];
 const DINING_CATEGORIES = ['restaurant', 'cafe', 'coffee', 'food', 'bakery', 'dining'];
@@ -94,54 +68,21 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
 
   const { data: cities } = useQuery({
     queryKey: ['trip-suggestion-cities', cityIds],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('cities')
-        .select('id, name, country_id, countries:country_id(equality_score, name)')
-        .in('id', cityIds);
-      if (error) throw error;
-      return (data || []) as CityInfo[];
-    },
+    queryFn: () => fetchTripSuggestionCities(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
 
   const { data: venues, isLoading: venuesLoading } = useQuery({
     queryKey: ['trip-suggestion-venues', cityIds],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('venues')
-        .select(
-          'id, name, category, address, foursquare_rating, is_featured, latitude, longitude, city_id, country_id',
-        )
-        .in('city_id', cityIds)
-        .order('foursquare_rating', { ascending: false, nullsFirst: false })
-        .limit(30);
-      if (error) throw error;
-      return (data || []) as SuggestedVenue[];
-    },
+    queryFn: () => fetchTripSuggestionVenues(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
 
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: ['trip-suggestion-events', cityIds, startDate, endDate],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      let query = supabase
-        .from('events')
-        .select(
-          'id, title, event_type, start_date, end_date, latitude, longitude, city_id, country_id',
-        )
-        .in('city_id', cityIds);
-      if (startDate) query = query.gte('start_date', startDate);
-      if (endDate) query = query.lte('start_date', endDate);
-      const { data, error } = await query.order('start_date', { ascending: true }).limit(20);
-      if (error) throw error;
-      return (data || []) as SuggestedEvent[];
-    },
+    queryFn: () => fetchTripSuggestionEvents(cityIds, startDate, endDate),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });

@@ -12,7 +12,11 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchTripDateRange,
+  fetchTripPlaceCities,
+  logTripBookingClick,
+} from '@/hooks/useBundledCheckout';
 import { useAuth } from '@/hooks/useAuth';
 
 const GYG_PARTNER = '2PBDXWH';
@@ -82,21 +86,14 @@ export function BundledCheckoutDialog({
       let checkIn = tripStartDate ?? null;
       let checkOut = tripEndDate ?? null;
       if (!checkIn || !checkOut) {
-        const { data: trip } = await supabase
-          .from('trips')
-          .select('start_date, end_date')
-          .eq('id', tripId)
-          .maybeSingle();
+        const trip = await fetchTripDateRange(tripId);
         checkIn = checkIn ?? trip?.start_date ?? null;
         checkOut = checkOut ?? trip?.end_date ?? null;
       }
-      const { data } = await supabase
-        .from('trip_places')
-        .select('city_id, cities(id, name)')
-        .eq('trip_id', tripId);
+      const data = await fetchTripPlaceCities(tripId);
       if (cancelled) return;
       const seen = new Map<string, string>();
-      for (const row of (data ?? []) as { city_id: string | null; cities: { id: string; name: string } | null }[]) {
+      for (const row of data) {
         if (row.cities?.id && row.cities.name && !seen.has(row.cities.id)) {
           seen.set(row.cities.id, row.cities.name);
         }
@@ -143,8 +140,7 @@ export function BundledCheckoutDialog({
 
   const markBooked = () => {
     if (!current) return;
-    // Fire-and-forget click log
-    void supabase.from('trip_booking_clicks').insert({
+    void logTripBookingClick({
       trip_id: tripId,
       trip_place_id: null,
       user_id: user?.id ?? null,

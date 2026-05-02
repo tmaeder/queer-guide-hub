@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -16,50 +16,23 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-
-interface TagSuggestionRow {
-  id: string;
-  entity_id: string;
-  entity_type: string;
-  tag_id: string | null;
-  suggested_tag_name: string;
-  confidence: number;
-  source: string;
-  status: string;
-  ai_model: string | null;
-  batch_id: string | null;
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-  created_at: string;
-}
+import {
+  usePendingTagSuggestions,
+  fetchAllPendingTagSuggestionIds,
+  rejectTagSuggestions,
+} from '@/hooks/useTagSuggestionsQueue';
 
 const SOURCE_LABELS: Record<string, { label: string; icon: typeof Bot }> = {
   auto_tag: { label: 'AI Auto-Tag', icon: Sparkles },
   duplicate_warning: { label: 'Near Duplicate', icon: AlertTriangle },
 };
 
-async function fetchPendingSuggestions(): Promise<{ items: TagSuggestionRow[]; total: number }> {
-  const { data, count, error } = await supabase
-    .from('tag_suggestions' as const)
-    .select('*', { count: 'exact' })
-    .eq('status', 'pending')
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error) throw error;
-  return { items: (data || []) as TagSuggestionRow[], total: count ?? 0 };
-}
-
 export function TagSuggestionsQueue() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['tag-suggestions-pending'],
-    queryFn: fetchPendingSuggestions,
-    staleTime: 30_000,
-  });
+  const { data, isLoading } = usePendingTagSuggestions();
 
   const items = data?.items || [];
   const total = data?.total || 0;
@@ -84,18 +57,7 @@ export function TagSuggestionsQueue() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: async (ids: string[]) => {
-      const { error } = await supabase
-        .from('tag_suggestions' as const)
-        .update({
-          status: 'rejected',
-          reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .in('id', ids);
-      if (error) throw error;
-      return ids.length;
-    },
+    mutationFn: (ids: string[]) => rejectTagSuggestions(ids, user?.id),
     onSuccess: (count) => {
       toast.success(`${count} suggestion${count !== 1 ? 's' : ''} rejected`);
       queryClient.invalidateQueries({ queryKey: ['tag-suggestions-pending'] });
@@ -118,13 +80,8 @@ export function TagSuggestionsQueue() {
     if (selectedIds.size > 0) {
       setSelectedIds(new Set());
     } else {
-      // Fetch ALL pending suggestion IDs (not just the loaded batch)
-      const { data } = await supabase
-        .from('tag_suggestions' as const)
-        .select('id')
-        .eq('status', 'pending')
-        .limit(5000);
-      setSelectedIds(new Set((data || []).map((i: { id: string }) => i.id)));
+      const ids = await fetchAllPendingTagSuggestionIds();
+      setSelectedIds(new Set(ids));
     }
   };
 

@@ -15,7 +15,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Send, Check } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchSendEventMembers,
+  fetchSendEventGroups,
+  postEventToGroup,
+  type SendEventMemberOption as MemberOption,
+  type SendEventGroupOption as GroupOption,
+} from '@/hooks/useSendEventDialog';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -27,18 +33,6 @@ interface SendEventDialogProps {
   eventDate: string;
   eventVenue?: string;
   eventPath: string;
-}
-
-interface MemberOption {
-  id: string;
-  display_name: string | null;
-  avatar_url: string | null;
-}
-
-interface GroupOption {
-  id: string;
-  name: string;
-  image_url: string | null;
 }
 
 export function SendEventDialog({
@@ -80,25 +74,7 @@ export function SendEventDialog({
     if (!user) return;
     setLoadingMembers(true);
     try {
-      let q = supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .neq('user_id', user.id)
-        .order('display_name')
-        .limit(30);
-
-      if (query.trim()) {
-        q = q.ilike('display_name', `%${query.trim()}%`);
-      }
-
-      const { data } = await q;
-      setMembers(
-        (data || []).map((p) => ({
-          id: p.user_id,
-          display_name: p.display_name,
-          avatar_url: p.avatar_url,
-        })),
-      );
+      setMembers(await fetchSendEventMembers(user.id, query));
     } finally {
       setLoadingMembers(false);
     }
@@ -108,20 +84,7 @@ export function SendEventDialog({
     if (!user) return;
     setLoadingGroups(true);
     try {
-      const { data } = await supabase
-        .from('group_memberships')
-        .select('group_id, community_groups(id, name, image_url)')
-        .eq('user_id', user.id)
-        .order('joined_at', { ascending: false });
-
-      setGroups(
-        (data || [])
-          .map((row) => {
-            const g = row.community_groups as { id: string; name: string; image_url: string | null } | null;
-            return g ? { id: g.id, name: g.name, image_url: g.image_url } : null;
-          })
-          .filter((g): g is GroupOption => g !== null),
-      );
+      setGroups(await fetchSendEventGroups(user.id));
     } finally {
       setLoadingGroups(false);
     }
@@ -165,13 +128,7 @@ export function SendEventDialog({
     if (!selectedGroup || !user) return;
     setSending(true);
     try {
-      const { error } = await supabase.from('group_posts').insert({
-        group_id: selectedGroup.id,
-        user_id: user.id,
-        content: buildEventMessage(),
-        post_type: 'text',
-      });
-      if (error) throw error;
+      await postEventToGroup(selectedGroup.id, user.id, buildEventMessage());
       toast({ title: 'Posted', description: `Event shared to ${selectedGroup.name}` });
       onOpenChange(false);
     } catch {
