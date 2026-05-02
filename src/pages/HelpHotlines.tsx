@@ -36,8 +36,8 @@ import {
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
-import { supabase } from '@/integrations/supabase/client';
 import { useMeta } from '@/hooks/useMeta';
+import { useCMSPage } from '@/hooks/useCMSPage';
 import { useAuth } from '@/hooks/useAuth';
 import { useHotlineBookmarks } from '@/hooks/useHotlineBookmarks';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -185,29 +185,18 @@ export default function HelpHotlines() {
     localStorage.setItem('qg_help_topic', topicFilter);
   }, [topicFilter]);
 
+  // Migrated to useCMSPage hook (DUP-4).
+  const { data: cmsResult, isLoading: cmsLoading } = useCMSPage('help');
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
+    setLoading(cmsLoading);
+    if (!cmsResult) return;
+    if (cmsResult.notFound || !cmsResult.page) {
+      setError(true);
+    } else {
+      setPage(cmsResult.page);
       setError(false);
-      const { data, error: fetchError } = await supabase
-        .from('cms_pages' as never)
-        .select('*')
-        .eq('slug', 'help')
-        .eq('workflow_state', 'published')
-        .single();
-      if (cancelled) return;
-      if (fetchError || !data) {
-        setError(true);
-      } else {
-        setPage(data as CMSPage);
-      }
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    }
+  }, [cmsLoading, cmsResult]);
 
   const hotlines: Hotline[] = useMemo(() => {
     const body = page?.body_json as HelpBodyJson | undefined;
