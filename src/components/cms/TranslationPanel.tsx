@@ -75,9 +75,9 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
     setLoading(true);
     try {
       const data = await listFromWhere<TranslationRow>('content_translations', '*', [
-        { col: 'table_name', val: tableName },
-        { col: 'record_id', val: recordId },
-        { col: 'language', val: selectedLang },
+        { op: 'eq', col: 'table_name', val: tableName },
+        { op: 'eq', col: 'record_id', val: recordId },
+        { op: 'eq', col: 'language', val: selectedLang },
       ]);
       const map: Record<string, TranslationRow> = {};
       const d: Record<string, string> = {};
