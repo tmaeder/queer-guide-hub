@@ -10,8 +10,6 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Badge } from '@/components/ui/badge';
 import { Inbox, Eye, Calendar, Activity, CheckCircle2 } from 'lucide-react';
 import { FeedbackCard } from './FeedbackCard';
@@ -107,12 +105,9 @@ export function FeedbackKanban({
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}
     >
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: `repeat(${kanbanColumns.length}, 1fr)` },
-          gap: 2,
-        }}
+      <div
+        className="grid grid-cols-1 gap-4"
+        style={{ gridTemplateColumns: `repeat(${kanbanColumns.length}, minmax(0, 1fr))` }}
       >
         {kanbanColumns.map((col) => (
           <Column
@@ -133,7 +128,7 @@ export function FeedbackKanban({
             onToggleSelect={onToggleSelect}
           />
         ))}
-      </Box>
+      </div>
     </DndContext>
   );
 }
@@ -174,71 +169,42 @@ function Column({
   const { setNodeRef, isOver } = useDroppable({ id: `col:${col.id}` });
 
   return (
-    <Box ref={setNodeRef} data-col-id={col.id}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          mb: 1.5,
-          px: 1,
-          py: 0.75,
-          borderTop: 3,
-          borderColor: col.color,
-          // Subtle 10%-alpha tint of the column color so each column is
-          // recognisable at a glance, including while dragging.
-          bgcolor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
-          borderRadius: '0 0 4px 4px',
+    <div ref={setNodeRef} data-col-id={col.id}>
+      <div
+        className="flex items-center gap-2 mb-3 px-2 py-[6px] rounded-b"
+        style={{
+          borderTop: `3px solid ${col.color}`,
+          backgroundColor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
         }}
       >
-        <Typography
-          variant="subtitle2"
-          sx={{ fontWeight: 700, color: col.color, letterSpacing: 0.3 }}
-        >
+        <h6 className="font-bold text-sm" style={{ color: col.color, letterSpacing: 0.3 }}>
           {col.label}
-        </Typography>
+        </h6>
         <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>
           {items.length}
         </Badge>
-      </Box>
+      </div>
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1,
+      <div
+        className="flex flex-col gap-2 overflow-y-auto pr-1 p-1 rounded transition-colors md:max-h-[calc(100vh-300px)]"
+        style={{
           minHeight: 120,
-          maxHeight: { md: 'calc(100vh - 300px)' },
-          overflowY: 'auto',
-          pr: 0.5,
-          p: 0.5,
-          borderRadius: 1,
-          bgcolor:
+          backgroundColor:
             isOver && activeId
               ? `color-mix(in srgb, ${col.color} 14%, transparent)`
               : 'transparent',
-          transition: 'background-color 0.15s',
         }}
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
           {items.length === 0 && (() => {
             const { icon: EmptyIcon, copy } = COLUMN_EMPTY[col.id];
             return (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 0.75,
-                  py: 4,
-                  opacity: 0.55,
-                }}
-              >
+              <div className="flex flex-col items-center gap-[6px] py-8 opacity-55">
                 <EmptyIcon size={22} color={col.color} strokeWidth={1.5} />
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <span className="text-xs text-muted-foreground" style={{ fontSize: '0.7rem' }}>
                   {copy}
-                </Typography>
-              </Box>
+                </span>
+              </div>
             );
           })()}
           {items.map((item) => (
@@ -261,7 +227,7 @@ function Column({
             />
           ))}
         </SortableContext>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

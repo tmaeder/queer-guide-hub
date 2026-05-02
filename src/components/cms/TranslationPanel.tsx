@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Languages, Loader2, Check, Sparkles } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -188,9 +186,9 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
         </Select>
 
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-            <Loader2 style={{ width: 20, height: 20, animation: 'spin 1s linear infinite' }} />
-          </Box>
+          <div className="flex justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
         ) : (
           <>
             {translatableFields.map((field) => {
@@ -199,8 +197,8 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
               const existing = translations[field];
 
               return (
-                <Box key={field} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div key={field} className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
                     <Label style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>
                       {field.replace('_', ' ')}
                     </Label>
@@ -212,14 +210,14 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
                         {existing.status}
                       </Badge>
                     )}
-                  </Box>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.disabled', fontSize: '0.7rem', lineHeight: 1.3 }}
+                  </div>
+                  <span
+                    className="text-xs text-muted-foreground"
+                    style={{ fontSize: '0.7rem', lineHeight: 1.3, opacity: 0.7 }}
                   >
                     {original.slice(0, 120)}
                     {original.length > 120 ? '...' : ''}
-                  </Typography>
+                  </span>
                   {isLong ? (
                     <Textarea
                       value={drafts[field] || ''}
@@ -233,14 +231,14 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
                       style={{ fontSize: '0.8125rem' }}
                     />
                   )}
-                </Box>
+                </div>
               );
             })}
 
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <div className="flex gap-2 flex-wrap">
               <Button size="sm" onClick={handleAutoTranslate} disabled={autoTranslating} variant="outline">
                 {autoTranslating ? (
-                  <Loader2 style={{ width: 14, height: 14, marginRight: 6, animation: 'spin 1s linear infinite' }} />
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 ) : (
                   <Sparkles style={{ width: 14, height: 14, marginRight: 6 }} />
                 )}
@@ -248,7 +246,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
               </Button>
               <Button size="sm" onClick={handleSave} disabled={saving}>
                 {saving ? (
-                  <Loader2 style={{ width: 14, height: 14, marginRight: 6, animation: 'spin 1s linear infinite' }} />
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 ) : (
                   <Check style={{ width: 14, height: 14, marginRight: 6 }} />
                 )}
@@ -259,7 +257,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
                   Publish all
                 </Button>
               )}
-            </Box>
+            </div>
           </>
         )}
       </CardContent>
