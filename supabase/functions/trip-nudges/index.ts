@@ -100,7 +100,7 @@ async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]
 
   let q = admin
     .from('events')
-    .select('id, title, start_date, end_date, city_id, country_id, featured, status')
+    .select('id, title, start_date, end_date, city_id, country_id, is_featured, status')
     .eq('status', 'active')
     .lte('start_date', `${trip.end_date}T23:59:59Z`)
     .gte('end_date', `${trip.start_date}T00:00:00Z`)
@@ -118,9 +118,9 @@ async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]
     id: string;
     title: string;
     start_date: string;
-    featured: boolean | null;
+    is_featured: boolean | null;
   }[])) {
-    if (!e.featured) continue; // only surface featured events at launch
+    if (!e.is_featured) continue; // only surface featured events at launch
     rows.push({
       trip_id: trip.id,
       kind: 'event_overlap',

@@ -26,7 +26,7 @@ interface VenueData {
   tags?: string[];
   amenities?: string[];
   verified: boolean;
-  featured: boolean;
+  is_featured: boolean;
 }
 
 function parseCSV(csvText: string): VenueData[] {
@@ -126,7 +126,8 @@ function parseCSV(csvText: string): VenueData[] {
           break;
         case 'verified':
         case 'featured':
-          venueData[header] = value.toLowerCase() === 'true';
+        case 'is_featured':
+          venueData.is_featured = value.toLowerCase() === 'true';
           break;
       }
     });
@@ -147,7 +148,7 @@ function parseCSV(csvText: string): VenueData[] {
     // Set defaults
     venueData.country = venueData.country || 'US';
     venueData.verified = venueData.verified || false;
-    venueData.featured = venueData.featured || false;
+    venueData.is_featured = venueData.is_featured || false;
 
     venues.push(venueData as VenueData);
   }

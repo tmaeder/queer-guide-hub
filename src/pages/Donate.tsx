@@ -1,9 +1,6 @@
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Heart } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { DonationForm } from '@/components/donate/DonationForm';
 import { DonorWall } from '@/components/donate/DonorWall';
 import { DonationSuccess } from '@/components/donate/DonationSuccess';
@@ -14,63 +11,39 @@ export default function Donate() {
   const status = searchParams.get('status');
 
   return (
-    <Container sx={{ py: { xs: 4, sm: 6 } }}>
-      {/* Hero */}
-      <Box sx={{ textAlign: 'center', mb: 5 }}>
-        <Box
-          sx={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            bgcolor: 'action.hover',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mx: 'auto',
-            mb: 2,
-          }}
-        >
-          <Heart style={{ width: 28, height: 28 }} />
-        </Box>
-        <Typography variant="h4" fontWeight={700} gutterBottom>
+    <div className="container mx-auto py-8 sm:py-12">
+      <div className="text-center mb-10">
+        <div className="w-14 h-14 rounded-full bg-muted/40 flex items-center justify-center mx-auto mb-4">
+          <Heart className="w-7 h-7" />
+        </div>
+        <h4 className="text-3xl font-bold mb-2">
           {t('donate.title', 'Support queer.guide')}
-        </Typography>
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ mx: 'auto', lineHeight: 1.7 }}
-        >
+        </h4>
+        <p className="text-base text-muted-foreground mx-auto leading-relaxed">
           {t(
             'donate.subtitle',
             'queer.guide is a free platform connecting the LGBTQ+ community with safe spaces, events, and resources worldwide. Your donation helps us keep it running and accessible to everyone.'
           )}
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {status === 'success' ? (
-        <Box sx={{ mx: 'auto' }}>
+        <div className="mx-auto">
           <DonationSuccess />
-        </Box>
+        </div>
       ) : (
         <>
-          {/* Centered form */}
-          <Box sx={{ mx: 'auto', mb: 6 }}>
+          <div className="mx-auto mb-12">
             <DonationForm />
-          </Box>
-
-          {/* Donor wall below */}
-          <Box sx={{ mx: 'auto' }}>
-            <Typography
-              variant="overline"
-              color="text.secondary"
-              sx={{ display: 'block', textAlign: 'center', mb: 2, letterSpacing: '0.1em' }}
-            >
+          </div>
+          <div className="mx-auto">
+            <p className="block text-center mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {t('donate.donorWall', 'Recent supporters')}
-            </Typography>
+            </p>
             <DonorWall />
-          </Box>
+          </div>
         </>
       )}
-    </Container>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
-import Box from '@mui/material/Box';
 import { ExploreMap } from '@/components/map/ExploreMap';
 import type { LayerType, ExploreMapFilters } from '@/hooks/useExploreMapData';
 import { LAYER_DEFS } from '@/components/map/ExploreMapLayers';
@@ -42,7 +41,7 @@ const MapPage: React.FC = () => {
   if (urlQuery) defaultFilters.search = urlQuery;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 64px)' }}>
+    <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 64px)' }}>
       <ExploreMap
         height="calc(100vh - 64px)"
         defaultLayers={defaultLayers}
@@ -50,7 +49,7 @@ const MapPage: React.FC = () => {
         showLayerToggles
         showFilters
       />
-    </Box>
+    </div>
   );
 };
 

@@ -339,7 +339,7 @@ serve(async (req) => {
                  hours: hours,
                  images: imageUrls,
                  verified: false,
-                 featured: false,
+                 is_featured: false,
                  tripadvisor_id: venue.location_id,
                  tripadvisor_rating: venue.rating ? parseFloat(venue.rating) : null,
                  tripadvisor_review_count: venue.num_reviews ? parseInt(venue.num_reviews) : null,

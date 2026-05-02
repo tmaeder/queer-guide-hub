@@ -233,7 +233,7 @@ serve(async (req) => {
               age_restriction: ageRestriction,
               max_attendees: event.accessibility?.ticketLimit || null,
               status: 'active',
-              featured: false
+              is_featured: false
             };
 
             // AI enrichment — enhance description and classify event type

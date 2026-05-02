@@ -1,5 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { TripContextBar } from '@/components/trips/TripContextBar';
@@ -13,53 +12,17 @@ import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
  * Children are the route table (`<AppRoutes />`).
  */
 export const LayoutShell = ({ children }: { children: React.ReactNode }) => (
-  <Box
-    sx={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      bgcolor: 'background.default',
-    }}
-  >
+  <div className="min-h-screen flex flex-col bg-background">
     {/* Skip link for keyboard users (a11y: WCAG 2.4.1) */}
-    <Box
-      component="a"
+    <a
       href="#main-content"
-      sx={{
-        position: 'absolute',
-        left: '-9999px',
-        top: 'auto',
-        width: 1,
-        height: 1,
-        overflow: 'hidden',
-        zIndex: 9999,
-        '&:focus': {
-          position: 'fixed',
-          top: 8,
-          left: 8,
-          width: 'auto',
-          height: 'auto',
-          overflow: 'visible',
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-          px: 2,
-          py: 1,
-          borderRadius: 1,
-          boxShadow: 3,
-          fontWeight: 600,
-          fontSize: '0.875rem',
-          textDecoration: 'none',
-          outline: '3px solid',
-          outlineColor: 'primary.main',
-          outlineOffset: '2px',
-        },
-      }}
+      className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:bg-card focus:text-foreground focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:font-semibold focus:text-sm focus:no-underline focus:outline focus:outline-[3px] focus:outline-primary focus:outline-offset-2"
     >
       Skip to main content
-    </Box>
+    </a>
 
     {/* Background — solid color, no decorative effects */}
-    <Box
+    <div
       aria-hidden="true"
       sx={{
         position: 'fixed',
@@ -68,18 +31,19 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => (
         pointerEvents: 'none',
         bgcolor: 'background.default',
       }}
+      className="fixed inset-0 z-0 pointer-events-none bg-background"
     />
     <AnalyticsTracker />
-    <Box sx={{ position: 'relative', zIndex: 1 }}>
+    <div className="relative z-10">
       <Header />
       <TripContextBar />
-    </Box>
+    </div>
     {children}
-    <Box sx={{ position: 'relative', zIndex: 1 }}>
+    <div className="relative z-10">
       <Footer />
-    </Box>
+    </div>
     <CookieConsentBanner />
     <FeedbackButton />
     <InstallBanner />
-  </Box>
+  </div>
 );

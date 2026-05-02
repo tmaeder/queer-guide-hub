@@ -31,6 +31,7 @@ export default function Directory() {
   const error = null;
 
   // Fetch continents for grouping countries
+  // Fetch continents for grouping countries (DUP-4)
   const { data: continents = [] } = useContinents();
 
   const [viewMode, setViewMode] = useState<ViewMode>("overview");

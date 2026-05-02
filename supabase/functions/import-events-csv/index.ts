@@ -29,7 +29,7 @@ interface EventData {
   ticket_url?: string;
   organizer_name?: string;
   organizer_contact?: string;
-  featured: boolean;
+  is_featured: boolean;
 }
 
 function parseCSV(csvText: string): EventData[] {
@@ -117,7 +117,8 @@ function parseCSV(csvText: string): EventData[] {
           break;
         case 'is_free':
         case 'featured':
-          eventData[header] = value.toLowerCase() === 'true';
+        case 'is_featured':
+          eventData.is_featured = value.toLowerCase() === 'true';
           break;
       }
     });

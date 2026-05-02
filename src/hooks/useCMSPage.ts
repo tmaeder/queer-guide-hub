@@ -10,6 +10,9 @@ const STALE_TIME = 5 * 60_000;
  * Page, and HelpHotlines (DUP-4 hook migration).
  *
  * Returns `notFound: true` when the page does not exist or is unpublished.
+ * DUP-4 — fetch a single published CMS page by slug, plus its parent and
+ * child pages when the slug exposes a hub hierarchy. Used by CMSRoutePage,
+ * Page, and HelpHotlines.
  */
 export function useCMSPage(slug: string | null | undefined) {
   return useQuery({
@@ -25,6 +28,14 @@ export function useCMSPage(slug: string | null | undefined) {
         .single();
 
       if (error || !data) return { page: null as CMSPage | null, parent: null as CMSPage | null, children: [] as CMSPage[], notFound: true };
+      if (error || !data) {
+        return {
+          page: null as CMSPage | null,
+          parent: null as CMSPage | null,
+          children: [] as CMSPage[],
+          notFound: true,
+        };
+      }
 
       const page = data as CMSPage;
 

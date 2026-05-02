@@ -186,6 +186,7 @@ export default function HelpHotlines() {
   }, [topicFilter]);
 
   // Migrated to useCMSPage hook (DUP-4).
+  // DUP-4 — pull cms_pages 'help' fetch into useCMSPage hook.
   const { data: cmsResult, isLoading: cmsLoading } = useCMSPage('help');
   useEffect(() => {
     setLoading(cmsLoading);

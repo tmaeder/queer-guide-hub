@@ -94,6 +94,15 @@ export default function AdminEventAmenities() {
         title: 'Success',
         description: editingId ? 'Event amenity updated' : 'Event amenity created',
       });
+      if (editingId) {
+        const { error } = await crud.upsert(form, editingId);
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Event amenity updated' });
+      } else {
+        const { error } = await crud.upsert(form, null);
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Event amenity created' });
+      }
       setDialogOpen(false);
       invalidateTable();
     } catch (err: unknown) {

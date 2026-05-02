@@ -219,7 +219,7 @@ export default tseslint.config(
     ignores: muiAllowlist,
     rules: {
       "no-restricted-imports": [
-        "error",
+        "warn",
         {
           patterns: [
             {

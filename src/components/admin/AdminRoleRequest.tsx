@@ -1,4 +1,3 @@
-import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Info } from 'lucide-react';
@@ -13,7 +12,7 @@ export function AdminRoleRequest() {
     return (
       <Card>
         <CardContent>
-          <Typography>Checking your permissions...</Typography>
+          <p className="text-sm text-muted-foreground">Checking your permissions...</p>
         </CardContent>
       </Card>
     );

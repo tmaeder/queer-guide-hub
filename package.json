@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:check": "vite build && node scripts/check-bundle-shape.mjs",
+    "build:check": "node --max-old-space-size=8192 node_modules/vite/bin/vite.js build && node scripts/check-bundle-shape.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -75,8 +75,6 @@
     "@tiptap/extension-youtube": "^3.19.0",
     "@tiptap/react": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
-    "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0",
     "@xyflow/react": "^12.10.2",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",

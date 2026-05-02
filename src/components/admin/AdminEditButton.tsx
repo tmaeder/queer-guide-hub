@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AdminEditDialog } from './AdminEditDialog';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import Tooltip from '@mui/material/Tooltip';
 
 interface AdminEditButtonProps {
   contentType: string;
@@ -30,16 +30,21 @@ export function AdminEditButton({
 
   return (
     <>
-      <Tooltip title="Edit (Admin)">
-        <Button
-          variant="outline"
-          size={size}
-          onClick={() => setOpen(true)}
-          aria-label="Edit content"
-        >
-          <Pencil style={{ width: 16, height: 16 }} />
-        </Button>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size={size}
+              onClick={() => setOpen(true)}
+              aria-label="Edit content"
+            >
+              <Pencil style={{ width: 16, height: 16 }} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Edit (Admin)</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <AdminEditDialog
         open={open}
         onOpenChange={setOpen}

@@ -26,6 +26,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import { ChevronRight, FileText, Shield, Cookie, Scale } from 'lucide-react';
+import { useCMSPage } from '@/hooks/useCMSPage';
 import DOMPurify from 'dompurify';
 import { useMeta } from '@/hooks/useMeta';
 import { LegalPageLayout } from '@/components/ui/LegalPageLayout';

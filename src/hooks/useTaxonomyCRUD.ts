@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
  * The page passes the table name + a typed form payload; this hook
  * keeps supabase.from() out of the component tree and gives the rule
  * one less surface to grandfather.
+ * Keeps supabase.from() out of the page tree.
  */
 export function useTaxonomyCRUD(table: string) {
   return {
