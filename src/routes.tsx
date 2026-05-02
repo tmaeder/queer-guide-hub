@@ -48,6 +48,7 @@ const AdminCountries = lazy(() => import('./pages/AdminCountries'));
 const AdminTags = lazy(() => import('./pages/AdminTags'));
 const AdminCities = lazy(() => import('./pages/AdminCities'));
 const AdminGroups = lazy(() => import('./pages/AdminGroups'));
+const Cities = lazyRetry(() => import('./pages/Cities'));
 const CityDetail = lazyRetry(() => import('./pages/CityDetail'));
 const CountryDetail = lazyRetry(() => import('./pages/CountryDetail'));
 const Travel = lazyRetry(() => import('./pages/Travel'));
@@ -380,6 +381,7 @@ export const AppRoutes = () => {
                 <Route path="bookings" element={<Navigate to="/trips" replace />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
+                <Route path="cities" element={<Cities />} />
                 <Route path="city/:slug" element={<CityDetail />} />
                 <Route path="country/:slug" element={<CountryDetail />} />
                 <Route path="users" element={<UserDirectory />} />
