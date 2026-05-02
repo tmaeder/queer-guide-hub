@@ -2,9 +2,6 @@ import { Label } from '@/components/ui/label';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { stack } from '@/lib/sx';
 
 export interface SelectOption {
   value: string;
@@ -26,7 +23,7 @@ export function SelectField({
   id, label, value, onChange, options, placeholder, description, disabled,
 }: SelectFieldProps) {
   return (
-    <Box sx={stack(0.5)}>
+    <div className="flex flex-col gap-1">
       <Label htmlFor={id}>{label}</Label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger>
@@ -39,8 +36,8 @@ export function SelectField({
         </SelectContent>
       </Select>
       {description && (
-        <Typography variant="caption" color="text.secondary">{description}</Typography>
+        <span className="text-xs text-muted-foreground">{description}</span>
       )}
-    </Box>
+    </div>
   );
 }
