@@ -1,0 +1,21 @@
+[
+  "src/components/admin/EmailIngestionsManager.tsx",
+  "src/components/admin/NewsSourcesManager.tsx",
+  "src/components/admin/SubmissionMediaSection.tsx",
+  "src/components/admin/dashboard/DashboardOverview.tsx",
+  "src/components/analytics/UmamiAnalyticsDashboard.tsx",
+  "src/components/cms/AuditLog.tsx",
+  "src/components/cms/UniversalContentDashboard.tsx",
+  "src/components/cms/editor/MediaPanel.tsx",
+  "src/components/cms/editor/RevisionPanel.tsx",
+  "src/components/cms/media/ExternalImageSearch.tsx",
+  "src/components/cms/media/MediaPickerDialog.tsx",
+  "src/components/cms/media/MediaUploader.tsx",
+  "src/components/cms/revisions/RevisionDiff.tsx",
+  "src/components/cms/revisions/RevisionHistory.tsx",
+  "src/components/personalities/AddPersonalityDialog.tsx",
+  "src/components/personalities/AdultModelsCsvImport.tsx",
+  "src/components/personalities/BulkCreatePersonalities.tsx",
+  "src/components/personalities/PersonalitiesCsvImport.tsx",
+  "src/components/personalities/PersonalitySelectionDialog.tsx"
+]
