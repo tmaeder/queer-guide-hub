@@ -286,7 +286,7 @@ export function EventHero({
           </Box>
           {event.festivals?.id && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-              <Music style={{ width: 14, height: 14, color: '#9ca3af' }} />
+              <Music style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
               <Typography variant="body2" color="text.secondary">
                 Part of{' '}
                 <Typography component="span" variant="body2" sx={{ fontWeight: 600 }}>
@@ -296,7 +296,7 @@ export function EventHero({
             </Box>
           )}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-            <MapPin style={{ width: 14, height: 14, color: '#9ca3af', flexShrink: 0 }} />
+            <MapPin style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
             <Typography variant="body2" color="text.secondary">
               {event.venues?.id ? (
                 <LocalizedLink

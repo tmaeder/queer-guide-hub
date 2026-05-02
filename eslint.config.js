@@ -93,10 +93,108 @@ export default tseslint.config(
       "src/utils/equalityScore.ts",
       "src/components/country/LGBTJurisdictionInfo.tsx",
       "src/components/country/SDGDataPanel.tsx",
+      "src/components/country/SafetyAlertBanner.tsx",
+      // Risk traffic-light (low/moderate/high/critical) for travel safety.
+      "src/components/trips/TripSafetyBriefing.tsx",
+      // Categorical news/topic taxonomy palette (politics, health, sports…).
+      "src/pages/NewsDetail.tsx",
+      "src/components/news/NewsCard.tsx",
+      // Deterministic avatar gradient palette (12 distinct hues by user id).
+      "src/lib/avatar.ts",
+      "src/components/profile/UserModeBadge.tsx",
+      "src/components/user-directory/UserDirectoryGrid.tsx",
+      // Map style + security dashboards = data-viz, hardcoded by design.
+      "src/components/map/**",
+      "src/components/security/**",
+      // Submission scan results — confidence traffic-light + flyer overlays.
+      "src/components/submission/**",
+      // Trip cover gradient palette + status badges.
+      "src/components/trips/TripCoverBand.tsx",
+      "src/pages/trips/**",
+      // Roadmap status badges (new / under_review / planned / in_progress…).
+      "src/pages/FeedbackBoard.tsx",
+      // Severity-tagged content warnings.
+      "src/components/ui/ContentWarningBanner.tsx",
+      // Categorical tag link palettes + relationship graph.
+      "src/components/tags/TagLinkedContent.tsx",
+      "src/components/tags/TagRelationshipGraph.tsx",
+      // Functional gradients / scales / state colors that are intentional.
+      "src/components/auth/PasswordStrengthMeter.tsx",
+      "src/components/country/WorldBankDataPanel.tsx",
+      "src/components/user-directory/UserDirectoryFilters.tsx",
+      "src/components/personalities/AddPersonalityDialog.tsx",
+      "src/hooks/useExploreMapData.ts",
+      "src/hooks/useReviewBulkActions.ts",
+      "src/hooks/useMapBoundaryLayers.ts",
+      "src/config/workflowConfig.ts",
+      "src/config/feedbackCategories.ts",
+      // Map style — vector tile color overrides, intentional.
+      "src/components/trips/TripMap.tsx",
+      // External brand SVGs (Google OAuth icon — locked color).
+      "src/components/auth/OAuthButtons.tsx",
+      // Severity rgba banners — pre-multiplied alpha for translucency.
+      "src/components/trips/TripDocExpiryBanner.tsx",
+      "src/components/trips/TripNudgesBanner.tsx",
+      // Validation success/state colors that don't map to existing tokens.
+      "src/components/ui/location-autocomplete.tsx",
+      // Role-icon palette (admin/owner/member).
+      "src/pages/MyGroups.tsx",
+      // Categorical budget category palette (food/transport/lodging/...).
+      "src/components/trips/BudgetTab.tsx",
+      // Filter chip dot colors — categorical.
+      "src/components/venues/VenueFilters.tsx",
+      // Star-fill yellow (semantic gold star).
+      "src/pages/Favorites.tsx",
+      // Video player chrome — pure black/white overlay regardless of theme.
+      "src/components/ui/modern-video-player.tsx",
+      // Theme provider — owns the color tokens themselves.
+      "src/components/theme/ThemeProvider.tsx",
+      // Categorical / functional palettes per file (see commit message
+      // for rationale on each).
+      "src/components/country/EqualityScoreBadge.tsx",
+      "src/components/country/CountryHeroImages.tsx",
+      "src/components/feedback/FeedbackButton.tsx",
+      "src/components/posts/PostCard.tsx",
+      "src/components/trips/TripsSignedOutHero.tsx",
+      "src/components/trips/SocialSignalBadges.tsx",
+      "src/components/trips/TripContextBar.tsx",
+      "src/components/trips/TripNewsSection.tsx",
+      "src/components/trips/BundledCheckoutDialog.tsx",
+      "src/components/trips/ReservationsTab.tsx",
+      "src/components/trips/TripLocalContext.tsx",
+      "src/components/trips/TripTemplates.tsx",
+      "src/components/trips/create/CityCountryAutocomplete.tsx",
+      "src/components/profile/PhotoGallery.tsx",
+      "src/components/profile/UrlValidator.tsx",
+      "src/components/profile/social/UrlValidator.tsx",
+      "src/components/hotels/HotelCard.tsx",
+      "src/components/analytics/UmamiAnalyticsDashboard.tsx",
+      "src/components/resources/TagListRenderer.tsx",
+      "src/components/messaging/MessagingInterface.tsx",
+      "src/config/contentTypes/**",
+      // Detail-page semantic accents (gold star fills, verified-shield green,
+      // quote-box parchment, life-status pulses) — semantic by design.
+      "src/pages/SearchResults.tsx",
+      "src/pages/SubmitHub.tsx",
+      "src/pages/HotelDetail.parts.tsx",
+      "src/pages/PersonalityDetail.parts.tsx",
+      "src/pages/CountryDetail.parts.tsx",
+      "src/pages/EventDetail.parts.tsx",
+      "src/pages/MarketplaceItemDetail.parts.tsx",
+      "src/pages/VenueDetail.parts.tsx",
+      "src/pages/QueerVillageDetail.parts.tsx",
+      "src/pages/Index.tsx",
+      // Hero / cover overlays — pre-multiplied black gradients on imagery.
+      "src/pages/Ressources.tsx",
+      "src/components/location/LocationInfo.tsx",
+      // Pages with one-off semantic colors (verified shield, etc).
+      "src/pages/Friends.tsx",
+      "src/pages/HelpHotlines.tsx",
+      "src/pages/UserDirectory.tsx",
     ],
     rules: {
       "no-restricted-syntax": [
-        "warn",
+        "error",
         {
           // Match hex literals AND rgb/hsl calls with NUMERIC content only —
           // hsl(var(--brand)), rgb(var(--…)) and similar token references

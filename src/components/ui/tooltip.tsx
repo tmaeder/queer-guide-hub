@@ -34,8 +34,8 @@ function Tooltip({
         slotProps={{
           tooltip: {
             sx: {
-              bgcolor: '#333333',
-              color: '#ffffff',
+              bgcolor: 'hsl(var(--foreground))',
+              color: 'hsl(var(--background))',
               fontSize: '0.75rem',
               fontWeight: 500,
               borderRadius: 0,
@@ -44,7 +44,7 @@ function Tooltip({
             },
           },
           arrow: {
-            sx: { color: '#333333' },
+            sx: { color: 'hsl(var(--foreground))' },
           },
         }}
       >

@@ -383,7 +383,7 @@ export default function Ressources() {
           </Box>
           {parentName && (
             <>
-              <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+              <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
               <Box
                 component="button"
                 onClick={() => {
@@ -409,7 +409,7 @@ export default function Ressources() {
           )}
           {childName && (
             <>
-              <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+              <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
               <Box
                 component="button"
                 onClick={() => {
@@ -433,7 +433,7 @@ export default function Ressources() {
               </Box>
             </>
           )}
-          <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+          <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
             {selectedTag.name}
           </Typography>
@@ -991,7 +991,7 @@ export default function Ressources() {
                       </Typography>
                     </Box>
                   )}
-                  <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+                  <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
                   <Icon style={{ width: 18, height: 18 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>
                     {getCategoryShortName(selectedSubcategory)}
