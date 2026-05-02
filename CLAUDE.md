@@ -117,7 +117,7 @@ The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git co
 LGBTQ+ travelers, locals, activists, researchers, allies. Warm, trusted, empowering. Safety-first, inclusive by default, content is the hero.
 
 - Brand: magenta `#b60d3d` (light) / `#ff7386` (dark), monochrome + single accent
-- Typography: Inter (body + headings), self-hosted
+- Typography: Inter (body + most headings) + Plus Jakarta Sans (display only — homepage stats, personality cards, home widgets). Both self-hosted. See `docs/design-system/typography.md`.
 - Strict flat: 0 radius, 0 borders, 0 shadows, 0 underlines. Full-width fluid layout.
 - Icons inline in text flow, never in separate containers. Minimal UI labeling.
 - Links by color/opacity only. Clean hover (0.85) and active (0.7) states.

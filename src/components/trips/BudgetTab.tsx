@@ -72,7 +72,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   const categoryColors: Record<string, string> = {
     food: '#F59E0B', // amber
     transport: '#06B6D4', // cyan
-    accommodation: theme.palette.brand?.main || '#DB2777', // brand magenta
+    accommodation: theme.palette.brand?.main || theme.palette.primary.main, // brand magenta
     activities: '#10B981', // emerald
     shopping: '#8B5CF6', // violet
     other: theme.palette.text.secondary as string,
@@ -125,7 +125,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   }
 
   if (items.length === 0) {
-    const brand = theme.palette.brand?.main || '#DB2777';
+    const brand = theme.palette.brand?.main || theme.palette.primary.main;
     return (
       <>
         <Box

@@ -53,7 +53,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   children,
 }) => {
   const theme = useTheme();
-  const brandColor = theme.palette.brand?.main || '#DB2777';
+  const brandColor = theme.palette.brand?.main || theme.palette.primary.main;
 
   const iconOpacity = mood === 'playful' ? 0.7 : mood === 'encouraging' ? 0.55 : 0.4;
   const bgOpacity = mood === 'playful' ? '18' : mood === 'encouraging' ? '12' : '0a';
