@@ -1,6 +1,7 @@
 import { formatCurrency } from '@/lib/currency';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Calendar,
   MapPin,
@@ -15,9 +16,6 @@ import {
 import { formatEventDateTime } from '@/lib/event-time';
 import { GroupEvent } from '@/hooks/useGroupEvents';
 import { useAuth } from '@/hooks/useAuth';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 
 interface GroupEventCardProps {
   event: GroupEvent;
@@ -29,18 +27,6 @@ interface GroupEventCardProps {
   isDeleting: boolean;
   canManage: boolean;
 }
-
-const eventTypeColors: Record<string, { bgcolor: string; color: string }> = {
-  social: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
-  meetup: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
-  workshop: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
-  conference: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
-  party: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
-  sports: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
-  cultural: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
-  educational: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
-  other: { bgcolor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' },
-};
 
 export function GroupEventCard({
   event,
@@ -58,103 +44,87 @@ export function GroupEventCard({
     return formatEventDateTime(startDate, endDate);
   };
 
-  const getEventTypeColor = (type: string) => {
-    return eventTypeColors[type] || eventTypeColors.other;
-  };
-
   return (
     <Card>
       <CardHeader>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography variant="h6">{event.title}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Calendar style={{ width: 16, height: 16 }} />
-              <Typography variant="body2" color="text.secondary">
+        <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-2">
+            <h6 className="text-base font-semibold">{event.title}</h6>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <p className="text-sm text-muted-foreground">
                 {formatEventDate(event.start_date, event.end_date)}
-              </Typography>
-            </Box>
-          </Box>
-          <Chip
-            label={event.event_type}
-            size="small"
-            sx={{
-              bgcolor: getEventTypeColor(event.event_type).bgcolor,
-              color: getEventTypeColor(event.event_type).color,
-              fontWeight: 500,
-            }}
-          />
-        </Box>
+              </p>
+            </div>
+          </div>
+          <Badge variant="secondary" className="font-medium">
+            {event.event_type}
+          </Badge>
+        </div>
       </CardHeader>
 
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-4">
           {event.description && (
-            <Typography variant="body2" color="text.secondary">
-              {event.description}
-            </Typography>
+            <p className="text-sm text-muted-foreground">{event.description}</p>
           )}
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             {(event.venue_name || event.address) && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <MapPin style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
-                <Typography variant="body2">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                <p className="text-sm">
                   {event.venue_name && event.address
                     ? `${event.venue_name}, ${event.address}`
                     : event.venue_name || event.address}
-                </Typography>
-              </Box>
+                </p>
+              </div>
             )}
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <MapPin style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
-              <Typography variant="body2">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-muted-foreground" />
+              <p className="text-sm">
                 {event.city}
                 {event.state && `, ${event.state}`}
-              </Typography>
-            </Box>
+              </p>
+            </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Users style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
-              <Typography variant="body2">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-muted-foreground" />
+              <p className="text-sm">
                 {event.attendee_count || 0} attending
-                {event.max_attendees && ` \u2022 ${event.max_attendees} max`}
-              </Typography>
-            </Box>
+                {event.max_attendees && ` • ${event.max_attendees} max`}
+              </p>
+            </div>
 
             {!event.is_free && (event.price_min || event.price_max) && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <DollarSign style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
-                <Typography variant="body2">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-muted-foreground" />
+                <p className="text-sm">
                   {event.price_min && event.price_max && event.price_min !== event.price_max
                     ? `${formatCurrency(event.price_min)} - ${formatCurrency(event.price_max)}`
                     : formatCurrency(event.price_min || event.price_max || 0)}
-                </Typography>
-              </Box>
+                </p>
+              </div>
             )}
 
             {event.is_free && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <DollarSign style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
-                <Typography variant="body2" sx={{ color: 'success.main', fontWeight: 500 }}>
-                  Free
-                </Typography>
-              </Box>
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-muted-foreground" />
+                <p className="text-sm text-green-600 font-medium">Free</p>
+              </div>
             )}
 
             {event.age_restriction && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Clock style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
-                <Typography variant="body2">{event.age_restriction}</Typography>
-              </Box>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <p className="text-sm">{event.age_restriction}</p>
+              </div>
             )}
-          </Box>
+          </div>
 
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2 }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center justify-between pt-4">
+            <div className="flex items-center gap-2">
               {event.user_attending ? (
                 <Button
                   variant="outline"
@@ -162,7 +132,7 @@ export function GroupEventCard({
                   onClick={() => onLeaveEvent(event.id)}
                   disabled={isLeaving}
                 >
-                  <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <UserMinus className="w-4 h-4 mr-2" />
                   {isLeaving ? 'Leaving...' : 'Leave'}
                 </Button>
               ) : (
@@ -174,7 +144,7 @@ export function GroupEventCard({
                     (event.max_attendees && (event.attendee_count || 0) >= event.max_attendees)
                   }
                 >
-                  <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <UserPlus className="w-4 h-4 mr-2" />
                   {isJoining ? 'Joining...' : 'Join'}
                 </Button>
               )}
@@ -186,12 +156,12 @@ export function GroupEventCard({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                    <ExternalLink className="w-4 h-4 mr-2" />
                     {event.ticket_url ? 'Tickets' : 'Website'}
                   </a>
                 </Button>
               )}
-            </Box>
+            </div>
 
             {canManage && onDeleteEvent && (
               <Button
@@ -200,11 +170,11 @@ export function GroupEventCard({
                 onClick={() => onDeleteEvent(event.id)}
                 disabled={isDeleting}
               >
-                <Trash2 style={{ width: 16, height: 16, color: 'var(--destructive)' }} />
+                <Trash2 className="w-4 h-4 text-destructive" />
               </Button>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
