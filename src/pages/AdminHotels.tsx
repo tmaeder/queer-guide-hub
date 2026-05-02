@@ -30,7 +30,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -356,20 +356,13 @@ export default function AdminHotels() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Hotels & BnBs
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage LGBTQ+ friendly accommodations
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <AdminEntityTable
+      title="Hotels & BnBs"
+      subtitle="Manage LGBTQ+ friendly accommodations"
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent style={{ maxWidth: 600, maxHeight: '90vh', overflow: 'auto' }}>
           <DialogHeader>
             <DialogTitle>{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</DialogTitle>
@@ -567,6 +560,7 @@ export default function AdminHotels() {
           </Box>
         </DialogContent>
       </Dialog>
-    </Box>
+      }
+    />
   );
 }

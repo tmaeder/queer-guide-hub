@@ -13,10 +13,10 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table/AdminEntityTable';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
-import { ArrowLeft, Eye, ExternalLink, MapPin, Shield, UserPlus } from 'lucide-react';
+import { Eye, ExternalLink, MapPin, Shield, UserPlus } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { UserStatsCards } from '@/components/admin/users/UserStatsCards';
@@ -337,45 +337,30 @@ export default function AdminUsers() {
         </Box>
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- isAdmin/navigate are stable, adding would defeat memoization
-    [columns],
+    [columns, isAdmin, navigate],
   );
 
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
-        </Button>
-        <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-            Users
-          </Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>Manage user accounts and permissions</p>
-        </div>
-      </Box>
-
-      <UserStatsCards />
-
-      <AdminDataTable config={tableConfig} />
-
-      <UserDetailSheet
-        user={selectedUser}
-        open={!!selectedUser}
-        onOpenChange={(open) => {
-          if (!open) setSelectedUser(null);
-        }}
-        onUserUpdated={() => setTableKey((k) => k + 1)}
-      />
-
-      <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />
-    </Box>
+    <AdminEntityTable
+      title="Users"
+      subtitle="Manage user accounts and permissions"
+      backHref="/admin"
+      backLabel="Back to Admin"
+      config={tableConfig}
+      beforeTable={<UserStatsCards />}
+      afterTable={
+        <>
+          <UserDetailSheet
+            user={selectedUser}
+            open={!!selectedUser}
+            onOpenChange={(open) => {
+              if (!open) setSelectedUser(null);
+            }}
+            onUserUpdated={() => setTableKey((k) => k + 1)}
+          />
+          <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />
+        </>
+      }
+    />
   );
 }
