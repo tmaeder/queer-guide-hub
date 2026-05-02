@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { useTaxonomyCRUD } from '@/hooks/useTaxonomyCRUD';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -48,6 +48,7 @@ const emptyForm = {
 
 export default function AdminVenueCategories() {
   const queryClient = useQueryClient();
+  const crud = useTaxonomyCRUD('venue_categories');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -86,11 +87,11 @@ export default function AdminVenueCategories() {
     }
     try {
       if (editingId) {
-        const { error } = await supabase.from('venue_categories').update(form).eq('id', editingId);
+        const { error } = await crud.upsert(form, editingId);
         if (error) throw error;
         toast.success('Category updated');
       } else {
-        const { error } = await supabase.from('venue_categories').insert([form]);
+        const { error } = await crud.upsert(form, null);
         if (error) throw error;
         toast.success('Category created');
       }
@@ -104,7 +105,7 @@ export default function AdminVenueCategories() {
   const handleDelete = async (row: CategoryRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await supabase.from('venue_categories').delete().eq('id', row.id);
+      const { error } = await crud.remove(row.id);
       if (error) throw error;
       toast.success('Category deleted');
       invalidateTable();
