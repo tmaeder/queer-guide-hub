@@ -5,8 +5,6 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useAuth } from '@/hooks/useAuth';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { useSignupFunnel } from '@/hooks/useSignupFunnel';
@@ -176,9 +174,9 @@ export default function MultiStepSignup({ onBack }: Props) {
   return (
     <Card>
       <CardHeader>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-1">
               <CardTitle>{t('auth.signup.title', 'Create your account')}</CardTitle>
               <CardDescription>
                 {t('auth.signup.stepIndicator', {
@@ -188,39 +186,28 @@ export default function MultiStepSignup({ onBack }: Props) {
                 })}{' '}
                 — {t(`auth.signup.steps.${stepKeys[currentStep - 1]}`)}
               </CardDescription>
-            </Box>
+            </div>
             <Button variant="outline" size="sm" onClick={onBack}>
               {t('auth.signup.haveAccount', 'Sign in')}
             </Button>
-          </Box>
-          <Progress value={progress} style={{ width: '100%', height: 6 }} />
-        </Box>
+          </div>
+          <Progress value={progress} className="w-full h-1.5" />
+        </div>
       </CardHeader>
 
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className="flex flex-col gap-6">
           {currentStep === 1 && (
             <>
               <OAuthButtons onError={setError} />
-              <Box sx={{ position: 'relative', textAlign: 'center', my: 1 }}>
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Box sx={{ width: '100%', borderTop: 1, borderColor: 'divider' }} />
-                </Box>
-                <Typography
-                  component="span"
-                  variant="caption"
-                  sx={{ position: 'relative', bgcolor: 'background.paper', px: 1, color: 'text.secondary', textTransform: 'uppercase' }}
-                >
+              <div className="relative text-center my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <span className="relative bg-background px-2 text-xs text-muted-foreground uppercase">
                   {t('auth.signup.orWithEmail', 'Or with email')}
-                </Typography>
-              </Box>
+                </span>
+              </div>
             </>
           )}
 
@@ -230,28 +217,28 @@ export default function MultiStepSignup({ onBack }: Props) {
             </Alert>
           )}
 
-          <Box sx={{ minHeight: 280 }}>{renderStep()}</Box>
+          <div className="min-h-[280px]">{renderStep()}</div>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <div className="flex justify-between pt-4 border-t border-border">
             <Button variant="outline" onClick={goPrev} disabled={currentStep === 1 || isLoading}>
-              <ChevronLeft style={{ width: 16, height: 16, marginRight: 6 }} />
+              <ChevronLeft className="w-4 h-4 mr-1.5" />
               {t('common.back', 'Back')}
             </Button>
             {currentStep < totalSteps ? (
               <Button onClick={goNext} disabled={isLoading}>
                 {t('common.next', 'Next')}
-                <ChevronRight style={{ width: 16, height: 16, marginLeft: 6 }} />
+                <ChevronRight className="w-4 h-4 ml-1.5" />
               </Button>
             ) : (
               <Button onClick={handleSubmit} disabled={isLoading}>
                 {isLoading && (
-                  <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}
                 {t('auth.signup.create', 'Create account')}
               </Button>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

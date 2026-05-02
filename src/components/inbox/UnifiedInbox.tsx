@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -56,7 +53,6 @@ export const UnifiedInbox: React.FC = () => {
   const { items, totalUnread, mailbox, loading } = useUnifiedInbox(typeFilter);
   const { currentAddress } = useMailboxAddress();
 
-  // For non-inbox folders, only show emails (notifications only appear in inbox)
   const folderItems =
     mailbox.selectedFolder !== 'inbox' ? items.filter((i) => i.type === 'email') : items;
 
@@ -71,7 +67,6 @@ export const UnifiedInbox: React.FC = () => {
 
   const selectEmail = (id: string) => {
     setSearchParams({ email: id });
-    // Mark as read
     const item = items.find((i) => i.id === id);
     if (item && !item.isRead && item.type === 'email') {
       mailbox.markRead(id);
@@ -89,41 +84,38 @@ export const UnifiedInbox: React.FC = () => {
 
   if (!user) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Typography>Please sign in to access your inbox.</Typography>
-      </Container>
+      <div className="container mx-auto py-8 px-4">
+        <p>Please sign in to access your inbox.</p>
+      </div>
     );
   }
 
-  // Settings view
   if (showSettings) {
     return (
-      <Container sx={{ py: 4 }}>
+      <div className="container mx-auto py-8 px-4">
         <Button variant="ghost" onClick={closeSettings} className="mb-4">
           <ChevronLeft className="h-4 w-4 mr-1" /> Back to Inbox
         </Button>
         <MailboxSettings />
-      </Container>
+      </div>
     );
   }
 
-  // Compose view
   if (showCompose) {
     return (
-      <Container sx={{ py: 4 }}>
+      <div className="container mx-auto py-8 px-4">
         <Button variant="ghost" onClick={closeCompose} className="mb-4">
           <ChevronLeft className="h-4 w-4 mr-1" /> Back to Inbox
         </Button>
         <ComposeEmail onSent={closeCompose} onCancel={closeCompose} />
-      </Container>
+      </div>
     );
   }
 
-  // Email detail view (mobile-first: replaces list)
   if (selectedEmailId) {
     const selectedItem = items.find((i) => i.id === selectedEmailId);
     return (
-      <Container sx={{ py: 4 }}>
+      <div className="container mx-auto py-8 px-4">
         <Button variant="ghost" onClick={clearSelection} className="mb-4">
           <ChevronLeft className="h-4 w-4 mr-1" /> Back
         </Button>
@@ -142,36 +134,29 @@ export const UnifiedInbox: React.FC = () => {
           />
         ) : (
           <Card className="p-6">
-            <Typography variant="h6">{selectedItem?.title}</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              {selectedItem?.snippet}
-            </Typography>
+            <h6 className="text-base font-semibold">{selectedItem?.title}</h6>
+            <p className="text-sm text-muted-foreground mt-1">{selectedItem?.snippet}</p>
           </Card>
         )}
-      </Container>
+      </div>
     );
   }
 
-  // Main inbox list view
   return (
-    <Container sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            <Mail
-              style={{ display: 'inline', marginRight: 8, verticalAlign: 'middle' }}
-              size={24}
-            />
+    <div className="container mx-auto py-8 px-4">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h5 className="text-xl font-bold">
+            <Mail className="inline-block mr-2 align-middle" size={24} />
             Inbox
-          </Typography>
+          </h5>
           {currentAddress && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            <p className="text-sm text-muted-foreground mt-1">
               {currentAddress}@queer.guide
-            </Typography>
+            </p>
           )}
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        </div>
+        <div className="flex gap-2">
           {!currentAddress && (
             <Button variant="outline" size="sm" onClick={openSettings}>
               Claim Email Address
@@ -182,11 +167,10 @@ export const UnifiedInbox: React.FC = () => {
               <PenSquare className="h-4 w-4 mr-1" /> Compose
             </Button>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      {/* Folder tabs */}
-      <Box sx={{ display: 'flex', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
+      <div className="flex gap-1 mb-4 flex-wrap">
         {FOLDERS.map((f) => (
           <Button
             key={f.key}
@@ -203,11 +187,10 @@ export const UnifiedInbox: React.FC = () => {
             )}
           </Button>
         ))}
-      </Box>
+      </div>
 
-      {/* Type filter (inbox folder only) */}
       {mailbox.selectedFolder === 'inbox' && (
-        <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
+        <div className="flex gap-1 mb-4">
           {TYPE_FILTERS.map((t) => (
             <Button
               key={t.key}
@@ -219,11 +202,10 @@ export const UnifiedInbox: React.FC = () => {
               {t.label}
             </Button>
           ))}
-        </Box>
+        </div>
       )}
 
-      {/* Search */}
-      <Box sx={{ position: 'relative', mb: 2 }}>
+      <div className="relative mb-4">
         <Search
           className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
           size={16}
@@ -234,20 +216,19 @@ export const UnifiedInbox: React.FC = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10"
         />
-      </Box>
+      </div>
 
-      {/* Email list */}
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <div className="flex justify-center py-16">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </Box>
+        </div>
       ) : filteredItems.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
+        <div className="text-center py-16">
           <Mail className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-          <Typography color="text.secondary">
+          <p className="text-muted-foreground">
             {searchQuery ? 'No results found' : 'No emails in this folder'}
-          </Typography>
-        </Box>
+          </p>
+        </div>
       ) : (
         <InboxItemList
           items={filteredItems}
@@ -255,6 +236,6 @@ export const UnifiedInbox: React.FC = () => {
           onToggleStar={(id) => mailbox.toggleStar(id)}
         />
       )}
-    </Container>
+    </div>
   );
 };
