@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +15,6 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { useVenues } from '@/hooks/useVenues';
 import { useToast } from '@/hooks/use-toast';
@@ -40,7 +38,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import {
@@ -52,7 +50,6 @@ import {
   Search,
   Check,
   ExternalLink,
-  AlertCircle,
 } from 'lucide-react';
 
 interface VenueRow {
@@ -119,7 +116,6 @@ const commonAmenities = [
 
 export default function AdminVenues() {
   const { user } = useAuth();
-  const { isAdmin, canManageContent } = useAdminRoles();
   const { createVenue, updateVenue, deleteVenue, refetch } = useVenues(false);
   const { toast } = useToast();
   const { resolveAddress } = useAddressResolver();
@@ -673,45 +669,15 @@ export default function AdminVenues() {
     [columns, isImporting],
   );
 
-  if (!isAdmin && !canManageContent()) {
-    return (
-      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <AlertCircle
-            style={{
-              height: 48,
-              width: 48,
-              margin: '0 auto',
-              color: 'var(--destructive)',
-              marginBottom: 16,
-            }}
-          />
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            Access Denied
-          </Typography>
-          <Typography color="text.secondary">
-            You don't have permission to access this page.
-          </Typography>
-        </Box>
-      </Container>
-    );
-  }
-
   return (
-    <Container
-      maxWidth={false}
-      sx={{ px: 3, py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      <Box>
-        <Typography variant="h4">Venues Management</Typography>
-        <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-          Manage venues and locations ({venueCategories.length} categories)
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      {/* Create/Edit Dialog */}
+    <AdminEntityTable
+      title="Venues Management"
+      subtitle={`Manage venues and locations (${venueCategories.length} categories)`}
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <>
+          {/* Create/Edit Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -1098,6 +1064,8 @@ export default function AdminVenues() {
         onSelectResult={handleSelectEnrichmentResult}
         venueName={enrichmentVenueName}
       />
-    </Container>
+        </>
+      }
+    />
   );
 }

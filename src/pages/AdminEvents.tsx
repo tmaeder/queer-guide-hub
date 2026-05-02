@@ -41,7 +41,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -562,18 +562,13 @@ export default function AdminEvents() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Events Management
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Create and manage events
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
+    <AdminEntityTable
+      title="Events Management"
+      subtitle="Create and manage events"
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <>
       {/* Create/Edit Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent style={{ maxWidth: 896, maxHeight: '90vh', overflow: 'auto' }}>
@@ -907,6 +902,8 @@ export default function AdminEvents() {
           </form>
         </DialogContent>
       </Dialog>
-    </Box>
+        </>
+      }
+    />
   );
 }
