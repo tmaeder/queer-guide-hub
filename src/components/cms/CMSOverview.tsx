@@ -30,7 +30,7 @@ import {
   Newspaper,
   Layers,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom, listFromIn, countRows } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentTypeIds, getContentType } from '@/config/contentTypeRegistry';
 import type { CMSView } from './CMSSidebar';
@@ -206,43 +206,38 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         const config = getContentType(id);
         if (!config) continue;
 
-        const { count } = await supabase
-          .from(config.tableName as 'events')
-          .select('*', { count: 'exact', head: true });
+        const count = await countRows(config.tableName);
 
         results.push({
           id: config.id,
           label: config.label.plural,
-          count: count ?? 0,
+          count,
           color: config.color,
           icon: config.icon,
         });
       }
 
       // Pages count
-      const { count: pagesCount } = await supabase
-        .from('cms_pages' as 'events')
-        .select('*', { count: 'exact', head: true });
-
+      const pagesCount = await countRows('cms_pages');
       const pagesConfig = getContentType('cms_pages');
       if (pagesConfig) {
         results.push({
           id: 'cms_pages',
           label: 'Pages',
-          count: pagesCount ?? 0,
+          count: pagesCount,
           color: pagesConfig.color,
           icon: pagesConfig.icon,
         });
       }
 
       // Review queue count
-      const { count: revCount } = await supabase
-        .from('cms_content_metadata' as 'events')
-        .select('*', { count: 'exact', head: true })
-        .eq('workflow_state', 'review');
+      const revCount = await countRows('cms_content_metadata', {
+        col: 'workflow_state',
+        val: 'review',
+      });
 
       setCounts(results);
-      setReviewCount(revCount ?? 0);
+      setReviewCount(revCount);
     } catch (err) {
       console.error('Error loading overview counts:', err);
     } finally {
@@ -252,39 +247,32 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
 
   async function loadRecentActivity() {
     try {
-      const { data: entries, error } = await supabase
-        .from('cms_audit_log' as 'events')
-        .select('id, action, actor_id, source_table, source_id, timestamp')
-        .order('timestamp', { ascending: false })
-        .limit(5);
-
-      if (error || !entries) {
+      const entries = await listFrom<AuditEntry>(
+        'cms_audit_log',
+        'id, action, actor_id, source_table, source_id, timestamp',
+        { col: 'timestamp', ascending: false },
+        5,
+      );
+      if (entries.length === 0) {
         setRecentActivity([]);
         return;
       }
 
       // Collect unique actor IDs
       const actorIds = [
-        ...new Set(
-          (entries as unknown as AuditEntry[])
-            .map((e) => e.actor_id)
-            .filter(Boolean) as string[]
-        ),
+        ...new Set(entries.map((e) => e.actor_id).filter(Boolean) as string[]),
       ];
 
       // Batch-fetch actor emails
       let actorMap: Record<string, string> = {};
       if (actorIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, email')
-          .in('user_id', actorIds);
-
-        if (profiles) {
-          actorMap = Object.fromEntries(
-            (profiles as { user_id: string; email: string }[]).map((p) => [p.user_id, p.email]),
-          );
-        }
+        const profiles = await listFromIn<{ user_id: string; email: string }>(
+          'profiles',
+          'user_id, email',
+          'user_id',
+          actorIds,
+        );
+        actorMap = Object.fromEntries(profiles.map((p) => [p.user_id, p.email]));
       }
 
       setRecentActivity(

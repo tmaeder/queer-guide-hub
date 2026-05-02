@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Box, Typography } from "@mui/material";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import { listFrom, insertInto, updateRow, deleteRow } from "@/hooks/usePageFetchers";
 import {
   Plus,
   Edit2,
@@ -57,13 +58,11 @@ export function NewsSourcesManager() {
 
   const fetchSources = async () => {
     try {
-      const { data, error } = await supabase
-        .from('news_sources')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSources(data || []);
+      const data = await listFrom<NewsSource>('news_sources', '*', {
+        col: 'created_at',
+        ascending: false,
+      });
+      setSources(data);
     } catch (_error) {
       toast({
         title: "Error",
@@ -99,28 +98,13 @@ export function NewsSourcesManager() {
 
     try {
       if (editingSource) {
-        const { error } = await supabase
-          .from('news_sources')
-          .update(formData)
-          .eq('id', editingSource.id);
-
+        const { error } = await updateRow('news_sources', editingSource.id, formData);
         if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "News source updated successfully",
-        });
+        toast({ title: 'Success', description: 'News source updated successfully' });
       } else {
-        const { error } = await supabase
-          .from('news_sources')
-          .insert([formData]);
-
+        const { error } = await insertInto('news_sources', formData);
         if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "News source created successfully",
-        });
+        toast({ title: 'Success', description: 'News source created successfully' });
       }
 
       setDialogOpen(false);
@@ -168,10 +152,7 @@ export function NewsSourcesManager() {
     if (!confirm("Are you sure you want to delete this news source?")) return;
 
     try {
-      const { error } = await supabase
-        .from('news_sources')
-        .delete()
-        .eq('id', sourceId);
+      const { error } = await deleteRow('news_sources', sourceId);
 
       if (error) throw error;
 
@@ -192,10 +173,7 @@ export function NewsSourcesManager() {
 
   const handleToggleActive = async (sourceId: string, isActive: boolean) => {
     try {
-      const { error } = await supabase
-        .from('news_sources')
-        .update({ is_active: !isActive })
-        .eq('id', sourceId);
+      const { error } = await updateRow('news_sources', sourceId, { is_active: !isActive });
 
       if (error) throw error;
 
@@ -264,10 +242,9 @@ export function NewsSourcesManager() {
     if (!editingSource) return;
 
     try {
-      const { error } = await supabase
-        .from('news_sources')
-        .update({ keywords: editingKeywords })
-        .eq('id', editingSource.id);
+      const { error } = await updateRow('news_sources', editingSource.id, {
+        keywords: editingKeywords,
+      });
 
       if (error) throw error;
 

@@ -10,6 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  listFromWhere,
+  updateRow,
+  insertInto,
+  updateRowsByIds,
+} from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, LANGUAGE_NAMES } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
@@ -67,24 +73,22 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
 
   async function loadTranslations() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('content_translations')
-      .select('*')
-      .eq('table_name', tableName)
-      .eq('record_id', recordId)
-      .eq('language', selectedLang);
-
-    if (!error && data) {
+    try {
+      const data = await listFromWhere<TranslationRow>('content_translations', '*', [
+        { col: 'table_name', val: tableName },
+        { col: 'record_id', val: recordId },
+        { col: 'language', val: selectedLang },
+      ]);
       const map: Record<string, TranslationRow> = {};
-      for (const row of data as TranslationRow[]) {
-        map[row.field_name] = row;
-      }
-      setTranslations(map);
       const d: Record<string, string> = {};
-      for (const row of data as TranslationRow[]) {
+      for (const row of data) {
+        map[row.field_name] = row;
         d[row.field_name] = row.value;
       }
+      setTranslations(map);
       setDrafts(d);
+    } catch {
+      // ignore — leave empty state
     }
     setLoading(false);
   }
@@ -97,12 +101,13 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
 
       const existing = translations[field];
       if (existing) {
-        await supabase
-          .from('content_translations')
-          .update({ value, status: 'human_reviewed', machine_source: null })
-          .eq('id', existing.id);
+        await updateRow('content_translations', existing.id, {
+          value,
+          status: 'human_reviewed',
+          machine_source: null,
+        });
       } else {
-        await supabase.from('content_translations').insert({
+        await insertInto('content_translations', {
           table_name: tableName,
           record_id: recordId,
           field_name: field,
@@ -122,12 +127,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
       .filter((t) => t.status !== 'published')
       .map((t) => t.id);
     if (ids.length === 0) return;
-
-    await supabase
-      .from('content_translations')
-      .update({ status: 'published' })
-      .in('id', ids);
-
+    await updateRowsByIds('content_translations', ids, { status: 'published' });
     toast({ title: 'Translations published' });
     await loadTranslations();
   }

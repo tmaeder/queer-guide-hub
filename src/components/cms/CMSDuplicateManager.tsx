@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, Check, X, Eye, Merge, RotateCcw } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -123,23 +123,14 @@ export function CMSDuplicateManager() {
   const runDuplicateDetection = async () => {
     setIsRunningDetection(true);
     try {
-      const { data: events, error: eventsError } = await supabase
-        .from('events')
-        .select('id, title, created_at, description')
-        .limit(100);
-
-      const { data: venues, error: venuesError } = await supabase
-        .from('venues')
-        .select('id, name, created_at, description')
-        .limit(100);
-
-      const { data: _personalities, error: personalitiesError } = await supabase
-        .from('personalities')
-        .select('id, name, created_at, description')
-        .limit(100);
-
-      if (eventsError || venuesError || personalitiesError) {
-        console.error('Error fetching content:', { eventsError, venuesError, personalitiesError });
+      let events: Array<{ id: string; title?: string; created_at: string; description?: string }> = [];
+      let venues: Array<{ id: string; name?: string; created_at: string; description?: string }> = [];
+      try {
+        events = await listFrom('events', 'id, title, created_at, description', undefined, 100);
+        venues = await listFrom('venues', 'id, name, created_at, description', undefined, 100);
+        await listFrom('personalities', 'id, name, created_at, description', undefined, 100);
+      } catch (err) {
+        console.error('Error fetching content:', err);
         toast.error('Failed to fetch content for duplicate detection');
         return;
       }
