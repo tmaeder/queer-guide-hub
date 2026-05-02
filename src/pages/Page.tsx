@@ -4,52 +4,20 @@
  * Fetches published page by slug and renders HTML body.
  */
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import { supabase } from '@/integrations/supabase/client';
 import DOMPurify from 'dompurify';
-import type { CMSPage } from '@/types/cms';
+import { useCMSPage } from '@/hooks/useCMSPage';
 
 export default function Page() {
   const { slug } = useParams<{ slug: string }>();
-  const [page, setPage] = useState<CMSPage | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-
-  useEffect(() => {
-    if (!slug) return;
-    loadPage(slug);
-  }, [slug]);
-
-  async function loadPage(pageSlug: string) {
-    setLoading(true);
-    setNotFound(false);
-
-    try {
-      const { data, error } = await supabase
-        .from('cms_pages' as const)
-        .select('*')
-        .eq('slug', pageSlug)
-        .eq('workflow_state', 'published')
-        .single();
-
-      if (error || !data) {
-        setNotFound(true);
-        return;
-      }
-
-      setPage(data as CMSPage);
-    } catch {
-      setNotFound(true);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data, isLoading: loading } = useCMSPage(slug);
+  const page = data?.page ?? null;
+  const notFound = !!data && data.notFound;
 
   if (loading) {
     return (
