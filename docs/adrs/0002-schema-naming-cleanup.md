@@ -29,8 +29,16 @@ across new contributors, this compounds to a real velocity tax.
 
 ## Decision
 
-**Pick one canonical name per concept and migrate via backwards-compatible
-view alias.** No big-bang. Three phases per rename:
+**Pick one canonical name per concept and migrate via a backwards-
+compatible bridge.** No big-bang. Three phases per rename:
+
+> **2026-05-02 update:** the original ADR proposed a view alias for
+> Phase A, but a view alias does not shield Supabase clients that query
+> the underlying table directly (`.from('venues').select('featured')`).
+> Phase A for MIG-1 instead used an **add-column + bidirectional sync
+> trigger** pattern — both column names work for reads AND writes
+> throughout Phase B. See migration `20260502020000` for the actual
+> implementation. Other MIGs were code-only and didn't need a bridge.
 
 1. **Phase A** — Add a backwards-compat view (or column alias) so both
    names work. Application code keeps working unchanged.
