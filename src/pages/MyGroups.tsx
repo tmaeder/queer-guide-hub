@@ -15,13 +15,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { EmptyState } from '@/components/ui/EmptyState';import { useTranslation } from 'react-i18next';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useTranslation } from 'react-i18next';
 
 export default function MyGroups() {
   const { userGroups, isLoading, createGroup, isCreating, leaveGroup, isLeaving } = useGroups();
@@ -31,11 +29,9 @@ export default function MyGroups() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('recent');
 
-  // Filter and sort user's groups
   const filteredAndSortedGroups = useMemo(() => {
     let filtered = userGroups;
 
-    // Search filter
     if (searchQuery) {
       filtered = filtered.filter(
         (group) =>
@@ -44,7 +40,6 @@ export default function MyGroups() {
       );
     }
 
-    // Sort groups
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'name':
@@ -58,7 +53,6 @@ export default function MyGroups() {
     });
   }, [userGroups, searchQuery, sortBy]);
 
-  // Group statistics
   const stats = useMemo(() => {
     const total = userGroups.length;
     const ownedGroups = userGroups.filter((group) => group.created_by === user?.id).length;
@@ -70,8 +64,7 @@ export default function MyGroups() {
 
   return (
     <AuthGate title={t('pages.myGroups.title', 'My Groups')} description="Please sign in to view your groups">
-      <Container sx={{ py: 4 }}>
-        {/* Header */}
+      <div className="container mx-auto py-8 px-4">
         <PageHeader
           title="My Groups"
           subtitle={t('pages.myGroups.subtitle', 'Manage and explore your community groups')}
@@ -80,7 +73,7 @@ export default function MyGroups() {
               <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
               <Button variant="outline" asChild>
                 <LocalizedLink to="/groups">
-                  <Users style={{ height: 16, width: 16, marginRight: 8 }} />
+                  <Users className="h-4 w-4 mr-2" />
                   Discover Groups
                 </LocalizedLink>
               </Button>
@@ -88,15 +81,7 @@ export default function MyGroups() {
           }
         />
 
-        {/* Statistics Cards */}
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' },
-            gap: 2,
-            mb: 3,
-          }}
-        >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader style={{ paddingBottom: '8px' }}>
               <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>
@@ -104,12 +89,10 @@ export default function MyGroups() {
               </CardTitle>
             </CardHeader>
             <CardContent style={{ paddingTop: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Users style={{ height: 16, width: 16 }} />
-                <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-                  {stats.total}
-                </Box>
-              </Box>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="text-2xl font-bold">{stats.total}</span>
+              </div>
             </CardContent>
           </Card>
 
@@ -120,12 +103,10 @@ export default function MyGroups() {
               </CardTitle>
             </CardHeader>
             <CardContent style={{ paddingTop: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Crown style={{ height: 16, width: 16, color: '#eab308' }} />
-                <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-                  {stats.ownedGroups}
-                </Box>
-              </Box>
+              <div className="flex items-center gap-2">
+                <Crown className="h-4 w-4" style={{ color: '#eab308' }} />
+                <span className="text-2xl font-bold">{stats.ownedGroups}</span>
+              </div>
             </CardContent>
           </Card>
 
@@ -136,12 +117,10 @@ export default function MyGroups() {
               </CardTitle>
             </CardHeader>
             <CardContent style={{ paddingTop: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <UserCheck style={{ height: 16, width: 16, color: '#22c55e' }} />
-                <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-                  {stats.memberGroups}
-                </Box>
-              </Box>
+              <div className="flex items-center gap-2">
+                <UserCheck className="h-4 w-4" style={{ color: '#22c55e' }} />
+                <span className="text-2xl font-bold">{stats.memberGroups}</span>
+              </div>
             </CardContent>
           </Card>
 
@@ -152,28 +131,25 @@ export default function MyGroups() {
               </CardTitle>
             </CardHeader>
             <CardContent style={{ paddingTop: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Settings style={{ height: 16, width: 16, color: '#3b82f6' }} />
-                <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-                  {stats.privateGroups}
-                </Box>
-              </Box>
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4" style={{ color: '#3b82f6' }} />
+                <span className="text-2xl font-bold">{stats.privateGroups}</span>
+              </div>
             </CardContent>
           </Card>
-        </Box>
+        </div>
 
-        {/* Search and Sort Controls */}
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 3 }}>
-          <Box sx={{ flex: 1 }}>
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex-1">
             <Input
               placeholder={t('pages.myGroups.searchPlaceholder', 'Search your groups...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: '100%' }}
+              className="w-full"
             />
-          </Box>
+          </div>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger style={{ width: 192 }}>
+            <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -182,9 +158,8 @@ export default function MyGroups() {
               <SelectItem value="members">{t('pages.myGroups.mostMembers', 'Most Members')}</SelectItem>
             </SelectContent>
           </Select>
-        </Box>
+        </div>
 
-        {/* Groups Grid */}
         {isLoading ? (
           <PageLoadingState count={6} />
         ) : filteredAndSortedGroups.length === 0 ? (
@@ -198,47 +173,30 @@ export default function MyGroups() {
           ) : (
             <Card>
               <CardContent>
-                <Users
-                  style={{
-                    width: 48,
-                    height: 48,
-                    margin: '0 auto 16px',
-                    color: 'hsl(var(--muted-foreground))',
-                  }}
-                />
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h6 className="text-base font-semibold mb-2">
                   You haven't joined any groups yet
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 3, maxWidth: '28rem', mx: 'auto' }}
-                >
+                </h6>
+                <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
                   Start by joining existing groups or create your own!
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5 }}>
+                </p>
+                <div className="flex justify-center gap-3">
                   <CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />
                   <Button variant="outline" asChild>
                     <LocalizedLink to="/groups">{t('pages.myGroups.browseGroups', 'Browse Groups')}</LocalizedLink>
                   </Button>
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )
         ) : (
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-              gap: 3,
-            }}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAndSortedGroups.map((group) => (
               <GroupCard key={group.id} group={group} onLeave={leaveGroup} isLeaving={isLeaving} />
             ))}
-          </Box>
+          </div>
         )}
-      </Container>
+      </div>
     </AuthGate>
   );
 }

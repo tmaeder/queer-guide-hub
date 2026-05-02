@@ -1,8 +1,4 @@
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Sparkles } from 'lucide-react';
@@ -109,91 +105,36 @@ const UserDirectory = () => {
   };
 
   return (
-    <Container sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <Paper
-        variant="outlined"
-        sx={{
-          p: { xs: 3, md: 4 },
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          bgcolor: 'background.paper',
-        }}
-      >
-        <Typography
-          variant="h3"
-          sx={{ fontWeight: 700, color: 'text.primary', fontSize: { xs: '2rem', md: '2.5rem' } }}
-        >
-          Members
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: '1.05rem',
-            color: 'text.secondary',
-            maxWidth: '40rem',
-            mx: 'auto',
-            lineHeight: 1.6,
-          }}
-        >
+    <div className="container mx-auto py-8 px-4 flex flex-col gap-8">
+      <div className="border border-border p-6 md:p-8 text-center flex flex-col gap-4 bg-background">
+        <h3 className="text-3xl md:text-4xl font-bold text-foreground">Members</h3>
+        <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           Discover amazing people, build meaningful connections, and grow your network within our
           inclusive LGBTQ+ community.
-        </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: 1.5,
-            fontSize: '0.875rem',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.75,
-              px: 1.5,
-              py: 0.75,
-              bgcolor: 'action.hover',
-              borderRadius: '9999px',
-            }}
-          >
-            <Users style={{ height: 14, width: 14 }} />
-            <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
+        </p>
+        <div className="flex flex-wrap justify-center gap-3 text-sm">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
+            <Users className="h-3.5 w-3.5" />
+            <span className="text-sm font-medium">
               {profiles?.length || 0} Members
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.75,
-              px: 1.5,
-              py: 0.75,
-              bgcolor: 'action.hover',
-              borderRadius: '9999px',
-            }}
-          >
-            <Sparkles style={{ height: 14, width: 14, color: '#2563eb' }} />
-            <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
-              Active Community
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
+            <Sparkles className="h-3.5 w-3.5" style={{ color: '#2563eb' }} />
+            <span className="text-sm font-medium">Active Community</span>
+          </div>
+        </div>
+      </div>
 
       {!user && (
         <Card>
           <CardContent>
-            <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
-              Community Directory
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <p className="font-medium mb-2">Community Directory</p>
+            <p className="text-sm text-muted-foreground mb-4">
               Member profiles are visible to signed-in members to protect privacy. Sign in to browse
               the full directory, see detailed profiles, and connect.
-            </Typography>
-            <Button onClick={() => navigate('/auth')} style={{ paddingLeft: 24, paddingRight: 24 }}>
+            </p>
+            <Button onClick={() => navigate('/auth')} className="px-6">
               Sign In to Browse
             </Button>
           </CardContent>
@@ -228,7 +169,7 @@ const UserDirectory = () => {
           clearAllFilters={clearAllFilters}
         />
       )}
-    </Container>
+    </div>
   );
 };
 
