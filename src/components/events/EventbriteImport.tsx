@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Loader2 } from "lucide-react";
-import Box from '@mui/material/Box';
 
 interface EventbriteImportProps {
   onImportComplete?: () => void;
@@ -95,8 +94,8 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
         <DialogHeader>
           <DialogTitle>Import Events from Eventbrite</DialogTitle>
         </DialogHeader>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box>
+        <div className="flex flex-col gap-4">
+          <div>
             <Label htmlFor="query">Search Query *</Label>
             <Input
               id="query"
@@ -104,9 +103,9 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-          </Box>
+          </div>
 
-          <Box>
+          <div>
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
@@ -114,9 +113,9 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
-          </Box>
+          </div>
 
-          <Box>
+          <div>
             <Label htmlFor="category">Category</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
@@ -130,9 +129,9 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
                 ))}
               </SelectContent>
             </Select>
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex gap-2">
             <Button
               variant="outline"
               style={{ flex: 1 }}
@@ -148,15 +147,15 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
             >
               {isLoading ? (
                 <>
-                  <Loader2 style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Importing...
                 </>
               ) : (
                 "Import Events"
               )}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
