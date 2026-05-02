@@ -26,21 +26,11 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-
-interface TripShare {
-  id: string;
-  trip_id: string;
-  token: string;
-  permissions: {
-    itinerary: boolean;
-    budget: boolean;
-    notes: boolean;
-    packing: boolean;
-  };
-  expires_at: string | null;
-  created_by: string | null;
-  created_at: string;
-}
+import {
+  fetchTripShares,
+  createTripShare,
+  deleteTripShare,
+} from '@/hooks/useTripShares';
 
 interface Props {
   open: boolean;
@@ -64,15 +54,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
 
   const { data: shares, isLoading } = useQuery({
     queryKey: ['trip-shares', tripId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('trip_shares')
-        .select('*')
-        .eq('trip_id', tripId)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as TripShare[];
-    },
+    queryFn: () => fetchTripShares(tripId),
     enabled: open && !!tripId,
   });
 
@@ -105,25 +87,18 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   });
 
   const createShare = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase
-        .from('trip_shares')
-        .insert({
-          trip_id: tripId,
-          created_by: user?.id || null,
-          permissions: {
-            itinerary: true,
-            budget: showBudget,
-            notes: showNotes,
-            packing: showPacking,
-          },
-          expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
-        })
-        .select()
-        .single();
-      if (error) throw error;
-      return data as TripShare;
-    },
+    mutationFn: () =>
+      createTripShare({
+        tripId,
+        createdBy: user?.id || null,
+        permissions: {
+          itinerary: true,
+          budget: showBudget,
+          notes: showNotes,
+          packing: showPacking,
+        },
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trip-shares', tripId] });
       setShowBudget(false);
@@ -141,10 +116,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   });
 
   const deleteShare = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('trip_shares').delete().eq('id', id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => deleteTripShare(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trip-shares', tripId] });
       setDeleteConfirmId(null);

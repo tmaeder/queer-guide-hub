@@ -7,7 +7,11 @@ import Skeleton from '@mui/material/Skeleton';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/material/styles';
 import { Plane, Hotel, Plus, Shield, MapPin, Star, Check } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchBookingAssistantCities,
+  fetchTripReservations,
+  fetchBookingAssistantVenues,
+} from '@/hooks/useTripBookingAssistant';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,13 +31,6 @@ interface Props {
   days: TripDay[];
   startDate?: string;
   endDate?: string;
-}
-
-interface CityInfo {
-  id: string;
-  name: string;
-  country_id: string | null;
-  countries?: { equality_score: number | null; name: string } | null;
 }
 
 export function TripBookingAssistant({ tripId, places, _days, startDate, endDate }: Props) {
@@ -61,15 +58,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
 
   const { data: cities } = useQuery({
     queryKey: ['trip-booking-cities', cityIds],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('cities')
-        .select('id, name, country_id, countries:country_id(equality_score, name)')
-        .in('id', cityIds);
-      if (error) throw error;
-      return (data || []) as CityInfo[];
-    },
+    queryFn: () => fetchBookingAssistantCities(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
@@ -77,14 +66,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
   // Fetch reservations to know what's already booked
   const { data: reservations } = useQuery({
     queryKey: ['trip-reservations', tripId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('reservations')
-        .select('id, type, title, provider, status')
-        .eq('trip_id', tripId);
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => fetchTripReservations(tripId),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -94,17 +76,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
   // Venue suggestions per city
   const { data: venues, isLoading: venuesLoading } = useQuery({
     queryKey: ['trip-suggestion-venues', cityIds],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('venues')
-        .select('id, name, category, address, foursquare_rating, is_featured, latitude, longitude, city_id, country_id')
-        .in('city_id', cityIds)
-        .order('foursquare_rating', { ascending: false, nullsFirst: false })
-        .limit(20);
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => fetchBookingAssistantVenues(cityIds),
     enabled: cityIds.length > 0 && activeTab === 'suggestions',
     staleTime: 10 * 60 * 1000,
   });
