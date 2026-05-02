@@ -204,7 +204,7 @@ async function fetchCandidates(
     let q = supabase.from(ctConfig.table).select(ctConfig.selectFields)
     if (mode === 'generate') q = q.or(`${fieldName}.is.null,${fieldName}.eq.`)
     if (mode === 'cleanup') q = q.not(fieldName, 'is', null).neq(fieldName, '')
-    if (contentType === 'venues') q = q.order('featured', { ascending: false, nullsFirst: false })
+    if (contentType === 'venues') q = q.order('is_featured', { ascending: false, nullsFirst: false })
     q = q.order(ctConfig.nameField)
     return q
   }

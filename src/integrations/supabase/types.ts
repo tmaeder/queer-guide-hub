@@ -4209,7 +4209,6 @@ export type Database = {
           enrichment_status: Json | null
           event_type: string
           external_id: string | null
-          featured: boolean | null
           festival_id: string | null
           geo_linked_at: string | null
           group_id: string | null
@@ -4272,7 +4271,6 @@ export type Database = {
           enrichment_status?: Json | null
           event_type: string
           external_id?: string | null
-          featured?: boolean | null
           festival_id?: string | null
           geo_linked_at?: string | null
           group_id?: string | null
@@ -4335,7 +4333,6 @@ export type Database = {
           enrichment_status?: Json | null
           event_type?: string
           external_id?: string | null
-          featured?: boolean | null
           festival_id?: string | null
           geo_linked_at?: string | null
           group_id?: string | null
@@ -14307,7 +14304,6 @@ export type Database = {
           email_lower: string | null
           enrichment_status: Json | null
           external_id: string | null
-          featured: boolean | null
           foursquare_data: Json | null
           foursquare_id: string | null
           foursquare_rating: number | null
@@ -14385,7 +14381,6 @@ export type Database = {
           email_lower?: string | null
           enrichment_status?: Json | null
           external_id?: string | null
-          featured?: boolean | null
           foursquare_data?: Json | null
           foursquare_id?: string | null
           foursquare_rating?: number | null
@@ -14463,7 +14458,6 @@ export type Database = {
           email_lower?: string | null
           enrichment_status?: Json | null
           external_id?: string | null
-          featured?: boolean | null
           foursquare_data?: Json | null
           foursquare_id?: string | null
           foursquare_rating?: number | null
@@ -17034,7 +17028,6 @@ export type Database = {
           email_lower: string | null
           enrichment_status: Json | null
           external_id: string | null
-          featured: boolean | null
           foursquare_data: Json | null
           foursquare_id: string | null
           foursquare_rating: number | null

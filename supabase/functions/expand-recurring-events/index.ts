@@ -42,7 +42,7 @@ const COPY_FIELDS = [
   'ticket_url', 'is_free', 'price_min', 'price_max', 'currency',
   'max_attendees', 'accessibility_attributes', 'accessibility_notes',
   'target_groups', 'age_restriction', 'images', 'tags', 'festival_id',
-  'data_source', 'status', 'featured', 'lgbti_relevance_score',
+  'data_source', 'status', 'is_featured', 'lgbti_relevance_score',
   'sensitivity_flags', 'content_warnings',
 ] as const
 

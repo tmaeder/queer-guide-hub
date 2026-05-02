@@ -281,7 +281,7 @@ serve(async (req) => {
                 hours: hours,
                 images: [], // We can fetch photos separately if needed
                 verified: false,
-                featured: false,
+                is_featured: false,
                 google_place_id: placeDetails.place_id,
                 google_rating: placeDetails.rating || null,
                 google_review_count: placeDetails.user_ratings_total || null,
