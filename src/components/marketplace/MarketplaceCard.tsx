@@ -6,8 +6,6 @@ import { MotionCard as Card, CardImage } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Phone, Mail, ExternalLink, Eye, Store } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
-import { Star, MapPin, Phone, Mail, ExternalLink, Eye } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
