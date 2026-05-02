@@ -3,8 +3,6 @@ import { useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
@@ -118,20 +116,18 @@ export default function MarketplaceItemDetail() {
 
   if (!isLoading && !listing && !error) {
     return (
-      <Container sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Item Not Found
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+      <div className="container mx-auto py-8 text-center px-4">
+        <h5 className="text-xl font-bold mb-4">Item Not Found</h5>
+        <p className="text-muted-foreground mb-6">
           The marketplace item you're looking for doesn't exist.
-        </Typography>
+        </p>
         <LocalizedLink to="/marketplace">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Marketplace
           </Button>
         </LocalizedLink>
-      </Container>
+      </div>
     );
   }
 
