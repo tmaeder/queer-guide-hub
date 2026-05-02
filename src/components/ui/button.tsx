@@ -1,6 +1,7 @@
 import * as React from "react"
 import MuiButton, { type ButtonProps as MuiButtonProps } from "@mui/material/Button"
 import MuiIconButton from "@mui/material/IconButton"
+import CircularProgress from "@mui/material/CircularProgress"
 import { Slot } from "@radix-ui/react-slot"
 import { motion, useReducedMotion } from "motion/react"
 import { springs } from "@/lib/motion"
@@ -18,6 +19,8 @@ export interface ButtonProps
   variant?: ShadcnVariant;
   size?: ShadcnSize;
   asChild?: boolean;
+  /** P6-1 — show a spinner and block clicks. Width is preserved. */
+  loading?: boolean;
 }
 
 function mapVariantToMui(variant: ShadcnVariant = "default"): {
@@ -55,14 +58,31 @@ function mapSizeToMui(size: ShadcnSize = "default"): MuiButtonProps["size"] {
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", asChild = false, children, style, ...props }, ref) => {
+  ({ className, variant = "default", size = "default", asChild = false, loading = false, children, style, disabled, ...props }, ref) => {
     const reduced = useReducedMotion();
-    const motionInteractions = reduced || props.disabled
+    const isInert = disabled || loading;
+    const motionInteractions = reduced || isInert
       ? {}
       : {
           whileTap: { opacity: 0.7 },
           transition: springs.snappy,
         };
+
+    const renderContent = (node: React.ReactNode) =>
+      loading ? (
+        <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+          <span style={{ visibility: "hidden", display: "inline-flex", alignItems: "center" }}>
+            {node}
+          </span>
+          <CircularProgress
+            size={16}
+            color="inherit"
+            sx={{ position: "absolute", left: "50%", top: "50%", marginLeft: "-8px", marginTop: "-8px" }}
+          />
+        </span>
+      ) : (
+        node
+      );
 
     // asChild pattern: render children as the root element
     // This is used for <Button asChild><Link to="...">...</Link></Button>
@@ -75,7 +95,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           {...motionInteractions}
           {...(props as Record<string, unknown>)}
         >
-          {children}
+          {renderContent(children)}
         </MotionSlot>
       );
     }
@@ -87,6 +107,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref as React.Ref<HTMLButtonElement>}
           className={className}
           color={variant === "destructive" ? "error" : variant === "default" ? "primary" : "default"}
+          disabled={isInert}
+          aria-busy={loading || undefined}
           sx={{
             minWidth: 44,
             minHeight: 44,
@@ -97,7 +119,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           {...motionInteractions}
           {...(props as Record<string, unknown>)}
         >
-          {children}
+          {renderContent(children)}
         </MotionMuiIconButton>
       );
     }
@@ -113,6 +135,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         size={muiSize}
         className={className}
         style={style}
+        disabled={isInert}
+        aria-busy={loading || undefined}
         sx={{
           // Preserve existing icon sizing behavior
           '& svg': {
@@ -125,7 +149,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...motionInteractions}
         {...(props as Record<string, unknown>)}
       >
-        {children}
+        {renderContent(children)}
       </MotionMuiButton>
     );
   }
