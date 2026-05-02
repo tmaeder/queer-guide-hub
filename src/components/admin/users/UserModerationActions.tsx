@@ -14,8 +14,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { ShieldCheck, ShieldBan, ShieldAlert } from 'lucide-react';
 
 type ModerationStatus = 'approved' | 'suspended' | 'banned';
@@ -97,29 +95,27 @@ export function UserModerationActions({
   const statusCfg = STATUS_CONFIG[currentStatus] ?? STATUS_CONFIG.approved;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          Current Status
-        </Typography>
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="text-sm text-muted-foreground mb-2">Current Status</p>
         <Badge variant={statusCfg.variant} style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
           {statusCfg.label}
         </Badge>
-      </Box>
+      </div>
 
-      <Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+      <div>
+        <p className="text-sm text-muted-foreground mb-2">
           Reason (required for suspend/ban)
-        </Typography>
+        </p>
         <Textarea
           placeholder="Describe the reason for this action..."
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           style={{ minHeight: 80 }}
         />
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      <div className="flex gap-2 flex-wrap">
         {currentStatus !== 'approved' && (
           <Button
             variant="outline"
@@ -156,7 +152,7 @@ export function UserModerationActions({
             Ban
           </Button>
         )}
-      </Box>
+      </div>
 
       <AlertDialog
         open={!!pendingAction}
@@ -189,6 +185,6 @@ export function UserModerationActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Box>
+    </div>
   );
 }

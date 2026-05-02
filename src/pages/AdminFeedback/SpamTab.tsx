@@ -1,5 +1,4 @@
 import type { Dispatch, RefObject, SetStateAction } from 'react';
-import Typography from '@mui/material/Typography';
 import { FeedbackKanban } from '@/components/admin/feedback/FeedbackKanban';
 import { FeedbackFilters } from '@/components/admin/feedback/FeedbackFilters';
 import { FeedbackPresets } from '@/components/admin/feedback/FeedbackPresets';
@@ -114,11 +113,11 @@ export function SpamTab({
       />
 
       {totalVisibleCount === 0 ? (
-        <Typography variant="body2" color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>
+        <p className="text-sm text-muted-foreground py-12 text-center">
           {activeFilterCount > 0
             ? 'No submissions match the current filters.'
             : 'No submissions yet.'}
-        </Typography>
+        </p>
       ) : (
         <FeedbackKanban
           grouped={grouped}
