@@ -117,7 +117,7 @@ export default function IntegrationsTab() {
         <div className="flex items-center gap-2">
           <Webhook className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-semibold">Alert Webhook Integrations</span>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{integrations.length}</Badge>
+          <Badge variant="outline" className="text-2xs px-1.5 py-0">{integrations.length}</Badge>
           <div className="flex-1" />
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -205,7 +205,7 @@ export default function IntegrationsTab() {
               <thead className="bg-muted/40">
                 <tr className="border-b border-border">
                   {['Name', 'Type', 'Min severity', 'URL', 'Sent', 'Last triggered', 'Enabled', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -214,14 +214,14 @@ export default function IntegrationsTab() {
                   <tr key={i.id} className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${!i.enabled ? 'opacity-50' : ''}`}>
                     <td className="px-3 py-2 font-medium">{i.name}</td>
                     <td className="px-3 py-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{KIND_LABEL[i.kind]}</Badge>
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0">{KIND_LABEL[i.kind]}</Badge>
                     </td>
                     <td className="px-3 py-2 text-xs capitalize">{i.min_severity}</td>
-                    <td className="px-3 py-2 text-[11px] font-mono text-muted-foreground truncate max-w-[280px]" title={i.webhook_url}>
+                    <td className="px-3 py-2 text-xs2 font-mono text-muted-foreground truncate max-w-[280px]" title={i.webhook_url}>
                       {i.webhook_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}/…
                     </td>
                     <td className="px-3 py-2 tabular-nums text-xs">{i.total_sent}</td>
-                    <td className="px-3 py-2 text-[11px] text-muted-foreground">
+                    <td className="px-3 py-2 text-xs2 text-muted-foreground">
                       {i.last_triggered_at ? (
                         <Tooltip>
                           <TooltipTrigger asChild>

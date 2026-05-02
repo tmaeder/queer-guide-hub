@@ -94,7 +94,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
         <TooltipContent side="left" className="text-xs">Zoom out</TooltipContent>
       </Tooltip>
 
-      <div className="text-[10px] text-center font-mono text-muted-foreground py-0.5 select-none">
+      <div className="text-2xs text-center font-mono text-muted-foreground py-0.5 select-none">
         {Math.round(zoom * 100)}%
       </div>
 

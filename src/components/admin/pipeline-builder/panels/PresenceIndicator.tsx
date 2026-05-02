@@ -101,7 +101,7 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
               {others.slice(0, 3).map(p => (
                 <div
                   key={p.user_id}
-                  className="w-5 h-5 rounded-full border-2 border-background flex items-center justify-center text-[9px] font-semibold text-white"
+                  className="w-5 h-5 rounded-full border-2 border-background flex items-center justify-center text-3xs font-semibold text-white"
                   style={{ backgroundColor: colorForUserId(p.user_id) }}
                   title={p.email || p.user_id.slice(0, 8)}
                 >
@@ -109,7 +109,7 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
                 </div>
               ))}
               {others.length > 3 && (
-                <div className="w-5 h-5 rounded-full border-2 border-background bg-muted text-muted-foreground flex items-center justify-center text-[9px] font-semibold">
+                <div className="w-5 h-5 rounded-full border-2 border-background bg-muted text-muted-foreground flex items-center justify-center text-3xs font-semibold">
                   +{others.length - 3}
                 </div>
               )}
@@ -138,7 +138,7 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
             ))}
           </div>
           {editorCount > 1 && (
-            <div className="mt-2 pt-2 border-t border-border text-[10px] text-amber-600 dark:text-amber-400">
+            <div className="mt-2 pt-2 border-t border-border text-2xs text-amber-600 dark:text-amber-400">
               ⚠ Multiple editors — last save wins
             </div>
           )}

@@ -81,7 +81,7 @@ export default function DedupDecisionsTab() {
   const FilterButton = ({ value, label }: { value: EntityFilter; label: string }) => (
     <button
       onClick={() => setEntityFilter(value)}
-      className={`text-[11px] px-2.5 py-1 rounded border transition-colors capitalize ${
+      className={`text-xs2 px-2.5 py-1 rounded border transition-colors capitalize ${
         entityFilter === value
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -97,7 +97,7 @@ export default function DedupDecisionsTab() {
       <div className="flex items-center gap-2 flex-wrap">
         <Merge className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-semibold">Pending dedupe decisions</span>
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{counts.all} pending</Badge>
+        <Badge variant="outline" className="text-2xs px-1.5 py-0">{counts.all} pending</Badge>
         <div className="flex-1" />
         <Button
           size="sm"
@@ -137,7 +137,7 @@ export default function DedupDecisionsTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Type', 'Method', 'Confidence', 'Canonical', 'Incoming', 'Created', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -150,19 +150,19 @@ export default function DedupDecisionsTab() {
                   return (
                     <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                       <td className="px-3 py-2">
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{r.entity_type}</Badge>
+                        <Badge variant="outline" className="text-2xs px-1.5 py-0 capitalize">{r.entity_type}</Badge>
                       </td>
                       <td className="px-3 py-2 font-mono text-xs">{r.match_method}</td>
                       <td className={`px-3 py-2 font-mono tabular-nums font-semibold ${confColor}`}>
                         {r.confidence.toFixed(3)}
                       </td>
                       <td className="px-3 py-2">
-                        <code className="text-[10px] bg-muted/60 px-1 rounded">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>
+                        <code className="text-2xs bg-muted/60 px-1 rounded">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>
                       </td>
-                      <td className="px-3 py-2 text-[11px] font-mono text-muted-foreground">
+                      <td className="px-3 py-2 text-xs2 font-mono text-muted-foreground">
                         {r.incoming_source_name}/{r.incoming_source_id}
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-muted-foreground"
+                      <td className="px-3 py-2 text-xs2 text-muted-foreground"
                           title={new Date(r.created_at).toISOString()}>
                         {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
                       </td>

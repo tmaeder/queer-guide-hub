@@ -70,10 +70,10 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">{d.label || d.nodeTypeSlug || n.id}</div>
-                      <div className="text-[10px] text-muted-foreground font-mono truncate">{d.nodeTypeSlug || n.id.slice(0, 12)}</div>
+                      <div className="text-2xs text-muted-foreground font-mono truncate">{d.nodeTypeSlug || n.id.slice(0, 12)}</div>
                     </div>
                     {d.status && (
-                      <span className={`text-[10px] px-1.5 py-0 rounded ${
+                      <span className={`text-2xs px-1.5 py-0 rounded ${
                         d.status === 'completed' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
                         : d.status === 'failed' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
                         : d.status === 'running' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'

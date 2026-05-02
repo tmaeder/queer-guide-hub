@@ -99,10 +99,10 @@ export default function ErrorsTab() {
               <div key={`${s.function_name}-${s.severity}`} className="border border-border rounded-md bg-background px-3 py-2.5 hover:bg-muted/30 transition-colors">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <SIcon className={`h-3.5 w-3.5 ${sc.className}`} />
-                  <span className="text-[11px] font-mono truncate flex-1" title={s.function_name}>
+                  <span className="text-xs2 font-mono truncate flex-1" title={s.function_name}>
                     {s.function_name}
                   </span>
-                  <Badge variant="outline" className={`text-[9px] px-1 py-0 ${sc.badgeClass}`}>
+                  <Badge variant="outline" className={`text-3xs px-1 py-0 ${sc.badgeClass}`}>
                     {s.severity}
                   </Badge>
                 </div>
@@ -111,7 +111,7 @@ export default function ErrorsTab() {
                   <div><strong>{s.last_24h}</strong> <span className="text-muted-foreground">/ 24h</span></div>
                   <div><strong>{s.last_7d}</strong> <span className="text-muted-foreground">/ 7d</span></div>
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-1">
+                <div className="text-2xs text-muted-foreground mt-1">
                   last: {s.last_seen_at ? formatDistanceToNow(new Date(s.last_seen_at), { addSuffix: true }) : '—'}
                 </div>
               </div>
@@ -142,7 +142,7 @@ export default function ErrorsTab() {
               <button
                 key={s}
                 onClick={() => setMinSeverity(s)}
-                className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
+                className={`text-xs2 px-2.5 py-1 rounded border transition-colors ${
                   minSeverity === s
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -158,7 +158,7 @@ export default function ErrorsTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['When', 'Function', 'Severity', 'Message'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -179,16 +179,16 @@ export default function ErrorsTab() {
                         selected?.id === e.id ? 'bg-primary/10' : 'hover:bg-muted/30'
                       }`}
                     >
-                      <td className="px-3 py-2 text-muted-foreground text-[11px] whitespace-nowrap align-top"
+                      <td className="px-3 py-2 text-muted-foreground text-xs2 whitespace-nowrap align-top"
                           title={new Date(e.created_at).toISOString()}>
                         {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
                       </td>
-                      <td className="px-3 py-2 font-mono text-[11px] align-top truncate max-w-[160px]"
+                      <td className="px-3 py-2 font-mono text-xs2 align-top truncate max-w-[160px]"
                           title={e.function_name}>
                         {e.function_name}
                       </td>
                       <td className="px-3 py-2 align-top">
-                        <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${sc.badgeClass}`}>
+                        <Badge variant="outline" className={`text-3xs px-1.5 py-0 ${sc.badgeClass}`}>
                           {e.severity}
                         </Badge>
                       </td>
@@ -211,27 +211,27 @@ export default function ErrorsTab() {
             ) : (
               <div className="flex flex-col gap-3">
                 <div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Message</div>
+                  <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Message</div>
                   <div className="text-sm break-words font-mono">{selected.message}</div>
                 </div>
                 {selected.context && (
                   <div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Context</div>
-                    <pre className="text-[11px] bg-muted/40 p-2 rounded-md overflow-auto">
+                    <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Context</div>
+                    <pre className="text-xs2 bg-muted/40 p-2 rounded-md overflow-auto">
                       {JSON.stringify(selected.context, null, 2)}
                     </pre>
                   </div>
                 )}
                 {selected.stack && (
                   <div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Stack</div>
-                    <pre className="text-[10px] bg-muted/40 p-2 rounded-md overflow-auto max-h-60 whitespace-pre-wrap">
+                    <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Stack</div>
+                    <pre className="text-2xs bg-muted/40 p-2 rounded-md overflow-auto max-h-60 whitespace-pre-wrap">
                       {selected.stack}
                     </pre>
                   </div>
                 )}
                 {(selected.pipeline_run_id || selected.staging_id) && (
-                  <div className="border-t border-border pt-2 space-y-1 text-[11px] text-muted-foreground">
+                  <div className="border-t border-border pt-2 space-y-1 text-xs2 text-muted-foreground">
                     {selected.pipeline_run_id && (
                       <div>
                         pipeline_run: <code className="bg-muted/60 px-1 rounded">{selected.pipeline_run_id}</code>

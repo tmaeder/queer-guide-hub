@@ -186,7 +186,7 @@ export default function PipelineDashboard() {
                         <div key={nodeId} className="border rounded-md p-2">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-mono truncate">{nodeId}</span>
-                            <Badge variant="outline" className={`text-[10px] ${statusColors[state.status] || ''}`}>
+                            <Badge variant="outline" className={`text-2xs ${statusColors[state.status] || ''}`}>
                               {state.status}
                             </Badge>
                           </div>

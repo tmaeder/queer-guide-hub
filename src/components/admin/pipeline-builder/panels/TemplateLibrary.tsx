@@ -181,13 +181,13 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-medium text-sm">{t.name}</span>
-                      <Badge variant="outline" className="text-[10px] px-1 py-0">{t.category}</Badge>
+                      <Badge variant="outline" className="text-2xs px-1 py-0">{t.category}</Badge>
                       {t.use_count > 0 && (
-                        <span className="text-[10px] text-muted-foreground">used {t.use_count}×</span>
+                        <span className="text-2xs text-muted-foreground">used {t.use_count}×</span>
                       )}
                     </div>
                     {t.description && <div className="text-xs text-muted-foreground mb-1">{t.description}</div>}
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-2xs text-muted-foreground">
                       {t.nodes.length} nodes, {t.edges.length} edges • created {formatDistanceToNow(new Date(t.created_at), { addSuffix: true })}
                     </div>
                   </div>

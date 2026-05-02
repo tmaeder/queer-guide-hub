@@ -114,7 +114,7 @@ export default function ScraperHealthTab() {
           title="Orphan mappings"
           badge={
             totalOrphans > 0
-              ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{totalOrphans} total</Badge>
+              ? <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{totalOrphans} total</Badge>
               : undefined
           }
         />
@@ -127,9 +127,9 @@ export default function ScraperHealthTab() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Entity type</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Orphans</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Action</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Entity type</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Orphans</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -179,7 +179,7 @@ export default function ScraperHealthTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Source', 'Type', 'Parsed', 'Started', 'Geo', 'Phone', 'Website', 'Images', 'Tags', 'Address', 'Desc'].map(h => (
-                    <th key={h} className="text-left px-2 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-2 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -189,7 +189,7 @@ export default function ScraperHealthTab() {
                     <td className="px-2 py-1.5 font-mono text-xs">{c.source_name}</td>
                     <td className="px-2 py-1.5 text-xs capitalize">{c.entity_type}</td>
                     <td className="px-2 py-1.5 tabular-nums">{c.entities_parsed}</td>
-                    <td className="px-2 py-1.5 text-muted-foreground text-[11px]"
+                    <td className="px-2 py-1.5 text-muted-foreground text-xs2"
                         title={new Date(c.started_at).toISOString()}>
                       {formatDistanceToNow(new Date(c.started_at), { addSuffix: true })}
                     </td>
@@ -210,7 +210,7 @@ export default function ScraperHealthTab() {
 
       {/* Quality score distribution */}
       <div className="border border-border rounded-md bg-background overflow-hidden">
-        <SectionHeader icon={BarChart3} title="Quality score distribution" badge={<Badge variant="outline" className="text-[10px] px-1.5 py-0">30-day · per source × type</Badge>} />
+        <SectionHeader icon={BarChart3} title="Quality score distribution" badge={<Badge variant="outline" className="text-2xs px-1.5 py-0">30-day · per source × type</Badge>} />
         <div className="max-h-[400px] overflow-auto">
           {quality.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground text-xs">No scored items yet</div>
@@ -219,7 +219,7 @@ export default function ScraperHealthTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Entity', 'Source', 'N', 'min', 'p25', 'p50', 'p75', 'max', 'avg'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>

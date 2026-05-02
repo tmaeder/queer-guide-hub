@@ -86,7 +86,7 @@ function StatCard({ icon: Icon, color, value, label }: { icon: React.ComponentTy
         <Icon className={`h-4 w-4 ${color}`} />
         <span className="text-2xl font-bold tabular-nums">{value}</span>
       </div>
-      <p className="text-[11px] text-muted-foreground mt-0.5">{label}</p>
+      <p className="text-xs2 text-muted-foreground mt-0.5">{label}</p>
     </div>
   );
 }
@@ -104,7 +104,7 @@ function IngestTable({ label, sources, totals }: { label: string; sources: Array
           <span>review <span className="font-semibold text-amber-700 dark:text-amber-300">{totals.pending_review}</span></span>
           <span>·</span>
           <span>rejected <span className="font-semibold text-destructive">{totals.rejected}</span></span>
-          <span className="ml-2 text-[10px]">last 14d</span>
+          <span className="ml-2 text-2xs">last 14d</span>
         </div>
       </div>
       <div className="max-h-56 overflow-y-auto">
@@ -112,7 +112,7 @@ function IngestTable({ label, sources, totals }: { label: string; sources: Array
           <thead className="bg-muted/40 sticky top-0">
             <tr className="border-b border-border">
               {['Source', 'Staged', 'Validated', 'Unique', 'Dupe', 'Merge?', 'Committed', 'Updated', 'Review', 'Rejected'].map(h => (
-                <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
@@ -294,7 +294,7 @@ export default function MonitorTab() {
                   <button
                     key={f}
                     onClick={() => setStatusFilter(f)}
-                    className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                    className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
                       statusFilter === f
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -308,7 +308,7 @@ export default function MonitorTab() {
                   <button
                     key={f}
                     onClick={() => setTypeFilter(f)}
-                    className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                    className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
                       typeFilter === f
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -322,7 +322,7 @@ export default function MonitorTab() {
                 <thead className="bg-muted/40 sticky top-0">
                   <tr className="border-b border-border">
                     {['Name', 'Type', 'Status', 'Items', 'Duration', 'Started'].map(h => (
-                      <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                      <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -345,12 +345,12 @@ export default function MonitorTab() {
                       >
                         <td className="px-3 py-2 font-medium truncate max-w-[200px]" title={run.name}>{run.name}</td>
                         <td className="px-3 py-2">
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          <Badge variant="outline" className="text-2xs px-1.5 py-0">
                             {run.type}
                           </Badge>
                         </td>
                         <td className="px-3 py-2">
-                          <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${statusClass[run.status] || 'bg-muted'}`}>
+                          <span className={`inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded-full ${statusClass[run.status] || 'bg-muted'}`}>
                             <Icon className={`h-2.5 w-2.5 ${run.status === 'running' ? 'animate-spin' : ''}`} />
                             {run.status}
                           </span>
@@ -373,7 +373,7 @@ export default function MonitorTab() {
               </table>
             </div>
             {!isLoading && (
-              <div className="px-3 py-1.5 border-t border-border text-[11px] text-muted-foreground">
+              <div className="px-3 py-1.5 border-t border-border text-xs2 text-muted-foreground">
                 Showing {filteredRuns.length} of {allRuns.length} runs
               </div>
             )}
@@ -389,8 +389,8 @@ export default function MonitorTab() {
                 <div className="flex flex-col gap-2">
                   <div>
                     <div className="font-semibold text-sm truncate">{selectedRun.name}</div>
-                    <div className="text-[11px] text-muted-foreground">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 mr-1">{selectedRun.type}</Badge>
+                    <div className="text-xs2 text-muted-foreground">
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0 mr-1">{selectedRun.type}</Badge>
                       {selectedRun.id.slice(0, 8)}
                     </div>
                   </div>
@@ -404,14 +404,14 @@ export default function MonitorTab() {
                     return (
                       <div key={nodeId} className="border border-border rounded-md p-2 hover:bg-muted/30 transition-colors">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[11px] font-mono truncate" title={nodeId}>{nodeId}</span>
-                          <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0 rounded ${statusClass[state.status as string] || 'bg-muted'}`}>
+                          <span className="text-xs2 font-mono truncate" title={nodeId}>{nodeId}</span>
+                          <span className={`inline-flex items-center gap-1 text-2xs px-1.5 py-0 rounded ${statusClass[state.status as string] || 'bg-muted'}`}>
                             <NodeIcon className={`h-2.5 w-2.5 ${state.status === 'running' ? 'animate-spin' : ''}`} />
                             {state.status as string}
                           </span>
                         </div>
                         {(state.items_out as number) > 0 && (
-                          <div className="text-[11px] text-muted-foreground mt-1">
+                          <div className="text-xs2 text-muted-foreground mt-1">
                             {state.items_out as number} items out
                             {state.duration_ms ? ` · ${formatDuration(state.duration_ms as number)}` : ''}
                           </div>
@@ -419,7 +419,7 @@ export default function MonitorTab() {
                         {state.error != null && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className="text-[11px] text-destructive mt-1 truncate cursor-help">{state.error as string}</div>
+                              <div className="text-xs2 text-destructive mt-1 truncate cursor-help">{state.error as string}</div>
                             </TooltipTrigger>
                             <TooltipContent className="text-xs max-w-[320px] whitespace-pre-wrap">{state.error as string}</TooltipContent>
                           </Tooltip>
@@ -430,7 +430,7 @@ export default function MonitorTab() {
                   {selectedRun.output_result && (
                     <details className="text-xs">
                       <summary className="cursor-pointer text-muted-foreground hover:text-foreground py-1">Raw output</summary>
-                      <pre className="text-[10px] bg-muted/40 p-2 rounded-md overflow-auto max-h-56 mt-1">
+                      <pre className="text-2xs bg-muted/40 p-2 rounded-md overflow-auto max-h-56 mt-1">
                         {JSON.stringify(selectedRun.output_result, null, 2)}
                       </pre>
                     </details>

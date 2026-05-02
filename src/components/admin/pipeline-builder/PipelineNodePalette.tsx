@@ -33,8 +33,8 @@ export default function PipelineNodePalette({
   return (
     <div className="w-60 shrink-0 flex flex-col border-r border-border bg-muted/30 overflow-hidden">
       <div className="px-3 py-2.5 border-b border-border">
-        <div className="font-semibold text-[13px]">Node Palette</div>
-        <div className="text-[11px] text-muted-foreground mt-0.5">Drag onto canvas</div>
+        <div className="font-semibold text-sm">Node Palette</div>
+        <div className="text-xs2 text-muted-foreground mt-0.5">Drag onto canvas</div>
         <div className="relative mt-2">
           <Search className="h-3 w-3 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <input
@@ -42,12 +42,12 @@ export default function PipelineNodePalette({
             value={paletteSearch}
             onChange={(e) => setPaletteSearch(e.target.value)}
             placeholder="Search nodes..."
-            className="w-full h-7 pl-6 pr-2 text-[12px] border border-border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full h-7 pl-6 pr-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-ring"
           />
           {paletteSearch && (
             <button
               onClick={() => setPaletteSearch('')}
-              className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-[14px] leading-none p-1"
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-sm leading-none p-1"
               title="Clear search"
             >×</button>
           )}
@@ -55,7 +55,7 @@ export default function PipelineNodePalette({
       </div>
       <div className="flex-1 overflow-y-auto p-2">
         {paletteSearch && Object.values(nodeTypesByCategory).every(t => !t || t.length === 0) && (
-          <div className="text-center text-[11px] text-muted-foreground py-6 px-2">
+          <div className="text-center text-xs2 text-muted-foreground py-6 px-2">
             No nodes match "{paletteSearch}"
           </div>
         )}
@@ -65,7 +65,7 @@ export default function PipelineNodePalette({
             if (!types?.length) return null;
             return (
               <div key={cat}>
-                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-1">
+                <div className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-1">
                   {categoryLabels[cat] || cat}
                 </div>
                 <div className="flex flex-col gap-0.5">
@@ -78,7 +78,7 @@ export default function PipelineNodePalette({
                             role="button"
                             tabIndex={0}
                             aria-label={`Add ${nt.display_name} node`}
-                            className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-grab text-[13px] hover:bg-accent focus:bg-accent focus:outline-none focus:ring-1 focus:ring-ring transition-colors active:cursor-grabbing"
+                            className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-grab text-sm hover:bg-accent focus:bg-accent focus:outline-none focus:ring-1 focus:ring-ring transition-colors active:cursor-grabbing"
                             draggable
                             onDragStart={(e) => onDragStart(e as unknown as DragEvent<HTMLDivElement>, nt)}
                             onKeyDown={(e) => {

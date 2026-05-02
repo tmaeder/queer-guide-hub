@@ -202,15 +202,15 @@ export default function OverviewTab() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[90px]">Kind</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Name</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[130px]">Schedule</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[110px]">Last run</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[100px]">Status</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[160px]">Last 10</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[110px]">Items</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[80px]">Enabled</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider w-[100px]" />
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[90px]">Kind</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Name</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[130px]">Schedule</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[110px]">Last run</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]">Status</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[160px]">Last 10</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[110px]">Items</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[80px]">Enabled</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider w-[100px]" />
               </tr>
             </thead>
             <tbody>
@@ -223,7 +223,7 @@ export default function OverviewTab() {
               ) : filtered.map(row => (
                 <tr key={`${row.kind}-${row.id}`} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                   <td className="px-3 py-2.5 align-top">
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+                    <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
                       {row.kind === 'pipeline' ? <GitBranch className="h-2.5 w-2.5" /> : <Workflow className="h-2.5 w-2.5" />}
                       {row.kind}
                     </Badge>
@@ -235,8 +235,8 @@ export default function OverviewTab() {
                     >
                       {row.display_name || row.name}
                     </button>
-                    {row.is_template && <Badge variant="outline" className="ml-2 text-[9px] px-1 py-0">Template</Badge>}
-                    <div className="text-[11px] text-muted-foreground font-mono truncate max-w-[320px]" title={row.name}>{row.name}</div>
+                    {row.is_template && <Badge variant="outline" className="ml-2 text-3xs px-1 py-0">Template</Badge>}
+                    <div className="text-xs2 text-muted-foreground font-mono truncate max-w-[320px]" title={row.name}>{row.name}</div>
                   </td>
                   <td className="px-3 py-2.5 align-top text-xs text-muted-foreground"
                       title={row.schedule || 'manual'}>
@@ -248,15 +248,15 @@ export default function OverviewTab() {
                   </td>
                   <td className="px-3 py-2.5 align-top">
                     {row.last_run_status ? (
-                      <Badge variant="outline" className={`text-[10px] px-2 py-0 ${statusClass[row.last_run_status] || ''}`}>
+                      <Badge variant="outline" className={`text-2xs px-2 py-0 ${statusClass[row.last_run_status] || ''}`}>
                         {row.last_run_status}
                       </Badge>
-                    ) : <span className="text-[11px] text-muted-foreground">never</span>}
+                    ) : <span className="text-xs2 text-muted-foreground">never</span>}
                   </td>
                   <td className="px-3 py-2.5 align-top">
                     <div className="flex flex-col gap-1">
                       <StatusDots statuses={row.recent_statuses} />
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-2xs text-muted-foreground">
                         {row.recent_total_count > 0 ? `${row.recent_success_count}/${row.recent_total_count} ok` : 'no runs'}
                       </span>
                     </div>
@@ -291,7 +291,7 @@ export default function OverviewTab() {
             </tbody>
           </table>
           {!isLoading && rows && (
-            <div className="px-3 py-1.5 border-t border-border text-[11px] text-muted-foreground">
+            <div className="px-3 py-1.5 border-t border-border text-xs2 text-muted-foreground">
               Showing {filtered.length} of {rows.length} definitions
             </div>
           )}
