@@ -215,7 +215,6 @@
   "src/components/trips/AddToTripMenuItem.tsx",
   "src/components/trips/AiPlanTab.tsx",
   "src/components/trips/BudgetTab.tsx",
-  "src/components/trips/BundledCheckoutDialog.tsx",
   "src/components/trips/CostSplitSummary.tsx",
   "src/components/trips/CreateTripDialog.tsx",
   "src/components/trips/DocumentsList.tsx",
