@@ -5,14 +5,12 @@ import { useMessaging } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import Box from '@mui/material/Box';
 
 interface StartConversationButtonProps {
   userId: string;
   userName?: string;
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
-  sx?: object;
 }
 
 export const StartConversationButton = ({
@@ -20,7 +18,6 @@ export const StartConversationButton = ({
   userName,
   variant = 'outline',
   size = 'sm',
-  sx = {},
 }: StartConversationButtonProps) => {
   const { user } = useAuth();
   const { startConversation } = useMessaging();
@@ -57,11 +54,9 @@ export const StartConversationButton = ({
   }
 
   return (
-    <Box sx={sx}>
-      <Button variant={variant} size={size} onClick={handleStartConversation} disabled={loading}>
-        <MessageCircle style={{ width: 16, height: 16, marginRight: 8 }} />
-        {loading ? 'Sliding into DMs...' : 'Send DM'}
-      </Button>
-    </Box>
+    <Button variant={variant} size={size} onClick={handleStartConversation} disabled={loading}>
+      <MessageCircle style={{ width: 16, height: 16, marginRight: 8 }} />
+      {loading ? 'Sliding into DMs...' : 'Send DM'}
+    </Button>
   );
 };

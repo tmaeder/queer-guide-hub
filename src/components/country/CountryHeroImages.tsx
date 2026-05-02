@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import Box from '@mui/material/Box';
 import { resolveEntityImage, isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
 interface CountryRecord {
@@ -65,43 +64,46 @@ export default function CountryHeroImages({ country, className = '' }: CountryHe
   if (!url) return null;
 
   return (
-    <Box
-      sx={{ position: 'relative', height: 192, borderRadius: 2, overflow: 'hidden', mb: 3 }}
-      className={className}
+    <div
+      className={`relative overflow-hidden mb-6 ${className}`}
+      style={{ height: 192 }}
     >
-      <Box
-        sx={{ position: 'absolute', inset: 0, backgroundSize: 'cover', backgroundPosition: 'center' }}
-        style={{ backgroundImage: `url(${url})` }}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${url})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
       >
-        <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.4)' }} />
-      </Box>
+        <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }} />
+      </div>
       {metadata?.photographer && (
-        <Box
-          sx={{
-            position: 'absolute',
+        <div
+          className="absolute text-xs"
+          style={{
             bottom: 8,
             left: 8,
-            fontSize: '0.75rem',
             color: 'white',
             textShadow: '0 1px 3px rgba(0,0,0,0.5)',
           }}
         >
           Photo by{' '}
           {metadata.photographer_url ? (
-            <Box
-              component="a"
+            <a
               href={metadata.photographer_url}
               target="_blank"
               rel="noopener noreferrer"
-              sx={{ textDecoration: 'underline', color: 'white', '&:hover': { opacity: 0.8 } }}
+              className="underline hover:opacity-80"
+              style={{ color: 'white' }}
             >
               {metadata.photographer}
-            </Box>
+            </a>
           ) : (
             metadata.photographer
           )}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

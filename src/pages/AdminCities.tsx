@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom, insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -84,20 +84,8 @@ export default function AdminCities() {
   const [continents, setContinents] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    supabase
-      .from('countries')
-      .select('id, name')
-      .order('name')
-      .then(({ data }) => {
-        if (data) setCountries(data);
-      });
-    supabase
-      .from('continents')
-      .select('id, name')
-      .order('name')
-      .then(({ data }) => {
-        if (data) setContinents(data);
-      });
+    listFrom<{ id: string; name: string }>('countries', 'id, name', { col: 'name' }).then(setCountries);
+    listFrom<{ id: string; name: string }>('continents', 'id, name', { col: 'name' }).then(setContinents);
   }, []);
 
   const invalidateTable = () =>
@@ -127,7 +115,7 @@ export default function AdminCities() {
   const handleDelete = async (city: CityRow) => {
     if (!confirm(`Delete "${city.name}"?`)) return;
     try {
-      const { error } = await supabase.from('cities').delete().eq('id', city.id);
+      const { error } = await deleteRow('cities', city.id);
       if (error) throw error;
       void logAdminGeoEdit('cities', 'delete', city.id, city as unknown as Record<string, unknown>, null);
       toast({ title: 'Success', description: 'City deleted' });
@@ -162,14 +150,15 @@ export default function AdminCities() {
 
     try {
       if (editingCity) {
-        const { error } = await supabase.from('cities').update(cityData).eq('id', editingCity.id);
+        const { error } = await updateRow('cities', editingCity.id, cityData);
         if (error) throw error;
         void logAdminGeoEdit('cities', 'update', editingCity.id, editingCity as unknown as Record<string, unknown>, cityData);
         toast({ title: 'Success', description: 'City updated' });
       } else {
-        const { data: inserted, error } = await supabase.from('cities').insert([cityData]).select('id').single();
+        const { data: inserted, error } = await insertInto('cities', cityData);
         if (error) throw error;
-        if (inserted?.id) void logAdminGeoEdit('cities', 'create', inserted.id, null, cityData);
+        const insertedId = (inserted as { id?: string } | null)?.id;
+        if (insertedId) void logAdminGeoEdit('cities', 'create', insertedId, null, cityData);
         toast({ title: 'Success', description: 'City created' });
       }
       resetForm();

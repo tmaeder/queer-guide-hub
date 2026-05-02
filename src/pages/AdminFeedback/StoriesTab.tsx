@@ -1,5 +1,4 @@
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import { Button } from '@/components/ui/button';
 import { StoriesKanban } from '@/components/admin/feedback/StoriesKanban';
 import { StorySuggestionsPanel } from '@/components/admin/feedback/StorySuggestionsPanel';
 import { ArchivedStoriesPanel } from '@/components/admin/feedback/ArchivedStoriesPanel';
@@ -45,24 +44,24 @@ export function StoriesTab({
         onAccept={onAcceptSuggestion}
         onDismiss={onDismissSuggestion}
       />
-      <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+      <div className="flex gap-2 mb-2">
         <Button
-          size="small"
-          variant={state.archived ? 'outlined' : 'contained'}
+          size="sm"
+          variant={state.archived ? 'outline' : 'default'}
           onClick={() => update({ archived: false })}
           data-testid="stories-active-toggle"
         >
           Active ({activeCount})
         </Button>
         <Button
-          size="small"
-          variant={state.archived ? 'contained' : 'outlined'}
+          size="sm"
+          variant={state.archived ? 'default' : 'outline'}
           onClick={() => update({ archived: true })}
           data-testid="stories-archived-toggle"
         >
           Archived ({groupedStories.archived.length})
         </Button>
-      </Box>
+      </div>
       {state.archived ? (
         <ArchivedStoriesPanel
           archived={groupedStories.archived}

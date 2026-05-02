@@ -11,7 +11,10 @@ import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/En
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchMarketplaceListingBundle,
+  toggleMarketplaceFavorite,
+} from '@/hooks/usePageFetchers';
 import {
   type MarketplaceListing,
   type MarketplaceReview,
@@ -27,46 +30,7 @@ interface ListingBundle {
 }
 
 async function fetchListingBundle(slug: string, userId: string | undefined): Promise<ListingBundle | null> {
-  let { data: listing, error } = await supabase
-    .from('marketplace_listings')
-    .select('*')
-    .eq('slug', slug)
-    .single();
-
-  if (error && /uuid|invalid|no rows/i.test(error.message || '')) {
-    const fb = await supabase.from('marketplace_listings').select('*').eq('id', slug).single();
-    listing = fb.data;
-    error = fb.error;
-  }
-  if (error) {
-    if (error.code === 'PGRST116') return null;
-    throw error;
-  }
-  if (!listing) return null;
-
-  const { data: reviews, error: reviewsError } = await supabase
-    .from('marketplace_reviews')
-    .select(`*, profiles:user_id (display_name, avatar_url)`)
-    .eq('listing_id', listing.id)
-    .order('created_at', { ascending: false });
-  if (reviewsError) throw reviewsError;
-
-  let isFavorited = false;
-  if (userId) {
-    const { data: fav } = await supabase
-      .from('marketplace_favorites')
-      .select('id')
-      .eq('listing_id', listing.id)
-      .eq('user_id', userId)
-      .maybeSingle();
-    isFavorited = !!fav;
-  }
-
-  return {
-    listing: listing as MarketplaceListing,
-    reviews: (reviews || []) as MarketplaceReview[],
-    isFavorited,
-  };
+  return fetchMarketplaceListingBundle<MarketplaceListing, MarketplaceReview>(slug, userId);
 }
 
 export default function MarketplaceItemDetail() {
@@ -120,23 +84,14 @@ export default function MarketplaceItemDetail() {
     if (!listing) return;
 
     try {
-      if (isFavorited) {
-        const { error: delErr } = await supabase
-          .from('marketplace_favorites')
-          .delete()
-          .eq('listing_id', listing.id)
-          .eq('user_id', user.id);
-        if (delErr) throw delErr;
-        setIsFavorited(false);
-        toast({ title: 'Removed from favorites' });
-      } else {
-        const { error: insErr } = await supabase
-          .from('marketplace_favorites')
-          .insert({ listing_id: listing.id, user_id: user.id });
-        if (insErr) throw insErr;
-        setIsFavorited(true);
-        toast({ title: 'Added to favorites' });
-      }
+      const { error: toggleErr } = await toggleMarketplaceFavorite(
+        listing.id,
+        user.id,
+        isFavorited,
+      );
+      if (toggleErr) throw toggleErr;
+      setIsFavorited(!isFavorited);
+      toast({ title: isFavorited ? 'Removed from favorites' : 'Added to favorites' });
     } catch (e) {
       console.error('Error toggling favorite:', e);
       toast({ title: 'Error', description: 'Failed to update favorites', variant: 'destructive' });

@@ -7,9 +7,6 @@ import { Input } from '@/components/ui/input';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { PageLoading } from '@/components/ui/loading';
 import { Building2 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 
 export default function Cities() {
   const { t } = useTranslation();
@@ -46,32 +43,24 @@ export default function Cities() {
   }, [cities, search]);
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h1"
-          sx={{
-            fontSize: { xs: '2rem', md: '2.5rem' },
-            fontWeight: 800,
-            letterSpacing: '-0.025em',
-            mb: 1,
-          }}
-        >
+    <div className="container mx-auto py-8 md:py-12 px-4">
+      <div className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
           {t('cities.title', 'Cities')}
-        </Typography>
-        <Typography sx={{ color: 'text.secondary' }}>
+        </h1>
+        <p className="text-muted-foreground">
           {t('cities.subtitle', 'Explore LGBTQ+ friendly cities around the world.')}
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
-      <Box sx={{ mb: 4, maxWidth: 480 }}>
+      <div className="mb-8 max-w-[480px]">
         <Input
           aria-label={t('cities.searchAriaLabel', 'Search cities')}
           placeholder={t('cities.searchPlaceholder', 'Search cities…')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-      </Box>
+      </div>
 
       {loading ? (
         <PageLoading />
@@ -88,26 +77,11 @@ export default function Cities() {
           }
         />
       ) : (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: '1fr 1fr',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)',
-            },
-            gap: 3,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filtered.map((city) => (
-            <Box
+            <div
               key={city.id}
-              sx={{
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                '&:hover': { transform: 'scale(1.03)' },
-              }}
+              className="cursor-pointer transition-transform hover:scale-[1.03]"
             >
               <DirectoryCard
                 type="city"
@@ -115,10 +89,10 @@ export default function Cities() {
                 data={city}
                 onClick={() => (window.location.href = `/city/${city.slug || city.id}`)}
               />
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }

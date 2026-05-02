@@ -337,7 +337,7 @@ export const UniversalSearchBar = () => {
                   paddingLeft: isMobile ? 16 : 12,
                   paddingRight: isMobile ? 16 : 12,
                   borderRadius: 0,
-                  color: '#666666',
+                  color: 'hsl(var(--muted-foreground))',
                   pointerEvents: 'none',
                   flexShrink: 0,
                 }}
@@ -402,7 +402,7 @@ export const UniversalSearchBar = () => {
                       height: isMobile ? 32 : 24,
                       width: isMobile ? 32 : 24,
                       padding: 0,
-                      color: '#666666',
+                      color: 'hsl(var(--muted-foreground))',
                     }}
                     onClick={() => {
                       setQuery('');
@@ -469,7 +469,7 @@ export const UniversalSearchBar = () => {
                         style={{ cursor: 'pointer' }}
                       >
                         <Clock
-                          style={{ height: 16, width: 16, marginRight: 8, color: '#666666' }}
+                          style={{ height: 16, width: 16, marginRight: 8, color: 'hsl(var(--muted-foreground))' }}
                         />
                         <Box component="span" sx={{ flex: 1 }}>
                           {search}
@@ -492,7 +492,7 @@ export const UniversalSearchBar = () => {
                     ))}
                     <CommandItem
                       onSelect={clearRecentSearches}
-                      style={{ cursor: 'pointer', color: '#666666' }}
+                      style={{ cursor: 'pointer', color: 'hsl(var(--muted-foreground))' }}
                     >
                       <X style={{ height: 16, width: 16, marginRight: 8 }} />
                       Clear recent searches
@@ -522,7 +522,7 @@ export const UniversalSearchBar = () => {
                               height: 16,
                               width: 16,
                               marginRight: 12,
-                              color: '#666666',
+                              color: 'hsl(var(--muted-foreground))',
                               flexShrink: 0,
                             }}
                           />

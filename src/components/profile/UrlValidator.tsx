@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Loader2, Shield } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface UrlValidatorProps {
   url: string;
@@ -15,12 +13,8 @@ export function UrlValidator({ url, onValidate }: UrlValidatorProps) {
 
   const validateUrl = async (urlToValidate: string): Promise<boolean> => {
     try {
-      // Basic client-side URL validation (no external API call with hardcoded keys)
       const parsed = new URL(urlToValidate);
-      // Block known dangerous protocols
-      if (!['http:', 'https:'].includes(parsed.protocol)) {
-        return false;
-      }
+      if (!['http:', 'https:'].includes(parsed.protocol)) return false;
       return true;
     } catch {
       return false;
@@ -29,17 +23,13 @@ export function UrlValidator({ url, onValidate }: UrlValidatorProps) {
 
   const handleValidation = async () => {
     if (!url.trim()) return;
-
     setValidationState('validating');
     setValidationDetails('');
-
     try {
       const cleanUrl = url.startsWith('http') ? url : `https://${url}`;
       const isValid = await validateUrl(cleanUrl);
-
       setValidationState(isValid ? 'valid' : 'invalid');
       setValidationDetails(isValid ? 'URL format is valid' : 'URL appears to be invalid');
-
       onValidate?.(cleanUrl, isValid);
     } catch (_error) {
       setValidationState('invalid');
@@ -51,40 +41,40 @@ export function UrlValidator({ url, onValidate }: UrlValidatorProps) {
   if (!url.trim()) return null;
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+    <div className="flex items-center gap-2 mt-2">
       <Button
         variant="outline"
         size="sm"
         onClick={handleValidation}
         disabled={validationState === 'validating'}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <span className="flex items-center gap-2">
           {validationState === 'validating' ? (
-            <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} />
+            <Loader2 className="w-3 h-3 animate-spin" />
           ) : (
-            <Shield style={{ width: 12, height: 12 }} />
+            <Shield className="w-3 h-3" />
           )}
           Validate
-        </Box>
+        </span>
       </Button>
 
       {validationState === 'valid' && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#16a34a' }}>
-          <CheckCircle style={{ width: 16, height: 16 }} />
-          <Typography variant="body2">Valid</Typography>
-        </Box>
+        <span className="flex items-center gap-1 text-green-600">
+          <CheckCircle className="w-4 h-4" />
+          <span className="text-sm">Valid</span>
+        </span>
       )}
 
       {validationState === 'invalid' && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#dc2626' }}>
-          <XCircle style={{ width: 16, height: 16 }} />
-          <Typography variant="body2">Invalid</Typography>
-        </Box>
+        <span className="flex items-center gap-1 text-red-600">
+          <XCircle className="w-4 h-4" />
+          <span className="text-sm">Invalid</span>
+        </span>
       )}
 
       {validationDetails && (
-        <Typography variant="caption" sx={{ color: 'text.secondary' }}>{validationDetails}</Typography>
+        <span className="text-xs text-muted-foreground">{validationDetails}</span>
       )}
-    </Box>
+    </div>
   );
 }

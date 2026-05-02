@@ -3,7 +3,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { supabase } from '@/integrations/supabase/client';
+import { updateCommunitySubmission } from '@/hooks/usePageFetchers';
 import { AnalyticsTab } from '@/components/admin/feedback/analytics/AnalyticsTab';
 import { kanbanColumns, type KanbanStatus } from '@/components/admin/feedback/constants';
 import { FeedbackCommandPalette } from '@/components/admin/feedback/FeedbackCommandPalette';
@@ -292,23 +292,15 @@ export default function AdminFeedback() {
         onDismissDuplicate={(id) => c.dismissSuggestion.mutate(id)}
         onToggleSpam={(isSpam) =>
           c.selected &&
-          supabase
-            .from('community_submissions')
-            .update({ is_spam: isSpam })
-            .eq('id', c.selected.id)
-            .then(() =>
-              c.queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
-            )
+          updateCommunitySubmission(c.selected.id, { is_spam: isSpam }).then(() =>
+            c.queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+          )
         }
         onToggleNotify={(notify) =>
           c.selected &&
-          supabase
-            .from('community_submissions')
-            .update({ notify_submitter: notify })
-            .eq('id', c.selected.id)
-            .then(() =>
-              c.queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
-            )
+          updateCommunitySubmission(c.selected.id, { notify_submitter: notify }).then(() =>
+            c.queryClient.invalidateQueries({ queryKey: ['admin-feedback-board'] }),
+          )
         }
         auditEntries={c.auditEntries}
         adminById={c.adminMap}

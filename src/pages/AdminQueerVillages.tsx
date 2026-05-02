@@ -15,7 +15,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchAllCitiesAndCountries } from '@/hooks/usePageFetchers';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -89,20 +89,10 @@ export default function AdminQueerVillages() {
   const [countries, setCountries] = useState<CountryOption[]>([]);
 
   useEffect(() => {
-    supabase
-      .from('cities')
-      .select('id, name')
-      .order('name')
-      .then(({ data }) => {
-        if (data) setCities(data);
-      });
-    supabase
-      .from('countries')
-      .select('id, name')
-      .order('name')
-      .then(({ data }) => {
-        if (data) setCountries(data);
-      });
+    fetchAllCitiesAndCountries().then(({ cities: c, countries: ctry }) => {
+      setCities(c as CityOption[]);
+      setCountries(ctry as CountryOption[]);
+    });
   }, []);
 
   const invalidateTable = () =>

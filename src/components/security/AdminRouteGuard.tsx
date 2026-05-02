@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useToast } from '@/hooks/use-toast';
-import Box from '@mui/material/Box';
 
 interface AdminRouteGuardProps {
   children: React.ReactNode;
@@ -79,18 +78,12 @@ export function AdminRouteGuard({
   // (open dialogs, unsaved form input) survives tab/window focus changes.
   if (stillResolving && !hasValidatedRef.current) {
     return (
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}
-      >
-        <Box
-          sx={{
-            animation: 'spin 1s linear infinite',
-            height: 128,
-            width: 128,
-            bgcolor: 'primary.main',
-          }}
+      <div className="flex items-center justify-center min-h-screen">
+        <div
+          className="animate-spin"
+          style={{ height: 128, width: 128, backgroundColor: 'hsl(var(--primary))' }}
         />
-      </Box>
+      </div>
     );
   }
 

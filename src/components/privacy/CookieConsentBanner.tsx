@@ -5,8 +5,6 @@ import { Card } from '@/components/ui/card';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { CookiePreferencesDialog } from './CookiePreferencesDialog';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 export function CookieConsentBanner() {
   const { showBanner, acceptAll, acceptNecessary } = useCookieConsent();
@@ -16,22 +14,14 @@ export function CookieConsentBanner() {
 
   return (
     <>
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: { xs: 0, md: 16 },
-          left: { xs: 0, md: 'auto' },
-          right: { xs: 0, md: 16 },
-          zIndex: 60,
-          p: 2,
-          maxWidth: { md: 480 },
-          bgcolor: 'background.paper',
-          borderRadius: { xs: 0, md: 2 },
+      <div
+        className="fixed z-[60] bg-background p-4 bottom-0 right-0 left-0 md:bottom-4 md:right-4 md:left-auto md:max-w-[480px]"
+        style={{
           boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
         }}
       >
         <Card style={{ padding: 24, maxWidth: 896, margin: '0 auto' }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+          <div className="flex items-start gap-4">
             <Cookie
               style={{
                 height: 24,
@@ -41,42 +31,28 @@ export function CookieConsentBanner() {
                 flexShrink: 0,
               }}
             />
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                  Cookie Settings
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+            <div className="flex-1 flex flex-col gap-4">
+              <div>
+                <p className="text-base font-semibold mb-2">Cookie Settings</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   We use cookies to enhance your experience, analyze site traffic, and personalize
                   content. You can manage your preferences or learn more in our{' '}
-                  <Box
-                    component={LocalizedLink}
-                    to="/legal"
-                    sx={{ textDecoration: 'underline', '&:hover': { color: 'text.primary' } }}
-                  >
+                  <LocalizedLink to="/legal" className="underline hover:text-foreground">
                     Legal Hub
-                  </Box>
+                  </LocalizedLink>
                   , including our{' '}
-                  <Box
-                    component={LocalizedLink}
-                    to="/privacy"
-                    sx={{ textDecoration: 'underline', '&:hover': { color: 'text.primary' } }}
-                  >
+                  <LocalizedLink to="/privacy" className="underline hover:text-foreground">
                     Privacy Policy
-                  </Box>{' '}
+                  </LocalizedLink>{' '}
                   and{' '}
-                  <Box
-                    component={LocalizedLink}
-                    to="/cookies"
-                    sx={{ textDecoration: 'underline', '&:hover': { color: 'text.primary' } }}
-                  >
+                  <LocalizedLink to="/cookies" className="underline hover:text-foreground">
                     Cookie Policy
-                  </Box>
+                  </LocalizedLink>
                   .
-                </Typography>
-              </Box>
+                </p>
+              </div>
 
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+              <div className="flex flex-wrap gap-3">
                 <Button onClick={acceptAll} size="sm">
                   Accept All
                 </Button>
@@ -92,11 +68,11 @@ export function CookieConsentBanner() {
                   <Settings style={{ height: 16, width: 16 }} />
                   Customize
                 </Button>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
         </Card>
-      </Box>
+      </div>
 
       <CookiePreferencesDialog open={showPreferences} onOpenChange={setShowPreferences} />
     </>

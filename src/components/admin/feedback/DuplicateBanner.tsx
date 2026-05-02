@@ -1,7 +1,5 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import { Copy, ArrowRightLeft, Layers } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { FeedbackSubmission, SubmissionStoryRef } from './types';
 
 interface Suggestion {
@@ -21,11 +19,6 @@ interface Props {
   onDismiss: (suggestionId: string) => void;
 }
 
-/**
- * Rendered at the top of the drawer when the current submission has one or
- * more open duplicate suggestions. The admin chooses which submission is the
- * canonical one; the other becomes `duplicate_of` the canonical.
- */
 export function DuplicateBanner({
   current,
   suggestions,
@@ -39,88 +32,63 @@ export function DuplicateBanner({
   if (suggestions.length === 0 && !parentStory) return null;
 
   return (
-    <Box
-      sx={{
-        mb: 2,
-        p: 1.5,
-        borderLeft: 3,
-        borderColor: '#f59e0b',
-        bgcolor: 'rgba(245, 158, 11, 0.08)',
-        borderRadius: 1,
+    <div
+      className="mb-4 p-3"
+      style={{
+        borderLeft: '3px solid #f59e0b',
+        backgroundColor: 'rgba(245, 158, 11, 0.08)',
       }}
     >
       {parentStory && (
-        <Box
+        <div
           onClick={() => onOpenStory?.(parentStory.story_id)}
-          sx={{
-            mb: suggestions.length > 0 ? 1 : 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
+          className={`flex items-center gap-1 ${suggestions.length > 0 ? 'mb-2' : ''}`}
+          style={{
             cursor: onOpenStory ? 'pointer' : 'default',
-            '&:hover': onOpenStory ? { opacity: 0.8 } : undefined,
           }}
         >
           <Layers size={11} />
-          <Typography variant="caption" sx={{ fontWeight: 600 }}>
+          <span className="text-xs font-semibold">
             Part of story: {parentStory.title}
             {parentStory.status === 'resolved' && ' (resolved)'}
-          </Typography>
-        </Box>
+          </span>
+        </div>
       )}
 
       {suggestions.length > 0 && (
-        <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.75 }}>
+        <span className="text-xs font-bold block mb-1.5">
           <Copy size={11} style={{ marginRight: 4, verticalAlign: '-1px' }} />
           {suggestions.length === 1
             ? 'Possible duplicate'
             : `${suggestions.length} possible duplicates`}
-        </Typography>
+        </span>
       )}
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <div className="flex flex-col gap-2">
         {suggestions.map((s) => {
           const partner = itemsById[s.partnerId];
           const pct = Math.round(s.similarity * 100);
           return (
-            <Box
-              key={s.suggestionId}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                flexWrap: 'wrap',
-              }}
-            >
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
+            <div key={s.suggestionId} className="flex items-center gap-2 flex-wrap">
+              <div className="flex-1 min-w-0">
+                <div
                   onClick={() => onOpenPartner(s.partnerId)}
-                  sx={{
-                    cursor: 'pointer',
+                  className="cursor-pointer"
+                  style={{
                     textDecoration: 'underline dotted',
                     textDecorationColor: 'var(--muted-foreground)',
                   }}
                 >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: '0.8rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                  <p className="text-sm truncate">
                     {partner?.data?.title ?? `#${s.partnerId.slice(0, 8)}`}
-                  </Typography>
-                </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                  {pct}% match
-                </Typography>
-              </Box>
+                  </p>
+                </div>
+                <span className="text-xs text-muted-foreground">{pct}% match</span>
+              </div>
 
               <Button
-                size="small"
-                variant="outlined"
+                size="sm"
+                variant="outline"
                 onClick={() =>
                   onMerge({
                     duplicateId: current.id,
@@ -128,14 +96,12 @@ export function DuplicateBanner({
                     suggestionId: s.suggestionId,
                   })
                 }
-                sx={{ textTransform: 'none', fontSize: '0.7rem' }}
+                style={{ textTransform: 'none', fontSize: '0.7rem' }}
               >
                 This is a dup of that
               </Button>
               <Button
-                size="small"
-                variant="contained"
-                startIcon={<ArrowRightLeft size={12} />}
+                size="sm"
                 onClick={() =>
                   onMerge({
                     duplicateId: s.partnerId,
@@ -143,22 +109,23 @@ export function DuplicateBanner({
                     suggestionId: s.suggestionId,
                   })
                 }
-                sx={{ textTransform: 'none', fontSize: '0.7rem', bgcolor: '#f59e0b' }}
+                style={{ textTransform: 'none', fontSize: '0.7rem', backgroundColor: '#f59e0b' }}
               >
+                <ArrowRightLeft size={12} className="mr-1" />
                 That's a dup of this
               </Button>
               <Button
-                size="small"
-                variant="text"
+                size="sm"
+                variant="ghost"
                 onClick={() => onDismiss(s.suggestionId)}
-                sx={{ textTransform: 'none', fontSize: '0.7rem' }}
+                style={{ textTransform: 'none', fontSize: '0.7rem' }}
               >
                 Not a dup
               </Button>
-            </Box>
+            </div>
           );
         })}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

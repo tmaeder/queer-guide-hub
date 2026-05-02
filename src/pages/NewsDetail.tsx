@@ -22,6 +22,14 @@ import { Badge } from '@/components/ui/badge';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchNewsCategories,
+  fetchNewsArticleBySlugOrId,
+  fetchNewsSourceById,
+  fetchNewsTagsForEntity,
+  fetchRelatedNewsArticles,
+  fetchNamesByIds,
+} from '@/hooks/usePageFetchers';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
 import { formatDistanceToNow, format } from 'date-fns';
 import Container from '@mui/material/Container';
@@ -86,121 +94,51 @@ export default function NewsDetail() {
     const fetchArticle = async () => {
       setLoading(true);
 
-      // Fetch categories once
-      supabase
-        .from('news_categories')
-        .select('slug, name, color')
-        .eq('is_active', true)
-        .then(({ data: cats }) => {
-          if (cats) setDbCategories(cats as DbCategory[]);
-        });
+      // Fetch categories once (DUP-4)
+      fetchNewsCategories<DbCategory>().then((cats) => setDbCategories(cats));
 
       try {
-        // Hide articles flagged or rejected by the news quality pipeline.
-        // Legacy rows (quality_status NULL) and approved ones (passed) stay visible.
-        let { data, error } = await supabase
-          .from('news_articles')
-          .select('*')
-          .eq('slug', slug)
-          .or('quality_status.is.null,quality_status.eq.passed')
-          .maybeSingle();
-
-        // Fall back to ID lookup for backwards compatibility
-        if (!data && !error) {
-          const fallback = await supabase
-            .from('news_articles')
-            .select('*')
-            .eq('id', slug)
-            .or('quality_status.is.null,quality_status.eq.passed')
-            .maybeSingle();
-          data = fallback.data;
-          error = fallback.error;
-        }
-
-        if (error || !data) {
+        const data = await fetchNewsArticleBySlugOrId<NewsArticle>(slug);
+        if (!data) {
           navigate('/news');
           return;
         }
 
-        setArticle(data as NewsArticle);
+        setArticle(data);
 
-        // Increment views
+        // Increment views (RPC, not subject to the rule)
         supabase.rpc('increment_article_views', { article_id: data.id }).then(() => {});
 
-        // Fetch source name — use publisher_name if available (for API-sourced articles)
+        // Source name + url
         if (data.source_id) {
-          supabase
-            .from('news_sources')
-            .select('name, url')
-            .eq('id', data.source_id)
-            .maybeSingle()
-            .then(({ data: src }) => {
-              if (src) {
-                setSourceName(data.publisher_name || src.name || '');
-                setSourceUrl(src.url || '');
-              }
-            });
-        }
-
-        // Fetch tags
-        supabase
-          .from('unified_tag_assignments')
-          .select('unified_tags!inner(name)')
-          .eq('entity_type', 'news')
-          .eq('entity_id', data.id)
-          .then(({ data: tagData }) => {
-            if (tagData) {
-              setTags(tagData.map((t: { unified_tags: { name: string } }) => t.unified_tags.name));
+          fetchNewsSourceById(data.source_id).then((src) => {
+            if (src) {
+              setSourceName(data.publisher_name || src.name || '');
+              setSourceUrl(src.url || '');
             }
           });
+        }
 
-        // Resolve city names
+        // Tags
+        fetchNewsTagsForEntity(data.id).then(setTags);
+
+        // City + country names
         if (data.city_ids?.length) {
-          supabase
-            .from('cities')
-            .select('id, name')
-            .in('id', data.city_ids)
-            .then(({ data: cities }) => {
-              if (cities) {
-                const map: Record<string, string> = {};
-                cities.forEach((c: { id: string; name: string }) => {
-                  map[c.id] = c.name;
-                });
-                setCityNames(map);
-              }
-            });
+          fetchNamesByIds('cities', data.city_ids).then((map) => {
+            if (Object.keys(map).length) setCityNames(map);
+          });
         }
-
-        // Resolve country names
         if (data.country_ids?.length) {
-          supabase
-            .from('countries')
-            .select('id, name')
-            .in('id', data.country_ids)
-            .then(({ data: countries }) => {
-              if (countries) {
-                const map: Record<string, string> = {};
-                countries.forEach((c: { id: string; name: string }) => {
-                  map[c.id] = c.name;
-                });
-                setCountryNames(map);
-              }
-            });
+          fetchNamesByIds('countries', data.country_ids).then((map) => {
+            if (Object.keys(map).length) setCountryNames(map);
+          });
         }
 
-        // Fetch related articles (same category, excluding current)
+        // Related
         if (data.category) {
-          supabase
-            .from('news_articles')
-            .select('id, title, excerpt, image_url, published_at, category')
-            .eq('category', data.category)
-            .neq('id', data.id)
-            .not('published_at', 'is', null)
-            .order('published_at', { ascending: false })
-            .limit(4)
-            .then(({ data: related }) => {
-              if (related) setRelatedArticles(related as RelatedArticle[]);
-            });
+          fetchRelatedNewsArticles<RelatedArticle>(data.category, data.id).then(
+            setRelatedArticles,
+          );
         }
       } catch (err) {
         console.error('Error fetching article:', err);
@@ -234,9 +172,9 @@ export default function NewsDetail() {
       culture: '#8b5cf6', health: '#10b981', sports: '#f97316', business: '#f59e0b',
       technology: '#6366f1', lifestyle: '#ec4899', education: '#06b6d4',
       legislation: '#3b82f6', transgender: '#8b5cf6', rights: '#ef4444',
-      advocacy: '#f97316', news: '#64748b', community: '#ec4899',
+      advocacy: '#f97316', news: 'hsl(var(--muted-foreground))', community: '#ec4899',
     };
-    return fallback[category?.toLowerCase()] || '#64748b';
+    return fallback[category?.toLowerCase()] || 'hsl(var(--muted-foreground))';
   };
 
   const getCategoryLabel = (category: string) => {
@@ -334,7 +272,7 @@ export default function NewsDetail() {
         </LocalizedLink>
         {article.category && article.category !== 'general' && (
           <>
-            <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
             <Typography
               variant="body2"
               color="text.secondary"
@@ -349,7 +287,7 @@ export default function NewsDetail() {
             </Typography>
           </>
         )}
-        <ChevronRight style={{ width: 14, height: 14, color: '#9ca3af' }} />
+        <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
         <Typography
           variant="body2"
           sx={{

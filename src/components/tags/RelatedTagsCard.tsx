@@ -1,8 +1,6 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
 import { useSimilarTags } from '@/hooks/useTagRelationships';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface RelatedTagsCardProps {
   tagId: string;
@@ -14,38 +12,33 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
 
   if (isLoading) {
     return (
-      <Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 2 }}>
-          Related
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <div>
+        <h6 className="font-bold text-lg mb-4">Related</h6>
+        <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} variant="rounded" width={70 + i * 12} height={32} sx={{ borderRadius: 4 }} />
+            <Skeleton key={i} className="h-8 rounded-full" style={{ width: 70 + i * 12 }} />
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   if (!similarTags || similarTags.length === 0) return null;
 
   return (
-    <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 2 }}>
-        Related
-      </Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+    <div>
+      <h6 className="font-bold text-lg mb-4">Related</h6>
+      <div className="flex flex-wrap gap-2">
         {similarTags.map((tag) => (
           <Badge
             key={tag.tag_id}
             variant="outline"
-
             onClick={() => onTagClick({ name: tag.name, id: tag.tag_id })}
           >
             {tag.name}
           </Badge>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

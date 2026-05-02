@@ -1,15 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Hotel as HotelIcon, Plus } from 'lucide-react';
+import { Hotel as HotelIcon, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HotelCard } from '@/components/hotels/HotelCard';
 import { HotelFilters } from '@/components/hotels/HotelFilters';
 import { useHotels, type HotelFilters as HotelFilterType } from '@/hooks/useHotels';
 import { EmptyState, type EmptyStateFilterChip } from '@/components/ui/EmptyState';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 import { useTranslation } from 'react-i18next';
 
 export default function Hotels() {
@@ -61,21 +57,21 @@ export default function Hotels() {
   };
 
   return (
-    <Container sx={{ py: { xs: 6, md: 10 } }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
+    <div className="container mx-auto py-12 md:py-20 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h4 className="text-2xl font-bold">
             {t('pages.hotels.title', 'Hotels & BnBs')}
-          </Typography>
-          <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+          </h4>
+          <p className="text-muted-foreground mt-1">
             {t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         <Button onClick={() => navigate('/submit/hotel')} variant="outline" size="sm">
           <Plus size={16} />
           {t('pages.hotels.submitHotel', 'Submit Hotel')}
         </Button>
-      </Box>
+      </div>
 
       <HotelFilters
         search={search}
@@ -87,9 +83,9 @@ export default function Hotels() {
       />
 
       {loading && hotels.length === 0 ? (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (<HotelCard key={i} loading />))}
-        </Box>
+        </div>
       ) : hotels.length === 0 ? (
         isModuleEmpty ? (
           <EmptyState
@@ -132,33 +128,22 @@ export default function Hotels() {
         )
       ) : (
         <>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: 'repeat(2, 1fr)',
-                md: 'repeat(3, 1fr)',
-                lg: 'repeat(4, 1fr)',
-              },
-              gap: 2,
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {hotels.map((hotel) => (
               <HotelCard key={hotel.id} hotel={hotel} />
             ))}
-          </Box>
+          </div>
 
           {hasMore && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <div className="flex justify-center mt-8">
               <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
-                {loading ? <CircularProgress size={16} sx={{ mr: 1 }} aria-label="Loading" /> : null}
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-label="Loading" /> : null}
                 {t('common.loadMore', 'Load More')}
               </Button>
-            </Box>
+            </div>
           )}
         </>
       )}
-    </Container>
+    </div>
   );
 }
