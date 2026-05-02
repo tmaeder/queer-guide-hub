@@ -61,13 +61,13 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => (
     {/* Background — solid color, no decorative effects */}
     <Box
       aria-hidden="true"
-      sx={(theme) => ({
+      sx={{
         position: 'fixed',
         inset: 0,
         zIndex: 0,
         pointerEvents: 'none',
-        bgcolor: theme.palette.mode === 'dark' ? '#0a0a0a' : '#ffffff',
-      })}
+        bgcolor: 'background.default',
+      }}
     />
     <AnalyticsTracker />
     <Box sx={{ position: 'relative', zIndex: 1 }}>

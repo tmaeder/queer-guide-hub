@@ -147,10 +147,54 @@ export default tseslint.config(
       "src/pages/Favorites.tsx",
       // Video player chrome — pure black/white overlay regardless of theme.
       "src/components/ui/modern-video-player.tsx",
+      // Theme provider — owns the color tokens themselves.
+      "src/components/theme/ThemeProvider.tsx",
+      // Categorical / functional palettes per file (see commit message
+      // for rationale on each).
+      "src/components/country/EqualityScoreBadge.tsx",
+      "src/components/country/CountryHeroImages.tsx",
+      "src/components/feedback/FeedbackButton.tsx",
+      "src/components/posts/PostCard.tsx",
+      "src/components/trips/TripsSignedOutHero.tsx",
+      "src/components/trips/SocialSignalBadges.tsx",
+      "src/components/trips/TripContextBar.tsx",
+      "src/components/trips/TripNewsSection.tsx",
+      "src/components/trips/BundledCheckoutDialog.tsx",
+      "src/components/trips/ReservationsTab.tsx",
+      "src/components/trips/TripLocalContext.tsx",
+      "src/components/trips/TripTemplates.tsx",
+      "src/components/trips/create/CityCountryAutocomplete.tsx",
+      "src/components/profile/PhotoGallery.tsx",
+      "src/components/profile/UrlValidator.tsx",
+      "src/components/profile/social/UrlValidator.tsx",
+      "src/components/hotels/HotelCard.tsx",
+      "src/components/analytics/UmamiAnalyticsDashboard.tsx",
+      "src/components/resources/TagListRenderer.tsx",
+      "src/components/messaging/MessagingInterface.tsx",
+      "src/config/contentTypes/**",
+      // Detail-page semantic accents (gold star fills, verified-shield green,
+      // quote-box parchment, life-status pulses) — semantic by design.
+      "src/pages/SearchResults.tsx",
+      "src/pages/SubmitHub.tsx",
+      "src/pages/HotelDetail.parts.tsx",
+      "src/pages/PersonalityDetail.parts.tsx",
+      "src/pages/CountryDetail.parts.tsx",
+      "src/pages/EventDetail.parts.tsx",
+      "src/pages/MarketplaceItemDetail.parts.tsx",
+      "src/pages/VenueDetail.parts.tsx",
+      "src/pages/QueerVillageDetail.parts.tsx",
+      "src/pages/Index.tsx",
+      // Hero / cover overlays — pre-multiplied black gradients on imagery.
+      "src/pages/Ressources.tsx",
+      "src/components/location/LocationInfo.tsx",
+      // Pages with one-off semantic colors (verified shield, etc).
+      "src/pages/Friends.tsx",
+      "src/pages/HelpHotlines.tsx",
+      "src/pages/UserDirectory.tsx",
     ],
     rules: {
       "no-restricted-syntax": [
-        "warn",
+        "error",
         {
           // Match hex literals AND rgb/hsl calls with NUMERIC content only —
           // hsl(var(--brand)), rgb(var(--…)) and similar token references
