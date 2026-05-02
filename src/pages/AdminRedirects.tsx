@@ -68,7 +68,7 @@ import {
   detectLoop,
 } from '@/lib/redirects/validation';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchRedirectById } from '@/hooks/usePageFetchers';
 import { format } from 'date-fns';
 
 const SUPABASE_URL = 'https://xqeacpakadqfxjxjcewc.supabase.co';
@@ -313,9 +313,9 @@ export default function AdminRedirects() {
           icon: Edit2,
           onClick: async (row) => {
             // Fetch full redirect data for edit dialog
-            const { data } = await supabase.from('redirects').select('*').eq('id', row.id).single();
+            const data = await fetchRedirectById<Redirect>(row.id);
             if (data) {
-              setEditingRedirect(data as Redirect);
+              setEditingRedirect(data);
               setDialogOpen(true);
             }
           },

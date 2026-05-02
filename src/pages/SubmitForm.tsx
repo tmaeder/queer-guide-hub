@@ -18,6 +18,7 @@ import { useSubmission } from '@/hooks/useSubmission';
 import { useAuth } from '@/hooks/useAuth';
 import { useFlyerScan } from '@/hooks/useFlyerScan';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchCountryNameById } from '@/hooks/usePageFetchers';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { FlyerScanUpload } from '@/components/submission/FlyerScanUpload';
 import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
@@ -135,15 +136,10 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       const match = Array.isArray(rows) ? rows[0] : rows;
       if (!match?.id || data.city) return; // re-check city in case user filled it during delay
 
-      // Resolve country name for the country field
+      // Resolve country name for the country field (DUP-4)
       let countryName = '';
       if (match.country_id) {
-        const { data: country } = await supabase
-          .from('countries')
-          .select('name')
-          .eq('id', match.country_id)
-          .single();
-        if (country) countryName = country.name;
+        countryName = (await fetchCountryNameById(match.country_id)) ?? '';
       }
 
       setFields({

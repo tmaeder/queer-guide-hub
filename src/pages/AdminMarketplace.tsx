@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus, Trash2, Download, RefreshCw, Star, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { deleteMarketplaceListing } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -308,10 +309,7 @@ export default function AdminMarketplace() {
           onClick: async (row) => {
             if (!confirm(`Delete "${row.title}"?`)) return;
             try {
-              const { error } = await supabase
-                .from('marketplace_listings')
-                .delete()
-                .eq('id', row.id);
+              const { error } = await deleteMarketplaceListing(row.id);
               if (error) throw error;
               toast({ title: 'Success', description: 'Listing deleted' });
             } catch {

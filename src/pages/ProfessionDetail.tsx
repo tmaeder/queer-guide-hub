@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { supabase } from '@/integrations/supabase/client';
+import { usePersonalitiesByProfession } from '@/hooks/usePageFetchers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,49 +22,32 @@ export default function ProfessionDetail() {
   const { professionName } = useParams<{ professionName: string }>();
   const navigate = useLocalizedNavigate();
   const [professionData, setProfessionData] = useState<ProfessionData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: personalities, isLoading: loading, error: queryError } = usePersonalitiesByProfession();
 
   useEffect(() => {
     if (!professionName) return;
-
-    const loadProfessionData = async () => {
-      try {
-        const decodedProfession = decodeURIComponent(professionName);
-
-        const { data: personalities, error: personalitiesError } = await supabase
-          .from('personalities')
-          .select('*')
-          .not('profession', 'is', null)
-          .order('name');
-
-        if (personalitiesError) throw personalitiesError;
-
-        const filteredPersonalities =
-          personalities?.filter(
-            (p) =>
-              p.profession &&
-              p.profession
-                .split(',')
-                .map((prof: string) => prof.trim().toLowerCase())
-                .includes(decodedProfession.toLowerCase()),
-          ) || [];
-
-        setProfessionData({
-          name: decodedProfession,
-          personalities: filteredPersonalities,
-          totalCount: filteredPersonalities.length,
-        });
-      } catch (err) {
-        console.error('Error loading profession data:', err);
-        setError('Failed to load profession data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProfessionData();
-  }, [professionName]);
+    if (queryError) {
+      setError('Failed to load profession data');
+      return;
+    }
+    if (!personalities) return;
+    const decodedProfession = decodeURIComponent(professionName);
+    const filtered = (personalities as Array<{ profession?: string | null }>)
+      .filter(
+        (p) =>
+          p.profession &&
+          p.profession
+            .split(',')
+            .map((prof: string) => prof.trim().toLowerCase())
+            .includes(decodedProfession.toLowerCase()),
+      ) as Record<string, unknown>[];
+    setProfessionData({
+      name: decodedProfession,
+      personalities: filtered,
+      totalCount: filtered.length,
+    });
+  }, [professionName, personalities, queryError]);
 
   const handleBack = () => {
     navigate('/resources');
