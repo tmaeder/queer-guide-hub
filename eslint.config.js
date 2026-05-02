@@ -42,9 +42,8 @@ export default tseslint.config(
         caughtErrorsIgnorePattern: "^_",
       }],
       "no-case-declarations": "warn",
-      // Tech-debt DUP-4: nudge supabase.from() out of pages/components into hooks.
-      // "warn" for now — promote to "error" once the remaining 9 page-level
-      // useEffect supabase fetches have been migrated.
+      // Tech-debt DUP-4: page-level supabase.from() migrated to hooks
+      // (PR #320). Components still warn — next milestone.
       "queerguide/no-supabase-from-in-pages": "warn",
       // Accessibility rules (WCAG 2.2 AA)
       "jsx-a11y/alt-text": "error",
@@ -62,6 +61,15 @@ export default tseslint.config(
       "jsx-a11y/no-static-element-interactions": "error",
       "jsx-a11y/role-has-required-aria-props": "error",
       "jsx-a11y/role-supports-aria-props": "error",
+    },
+  },
+  // DUP-4: pages are now clean of inline supabase.from() — promote to error
+  // for src/pages/** so regressions fail CI. Components still warn until the
+  // next migration milestone.
+  {
+    files: ["src/pages/**/*.{ts,tsx}"],
+    rules: {
+      "queerguide/no-supabase-from-in-pages": "error",
     },
   },
   // P2-1 — block hardcoded color literals outside theme/config files.
