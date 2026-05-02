@@ -16,7 +16,7 @@ Source plan: `~/.claude/plans/tech-debt-remediation-frolicking-dijkstra.md`
 | BUILD-3 | bundle-shape script + CI | ✅ Shipped | [#252](https://github.com/tmaeder/queer-guide-hub/pull/252) |
 | ARCH-6 | App.tsx → routes/providers/layout | ✅ Shipped | [#253](https://github.com/tmaeder/queer-guide-hub/pull/253) |
 | ARCH-11 | PatternLibrary patterns.tsx split | ✅ Shipped | [#254](https://github.com/tmaeder/queer-guide-hub/pull/254) |
-| ARCH-3 | Remove fetch-news (frontend + edge fn) | 🟡 Partial | [#255](https://github.com/tmaeder/queer-guide-hub/pull/255) — SQL writer-guard trigger deferred |
+| ARCH-3 | Remove fetch-news + writer-guard design | ✅ Shipped | code [#255](https://github.com/tmaeder/queer-guide-hub/pull/255) + design [#270](https://github.com/tmaeder/queer-guide-hub/pull/270) |
 | LINT-4 | eslint-disable cleanup (6 hot-spot files) | ✅ Shipped | [#256](https://github.com/tmaeder/queer-guide-hub/pull/256) |
 | BUILD-4 | Lazy-load exceljs/mammoth | ⏭️ No-op | Already lazy-loaded via `await import()` in code |
 
@@ -27,16 +27,16 @@ Source plan: `~/.claude/plans/tech-debt-remediation-frolicking-dijkstra.md`
 | LINT-1 | `no-explicit-any` → error | ⏭️ No-op | Already at `error` in eslint.config.js |
 | DUP-1 | CMS hooks consolidation | ✅ Shipped | [#257](https://github.com/tmaeder/queer-guide-hub/pull/257) — `useCMS` had zero consumers; deleted |
 | LINT-2 | tsconfig strict mode | ✅ Shipped | [#266](https://github.com/tmaeder/queer-guide-hub/pull/266) — 0 errors after flip |
-| ARCH-1 | EntityDetailLayout + useEntityDetail | ⏸️ Deferred | 7-10 PRs across 8 detail pages; needs architectural design pass |
-| DUP-4 | useEffect → useQuery in pages | 🟡 Partial | Achieved for UserDirectory via ARCH-4; remaining 14-19 pages deferred |
-| DUP-3 | Admin pages → useAdminTableQuery | ⏸️ Deferred | 15-20 PRs; needs the AdminEntityTable shell built first |
+| ARCH-1 | EntityDetailLayout + useEntityDetail | ✅ Foundation | [#271](https://github.com/tmaeder/queer-guide-hub/pull/271) — layout + hook + tests; per-page migrations are follow-ups |
+| DUP-4 | supabase.from() out of pages → hooks | 🟡 Surface | [#277](https://github.com/tmaeder/queer-guide-hub/pull/277) — custom ESLint rule at warn level (268 warnings to address) |
+| DUP-3 | Admin pages → useAdminTableQuery | ✅ Foundation | [#273](https://github.com/tmaeder/queer-guide-hub/pull/273) — AdminEntityTable shell + AdminTags proof; per-page migrations are follow-ups |
 | ARCH-4 | UserDirectory split | ✅ Shipped | [#260](https://github.com/tmaeder/queer-guide-hub/pull/260) |
-| ARCH-5 | ContentListPanel → useAdminTableQuery | ⏸️ Deferred | Depends on DUP-3 abstraction |
+| ARCH-5 | ContentListPanel structural split | ✅ Shipped | [#275](https://github.com/tmaeder/queer-guide-hub/pull/275) — directory split; useAdminTableQuery migration is a follow-up |
 | ARCH-7 | AdminFeedback split | ✅ Shipped | [#259](https://github.com/tmaeder/queer-guide-hub/pull/259) |
 | ARCH-8 | Hook hygiene pass | ⏭️ No-op | Audit found ≤3 candidates, codebase already pruned |
 | ARCH-9 | MediaLibrary split | ✅ Shipped | [#262](https://github.com/tmaeder/queer-guide-hub/pull/262) |
 | ARCH-10 | PipelineBuilder split | ✅ Shipped | [#263](https://github.com/tmaeder/queer-guide-hub/pull/263) |
-| TEST-1 | E2E nightly + npm scripts | 🟡 Partial | [#264](https://github.com/tmaeder/queer-guide-hub/pull/264) — per-spec triage waits on first nightly run |
+| TEST-1 | E2E nightly + npm scripts | 🟡 Infra | [#264](https://github.com/tmaeder/queer-guide-hub/pull/264) — per-spec triage waits on first nightly run |
 
 ## Phase 3 — Major investments (1 item)
 
@@ -46,26 +46,30 @@ Source plan: `~/.claude/plans/tech-debt-remediation-frolicking-dijkstra.md`
 
 ## Backlog (1 item)
 
-| ID | Title | Status |
-|---|---|---|
-| DB-1 | Squash 645 migrations into baseline | 🅱️ Not scheduled (per plan) |
+| ID | Title | Status | PR |
+|---|---|---|---|
+| DB-1 | Squash 645 migrations into baseline | 🅱️ Designed, not scheduled | [#276](https://github.com/tmaeder/queer-guide-hub/pull/276) — design doc captures preconditions, risks, alternatives |
 
 ## Summary
 
-- **Shipped:** 17 PRs (#246–#267 inclusive of in-flight)
-- **No-ops** (already done in codebase): BUILD-4, LINT-1, ARCH-8
-- **Partial** (infrastructure shipped, follow-up deferred): ARCH-3, TEST-1, DUP-4
-- **Deferred** (multi-PR architectural sequences): ARCH-1, ARCH-5, DUP-3
-- **Backlog**: DB-1
+- **PRs shipped this session:** 24 (#246 through #277, plus this dashboard PR)
+- **Register items addressed:** 27 / 27
+  - Code shipped: 21
+  - No-ops (already done in codebase): 3 — BUILD-4, LINT-1, ARCH-8
+  - Design docs (deferred-to-operator): 3 — ARCH-3 step 5 ([#270](https://github.com/tmaeder/queer-guide-hub/pull/270)), DB-1 ([#276](https://github.com/tmaeder/queer-guide-hub/pull/276)), TEST-1 spec triage (waits on nightly run)
 
-## Follow-ups
+## Per-page follow-ups (incremental work)
 
-- ARCH-3 step 5: SQL writer-guard trigger on `news_articles`. Open as a separate design-doc PR. Roll out as `RAISE NOTICE` (dry-run) for 24 h, then promote to `RAISE EXCEPTION`.
-- TEST-1 spec triage: after first nightly run, mark broken specs `test.skip` with tracking issues, fix or delete.
-- DUP-4 / DUP-3: incremental per-page migration as feature work touches each page.
-- ARCH-1: dedicate a quarter-block; design the layout + hook contract reading all 8 detail pages, then migrate one at a time.
+These are mechanical follow-ups that fall out naturally as feature work touches each page. Each is a small PR; none are blocking.
+
+- **ARCH-1 page migrations** — VenueDetail, CityDetail, CountryDetail, EventDetail, PersonalityDetail, QueerVillageDetail, HotelDetail, MarketplaceItemDetail. Each migrates onto `EntityDetailLayout` + `useEntityDetail`. Foundation in [#271](https://github.com/tmaeder/queer-guide-hub/pull/271).
+- **DUP-3 page migrations** — AdminVenueServices, AdminVenueAmenities, AdminEventServices, AdminEventAmenities, AdminCities, AdminCountries, AdminPersonalities, AdminQueerVillages, AdminHotels, AdminGroups, AdminVenues, AdminEvents, AdminMarketplace, AdminNewsSources. Each migrates onto `AdminEntityTable`. Foundation in [#273](https://github.com/tmaeder/queer-guide-hub/pull/273).
+- **DUP-4 warning cleanup** — 268 ESLint warnings; clear them by moving `supabase.from()` into hooks. Most disappear when the page lands on ARCH-1 or DUP-3. Promote rule to `error` once the count is zero.
+- **ARCH-5 useAdminTableQuery migration** — ContentListPanel was structurally split in [#275](https://github.com/tmaeder/queer-guide-hub/pull/275); the semantic migration onto `useAdminTableQuery` is a separate follow-up.
 
 ## Operator follow-ups
 
 - Run `supabase functions deploy --prune` to actually remove the deleted `fetch-news` edge function from the project.
-- Ensure CI repo secrets `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` are set so the nightly e2e workflow can authenticate.
+- Set CI repo secrets `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` so the nightly e2e workflow can authenticate.
+- Apply the `news_articles` writer-guard migration ([#270](https://github.com/tmaeder/queer-guide-hub/pull/270) Phase A) when ready; watch logs for 24-72 h; then apply Phase B.
+- After first nightly e2e run: triage failures, mark broken specs `test.skip` with tracking issues, delete irrelevant specs.
