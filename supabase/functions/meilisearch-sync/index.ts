@@ -381,7 +381,7 @@ function mapVenue(v: any) {
     target_groups: v.target_groups || [],
     services: v.services || [],
     accessibility: v.accessibility_attributes || [],
-    featured: v.featured || false,
+    featured: v.is_featured || false,
     slug: v.slug,
     image_url: Array.isArray(v.images) ? v.images[0] : v.images,
     ...(v.latitude && v.longitude ? { _geo: { lat: Number(v.latitude), lng: Number(v.longitude) } } : {}),
@@ -392,7 +392,7 @@ function mapVenue(v: any) {
 async function fetchVenues(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('venues')
-    .select('id, name, description, category, address, city, country, latitude, longitude, images, featured, slug, tags, target_groups, services, accessibility_attributes')
+    .select('id, name, description, category, address, city, country, latitude, longitude, images, is_featured, slug, tags, target_groups, services, accessibility_attributes')
     .neq('data_source', 'refuge_restrooms')
     .range(offset, offset + limit - 1)
   if (error) throw error
@@ -403,7 +403,7 @@ async function fetchVenues(sb: any, limit: number, offset: number) {
 async function fetchVenue(sb: any, id: string) {
   const { data, error } = await sb
     .from('venues')
-    .select('id, name, description, category, address, city, country, latitude, longitude, images, featured, slug, tags, target_groups, services, accessibility_attributes, data_source')
+    .select('id, name, description, category, address, city, country, latitude, longitude, images, is_featured, slug, tags, target_groups, services, accessibility_attributes, data_source')
     .eq('id', id)
     .single()
   if (error || !data) return null
@@ -430,7 +430,7 @@ function mapEvent(e: any) {
     is_free: e.is_free,
     price_min: e.price_min,
     price_max: e.price_max,
-    featured: e.featured || false,
+    featured: e.is_featured || false,
     target_groups: e.target_groups || [],
     accessibility: e.accessibility_attributes || [],
     slug: e.slug,
@@ -443,7 +443,7 @@ function mapEvent(e: any) {
 async function fetchEvents(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('events')
-    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, featured, target_groups, accessibility_attributes, slug, logo_url')
+    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, is_featured, target_groups, accessibility_attributes, slug, logo_url')
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapEvent)
@@ -453,7 +453,7 @@ async function fetchEvents(sb: any, limit: number, offset: number) {
 async function fetchEvent(sb: any, id: string) {
   const { data, error } = await sb
     .from('events')
-    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, featured, target_groups, accessibility_attributes, slug, logo_url')
+    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, is_featured, target_groups, accessibility_attributes, slug, logo_url')
     .eq('id', id)
     .single()
   if (error || !data) return null

@@ -189,7 +189,7 @@ serve(async (req) => {
               price_max: priceMax,
               max_attendees: event.capacity || null,
               status: 'active',
-              featured: false
+              is_featured: false
             };
 
             // AI enrichment — enhance description and classify event type

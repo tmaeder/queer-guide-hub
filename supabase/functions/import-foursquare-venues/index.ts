@@ -469,7 +469,7 @@ Deno.serve(async (req) => {
                 price_range: venue.price || null,
                 hours: hoursData,
                 verified: venue.verified || false,
-                featured: venue.popularity && venue.popularity > 0.7 ? true : false,
+                is_featured: venue.popularity && venue.popularity > 0.7 ? true : false,
                 foursquare_id: venue.fsq_id,
                 foursquare_rating: venue.rating || null,
                 data_source: 'foursquare',
