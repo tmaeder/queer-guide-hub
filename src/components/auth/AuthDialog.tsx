@@ -8,8 +8,6 @@ import { Separator } from '@/components/ui/separator';
 import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface AuthDialogProps {
   open: boolean;
@@ -55,54 +53,31 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     onOpenChange(false);
     navigate('/auth');
   };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 1,
-              mb: 1.5,
-            }}
-          >
+          <div className="flex items-center justify-center gap-2 mb-3">
             <Heart
-              style={{
-                width: 28,
-                height: 28,
-                color: 'var(--primary)',
-                fill: 'currentColor',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              }}
+              className="w-7 h-7 fill-current animate-pulse"
+              style={{ color: 'var(--primary)' }}
             />
-            <Typography variant="h6" sx={{ fontWeight: 700 }} className="gradient-text">
+            <h6 className="text-base font-bold gradient-text">
               The Queer Guide
-            </Typography>
-          </Box>
-          <DialogTitle>
-            Welcome Back
-          </DialogTitle>
-          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+            </h6>
+          </div>
+          <DialogTitle>Welcome Back</DialogTitle>
+          <p className="text-sm text-muted-foreground mt-1">
             Sign in to continue your journey
-          </Typography>
+          </p>
         </DialogHeader>
 
-        <Box sx={{ px: 3, pb: 3 }}>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Label
-                  htmlFor="email"
-
-                >
-                  Email Address
-                </Label>
+        <div className="px-6 pb-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -111,16 +86,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-              </Box>
+              </div>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Label
-                  htmlFor="password"
-
-                >
-                  Password
-                </Label>
-                <Box sx={{ position: 'relative' }}>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
@@ -134,67 +104,50 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     variant="ghost"
                     size="sm"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
-
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={loading}
                   >
                     {showPassword ? (
-                      <EyeOff style={{ width: 16, height: 16 }} />
+                      <EyeOff className="w-4 h-4" />
                     ) : (
-                      <Eye style={{ width: 16, height: 16 }} />
+                      <Eye className="w-4 h-4" />
                     )}
                   </Button>
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
 
             <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
-                  <Loader2
-                    style={{
-                      marginRight: 8,
-                      height: 16,
-                      width: 16,
-                      animation: 'spin 1s linear infinite',
-                    }}
-                  />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
                 </>
               ) : (
                 'Sign In'
               )}
             </Button>
-          </Box>
+          </form>
 
-          <Box sx={{ mt: 3 }}>
-            <Box sx={{ position: 'relative' }}>
-              <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
-                <Separator style={{ width: '100%' }} />
-              </Box>
-              <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    bgcolor: 'background.paper',
-                    px: 1.5,
-                    color: 'text.secondary',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                  }}
-                >
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="text-xs bg-background px-3 text-muted-foreground font-medium uppercase">
                   New to The Queer Guide?
-                </Typography>
-              </Box>
-            </Box>
+                </span>
+              </div>
+            </div>
 
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <Button variant="outline" onClick={handleSignUpClick} style={{ width: '100%' }}>
+            <div className="mt-4 text-center">
+              <Button variant="outline" onClick={handleSignUpClick} className="w-full">
                 Create your account with guided signup
               </Button>
-            </Box>
-          </Box>
-        </Box>
+            </div>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
