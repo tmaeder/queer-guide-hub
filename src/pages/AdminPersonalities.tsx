@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -13,7 +13,10 @@ import {
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { supabase } from '@/integrations/supabase/client';
 import { usePersonalities } from '@/hooks/usePersonalities';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { toast } from '@/hooks/use-toast';
@@ -98,6 +101,67 @@ export default function AdminPersonalities() {
   const { updatePersonality, refetchPersonalities } = usePersonalities(false);
   const [selectedPersonality, setSelectedPersonality] = useState<PersonalityRow | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [internalNotes, setInternalNotes] = useState('');
+  const [internalNotesLoaded, setInternalNotesLoaded] = useState('');
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [notesSaving, setNotesSaving] = useState(false);
+
+  useEffect(() => {
+    if (!editDialogOpen || !selectedPersonality) {
+      setInternalNotes('');
+      setInternalNotesLoaded('');
+      return;
+    }
+    let cancelled = false;
+    setNotesLoading(true);
+    (async () => {
+      const { data, error } = await supabase
+        .from('personality_internal_notes' as never)
+        .select('notes')
+        .eq('personality_id', selectedPersonality.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to load internal notes',
+          variant: 'destructive',
+        });
+      }
+      const notes = ((data as { notes?: string } | null)?.notes) ?? '';
+      setInternalNotes(notes);
+      setInternalNotesLoaded(notes);
+      setNotesLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [editDialogOpen, selectedPersonality]);
+
+  const saveInternalNotes = async () => {
+    if (!selectedPersonality) return;
+    setNotesSaving(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from('personality_internal_notes' as never)
+      .upsert(
+        {
+          personality_id: selectedPersonality.id,
+          notes: internalNotes,
+          updated_by: user?.id ?? null,
+        } as never,
+        { onConflict: 'personality_id' },
+      );
+    setNotesSaving(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setInternalNotesLoaded(internalNotes);
+    toast({ title: 'Gespeichert', description: 'Interne Notizen aktualisiert' });
+  };
 
   const handleVerificationChange = async (id: string, status: string) => {
     try {
@@ -244,7 +308,6 @@ export default function AdminPersonalities() {
         },
         meta: {
           serverSortable: true,
-          defaultVisible: false,
           hideable: true,
         } satisfies AdminColumnMeta,
       }),
@@ -544,6 +607,32 @@ export default function AdminPersonalities() {
                   onChange={(e) => handleFeaturedToggle(selectedPersonality.id, e.target.checked)}
                 />
                 <Label htmlFor="featured">Featured Personality</Label>
+              </Box>
+              <Box>
+                <Label htmlFor="internal-notes">Interne Notizen</Label>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                  Nur intern sichtbar — wird nicht öffentlich angezeigt.
+                </Typography>
+                <Textarea
+                  id="internal-notes"
+                  value={internalNotes}
+                  onChange={(e) => setInternalNotes(e.target.value)}
+                  placeholder={notesLoading ? 'Laden…' : 'Interne Vermerke zu dieser Person'}
+                  rows={5}
+                  disabled={notesLoading || notesSaving}
+                />
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={saveInternalNotes}
+                    disabled={
+                      notesLoading || notesSaving || internalNotes === internalNotesLoaded
+                    }
+                  >
+                    {notesSaving ? 'Speichern…' : 'Notizen speichern'}
+                  </Button>
+                </Box>
               </Box>
             </Box>
           )}

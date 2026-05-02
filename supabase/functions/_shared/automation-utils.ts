@@ -571,7 +571,7 @@ export async function loadSharedReferenceData(supabase: SupabaseClient): Promise
   const [countriesRes, citiesRes, aliasesRes] = await Promise.all([
     supabase.from('countries').select('id, name, code').order('name'),
     supabase.from('cities').select('id, name, country_id').order('population', { ascending: false, nullsFirst: false }),
-    supabase.from('city_aliases').select('alias_name, city_id'),
+    supabase.from('city_aliases').select('alias, city_id'),
   ])
 
   const countryByName = new Map<string, CountryRef>()
@@ -596,7 +596,7 @@ export async function loadSharedReferenceData(supabase: SupabaseClient): Promise
   for (const a of aliasesRes.data || []) {
     for (const [name, citiesArr] of citiesByName) {
       if (citiesArr.some(c => c.id === (a as { city_id: string }).city_id)) {
-        cityAliases.set((a as { alias_name: string }).alias_name.toLowerCase(), name)
+        cityAliases.set((a as { alias: string }).alias.toLowerCase(), name)
         break
       }
     }
