@@ -55,15 +55,15 @@ const getToastStyle = (variant: ToastVariant = 'default'): React.CSSProperties =
   if (variant === 'destructive') {
     return {
       ...base,
-      backgroundColor: '#dc2626',
-      color: '#ffffff',
-      borderColor: '#dc2626',
+      backgroundColor: 'hsl(var(--destructive))',
+      color: 'hsl(var(--destructive-foreground))',
+      borderColor: 'hsl(var(--destructive))',
     };
   }
 
   return {
     ...base,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'hsl(var(--background))',
     color: 'inherit',
   };
 };

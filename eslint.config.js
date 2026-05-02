@@ -94,44 +94,25 @@ export default tseslint.config(
       "src/components/country/LGBTJurisdictionInfo.tsx",
       "src/components/country/SDGDataPanel.tsx",
       "src/components/country/SafetyAlertBanner.tsx",
-      "src/components/country/EqualityScoreBadge.tsx",
-      "src/components/country/CountryHeroImages.tsx",
       // Risk traffic-light (low/moderate/high/critical) for travel safety.
       "src/components/trips/TripSafetyBriefing.tsx",
-      "src/components/trips/TripCoverBand.tsx",
-      "src/components/trips/TripDocExpiryBanner.tsx",
-      "src/components/trips/TripNudgesBanner.tsx",
-      "src/components/trips/TripMap.tsx",
-      "src/components/trips/TripsSignedOutHero.tsx",
-      "src/components/trips/SocialSignalBadges.tsx",
-      "src/components/trips/TripContextBar.tsx",
-      "src/components/trips/TripNewsSection.tsx",
-      "src/components/trips/BudgetTab.tsx",
-      "src/components/trips/BundledCheckoutDialog.tsx",
-      "src/components/trips/ReservationsTab.tsx",
-      "src/components/trips/TripLocalContext.tsx",
-      "src/components/trips/TripTemplates.tsx",
-      "src/components/trips/create/CityCountryAutocomplete.tsx",
-      "src/pages/trips/**",
       // Categorical news/topic taxonomy palette (politics, health, sports…).
       "src/pages/NewsDetail.tsx",
       "src/components/news/NewsCard.tsx",
       // Deterministic avatar gradient palette (12 distinct hues by user id).
       "src/lib/avatar.ts",
       "src/components/profile/UserModeBadge.tsx",
-      "src/components/profile/PhotoGallery.tsx",
-      "src/components/profile/UrlValidator.tsx",
-      "src/components/profile/social/UrlValidator.tsx",
       "src/components/user-directory/UserDirectoryGrid.tsx",
-      "src/components/user-directory/UserDirectoryFilters.tsx",
       // Map style + security dashboards = data-viz, hardcoded by design.
       "src/components/map/**",
       "src/components/security/**",
       // Submission scan results — confidence traffic-light + flyer overlays.
       "src/components/submission/**",
+      // Trip cover gradient palette + status badges.
+      "src/components/trips/TripCoverBand.tsx",
+      "src/pages/trips/**",
       // Roadmap status badges (new / under_review / planned / in_progress…).
       "src/pages/FeedbackBoard.tsx",
-      "src/components/feedback/FeedbackButton.tsx",
       // Severity-tagged content warnings.
       "src/components/ui/ContentWarningBanner.tsx",
       // Categorical tag link palettes + relationship graph.
@@ -140,37 +121,11 @@ export default tseslint.config(
       // Functional gradients / scales / state colors that are intentional.
       "src/components/auth/PasswordStrengthMeter.tsx",
       "src/components/country/WorldBankDataPanel.tsx",
+      "src/components/user-directory/UserDirectoryFilters.tsx",
       "src/components/personalities/AddPersonalityDialog.tsx",
       "src/hooks/useExploreMapData.ts",
       "src/hooks/useReviewBulkActions.ts",
-      "src/hooks/useMapBoundaryLayers.ts",
       "src/config/workflowConfig.ts",
-      "src/config/feedbackCategories.ts",
-      "src/config/contentTypes/**",
-      // External brand SVGs (Google OAuth icon — locked color).
-      "src/components/auth/OAuthButtons.tsx",
-      // Validation success/state colors that don't map to existing tokens.
-      "src/components/ui/location-autocomplete.tsx",
-      // Role-icon palette (admin/owner/member).
-      "src/pages/MyGroups.tsx",
-      // Filter chip dot colors — categorical.
-      "src/components/venues/VenueFilters.tsx",
-      // Star-fill yellow (semantic gold star).
-      "src/pages/Favorites.tsx",
-      // Video player chrome — pure black/white overlay regardless of theme.
-      "src/components/ui/modern-video-player.tsx",
-      // Theme provider — owns the color tokens themselves.
-      "src/components/theme/ThemeProvider.tsx",
-      // Post tag color from content tag config (categorical).
-      "src/components/posts/PostCard.tsx",
-      // Hotel rating dot palette + hero gradient.
-      "src/components/hotels/HotelCard.tsx",
-      // Analytics dashboard data-viz.
-      "src/components/analytics/UmamiAnalyticsDashboard.tsx",
-      // Resource list tag chips (categorical).
-      "src/components/resources/TagListRenderer.tsx",
-      // Messaging UI status colors.
-      "src/components/messaging/MessagingInterface.tsx",
     ],
     rules: {
       "no-restricted-syntax": [
