@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Sparkles, X } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
@@ -38,32 +36,20 @@ export function TravelPrefsPrompt() {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        p: 2,
-        mb: 3,
-        bgcolor: 'action.hover',
-        borderRadius: 1,
-      }}
-    >
-      <Sparkles style={{ height: 20, width: 20, color: 'var(--primary)', flexShrink: 0 }} />
-      <Box sx={{ flex: 1 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-          Personalize your travel
-        </Typography>
-        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+    <div className="flex items-center gap-4 p-4 mb-6 bg-muted/40 rounded-lg">
+      <Sparkles className="h-5 w-5 text-primary shrink-0" />
+      <div className="flex-1">
+        <p className="font-semibold text-sm">Personalize your travel</p>
+        <p className="text-xs text-muted-foreground">
           Set your budget, safety preferences, and interests for better recommendations.
-        </Typography>
-      </Box>
+        </p>
+      </div>
       <LocalizedLink to="/profile/settings?tab=travel">
         <Button size="sm">Set up</Button>
       </LocalizedLink>
       <Button variant="ghost" size="sm" onClick={handleDismiss} style={{ padding: 4, minWidth: 0 }}>
-        <X style={{ height: 16, width: 16 }} />
+        <X className="h-4 w-4" />
       </Button>
-    </Box>
+    </div>
   );
 }

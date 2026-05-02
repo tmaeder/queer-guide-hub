@@ -1,7 +1,6 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Box from '@mui/material/Box';
 
 interface HotelFiltersProps {
   search: string;
@@ -21,8 +20,8 @@ export function HotelFilters({
   onPriceChange,
 }: HotelFiltersProps) {
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 3 }}>
-      <Box sx={{ position: 'relative', flex: '1 1 200px', maxWidth: 320 }}>
+    <div className="flex flex-wrap gap-3 mb-6">
+      <div className="relative flex-1 max-w-xs min-w-[200px]">
         <Search
           style={{
             position: 'absolute',
@@ -40,7 +39,7 @@ export function HotelFilters({
           onChange={(e) => onSearchChange(e.target.value)}
           style={{ paddingLeft: 32 }}
         />
-      </Box>
+      </div>
 
       <Select value={hotelType} onValueChange={onTypeChange}>
         <SelectTrigger style={{ width: 160 }}>
@@ -69,6 +68,6 @@ export function HotelFilters({
           <SelectItem value="4">$$$$ Luxury</SelectItem>
         </SelectContent>
       </Select>
-    </Box>
+    </div>
   );
 }

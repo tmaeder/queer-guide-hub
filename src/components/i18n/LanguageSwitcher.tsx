@@ -16,7 +16,6 @@ import {
   isSupportedLocale,
 } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
-import Box from '@mui/material/Box';
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
@@ -30,13 +29,11 @@ export function LanguageSwitcher() {
   const handleChange = (newLocale: string) => {
     if (!isSupportedLocale(newLocale) || newLocale === currentLocale) return;
 
-    // Strip current locale prefix from path
     const pathWithoutLocale =
       locale && isSupportedLocale(locale)
         ? location.pathname.replace(`/${locale}`, '') || '/'
         : location.pathname;
 
-    // Build new path
     const newPath =
       newLocale === DEFAULT_LOCALE
         ? pathWithoutLocale
@@ -66,9 +63,7 @@ export function LanguageSwitcher() {
       <SelectContent>
         {SUPPORTED_LOCALES.map((lang) => (
           <SelectItem key={lang} value={lang}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <span style={{ fontSize: '0.8125rem' }}>{LANGUAGE_NAMES[lang]}</span>
-            </Box>
+            <span className="text-[0.8125rem]">{LANGUAGE_NAMES[lang]}</span>
           </SelectItem>
         ))}
       </SelectContent>
