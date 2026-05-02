@@ -3,8 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MapPin, Phone, Globe, Star, Clock } from "lucide-react";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface VenueData {
   name?: string;
@@ -45,7 +43,7 @@ export function VenueEnrichmentPreview({
   onClose,
   results,
   onSelectResult,
-  venueName
+  venueName,
 }: VenueEnrichmentPreviewProps) {
   const getSourceBadgeVariant = (source: string) => {
     switch (source) {
@@ -74,52 +72,52 @@ export function VenueEnrichmentPreview({
           <DialogTitle>Choose Venue Data Source for "{venueName}"</DialogTitle>
         </DialogHeader>
 
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {results.map((result, index) => (
-            <Card key={index} style={{ cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
+            <Card key={index} className="cursor-pointer transition-shadow hover:shadow-md">
               <CardHeader style={{ paddingBottom: 12 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div className="flex items-center justify-between">
                   <CardTitle style={{ fontSize: '1.125rem' }}>{result.data.name || venueName}</CardTitle>
                   <Badge variant={getSourceBadgeVariant(result.source)}>
                     {formatSourceName(result.source)}
                   </Badge>
-                </Box>
+                </div>
               </CardHeader>
 
               <CardContent>
                 {result.data.address && (
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <div className="flex items-start gap-2">
                     <MapPin style={{ height: 16, width: 16, marginTop: 2, color: 'var(--muted-foreground)', flexShrink: 0 }} />
-                    <Typography variant="body2">{result.data.address}</Typography>
-                  </Box>
+                    <p className="text-sm">{result.data.address}</p>
+                  </div>
                 )}
 
                 {result.data.phone && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Phone style={{ height: 16, width: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
-                    <Typography variant="body2">{result.data.phone}</Typography>
-                  </Box>
+                    <p className="text-sm">{result.data.phone}</p>
+                  </div>
                 )}
 
                 {result.data.website && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Globe style={{ height: 16, width: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
-                    <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{result.data.website}</Typography>
-                  </Box>
+                    <p className="text-sm truncate">{result.data.website}</p>
+                  </div>
                 )}
 
                 {result.data.rating && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Star style={{ height: 16, width: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
-                    <Typography variant="body2">{result.data.rating}/10</Typography>
-                  </Box>
+                    <p className="text-sm">{result.data.rating}/10</p>
+                  </div>
                 )}
 
                 {result.data.hours && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)', flexShrink: 0 }} />
-                    <Typography variant="body2">{result.data.hours}</Typography>
-                  </Box>
+                    <p className="text-sm">{result.data.hours}</p>
+                  </div>
                 )}
 
                 {result.data.category && (
@@ -129,9 +127,12 @@ export function VenueEnrichmentPreview({
                 )}
 
                 {result.data.description && (
-                  <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  <p
+                    className="text-sm text-muted-foreground"
+                    style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+                  >
                     {result.data.description}
-                  </Typography>
+                  </p>
                 )}
 
                 <Button
@@ -144,13 +145,13 @@ export function VenueEnrichmentPreview({
               </CardContent>
             </Card>
           ))}
-        </Box>
+        </div>
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+        <div className="flex justify-end gap-2 mt-4">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-        </Box>
+        </div>
       </DialogContent>
     </Dialog>
   );
