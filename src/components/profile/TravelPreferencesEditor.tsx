@@ -14,7 +14,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Shield, DollarSign, Compass, Home, Users, Accessibility, Plane, MapPin } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchProfileTravelPreferences,
+  fetchTravelPrefsHomeCity,
+  saveProfileTravelPreferences,
+} from '@/hooks/useTravelPreferencesEditor';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -92,13 +96,9 @@ export function TravelPreferencesEditor() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('travel_preferences')
-        .eq('user_id', user.id)
-        .single();
-      if (data?.travel_preferences) {
-        setPrefs({ ...DEFAULT_PREFS, ...(data.travel_preferences as Partial<TravelPreferences>) });
+      const stored = await fetchProfileTravelPreferences(user.id);
+      if (stored) {
+        setPrefs({ ...DEFAULT_PREFS, ...stored });
       }
       setLoaded(true);
     })();
@@ -110,25 +110,8 @@ export function TravelPreferencesEditor() {
     setPreferredTransport(travelPrefs.preferred_transport ?? []);
     if (travelPrefs.home_city_id && !homeCity) {
       (async () => {
-        const { data } = await supabase
-          .from('cities')
-          .select('id, name, timezone, country:country_id(id, name, code)')
-          .eq('id', travelPrefs.home_city_id!)
-          .maybeSingle();
-        if (data) {
-          const row = data as Record<string, unknown>;
-          const country = row.country as { id: string; name: string; code: string | null } | null;
-          if (country) {
-            setHomeCity({
-              cityId: row.id as string,
-              cityName: row.name as string,
-              countryId: country.id,
-              countryName: country.name,
-              countryCode: country.code ?? null,
-              timezone: (row.timezone as string | null) ?? null,
-            });
-          }
-        }
+        const city = await fetchTravelPrefsHomeCity(travelPrefs.home_city_id!);
+        if (city) setHomeCity(city);
       })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,11 +127,7 @@ export function TravelPreferencesEditor() {
     if (!user) return;
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ travel_preferences: prefs })
-        .eq('user_id', user.id);
-      if (error) throw error;
+      await saveProfileTravelPreferences(user.id, prefs);
 
       await updateTravelPrefs.mutateAsync({
         budget_tier: BUDGET_TO_TIER[prefs.budget_level] ?? null,
