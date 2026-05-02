@@ -2,10 +2,10 @@ import type { CSSProperties } from 'react';
 import { formatCurrency } from '@/lib/currency';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { MotionCard as Card } from '@/components/ui/card';
+import { MotionCard as Card, CardImage } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Phone, Mail, ExternalLink, Eye } from 'lucide-react';
+import { Star, MapPin, Phone, Mail, ExternalLink, Eye, Store } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
@@ -70,13 +70,23 @@ export function MarketplaceCard({
         return price;
     }
   };
+  const listingImage = listing.images?.[0] ?? null;
+
   return (
     <Card>
-      {showFavoriteButton && (
-        <Box sx={{ position: 'absolute', top: 3, right: 3, zIndex: 10 }}>
-          <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="sm" />
-        </Box>
-      )}
+      <Box sx={{ position: 'relative' }}>
+        <CardImage
+          src={listingImage}
+          alt={listing.title}
+          fallbackIcon={Store}
+          height={160}
+        />
+        {showFavoriteButton && (
+          <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
+            <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="sm" />
+          </Box>
+        )}
+      </Box>
 
       <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
         {/* Header */}
