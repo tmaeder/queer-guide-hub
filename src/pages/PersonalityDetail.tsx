@@ -10,8 +10,6 @@ import { usePersonalities, type Personality } from '@/hooks/usePersonalities';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useCountryIdByName } from '@/hooks/usePageFetchers';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import {
   type SimilarPersonality,
@@ -138,18 +136,16 @@ export default function PersonalityDetail() {
 
   if (!isLoading && !error && !personality) {
     return (
-      <Box sx={{ mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" component="h1" sx={{ fontSize: '1.5rem', fontWeight: 700, mb: 2 }}>
-          Personality Not Found
-        </Typography>
-        <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+      <div className="mx-auto px-4 py-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Personality Not Found</h1>
+        <p className="text-muted-foreground mb-6">
           The personality you&apos;re looking for doesn&apos;t exist.
-        </Typography>
+        </p>
         <Button onClick={() => navigate('/personalities')}>
-          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+          <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Personalities
         </Button>
-      </Box>
+      </div>
     );
   }
 
@@ -203,9 +199,9 @@ export default function PersonalityDetail() {
         entityId={personality?.id}
       />
       {personality && (
-        <Box sx={{ mx: 'auto', px: 2 }}>
+        <div className="mx-auto px-4">
           <SimilarItems entity={{ type: 'personality', id: personality.id }} className="mt-8" />
-        </Box>
+        </div>
       )}
     </>
   );
