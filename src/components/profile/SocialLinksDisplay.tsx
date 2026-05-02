@@ -10,7 +10,6 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Box from '@mui/material/Box';
 
 interface _SocialLink {
   platform: string;
@@ -74,7 +73,7 @@ export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md
             <Icon style={iconStyle} />
             {showLabels && (
               <>
-                <Box component="span" sx={{ ml: 1 }}>{config.name}</Box>
+                <span className="ml-2">{config.name}</span>
                 <ExternalLink style={{ width: 12, height: 12, marginLeft: 4 }} />
               </>
             )}
@@ -99,7 +98,7 @@ export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md
           <Globe style={iconStyle} />
           {showLabels && (
             <>
-              <Box component="span" sx={{ ml: 1 }}>{platform}</Box>
+              <span className="ml-2">{platform}</span>
               <ExternalLink style={{ width: 12, height: 12, marginLeft: 4 }} />
             </>
           )}
@@ -109,16 +108,16 @@ export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md
   };
 
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, ...(showLabels && { flexDirection: 'column' }) }}>
+    <div className={`flex flex-wrap gap-2 ${showLabels ? 'flex-col' : ''}`}>
       {Object.entries(socialLinks).map(([platform, url]) => {
         if (!url || typeof url !== 'string') return null;
 
         return (
-          <Box key={platform}>
+          <div key={platform}>
             {getSocialIcon(platform, url)}
-          </Box>
+          </div>
         );
       })}
-    </Box>
+    </div>
   );
 }

@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Cloud, Sun, CloudRain, Thermometer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface WeatherData {
   success: boolean;
@@ -84,10 +82,10 @@ export default function CountryWeatherForecast({
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem', color: 'text.secondary' }}>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Thermometer style={{ height: 16, width: 16 }} />
         Loading weather...
-      </Box>
+      </div>
     );
   }
 
@@ -99,18 +97,18 @@ export default function CountryWeatherForecast({
   const threeDayForecast = weather.forecast.slice(0, 3);
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.875rem' }}>
+    <div className="flex items-center gap-4 text-sm">
       {threeDayForecast.map((day, index) => (
-        <Box key={day.date} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="caption" color="text.secondary">
+        <div key={day.date} className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
             {index === 0 ? 'Today' :
              index === 1 ? 'Tom' :
              new Date(day.date).toLocaleDateString('en', { weekday: 'short' })}
-          </Typography>
+          </span>
           {getWeatherIcon(day.icon)}
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>{day.temp}°</Typography>
-        </Box>
+          <span className="text-sm font-medium">{day.temp}°</span>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }

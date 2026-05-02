@@ -1,7 +1,4 @@
 import { AlertTriangle } from 'lucide-react';
-import { useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 
 interface ErrorRetryProps {
@@ -25,40 +22,27 @@ export function ErrorRetry({
   onRetry,
   retryLabel = 'Retry',
 }: ErrorRetryProps) {
-  const theme = useTheme();
-  const brandColor = theme.palette.brand?.main || theme.palette.primary.main;
-
   return (
-    <Box
+    <div
       role="alert"
       aria-live="polite"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-        gap: 1.5,
-        py: 6,
-        px: 2,
-      }}
+      className="flex flex-col items-center text-center gap-3 py-12 px-4"
     >
-      <AlertTriangle size={32} style={{ color: brandColor }} aria-hidden="true" />
-      <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
-        {title}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 480 }}>
+      <AlertTriangle size={32} style={{ color: 'hsl(var(--brand))' }} aria-hidden="true" />
+      <h2 className="text-base font-semibold">{title}</h2>
+      <p className="text-sm text-muted-foreground" style={{ maxWidth: 480 }}>
         {description}
-      </Typography>
+      </p>
       {error && (
-        <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'monospace' }}>
+        <p className="text-xs font-mono" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
           {error}
-        </Typography>
+        </p>
       )}
       {onRetry && (
         <Button variant="outline" size="sm" onClick={onRetry}>
           {retryLabel}
         </Button>
       )}
-    </Box>
+    </div>
   );
 }
