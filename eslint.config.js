@@ -6,6 +6,7 @@ import jsxA11y from "eslint-plugin-jsx-a11y";
 import unusedImports from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
+import noSupabaseFromInPages from "./eslint-rules/no-supabase-from-in-pages.js";
 
 export default tseslint.config(
   { ignores: ["dist", "src/integrations/supabase/types.ts"] },
@@ -21,6 +22,7 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
       "jsx-a11y": jsxA11y,
       "unused-imports": unusedImports,
+      "queerguide": { rules: { "no-supabase-from-in-pages": noSupabaseFromInPages } },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -38,6 +40,10 @@ export default tseslint.config(
         caughtErrorsIgnorePattern: "^_",
       }],
       "no-case-declarations": "warn",
+      // Tech-debt DUP-4: nudge supabase.from() out of pages/components into hooks.
+      // "warn" for now — promote to "error" once the remaining 9 page-level
+      // useEffect supabase fetches have been migrated.
+      "queerguide/no-supabase-from-in-pages": "warn",
       // Accessibility rules (WCAG 2.2 AA)
       "jsx-a11y/alt-text": "error",
       "jsx-a11y/anchor-has-content": "error",
