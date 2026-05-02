@@ -3,6 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  listCommunitySubmissionsByType,
+  updateCommunitySubmission,
+  updateCommunitySubmissionsByIds,
+} from '@/hooks/usePageFetchers';
 import { useFeedbackVoteCounts } from '@/hooks/useFeedbackVote';
 import { useFeedbackUrlState } from '@/hooks/useFeedbackUrlState';
 import { useFeedbackAdmins, buildAdminMap } from '@/hooks/useFeedbackAdmins';
@@ -94,28 +99,18 @@ export function useAdminFeedbackController() {
 
   const { data: items = [], isLoading } = useQuery<FeedbackSubmission[]>({
     queryKey: ['admin-feedback-board'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('community_submissions')
-        .select(FEEDBACK_COLUMNS)
-        .eq('content_type', 'feedback')
-        .order('submitted_at', { ascending: false });
-      if (error) throw error;
-      return (data as unknown as FeedbackSubmission[]) || [];
-    },
+    queryFn: () =>
+      listCommunitySubmissionsByType<FeedbackSubmission>('feedback', FEEDBACK_COLUMNS),
   });
 
   const { data: apiErrors = [], isLoading: errorsLoading } = useQuery<ApiErrorSubmission[]>({
     queryKey: ['admin-api-errors'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('community_submissions')
-        .select(API_ERROR_COLUMNS)
-        .eq('content_type', 'api_error')
-        .order('last_seen_at', { ascending: false });
-      if (error) throw error;
-      return (data as unknown as ApiErrorSubmission[]) || [];
-    },
+    queryFn: () =>
+      listCommunitySubmissionsByType<ApiErrorSubmission>(
+        'api_error',
+        API_ERROR_COLUMNS,
+        'last_seen_at',
+      ),
   });
 
   const { data: admins = [] } = useFeedbackAdmins();
@@ -348,14 +343,11 @@ export function useAdminFeedbackController() {
   const updateRow = useCallback(
     async (ids: string[], patch: Record<string, unknown>) => {
       if (ids.length === 0) return;
-      const { error } = await supabase
-        .from('community_submissions')
-        .update({
-          ...patch,
-          reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .in('id', ids);
+      const { error } = await updateCommunitySubmissionsByIds(ids, {
+        ...patch,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+      });
       if (error) throw error;
     },
     [user],
@@ -425,10 +417,7 @@ export function useAdminFeedbackController() {
 
   const labelsMutation = useMutation({
     mutationFn: async ({ id, labels }: { id: string; labels: string[] }) => {
-      const { error } = await supabase
-        .from('community_submissions')
-        .update({ labels })
-        .eq('id', id);
+      const { error } = await updateCommunitySubmission(id, { labels });
       if (error) throw error;
     },
     onMutate: async ({ id, labels }) => {
@@ -452,15 +441,12 @@ export function useAdminFeedbackController() {
       id: string;
       resolution: FeedbackResolution | null;
     }) => {
-      const { error } = await supabase
-        .from('community_submissions')
-        .update({
-          resolution,
-          resolved_at: resolution ? new Date().toISOString() : null,
-          reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq('id', id);
+      const { error } = await updateCommunitySubmission(id, {
+        resolution,
+        resolved_at: resolution ? new Date().toISOString() : null,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+      });
       if (error) throw error;
       return { id, resolution };
     },
@@ -482,10 +468,7 @@ export function useAdminFeedbackController() {
 
   const notesMutation = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
-      const { error } = await supabase
-        .from('community_submissions')
-        .update({ reviewer_notes: notes })
-        .eq('id', id);
+      const { error } = await updateCommunitySubmission(id, { reviewer_notes: notes });
       if (error) throw error;
     },
     onSuccess: () => {

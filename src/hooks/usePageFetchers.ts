@@ -519,6 +519,34 @@ export async function toggleFeedbackVote(
   }
 }
 
+/** AdminFeedback controller — bulk update by id list. */
+export async function updateCommunitySubmissionsByIds(
+  ids: string[],
+  update: Record<string, unknown>,
+): Promise<{ error: Error | null }> {
+  if (ids.length === 0) return { error: null };
+  const { error } = await supabase
+    .from('community_submissions')
+    .update(update as never)
+    .in('id', ids);
+  return { error: error as Error | null };
+}
+
+/** AdminFeedback controller — list community submissions filtered by content_type. */
+export async function listCommunitySubmissionsByType<T = unknown>(
+  contentType: string,
+  columns: string,
+  orderCol = 'submitted_at',
+): Promise<T[]> {
+  const { data, error } = await supabase
+    .from('community_submissions')
+    .select(columns as never)
+    .eq('content_type', contentType)
+    .order(orderCol, { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as T[];
+}
+
 /** Generic CRUD helpers — last-resort wrappers when a more specific hook is overkill. */
 export async function listFrom<T = unknown>(
   table: string,
