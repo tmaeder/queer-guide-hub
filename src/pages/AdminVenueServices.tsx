@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import Typography from '@mui/material/Typography';
 import {
   Select,
   SelectContent,
@@ -22,7 +22,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -240,112 +240,106 @@ export default function AdminVenueServices() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Venue Services
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage venue services and offerings
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent style={{ maxWidth: 560 }}>
-          <DialogHeader>
-            <DialogTitle>{editingId ? 'Edit Service' : 'Create Service'}</DialogTitle>
-          </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <Box>
-                <Label>Name *</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                />
-              </Box>
-              <Box>
-                <Label>Slug</Label>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+    <AdminEntityTable
+      title="Venue Services"
+      subtitle="Manage venue services and offerings"
+      config={tableConfig}
+      afterTable={
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent style={{ maxWidth: 560 }}>
+            <DialogHeader>
+              <DialogTitle>{editingId ? 'Edit Service' : 'Create Service'}</DialogTitle>
+            </DialogHeader>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box>
+                  <Label>Name *</Label>
                   <Input
-                    value={form.slug}
-                    onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={generateSlug}
-                    style={{ flexShrink: 0, height: 40 }}
-                  >
-                    Gen
-                  </Button>
+                </Box>
+                <Box>
+                  <Label>Slug</Label>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Input
+                      value={form.slug}
+                      onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={generateSlug}
+                      style={{ flexShrink: 0, height: 40 }}
+                    >
+                      Gen
+                    </Button>
+                  </Box>
                 </Box>
               </Box>
-            </Box>
-            <Box>
-              <Label>Description</Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                rows={2}
-              />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
               <Box>
-                <Label>Icon</Label>
-                <Input
-                  value={form.icon}
-                  onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
-                  placeholder="Lucide name"
+                <Label>Description</Label>
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  rows={2}
                 />
               </Box>
-              <Box>
-                <Label>Category</Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {serviceCategories.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c.charAt(0).toUpperCase() + c.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                <Box>
+                  <Label>Icon</Label>
+                  <Input
+                    value={form.icon}
+                    onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+                    placeholder="Lucide name"
+                  />
+                </Box>
+                <Box>
+                  <Label>Category</Label>
+                  <Select
+                    value={form.category}
+                    onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {serviceCategories.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c.charAt(0).toUpperCase() + c.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Box>
+                <Box>
+                  <Label>Sort Order</Label>
+                  <Input
+                    type="number"
+                    value={form.sort_order}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
+                    }
+                  />
+                </Box>
               </Box>
-              <Box>
-                <Label>Sort Order</Label>
-                <Input
-                  type="number"
-                  value={form.sort_order}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
-                  }
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Switch
+                  checked={form.is_active}
+                  onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
                 />
+                <Label>Active</Label>
               </Box>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Switch
-                checked={form.is_active}
-                onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
-              />
-              <Label>Active</Label>
-            </Box>
-          </Box>
-          <DialogFooter style={{ marginTop: 16 }}>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Box>
+            <DialogFooter style={{ marginTop: 16 }}>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      }
+    />
   );
 }
