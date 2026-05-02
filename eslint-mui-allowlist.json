@@ -153,7 +153,6 @@
   "src/components/events/EventCard.tsx",
   "src/components/events/EventsCalendarView.tsx",
   "src/components/events/RecurrencePicker.tsx",
-  "src/components/events/TicketmasterImport.tsx",
   "src/components/feedback/FeedbackButton.tsx",
   "src/components/groups/CreateGroupDialog.tsx",
   "src/components/groups/CreateGroupEventDialog.tsx",
