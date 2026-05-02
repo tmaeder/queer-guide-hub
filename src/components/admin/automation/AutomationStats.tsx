@@ -3,12 +3,12 @@
  */
 
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Clock, CheckCircle2, AlertTriangle, Zap, TrendingUp, Layers } from 'lucide-react';
 import type { AutomationStats as Stats } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';
-import { brandColors } from '@/theme/muiTheme';
+
+// queer.guide brand magenta — was brandColors.main from src/theme/muiTheme.ts
+const BRAND_MAIN = '#b60d3d';
 
 interface Props {
   stats: Stats;
@@ -24,7 +24,7 @@ const CARDS: Array<{
   { key: 'pending_changes', label: 'Pending Review', icon: AlertTriangle, color: '#f59e0b' },
   { key: 'auto_approved_24h', label: 'Auto-Approved (24h)', icon: CheckCircle2, color: '#10b981' },
   { key: 'total_proposed_24h', label: 'Total Proposed (24h)', icon: TrendingUp, color: '#6366f1' },
-  { key: 'modules_enabled', label: 'Modules Active', icon: Zap, color: brandColors.main },
+  { key: 'modules_enabled', label: 'Modules Active', icon: Zap, color: BRAND_MAIN },
   {
     key: 'approval_rate',
     label: 'Auto-Approval Rate',
@@ -43,35 +43,18 @@ const CARDS: Array<{
 
 export function AutomationStats({ stats }: Props) {
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(6, 1fr)' },
-        gap: 2,
-      }}
-    >
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
       {CARDS.map(({ key, label, icon: Icon, color, format }) => (
-        <Box
-          key={key}
-          sx={{
-            p: 2,
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <div key={key} className="p-4 rounded-2xl border border-border bg-card">
+          <div className="flex items-center gap-2 mb-2">
             <Icon size={16} style={{ color }} />
-            <Typography variant="caption" color="text.secondary" noWrap>
-              {label}
-            </Typography>
-          </Box>
-          <Typography variant="h6" fontWeight={700}>
+            <p className="text-xs text-muted-foreground truncate">{label}</p>
+          </div>
+          <p className="text-base font-bold">
             {format ? format(stats[key]) : String(stats[key] ?? 0)}
-          </Typography>
-        </Box>
+          </p>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
