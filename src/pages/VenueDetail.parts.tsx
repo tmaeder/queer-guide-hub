@@ -33,7 +33,7 @@ import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -64,74 +64,7 @@ export interface FetchVenueResult {
 }
 
 export async function fetchVenue(slug: string): Promise<FetchVenueResult> {
-  let { data: venueData, error: venueError } = await supabase
-    .from('venues')
-    .select(VENUE_SELECT_FIELDS)
-    .eq('slug', slug)
-    .single();
-
-  if (venueError && /uuid|invalid|no rows/i.test(venueError.message || '')) {
-    const fallback = await supabase
-      .from('venues')
-      .select(VENUE_SELECT_FIELDS)
-      .eq('id', slug)
-      .single();
-    venueData = fallback.data;
-    venueError = fallback.error;
-  }
-
-  // Last-ditch fallback: param looks like a website hostname.
-  if (venueError && /\./.test(slug) && !/\s/.test(slug)) {
-    const host = slug.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0];
-    if (host) {
-      const { data: byWebsite } = await supabase
-        .from('venues')
-        .select('slug, id')
-        .or(`website.ilike.%${host}%,website.ilike.%www.${host}%`)
-        .limit(1)
-        .maybeSingle();
-      if (byWebsite?.slug || byWebsite?.id) {
-        return {
-          venue: null,
-          reviews: [],
-          redirectTo: `/venues/${byWebsite.slug || byWebsite.id}`,
-        };
-      }
-    }
-  }
-
-  if (venueError) {
-    if (
-      /no rows|not found|0 rows/i.test(venueError.message || '') ||
-      venueError.code === 'PGRST116'
-    ) {
-      return { venue: null, reviews: [], notFound: true };
-    }
-    throw venueError;
-  }
-
-  if (!venueData) return { venue: null, reviews: [], notFound: true };
-
-  const { data: reviewsData, error: reviewsError } = await supabase
-    .from('venue_reviews')
-    .select(
-      `
-      *,
-      profiles:user_id (
-        display_name,
-        avatar_url
-      )
-    `,
-    )
-    .eq('venue_id', venueData.id)
-    .order('created_at', { ascending: false });
-
-  if (reviewsError) throw reviewsError;
-
-  return {
-    venue: venueData as VenueWithRelations,
-    reviews: (reviewsData as VenueReview[]) || [],
-  };
+  return fetchVenueWithReviews<VenueWithRelations, VenueReview>(slug, VENUE_SELECT_FIELDS);
 }
 
 export function getPriceRange(range: number | null) {

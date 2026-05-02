@@ -20,6 +20,11 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  insertEntityFromSubmission,
+  updateCommunitySubmission,
+  insertCommunitySubmissionAudit,
+} from '@/hooks/usePageFetchers';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
@@ -215,25 +220,22 @@ function SubmissionsCore() {
       }
       if ('featured' in cleanData === false) cleanData.featured = false;
 
-      const { data: promoted, error: insertError } = await supabase
-        .from(config.targetTable as 'venues')
-        .insert(cleanData)
-        .select('id')
-        .single();
+      const { data: promoted, error: insertError } = await insertEntityFromSubmission(
+        config.targetTable,
+        cleanData,
+      );
       if (insertError) throw insertError;
+      if (!promoted) throw new Error('Insert returned no row');
 
       const oldStatus = submission.status;
-      const { error: updateError } = await supabase
-        .from('community_submissions' as const)
-        .update({
-          status: 'approved',
-          reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString(),
-          reviewer_notes: reviewerNotes || null,
-          promoted_to_id: promoted.id,
-          promoted_to_table: config.targetTable,
-        })
-        .eq('id', submission.id);
+      const { error: updateError } = await updateCommunitySubmission(submission.id, {
+        status: 'approved',
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+        reviewer_notes: reviewerNotes || null,
+        promoted_to_id: promoted.id,
+        promoted_to_table: config.targetTable,
+      });
       if (updateError) throw updateError;
 
       // Audit trail — append-only, RLS-gated to admins/mods.
@@ -249,9 +251,7 @@ function SubmissionsCore() {
           auditRows.push({ submission_id: submission.id, actor_id: user.id,
             field: 'review_note', old_value: null, new_value: reviewerNotes as unknown });
         }
-        const { error: auditErr } = await supabase
-          .from('community_submissions_audit')
-          .insert(auditRows);
+        const { error: auditErr } = await insertCommunitySubmissionAudit(auditRows);
         if (auditErr) console.error('Audit write failed:', auditErr.message);
       }
 
@@ -285,13 +285,10 @@ function SubmissionsCore() {
 
       // submission-action handles status + audit; sync reviewer_notes/by separately
       // since it doesn't expose those columns.
-      await supabase
-        .from('community_submissions' as const)
-        .update({
-          reviewed_by: user?.id,
-          reviewer_notes: reviewerNotes || null,
-        })
-        .eq('id', submission.id);
+      await updateCommunitySubmission(submission.id, {
+        reviewed_by: user?.id,
+        reviewer_notes: reviewerNotes || null,
+      });
 
       toast({ title: 'Submission rejected' });
       setDialogOpen(false);
@@ -627,10 +624,9 @@ function SubmissionsCore() {
                             : {}),
                         }}
                         onClick={async () => {
-                          const { error } = await supabase
-                            .from('community_submissions' as const)
-                            .update({ feedback_status: opt.value })
-                            .eq('id', selectedSubmission.id);
+                          const { error } = await updateCommunitySubmission(selectedSubmission.id, {
+                            feedback_status: opt.value,
+                          });
                           if (!error) {
                             setSelectedSubmission({ ...selectedSubmission, feedback_status: opt.value });
                             doRefresh();

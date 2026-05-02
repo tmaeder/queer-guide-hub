@@ -9,6 +9,7 @@ import { EntityDetailLayout } from '@/components/entity/EntityDetailLayout';
 import { usePersonalities, type Personality } from '@/hooks/usePersonalities';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useCountryIdByName } from '@/hooks/usePageFetchers';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
@@ -87,21 +88,11 @@ export default function PersonalityDetail() {
     }
   }, [personality]);
 
+  // DUP-4: useCountryIdByName replaces the inline supabase.from('countries').
+  const { data: resolvedCountryId } = useCountryIdByName(personality?.nationality ?? null);
   useEffect(() => {
-    if (!personality?.nationality) return;
-    let cancelled = false;
-    (async () => {
-      const { data: countryData } = await supabase
-        .from('countries')
-        .select('id')
-        .eq('name', personality.nationality!)
-        .maybeSingle();
-      if (!cancelled && countryData) setCountryId(countryData.id);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [personality?.nationality]);
+    if (resolvedCountryId) setCountryId(resolvedCountryId);
+  }, [resolvedCountryId]);
 
   useEffect(() => {
     if (!personality?.id) return;

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { Newspaper, Search, Grid3X3, List, SortAsc, Filter, X, TrendingUp, ChevronLeft, ChevronRight, LayoutList, BookOpen } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchNamesByIds } from "@/hooks/usePageFetchers";
 import type { Tables } from "@/integrations/supabase/types";
 
 type FeaturedArticle = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
@@ -113,22 +113,12 @@ export default function News() {
       (a.country_ids || []).forEach((id: string) => allCountryIds.add(id));
     });
     const fetchNames = async () => {
-      if (allCityIds.size > 0) {
-        const { data } = await supabase.from('cities').select('id, name').in('id', Array.from(allCityIds));
-        if (data) {
-          const map: Record<string, string> = {};
-          data.forEach((c: { id: string; name: string }) => { map[c.id] = c.name; });
-          setCityNames(map);
-        }
-      }
-      if (allCountryIds.size > 0) {
-        const { data } = await supabase.from('countries').select('id, name').in('id', Array.from(allCountryIds));
-        if (data) {
-          const map: Record<string, string> = {};
-          data.forEach((c: { id: string; name: string }) => { map[c.id] = c.name; });
-          setCountryNames(map);
-        }
-      }
+      const [cities, countries] = await Promise.all([
+        fetchNamesByIds('cities', Array.from(allCityIds)),
+        fetchNamesByIds('countries', Array.from(allCountryIds)),
+      ]);
+      if (Object.keys(cities).length > 0) setCityNames(cities);
+      if (Object.keys(countries).length > 0) setCountryNames(countries);
     };
     fetchNames();
   }, [articles]);

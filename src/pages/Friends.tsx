@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Clock, Check, X, Siren } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { useSOS } from '@/hooks/useSOS';
 import { useTranslation } from 'react-i18next';
@@ -60,15 +60,8 @@ export default function Friends() {
     ],
     queryFn: async () => {
       if (!user || friends.length === 0) return [];
-
       const friendIds = friends.map((f) => (f.user_id === user.id ? f.target_user_id : f.user_id));
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url, location')
-        .in('user_id', friendIds);
-
-      if (error) throw error;
-      return data;
+      return fetchProfilesByUserIds(friendIds);
     },
     enabled: !!user && friends.length > 0,
   });
@@ -77,15 +70,7 @@ export default function Friends() {
     queryKey: ['request-profiles', pendingRequests.map((r) => r.user_id)],
     queryFn: async () => {
       if (!user || pendingRequests.length === 0) return [];
-
-      const requestIds = pendingRequests.map((r) => r.user_id);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url, location')
-        .in('user_id', requestIds);
-
-      if (error) throw error;
-      return data;
+      return fetchProfilesByUserIds(pendingRequests.map((r) => r.user_id));
     },
     enabled: !!user && pendingRequests.length > 0,
   });

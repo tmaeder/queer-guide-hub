@@ -15,6 +15,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchPersonalityInternalNote,
+  upsertPersonalityInternalNote,
+} from '@/hooks/usePageFetchers';
 import { usePersonalities } from '@/hooks/usePersonalities';
 import { toast } from '@/hooks/use-toast';
 import { PersonalitiesCsvImport } from '@/components/personalities/PersonalitiesCsvImport';
@@ -111,23 +115,22 @@ export default function AdminPersonalities() {
     let cancelled = false;
     setNotesLoading(true);
     (async () => {
-      const { data, error } = await supabase
-        .from('personality_internal_notes' as never)
-        .select('notes')
-        .eq('personality_id', selectedPersonality.id)
-        .maybeSingle();
-      if (cancelled) return;
-      if (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to load internal notes',
-          variant: 'destructive',
-        });
+      try {
+        const notes = (await fetchPersonalityInternalNote(selectedPersonality.id)) ?? '';
+        if (cancelled) return;
+        setInternalNotes(notes);
+        setInternalNotesLoaded(notes);
+      } catch {
+        if (!cancelled) {
+          toast({
+            title: 'Error',
+            description: 'Failed to load internal notes',
+            variant: 'destructive',
+          });
+        }
+      } finally {
+        if (!cancelled) setNotesLoading(false);
       }
-      const notes = ((data as { notes?: string } | null)?.notes) ?? '';
-      setInternalNotes(notes);
-      setInternalNotesLoaded(notes);
-      setNotesLoading(false);
     })();
     return () => {
       cancelled = true;
@@ -140,16 +143,11 @@ export default function AdminPersonalities() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const { error } = await supabase
-      .from('personality_internal_notes' as never)
-      .upsert(
-        {
-          personality_id: selectedPersonality.id,
-          notes: internalNotes,
-          updated_by: user?.id ?? null,
-        } as never,
-        { onConflict: 'personality_id' },
-      );
+    const { error } = await upsertPersonalityInternalNote({
+      personality_id: selectedPersonality.id,
+      notes: internalNotes,
+      updated_by: user?.id ?? null,
+    });
     setNotesSaving(false);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });

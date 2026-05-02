@@ -16,7 +16,7 @@ import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { upsertEventAttendance } from '@/hooks/usePageFetchers';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import {
   type EventWithRelations,
@@ -95,9 +95,11 @@ export default function EventDetail() {
       return;
     }
     try {
-      const { error: upsertError } = await supabase
-        .from('event_attendees')
-        .upsert({ event_id: event.id, user_id: user.id, status });
+      const { error: upsertError } = await upsertEventAttendance({
+        event_id: event.id,
+        user_id: user.id,
+        status,
+      });
       if (upsertError) throw upsertError;
       setUserAttendance(status);
       toast({

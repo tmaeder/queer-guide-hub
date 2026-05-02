@@ -3,6 +3,9 @@ import { useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { useHotelByIdFallback } from '@/hooks/usePageFetchers';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 import { supabase } from '@/integrations/supabase/client';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
@@ -37,29 +40,13 @@ export default function HotelDetail() {
   });
 
   // Fallback: slug param may be a uuid; if slug lookup yields no row, try by id.
-  const [fallback, setFallback] = useState<HotelWithRelations | null>(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
-  useEffect(() => {
-    if (primaryLoading || primary || !slug) return;
-    let cancelled = false;
-    setFallbackLoading(true);
-    (async () => {
-      const { data } = await supabase
-        .from('hotels')
-        .select(JOIN_SPEC)
-        .eq('id', slug)
-        .maybeSingle();
-      if (!cancelled) {
-        setFallback((data as HotelWithRelations | null) ?? null);
-        setFallbackLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [slug, primary, primaryLoading]);
+  const { data: fallback, isLoading: fallbackLoading } = useHotelByIdFallback<HotelWithRelations>(
+    JOIN_SPEC,
+    slug,
+    !primaryLoading && !primary,
+  );
 
-  const hotel = primary ?? fallback;
+  const hotel = primary ?? fallback ?? null;
   const loading = primaryLoading || (!primary && fallbackLoading);
   const { data: tripStatus } = useEntityTripStatus('hotel', hotel?.id);
 

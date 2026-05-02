@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { deleteCountry, updateCountry } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -109,7 +109,7 @@ export default function AdminCountries() {
   const handleDelete = async (country: CountryRow) => {
     if (!confirm(`Delete "${country.name}"? This will affect related data.`)) return;
     try {
-      const { error } = await supabase.from('countries').delete().eq('id', country.id);
+      const { error } = await deleteCountry(country.id);
       if (error) throw error;
       void logAdminGeoEdit('countries', 'delete', country.id, country as unknown as Record<string, unknown>, null);
       toast({ title: 'Success', description: `${country.name} deleted` });
@@ -135,7 +135,7 @@ export default function AdminCountries() {
         lgbt_rights_status: formData.lgbt_rights_status || null,
         equality_score: formData.equality_score ? parseFloat(formData.equality_score) : null,
       };
-      const { error } = await supabase.from('countries').update(update).eq('id', editingCountry.id);
+      const { error } = await updateCountry(editingCountry.id, update);
       if (error) throw error;
       void logAdminGeoEdit('countries', 'update', editingCountry.id, editingCountry as unknown as Record<string, unknown>, update);
       toast({ title: 'Success', description: `${formData.name} updated` });
