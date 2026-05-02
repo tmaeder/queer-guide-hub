@@ -57,7 +57,7 @@ const Index = React.memo(() => {
   );
 
   const showStatsStrip =
-    loading || (!statsError && stats.some((s) => typeof s.value === 'number' && s.value > 0));
+    loading || (!statsError && stats.some((s) => typeof s.value === 'number' && s.value >= 100));
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -207,7 +207,7 @@ const Index = React.memo(() => {
                 >
                   {loading ? (
                     <Skeleton className="mx-auto h-[1em] w-24" />
-                  ) : typeof stat.value === 'number' && stat.value > 0 ? (
+                  ) : typeof stat.value === 'number' && stat.value >= 100 ? (
                     <AnimatedCounter value={stat.value} suffix="+" />
                   ) : (
                     '\u2014'
