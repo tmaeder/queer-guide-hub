@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { CheckCircle2, Hotel, Ticket, ExternalLink, ArrowRight } from 'lucide-react';
 import {
   Dialog,
@@ -173,81 +171,65 @@ export function BundledCheckoutDialog({
         </DialogHeader>
 
         {loading ? (
-          <Box sx={{ py: 4, textAlign: 'center' }}>
-            <Typography variant="caption" color="text.secondary">
+          <div className="py-8 text-center">
+            <span className="text-xs text-muted-foreground">
               {t('common.loading', 'Loading…')}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         ) : total === 0 ? (
-          <Box sx={{ py: 4, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
+          <div className="py-8 text-center">
+            <p className="text-sm text-muted-foreground">
               {t('trips.bundledCheckout.emptyHint', "Add places to your trip first — we'll generate bookable links per city.")}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         ) : isDone ? (
-          <Box sx={{ py: 3, textAlign: 'center' }}>
-            <CheckCircle2 size={40} style={{ color: '#059669', margin: '0 auto 12px' }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+          <div className="py-6 text-center">
+            <CheckCircle2 size={40} className="mx-auto mb-3" style={{ color: '#059669' }} />
+            <h6 className="text-base font-bold mb-1">
               {bookedCount > 0 ? t('trips.bundledCheckout.openedOf', '{{booked}} of {{total}} opened', { booked: bookedCount, total }) : t('trips.bundledCheckout.allSkipped', 'All steps skipped')}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
+            </h6>
+            <span className="text-xs text-muted-foreground">
               {t('trips.bundledCheckout.revisitHint', 'You can revisit this anytime from the Budget tab.')}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         ) : (
-          <Box>
-            {/* Progress dots */}
-            <Box sx={{ display: 'flex', gap: 0.5, mb: 2, alignItems: 'center' }}>
+          <div>
+            <div className="flex gap-1 mb-4 items-center">
               {steps.map((s, i) => (
-                <Box
+                <div
                   key={s.key}
-                  sx={{
-                    flex: 1,
-                    height: 4,
-                    bgcolor: bookedKeys.has(s.key)
-                      ? 'brand.main'
+                  className="flex-1 h-1 transition-colors"
+                  style={{
+                    backgroundColor: bookedKeys.has(s.key)
+                      ? 'hsl(var(--brand))'
                       : i === index
-                        ? 'text.primary'
-                        : 'action.hover',
+                        ? 'hsl(var(--foreground))'
+                        : 'hsl(var(--muted))',
                     opacity: bookedKeys.has(s.key) || i === index ? 1 : 0.6,
-                    transition: 'background-color 0.2s',
                   }}
                 />
               ))}
-            </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: 'block' }}>
+            </div>
+            <span className="text-xs text-muted-foreground mb-3 block">
               {t('trips.bundledCheckout.stepOf', 'Step {{current}} of {{total}} · {{booked}} opened', { current: index + 1, total, booked: bookedCount })}
-            </Typography>
+            </span>
 
-            {/* Current card */}
-            <Box sx={{ p: 2.5, bgcolor: 'action.hover', display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <Box
-                sx={{
-                  flexShrink: 0,
-                  width: 40,
-                  height: 40,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: 'background.paper',
-                  color: 'brand.main',
-                }}
+            <div className="p-5 bg-muted flex items-start gap-3">
+              <div
+                className="shrink-0 w-10 h-10 flex items-center justify-center bg-background"
+                style={{ color: 'hsl(var(--brand))' }}
               >
                 {current?.kind === 'hotel' ? <Hotel size={20} /> : <Ticket size={20} />}
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  {current?.title}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {current?.subtitle}
-                </Typography>
-                <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.6 }}>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold">{current?.title}</p>
+                <span className="text-xs text-muted-foreground">{current?.subtitle}</span>
+                <span className="text-xs block mt-1 opacity-60">
                   {t('trips.bundledCheckout.via', 'via')} {current?.provider === 'booking' ? 'Booking.com' : 'GetYourGuide'}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
+                </span>
+              </div>
+            </div>
+          </div>
         )}
 
         <DialogFooter className="gap-2">
