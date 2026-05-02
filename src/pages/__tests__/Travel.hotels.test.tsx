@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, useSearchParams } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from '@mui/material/styles';
+import { createAppTheme } from '@/theme/muiTheme';
 import type { ReactNode } from 'react';
+
+const muiTheme = createAppTheme('light');
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -65,21 +69,23 @@ function UrlProbe({ onChange }: { onChange: (p: URLSearchParams) => void }) {
 function renderAt(path: string, onUrlChange: (p: URLSearchParams) => void = () => {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <QueryClientProvider client={qc}>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route
-            path="/travel"
-            element={
-              <>
-                <Travel />
-                <UrlProbe onChange={onUrlChange} />
-              </>
-            }
-          />
-        </Routes>
-      </MemoryRouter>
-    </QueryClientProvider>,
+    <ThemeProvider theme={muiTheme}>
+      <QueryClientProvider client={qc}>
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route
+              path="/travel"
+              element={
+                <>
+                  <Travel />
+                  <UrlProbe onChange={onUrlChange} />
+                </>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    </ThemeProvider>,
   );
 }
 
