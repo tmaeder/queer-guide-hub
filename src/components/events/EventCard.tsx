@@ -287,7 +287,7 @@ export const EventCard = memo(function EventCard({
                         During your trip
                       </Box>
                     )}
-                    {event.featured && (
+                    {event.is_featured && (
                       <Badge>
                         <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                         Featured
@@ -369,7 +369,7 @@ export const EventCard = memo(function EventCard({
                       During your trip
                     </Badge>
                   )}
-                  {event.featured && (
+                  {event.is_featured && (
                     <Badge>
                       <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                       Featured

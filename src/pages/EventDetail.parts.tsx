@@ -277,7 +277,7 @@ export function EventHero({
             >
               {event.title}
             </Typography>
-            {event.featured && (
+            {event.is_featured && (
               <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
             )}
             {event.countries?.equality_score != null && (

@@ -323,7 +323,7 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                                   Free
                                 </Badge>
                               )}
-                              {event.featured && (
+                              {event.is_featured && (
                                 <Badge
                                   variant="default"
                                   style={{

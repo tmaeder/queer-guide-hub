@@ -51,7 +51,7 @@ const RegionalEventsCalendar: React.FC = () => {
 
   const { hero, list, days, eventsByDay, today } = useMemo(() => {
     const all = events as Event[];
-    const featured = all.find((e) => e.featured);
+    const featured = all.find((e) => e.is_featured);
     const heroEvent = featured ?? all[0] ?? null;
     const rest = all.filter((e) => e.id !== heroEvent?.id).slice(0, 6);
 

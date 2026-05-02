@@ -44,7 +44,7 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
                 <Badge variant="outline">
                   {venue.category}
                 </Badge>
-                {venue.featured && (
+                {venue.is_featured && (
                   <Badge>
                     <Star style={{ width: 12, height: 12, marginRight: 4 }} />
                     Featured

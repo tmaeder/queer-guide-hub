@@ -98,7 +98,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
       if (cityIds.length === 0) return [];
       const { data, error } = await supabase
         .from('venues')
-        .select('id, name, category, address, foursquare_rating, featured, latitude, longitude, city_id, country_id')
+        .select('id, name, category, address, foursquare_rating, is_featured, latitude, longitude, city_id, country_id')
         .in('city_id', cityIds)
         .order('foursquare_rating', { ascending: false, nullsFirst: false })
         .limit(20);
