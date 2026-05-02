@@ -10,9 +10,6 @@ import {
   Shield,
   Luggage,
 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -50,29 +47,29 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
   return (
     <>
       {heroImage && (
-        <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 3, height: 300 }}>
+        <div className="rounded-md overflow-hidden mb-6 h-[300px]">
           <img
             loading="lazy"
             src={heroImage}
             alt={hotel.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className="w-full h-full object-cover"
           />
-        </Box>
+        </div>
       )}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>{hotel.name}</Typography>
-            {hotel.verified && <Shield style={{ width: 20, height: 20, color: '#10b981' }} />}
-          </Box>
-          <Typography variant="body1" color="text.secondary">
+      <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="text-2xl font-bold">{hotel.name}</h4>
+            {hotel.verified && <Shield className="w-5 h-5" style={{ color: '#10b981' }} />}
+          </div>
+          <p className="text-muted-foreground">
             {hotel.hotel_type && <>{TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type} &middot; </>}
             {cityName && countryName ? `${cityName}, ${countryName}` : cityName || countryName || ''}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
           <Button variant="outline" size="sm" onClick={onAddToTrip}>
-            <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
+            <Luggage className="w-3.5 h-3.5 mr-1.5" />
             Add to Trip
           </Button>
           {isInTrip && (
@@ -91,106 +88,103 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
           {hotel.booking_url && (
             <Button size="sm" asChild>
               <a href={hotel.booking_url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink style={{ width: 16, height: 16, marginRight: 6 }} />
+                <ExternalLink className="w-4 h-4 mr-1.5" />
                 Book Now
               </a>
             </Button>
           )}
           {hotel.website && (
             <Button variant="outline" size="sm" onClick={() => window.open(hotel.website!, '_blank')}>
-              <Globe style={{ width: 16, height: 16, marginRight: 6 }} />
+              <Globe className="w-4 h-4 mr-1.5" />
               Website
             </Button>
           )}
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
         {hotel.star_rating && (
-          <Chip
-            icon={<Star style={{ width: 14, height: 14, fill: '#f59e0b', color: '#f59e0b' }} />}
-            label={`${hotel.star_rating} Stars`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Star className="w-3.5 h-3.5" style={{ fill: '#f59e0b', color: '#f59e0b' }} />
+            {`${hotel.star_rating} Stars`}
+          </Badge>
         )}
         {hotel.price_range && (
-          <Chip
-            icon={<DollarSign style={{ width: 14, height: 14 }} />}
-            label={'$'.repeat(hotel.price_range)}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <DollarSign className="w-3.5 h-3.5" />
+            {'$'.repeat(hotel.price_range)}
+          </Badge>
         )}
-        {hotel.lgbtq_friendly && <Chip label="LGBTQ+ Friendly" size="small" color="primary" />}
+        {hotel.lgbtq_friendly && <Badge>LGBTQ+ Friendly</Badge>}
         {cityName && (
-          <Chip
-            icon={<MapPin style={{ width: 14, height: 14 }} />}
-            label={`${cityName}${countryName ? `, ${countryName}` : ''}`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <MapPin className="w-3.5 h-3.5" />
+            {`${cityName}${countryName ? `, ${countryName}` : ''}`}
+          </Badge>
         )}
-      </Box>
+      </div>
     </>
   );
 }
 
 export function HotelOverview({ hotel, t }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {hotel.description && (
         <Card>
           <CardHeader><CardTitle>{t('pages.hotelDetail.about', 'About')}</CardTitle></CardHeader>
           <CardContent>
-            <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{hotel.description}</Typography>
+            <p className="whitespace-pre-wrap">{hotel.description}</p>
           </CardContent>
         </Card>
       )}
       {hotel.queer_safety_notes && (
         <Card>
           <CardHeader><CardTitle>{t('pages.hotelDetail.safetyNotes', 'Safety Notes')}</CardTitle></CardHeader>
-          <CardContent><Typography variant="body2">{hotel.queer_safety_notes}</Typography></CardContent>
+          <CardContent><p className="text-sm">{hotel.queer_safety_notes}</p></CardContent>
         </Card>
       )}
       {hotel.amenities && hotel.amenities.length > 0 && (
         <Card>
           <CardHeader><CardTitle>{t('pages.hotelDetail.amenities', 'Amenities')}</CardTitle></CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <div className="flex flex-wrap gap-2">
               {hotel.amenities.map((amenity, i) => (
-                <Chip key={i} label={amenity} size="small" variant="outlined" icon={<Wifi style={{ width: 14, height: 14 }} />} />
+                <Badge key={i} variant="outline" className="gap-1">
+                  <Wifi className="w-3.5 h-3.5" />
+                  {amenity}
+                </Badge>
               ))}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
-    </Box>
+    </div>
   );
 }
 
 export function HotelSidebar({ hotel, t }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       <Card>
         <CardHeader><CardTitle>{t('pages.hotelDetail.contact', 'Contact')}</CardTitle></CardHeader>
         <CardContent>
           {hotel.address && (
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-              <MapPin style={{ width: 16, height: 16, marginTop: 2, flexShrink: 0 }} />
-              <Typography variant="body2">{hotel.address}</Typography>
-            </Box>
+            <div className="flex items-start gap-2">
+              <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+              <p className="text-sm">{hotel.address}</p>
+            </div>
           )}
           {hotel.phone && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Phone style={{ width: 16, height: 16, flexShrink: 0 }} />
-              <a href={`tel:${hotel.phone}`} style={{ fontSize: '0.875rem' }}>{hotel.phone}</a>
-            </Box>
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 shrink-0" />
+              <a href={`tel:${hotel.phone}`} className="text-sm">{hotel.phone}</a>
+            </div>
           )}
           {hotel.email && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Mail style={{ width: 16, height: 16, flexShrink: 0 }} />
-              <a href={`mailto:${hotel.email}`} style={{ fontSize: '0.875rem' }}>{hotel.email}</a>
-            </Box>
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 shrink-0" />
+              <a href={`mailto:${hotel.email}`} className="text-sm">{hotel.email}</a>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -198,39 +192,32 @@ export function HotelSidebar({ hotel, t }: { hotel: HotelWithRelations; t: (k: s
         <Card>
           <CardHeader><CardTitle>{t('pages.hotelDetail.tags', 'Tags')}</CardTitle></CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            <div className="flex flex-wrap gap-1">
               {hotel.tags.map((tag, i) => (
                 <Badge key={i} variant="outline">{tag}</Badge>
               ))}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
-    </Box>
+    </div>
   );
 }
 
 export function HotelPhotos({ hotel }: { hotel: HotelWithRelations }) {
   if (!hotel.images || hotel.images.length <= 1) return null;
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-        gap: 2,
-        mt: 2,
-      }}
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
       {hotel.images.map((img, i) => (
-        <Box key={i} sx={{ borderRadius: 2, overflow: 'hidden', height: 200 }}>
+        <div key={i} className="rounded-md overflow-hidden h-[200px]">
           <img
             src={img}
             alt={`${hotel.name} ${i + 1}`}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className="w-full h-full object-cover"
             loading="lazy"
           />
-        </Box>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
