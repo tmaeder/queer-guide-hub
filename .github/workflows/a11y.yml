@@ -45,7 +45,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm install --legacy-peer-deps
+      - run: npm install
       - run: npm run lint
 
   axe-playwright:
@@ -66,7 +66,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm install --legacy-peer-deps
+      - run: npm install
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test e2e/a11y-admin.spec.ts e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/a11y-dialogs.spec.ts e2e/focus-visible.spec.ts --workers=1
       - if: always()
@@ -89,7 +89,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm install --legacy-peer-deps
+      - run: npm install
       - run: npx playwright install --with-deps chromium
       - run: node scripts/a11y-axe-scan.mjs
       - name: Fail on serious/critical

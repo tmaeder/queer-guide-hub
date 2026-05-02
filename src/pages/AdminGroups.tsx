@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -18,10 +17,10 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
-import { ArrowLeft, Eye, Trash2, Lock, Globe, Users, Check, X } from 'lucide-react';
+import { Eye, Trash2, Lock, Globe, Users, Check, X } from 'lucide-react';
 import { useGroupJoinRequests } from '@/hooks/useGroupJoinRequests';
 
 interface GroupRow {
@@ -40,8 +39,7 @@ const columnHelper = createColumnHelper<GroupRow>();
 
 export default function AdminGroups() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { isAdmin, canManageContent } = useAdminRoles();
+  const { isAdmin } = useAdminRoles();
   const { toast } = useToast();
 
   const columns = useMemo(
@@ -231,44 +229,15 @@ export default function AdminGroups() {
     [columns, isAdmin],
   );
 
-  if (!user || !canManageContent()) {
-    return (
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Access Denied
-        </Typography>
-        <p>You don't have permission to access this page.</p>
-      </Box>
-    );
-  }
-
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
-        </Button>
-        <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-            Groups
-          </Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>
-            Manage community groups and their settings
-          </p>
-        </div>
-      </Box>
-
-      <PendingJoinRequestsPanel />
-
-      <AdminDataTable config={tableConfig} />
-    </Box>
+    <AdminEntityTable
+      title="Groups"
+      subtitle="Manage community groups and their settings"
+      backHref="/admin"
+      backLabel="Back to Admin"
+      config={tableConfig}
+      beforeTable={<PendingJoinRequestsPanel />}
+    />
   );
 }
 

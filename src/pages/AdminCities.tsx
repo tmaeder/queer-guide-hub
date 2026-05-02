@@ -29,7 +29,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -411,20 +411,13 @@ export default function AdminCities() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Cities Management
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage cities in the directory
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <AdminEntityTable
+      title="Cities Management"
+      subtitle="Manage cities in the directory"
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ maxWidth: 672 }}>
           <DialogHeader>
             <DialogTitle>{editingCity ? 'Edit City' : 'Add New City'}</DialogTitle>
@@ -538,6 +531,7 @@ export default function AdminCities() {
           </Box>
         </DialogContent>
       </Dialog>
-    </Box>
+      }
+    />
   );
 }

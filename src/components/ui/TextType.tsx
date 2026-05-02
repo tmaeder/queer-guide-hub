@@ -89,7 +89,14 @@ const TextType = ({
 
     let timeout: NodeJS.Timeout;
 
+    // Guard: if `text` resolved to an empty array (e.g. an i18n bundle
+    // hadn't loaded yet during HMR) or contains nullish entries (a
+    // missing translation key returning undefined), skip the animation
+    // tick rather than crashing on `processedText.length`.
     const currentText = textArray[currentTextIndex];
+    if (typeof currentText !== 'string' || currentText.length === 0) {
+      return;
+    }
     const processedText = reverseMode ? currentText.split('').reverse().join('') : currentText;
 
     const executeTypingAnimation = () => {

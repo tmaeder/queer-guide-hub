@@ -1,37 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { Toaster } from '@/components/ui/toaster';
-import { Toaster as Sonner } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router';
+import { BrowserRouter } from 'react-router';
 import './i18n';
-import { useTranslation } from 'react-i18next';
-import { AuthProvider } from '@/hooks/useAuth';
-import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
-import { AccessibilityProvider } from '@/hooks/useAccessibility';
-import { CookieConsentProvider } from '@/hooks/useCookieConsent';
-import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
-import { CookieConsentBanner } from '@/components/privacy/CookieConsentBanner';
-import { FeedbackButton } from '@/components/feedback/FeedbackButton';
-import { installErrorBuffer, installNetworkBuffer } from '@/utils/feedbackContext';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-
-// Install feedback context buffers at module load (idempotent)
-installErrorBuffer();
-installNetworkBuffer();
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
-import { LocaleRouter } from '@/components/routing/LocaleRouter';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { ThemeProvider } from '@/components/theme/ThemeProvider';
-import { MotionPage } from '@/components/motion';
-import { PWAProvider } from '@/components/pwa/PWAProvider';
-import { InstallBanner } from '@/components/pwa/InstallBanner';
-import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
-import { CurrencyProvider } from '@/hooks/useCurrency';
 import { ActiveTripProvider } from '@/hooks/useActiveTrip';
 import { TripContextBar } from '@/components/trips/TripContextBar';
 import Box from '@mui/material/Box';
@@ -588,5 +556,20 @@ const App = () => {
     </QueryClientProvider>
   );
 };
+import { AppProviders } from '@/providers/AppProviders';
+import { LayoutShell } from '@/components/layout/LayoutShell';
+import { AppRoutes } from './routes';
+
+const App = () => (
+  <AppProviders>
+    <BrowserRouter>
+      <ActiveTripProvider>
+        <LayoutShell>
+          <AppRoutes />
+        </LayoutShell>
+      </ActiveTripProvider>
+    </BrowserRouter>
+  </AppProviders>
+);
 
 export default App;

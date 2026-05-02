@@ -1,8 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -18,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { usePersonalities } from '@/hooks/usePersonalities';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { toast } from '@/hooks/use-toast';
 import { PersonalitiesCsvImport } from '@/components/personalities/PersonalitiesCsvImport';
 import { AdultModelsCsvImport } from '@/components/personalities/AdultModelsCsvImport';
@@ -34,7 +31,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import {
@@ -97,7 +94,6 @@ function VisibilityBadge({ visibility }: { visibility: string }) {
 }
 
 export default function AdminPersonalities() {
-  const { isAdmin } = useAdminRoles();
   const { updatePersonality, refetchPersonalities } = usePersonalities(false);
   const [selectedPersonality, setSelectedPersonality] = useState<PersonalityRow | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -510,55 +506,19 @@ export default function AdminPersonalities() {
     [columns],
   );
 
-  if (!isAdmin) {
-    return (
-      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
-        <Card>
-          <CardContent>
-            <AlertCircle
-              style={{
-                height: 48,
-                width: 48,
-                margin: '0 auto',
-                color: 'var(--destructive)',
-                marginBottom: 16,
-              }}
-            />
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              Access Denied
-            </Typography>
-            <Typography color="text.secondary">
-              You don't have permission to access this page.
-            </Typography>
-          </CardContent>
-        </Card>
-      </Container>
-    );
-  }
-
   return (
-    <Container
-      maxWidth={false}
-      sx={{ px: 3, py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      {/* Header */}
-      <Box>
-        <Typography variant="h4">Personalities Management</Typography>
-        <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-          Manage and moderate LGBTQ+ personalities in the directory
-        </Typography>
-      </Box>
-
-      {/* Bulk Import */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
-        <BulkCreatePersonalities />
-      </Box>
-
-      {/* Data Table */}
-      <AdminDataTable config={tableConfig} />
-
-      {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+    <AdminEntityTable
+      title="Personalities Management"
+      subtitle="Manage and moderate LGBTQ+ personalities in the directory"
+      backHref={null}
+      config={tableConfig}
+      beforeTable={
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3, mb: 3 }}>
+          <BulkCreatePersonalities />
+        </Box>
+      }
+      afterTable={
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent style={{ maxWidth: 672 }}>
           <DialogHeader>
             <DialogTitle>Edit Personality</DialogTitle>
@@ -638,6 +598,7 @@ export default function AdminPersonalities() {
           )}
         </DialogContent>
       </Dialog>
-    </Container>
+      }
+    />
   );
 }

@@ -1,5 +1,18 @@
 import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse } from '../_shared/supabase-client.ts'
 
+// Per-target-table commit RPCs. All have signature
+// (p_staging_id uuid, p_actor text). Used to skip workflow-executor
+// latency on individual reviewer approvals.
+const COMMIT_RPC_BY_TARGET: Record<string, string> = {
+  venues: 'commit_venue_staging_item',
+  events: 'commit_event_staging_item',
+  personalities: 'commit_personality_staging_item',
+  cities: 'commit_city_staging_item',
+  countries: 'commit_country_staging_item',
+  marketplace_listings: 'commit_marketplace_staging_item',
+  news_articles: 'commit_news_staging_item',
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
 
@@ -102,17 +115,18 @@ Deno.serve(async (req) => {
           .single()
 
         let commitResult: unknown = null
-        if (item?.target_table === 'venues') {
-          const { data, error: rpcErr } = await supabase.rpc('commit_venue_staging_item', {
+        const commitFn = COMMIT_RPC_BY_TARGET[item?.target_table ?? '']
+        if (commitFn) {
+          const { data, error: rpcErr } = await supabase.rpc(commitFn, {
             p_staging_id: staging_id,
             p_actor: `review:${userId}`,
           })
           if (rpcErr) throw rpcErr
           commitResult = data
-        } else if (item?.job_id) {
-          supabase.functions.invoke('ingestion-pipeline', {
-            body: { job_id: item.job_id, stage: 'commit' },
-          }).catch(() => {})
+        } else if (item?.target_table) {
+          // marketplace_listings, news_articles: only batch RPCs exist; commit
+          // happens via the regular pipeline cron, not on individual approve.
+          console.warn(`[review-api] no per-item commit RPC for target_table=${item.target_table}; relying on batch pipeline cron`)
         }
 
         return new Response(JSON.stringify({
@@ -197,17 +211,21 @@ Deno.serve(async (req) => {
 
         if (error) throw error
 
-        // Get unique job IDs to trigger commits
+        // Per-item commit RPCs by target_table (skips workflow latency).
+        // marketplace_listings + news_articles fall through to the regular
+        // batch pipeline cron — no per-item RPC exists for those types.
         const { data: items } = await supabase
           .from('ingestion_staging')
-          .select('job_id')
+          .select('id, target_table')
           .in('id', staging_ids)
 
-        const jobIds = [...new Set((items || []).map((i: { job_id: string }) => i.job_id))]
-        for (const jobId of jobIds) {
-          supabase.functions.invoke('ingestion-pipeline', {
-            body: { job_id: jobId, stage: 'commit' },
-          }).catch(() => {})
+        for (const it of items ?? []) {
+          const commitFn = COMMIT_RPC_BY_TARGET[(it as { target_table: string }).target_table]
+          if (!commitFn) continue
+          await supabase.rpc(commitFn, {
+            p_staging_id: (it as { id: string }).id,
+            p_actor: `review:${userId}`,
+          })
         }
 
         return new Response(JSON.stringify({

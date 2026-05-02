@@ -3,11 +3,7 @@
 // Remove after confirming all clients have switched to the new search-proxy worker.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders } from '../_shared/supabase-client.ts'
 
 // Map frontend type names to DB function content_types
 const TYPE_MAP: Record<string, string> = {
@@ -46,6 +42,7 @@ interface SearchRequest {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }

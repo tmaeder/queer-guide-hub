@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { validateNewsSource } from "@/utils/contentValidation";
+import { LEGACY_NEWS_TRIGGER_ENABLED } from "@/lib/featureFlags";
 
 type NewsSource = Tables<'news_sources'>;
 
@@ -213,22 +214,30 @@ export function NewsSourcesManager() {
     }
   };
 
-  const triggerFetch = async (sourceId: string) => {
+  const triggerFetch = async (_sourceId: string) => {
+    // Manual trigger now enqueues the canonical news-ingestion pipeline run
+    // instead of calling the legacy fetch-news direct-upsert path.
+    // Per-source scoping is not yet supported by source-rss-news; the run
+    // processes every active source.
     try {
-      const { error } = await supabase.functions.invoke('fetch-news', {
-        body: { sourceId }
+      const { error } = await supabase.functions.invoke('pipeline-executor', {
+        body: {
+          action: 'start',
+          pipeline_name: 'news-ingestion',
+          context: { triggered_by: 'admin-news-sources-manual' },
+        },
       });
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "News fetch triggered successfully",
+        title: "Manual ingestion enqueued",
+        description: "Run progress visible at /admin/pipelines?tab=news",
       });
     } catch (_error) {
       toast({
         title: "Error",
-        description: "Failed to trigger news fetch",
+        description: "Failed to enqueue news ingestion",
         variant: "destructive",
       });
     }
@@ -516,15 +525,17 @@ export function NewsSourcesManager() {
                             onCheckedChange={() => handleToggleActive(source.id, source.is_active)}
                           />
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => triggerFetch(source.id)}
-                            disabled={!source.is_active}
-                            aria-label={`Fetch news from ${source.name}`}
-                          >
-                            <Play style={{ height: 12, width: 12 }} aria-hidden="true" />
-                          </Button>
+                          {LEGACY_NEWS_TRIGGER_ENABLED && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => triggerFetch(source.id)}
+                              disabled={!source.is_active}
+                              aria-label={`Fetch news from ${source.name} (legacy path)`}
+                            >
+                              <Play style={{ height: 12, width: 12 }} aria-hidden="true" />
+                            </Button>
+                          )}
 
                           <Button
                             variant="outline"

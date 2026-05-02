@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane, Tag } from 'lucide-react';
+import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane, Tag, Layers } from 'lucide-react';
 import { SearchFilters } from '@/hooks/useSearch';
+import { useTopicClusters } from '@/hooks/useTopicClusters';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import Box from '@mui/material/Box';
@@ -87,6 +88,17 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
     });
   };
 
+  const toggleCluster = (clusterId: string) => {
+    const current = filters.cluster_ids || [];
+    const next = current.includes(clusterId)
+      ? current.filter(id => id !== clusterId)
+      : [...current, clusterId];
+    onFiltersChange({
+      ...filters,
+      cluster_ids: next.length > 0 ? next : undefined,
+    });
+  };
+
   const clearAllFilters = () => {
     onFiltersChange({});
   };
@@ -98,6 +110,8 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
     }
     return Object.values(popularCategories).flat().slice(0, 12);
   };
+
+  const { clusters, loading: clustersLoading } = useTopicClusters();
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -177,6 +191,52 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 }
               >
                 {category}
+              </Badge>
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      {/* Topic Clusters (#PRODUCT-1 from QA sweep — exposes the filterable
+          cluster_ids field that PR #225 added to every Meili index). */}
+      {!clustersLoading && clusters.length > 0 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Label
+              style={{
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <Layers style={{ width: 14, height: 14 }} aria-hidden="true" />
+              Topics
+            </Label>
+            {filters.cluster_ids && filters.cluster_ids.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                style={{ height: 24, fontSize: '0.75rem' }}
+                onClick={() =>
+                  onFiltersChange({ ...filters, cluster_ids: undefined })
+                }
+              >
+                Clear
+              </Button>
+            )}
+          </Box>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {clusters.map((cluster) => (
+              <Badge
+                key={cluster.id}
+                variant={filters.cluster_ids?.includes(cluster.id) ? 'default' : 'secondary'}
+                style={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                onClick={() => toggleCluster(cluster.id)}
+                title={cluster.description ?? undefined}
+              >
+                {cluster.name}
               </Badge>
             ))}
           </Box>

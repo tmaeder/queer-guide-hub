@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,7 +21,6 @@ import {
   RefreshCw,
   Globe,
   Rss,
-  ArrowLeft,
   AlertCircle,
   CheckCircle,
   Tags,
@@ -40,9 +37,10 @@ import {
 } from '@/utils/excelExport';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
+import { LEGACY_NEWS_TRIGGER_ENABLED } from '@/lib/featureFlags';
 
 interface NewsSourceRow {
   id: string;
@@ -83,8 +81,6 @@ const frequencies = [
 const columnHelper = createColumnHelper<NewsSourceRow>();
 
 export default function AdminNewsSources() {
-  const navigate = useNavigate();
-  const { canManageContent, loading } = useAdminRoles();
   const { toast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -342,7 +338,13 @@ export default function AdminNewsSources() {
       ],
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEdit },
-        { key: 'fetch', label: 'Fetch Now', icon: RefreshCw, onClick: triggerFetch },
+        {
+          key: 'fetch',
+          label: 'Fetch Now (legacy)',
+          icon: RefreshCw,
+          onClick: triggerFetch,
+          visible: () => LEGACY_NEWS_TRIGGER_ENABLED,
+        },
         {
           key: 'open',
           label: 'Open URL',
@@ -415,47 +417,13 @@ export default function AdminNewsSources() {
     [columns],
   );
 
-  if (loading) {
-    return <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, textAlign: 'center' }}>Loading...</Box>;
-  }
-  if (!canManageContent()) {
-    return (
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Access Denied
-        </Typography>
-        <p>You don't have permission to access this page.</p>
-      </Box>
-    );
-  }
-
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
-        </Button>
-        <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-            News Sources
-          </Typography>
-          <p style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Manage RSS feeds and API sources for the news hub
-          </p>
-        </div>
-      </Box>
-
-      {/* Table */}
-      <AdminDataTable config={tableConfig} />
-
+    <AdminEntityTable
+      title="News Sources"
+      subtitle="Manage RSS feeds and API sources for the news hub"
+      config={tableConfig}
+      afterTable={
+        <>
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ maxWidth: 500 }}>
@@ -616,6 +584,8 @@ export default function AdminNewsSources() {
           </Box>
         </DialogContent>
       </Dialog>
-    </Box>
+        </>
+      }
+    />
   );
 }

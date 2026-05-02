@@ -1,4 +1,6 @@
 export { AdminDataTable } from './AdminDataTable';
+export { AdminEntityTable } from './AdminEntityTable';
+export type { AdminEntityTableProps } from './AdminEntityTable';
 export { DataTableToolbar } from './DataTableToolbar';
 export { DataTableFilters } from './DataTableFilters';
 export { DataTablePagination } from './DataTablePagination';

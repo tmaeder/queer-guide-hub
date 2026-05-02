@@ -1,212 +1,97 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { useEffect, useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import {
-  ArrowLeft,
-  Star,
-  MapPin,
-  Phone,
-  Globe,
-  Instagram,
-  Mail,
-  Clock,
-  Wifi,
-  Car,
-  Accessibility,
-  ChevronRight,
-  Luggage,
-  Navigation2,
-  RefreshCw,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FavoriteButton } from '@/components/ui/favorite-button';
-import { ReportButton } from '@/components/moderation/ReportButton';
-import { AdminEditButton } from '@/components/admin/AdminEditButton';
-import { VenueEvents } from '@/components/venues/VenueEvents';
-import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
-import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
-import { useTrackEvent } from '@/hooks/useTrackEvent';
-import { useEvents } from '@/hooks/useEvents';
-import { Database } from '@/integrations/supabase/types';
-import { supabase } from '@/integrations/supabase/client';
-import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
-import { EntityMap } from '@/components/map/EntityMap';
-import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { ScrollReveal } from '@/components/animation/ScrollReveal';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Chip from '@mui/material/Chip';
-import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
-import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
+import { useEvents } from '@/hooks/useEvents';
 import { useTranslation } from 'react-i18next';
-
-type Venue = Database['public']['Tables']['venues']['Row'];
-type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
-  profiles: { display_name: string; avatar_url: string | null } | null;
-};
-
-type VenueWithRelations = Venue & {
-  cities?: { id: string; name: string } | null;
-  countries?: {
-    id: string;
-    name: string;
-    equality_score: number | null;
-    lgbti_criminalization: Record<string, unknown> | null;
-  } | null;
-};
+import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
+import {
+  fetchVenue,
+  type VenueWithRelations,
+  type VenueReview,
+  VenueHero,
+  VenueOverview,
+  VenuePhotos,
+  VenueEventsTab,
+  VenueReviewsTab,
+} from './VenueDetail.parts';
 
 export default function VenueDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [venue, setVenue] = useState<VenueWithRelations | null>(null);
-  const [reviews, setReviews] = useState<VenueReview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
-  const [notFound, setNotFound] = useState(false);
   const [checkinRefresh, setCheckinRefresh] = useState(0);
   const [addToTripOpen, setAddToTripOpen] = useState(false);
-  const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
-  const { data: socialSignals } = useVenueSocialSignals(venue?.id ? [venue.id] : []);
   const { events } = useEvents();
   const { track } = useTrackEvent();
 
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['venue-detail', slug],
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+    queryFn: async () => {
+      const result = await fetchVenue(slug!);
+      if (result.redirectTo) {
+        navigate(result.redirectTo, { replace: true });
+      }
+      return result;
+    },
+  });
+
+  const venue: VenueWithRelations | null = data?.venue ?? null;
+  const reviews: VenueReview[] = data?.reviews ?? [];
+  const notFound = data?.notFound ?? false;
+
+  const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
+  const { data: socialSignals } = useVenueSocialSignals(venue?.id ? [venue.id] : []);
+
   useEffect(() => {
     if (venue?.id) {
-      track({ eventType: 'page_view', entityType: 'venue', entityId: venue.id, metadata: { name: venue.name } });
+      track({
+        eventType: 'page_view',
+        entityType: 'venue',
+        entityId: venue.id,
+        metadata: { name: venue.name },
+      });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venue?.id]);
 
-  const venueEvents = events.filter((event) => event.venue_id === venue?.id);
-
-  const fetchVenue = async () => {
-    if (!slug) return;
-    try {
-      setLoading(true);
-      setFetchError(false);
-      setNotFound(false);
-
-      // Try slug first, fall back to ID for backwards compatibility
-      const selectFields = '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization)';
-      let { data: venueData, error: venueError } = await supabase
-        .from('venues')
-        .select(selectFields)
-        .eq('slug', slug)
-        .single();
-
-      if (venueError && /uuid|invalid|no rows/i.test(venueError.message || '')) {
-        const fallback = await supabase.from('venues').select(selectFields).eq('id', slug).single();
-        venueData = fallback.data;
-        venueError = fallback.error;
-      }
-
-      // Last-ditch fallback: param looks like a website hostname (e.g. user typed
-      // /venues/www.example.com). Match against the website column and redirect
-      // to the canonical slug URL.
-      if (venueError && /\./.test(slug) && !/\s/.test(slug)) {
-        const host = slug.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0];
-        if (host) {
-          const { data: byWebsite } = await supabase
-            .from('venues')
-            .select('slug, id')
-            .or(`website.ilike.%${host}%,website.ilike.%www.${host}%`)
-            .limit(1)
-            .maybeSingle();
-          if (byWebsite?.slug || byWebsite?.id) {
-            navigate(`/venues/${byWebsite.slug || byWebsite.id}`, { replace: true });
-            return;
-          }
-        }
-      }
-
-      if (venueError) {
-        if (/no rows|not found|0 rows/i.test(venueError.message || '') || venueError.code === 'PGRST116') {
-          setNotFound(true);
-          return;
-        }
-        throw venueError;
-      }
-      setVenue(venueData);
-
-      const { data: reviewsData, error: reviewsError } = await supabase
-        .from('venue_reviews')
-        .select(
-          `
-          *,
-          profiles:user_id (
-            display_name,
-            avatar_url
-          )
-        `,
-        )
-        .eq('venue_id', venueData.id)
-        .order('created_at', { ascending: false });
-
-      if (reviewsError) throw reviewsError;
-      setReviews(reviewsData || []);
-    } catch (_error) {
-      setFetchError(true);
-      toast({ title: t('common.error', 'Error'), description: t('pages.venueDetail.loadFailed', 'Failed to load venue details.'), variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchVenue();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVenue defined above, re-run on slug change
-  }, [slug]);
+    if (error) {
+      toast({
+        title: t('common.error', 'Error'),
+        description: t('pages.venueDetail.loadFailed', 'Failed to load venue details.'),
+        variant: 'destructive',
+      });
+    }
+  }, [error, t, toast]);
 
-  if (loading) {
-    return (
-      <Container sx={{ py: 4 }}>
-        <Box
-          sx={{
-            '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
-            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          }}
-        >
-          <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: '40%', mb: 2 }} />
-          <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 3, mb: 3 }} />
-          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '60%', mb: 2 }} />
-          <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-            {[1, 2, 3, 4].map((i) => (
-              <Box
-                key={i}
-                sx={{ height: 32, width: 80, bgcolor: 'action.hover', borderRadius: 4 }}
-              />
-            ))}
-          </Box>
-          <Box sx={{ height: 40, bgcolor: 'action.hover', borderRadius: 1, mb: 3 }} />
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
-            <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 2 }} />
-            <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 2 }} />
-          </Box>
-        </Box>
-      </Container>
-    );
-  }
-
-  if (notFound && !venue) {
+  // NotFound branch
+  if (!isLoading && notFound) {
     return (
       <Container sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
           {t('pages.venueDetail.notFoundTitle', 'Venue not found')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          {t('pages.venueDetail.notFoundBody', 'No venue matches this URL. It may have been removed or the link is incorrect.')}
+          {t(
+            'pages.venueDetail.notFoundBody',
+            'No venue matches this URL. It may have been removed or the link is incorrect.',
+          )}
         </Typography>
         <LocalizedLink to="/venues">
           <Button variant="outline">
@@ -218,7 +103,8 @@ export default function VenueDetail() {
     );
   }
 
-  if (fetchError && !venue) {
+  // Fetch error branch (network / unknown error, no venue loaded)
+  if (!isLoading && error && !venue) {
     return (
       <Container sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
@@ -228,7 +114,7 @@ export default function VenueDetail() {
           Could not load venue details. Check your connection and try again.
         </Typography>
         <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
-          <Button onClick={() => fetchVenue()}>
+          <Button onClick={() => refetch()}>
             <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
             Try Again
           </Button>
@@ -243,784 +129,125 @@ export default function VenueDetail() {
     );
   }
 
-  if (!venue) {
-    return (
-      <Container sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Venue Not Found
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
-          The venue you're looking for doesn't exist.
-        </Typography>
-        <LocalizedLink to="/venues">
-          <Button>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
-            Back to Venues
-          </Button>
-        </LocalizedLink>
-      </Container>
-    );
-  }
+  const venueEvents = venue ? events.filter((event) => event.venue_id === venue.id) : [];
 
   const averageRating = reviews.length
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
-  const getPriceRange = (range: number | null) => {
-    if (!range) return '';
-    return '$'.repeat(range);
-  };
-
-  const formatHours = (hours: Record<string, unknown>) => {
-    if (!hours || typeof hours !== 'object')
-      return (
-        <Typography variant="body2" color="text.secondary">
-          Hours not available
-        </Typography>
-      );
-
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-    return days.map((day, index) => (
-      <Box key={day} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {dayNames[index]}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {hours[day] || 'Closed'}
-        </Typography>
-      </Box>
-    ));
-  };
-
-  const heroImage = venue.images && venue.images.length > 0 ? venue.images[0] : null;
+  const cityName = venue?.cities?.name ?? venue?.city ?? null;
+  const countryName = venue?.countries?.name ?? venue?.country ?? null;
+  const cityLink = venue?.cities?.id ? `/city/${venue.cities.slug || venue.cities.id}` : null;
+  const countryLink = venue?.countries?.id
+    ? `/country/${venue.countries.slug || venue.countries.id}`
+    : null;
+  const heroImage = venue?.images && venue.images.length > 0 ? venue.images[0] : null;
   const remainingImages =
-    venue.images && venue.images.length > 1 ? venue.images.slice(1) : venue.images || [];
+    venue?.images && venue.images.length > 1 ? venue.images.slice(1) : venue?.images || [];
 
-  const cityName = venue.cities?.name || venue.city;
-  const countryName = venue.countries?.name || venue.country;
-  const cityLink = venue.cities?.id ? `/city/${venue.cities.slug || venue.cities.id}` : null;
-  const countryLink = venue.countries?.id ? `/country/${venue.countries.slug || venue.countries.id}` : null;
+  const breadcrumbs = venue
+    ? [
+        { label: 'Venues', href: '/venues' },
+        ...(countryName ? [{ label: countryName, href: countryLink ?? undefined }] : []),
+        ...(cityName ? [{ label: cityName, href: cityLink ?? undefined }] : []),
+        { label: venue.name },
+      ]
+    : undefined;
+
+  const tabs: EntityDetailTab[] = venue
+    ? [
+        {
+          id: 'overview',
+          label: t('pages.venueDetail.overview', 'Overview'),
+          content: (
+            <VenueOverview
+              venue={venue}
+              checkinRefresh={checkinRefresh}
+              navigate={navigate}
+              t={t}
+            />
+          ),
+        },
+        ...(remainingImages.length > 0 || heroImage
+          ? [
+              {
+                id: 'photos',
+                label: `Photos ${venue.images && venue.images.length > 0 ? `(${venue.images.length})` : ''}`,
+                content: <VenuePhotos venue={venue} t={t} />,
+              },
+            ]
+          : []),
+        ...(venueEvents.length > 0
+          ? [
+              {
+                id: 'events',
+                label: `Events (${venueEvents.length})`,
+                content: <VenueEventsTab venue={venue} venueEvents={venueEvents} t={t} />,
+              },
+            ]
+          : []),
+        {
+          id: 'reviews',
+          label: `Reviews (${reviews.length})`,
+          content: <VenueReviewsTab reviews={reviews} />,
+        },
+      ]
+    : [];
 
   return (
-    <Container sx={{ py: 4 }}>
-      {/* Breadcrumb */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
-        <LocalizedLink
-          to="/venues"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            color: 'inherit',
-            textDecoration: 'none',
-          }}
-        >
-          <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ '&:hover': { color: 'primary.main' } }}
-          >
-            Venues
-          </Typography>
-        </LocalizedLink>
-        {countryName && (
-          <>
-            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-            {countryLink ? (
-              <LocalizedLink to={countryLink} style={{ textDecoration: 'none' }}>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ '&:hover': { color: 'primary.main' } }}
-                >
-                  {countryName}
-                </Typography>
-              </LocalizedLink>
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                {countryName}
-              </Typography>
-            )}
-          </>
-        )}
-        {cityName && (
-          <>
-            <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-            {cityLink ? (
-              <LocalizedLink to={cityLink} style={{ textDecoration: 'none' }}>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ '&:hover': { color: 'primary.main' } }}
-                >
-                  {cityName}
-                </Typography>
-              </LocalizedLink>
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                {cityName}
-              </Typography>
-            )}
-          </>
-        )}
-        <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {venue.name}
-        </Typography>
-      </Box>
-
-      {/* Hero Image */}
-      {heroImage && (
-        <Box
-          sx={{
-            width: '100%',
-            height: { xs: 160, md: 192 },
-            borderRadius: 3,
-            overflow: 'hidden',
-            mb: 3,
-            position: 'relative',
-          }}
-        >
-          <Box
-            component="img"
-            src={heroImage}
-            alt={venue.name}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        </Box>
-      )}
-
-      {/* Safety Alert Banner */}
-      {venue.countries?.lgbti_criminalization && (
-        <SafetyAlertBanner
-          criminalization={venue.countries.lgbti_criminalization}
-          countryName={venue.countries.name}
-        />
-      )}
-
-      {/* Permanently Closed Banner */}
-      {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
-        <Box
-          sx={{
-            mb: 3,
-            px: 2,
-            py: 1.5,
-            bgcolor: 'error.main',
-            color: 'error.contrastText',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            Permanently closed
-            {' · '}
-            {new Date(venue.closed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-          </Typography>
-        </Box>
-      )}
-
-      {/* Title Row */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: { md: 'flex-start' },
-          justifyContent: { md: 'space-between' },
-          gap: 2,
-          mb: 2,
-        }}
-      >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5, flexWrap: 'wrap' }}>
-            {venue.logo_url && (
-              <Box
-                component="img"
-                src={venue.logo_url}
-                alt=""
-                sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '10px',
-                  objectFit: 'contain',
-                  p: '3px',
-                  flexShrink: 0,
-                }}
-                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            )}
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              {venue.name}
-            </Typography>
-            {venue.verified && <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>}
-            {venue.featured && <Badge>Featured</Badge>}
-            {venue.countries?.equality_score != null && (
-              <EqualityScoreBadge score={venue.countries.equality_score} size="sm" />
-            )}
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-            <MapPin style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-            <Typography variant="body2" color="text.secondary">
-              {cityLink ? (
-                <LocalizedLink to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                  <Typography
-                    component="span"
-                    variant="body2"
-                    sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
-                  >
-                    {cityName}
-                  </Typography>
-                </LocalizedLink>
-              ) : (
-                cityName
-              )}
-              {countryName && (
-                <>
-                  {', '}
-                  {countryLink ? (
-                    <LocalizedLink to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
-                      >
-                        {countryName}
-                      </Typography>
-                    </LocalizedLink>
-                  ) : (
-                    countryName
-                  )}
-                </>
-              )}
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-          <FavoriteButton itemId={venue.id} type="venue" size="md" />
-          <Button variant="outline" size="sm" onClick={() => setAddToTripOpen(true)}>
-            <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
-            Add to Trip
-          </Button>
-          {tripStatus?.isInTrip && (
-            <Badge variant="secondary">
-              In {tripStatus.count} trip{tripStatus.count !== 1 ? 's' : ''}
-            </Badge>
-          )}
-          <SocialSignalBadges signal={socialSignals?.get(venue.id)} tripUsageThreshold={1} />
-          <ReportButton contentType="venues" contentId={venue.id} contentName={venue.name} />
-          <AdminEditButton
-            contentType="venues"
-            contentId={venue.id}
-            contentName={venue.name}
-            currentData={venue as Record<string, unknown>}
-            onSaved={() => window.location.reload()}
-          />
-          <VenueCheckInButton
-            venueId={venue.id}
-            venueName={venue.name}
-            venueLatitude={venue.latitude}
-            venueLongitude={venue.longitude}
-            onCheckInSuccess={() => setCheckinRefresh((prev) => prev + 1)}
-          />
-          {venue.phone && (
-            <Button variant="outline" size="sm" onClick={() => window.open(`tel:${venue.phone}`)}>
-              <Phone style={{ width: 16, height: 16, marginRight: 8 }} />
-              Call
-            </Button>
-          )}
-          {venue.website && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open(venue.website!, '_blank')}
-            >
-              <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
-              Website
-            </Button>
-          )}
-        </Box>
-      </Box>
-
-      {/* Stat Chips */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-        {venue.category && <Chip label={venue.category} size="small" />}
-        {cityName && (
-          <Chip
-            icon={<MapPin style={{ width: 14, height: 14 }} />}
-            label={`${cityName}${countryName ? `, ${countryName}` : ''}`}
-            size="small"
-            variant="outlined"
-          />
-        )}
-        {venue.price_range && (
-          <Chip label={getPriceRange(venue.price_range)} size="small" variant="outlined" />
-        )}
-        {averageRating > 0 && (
-          <Chip
-            icon={<Star style={{ width: 14, height: 14, fill: 'currentColor' }} />}
-            label={`${averageRating.toFixed(1)} (${reviews.length} review${reviews.length !== 1 ? 's' : ''})`}
-            size="small"
-            variant="outlined"
-          />
-        )}
-        {venue.amenities?.map((amenity) => (
-          <Chip
-            key={amenity}
-            label={amenity.replace('-', ' ')}
-            size="small"
-            variant="outlined"
-            sx={{ textTransform: 'capitalize' }}
-          />
-        ))}
-      </Box>
-
-      {/* Tabs */}
-      <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">{t('pages.venueDetail.overview', 'Overview')}</TabsTrigger>
-          {(remainingImages.length > 0 || heroImage) && (
-            <TabsTrigger value="photos">
-              Photos {venue.images && venue.images.length > 0 ? `(${venue.images.length})` : ''}
-            </TabsTrigger>
-          )}
-          {venueEvents.length > 0 && (
-            <TabsTrigger value="events">Events ({venueEvents.length})</TabsTrigger>
-          )}
-          <TabsTrigger value="reviews">Reviews ({reviews.length})</TabsTrigger>
-        </TabsList>
-
-        {/* Overview Tab */}
-        <TabsContent value="overview">
-          <ScrollReveal direction="up">
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
-              gap: 3,
-              mt: 1,
-            }}
-          >
-            {/* Main Content */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Description */}
-              {venue.description && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('pages.venueDetail.about', 'About')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                      {venue.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Amenities */}
-              {venue.amenities && venue.amenities.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('pages.venueDetail.amenities', 'Amenities')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr' },
-                        gap: 1.5,
-                      }}
-                    >
-                      {venue.amenities.map((amenity, index) => (
-                        <Box
-                          key={index}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            p: 1,
-                            borderRadius: 1,
-                          }}
-                        >
-                          {amenity === 'wifi' && <Wifi style={{ width: 16, height: 16 }} />}
-                          {amenity === 'parking' && <Car style={{ width: 16, height: 16 }} />}
-                          {amenity === 'wheelchair-accessible' && (
-                            <Accessibility style={{ width: 16, height: 16 }} />
-                          )}
-                          {!['wifi', 'parking', 'wheelchair-accessible'].includes(amenity) && (
-                            <Box
-                              sx={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: '50%',
-                                bgcolor: 'action.disabled',
-                                flexShrink: 0,
-                              }}
-                            />
-                          )}
-                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                            {amenity.replace('-', ' ')}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Recent Check-ins (mobile only, shown inline) */}
-              <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
-                <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />
-              </Box>
-            </Box>
-
-            {/* Sidebar */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Location Map */}
-              {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
-                <Card>
-                  <CardContent>
-                    <EntityMap
-                      center={[Number(venue.longitude), Number(venue.latitude)]}
-                      zoom={15}
-                      height={200}
-                      markers={[
-                        {
-                          id: venue.id,
-                          lat: Number(venue.latitude),
-                          lng: Number(venue.longitude),
-                          name: venue.name ?? 'Venue',
-                          type: 'venues',
-                          primary: true,
-                        },
-                      ]}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Recent Check-ins (desktop only) */}
-              <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-                <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />
-              </Box>
-
-              {/* Contact Info */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('pages.venueDetail.contact', 'Contact')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {venue.address && (
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                      <MapPin
-                        style={{
-                          width: 16,
-                          height: 16,
-                          color: 'hsl(var(--muted-foreground))',
-                          flexShrink: 0,
-                          marginTop: 2,
-                        }}
-                      />
-                      <Box>
-                        <Typography variant="body2">
-                          {venue.address}
-                          {venue.postal_code ? `, ${venue.postal_code}` : ''}
-                        </Typography>
-                        {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
-                          <Button variant="outline" size="sm" asChild style={{ marginTop: 8 }}>
-                            <a
-                              href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <Navigation2 style={{ width: 14, height: 14, marginRight: 6 }} />
-                              Directions
-                            </a>
-                          </Button>
-                        )}
-                      </Box>
-                    </Box>
-                  )}
-                  {venue.phone && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Phone style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-                      <Typography
-                        component="a"
-                        href={`tel:${venue.phone}`}
-                        variant="body2"
-                        color="primary"
-                        sx={{ '&:hover': { textDecoration: 'underline' } }}
-                      >
-                        {venue.phone}
-                      </Typography>
-                    </Box>
-                  )}
-                  {venue.email && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Mail style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-                      <Typography
-                        component="a"
-                        href={`mailto:${venue.email}`}
-                        variant="body2"
-                        color="primary"
-                        sx={{ '&:hover': { textDecoration: 'underline' } }}
-                      >
-                        {venue.email}
-                      </Typography>
-                    </Box>
-                  )}
-                  {venue.website && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Globe style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-                      <Typography
-                        component="a"
-                        href={venue.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="body2"
-                        color="primary"
-                        sx={{
-                          '&:hover': { textDecoration: 'underline' },
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                      </Typography>
-                    </Box>
-                  )}
-                  {venue.instagram && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Instagram style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-                      <Typography
-                        component="a"
-                        href={`https://instagram.com/${venue.instagram}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="body2"
-                        color="primary"
-                        sx={{ '&:hover': { textDecoration: 'underline' } }}
-                      >
-                        @{venue.instagram}
-                      </Typography>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Hours */}
-              {venue.hours && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Clock style={{ width: 16, height: 16 }} />
-                        Hours
-                      </Box>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {formatHours(venue.hours)}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Tags */}
-              {venue.tags && venue.tags.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('pages.venueDetail.tags', 'Tags')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {venue.tags.map((tag, index) => (
-                        <Chip
-                          key={index}
-                          label={tag}
-                          size="small"
-                          variant="outlined"
-                          onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
-                          sx={{ cursor: 'pointer' }}
-                        />
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              )}
-            </Box>
-          </Box>
-          </ScrollReveal>
-        </TabsContent>
-
-        {/* Photos Tab */}
-        <TabsContent value="photos">
-          {venue.images && venue.images.length > 0 ? (
-            <StaggerGrid
-              sx={{
-                gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
-                gap: 2,
-                mt: 1,
-              }}
-            >
-              {venue.images.map((imageUrl, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    aspectRatio: '1/1',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    bgcolor: 'action.hover',
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={imageUrl}
-                    alt={`${venue.name} - Image ${index + 1}`}
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      '&:hover': { transform: 'scale(1.05)' },
-                      transition: 'transform 300ms',
-                      cursor: 'pointer',
-                    }}
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      (e.target as HTMLImageElement).src = '/placeholder.svg';
-                    }}
-                    onClick={() => window.open(imageUrl, '_blank')}
-                  />
-                </Box>
-              ))}
-            </StaggerGrid>
-          ) : (
-            <Box sx={{ textAlign: 'center', py: 6 }}>
-              <Typography color="text.secondary">{t('pages.venueDetail.noPhotos', 'No photos available')}</Typography>
-            </Box>
-          )}
-        </TabsContent>
-
-        {/* Events Tab */}
-        <TabsContent value="events">
-          {venueEvents.length > 0 ? (
-            <Box sx={{ mt: 1 }}>
-              <VenueEvents
-                venueId={venue.id}
-                venueName={venue.name}
-                events={venueEvents}
-                compact={false}
-              />
-            </Box>
-          ) : (
-            <Box sx={{ textAlign: 'center', py: 6 }}>
-              <Typography color="text.secondary">{t('pages.venueDetail.noEvents', 'No upcoming events at this venue')}</Typography>
-            </Box>
-          )}
-        </TabsContent>
-
-        {/* Reviews Tab */}
-        <TabsContent value="reviews">
-          {reviews.length > 0 ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-              {reviews.map((review) => (
-                <Card key={review.id}>
-                  <CardContent>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        justifyContent: 'space-between',
-                        mb: 1,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Box
-                          sx={{
-                            width: 36,
-                            height: 36,
-                            bgcolor: 'action.hover',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 600,
-                            fontSize: '0.875rem',
-                          }}
-                        >
-                          {review.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
-                        </Box>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {review.profiles?.display_name || 'Anonymous'}
-                          </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                key={i}
-                                style={{
-                                  width: 13,
-                                  height: 13,
-                                  fill: i < review.rating ? 'currentColor' : 'none',
-                                  // TODO(polish): no token match — star rating amber/gray
-                                  color: i < review.rating ? '#f59e0b' : '#d1d5db',
-                                }}
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </Typography>
-                    </Box>
-                    {review.title && (
-                      <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                        {review.title}
-                      </Typography>
-                    )}
-                    {review.content && (
-                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                        {review.content}
-                      </Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </Box>
-          ) : (
-            <Box sx={{ textAlign: 'center', py: 6 }}>
-              <Typography color="text.secondary">
-                No reviews yet. Be the first to leave a review!
-              </Typography>
-            </Box>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      <SimilarItems entity={{ type: 'venue', id: venue.id }} className="mt-8" />
-
-      <AddToTripDialog
-        open={addToTripOpen}
-        onClose={() => setAddToTripOpen(false)}
-        entity={{
-          type: 'venue',
-          id: venue.id,
-          name: venue.name,
-          latitude: venue.latitude,
-          longitude: venue.longitude,
-          city_id: venue.city_id,
-          country_id: venue.country_id,
-          address: venue.address,
-          category: venue.category,
-        }}
+    <>
+      <EntityDetailLayout
+        loading={isLoading}
+        error={null}
+        breadcrumbs={breadcrumbs}
+        hero={
+          venue ? (
+            <VenueHero
+              venue={venue}
+              cityName={cityName}
+              countryName={countryName}
+              cityLink={cityLink}
+              countryLink={countryLink}
+              heroImage={heroImage}
+              averageRating={averageRating}
+              reviewCount={reviews.length}
+              tripCount={tripStatus?.count}
+              isInTrip={tripStatus?.isInTrip}
+              socialSignal={socialSignals?.get(venue.id)}
+              onAddToTrip={() => setAddToTripOpen(true)}
+              onCheckInSuccess={() => setCheckinRefresh((prev) => prev + 1)}
+              t={t}
+            />
+          ) : null
+        }
+        tabs={tabs}
+        entityType="venue"
+        entityId={venue?.id}
       />
-    </Container>
+
+      {venue && (
+        <>
+          <Container sx={{ pb: 4 }}>
+            <SimilarItems entity={{ type: 'venue', id: venue.id }} className="mt-8" />
+          </Container>
+
+          <AddToTripDialog
+            open={addToTripOpen}
+            onClose={() => setAddToTripOpen(false)}
+            entity={{
+              type: 'venue',
+              id: venue.id,
+              name: venue.name,
+              latitude: venue.latitude,
+              longitude: venue.longitude,
+              city_id: venue.city_id,
+              country_id: venue.country_id,
+              address: venue.address,
+              category: venue.category,
+            }}
+          />
+        </>
+      )}
+    </>
   );
 }

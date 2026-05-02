@@ -16,7 +16,7 @@ import {
 import { Store, Plus, Grid, List } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -146,18 +146,10 @@ const Marketplace = () => {
       count: sortedListings.filter((l) => l.category === 'services').length,
     },
   ];
-  if (error) {
-    return (
-      <Box sx={{ minHeight: '100vh' }}>
-        <Container sx={{ py: { xs: 6, md: 10 } }}>
-          <ErrorState
-            message={t('pages.marketplace.loadError', 'Something went wrong while loading the marketplace. Please try again.')}
-            onRetry={() => fetchListings()}
-          />
-        </Container>
-      </Box>
-    );
-  }
+  // Error renders inline below the toolbar (not as a full-page replacement)
+  // so users keep access to filters / sort / view toggle while retrying —
+  // matches the /news, /events, /venues pattern. (#UX-2 from QA sweep
+  // 2026-04-30.)
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Container sx={{ py: { xs: 6, md: 10 } }}>
@@ -252,16 +244,24 @@ const Marketplace = () => {
             </Box>
           </Paper>
 
+          {/* Error State (inline; preserves chrome above) */}
+          {error && (
+            <ErrorState
+              message={t('pages.marketplace.loadError', 'Something went wrong while loading the marketplace. Please try again.')}
+              onRetry={() => fetchListings()}
+            />
+          )}
+
           {/* Loading State */}
-          {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchListings()} />}
-          {loading && !loadingTimedOut && (
+          {!error && loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchListings()} />}
+          {!error && loading && !loadingTimedOut && (
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
               {Array.from({ length: 6 }).map((_, i) => (<MarketplaceCard key={i} loading />))}
             </Box>
           )}
 
           {/* Empty State */}
-          {!loading && sortedListings.length === 0 && (
+          {!error && !loading && sortedListings.length === 0 && (
             <EmptyState
               icon={Store}
               title={t('pages.marketplace.emptyTitle', 'Nothing on the shelves yet')}
