@@ -13,7 +13,7 @@ maintainer is unavailable. Read top to bottom once; bookmark sections
 | Search | Meilisearch (Infomaniak self-hosted) | proxied via `search-proxy` worker |
 | Cron / pipelines | Supabase pg_cron + Cloudflare Workers + GitHub Actions | see §3 |
 | Status / health | Supabase dashboard + CF dashboard | (no centralized status page yet) |
-| Sentry | Frontend only (`src/sentry.ts`) | edge functions NOT wired (see §6) |
+| Sentry | Frontend (`src/sentry.ts`) + edge functions (via `_shared/report-api-error.ts`) | maedertobiassimon org, `javascript-react` project; separate "Edge Functions" DSN |
 | Logs | Supabase function logs + CF Worker tail | `supabase functions logs <name>` / `wrangler tail <worker>` |
 
 CF account: `7aa3765cc5f50f2b681b782eb4a8d296`.
@@ -167,7 +167,11 @@ Future deletion candidates (deferred to Phase 2):
 ## 6. Sentry / monitoring
 
 - **Frontend** is wired (`src/sentry.ts`, imported in `main.tsx`).
-- **Edge functions are NOT** — gap confirmed during Phase 0 audit. Add `Sentry.init` in each function's entrypoint when you have time. For now, edge function errors are visible only in `supabase functions logs`.
+- **Edge functions** are wired via `supabase/functions/_shared/report-api-error.ts`, which calls `_shared/sentry.ts` to capture every error reported through `reportApiError(...)`. The 4 functions currently using `reportApiError` (workflow-dispatcher, pipeline-executor, pipeline-commit, stripe-webhook) gain Sentry capture automatically. New functions should call `reportApiError` in their top-level catch.
+- The DSN lives in the Supabase secret `SENTRY_DSN` (`supabase secrets set --project-ref <ref> SENTRY_DSN=...`). All edge functions read it via `Deno.env.get('SENTRY_DSN')`. If the secret is unset, Sentry is a silent no-op.
+- Errors are tagged `edge_function: <name>` for easy Sentry filtering; the DSN named "Edge Functions" makes it filterable by `dsn.public_key` too.
+- For ad-hoc capture inside a function: `import { captureError } from "../_shared/sentry.ts"; captureError(err, { context })`.
+- For wrapping a serve handler: `import { withSentry } from "../_shared/sentry.ts"; serve((req) => withSentry("my-fn", async () => { ... }))`.
 - No PagerDuty / OpsGenie integration; Sentry alert rules go to email.
 
 ## 7. Known gaps / "stuff to ask about"
