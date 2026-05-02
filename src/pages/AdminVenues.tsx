@@ -66,7 +66,7 @@ interface VenueRow {
   email: string | null;
   website: string | null;
   instagram: string | null;
-  featured: boolean;
+  is_featured: boolean;
   verified: boolean;
   price_range: number | null;
   foursquare_rating: number | null;
@@ -146,7 +146,7 @@ export default function AdminVenues() {
     website: '',
     instagram: '',
     price_range: '1',
-    featured: false,
+    is_featured: false,
     verified: false,
     latitude: '',
     longitude: '',
@@ -173,7 +173,7 @@ export default function AdminVenues() {
       website: '',
       instagram: '',
       price_range: '1',
-      featured: false,
+      is_featured: false,
       verified: false,
       latitude: '',
       longitude: '',
@@ -202,7 +202,7 @@ export default function AdminVenues() {
       website: venue.website || '',
       instagram: venue.instagram || '',
       price_range: venue.price_range?.toString() || '1',
-      featured: venue.featured || false,
+      is_featured: venue.is_featured || false,
       verified: venue.verified || false,
       latitude: venue.latitude?.toString() || '',
       longitude: venue.longitude?.toString() || '',
@@ -245,7 +245,7 @@ export default function AdminVenues() {
         latitude: formData.latitude?.trim() ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude?.trim() ? parseFloat(formData.longitude) : null,
         images: formData.images.length > 0 ? formData.images : [],
-        featured: formData.featured,
+        is_featured: formData.is_featured,
         verified: formData.verified,
         created_by: user?.id,
       };
@@ -410,7 +410,7 @@ export default function AdminVenues() {
       { header: 'Email', accessor: (r) => r.email },
       { header: 'Website', accessor: (r) => r.website },
       { header: 'Instagram', accessor: (r) => r.instagram },
-      { header: 'Featured', accessor: (r) => formatBoolean(r.featured) },
+      { header: 'Featured', accessor: (r) => formatBoolean(r.is_featured) },
       { header: 'Verified', accessor: (r) => formatBoolean(r.verified) },
       { header: 'Rating', accessor: (r) => r.foursquare_rating },
       { header: 'Price Range', accessor: (r) => r.price_range },
@@ -487,7 +487,7 @@ export default function AdminVenues() {
           hideable: true,
         } satisfies AdminColumnMeta,
       }),
-      columnHelper.accessor('featured', {
+      columnHelper.accessor('is_featured', {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
@@ -559,7 +559,7 @@ export default function AdminVenues() {
     () => ({
       tableName: 'venues',
       select:
-        'id,name,description,category,address,city,state,country,postal_code,phone,email,website,instagram,featured,verified,price_range,foursquare_rating,latitude,longitude,amenities,tags,images,city_id,country_id,created_at,created_by',
+        'id,name,description,category,address,city,state,country,postal_code,phone,email,website,instagram,is_featured,verified,price_range,foursquare_rating,latitude,longitude,amenities,tags,images,city_id,country_id,created_at,created_by',
       columns,
       defaultSort: { column: 'name', direction: 'asc' as const },
       defaultPageSize: 50,
@@ -585,10 +585,10 @@ export default function AdminVenues() {
           dynamicOptions: { tableName: 'venues', column: 'city' },
         },
         {
-          key: 'featured',
+          key: 'is_featured',
           label: 'Featured',
           type: 'boolean',
-          column: 'featured',
+          column: 'is_featured',
         },
         {
           key: 'verified',
@@ -608,7 +608,7 @@ export default function AdminVenues() {
             label: c.charAt(0).toUpperCase() + c.slice(1),
           })),
         },
-        { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
+        { key: 'is_featured', label: 'Featured', type: 'boolean', column: 'is_featured' },
         { key: 'verified', label: 'Verified', type: 'boolean', column: 'verified' },
       ],
       rowActions: [
@@ -896,13 +896,13 @@ export default function AdminVenues() {
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
-                    id="featured"
-                    checked={formData.featured}
+                    id="is_featured"
+                    checked={formData.is_featured}
                     onCheckedChange={(c) =>
-                      setFormData((prev) => ({ ...prev, featured: c as boolean }))
+                      setFormData((prev) => ({ ...prev, is_featured: c as boolean }))
                     }
                   />
-                  <Label htmlFor="featured">Featured</Label>
+                  <Label htmlFor="is_featured">Featured</Label>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox

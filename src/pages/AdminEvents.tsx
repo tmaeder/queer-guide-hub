@@ -69,7 +69,7 @@ interface EventRow {
   price_max: number | null;
   max_attendees: number | null;
   age_restriction: string | null;
-  featured: boolean;
+  is_featured: boolean;
   status: string | null;
   organizer_name: string | null;
   organizer_contact: string | null;
@@ -131,7 +131,7 @@ const emptyForm = {
   ticket_url: '',
   organizer_name: '',
   organizer_contact: '',
-  featured: false,
+  is_featured: false,
   tags: [] as string[],
   images: [] as string[],
 };
@@ -290,7 +290,7 @@ export default function AdminEvents() {
       ticket_url: event.ticket_url || '',
       organizer_name: event.organizer_name || '',
       organizer_contact: event.organizer_contact || '',
-      featured: event.featured,
+      is_featured: event.is_featured,
       tags: event.tags || [],
       images: event.images || [],
     });
@@ -327,7 +327,7 @@ export default function AdminEvents() {
       { header: 'Country', accessor: (r) => r.country },
       { header: 'Organizer', accessor: (r) => r.organizer_name },
       { header: 'Is Free', accessor: (r) => formatBoolean(r.is_free) },
-      { header: 'Featured', accessor: (r) => formatBoolean(r.featured) },
+      { header: 'Featured', accessor: (r) => formatBoolean(r.is_featured) },
       { header: 'Tags', accessor: (r) => formatArray(r.tags) },
       { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
     ];
@@ -428,7 +428,7 @@ export default function AdminEvents() {
           ),
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
-      columnHelper.accessor('featured', {
+      columnHelper.accessor('is_featured', {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
@@ -464,7 +464,7 @@ export default function AdminEvents() {
     () => ({
       tableName: 'events',
       select:
-        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,featured,status,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
+        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
       columns,
       defaultSort: { column: 'start_date', direction: 'desc' },
       defaultPageSize: 50,
@@ -502,7 +502,7 @@ export default function AdminEvents() {
             label: s.charAt(0).toUpperCase() + s.slice(1),
           })),
         },
-        { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
+        { key: 'is_featured', label: 'Featured', type: 'boolean', column: 'is_featured' },
         { key: 'is_free', label: 'Free', type: 'boolean', column: 'is_free' },
       ],
       bulkEditFields: [
@@ -526,7 +526,7 @@ export default function AdminEvents() {
             label: s.charAt(0).toUpperCase() + s.slice(1),
           })),
         },
-        { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
+        { key: 'is_featured', label: 'Featured', type: 'boolean', column: 'is_featured' },
         { key: 'is_free', label: 'Free Event', type: 'boolean', column: 'is_free' },
       ],
       rowActions: [
@@ -882,11 +882,11 @@ export default function AdminEvents() {
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Checkbox
-                    id="featured"
-                    checked={formData.featured}
-                    onCheckedChange={(c) => setFormData((p) => ({ ...p, featured: c as boolean }))}
+                    id="is_featured"
+                    checked={formData.is_featured}
+                    onCheckedChange={(c) => setFormData((p) => ({ ...p, is_featured: c as boolean }))}
                   />
-                  <Label htmlFor="featured">Featured Event</Label>
+                  <Label htmlFor="is_featured">Featured Event</Label>
                 </Box>
               </Box>
 

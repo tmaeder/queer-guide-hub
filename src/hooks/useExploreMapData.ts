@@ -300,7 +300,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
     queryFn: async () => {
       let query = supabase
         .from('queer_villages')
-        .select('id, name, slug, latitude, longitude, description, is_featured, cities:city_id(name)')
+        .select('id, name, slug, latitude, longitude, description, featured, cities:city_id(name)')
         .not('latitude', 'is', null)
         .not('longitude', 'is', null)
         .order('featured', { ascending: false })
@@ -332,7 +332,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
         color: LAYER_COLORS.neighbourhoods,
         scale: 0.85,
         linkTo: `/villages/${v.slug}`,
-        meta: { city: v.cities?.name, featured: v.is_featured, description: v.description },
+        meta: { city: v.cities?.name, featured: v.featured, description: v.description },
       }));
   }, [rawVillages, neighbourhoodsEnabled]);
 

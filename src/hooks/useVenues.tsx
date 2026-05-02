@@ -67,7 +67,7 @@ export function useVenues(autoFetch: boolean = true) {
         .from('venues')
         .select('*', { count: 'exact' })
         .neq('data_source', 'refuge_restrooms')
-        .order('featured', { ascending: false })
+        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (filters?.city) {

@@ -129,7 +129,7 @@ export function useEvents(autoFetch: boolean = true) {
             { count: 'exact' },
           )
           .eq('status', 'active')
-          .order('featured', { ascending: false })
+          .order('is_featured', { ascending: false })
           .order('start_date', { ascending: filters?.includePast ? false : true });
 
         const nowIso = new Date().toISOString();
