@@ -1,13 +1,8 @@
 /**
  * GeoLinkPanel — Geo-linking card for the CMS editor sidebar.
- *
- * Shows the current geo-link status (city/country) for a content item,
- * and provides a button to link or re-link the item to its city/country.
  */
 
 import { useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,13 +12,9 @@ import { useGeoLink } from '@/hooks/useGeoLink';
 interface GeoLinkPanelProps {
   contentType: string;
   contentId: string;
-  /** Current city name from content (text field) */
   cityName?: string;
-  /** Current country name from content (text field) */
   countryName?: string;
-  /** Whether city_id FK is already set */
   hasCityId?: boolean;
-  /** Whether country_id FK is already set */
   hasCountryId?: boolean;
   onLinked?: () => void;
 }
@@ -43,7 +34,6 @@ export function GeoLinkPanel({
   const isFullyLinked = hasCityId && hasCountryId;
   const isPartiallyLinked = (hasCityId || hasCountryId) && !isFullyLinked;
 
-  // Map content types for the edge function
   const edgeFnType = contentType === 'news' ? 'news_articles' : contentType;
 
   const handleLink = useCallback(async () => {
@@ -58,12 +48,10 @@ export function GeoLinkPanel({
     }
   }, [edgeFnType, contentId, linkSingle, onLinked]);
 
-  // Build location display string
   const locationDisplay = cityName && countryName
     ? `${cityName}, ${countryName}`
     : cityName || countryName || null;
 
-  // Result display
   const resultItem = result?.results?.[0];
   const resolvedDisplay = resultItem
     ? [resultItem.city_resolved, resultItem.country_resolved].filter(Boolean).join(', ')
@@ -73,45 +61,34 @@ export function GeoLinkPanel({
     <Card>
       <CardHeader>
         <CardTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <MapPin style={{ height: 16, width: 16, color: 'var(--mui-palette-primary-main)' }} />
+          <div className="flex items-center gap-2">
+            <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--primary))' }} />
             Geo Location
-          </Box>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Current status */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+        <div className="flex items-center gap-2 flex-wrap">
           {isFullyLinked ? (
             <>
               <Check style={{ height: 14, width: 14, color: '#16a34a' }} />
-              <Typography variant="body2" sx={{ color: '#16a34a', fontWeight: 500 }}>
-                Linked
-              </Typography>
+              <p className="text-sm font-medium" style={{ color: '#16a34a' }}>Linked</p>
               {locationDisplay && (
-                <Typography variant="body2" color="text.secondary">
-                  {locationDisplay}
-                </Typography>
+                <p className="text-sm text-muted-foreground">{locationDisplay}</p>
               )}
             </>
           ) : isPartiallyLinked ? (
             <>
               <AlertCircle style={{ height: 14, width: 14, color: '#ca8a04' }} />
-              <Typography variant="body2" sx={{ color: '#ca8a04', fontWeight: 500 }}>
-                Partially linked
-              </Typography>
+              <p className="text-sm font-medium" style={{ color: '#ca8a04' }}>Partially linked</p>
               {locationDisplay && (
-                <Typography variant="body2" color="text.secondary">
-                  {locationDisplay}
-                </Typography>
+                <p className="text-sm text-muted-foreground">{locationDisplay}</p>
               )}
             </>
           ) : locationDisplay ? (
             <>
               <AlertCircle style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-              <Typography variant="body2" color="text.secondary">
-                {locationDisplay}
-              </Typography>
+              <p className="text-sm text-muted-foreground">{locationDisplay}</p>
               <Badge variant="outline" style={{ fontSize: '0.625rem', padding: '0 4px' }}>
                 Not linked
               </Badge>
@@ -119,55 +96,36 @@ export function GeoLinkPanel({
           ) : (
             <>
               <AlertCircle style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-              <Typography variant="caption" color="text.secondary">
-                No location data
-              </Typography>
+              <span className="text-xs text-muted-foreground">No location data</span>
             </>
           )}
-        </Box>
+        </div>
 
-        {/* Loading */}
         {loading && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}>
-            <Loader2 style={{ height: 14, width: 14, animation: 'spin 1s linear infinite' }} />
-            <Typography variant="caption" color="text.secondary">
-              Resolving location...
-            </Typography>
-          </Box>
+          <div className="flex items-center gap-2 py-1">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <span className="text-xs text-muted-foreground">Resolving location...</span>
+          </div>
         )}
 
-        {/* Result after linking */}
         {linked && resultItem && !loading && (
-          <Box sx={{
-            bgcolor: 'action.hover',
-            borderRadius: 1,
-            p: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 0.5,
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <div className="bg-muted p-2 flex flex-col gap-1">
+            <div className="flex items-center gap-1">
               <Check style={{ height: 12, width: 12, color: '#16a34a' }} />
-              <Typography variant="caption" sx={{ color: '#16a34a', fontWeight: 500 }}>
+              <span className="text-xs font-medium" style={{ color: '#16a34a' }}>
                 {resultItem.status === 'linked' ? 'Fully linked' : 'Partially linked'}
-              </Typography>
-            </Box>
+              </span>
+            </div>
             {resolvedDisplay && (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs text-muted-foreground">
                 Resolved to: {resolvedDisplay}
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
         )}
 
-        {/* Link / Re-link button */}
         {!loading && (
-          <Button
-            variant="outline"
-            size="sm"
-
-            onClick={handleLink}
-          >
+          <Button variant="outline" size="sm" onClick={handleLink}>
             {isFullyLinked ? (
               <RefreshCw style={{ height: 14, width: 14, marginRight: 6 }} />
             ) : (

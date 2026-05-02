@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { Pencil, Trash2, X } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -70,28 +67,18 @@ export function DataTableBulkActions({
 
   return (
     <>
-      <Paper
-        elevation={0}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          px: 2,
-          py: 1,
-          borderBottom: '1px solid var(--border, #e4e4e7)',
-          bgcolor: 'rgba(59, 130, 246, 0.05)',
-        }}
+      <div
+        className="flex items-center gap-2 px-4 py-2 border-b border-border"
+        style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
       >
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          {selectedCount} selected
-        </Typography>
+        <p className="text-sm font-semibold">{selectedCount} selected</p>
 
         <Button variant="ghost" size="sm" onClick={onClearSelection}>
           <X style={{ height: 14, width: 14, marginRight: 4 }} />
           Clear
         </Button>
 
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
 
         {bulkEditFields && bulkEditFields.length > 0 && (
           <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
@@ -111,7 +98,7 @@ export function DataTableBulkActions({
           <Trash2 style={{ height: 14, width: 14, marginRight: 4 }} />
           Delete
         </Button>
-      </Paper>
+      </div>
 
       {/* Delete Confirmation */}
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
