@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { useTaxonomyCRUD } from '@/hooks/useTaxonomyCRUD';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -46,6 +46,7 @@ const emptyForm = {
 export default function AdminEventTypes() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const crud = useTaxonomyCRUD('event_types');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -79,11 +80,11 @@ export default function AdminEventTypes() {
     }
     try {
       if (editingId) {
-        const { error } = await supabase.from('event_types').update(form).eq('id', editingId);
+        const { error } = await crud.upsert(form, editingId);
         if (error) throw error;
         toast({ title: 'Success', description: 'Event type updated' });
       } else {
-        const { error } = await supabase.from('event_types').insert([form]);
+        const { error } = await crud.upsert(form, null);
         if (error) throw error;
         toast({ title: 'Success', description: 'Event type created' });
       }
@@ -101,7 +102,7 @@ export default function AdminEventTypes() {
   const handleDelete = async (row: EventTypeRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await supabase.from('event_types').delete().eq('id', row.id);
+      const { error } = await crud.remove(row.id);
       if (error) throw error;
       toast({ title: 'Success', description: 'Event type deleted' });
       invalidateTable();

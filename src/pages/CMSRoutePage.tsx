@@ -16,7 +16,6 @@
  *   - SEO meta via useMeta hook
  */
 
-import { useEffect, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -26,7 +25,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import { ChevronRight, FileText, Shield, Cookie, Scale } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useCMSPage } from '@/hooks/useCMSPage';
 import DOMPurify from 'dompurify';
 import { useMeta } from '@/hooks/useMeta';
 import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
@@ -210,11 +209,11 @@ function LegalHubCard({ page }: { page: CMSPage }) {
 
 // ── Main component ──────────────────────────────────────────────────────────
 export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
-  const [page, setPage] = useState<CMSPage | null>(null);
-  const [parentPage, setParentPage] = useState<CMSPage | null>(null);
-  const [childPages, setChildPages] = useState<CMSPage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const { data, isLoading: loading } = useCMSPage(slug);
+  const page = data?.page ?? null;
+  const parentPage = data?.parent ?? null;
+  const childPages = data?.children ?? [];
+  const notFound = !!data && data.notFound;
 
   const isLegalHub = slug === 'legal';
   const isLegalChild = page?.parent_slug === 'legal';
@@ -225,58 +224,6 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     description: page?.meta_description || page?.excerpt || '',
     canonicalPath: `/${slug}`,
   });
-
-  useEffect(() => {
-    loadPage(slug);
-  }, [slug]);
-
-  async function loadPage(pageSlug: string) {
-    setLoading(true);
-    setNotFound(false);
-    setParentPage(null);
-    setChildPages([]);
-
-    try {
-      const { data, error } = await supabase
-        .from('cms_pages' as const)
-        .select('*')
-        .eq('slug', pageSlug)
-        .eq('workflow_state', 'published')
-        .single();
-
-      if (error || !data) {
-        setNotFound(true);
-        return;
-      }
-
-      const pageData = data as CMSPage;
-      setPage(pageData);
-
-      if (pageData.parent_slug) {
-        const { data: parent } = await supabase
-          .from('cms_pages' as const)
-          .select('slug, title, subtitle')
-          .eq('slug', pageData.parent_slug)
-          .eq('workflow_state', 'published')
-          .single();
-
-        if (parent) setParentPage(parent as CMSPage);
-      }
-
-      const { data: children } = await supabase
-        .from('cms_pages' as const)
-        .select('slug, title, subtitle, excerpt, category')
-        .eq('parent_slug', pageSlug)
-        .eq('workflow_state', 'published')
-        .order('title');
-
-      if (children && children.length > 0) setChildPages(children as CMSPage[]);
-    } catch {
-      setNotFound(true);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   if (loading) return <PageSkeleton />;
 
