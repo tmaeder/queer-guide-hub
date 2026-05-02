@@ -17,7 +17,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useGroupNotifications } from '@/hooks/useGroupNotifications';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchUserPostInteractions } from '@/hooks/usePageFetchers';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -71,69 +71,11 @@ export const NotificationList = () => {
       try {
         setLikesLoading(true);
         setCommentsLoading(true);
-        // Fetch user's post IDs
-        const { data: posts, error: postsErr } = await supabase
-          .from('community_posts')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(200);
-        if (postsErr) throw postsErr;
-        const postIds = (posts || []).map((p) => p.id);
-        if (postIds.length === 0) {
-          if (isMounted) {
-            setLikes([]);
-            setComments([]);
-          }
-          return;
+        const { likes, comments } = await fetchUserPostInteractions<LikeItem, CommentItem>(user.id);
+        if (isMounted) {
+          setLikes(likes);
+          setComments(comments);
         }
-        // Fetch recent likes on user's posts
-        const { data: likesData } = await supabase
-          .from('post_likes')
-          .select('id, post_id, user_id, created_at')
-          .in('post_id', postIds)
-          .order('created_at', { ascending: false })
-          .limit(20);
-        let likesEnriched: LikeItem[] = [];
-        if (likesData?.length) {
-          const likerIds = [...new Set(likesData.map((l) => l.user_id))];
-          const { data: likerProfiles } = await supabase
-            .from('profiles')
-            .select('user_id, display_name, avatar_url')
-            .in('user_id', likerIds);
-          likesEnriched = (likesData || []).map((l) => {
-            const p = likerProfiles?.find((x) => x.user_id === l.user_id);
-            return {
-              id: l.id,
-              post_id: l.post_id,
-              user_id: l.user_id,
-              created_at: l.created_at as string,
-              user_display_name: p?.display_name || 'Someone',
-              user_avatar_url: p?.avatar_url || null,
-            };
-          });
-        }
-        if (isMounted) setLikes(likesEnriched);
-
-        // Fetch recent comments on user's posts (with profile join)
-        const { data: commentsData, error: commentsErr } = await supabase
-          .from('post_comments')
-          .select(
-            `id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`,
-          )
-          .in('post_id', postIds)
-          .order('created_at', { ascending: false })
-          .limit(20);
-        if (commentsErr) throw commentsErr;
-        const commentsEnriched: CommentItem[] = (commentsData || []).map((c: Record<string, unknown> & { profiles?: { display_name?: string; avatar_url?: string } }) => ({
-          id: c.id,
-          post_id: c.post_id,
-          user_id: c.user_id,
-          content: c.content,
-          created_at: c.created_at,
-          user_display_name: c.profiles?.display_name || 'Someone',
-          user_avatar_url: c.profiles?.avatar_url || null,
-        }));
-        if (isMounted) setComments(commentsEnriched);
       } catch (e) {
         // Fail silently in dropdown context
         console.error('Failed to fetch likes/comments', e);

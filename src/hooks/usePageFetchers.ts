@@ -519,6 +519,64 @@ export async function toggleFeedbackVote(
   }
 }
 
+/** NotificationList — fetch likes + comments on a user's posts. */
+export async function fetchUserPostInteractions<TLike, TComment>(
+  userId: string,
+): Promise<{ likes: TLike[]; comments: TComment[] }> {
+  const { data: posts } = await supabase
+    .from('community_posts')
+    .select('id')
+    .eq('user_id', userId)
+    .limit(200);
+  const postIds = (posts ?? []).map((p) => p.id);
+  if (postIds.length === 0) return { likes: [] as TLike[], comments: [] as TComment[] };
+
+  const { data: likesData } = await supabase
+    .from('post_likes')
+    .select('id, post_id, user_id, created_at')
+    .in('post_id', postIds)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  let likes: TLike[] = [];
+  if (likesData?.length) {
+    const likerIds = [...new Set(likesData.map((l) => l.user_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, avatar_url')
+      .in('user_id', likerIds);
+    likes = likesData.map((l) => {
+      const p = (profiles ?? []).find((x) => x.user_id === l.user_id);
+      return {
+        id: l.id,
+        post_id: l.post_id,
+        user_id: l.user_id,
+        created_at: l.created_at,
+        user_display_name: p?.display_name || 'Someone',
+        user_avatar_url: p?.avatar_url || null,
+      } as unknown as TLike;
+    });
+  }
+
+  const { data: commentsData } = await supabase
+    .from('post_comments')
+    .select(`id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`)
+    .in('post_id', postIds)
+    .order('created_at', { ascending: false })
+    .limit(20);
+  const comments: TComment[] = (commentsData ?? []).map((c: Record<string, unknown> & { profiles?: { display_name?: string; avatar_url?: string } }) => ({
+    id: c.id,
+    post_id: c.post_id,
+    user_id: c.user_id,
+    content: c.content,
+    created_at: c.created_at,
+    user_display_name: c.profiles?.display_name || 'Someone',
+    user_avatar_url: c.profiles?.avatar_url || null,
+  } as unknown as TComment));
+
+  return { likes, comments };
+}
+
 /** ReviewQueueTab — list pending review items, optional target_table filter. */
 export async function fetchReviewQueueItems<T = unknown>(
   filter: { targetTable?: string; dedupStatus?: string },
@@ -596,6 +654,35 @@ export async function countRows(
   }
   const { count, error } = await q;
   return error ? 0 : (count ?? 0);
+}
+
+/** listFrom with one or more `eq` filters. */
+export async function listFromWhere<T = unknown>(
+  table: string,
+  select: string,
+  filters: Array<{ col: string; val: unknown }>,
+): Promise<T[]> {
+  let q = supabase.from(table as never).select(select as never);
+  for (const f of filters) {
+    q = (q as unknown as { eq: (c: string, v: unknown) => typeof q }).eq(f.col, f.val);
+  }
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []) as T[];
+}
+
+/** Update many rows by id list — generic for any table. */
+export async function updateRowsByIds(
+  table: string,
+  ids: string[],
+  update: Record<string, unknown>,
+): Promise<{ error: Error | null }> {
+  if (ids.length === 0) return { error: null };
+  const { error } = await supabase
+    .from(table as never)
+    .update(update as never)
+    .in('id', ids);
+  return { error: error as Error | null };
 }
 
 /** Like listFrom but with an `.in(col, values)` filter. */
