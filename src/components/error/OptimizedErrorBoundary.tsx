@@ -1,6 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,30 +58,28 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
     errors.some((e) => e?.message?.includes('fetch'));
 
   return (
-    <Box
-      sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400, p: 3 }}
-    >
+    <div className="flex items-center justify-center p-6" style={{ minHeight: 400 }}>
       <Card>
         <CardHeader>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center gap-2">
             {isNetworkError ? (
               <Wifi style={{ height: 20, width: 20, color: 'var(--destructive)' }} />
             ) : (
               <AlertCircle style={{ height: 20, width: 20, color: 'var(--destructive)' }} />
             )}
             <CardTitle>{isNetworkError ? 'Connection Issue' : 'Something went wrong'}</CardTitle>
-          </Box>
+          </div>
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
             <AlertTitle>Error Details</AlertTitle>
             <AlertDescription>
-              <Typography variant="body2">
+              <p className="text-sm">
                 {isNetworkError
                   ? 'Unable to connect to the server. Please check your internet connection and try again.'
                   : error?.message ||
                     'An unexpected error occurred. Please try refreshing the page.'}
-              </Typography>
+              </p>
             </AlertDescription>
           </Alert>
 
@@ -91,29 +87,19 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
             <Alert>
               <AlertTitle>Additional Issues</AlertTitle>
               <AlertDescription>
-                <Typography variant="body2">Some features may not work properly due to:</Typography>
-                <Box
-                  component="ul"
-                  sx={{
-                    listStyleType: 'disc',
-                    listStylePosition: 'inside',
-                    mt: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 0.5,
-                  }}
-                >
+                <p className="text-sm">Some features may not work properly due to:</p>
+                <ul className="list-disc list-inside mt-2 flex flex-col gap-1">
                   {errors.slice(0, 3).map((err, i) => (
-                    <Typography component="li" key={i} variant="caption">
+                    <li key={i} className="text-xs">
                       {err?.message || 'Unknown error'}
-                    </Typography>
+                    </li>
                   ))}
-                </Box>
+                </ul>
               </AlertDescription>
             </Alert>
           )}
 
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex gap-2">
             <Button onClick={resetErrorBoundary} variant="outline">
               <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
               Try Again
@@ -121,14 +107,13 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
             <Button onClick={() => window.location.reload()} variant="default">
               Refresh Page
             </Button>
-          </Box>
+          </div>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 };
 
-// Specialized error fallback for data loading errors
 export const DataErrorFallback: React.FC<ErrorFallbackProps> = ({
   resetErrorBoundary,
   errors = [],
@@ -138,31 +123,19 @@ export const DataErrorFallback: React.FC<ErrorFallbackProps> = ({
       <AlertCircle style={{ height: 16, width: 16 }} />
       <AlertTitle>Failed to load data</AlertTitle>
       <AlertDescription>
-        <Typography variant="body2">
+        <p className="text-sm">
           Some information couldn't be loaded. You can continue using the app with limited
           functionality.
-        </Typography>
+        </p>
         {errors.length > 0 && (
-          <Box component="details" sx={{ fontSize: '0.75rem' }}>
-            <Box component="summary" sx={{ cursor: 'pointer' }}>
-              Show details
-            </Box>
-            <Box
-              component="ul"
-              sx={{
-                listStyleType: 'disc',
-                listStylePosition: 'inside',
-                mt: 0.5,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 0.5,
-              }}
-            >
+          <details className="text-xs">
+            <summary className="cursor-pointer">Show details</summary>
+            <ul className="list-disc list-inside mt-1 flex flex-col gap-1">
               {errors.map((err, i) => (
                 <li key={i}>{err?.message || 'Unknown error'}</li>
               ))}
-            </Box>
-          </Box>
+            </ul>
+          </details>
         )}
         <Button onClick={resetErrorBoundary} variant="outline" size="sm">
           <RefreshCw style={{ height: 12, width: 12, marginRight: 4 }} />
