@@ -5,10 +5,6 @@
 
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
 import { Tag, CheckCircle, XCircle, AlertTriangle, Bot, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -87,85 +83,63 @@ export function TagSuggestionsQueue() {
 
   const isPending = approveMutation.isPending || rejectMutation.isPending;
 
-  if (isLoading) return <LinearProgress />;
+  if (isLoading) {
+    return (
+      <div className="h-1 w-full bg-muted overflow-hidden">
+        <div className="h-full bg-primary animate-pulse" style={{ width: '50%' }} />
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 8 }}>
-        <Box
-          sx={{
-            mx: 'auto',
-            width: 80,
-            height: 80,
-            bgcolor: 'success.main',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mb: 2,
-            opacity: 0.9,
-          }}
-        >
-          <Tag style={{ width: 40, height: 40, color: '#fff' }} />
-        </Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-          No pending suggestions
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 320, mx: 'auto' }}>
-          Tag suggestions from auto-tagging and near-duplicate detection will appear here for
-          review.
-        </Typography>
-      </Box>
+      <div className="text-center py-16">
+        <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4 opacity-90" style={{ backgroundColor: '#16a34a' }}>
+          <Tag className="w-10 h-10 text-white" />
+        </div>
+        <h6 className="text-base font-semibold mb-1">No pending suggestions</h6>
+        <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+          Tag suggestions from auto-tagging and near-duplicate detection will appear here for review.
+        </p>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {/* Bulk actions */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 1,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={selectedIds.size > 0 && selectedIds.size >= total}
             onChange={toggleSelectAll}
-            style={{ width: 16, height: 16, cursor: 'pointer' }}
+            className="w-4 h-4 cursor-pointer"
           />
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-sm text-muted-foreground">
             {selectedIds.size > 0
               ? `${selectedIds.size} selected (all)`
               : `${total} pending suggestion${total !== 1 ? 's' : ''}`}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          </p>
+        </div>
+        <div className="flex gap-2 items-center">
           {selectedIds.size > 0 && (
             <>
-              <Typography variant="body2" color="text.secondary">
-                {selectedIds.size} selected
-              </Typography>
+              <p className="text-sm text-muted-foreground">{selectedIds.size} selected</p>
               <Button
                 size="sm"
                 disabled={isPending}
                 onClick={() => approveMutation.mutate(Array.from(selectedIds))}
-                style={{ backgroundColor: '#16a34a', color: 'white', display: 'flex', gap: 6 }}
+                style={{ backgroundColor: '#16a34a', color: 'white' }}
               >
-                <CheckCircle style={{ height: 14, width: 14 }} /> Approve Selected
+                <CheckCircle className="h-3.5 w-3.5 mr-1.5" /> Approve Selected
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 disabled={isPending}
                 onClick={() => rejectMutation.mutate(Array.from(selectedIds))}
-                style={{ display: 'flex', gap: 6 }}
               >
-                <XCircle style={{ height: 14, width: 14 }} /> Reject Selected
+                <XCircle className="h-3.5 w-3.5 mr-1.5" /> Reject Selected
               </Button>
             </>
           )}
@@ -173,14 +147,13 @@ export function TagSuggestionsQueue() {
             size="sm"
             disabled={isPending || items.length === 0}
             onClick={() => approveMutation.mutate(items.map((i) => i.id))}
-            style={{ backgroundColor: '#16a34a', color: 'white', display: 'flex', gap: 6 }}
+            style={{ backgroundColor: '#16a34a', color: 'white' }}
           >
-            <CheckCircle style={{ height: 14, width: 14 }} /> Approve All ({items.length})
+            <CheckCircle className="h-3.5 w-3.5 mr-1.5" /> Approve All ({items.length})
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      {/* Items */}
       {items.map((item) => {
         const sourceInfo = SOURCE_LABELS[item.source] || { label: item.source, icon: Tag };
         const SourceIcon = sourceInfo.icon;
@@ -190,65 +163,42 @@ export function TagSuggestionsQueue() {
         return (
           <Card key={item.id}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <div className="flex items-center gap-4">
                 <input
                   type="checkbox"
                   checked={selectedIds.has(item.id)}
                   onChange={() => toggleSelect(item.id)}
-                  style={{ width: 16, height: 16, cursor: 'pointer' }}
+                  className="w-4 h-4 cursor-pointer"
                 />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      mb: 0.5,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                      {item.suggested_tag_name}
-                    </Typography>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <p className="font-semibold text-[0.9rem]">{item.suggested_tag_name}</p>
                     <Badge variant="outline">{item.entity_type}</Badge>
-                    <Chip
-                      icon={<SourceIcon style={{ width: 12, height: 12 }} />}
-                      label={sourceInfo.label}
-                      size="small"
-                      variant="outlined"
-                      sx={{ fontSize: '0.7rem' }}
-                    />
-                    <Box
-                      sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        px: 0.75,
-                        py: 0.15,
-                        borderRadius: 0.5,
-                        bgcolor: `${confidenceColor}15`,
-                        color: confidenceColor,
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                      }}
+                    <Badge variant="outline" className="text-[0.7rem] gap-1">
+                      <SourceIcon className="w-3 h-3" />
+                      {sourceInfo.label}
+                    </Badge>
+                    <span
+                      className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[0.7rem] font-semibold"
+                      style={{ backgroundColor: `${confidenceColor}15`, color: confidenceColor }}
                     >
                       {(item.confidence * 100).toFixed(0)}%
-                    </Box>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary">
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
                     Entity: {item.entity_id.slice(0, 8)}... |{' '}
                     {new Date(item.created_at).toLocaleDateString()}
                     {item.ai_model && ` | Model: ${item.ai_model}`}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                  </span>
+                </div>
+                <div className="flex gap-1 shrink-0">
                   <Button
                     size="sm"
                     disabled={isPending}
                     onClick={() => approveMutation.mutate([item.id])}
                     style={{ backgroundColor: '#16a34a', color: 'white', padding: '4px 8px' }}
                   >
-                    <CheckCircle style={{ height: 14, width: 14 }} />
+                    <CheckCircle className="h-3.5 w-3.5" />
                   </Button>
                   <Button
                     variant="destructive"
@@ -257,15 +207,15 @@ export function TagSuggestionsQueue() {
                     onClick={() => rejectMutation.mutate([item.id])}
                     style={{ padding: '4px 8px' }}
                   >
-                    <XCircle style={{ height: 14, width: 14 }} />
+                    <XCircle className="h-3.5 w-3.5" />
                   </Button>
-                </Box>
-              </Box>
+                </div>
+              </div>
             </CardContent>
           </Card>
         );
       })}
-    </Box>
+    </div>
   );
 }
 
