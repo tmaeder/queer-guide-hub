@@ -68,7 +68,22 @@ function scopeFilterToIndex(filter: string | undefined, indexUid: string): strin
 	return kept.length ? kept.join(" AND ") : undefined;
 }
 
-export function buildFilters(filters: any): string | undefined {
+export interface SearchFilters {
+	featured?: boolean;
+	location?: string;
+	city?: string;
+	country?: string;
+	categories?: string[];
+	tags?: string[];
+	types?: string[];
+	lat?: number;
+	lng?: number;
+	radius?: number;
+	date_from?: string | number | Date;
+	date_to?: string | number | Date;
+}
+
+export function buildFilters(filters: SearchFilters | null | undefined): string | undefined {
 	if (!filters) return undefined;
 	const parts: string[] = [];
 	if (filters.featured) parts.push("featured = true OR is_featured = true");
@@ -121,7 +136,8 @@ export async function meiliMultiSearch(
 		...(args.useHybrid ? { hybrid: { semanticRatio: 0.5, embedder: "default" } } : {}),
 	}));
 
-	const run = async (q: any[]) =>
+	type MeiliQuery = (typeof queries)[number];
+	const run = async (q: Array<MeiliQuery | Omit<MeiliQuery, "hybrid">>) =>
 		fetch(`${env.MEILISEARCH_URL}/multi-search`, {
 			method: "POST",
 			headers: {
@@ -134,16 +150,22 @@ export async function meiliMultiSearch(
 	let res = await run(queries);
 	if (!res.ok && args.useHybrid) {
 		// Fallback: lexical only.
-		const q2 = queries.map(({ hybrid, ...rest }) => rest);
+		const q2 = queries.map(({ hybrid: _hybrid, ...rest }) => rest);
 		res = await run(q2);
 	}
 	if (!res.ok) {
 		const text = await res.text();
 		throw new Error(`meili ${res.status}: ${text}`);
 	}
-	const data = (await res.json()) as any;
+	type MeiliResult = {
+		indexUid: string;
+		hits: Array<Record<string, unknown>>;
+		estimatedTotalHits?: number;
+		facetDistribution?: Record<string, Record<string, number>>;
+	};
+	const data = (await res.json()) as { results: MeiliResult[] };
 
-	const hits: any[] = [];
+	const hits: ReturnType<typeof mapHit>[] = [];
 	const mergedFacets: Record<string, Record<string, number>> = {};
 	let totalHits = 0;
 	for (const r of data.results) {
@@ -168,26 +190,27 @@ export async function meiliMultiSearch(
 	};
 }
 
-function mapHit(hit: any, indexUid: string) {
+function mapHit(hit: Record<string, unknown>, indexUid: string) {
+	const geo = hit._geo as { lat: number; lng: number } | undefined;
 	return {
-		id: hit.id,
-		objectID: hit.id,
-		type: hit.type || indexUid,
+		id: hit.id as string | undefined,
+		objectID: hit.id as string | undefined,
+		type: (hit.type as string) || indexUid,
 		content_type: indexTypeOf(indexUid),
-		title: hit.title || hit.name,
-		name: hit.title || hit.name,
-		description: hit.description,
-		category: hit.category || hit.event_type || hit.profession,
-		city: hit.city,
-		country: hit.country,
-		_geoloc: hit._geo ? { lat: hit._geo.lat, lng: hit._geo.lng } : undefined,
-		image_url: hit.image_url || hit.logo_url,
-		slug: hit.slug,
-		start_date: hit.start_date,
-		end_date: hit.end_date,
-		featured: hit.featured || hit.is_featured || false,
-		tags: hit.tags || [],
-		_rankingScore: hit._rankingScore || 0,
+		title: (hit.title as string) || (hit.name as string),
+		name: (hit.title as string) || (hit.name as string),
+		description: hit.description as string | undefined,
+		category: (hit.category as string) || (hit.event_type as string) || (hit.profession as string),
+		city: hit.city as string | undefined,
+		country: hit.country as string | undefined,
+		_geoloc: geo ? { lat: geo.lat, lng: geo.lng } : undefined,
+		image_url: (hit.image_url as string) || (hit.logo_url as string),
+		slug: hit.slug as string | undefined,
+		start_date: hit.start_date as number | string | undefined,
+		end_date: hit.end_date as number | string | undefined,
+		featured: Boolean(hit.featured || hit.is_featured),
+		tags: (hit.tags as string[]) || [],
+		_rankingScore: (hit._rankingScore as number) || 0,
 	};
 }
 

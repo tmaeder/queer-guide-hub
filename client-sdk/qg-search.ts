@@ -25,9 +25,31 @@ export interface SearchFilters {
 	date_to?: string;
 }
 
+export interface SearchHit {
+	id?: string;
+	objectID?: string;
+	type?: string;
+	content_type?: string;
+	title?: string;
+	name?: string;
+	description?: string;
+	category?: string;
+	city?: string;
+	country?: string;
+	_geoloc?: { lat: number; lng: number };
+	image_url?: string;
+	slug?: string;
+	start_date?: string | number;
+	end_date?: string | number;
+	featured?: boolean;
+	tags?: string[];
+	_rankingScore?: number;
+	[key: string]: unknown;
+}
+
 export interface SearchResult {
-	hits: any[];
-	suggestions: any[];
+	hits: SearchHit[];
+	suggestions: SearchHit[];
 	nbHits: number;
 	totalHits: number;
 	processingTimeMS: number;
@@ -48,8 +70,8 @@ const DEFAULT_STORAGE_KEY = "qg_sid";
 export class QGSearchClient {
 	private opts: QGSearchClientOptions;
 	private sessionId: string;
-	private trackQueue: any[] = [];
-	private flushTimer: any = null;
+	private trackQueue: Array<Record<string, unknown>> = [];
+	private flushTimer: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(opts: QGSearchClientOptions) {
 		this.opts = { lang: "en", storageKey: DEFAULT_STORAGE_KEY, ...opts };
@@ -150,14 +172,14 @@ export class QGSearchClient {
 		});
 	}
 
-	async similar(entity: { type: string; id: string }, limit = 10): Promise<any[]> {
+	async similar(entity: { type: string; id: string }, limit = 10): Promise<SearchHit[]> {
 		const res = await fetch(`${this.opts.endpoint}/similar`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ entity_type: entity.type, entity_id: entity.id, limit }),
 		});
 		if (!res.ok) throw new Error(`similar ${res.status}`);
-		const data = (await res.json()) as { results: any[] };
+		const data = (await res.json()) as { results: SearchHit[] };
 		return data.results ?? [];
 	}
 }
