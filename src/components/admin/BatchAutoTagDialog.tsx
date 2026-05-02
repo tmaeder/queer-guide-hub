@@ -6,9 +6,6 @@
  */
 
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import LinearProgress from '@mui/material/LinearProgress';
 import {
   Dialog,
   DialogContent,
@@ -75,26 +72,25 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Sparkles style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Sparkles className="h-4 w-4 mr-2" />
           Batch Auto-Tag
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Sparkles style={{ height: 20, width: 20 }} />
+            <span className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
               Batch Auto-Tag Content
-            </Box>
+            </span>
           </DialogTitle>
           <DialogDescription>
             Use AI to automatically suggest and assign tags to untagged content items.
           </DialogDescription>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
-          {/* Content Type Selection */}
-          <Box>
+        <div className="flex flex-col gap-5 mt-2">
+          <div>
             <Label>Content Type</Label>
             <Select value={contentType} onValueChange={setContentType} disabled={loading}>
               <SelectTrigger>
@@ -103,21 +99,18 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
               <SelectContent>
                 {CONTENT_TYPES.map(ct => (
                   <SelectItem key={ct.value} value={ct.value}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <span className="flex items-center gap-2">
                       {ct.label}
-                      <Typography variant="caption" color="text.secondary">
-                        ({ct.count})
-                      </Typography>
-                    </Box>
+                      <span className="text-xs text-muted-foreground">({ct.count})</span>
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </Box>
+          </div>
 
-          {/* Settings row */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-            <Box>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label>Batch Limit</Label>
               <Input
                 type="number"
@@ -127,11 +120,9 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
                 onChange={e => setBatchLimit(Number(e.target.value))}
                 disabled={loading}
               />
-              <Typography variant="caption" color="text.secondary">
-                Max items to process
-              </Typography>
-            </Box>
-            <Box>
+              <span className="text-xs text-muted-foreground">Max items to process</span>
+            </div>
+            <div>
               <Label>Auto-approve ≥</Label>
               <Input
                 type="number"
@@ -142,95 +133,81 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
                 onChange={e => setThreshold(Number(e.target.value))}
                 disabled={loading}
               />
-              <Typography variant="caption" color="text.secondary">
-                Confidence threshold
-              </Typography>
-            </Box>
-          </Box>
+              <span className="text-xs text-muted-foreground">Confidence threshold</span>
+            </div>
+          </div>
 
-          {/* Cost estimate */}
-          <Box sx={{ bgcolor: 'action.hover', borderRadius: 1, p: 1.5 }}>
-            <Typography variant="caption" color="text.secondary">
+          <div className="bg-muted rounded-sm p-3">
+            <span className="text-xs text-muted-foreground">
               <strong>Estimated cost:</strong> ~${(batchLimit * 0.0003).toFixed(4)} USD
               ({batchLimit} items × $0.0003/item with GPT-4o-mini)
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
-          {/* Progress */}
           {loading && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
-                <Typography variant="body2">Processing…</Typography>
-              </Box>
-              <LinearProgress sx={{ borderRadius: 1 }} />
-              <Typography variant="caption" color="text.secondary">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <p className="text-sm">Processing…</p>
+              </div>
+              <div className="h-1 w-full bg-muted rounded-sm overflow-hidden">
+                <div className="h-full bg-primary animate-pulse" style={{ width: '30%' }} />
+              </div>
+              <span className="text-xs text-muted-foreground">
                 This may take a few minutes depending on batch size.
-              </Typography>
-            </Box>
+              </span>
+            </div>
           )}
 
-          {/* Results */}
           {result && !loading && (
-            <Box sx={{
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 2,
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1.5,
-            }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CheckCircle style={{ height: 18, width: 18, color: '#16a34a' }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                  Batch Complete
-                </Typography>
-              </Box>
+            <div className="border border-border rounded-md p-4 flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" style={{ color: '#16a34a' }} />
+                <p className="text-sm font-semibold">Batch Complete</p>
+              </div>
 
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Tag style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-                  <Typography variant="body2">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-1">
+                  <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="text-sm">
                     <strong>{result.items_processed}</strong> items processed
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Sparkles style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-                  <Typography variant="body2">
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="text-sm">
                     <strong>{result.total_suggestions}</strong> tags suggested
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <CheckCircle style={{ height: 14, width: 14, color: '#16a34a' }} />
-                  <Typography variant="body2">
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CheckCircle className="h-3.5 w-3.5" style={{ color: '#16a34a' }} />
+                  <p className="text-sm">
                     <strong>{result.total_auto_approved}</strong> auto-approved
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <AlertCircle style={{ height: 14, width: 14, color: '#ca8a04' }} />
-                  <Typography variant="body2">
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <AlertCircle className="h-3.5 w-3.5" style={{ color: '#ca8a04' }} />
+                  <p className="text-sm">
                     <strong>{result.new_tags_created}</strong> new tags created
-                  </Typography>
-                </Box>
-              </Box>
+                  </p>
+                </div>
+              </div>
 
               {result.items_processed === 0 && (
-                <Typography variant="body2" color="text.secondary">
+                <p className="text-sm text-muted-foreground">
                   {result.message || `All ${contentType.replace('_', ' ')} already have tags assigned.`}
-                </Typography>
+                </p>
               )}
-            </Box>
+            </div>
           )}
 
-          {/* Run button */}
           {!loading && (
             <Button onClick={handleRun}>
-              <Sparkles style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Sparkles className="h-4 w-4 mr-2" />
               {result ? 'Run Again' : 'Start Batch Auto-Tag'}
             </Button>
           )}
-        </Box>
+        </div>
       </DialogContent>
     </Dialog>
   );
