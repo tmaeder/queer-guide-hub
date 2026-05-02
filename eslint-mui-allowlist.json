@@ -62,7 +62,6 @@
   "src/components/admin/import-hub/DuplicatesPanel.tsx",
   "src/components/admin/import-hub/ReviewQueueEnhanced.tsx",
   "src/components/admin/import-hub/StructuredFieldDisplay.tsx",
-  "src/components/admin/import-hub/VenueIngestStatsPanel.tsx",
   "src/components/admin/review/ReviewFilters.tsx",
   "src/components/admin/review/ReviewItemCard.tsx",
   "src/components/admin/search-intelligence/AuditTab.tsx",
