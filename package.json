@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:check": "vite build && node scripts/check-bundle-shape.mjs",
+    "build:check": "node --max-old-space-size=6144 node_modules/vite/bin/vite.js build && node scripts/check-bundle-shape.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
