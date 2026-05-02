@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { useTaxonomyCRUD } from '@/hooks/useTaxonomyCRUD';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -55,6 +55,7 @@ const emptyForm = {
 export default function AdminEventAmenities() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const crud = useTaxonomyCRUD('event_amenities');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -87,15 +88,12 @@ export default function AdminEventAmenities() {
       return;
     }
     try {
-      if (editingId) {
-        const { error } = await supabase.from('event_amenities').update(form).eq('id', editingId);
-        if (error) throw error;
-        toast({ title: 'Success', description: 'Event amenity updated' });
-      } else {
-        const { error } = await supabase.from('event_amenities').insert([form]);
-        if (error) throw error;
-        toast({ title: 'Success', description: 'Event amenity created' });
-      }
+      const { error } = await crud.upsert(form, editingId);
+      if (error) throw error;
+      toast({
+        title: 'Success',
+        description: editingId ? 'Event amenity updated' : 'Event amenity created',
+      });
       setDialogOpen(false);
       invalidateTable();
     } catch (err: unknown) {
@@ -110,7 +108,7 @@ export default function AdminEventAmenities() {
   const handleDelete = async (row: EventAmenityRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await supabase.from('event_amenities').delete().eq('id', row.id);
+      const { error } = await crud.remove(row.id);
       if (error) throw error;
       toast({ title: 'Success', description: 'Event amenity deleted' });
       invalidateTable();
