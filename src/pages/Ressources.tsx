@@ -16,7 +16,7 @@ import {
   getCategoryShortName,
   parentOrder,
 } from '@/components/resources/categoryMeta';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -85,22 +85,9 @@ export default function Ressources() {
   const [professions, setProfessions] = useState<string[]>([]);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load professions once
+  // Load professions once (DUP-4)
   useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from('personalities')
-          .select('profession')
-          .not('profession', 'is', null);
-        if (data) {
-          const unique = [...new Set(data.map((p) => p.profession).filter(Boolean))].sort();
-          setProfessions(unique as string[]);
-        }
-      } catch (e) {
-        console.error('Error loading professions:', e);
-      }
-    })();
+    fetchAllProfessions().then(setProfessions).catch((e) => console.error('Error loading professions:', e));
   }, []);
 
   // Profession filter from URL
@@ -152,50 +139,9 @@ export default function Ressources() {
     }
     if (allTags.length > 0 || !loading) {
       (async () => {
-        const { data } = await supabase
-          .from('unified_tags')
-          .select('*')
-          .ilike('name', decoded)
-          .eq('status', 'active')
-          .limit(1)
-          .maybeSingle();
-        if (!data) return;
-        const { data: catAssignments } = await supabase
-          .from('tag_category_assignments')
-          .select(
-            'tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)',
-          )
-          .eq('tag_id', data.id);
-        const cats = (catAssignments || [])
-          .map((a: { tag_categories: { id: string; name: string; slug: string; level: number; parent_id: string | null } | null; is_primary: boolean }) => {
-            const c = a.tag_categories;
-            return c
-              ? {
-                  id: c.id,
-                  name: c.name,
-                  slug: c.slug,
-                  level: c.level,
-                  parent_id: c.parent_id,
-                  parent_name: null as string | null,
-                  is_primary: a.is_primary,
-                }
-              : null;
-          })
-          .filter(Boolean) as { id: string; name: string; slug: string; level: number; parent_id: string | null; parent_name: string | null; is_primary: boolean }[];
-        if (cats.length > 0) {
-          const parentIds = cats.filter((c) => c.parent_id).map((c) => c.parent_id);
-          if (parentIds.length > 0) {
-            const { data: parents } = await supabase
-              .from('tag_categories')
-              .select('id, name')
-              .in('id', parentIds);
-            const pm = new Map((parents || []).map((p: { id: string; name: string }) => [p.id, p.name]));
-            cats.forEach((c) => {
-              if (c.parent_id) c.parent_name = pm.get(c.parent_id) || null;
-            });
-          }
-        }
-        setSelectedTag({ ...data, categories: cats } as CentralizedTag);
+        const tag = await fetchTagWithCategories(decoded);
+        if (!tag) return;
+        setSelectedTag(tag as CentralizedTag);
         setViewMode('tag-detail');
       })();
     }

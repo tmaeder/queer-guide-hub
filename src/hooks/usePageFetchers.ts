@@ -251,6 +251,108 @@ export async function upsertEmailTemplate(
   return { error };
 }
 
+/** Ressources.tsx — list distinct profession values. */
+export async function fetchAllProfessions(): Promise<string[]> {
+  const { data } = await supabase.from('personalities').select('profession').not('profession', 'is', null);
+  if (!data) return [];
+  return [...new Set((data as Array<{ profession?: string }>).map((p) => p.profession).filter(Boolean))].sort() as string[];
+}
+
+/** Ressources.tsx — fetch tag by name + category assignments + parent names. */
+export async function fetchTagWithCategories(name: string) {
+  const { data } = await supabase
+    .from('unified_tags')
+    .select('*')
+    .ilike('name', name)
+    .eq('status', 'active')
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+
+  const tag = data as { id: string };
+  const { data: catAssignments } = await supabase
+    .from('tag_category_assignments')
+    .select('tag_id, category_id, is_primary, tag_categories(id, name, slug, level, parent_id)')
+    .eq('tag_id', tag.id);
+
+  type Cat = {
+    id: string;
+    name: string;
+    slug: string;
+    level: number;
+    parent_id: string | null;
+    parent_name: string | null;
+    is_primary: boolean;
+  };
+  const cats: Cat[] = (catAssignments ?? [])
+    .map((a) => {
+      const c = (a as { tag_categories?: Cat | null }).tag_categories;
+      return c
+        ? {
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            level: c.level,
+            parent_id: c.parent_id,
+            parent_name: null,
+            is_primary: (a as { is_primary?: boolean }).is_primary ?? false,
+          }
+        : null;
+    })
+    .filter((c): c is Cat => c !== null);
+
+  if (cats.length > 0) {
+    const parentIds = cats.filter((c) => c.parent_id).map((c) => c.parent_id as string);
+    if (parentIds.length > 0) {
+      const { data: parents } = await supabase
+        .from('tag_categories')
+        .select('id, name')
+        .in('id', parentIds);
+      const pm = new Map(((parents ?? []) as Array<{ id: string; name: string }>).map((p) => [p.id, p.name]));
+      cats.forEach((c) => {
+        if (c.parent_id) c.parent_name = pm.get(c.parent_id) || null;
+      });
+    }
+  }
+  return { ...data, categories: cats };
+}
+
+/** AdminSubmissions.tsx — promote a submission to its target table. */
+export async function insertEntityFromSubmission(
+  table: string,
+  payload: Record<string, unknown>,
+): Promise<{ data: { id: string } | null; error: Error | null }> {
+  const { data, error } = await supabase
+    .from(table as never)
+    .insert(payload as never)
+    .select('id')
+    .single();
+  return {
+    data: (data as { id: string } | null) ?? null,
+    error: error as Error | null,
+  };
+}
+
+/** AdminSubmissions.tsx — update a submission row (approve/reject side effects). */
+export async function updateCommunitySubmission(
+  id: string,
+  update: Record<string, unknown>,
+): Promise<{ error: Error | null }> {
+  const { error } = await supabase
+    .from('community_submissions' as const)
+    .update(update as never)
+    .eq('id', id);
+  return { error: error as Error | null };
+}
+
+/** AdminSubmissions.tsx — append audit rows. */
+export async function insertCommunitySubmissionAudit(
+  rows: Array<Record<string, unknown>>,
+): Promise<{ error: Error | null }> {
+  const { error } = await supabase.from('community_submissions_audit').insert(rows as never);
+  return { error: error as Error | null };
+}
+
 /** NewsDetail.tsx — categories list. */
 export async function fetchNewsCategories<T = unknown>(): Promise<T[]> {
   const { data } = await supabase
