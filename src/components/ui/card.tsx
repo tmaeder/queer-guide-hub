@@ -96,7 +96,7 @@ const CardImage: React.FC<CardImageProps> = ({
   const [error, setError] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
   const theme = useTheme();
-  const brandColor = theme.palette.brand?.main || '#DB2777';
+  const brandColor = theme.palette.brand?.main || theme.palette.primary.main;
 
   if (!src || error) {
     return (

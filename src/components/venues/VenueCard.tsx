@@ -28,25 +28,6 @@ interface VenueCardProps {
   onTagClick?: (tag: string) => void;
 }
 
-// TODO(polish): no token match — category accent palette
-const categoryColors: Record<string, string> = {
-  bar: '#7c3aed',
-  restaurant: '#dc2626',
-  cafe: '#ca8a04',
-  club: '#db2777',
-  hotel: '#2563eb',
-  bookstore: '#059669',
-  gym: '#ea580c',
-  salon: '#c026d3',
-  healthcare: '#0d9488',
-  sauna: '#9333ea',
-};
-
-const getCategoryBg = (category: string | null) => {
-  if (!category) return '#64748b';
-  return categoryColors[category.toLowerCase()] || '#64748b';
-};
-
 const VenueCardFixture = () => (
   <Card hoverable style={{ overflow: 'hidden' }}>
     <CardImage src="" alt="Venue" fallbackIcon={MapPin} />
@@ -68,8 +49,7 @@ export function VenueCard({
 }: VenueCardProps) {
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
 
-  const hasImage = venue?.images?.[0];
-  const categoryColor = getCategoryBg(venue?.category ?? null);
+  const venueImage = venue?.images?.[0] ?? venue?.logo_url ?? null;
 
   return (
     <Skeleton
@@ -89,21 +69,12 @@ export function VenueCard({
 
           >
             <Box sx={{ position: 'relative' }}>
-              {hasImage ? (
-                <CardImage src={venue.images![0]} alt={venue.name} fallbackIcon={MapPin} />
-              ) : (
-                <Box
-                  sx={{
-                    height: 160,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: `${categoryColor}12`,
-                  }}
-                >
-                  <MapPin style={{ width: 32, height: 32, color: categoryColor, opacity: 0.5 }} />
-                </Box>
-              )}
+              <CardImage
+                src={venueImage}
+                alt={venue.name}
+                fallbackIcon={MapPin}
+                height={160}
+              />
 
               {/* Category label — top left */}
               {venue.category && (

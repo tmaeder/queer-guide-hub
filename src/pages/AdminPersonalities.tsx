@@ -304,7 +304,6 @@ export default function AdminPersonalities() {
         },
         meta: {
           serverSortable: true,
-          defaultVisible: false,
           hideable: true,
         } satisfies AdminColumnMeta,
       }),
