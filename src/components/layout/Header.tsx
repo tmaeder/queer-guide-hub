@@ -806,6 +806,53 @@ export function Header() {
             </Box>
           )}
         </Box>
+
+        {/* P4-1 — desktop primary nav row, hidden on mobile (burger drawer covers it). */}
+        {!isMobile && (
+          <Box
+            component="nav"
+            aria-label={t('header.primaryNav', 'Primary navigation')}
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              alignItems: 'center',
+              gap: 0.5,
+              height: 40,
+              borderTop: 'none',
+              overflowX: 'auto',
+            }}
+          >
+            {[
+              { to: '/venues', labelKey: 'header.nav.venues' },
+              { to: '/events', labelKey: 'header.nav.events' },
+              { to: '/news', labelKey: 'header.nav.news' },
+              { to: '/marketplace', labelKey: 'header.nav.marketplace' },
+              { to: '/hotels', labelKey: 'header.nav.hotels' },
+              { to: '/travel', labelKey: 'header.nav.travel' },
+              { to: '/groups', labelKey: 'header.nav.groups' },
+              { to: '/resources', labelKey: 'header.nav.resources' },
+            ].map((item) => {
+              const active = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  style={{
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    padding: '6px 10px',
+                    fontSize: '0.875rem',
+                    fontWeight: active ? 700 : 500,
+                    opacity: active ? 1 : 0.75,
+                    borderBottom: active ? '2px solid currentColor' : '2px solid transparent',
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  {t(item.labelKey)}
+                </Link>
+              );
+            })}
+          </Box>
+        )}
       </Box>
 
       {/* Mobile drawer */}

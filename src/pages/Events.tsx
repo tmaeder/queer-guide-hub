@@ -332,10 +332,7 @@ const Events = () => {
                   <CalendarIcon size={16} />
                 </Button>
               </Box>
-              <Button onClick={() => navigate('/submit/event')} style={{ display: 'flex', gap: 8 }}>
-                <Plus size={16} />
-                {t('pages.events.submitEvent', 'Submit Event')}
-              </Button>
+              {/* P4-3 — Submit CTA consolidated to header. */}
             </>
           }
         />
