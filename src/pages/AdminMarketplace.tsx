@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
 import { Button } from '@/components/ui/button';
@@ -17,7 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Trash2, ArrowLeft, Download, RefreshCw, Star, MapPin } from 'lucide-react';
+import { Plus, Trash2, Download, RefreshCw, Star, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
@@ -31,7 +29,7 @@ import {
 } from '@/utils/excelExport';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 
@@ -85,9 +83,7 @@ const formatCategory = (c: string) => c.replace(/_/g, ' ').replace(/\b\w/g, (l) 
 const columnHelper = createColumnHelper<MarketplaceRow>();
 
 export default function AdminMarketplace() {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const { canManageContent, loading: rolesLoading } = useAdminRoles();
   const { createListing } = useMarketplace();
   const { toast } = useToast();
 
@@ -365,44 +361,13 @@ export default function AdminMarketplace() {
     [columns],
   );
 
-  if (rolesLoading) {
-    return <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, textAlign: 'center' }}>Loading...</Box>;
-  }
-  if (!canManageContent()) {
-    return (
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Access Denied
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
-        </Button>
-        <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-            Marketplace
-          </Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>
-            Manage marketplace listings and products
-          </p>
-        </div>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
+    <AdminEntityTable
+      title="Marketplace"
+      subtitle="Manage marketplace listings and products"
+      config={tableConfig}
+      afterTable={
+        <>
       {/* Create Listing Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent style={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
@@ -669,6 +634,8 @@ export default function AdminMarketplace() {
           </Box>
         </DialogContent>
       </Dialog>
-    </Box>
+        </>
+      }
+    />
   );
 }
