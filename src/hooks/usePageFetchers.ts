@@ -535,9 +535,18 @@ export async function listFrom<T = unknown>(
 }
 
 /** Count rows in a table — used by data-viz dashboards. */
-export async function countRows(table: string, filter?: { col: string; val: unknown }): Promise<number> {
+export async function countRows(
+  table: string,
+  filter?: { col: string; op?: 'eq' | 'neq' | 'gte' | 'lte'; val: unknown },
+): Promise<number> {
   let q = supabase.from(table as never).select('*', { count: 'exact', head: true });
-  if (filter) q = (q as unknown as { eq: (c: string, v: unknown) => typeof q }).eq(filter.col, filter.val);
+  if (filter) {
+    const op = filter.op ?? 'eq';
+    q = (q as unknown as Record<string, (c: string, v: unknown) => typeof q>)[op](
+      filter.col,
+      filter.val,
+    );
+  }
   const { count, error } = await q;
   return error ? 0 : (count ?? 0);
 }

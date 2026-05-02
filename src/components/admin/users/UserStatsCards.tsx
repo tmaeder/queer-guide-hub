@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { countRows } from '@/hooks/usePageFetchers';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, UserPlus, Activity, ShieldAlert } from 'lucide-react';
@@ -9,20 +9,13 @@ function useUserStats() {
     queryKey: ['admin-user-stats'],
     queryFn: async () => {
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-
-      const [total, newThisWeek, activeNow, modIssues] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', weekAgo),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_online', true),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).neq('moderation_status' as const, 'approved'),
+      const [totalUsers, newThisWeek, activeNow, moderationIssues] = await Promise.all([
+        countRows('profiles'),
+        countRows('profiles', { col: 'created_at', op: 'gte', val: weekAgo }),
+        countRows('profiles', { col: 'is_online', op: 'eq', val: true }),
+        countRows('profiles', { col: 'moderation_status', op: 'neq', val: 'approved' }),
       ]);
-
-      return {
-        totalUsers: total.count ?? 0,
-        newThisWeek: newThisWeek.count ?? 0,
-        activeNow: activeNow.count ?? 0,
-        moderationIssues: modIssues.count ?? 0,
-      };
+      return { totalUsers, newThisWeek, activeNow, moderationIssues };
     },
     staleTime: 60_000,
   });
