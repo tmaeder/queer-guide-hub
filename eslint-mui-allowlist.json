@@ -1,4 +1,6 @@
 [
+  "src/components/accessibility/AccessibilityControls.tsx",
+  "src/components/admin/AdminEditDialog.tsx",
   "src/App.tsx",
   "src/components/accessibility/AccessibilityControls.tsx",
   "src/components/admin/AdminEditDialog.tsx",
@@ -174,6 +176,7 @@
   "src/components/home/RegionalEventsCalendar.tsx",
   "src/components/hotels/HotelCard.tsx",
   "src/components/inbox/UnifiedInbox.tsx",
+  "src/components/layout/AuthGate.tsx",
   "src/components/layout/Footer.tsx",
   "src/components/layout/Header.tsx",
   "src/components/loading/OptimizedLoader.tsx",
@@ -230,6 +233,7 @@
   "src/components/pwa/InstallBanner.tsx",
   "src/components/resources/ResourcesFilterBar.tsx",
   "src/components/resources/TagListRenderer.tsx",
+  "src/components/search/SearchFeedbackButtons.tsx",
   "src/components/search/SearchFiltersPanel.tsx",
   "src/components/search/UniversalSearchBar.tsx",
   "src/components/security/AutomatedSecurityScheduler.tsx",
@@ -248,7 +252,6 @@
   "src/components/tags/TagLinkedContent.tsx",
   "src/components/tags/TagRelationshipGraph.tsx",
   "src/components/tags/TagSelector.tsx",
-  "src/components/theme/ThemeProvider.tsx",
   "src/components/travel/AirportAutocomplete.tsx",
   "src/components/travel/CityTravelHub.tsx",
   "src/components/travel/FlightCalendarWidget.tsx",
@@ -313,7 +316,6 @@
   "src/components/ui/tabs.tsx",
   "src/components/ui/textarea.tsx",
   "src/components/ui/tooltip.tsx",
-  "src/components/ui/venue-combobox.tsx",
   "src/components/user-directory/UserDirectoryFilters.tsx",
   "src/components/user-directory/UserDirectoryGrid.tsx",
   "src/components/venues/VenueCard.tsx",
@@ -406,6 +408,5 @@
   "src/routes.tsx",
   "src/test/__tests__/test-utils.test.tsx",
   "src/test/test-utils.tsx",
-  "src/theme/muiTheme.ts",
-  "src/theme/theme.d.ts"
+  "src/theme/muiTheme.ts"
 ]
