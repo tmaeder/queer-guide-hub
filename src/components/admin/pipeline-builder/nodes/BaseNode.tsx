@@ -106,7 +106,7 @@ function BaseNode({ data, selected }: NodeProps) {
             </Tooltip>
           )}
           {sc && (
-            <Badge variant="outline" className={`ml-auto text-[10px] px-1.5 py-0 gap-1 ${sc.className}`}>
+            <Badge variant="outline" className={`ml-auto text-2xs px-1.5 py-0 gap-1 ${sc.className}`}>
               {StatusIcon && <StatusIcon className="h-2.5 w-2.5" />}
               {status}
             </Badge>
@@ -115,7 +115,7 @@ function BaseNode({ data, selected }: NodeProps) {
 
         {/* Metrics bar */}
         {(d.itemsOut !== undefined || d.itemsIn !== undefined || d.durationMs) && (
-          <div className="flex items-center gap-3 px-3 py-1.5 text-[11px] font-mono border-t border-border/50">
+          <div className="flex items-center gap-3 px-3 py-1.5 text-xs2 font-mono border-t border-border/50">
             {d.itemsIn !== undefined && (
               <span className="text-muted-foreground" title="items in">
                 <Icons.ArrowDownToLine className="h-3 w-3 inline mr-0.5" />{d.itemsIn}
@@ -138,7 +138,7 @@ function BaseNode({ data, selected }: NodeProps) {
         {d.errorMessage && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="px-3 py-1.5 text-[10px] text-destructive bg-destructive/5 border-t border-destructive/20 truncate cursor-help">
+              <div className="px-3 py-1.5 text-2xs text-destructive bg-destructive/5 border-t border-destructive/20 truncate cursor-help">
                 {d.errorMessage}
               </div>
             </TooltipTrigger>

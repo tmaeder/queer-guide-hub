@@ -68,6 +68,11 @@ export default tseslint.config(
   // See docs/design-system/FIX_PLAN.md and CLAUDE.md design section.
   {
     files: ["src/**/*.{ts,tsx}"],
+    // Allowlist — see docs/design-system/admin-palette.md.
+    // Admin status/data-viz files use functional traffic-light colors
+    // (success/info/warning/error) by design, plus equality-score / SDG
+    // gradient scales that are also functional encodings. The token rule
+    // does not apply to these files.
     ignores: [
       "src/theme/**",
       "src/lib/animation.ts",
@@ -78,13 +83,26 @@ export default tseslint.config(
       "src/integrations/supabase/types.ts",
       "src/**/__tests__/**",
       "src/test/**",
+      // Admin status / data-viz dashboards — chromatic by design.
+      "src/components/admin/**",
+      "src/components/cms/**",
+      "src/pages/Admin*.tsx",
+      "src/pages/admin/**",
+      "src/pages/SecurityDashboard.tsx",
+      // Functional color scales (equality score 0–100, SDG indicators).
+      "src/utils/equalityScore.ts",
+      "src/components/country/LGBTJurisdictionInfo.tsx",
+      "src/components/country/SDGDataPanel.tsx",
     ],
     rules: {
       "no-restricted-syntax": [
         "warn",
         {
+          // Match hex literals AND rgb/hsl calls with NUMERIC content only —
+          // hsl(var(--brand)), rgb(var(--…)) and similar token references
+          // are deliberately allowed.
           selector:
-            "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgb\\(|^rgba\\(|^hsl\\(|^hsla\\(/]",
+            "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",
           message:
             "Hardcoded color literal — use theme tokens (theme.palette.*, hsl(var(--brand)), etc.). See docs/design-system/FIX_PLAN.md P1-1.",
         },
@@ -92,10 +110,11 @@ export default tseslint.config(
     },
   },
   // ADR 0001 forcing function — ban net-new MUI imports.
-  // The eslint-mui-allowlist.json file lists the existing MUI-importing
-  // files (19 as of 2026-05-02). New code can't add to the list; existing
-  // entries should be removed as their files migrate to shadcn. When the
-  // list is empty, delete this block + the JSON file + uninstall MUI.
+  // The eslint-mui-allowlist.json file is a ratchet snapshot of all files
+  // that import MUI today (526 as of 2026-05-02). New code can't add to
+  // the list; existing entries should be removed as their files migrate
+  // to shadcn. When the list is empty, delete this block + the JSON file
+  // + uninstall MUI.
   // Ref: docs/adrs/0001-ui-library-consolidation.md
   {
     files: ["src/**/*.{ts,tsx}"],

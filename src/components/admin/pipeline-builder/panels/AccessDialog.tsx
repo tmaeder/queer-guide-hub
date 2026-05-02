@@ -163,14 +163,14 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
                   const PIcon = pc.icon;
                   return (
                     <div key={g.id} className="p-2.5 flex items-center gap-2 hover:bg-muted/30 transition-colors">
-                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 gap-1 ${pc.className}`}>
+                      <Badge variant="outline" className={`text-2xs px-1.5 py-0 gap-1 ${pc.className}`}>
                         <PIcon className="h-2.5 w-2.5" />
                         {pc.label}
                       </Badge>
-                      <code className="text-[11px] font-mono flex-1 truncate" title={g.user_id}>
+                      <code className="text-xs2 font-mono flex-1 truncate" title={g.user_id}>
                         {g.user_id.slice(0, 16)}
                       </code>
-                      <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                      <span className="text-xs2 text-muted-foreground whitespace-nowrap">
                         {formatDistanceToNow(new Date(g.granted_at), { addSuffix: true })}
                       </span>
                       <Button

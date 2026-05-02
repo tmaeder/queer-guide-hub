@@ -43,7 +43,7 @@ function sloBadge(s: HotelStats) {
     : success >= 0.4                  ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'
     : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300';
   return (
-    <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${className}`}>
+    <span className={`inline-block text-2xs px-2 py-0.5 rounded-full font-medium ${className}`}>
       {(success * 100).toFixed(0)}% commit
     </span>
   );
@@ -58,7 +58,7 @@ function RatioBar({ actual, expected }: { actual: number; expected: number | nul
       <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
         <div className={`h-full transition-all ${bg}`} style={{ width: `${pct * 100}%` }} />
       </div>
-      <span className="text-[11px] text-muted-foreground tabular-nums">{actual}/{expected}</span>
+      <span className="text-xs2 text-muted-foreground tabular-nums">{actual}/{expected}</span>
     </div>
   );
 }
@@ -151,7 +151,7 @@ export default function CoverageTab() {
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
                 {['Source', 'Staged', 'Validated', 'Unique', 'Dupes', 'Committed', 'Rejected', 'Review', 'SLO'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -180,13 +180,13 @@ export default function CoverageTab() {
           <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2 sticky top-0 bg-background z-10">
             <Bed className="h-3.5 w-3.5" />
             Coverage targets
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-1">{coverage.length}</Badge>
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 ml-1">{coverage.length}</Badge>
           </div>
           <table className="w-full text-sm">
             <thead className="bg-muted/40 sticky top-[37px] z-10">
               <tr className="border-b border-border">
                 {['Source', 'City', 'Type', 'Coverage', 'Last run', 'Enabled'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -202,7 +202,7 @@ export default function CoverageTab() {
                     {r.city_id ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <code className="text-[10px] text-muted-foreground">{r.city_id.slice(0, 8)}</code>
+                          <code className="text-2xs text-muted-foreground">{r.city_id.slice(0, 8)}</code>
                         </TooltipTrigger>
                         <TooltipContent className="text-xs font-mono">{r.city_id}</TooltipContent>
                       </Tooltip>

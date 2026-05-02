@@ -133,7 +133,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
               )}
 
               {/* Index badge */}
-              <span className="absolute top-1 left-1 text-[10px] font-mono bg-black/50 text-white rounded px-1">
+              <span className="absolute top-1 left-1 text-2xs font-mono bg-black/50 text-white rounded px-1">
                 {index + 1}
               </span>
             </div>

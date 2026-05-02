@@ -59,7 +59,7 @@ function CommentNode({ data, selected, id }: NodeProps) {
 
       <div className="flex items-center gap-1.5 px-2 py-1 border-b" style={{ borderColor: `${scheme.border}50` }}>
         <StickyNote className="h-3 w-3 opacity-60" />
-        <span className="text-[10px] font-medium opacity-60">comment</span>
+        <span className="text-2xs font-medium opacity-60">comment</span>
         <div className="ml-auto">
           <Popover>
             <PopoverTrigger asChild>
