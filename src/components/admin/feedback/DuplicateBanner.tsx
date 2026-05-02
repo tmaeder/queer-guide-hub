@@ -40,9 +40,11 @@ export function DuplicateBanner({
       }}
     >
       {parentStory && (
-        <div
+        <button
+          type="button"
           onClick={() => onOpenStory?.(parentStory.story_id)}
-          className={`flex items-center gap-1 ${suggestions.length > 0 ? 'mb-2' : ''}`}
+          disabled={!onOpenStory}
+          className={`flex items-center gap-1 bg-transparent border-0 p-0 text-left ${suggestions.length > 0 ? 'mb-2' : ''}`}
           style={{
             cursor: onOpenStory ? 'pointer' : 'default',
           }}
@@ -52,7 +54,7 @@ export function DuplicateBanner({
             Part of story: {parentStory.title}
             {parentStory.status === 'resolved' && ' (resolved)'}
           </span>
-        </div>
+        </button>
       )}
 
       {suggestions.length > 0 && (
@@ -71,9 +73,10 @@ export function DuplicateBanner({
           return (
             <div key={s.suggestionId} className="flex items-center gap-2 flex-wrap">
               <div className="flex-1 min-w-0">
-                <div
+                <button
+                  type="button"
                   onClick={() => onOpenPartner(s.partnerId)}
-                  className="cursor-pointer"
+                  className="cursor-pointer bg-transparent border-0 p-0 text-left w-full"
                   style={{
                     textDecoration: 'underline dotted',
                     textDecorationColor: 'var(--muted-foreground)',
@@ -82,7 +85,7 @@ export function DuplicateBanner({
                   <p className="text-sm truncate">
                     {partner?.data?.title ?? `#${s.partnerId.slice(0, 8)}`}
                   </p>
-                </div>
+                </button>
                 <span className="text-xs text-muted-foreground">{pct}% match</span>
               </div>
 
