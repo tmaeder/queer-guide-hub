@@ -48,10 +48,10 @@ const Index = React.memo(() => {
 
   const stats = useMemo(
     () => [
-      { value: realStats.venues, label: t('home.stats.venues', 'Venues') },
+      { value: realStats.venues, label: t('home.stats.venues', 'Venues'), link: '/venues' },
       { value: realStats.profiles, label: t('home.stats.members', 'Members') },
-      { value: realStats.cities, label: t('home.stats.cities', 'Cities') },
-      { value: realStats.events, label: t('home.stats.events', 'Events') },
+      { value: realStats.cities, label: t('home.stats.cities', 'Cities'), link: '/cities' },
+      { value: realStats.events, label: t('home.stats.events', 'Events'), link: '/events' },
     ],
     [realStats, t],
   );
@@ -190,8 +190,9 @@ const Index = React.memo(() => {
               gap: { xs: 3, md: 4 },
             }}
           >
-            {stats.map((stat, i) => (
-              <Box key={i} sx={{ textAlign: 'center' }}>
+            {stats.map((stat, i) => {
+              const inner = (
+                <>
                 <Typography
                   component="div"
                   sx={{
@@ -226,8 +227,23 @@ const Index = React.memo(() => {
                 >
                   {stat.label}
                 </Typography>
-              </Box>
-            ))}
+                </>
+              );
+              return (
+                <Box key={i} sx={{ textAlign: 'center' }}>
+                  {stat.link ? (
+                    <LocalizedLink
+                      to={stat.link}
+                      style={{ color: 'inherit', textDecoration: 'none', display: 'block' }}
+                    >
+                      {inner}
+                    </LocalizedLink>
+                  ) : (
+                    inner
+                  )}
+                </Box>
+              );
+            })}
           </StaggerGrid>
         </Box>
       )}
