@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,7 +114,7 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Upload />
+          <Upload className="w-4 h-4 mr-2" />
           Import Adult Models CSV
         </Button>
       </DialogTrigger>
@@ -125,16 +124,16 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
         </DialogHeader>
 
         {!importResult ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div className="flex flex-col gap-6">
             <Alert>
-              <AlertCircle />
+              <AlertCircle className="w-4 h-4" />
               <AlertDescription>
                 Upload a CSV file with adult model data. Each model will be created as a personality with the profession "adult model".
               </AlertDescription>
             </Alert>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
+            <div className="flex flex-col gap-4">
+              <div>
                 <Label htmlFor="csv-file">Select CSV File</Label>
                 <Input
                   ref={fileInputRef}
@@ -143,25 +142,24 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
                   accept=".csv"
                   onChange={handleFileUpload}
                   disabled={isUploading}
-
                 />
-              </Box>
+              </div>
 
-              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>Required columns:</Typography>
-                <Box component="ul" sx={{ listStylePosition: 'inside', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Box component="li"><Typography component="code">pornhub-profile</Typography> - Profile URL</Box>
-                  <Box component="li"><Typography component="code">picture</Typography> - Image URL</Box>
-                  <Box component="li"><Typography component="code">name</Typography> - Model name</Box>
-                </Box>
-                <Typography variant="body2" sx={{ mt: 1 }}>
+              <div className="text-sm text-muted-foreground flex flex-col gap-2">
+                <p className="font-semibold">Required columns:</p>
+                <ul className="list-inside flex flex-col gap-1">
+                  <li><code>pornhub-profile</code> - Profile URL</li>
+                  <li><code>picture</code> - Image URL</li>
+                  <li><code>name</code> - Model name</li>
+                </ul>
+                <p className="mt-2">
                   All personalities will be created with profession "adult model" and will not be marked as verified or featured by default.
-                </Typography>
-              </Box>
+                </p>
+              </div>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div className="flex justify-between">
                 <Button variant="outline" onClick={downloadTemplate}>
-                  <Download />
+                  <Download className="w-4 h-4 mr-2" />
                   Download Template
                 </Button>
                 <Button disabled={isUploading}>
@@ -169,29 +167,29 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
                     <>Processing...</>
                   ) : (
                     <>
-                      <Upload />
+                      <Upload className="w-4 h-4 mr-2" />
                       Upload File
                     </>
                   )}
                 </Button>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             <Card>
               <CardHeader>
                 <CardTitle>
                   {importResult.success ? (
-                    <CheckCircle />
+                    <CheckCircle className="w-5 h-5 inline-block mr-2 text-green-600" />
                   ) : (
-                    <XCircle />
+                    <XCircle className="w-5 h-5 inline-block mr-2 text-destructive" />
                   )}
                   Import Results
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <div className="flex gap-4">
                   <Badge variant="outline">
                     {importResult.imported} imported
                   </Badge>
@@ -203,39 +201,39 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
                       {importResult.errors.length} errors
                     </Badge>
                   )}
-                </Box>
+                </div>
 
                 {importResult.error && (
-                  <Alert variant="destructive">
-                    <XCircle />
+                  <Alert variant="destructive" className="mt-4">
+                    <XCircle className="w-4 h-4" />
                     <AlertDescription>{importResult.error}</AlertDescription>
                   </Alert>
                 )}
 
                 {importResult.errors && importResult.errors.length > 0 && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>Errors:</Typography>
-                    <Box sx={{ maxHeight: '128px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <p className="text-sm font-medium">Errors:</p>
+                    <div className="max-h-32 overflow-y-auto flex flex-col gap-1">
                       {importResult.errors.map((error, index) => (
-                        <Box key={index} sx={{ fontSize: '0.875rem', color: 'error.main', bgcolor: 'error.light', p: 1, borderRadius: 1 }}>
+                        <div key={index} className="text-sm text-destructive bg-destructive/10 p-2 rounded-sm">
                           {error}
-                        </Box>
+                        </div>
                       ))}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div className="flex justify-between">
               <Button variant="outline" onClick={resetImport}>
                 Import Another File
               </Button>
               <Button onClick={() => setIsOpen(false)}>
                 Close
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
       </DialogContent>
     </Dialog>
