@@ -3,8 +3,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Globe } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
@@ -127,21 +125,14 @@ export default function CountryDetail() {
   }, [country?.latitude, country?.longitude, country?.capital, country?.name, country]);
 
   if (!countrySlug) {
-    return <Box>Country not found</Box>;
+    return <div>Country not found</div>;
   }
 
   if (countryLoading) {
     return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center flex flex-col gap-4">
+          <div className="animate-pulse">
             <Globe
               style={{
                 height: 48,
@@ -150,38 +141,29 @@ export default function CountryDetail() {
                 color: 'hsl(var(--muted-foreground))',
               }}
             />
-          </Box>
-          <Typography sx={{ color: 'text.secondary' }}>Loading country details...</Typography>
-        </Box>
-      </Box>
+          </div>
+          <p className="text-muted-foreground">Loading country details...</p>
+        </div>
+      </div>
     );
   }
 
   if (!country) {
     return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="h4" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-            Country not found
-          </Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center flex flex-col gap-4">
+          <h4 className="text-2xl font-bold">Country not found</h4>
+          <p className="text-muted-foreground">
             The country you're looking for doesn't exist.
-          </Typography>
+          </p>
           <Button asChild>
             <LocalizedLink to="/users">
               <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
               Back to Directory
             </LocalizedLink>
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 

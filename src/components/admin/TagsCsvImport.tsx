@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -137,26 +136,25 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
           <DialogTitle>Import Tags from CSV</DialogTitle>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className="flex flex-col gap-6">
           {/* Instructions */}
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <div className="flex items-center gap-2 mb-2">
                 <FileText style={{ width: 16, height: 16 }} />
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>CSV Format Requirements</Typography>
-              </Box>
-              <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography variant="body2" color="text.secondary" component="li">* <strong>Required columns:</strong> name, category</Typography>
-                <Typography variant="body2" color="text.secondary" component="li">* <strong>Optional columns:</strong> description, color</Typography>
-                <Typography variant="body2" color="text.secondary" component="li">* <strong>Categories:</strong> consent, genders, sexual-orientations, romantic-orientations, relationships, roles, gay-culture, kink-activities, sexual-activities, philia, toys-equipment, play-spaces, events, holidays, sexual-health, mental-health, scene-safety, safety-resources</Typography>
-                <Typography variant="body2" color="text.secondary" component="li">* <strong>Color format:</strong> Hex color codes (e.g., #6366f1)</Typography>
-              </Box>
+                <p className="text-sm font-semibold">CSV Format Requirements</p>
+              </div>
+              <ul className="flex flex-col gap-1">
+                <li className="text-sm text-muted-foreground">* <strong>Required columns:</strong> name, category</li>
+                <li className="text-sm text-muted-foreground">* <strong>Optional columns:</strong> description, color</li>
+                <li className="text-sm text-muted-foreground">* <strong>Categories:</strong> consent, genders, sexual-orientations, romantic-orientations, relationships, roles, gay-culture, kink-activities, sexual-activities, philia, toys-equipment, play-spaces, events, holidays, sexual-health, mental-health, scene-safety, safety-resources</li>
+                <li className="text-sm text-muted-foreground">* <strong>Color format:</strong> Hex color codes (e.g., #6366f1)</li>
+              </ul>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={downloadTemplate}
-
               >
                 <Download style={{ width: 16, height: 16, marginRight: 8 }} />
                 Download Template
@@ -166,8 +164,8 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
 
           {/* File Upload */}
           {!importResult && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
+            <div className="flex flex-col gap-4">
+              <div>
                 <Label htmlFor="csv-file">Select CSV File</Label>
                 <Input
                   id="csv-file"
@@ -177,72 +175,72 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
                   onChange={handleFileUpload}
                   disabled={isUploading}
                 />
-              </Box>
+              </div>
 
               {isUploading && (
-                <Box sx={{ textAlign: 'center', py: 2 }}>
-                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 16, height: 16, border: 2, borderColor: 'primary.main', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } } }} />
+                <div className="text-center py-4">
+                  <div className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Uploading and processing CSV...
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               )}
-            </Box>
+            </div>
           )}
 
           {/* Import Results */}
           {importResult && (
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <div className="flex items-center gap-2 mb-3">
                   {importResult.success ? (
                     <CheckCircle style={{ width: 20, height: 20, color: '#22c55e' }} />
                   ) : (
                     <AlertCircle style={{ width: 20, height: 20, color: '#ef4444' }} />
                   )}
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  <p className="text-sm font-semibold">
                     {importResult.success ? 'Import Successful' : 'Import Failed'}
-                  </Typography>
-                </Box>
+                  </p>
+                </div>
 
                 {importResult.success ? (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant="body2">Successfully imported <strong>{importResult.imported}</strong> tags</Typography>
-                    <Typography variant="body2">Total tags processed: <strong>{importResult.total_parsed}</strong></Typography>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm">Successfully imported <strong>{importResult.imported}</strong> tags</p>
+                    <p className="text-sm">Total tags processed: <strong>{importResult.total_parsed}</strong></p>
                     {importResult.errors && importResult.errors.length > 0 && (
-                      <Box>
-                        <Typography variant="body2" sx={{ color: 'warning.main' }}>Some rows had errors:</Typography>
-                        <Box component="ul" sx={{ listStyle: 'disc', pl: 3, color: 'warning.main' }}>
+                      <div>
+                        <p className="text-sm" style={{ color: 'hsl(var(--warning))' }}>Some rows had errors:</p>
+                        <ul className="list-disc pl-6" style={{ color: 'hsl(var(--warning))' }}>
                           {importResult.errors.map((error, index) => (
-                            <Typography variant="body2" component="li" key={index}>{error}</Typography>
+                            <li className="text-sm" key={index}>{error}</li>
                           ))}
-                        </Box>
-                      </Box>
+                        </ul>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                 ) : (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant="body2" color="error.main">{importResult.error}</Typography>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-destructive">{importResult.error}</p>
                     {importResult.details && (
-                      <Typography variant="body2" color="text.secondary">{importResult.details}</Typography>
+                      <p className="text-sm text-muted-foreground">{importResult.details}</p>
                     )}
                     {importResult.hint && (
-                      <Typography variant="body2" sx={{ color: 'info.main' }}>{importResult.hint}</Typography>
+                      <p className="text-sm" style={{ color: 'hsl(var(--info, 199 89% 48%))' }}>{importResult.hint}</p>
                     )}
                     {importResult.errors && importResult.errors.length > 0 && (
-                      <Box>
-                        <Typography variant="body2" color="error.main">Errors found:</Typography>
-                        <Box component="ul" sx={{ listStyle: 'disc', pl: 3, color: 'error.main' }}>
+                      <div>
+                        <p className="text-sm text-destructive">Errors found:</p>
+                        <ul className="list-disc pl-6 text-destructive">
                           {importResult.errors.map((error, index) => (
-                            <Typography variant="body2" component="li" key={index}>{error}</Typography>
+                            <li className="text-sm" key={index}>{error}</li>
                           ))}
-                        </Box>
-                      </Box>
+                        </ul>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                 )}
 
-                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                <div className="flex gap-2 mt-4">
                   <Button
                     onClick={resetImport}
                     variant="outline"
@@ -256,11 +254,11 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
                   >
                     Close
                   </Button>
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
-        </Box>
+        </div>
       </DialogContent>
     </Dialog>
   );
