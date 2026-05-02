@@ -114,7 +114,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
       const { data, error } = await supabase
         .from('venues')
         .select(
-          'id, name, category, address, foursquare_rating, featured, latitude, longitude, city_id, country_id',
+          'id, name, category, address, foursquare_rating, is_featured, latitude, longitude, city_id, country_id',
         )
         .in('city_id', cityIds)
         .order('foursquare_rating', { ascending: false, nullsFirst: false })

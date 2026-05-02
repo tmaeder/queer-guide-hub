@@ -87,7 +87,7 @@ async function fetchVenuesInBbox(
     .lte('latitude', bbox.north)
     .gte('longitude', bbox.west)
     .lte('longitude', bbox.east)
-    .order('featured', { ascending: false });
+    .order('is_featured', { ascending: false });
 
   if (filters?.category) query = query.eq('category', filters.category);
   if (filters?.tags?.length) query = query.overlaps('tags', filters.tags);
