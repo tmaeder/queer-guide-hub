@@ -1,7 +1,10 @@
 # ADR 0001 — UI library consolidation
 
-**Status:** Proposed (awaiting acceptance)
-**Date:** 2026-05-01
+**Status:** Accepted (forcing function landed 2026-05-02)
+**Date:** 2026-05-01 (status updated 2026-05-02)
+
+> **Update 2026-05-02.** Between the ADR landing and this update, the team's tech-debt sweep migrated MUI imports from 502 files down to **19**. The migration timeline in this doc (4–7 months) is now overstated; clearing the remaining 19 is plausibly a single sprint. The ESLint forcing function (`eslint-mui-allowlist.json` + `no-restricted-imports`) shipped to ensure no net-new MUI imports while the tail is migrated.
+
 **Decision driver:** consolidation sprint Phase 3
 
 ## Context
