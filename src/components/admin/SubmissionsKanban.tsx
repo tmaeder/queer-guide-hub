@@ -1,7 +1,5 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { submissionRegistry } from '@/config/submissionRegistry';
@@ -75,59 +73,38 @@ export function SubmissionsKanban({ onCardClick }: Props) {
   }, [rows]);
 
   if (isLoading) {
-    return (
-      <Box sx={{ p: 4, textAlign: 'center', color: 'var(--muted-foreground)' }}>Loading…</Box>
-    );
+    return <div className="p-8 text-center text-muted-foreground">Loading…</div>;
   }
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: `repeat(${LANES.length}, 1fr)` },
-        gap: 2,
-      }}
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       {LANES.map((lane) => {
         const laneRows = byLane[lane.key] ?? [];
         return (
-          <Box
-            key={lane.key}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 0.5 }}>
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: lane.color }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                {lane.label}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
-                {laneRows.length}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, minHeight: 80 }}>
+          <div key={lane.key} className="flex flex-col gap-2 min-w-0">
+            <div className="flex items-center gap-2 px-1">
+              <div
+                className="rounded-full"
+                style={{ width: 8, height: 8, backgroundColor: lane.color }}
+              />
+              <p className="text-sm font-semibold">{lane.label}</p>
+              <span className="text-xs text-muted-foreground">{laneRows.length}</span>
+            </div>
+            <div className="flex flex-col gap-2" style={{ minHeight: 80 }}>
               {laneRows.length === 0 ? (
-                <Box
-                  sx={{
-                    p: 2,
-                    fontSize: 12,
-                    color: 'var(--muted-foreground)',
-                    border: '1px dashed',
-                    borderColor: 'divider',
-                    textAlign: 'center',
-                  }}
-                >
+                <div className="p-4 text-xs text-muted-foreground text-center border border-dashed border-border">
                   Empty
-                </Box>
+                </div>
               ) : (
                 laneRows.map((row) => (
                   <KanbanCard key={row.id} row={row} onClick={() => onCardClick(row)} />
                 ))
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
         );
       })}
-    </Box>
+    </div>
   );
 }
 
@@ -137,7 +114,7 @@ function KanbanCard({ row, onClick }: { row: KanbanRow; onClick: () => void }) {
   const score = row.queer_relevance_score;
   const hasHighSeverity = (row.safety_flags ?? []).some((f) => f.severity === 'high');
   return (
-    <Box
+    <div
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -147,30 +124,18 @@ function KanbanCard({ row, onClick }: { row: KanbanRow; onClick: () => void }) {
           onClick();
         }
       }}
-      sx={{
-        p: 1.25,
-        border: '1px solid',
-        borderColor: hasHighSeverity ? '#ef4444' : 'divider',
-        bgcolor: 'background.paper',
-        cursor: 'pointer',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 0.75,
-        '&:hover': { bgcolor: 'action.hover' },
+      className="p-2 bg-background cursor-pointer flex flex-col gap-1.5 hover:bg-muted"
+      style={{
+        border: `1px solid ${hasHighSeverity ? '#ef4444' : 'hsl(var(--border))'}`,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+      <div className="flex items-center gap-1.5 min-w-0">
         {Icon && (
           <Icon style={{ width: 14, height: 14, color: config?.color, flexShrink: 0 }} />
         )}
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        >
-          {getTitle(row)}
-        </Typography>
-      </Box>
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <p className="text-sm font-medium truncate">{getTitle(row)}</p>
+      </div>
+      <div className="flex gap-1 flex-wrap">
         {row.platform && (
           <Badge variant="outline" style={{ fontSize: 10 }}>
             {row.platform}
@@ -186,8 +151,8 @@ function KanbanCard({ row, onClick }: { row: KanbanRow; onClick: () => void }) {
             risk
           </Badge>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
