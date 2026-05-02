@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { useTaxonomyCRUD } from '@/hooks/useTaxonomyCRUD';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -61,6 +61,7 @@ const emptyForm = {
 export default function AdminAccessibilityAttributes() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const crud = useTaxonomyCRUD('accessibility_attributes');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -93,18 +94,12 @@ export default function AdminAccessibilityAttributes() {
       return;
     }
     try {
-      if (editingId) {
-        const { error } = await supabase
-          .from('accessibility_attributes')
-          .update(form)
-          .eq('id', editingId);
-        if (error) throw error;
-        toast({ title: 'Success', description: 'Attribute updated' });
-      } else {
-        const { error } = await supabase.from('accessibility_attributes').insert([form]);
-        if (error) throw error;
-        toast({ title: 'Success', description: 'Attribute created' });
-      }
+      const { error } = await crud.upsert(form, editingId);
+      if (error) throw error;
+      toast({
+        title: 'Success',
+        description: editingId ? 'Attribute updated' : 'Attribute created',
+      });
       setDialogOpen(false);
       invalidateTable();
     } catch (err: unknown) {
@@ -119,7 +114,7 @@ export default function AdminAccessibilityAttributes() {
   const handleDelete = async (row: AccessibilityRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await supabase.from('accessibility_attributes').delete().eq('id', row.id);
+      const { error } = await crud.remove(row.id);
       if (error) throw error;
       toast({ title: 'Success', description: 'Attribute deleted' });
       invalidateTable();

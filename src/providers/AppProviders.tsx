@@ -10,8 +10,6 @@ import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { PWAProvider } from '@/components/pwa/PWAProvider';
 import { CurrencyProvider } from '@/hooks/useCurrency';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const queryClient = createOptimizedQueryClient();
 
@@ -19,7 +17,7 @@ const queryClient = createOptimizedQueryClient();
  * Application-wide providers — everything that does NOT require BrowserRouter.
  * ActiveTripProvider stays inside BrowserRouter (uses router hooks) and is wired in App.tsx.
  *
- * Toaster/Sonner/Analytics/SpeedInsights are sibling render-only components mounted here
+ * Toaster/Sonner are sibling render-only components mounted here
  * to preserve the original App.tsx ordering.
  */
 export const AppProviders = ({ children }: { children: React.ReactNode }) => (
@@ -34,8 +32,6 @@ export const AppProviders = ({ children }: { children: React.ReactNode }) => (
                   <Toaster />
                   <Sonner />
                   {children}
-                  <Analytics />
-                  <SpeedInsights />
                 </TooltipProvider>
               </CurrencyProvider>
             </AuthProvider>

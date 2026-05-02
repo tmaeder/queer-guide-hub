@@ -1,6 +1,10 @@
 [
   "src/components/accessibility/AccessibilityControls.tsx",
   "src/components/admin/AdminEditDialog.tsx",
+  "src/App.tsx",
+  "src/components/accessibility/AccessibilityControls.tsx",
+  "src/components/admin/AdminEditDialog.tsx",
+  "src/components/admin/AdvancedImportDialog.tsx",
   "src/components/admin/AffiliatePartnersManager.tsx",
   "src/components/admin/ApiKeysManager.tsx",
   "src/components/admin/AudioManager.tsx",
