@@ -7,32 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-
-interface CoverageRow {
-  id: number;
-  source_slug: string;
-  city_id: string | null;
-  accommodation_type: string | null;
-  expected_count: number | null;
-  actual_count: number;
-  last_run_at: string | null;
-  last_success_at: string | null;
-  success_ratio: number | null;
-  is_enabled: boolean;
-}
-
-interface HotelStats {
-  source: string;
-  accommodation_type: string;
-  staged: number;
-  validated: number;
-  unique_items: number;
-  duplicates: number;
-  committed: number;
-  rejected: number;
-  pending_review: number;
-  day: string;
-}
+import {
+  fetchSourceCoverageTargets,
+  fetchHotelIngestStats,
+  type CoverageTargetRow as CoverageRow,
+  type HotelIngestStats as HotelStats,
+} from '@/hooks/usePipelineBuilderTabs';
 
 function sloBadge(s: HotelStats) {
   const total = s.staged || 1;
@@ -69,25 +49,13 @@ export default function CoverageTab() {
 
   const { data: coverage = [], isLoading: covLoading } = useQuery<CoverageRow[]>({
     queryKey: ['source-coverage'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('source_coverage_targets')
-        .select('*')
-        .order('source_slug')
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as CoverageRow[];
-    },
+    queryFn: fetchSourceCoverageTargets,
     refetchInterval: 60_000,
   });
 
   const { data: hotelStats = [] } = useQuery<HotelStats[]>({
     queryKey: ['hotel-ingest-stats'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('hotel_ingest_stats').select('*');
-      if (error) throw error;
-      return (data ?? []) as HotelStats[];
-    },
+    queryFn: fetchHotelIngestStats,
     refetchInterval: 60_000,
   });
 

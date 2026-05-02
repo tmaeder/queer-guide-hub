@@ -6,19 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
-interface DedupRow {
-  id: string;
-  entity_type: string;
-  entity_a_id: string | null;
-  entity_b_id: string | null;
-  match_method: string;
-  confidence: number;
-  decision: string;
-  incoming_source_name: string | null;
-  incoming_source_id: string | null;
-  created_at: string;
-}
+import {
+  fetchPendingDedupDecisions,
+  setDedupDecision,
+  type DedupDecisionRow as DedupRow,
+} from '@/hooks/usePipelineBuilderTabs';
 
 type EntityFilter = 'all' | 'venue' | 'event' | 'place' | 'stay';
 
@@ -29,29 +21,13 @@ export default function DedupDecisionsTab() {
 
   const { data: rows = [], isLoading } = useQuery<DedupRow[]>({
     queryKey: ['dedup-decisions', entityFilter],
-    queryFn: async () => {
-      let q = supabase
-        .from('scraper_dedupe_decisions')
-        .select('*')
-        .eq('decision', 'pending')
-        .order('confidence', { ascending: false })
-        .limit(200);
-      if (entityFilter !== 'all') q = q.eq('entity_type', entityFilter);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as DedupRow[];
-    },
+    queryFn: () => fetchPendingDedupDecisions(entityFilter),
     refetchInterval: 60_000,
   });
 
   const resolve = useMutation({
-    mutationFn: async ({ id, decision }: { id: string; decision: 'merge' | 'skip' }) => {
-      const { error } = await supabase
-        .from('scraper_dedupe_decisions')
-        .update({ decision })
-        .eq('id', id);
-      if (error) throw error;
-    },
+    mutationFn: ({ id, decision }: { id: string; decision: 'merge' | 'skip' }) =>
+      setDedupDecision(id, decision),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dedup-decisions'] }),
     onError: (e: Error) => toast({ title: 'Update failed', description: e.message, variant: 'destructive' }),
   });
