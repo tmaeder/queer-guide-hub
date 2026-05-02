@@ -157,12 +157,12 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
           latitude: v.latitude ?? undefined, longitude: v.longitude ?? undefined,
           country_id: v.country_id ?? undefined, city_id: v.city_id ?? undefined,
         })),
-        ...(eventsRes.data || []).map((e) => ({
+        ...events.map((e) => ({
           id: e.id, name: e.title, type: 'event' as const,
           latitude: e.latitude ?? undefined, longitude: e.longitude ?? undefined,
           country_id: e.country_id ?? undefined, city_id: e.city_id ?? undefined,
         })),
-        ...(hotelsRes.data || []).map((h) => ({
+        ...hotels.map((h) => ({
           id: h.id, name: h.name, type: 'hotel' as const,
           rating: h.star_rating ?? undefined, address: h.address ?? undefined,
           latitude: h.latitude ?? undefined, longitude: h.longitude ?? undefined,
