@@ -251,6 +251,70 @@ export async function upsertEmailTemplate(
   return { error };
 }
 
+/** MarketplaceItemDetail.tsx — slug→uuid fallback + reviews + favorite state. */
+export async function fetchMarketplaceListingBundle<TListing, TReview>(
+  slug: string,
+  userId: string | undefined,
+): Promise<{ listing: TListing; reviews: TReview[]; isFavorited: boolean } | null> {
+  let { data: listing, error } = await supabase
+    .from('marketplace_listings')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+  if (error && /uuid|invalid|no rows/i.test(error.message || '')) {
+    const fb = await supabase.from('marketplace_listings').select('*').eq('id', slug).single();
+    listing = fb.data;
+    error = fb.error;
+  }
+  if (error) {
+    if ((error as { code?: string }).code === 'PGRST116') return null;
+    throw error;
+  }
+  if (!listing) return null;
+  const typed = listing as TListing & { id: string };
+  const { data: reviews, error: reviewsError } = await supabase
+    .from('marketplace_reviews')
+    .select(`*, profiles:user_id (display_name, avatar_url)`)
+    .eq('listing_id', typed.id)
+    .order('created_at', { ascending: false });
+  if (reviewsError) throw reviewsError;
+  let isFavorited = false;
+  if (userId) {
+    const { data: fav } = await supabase
+      .from('marketplace_favorites')
+      .select('id')
+      .eq('listing_id', typed.id)
+      .eq('user_id', userId)
+      .maybeSingle();
+    isFavorited = !!fav;
+  }
+  return {
+    listing: typed,
+    reviews: (reviews ?? []) as TReview[],
+    isFavorited,
+  };
+}
+
+/** MarketplaceItemDetail.tsx — toggle marketplace favorite. */
+export async function toggleMarketplaceFavorite(
+  listingId: string,
+  userId: string,
+  isFavorited: boolean,
+) {
+  if (isFavorited) {
+    const { error } = await supabase
+      .from('marketplace_favorites')
+      .delete()
+      .eq('listing_id', listingId)
+      .eq('user_id', userId);
+    return { error };
+  }
+  const { error } = await supabase
+    .from('marketplace_favorites')
+    .insert({ listing_id: listingId, user_id: userId } as never);
+  return { error };
+}
+
 /** FeedbackBoard.tsx — list non-spam feedback submissions. */
 export async function fetchFeedbackBoardItems<T = unknown>(): Promise<T[]> {
   const { data, error } = await supabase
