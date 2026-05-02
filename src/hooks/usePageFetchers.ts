@@ -251,6 +251,76 @@ export async function upsertEmailTemplate(
   return { error };
 }
 
+/** NewsDetail.tsx — categories list. */
+export async function fetchNewsCategories<T = unknown>(): Promise<T[]> {
+  const { data } = await supabase
+    .from('news_categories')
+    .select('slug, name, color')
+    .eq('is_active', true);
+  return (data ?? []) as T[];
+}
+
+/** NewsDetail.tsx — article by slug then by id, scoped to non-rejected. */
+export async function fetchNewsArticleBySlugOrId<T = unknown>(slug: string): Promise<T | null> {
+  let { data, error } = await supabase
+    .from('news_articles')
+    .select('*')
+    .eq('slug', slug)
+    .or('quality_status.is.null,quality_status.eq.passed')
+    .maybeSingle();
+  if (!data && !error) {
+    const fb = await supabase
+      .from('news_articles')
+      .select('*')
+      .eq('id', slug)
+      .or('quality_status.is.null,quality_status.eq.passed')
+      .maybeSingle();
+    data = fb.data;
+    error = fb.error;
+  }
+  if (error) return null;
+  return (data ?? null) as T | null;
+}
+
+/** NewsDetail.tsx — source name + url by id. */
+export async function fetchNewsSourceById(id: string): Promise<{ name?: string; url?: string } | null> {
+  const { data } = await supabase
+    .from('news_sources')
+    .select('name, url')
+    .eq('id', id)
+    .maybeSingle();
+  return (data as { name?: string; url?: string } | null) ?? null;
+}
+
+/** NewsDetail.tsx — tags assigned to a news entity. */
+export async function fetchNewsTagsForEntity(entityId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from('unified_tag_assignments')
+    .select('unified_tags!inner(name)')
+    .eq('entity_type', 'news')
+    .eq('entity_id', entityId);
+  return (
+    (data as Array<{ unified_tags: { name: string } }> | null)?.map((t) => t.unified_tags.name) ??
+    []
+  );
+}
+
+/** NewsDetail.tsx — related articles in same category. */
+export async function fetchRelatedNewsArticles<T = unknown>(
+  category: string,
+  excludeId: string,
+): Promise<T[]> {
+  const { data } = await supabase
+    .from('news_articles')
+    .select('id, title, excerpt, image_url, published_at, category')
+    .eq('category', category)
+    .neq('id', excludeId)
+    .not('published_at', 'is', null)
+    .order('published_at', { ascending: false })
+    .limit(4);
+  return (data ?? []) as T[];
+}
+
 /** MarketplaceItemDetail.tsx — slug→uuid fallback + reviews + favorite state. */
 export async function fetchMarketplaceListingBundle<TListing, TReview>(
   slug: string,
