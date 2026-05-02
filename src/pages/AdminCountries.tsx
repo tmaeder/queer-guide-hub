@@ -20,7 +20,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -403,20 +403,13 @@ export default function AdminCountries() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Countries Management
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage countries, their information, and geographical data
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+    <AdminEntityTable
+      title="Countries Management"
+      subtitle="Manage countries, their information, and geographical data"
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent style={{ maxWidth: 672 }}>
           <DialogHeader>
             <DialogTitle>Edit Country</DialogTitle>
@@ -518,6 +511,7 @@ export default function AdminCountries() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+      }
+    />
   );
 }
