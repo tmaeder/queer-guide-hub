@@ -382,7 +382,7 @@ export default function News() {
             <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 1, mb: 2, display: 'block', color: 'text.secondary' }}>
               Featured Stories
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1fr) minmax(0, 1fr)' }, gap: 3 }}>
               {/* Hero featured article */}
               {featuredArticles[0] && (
                 <NewsCard
