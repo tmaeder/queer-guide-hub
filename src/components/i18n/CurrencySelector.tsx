@@ -7,7 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Box from '@mui/material/Box';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -54,11 +53,9 @@ export function CurrencySelector() {
       <SelectContent>
         {currencies.map((c) => (
           <SelectItem key={c.code} value={c.code}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <span style={{ fontSize: '0.8125rem' }}>
-                {c.code} {c.symbol ? `(${c.symbol})` : ''}
-              </span>
-            </Box>
+            <span className="text-[0.8125rem]">
+              {c.code} {c.symbol ? `(${c.symbol})` : ''}
+            </span>
           </SelectItem>
         ))}
       </SelectContent>
