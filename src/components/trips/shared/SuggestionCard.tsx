@@ -1,6 +1,4 @@
 import { useEffect, useRef } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,11 +12,8 @@ export interface SuggestionCardProps {
   priceLabel?: string | null;
   provider: string;
   ctaLabel: string;
-  /** Called once when the card enters the viewport (IntersectionObserver, 500ms debounce). */
   onImpression?: () => void;
-  /** Called when user clicks the primary CTA — must return a URL or navigate. */
   onCtaClick: () => void;
-  /** Optional secondary action (e.g. "Add to checklist" for packing cards). */
   secondaryAction?: {
     label: string;
     onClick: () => void;
@@ -27,10 +22,6 @@ export interface SuggestionCardProps {
   compact?: boolean;
 }
 
-/**
- * Shared suggestion card used by Reservations + Packing panels.
- * Fires a single impression event when scrolled into view.
- */
 export function SuggestionCard({
   title,
   subtitle,
@@ -82,43 +73,30 @@ export function SuggestionCard({
   return (
     <Card ref={ref} hoverable className={compact ? '' : 'h-full'}>
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, height: '100%' }}>
+        <div className="flex flex-col gap-2 h-full">
           {imageUrl && (
-            <Box
-              sx={{
-                width: '100%',
+            <div
+              className="w-full bg-muted"
+              style={{
                 aspectRatio: '16/10',
-                bgcolor: 'action.hover',
                 backgroundImage: `url(${imageUrl})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                borderRadius: 1,
               }}
               role="img"
               aria-label={title}
             />
           )}
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+          <div className="flex items-center justify-between gap-2">
             <Badge variant="outline">{provider}</Badge>
-            {priceLabel && (
-              <Typography variant="body2" fontWeight={700}>
-                {priceLabel}
-              </Typography>
-            )}
-          </Box>
-          <Typography variant="subtitle2" fontWeight={700} sx={{ lineHeight: 1.3 }}>
-            {title}
-          </Typography>
-          {subtitle && (
-            <Typography variant="caption" color="text.secondary">
-              {subtitle}
-            </Typography>
-          )}
+            {priceLabel && <p className="text-sm font-bold">{priceLabel}</p>}
+          </div>
+          <p className="text-sm font-bold leading-tight">{title}</p>
+          {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
           {description && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{
+            <p
+              className="text-xs text-muted-foreground"
+              style={{
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
@@ -126,15 +104,10 @@ export function SuggestionCard({
               }}
             >
               {description}
-            </Typography>
+            </p>
           )}
-          <Box sx={{ mt: 'auto', display: 'flex', gap: 1 }}>
-            <Button
-              variant="brand"
-              size="sm"
-              className="flex-1"
-              onClick={onCtaClick}
-            >
+          <div className="mt-auto flex gap-2">
+            <Button variant="brand" size="sm" className="flex-1" onClick={onCtaClick}>
               {ctaLabel}
               <ExternalLink size={14} style={{ marginLeft: 6 }} />
             </Button>
@@ -148,8 +121,8 @@ export function SuggestionCard({
                 {secondaryAction.label}
               </Button>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
