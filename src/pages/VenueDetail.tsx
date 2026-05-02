@@ -3,9 +3,6 @@ import { useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -83,49 +80,46 @@ export default function VenueDetail() {
   // NotFound branch
   if (!isLoading && notFound) {
     return (
-      <Container sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+      <div className="container mx-auto py-8 px-4 text-center">
+        <h5 className="text-xl font-bold mb-4">
           {t('pages.venueDetail.notFoundTitle', 'Venue not found')}
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        </h5>
+        <p className="text-muted-foreground mb-6">
           {t(
             'pages.venueDetail.notFoundBody',
             'No venue matches this URL. It may have been removed or the link is incorrect.',
           )}
-        </Typography>
+        </p>
         <LocalizedLink to="/venues">
           <Button variant="outline">
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft className="w-4 h-4 mr-2" />
             {t('pages.venueDetail.backToVenues', 'Back to Venues')}
           </Button>
         </LocalizedLink>
-      </Container>
+      </div>
     );
   }
 
-  // Fetch error branch (network / unknown error, no venue loaded)
   if (!isLoading && error && !venue) {
     return (
-      <Container sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Failed to Load
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+      <div className="container mx-auto py-8 px-4 text-center">
+        <h5 className="text-xl font-bold mb-4">Failed to Load</h5>
+        <p className="text-muted-foreground mb-6">
           Could not load venue details. Check your connection and try again.
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+        </p>
+        <div className="flex gap-3 justify-center">
           <Button onClick={() => refetch()}>
-            <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
+            <RefreshCw className="w-4 h-4 mr-2" />
             Try Again
           </Button>
           <LocalizedLink to="/venues">
             <Button variant="outline">
-              <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Venues
             </Button>
           </LocalizedLink>
-        </Box>
-      </Container>
+        </div>
+      </div>
     );
   }
 
@@ -227,9 +221,9 @@ export default function VenueDetail() {
 
       {venue && (
         <>
-          <Container sx={{ pb: 4 }}>
+          <div className="container mx-auto pb-8 px-4">
             <SimilarItems entity={{ type: 'venue', id: venue.id }} className="mt-8" />
-          </Container>
+          </div>
 
           <AddToTripDialog
             open={addToTripOpen}
