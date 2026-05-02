@@ -414,7 +414,7 @@ const contentStatItems = [
     key: 'pages',
     label: 'Pages',
     icon: FileText,
-    color: '#64748b',
+    color: 'hsl(var(--muted-foreground))',
     route: '/admin/content/cms_pages',
   },
 ] as const;

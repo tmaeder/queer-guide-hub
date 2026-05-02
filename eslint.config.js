@@ -125,7 +125,28 @@ export default tseslint.config(
       "src/components/personalities/AddPersonalityDialog.tsx",
       "src/hooks/useExploreMapData.ts",
       "src/hooks/useReviewBulkActions.ts",
+      "src/hooks/useMapBoundaryLayers.ts",
       "src/config/workflowConfig.ts",
+      "src/config/feedbackCategories.ts",
+      // Map style — vector tile color overrides, intentional.
+      "src/components/trips/TripMap.tsx",
+      // External brand SVGs (Google OAuth icon — locked color).
+      "src/components/auth/OAuthButtons.tsx",
+      // Severity rgba banners — pre-multiplied alpha for translucency.
+      "src/components/trips/TripDocExpiryBanner.tsx",
+      "src/components/trips/TripNudgesBanner.tsx",
+      // Validation success/state colors that don't map to existing tokens.
+      "src/components/ui/location-autocomplete.tsx",
+      // Role-icon palette (admin/owner/member).
+      "src/pages/MyGroups.tsx",
+      // Categorical budget category palette (food/transport/lodging/...).
+      "src/components/trips/BudgetTab.tsx",
+      // Filter chip dot colors — categorical.
+      "src/components/venues/VenueFilters.tsx",
+      // Star-fill yellow (semantic gold star).
+      "src/pages/Favorites.tsx",
+      // Video player chrome — pure black/white overlay regardless of theme.
+      "src/components/ui/modern-video-player.tsx",
     ],
     rules: {
       "no-restricted-syntax": [

@@ -162,7 +162,7 @@ function ChildPageCard({ page }: { page: CMSPage }) {
           </Typography>
         )}
       </Box>
-      <ChevronRight size={18} style={{ flexShrink: 0, marginTop: 2, color: '#94a3b8' }} />
+      <ChevronRight size={18} style={{ flexShrink: 0, marginTop: 2, color: 'hsl(var(--muted-foreground))' }} />
     </Box>
   );
 }
@@ -203,7 +203,7 @@ function LegalHubCard({ page }: { page: CMSPage }) {
           </Typography>
         )}
       </Box>
-      <ChevronRight size={16} style={{ flexShrink: 0, marginTop: 4, color: '#94a3b8' }} />
+      <ChevronRight size={16} style={{ flexShrink: 0, marginTop: 4, color: 'hsl(var(--muted-foreground))' }} />
     </Box>
   );
 }
@@ -347,7 +347,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         {parentPage && (
           <Container sx={{ pt: 2, maxWidth: 1100 }}>
             <Breadcrumbs
-              separator={<ChevronRight size={14} style={{ color: '#94a3b8' }} />}
+              separator={<ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />}
             >
               <Link
                 component={LocalizedLink}
@@ -387,7 +387,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     <Container sx={{ py: 4 }}>
       {parentPage && (
         <Breadcrumbs
-          separator={<ChevronRight size={14} style={{ color: '#94a3b8' }} />}
+          separator={<ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />}
           sx={{ mb: 2 }}
         >
           <Link
