@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +14,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -195,19 +194,12 @@ export default function AdminEventTypes() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Event Types
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage event type classifications
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <AdminEntityTable
+      title="Event Types"
+      subtitle="Manage event type classifications"
+      config={tableConfig}
+      afterTable={
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ maxWidth: 480 }}>
           <DialogHeader>
             <DialogTitle>{editingId ? 'Edit Event Type' : 'Create Event Type'}</DialogTitle>
@@ -272,6 +264,7 @@ export default function AdminEventTypes() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+      }
+    />
   );
 }

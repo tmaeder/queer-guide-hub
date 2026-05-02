@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +21,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -232,19 +231,12 @@ export default function AdminAccessibilityAttributes() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Accessibility Attributes
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage accessibility features and attributes
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <AdminEntityTable
+      title="Accessibility Attributes"
+      subtitle="Manage accessibility features and attributes"
+      config={tableConfig}
+      afterTable={
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ maxWidth: 480 }}>
           <DialogHeader>
             <DialogTitle>{editingId ? 'Edit Attribute' : 'Create Attribute'}</DialogTitle>
@@ -319,6 +311,7 @@ export default function AdminAccessibilityAttributes() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+      }
+    />
   );
 }
