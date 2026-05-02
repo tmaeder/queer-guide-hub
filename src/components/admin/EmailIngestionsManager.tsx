@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
-import { Box, Typography } from '@mui/material';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Mail,
@@ -30,7 +29,7 @@ interface EmailIngestion {
   extracted_venues: number;
   inserted_event_ids: string[];
   inserted_venue_ids: string[];
-  ai_extraction: { events?: Array<{ title: string; city: string; country: string; start_date?: string; event_type?: string }>; venues?: Array<{ name: string; city: string; country: string; venue_type?: string }> };
+  ai_extraction: { events?: Array<{ title: string; city: string; country: string; start_date?: string; event_type?: string }>; venues?: Array<{ name: string; city: string; country: string; venue_type?: string; address?: string; category?: string }>; summary?: string };
   status: string;
   error_message: string | null;
   processing_ms: number | null;
@@ -120,7 +119,6 @@ export function EmailIngestionsManager() {
     });
   };
 
-  // Filtering
   const filtered = ingestions.filter((ing) => {
     if (statusFilter !== 'all' && ing.status !== statusFilter) return false;
     if (searchQuery) {
@@ -130,7 +128,6 @@ export function EmailIngestionsManager() {
     return true;
   });
 
-  // Stats
   const totalCount = ingestions.length;
   const completedCount = ingestions.filter((i) => i.status === 'completed').length;
   const failedCount = ingestions.filter((i) => i.status === 'failed').length;
@@ -138,102 +135,68 @@ export function EmailIngestionsManager() {
 
   if (loading) {
     return (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
-        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-          Loading email ingestions...
-        </Typography>
-      </Box>
+      <div className="text-center p-8">
+        <p className="text-sm text-muted-foreground">Loading email ingestions...</p>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <Mail style={{ height: 24, width: 24, color: '#ec4899' }} />
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Email Ingestions
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-              Forwarded emails processed for LGBTQ+ events and venues
-            </Typography>
-          </Box>
-        </Box>
+          <div>
+            <h6 className="text-base font-semibold">Email Ingestions</h6>
+            <p className="text-sm text-muted-foreground">Forwarded emails processed for LGBTQ+ events and venues</p>
+          </div>
+        </div>
         <Button variant="outline" size="sm" onClick={fetchIngestions}>
           <RefreshCw style={{ height: 14, width: 14, marginRight: 6 }} />
           Refresh
         </Button>
-      </Box>
+      </div>
 
       {/* Stats grid */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' },
-          gap: 2,
-        }}
-      >
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{totalCount}</Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
-              Total
-            </Typography>
+            <div className="text-2xl font-bold">{totalCount}</div>
+            <span className="text-xs text-muted-foreground">Total</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <Box sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}>
-              {completedCount}
-            </Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
-              Completed
-            </Typography>
+            <div className="text-2xl font-bold" style={{ color: '#16a34a' }}>{completedCount}</div>
+            <span className="text-xs text-muted-foreground">Completed</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <Box sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#dc2626' }}>{failedCount}</Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
-              Failed
-            </Typography>
+            <div className="text-2xl font-bold" style={{ color: '#dc2626' }}>{failedCount}</div>
+            <span className="text-xs text-muted-foreground">Failed</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <Box sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#ca8a04' }}>
-              {processingCount}
-            </Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
-              Processing
-            </Typography>
+            <div className="text-2xl font-bold" style={{ color: '#ca8a04' }}>{processingCount}</div>
+            <span className="text-xs text-muted-foreground">Processing</span>
           </CardContent>
         </Card>
-      </Box>
+      </div>
 
       {/* Search and filters */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
-        <Box sx={{ position: 'relative', flex: 1, minWidth: 200 }}>
-          <Search
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              height: 14,
-              width: 14,
-              color: '#9ca3af',
-            }}
-          />
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', height: 14, width: 14, color: '#9ca3af' }} />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by subject or sender..."
             style={{ paddingLeft: 32 }}
           />
-        </Box>
+        </div>
         {(['all', 'completed', 'failed', 'no_content', 'processing'] as StatusFilter[]).map(
           (filter) => (
             <Button
@@ -250,24 +213,24 @@ export function EmailIngestionsManager() {
             </Button>
           ),
         )}
-      </Box>
+      </div>
 
       {/* Ingestion list */}
       {filtered.length === 0 ? (
         <Card>
           <CardContent style={{ padding: 32 }}>
-            <Box sx={{ textAlign: 'center', color: 'var(--muted-foreground)' }}>
+            <div className="text-center text-muted-foreground">
               <Mail style={{ height: 40, width: 40, margin: '0 auto 12px', opacity: 0.4 }} />
-              <Typography variant="body2">
+              <p className="text-sm">
                 {ingestions.length === 0
                   ? 'No email ingestions yet. Forward emails to ingest@queer.guide to get started.'
                   : 'No ingestions match your filters.'}
-              </Typography>
-            </Box>
+              </p>
+            </div>
           </CardContent>
         </Card>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <div className="flex flex-col gap-3">
           {filtered.map((ing) => (
             <Collapsible key={ing.id}>
               <Card
@@ -278,56 +241,25 @@ export function EmailIngestionsManager() {
               >
                 <CardContent style={{ padding: 14 }}>
                   {/* Summary row */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 1,
-                    }}
-                  >
-                    <Box
-                      sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}
-                    >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Badge variant={STATUS_BADGE_VARIANT[ing.status] || 'outline'}>
                         {ing.status === 'no_content' ? 'no content' : ing.status}
                       </Badge>
-                      <Box
-                        component="span"
-                        sx={{
-                          fontWeight: 500,
-                          fontSize: '0.875rem',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
+                      <span className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap">
                         {ing.subject}
-                      </Box>
-                    </Box>
+                      </span>
+                    </div>
 
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        flexShrink: 0,
-                        fontSize: '0.75rem',
-                        color: 'var(--muted-foreground)',
-                      }}
-                    >
-                      <Box
-                        component="span"
-                        sx={{ display: { xs: 'none', md: 'inline' } }}
-                        title={ing.from_address}
-                      >
+                    <div className="flex items-center gap-3 flex-shrink-0 text-xs text-muted-foreground">
+                      <span className="hidden md:inline" title={ing.from_address}>
                         {ing.from_address.length > 24
                           ? ing.from_address.slice(0, 24) + '...'
                           : ing.from_address}
-                      </Box>
+                      </span>
 
                       {ing.status === 'completed' && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <div className="flex items-center gap-1">
                           {ing.extracted_events > 0 && (
                             <Badge variant="outline" style={{ fontSize: '0.7rem' }}>
                               <Calendar style={{ height: 10, width: 10, marginRight: 3 }} />
@@ -340,33 +272,21 @@ export function EmailIngestionsManager() {
                               {ing.extracted_venues}
                             </Badge>
                           )}
-                        </Box>
+                        </div>
                       )}
 
                       {ing.processing_ms != null && (
-                        <Box
-                          component="span"
-                          sx={{ display: { xs: 'none', sm: 'inline' } }}
-                          title="Processing time"
-                        >
-                          <Clock
-                            style={{
-                              height: 10,
-                              width: 10,
-                              display: 'inline',
-                              marginRight: 2,
-                              verticalAlign: 'middle',
-                            }}
-                          />
+                        <span className="hidden sm:inline" title="Processing time">
+                          <Clock style={{ height: 10, width: 10, display: 'inline', marginRight: 2, verticalAlign: 'middle' }} />
                           {ing.processing_ms < 1000
                             ? `${ing.processing_ms}ms`
                             : `${(ing.processing_ms / 1000).toFixed(1)}s`}
-                        </Box>
+                        </span>
                       )}
 
-                      <Box component="span" title={new Date(ing.received_at).toLocaleString()}>
+                      <span title={new Date(ing.received_at).toLocaleString()}>
                         {relativeTime(ing.received_at)}
-                      </Box>
+                      </span>
 
                       <CollapsibleTrigger asChild>
                         <Button
@@ -382,196 +302,97 @@ export function EmailIngestionsManager() {
                           )}
                         </Button>
                       </CollapsibleTrigger>
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
 
                   {/* Expanded detail */}
                   <CollapsibleContent style={{ marginTop: 16 }}>
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                        gap: 2,
-                        fontSize: '0.85rem',
-                      }}
-                    >
-                      <Box>
-                        <Box component="span" sx={{ fontWeight: 500 }}>
-                          From:
-                        </Box>
-                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-                          {ing.from_address}
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Box component="span" sx={{ fontWeight: 500 }}>
-                          Received:
-                        </Box>
-                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-                          {new Date(ing.received_at).toLocaleString()}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ gridColumn: { md: 'span 2' } }}>
-                        <Box component="span" sx={{ fontWeight: 500 }}>
-                          Subject:
-                        </Box>
-                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-                          {ing.subject}
-                        </Typography>
-                      </Box>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[0.85rem]">
+                      <div>
+                        <span className="font-medium">From:</span>
+                        <p className="text-sm text-muted-foreground">{ing.from_address}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium">Received:</span>
+                        <p className="text-sm text-muted-foreground">{new Date(ing.received_at).toLocaleString()}</p>
+                      </div>
+                      <div className="md:col-span-2">
+                        <span className="font-medium">Subject:</span>
+                        <p className="text-sm text-muted-foreground">{ing.subject}</p>
+                      </div>
 
-                      {/* AI Summary */}
                       {ing.ai_extraction?.summary && (
-                        <Box sx={{ gridColumn: { md: 'span 2' } }}>
-                          <Box component="span" sx={{ fontWeight: 500 }}>
-                            AI Summary:
-                          </Box>
-                          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-                            {ing.ai_extraction.summary}
-                          </Typography>
-                        </Box>
+                        <div className="md:col-span-2">
+                          <span className="font-medium">AI Summary:</span>
+                          <p className="text-sm text-muted-foreground">{ing.ai_extraction.summary}</p>
+                        </div>
                       )}
 
-                      {/* Error message */}
                       {ing.error_message && (
-                        <Box sx={{ gridColumn: { md: 'span 2' } }}>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: 1,
-                              p: 1.5,
-                              borderRadius: 1,
-                              bgcolor: 'rgba(220, 38, 38, 0.08)',
+                        <div className="md:col-span-2">
+                          <div
+                            className="flex items-start gap-2 p-3 rounded"
+                            style={{
+                              backgroundColor: 'rgba(220, 38, 38, 0.08)',
                               border: '1px solid rgba(220, 38, 38, 0.2)',
                             }}
                           >
-                            <AlertCircle
-                              style={{
-                                height: 14,
-                                width: 14,
-                                color: '#dc2626',
-                                marginTop: 2,
-                                flexShrink: 0,
-                              }}
-                            />
-                            <Typography
-                              variant="body2"
-                              sx={{ color: '#dc2626', wordBreak: 'break-word' }}
-                            >
-                              {ing.error_message}
-                            </Typography>
-                          </Box>
-                        </Box>
+                            <AlertCircle style={{ height: 14, width: 14, color: '#dc2626', marginTop: 2, flexShrink: 0 }} />
+                            <p className="text-sm break-words" style={{ color: '#dc2626' }}>{ing.error_message}</p>
+                          </div>
+                        </div>
                       )}
 
-                      {/* Extracted events */}
-                      {ing.ai_extraction?.events?.length > 0 && (
-                        <Box sx={{ gridColumn: { md: 'span 2' } }}>
-                          <Box component="span" sx={{ fontWeight: 500 }}>
-                            Extracted Events ({ing.ai_extraction.events.length}):
-                          </Box>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 0.5,
-                              mt: 0.5,
-                            }}
-                          >
+                      {ing.ai_extraction?.events && ing.ai_extraction.events.length > 0 && (
+                        <div className="md:col-span-2">
+                          <span className="font-medium">Extracted Events ({ing.ai_extraction.events.length}):</span>
+                          <div className="flex flex-col gap-1 mt-1">
                             {ing.ai_extraction.events.map((ev, i: number) => (
-                              <Box
-                                key={i}
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1,
-                                  fontSize: '0.8rem',
-                                  color: 'var(--muted-foreground)',
-                                }}
-                              >
+                              <div key={i} className="flex items-center gap-2 text-[0.8rem] text-muted-foreground">
                                 <Calendar style={{ height: 12, width: 12, flexShrink: 0 }} />
                                 <span>
                                   <strong>{ev.title}</strong> — {ev.city}, {ev.country}
-                                  {ev.start_date &&
-                                    ` (${new Date(ev.start_date).toLocaleDateString()})`}
+                                  {ev.start_date && ` (${new Date(ev.start_date).toLocaleDateString()})`}
                                 </span>
-                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>
-                                  {ev.event_type}
-                                </Badge>
-                              </Box>
+                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>{ev.event_type}</Badge>
+                              </div>
                             ))}
-                          </Box>
-                        </Box>
+                          </div>
+                        </div>
                       )}
 
-                      {/* Extracted venues */}
-                      {ing.ai_extraction?.venues?.length > 0 && (
-                        <Box sx={{ gridColumn: { md: 'span 2' } }}>
-                          <Box component="span" sx={{ fontWeight: 500 }}>
-                            Extracted Venues ({ing.ai_extraction.venues.length}):
-                          </Box>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 0.5,
-                              mt: 0.5,
-                            }}
-                          >
+                      {ing.ai_extraction?.venues && ing.ai_extraction.venues.length > 0 && (
+                        <div className="md:col-span-2">
+                          <span className="font-medium">Extracted Venues ({ing.ai_extraction.venues.length}):</span>
+                          <div className="flex flex-col gap-1 mt-1">
                             {ing.ai_extraction.venues.map((v, i: number) => (
-                              <Box
-                                key={i}
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1,
-                                  fontSize: '0.8rem',
-                                  color: 'var(--muted-foreground)',
-                                }}
-                              >
+                              <div key={i} className="flex items-center gap-2 text-[0.8rem] text-muted-foreground">
                                 <Building style={{ height: 12, width: 12, flexShrink: 0 }} />
                                 <span>
                                   <strong>{v.name}</strong> — {v.address}, {v.city}
                                 </span>
-                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>
-                                  {v.category}
-                                </Badge>
-                              </Box>
+                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>{v.category}</Badge>
+                              </div>
                             ))}
-                          </Box>
-                        </Box>
+                          </div>
+                        </div>
                       )}
 
-                      {/* Body preview */}
                       {ing.body_text && (
-                        <Box sx={{ gridColumn: { md: 'span 2' } }}>
-                          <Box component="span" sx={{ fontWeight: 500 }}>
-                            Body Preview:
-                          </Box>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: 'var(--muted-foreground)',
-                              whiteSpace: 'pre-wrap',
-                              mt: 0.5,
-                              maxHeight: 200,
-                              overflow: 'auto',
-                              fontSize: '0.8rem',
-                              bgcolor: 'rgba(0,0,0,0.03)',
-                              p: 1,
-                              borderRadius: 1,
-                            }}
+                        <div className="md:col-span-2">
+                          <span className="font-medium">Body Preview:</span>
+                          <p
+                            className="text-sm text-muted-foreground mt-1 p-2 rounded overflow-auto whitespace-pre-wrap"
+                            style={{ maxHeight: 200, fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.03)' }}
                           >
                             {ing.body_text.slice(0, 1000)}
                             {ing.body_text.length > 1000 && '...'}
-                          </Typography>
-                        </Box>
+                          </p>
+                        </div>
                       )}
 
-                      {/* Raw AI extraction JSON */}
                       {ing.ai_extraction && (
-                        <Box sx={{ gridColumn: { md: 'span 2' } }}>
+                        <div className="md:col-span-2">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -586,32 +407,28 @@ export function EmailIngestionsManager() {
                             )}
                           </Button>
                           {expandedJson.has(ing.id) && (
-                            <Box
-                              component="pre"
-                              sx={{
-                                mt: 1,
-                                p: 1.5,
-                                borderRadius: 1,
-                                bgcolor: 'rgba(0,0,0,0.05)',
-                                overflow: 'auto',
+                            <pre
+                              className="mt-2 p-3 rounded overflow-auto"
+                              style={{
+                                backgroundColor: 'rgba(0,0,0,0.05)',
                                 maxHeight: 400,
                                 fontSize: '0.75rem',
                                 lineHeight: 1.4,
                               }}
                             >
                               {JSON.stringify(ing.ai_extraction, null, 2)}
-                            </Box>
+                            </pre>
                           )}
-                        </Box>
+                        </div>
                       )}
-                    </Box>
+                    </div>
                   </CollapsibleContent>
                 </CardContent>
               </Card>
             </Collapsible>
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
