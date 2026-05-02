@@ -1,4 +1,10 @@
 [
+  "src/App.tsx",
+  "src/components/ErrorBoundary.tsx",
+  "src/components/accessibility/AccessibilityControls.tsx",
+  "src/components/activities/ActivitiesWidget.tsx",
+  "src/components/admin/AdminEditButton.tsx",
+  "src/components/admin/AdminEditDialog.tsx",
   "src/components/admin/EmailIngestionsManager.tsx",
   "src/components/admin/NewsSourcesManager.tsx",
   "src/components/admin/SubmissionMediaSection.tsx",
