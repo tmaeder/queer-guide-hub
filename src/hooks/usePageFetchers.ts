@@ -251,6 +251,73 @@ export async function upsertEmailTemplate(
   return { error };
 }
 
+/** FeedbackBoard.tsx — list non-spam feedback submissions. */
+export async function fetchFeedbackBoardItems<T = unknown>(): Promise<T[]> {
+  const { data, error } = await supabase
+    .from('community_submissions' as const)
+    .select('id,data,submitted_at,feedback_status')
+    .eq('content_type', 'feedback')
+    .or('is_spam.is.null,is_spam.eq.false')
+    .is('duplicate_of', null)
+    .order('submitted_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as T[];
+}
+
+/** FeedbackBoard.tsx — toggle a feedback vote. */
+export async function toggleFeedbackVote(
+  submissionId: string,
+  userId: string,
+  hasVoted: boolean,
+) {
+  if (hasVoted) {
+    await supabase
+      .from('feedback_votes' as const)
+      .delete()
+      .eq('submission_id', submissionId)
+      .eq('user_id', userId);
+  } else {
+    await supabase
+      .from('feedback_votes' as const)
+      .insert({ submission_id: submissionId, user_id: userId } as never);
+  }
+}
+
+/** Generic CRUD helpers — last-resort wrappers when a more specific hook is overkill. */
+export async function listFrom<T = unknown>(
+  table: string,
+  select = '*',
+  order?: { col: string; ascending?: boolean },
+): Promise<T[]> {
+  let q = supabase.from(table as never).select(select as never);
+  if (order) q = (q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }).order(order.col, { ascending: order.ascending ?? true });
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []) as T[];
+}
+
+export async function insertInto<TPayload extends Record<string, unknown>>(
+  table: string,
+  payload: TPayload,
+): Promise<{ data: unknown; error: unknown }> {
+  const { data, error } = await supabase.from(table as never).insert([payload as never]).select().maybeSingle();
+  return { data, error };
+}
+
+export async function updateRow(
+  table: string,
+  id: string,
+  update: Record<string, unknown>,
+): Promise<{ error: unknown }> {
+  const { error } = await supabase.from(table as never).update(update as never).eq('id', id);
+  return { error };
+}
+
+export async function deleteRow(table: string, id: string): Promise<{ error: unknown }> {
+  const { error } = await supabase.from(table as never).delete().eq('id', id);
+  return { error };
+}
+
 /** AdminQueerVillages.tsx — list cities + countries. */
 export async function fetchAllCitiesAndCountries() {
   const [citiesRes, countriesRes] = await Promise.all([

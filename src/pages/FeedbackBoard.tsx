@@ -18,7 +18,7 @@ import type { FeedbackItem } from '@/components/feedback/FeedbackCard';
 import { useFeedbackVoteCounts } from '@/hooks/useFeedbackVote';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchFeedbackBoardItems, toggleFeedbackVote } from '@/hooks/usePageFetchers';
 import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';import { useTranslation } from 'react-i18next';
 
 
@@ -49,17 +49,7 @@ export default function FeedbackBoard() {
   // Fetch all feedback submissions
   const { data: items = [], isLoading } = useQuery<FeedbackItem[]>({
     queryKey: ['feedback-board'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('community_submissions' as const)
-        .select('id,data,submitted_at,feedback_status')
-        .eq('content_type', 'feedback')
-        .or('is_spam.is.null,is_spam.eq.false')
-        .is('duplicate_of', null)
-        .order('submitted_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => fetchFeedbackBoardItems<FeedbackItem>(),
   });
 
   // Batch vote counts
@@ -87,17 +77,7 @@ export default function FeedbackBoard() {
     mutationFn: async (submissionId: string) => {
       if (!user) throw new Error('Login required');
       const voteState = votesMap[submissionId];
-      if (voteState?.hasVoted) {
-        await supabase
-          .from('feedback_votes' as const)
-          .delete()
-          .eq('submission_id', submissionId)
-          .eq('user_id', user.id);
-      } else {
-        await supabase
-          .from('feedback_votes' as const)
-          .insert({ submission_id: submissionId, user_id: user.id });
-      }
+      await toggleFeedbackVote(submissionId, user.id, !!voteState?.hasVoted);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['feedback-votes'] });

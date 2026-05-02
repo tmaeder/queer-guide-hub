@@ -26,6 +26,7 @@ import {
   Tags,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -113,14 +114,11 @@ export default function AdminNewsSources() {
     e.preventDefault();
     try {
       if (editingSource) {
-        const { error } = await supabase
-          .from('news_sources')
-          .update(formData)
-          .eq('id', editingSource.id);
+        const { error } = await updateRow('news_sources', editingSource.id, formData);
         if (error) throw error;
         toast({ title: 'Success', description: 'News source updated' });
       } else {
-        const { error } = await supabase.from('news_sources').insert([formData]);
+        const { error } = await insertInto('news_sources', formData);
         if (error) throw error;
         toast({ title: 'Success', description: 'News source created' });
       }
@@ -180,10 +178,9 @@ export default function AdminNewsSources() {
   const saveKeywords = async () => {
     if (!editingSource) return;
     try {
-      const { error } = await supabase
-        .from('news_sources')
-        .update({ keywords: editingKeywords })
-        .eq('id', editingSource.id);
+      const { error } = await updateRow('news_sources', editingSource.id, {
+        keywords: editingKeywords,
+      });
       if (error) throw error;
       toast({ title: 'Success', description: 'Keywords updated' });
       setKeywordsDialogOpen(false);
@@ -366,7 +363,7 @@ export default function AdminNewsSources() {
           onClick: async (row) => {
             if (!confirm(`Delete "${row.name}"?`)) return;
             try {
-              const { error } = await supabase.from('news_sources').delete().eq('id', row.id);
+              const { error } = await deleteRow('news_sources', row.id);
               if (error) throw error;
               toast({ title: 'Success', description: 'Source deleted' });
             } catch {
