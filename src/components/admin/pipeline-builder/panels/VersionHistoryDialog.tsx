@@ -91,15 +91,15 @@ export default function VersionHistoryDialog({ pipelineId, currentVersion, onRev
                   <div key={v.id} className="p-3 flex items-start gap-3 hover:bg-muted/30 transition-colors">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-mono ${isCurrent ? 'bg-primary/10 text-primary border-primary/30' : ''}`}>
+                        <Badge variant="outline" className={`text-2xs px-1.5 py-0 font-mono ${isCurrent ? 'bg-primary/10 text-primary border-primary/30' : ''}`}>
                           v{v.version}
                         </Badge>
-                        {isCurrent && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-900">current</Badge>}
+                        {isCurrent && <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-900">current</Badge>}
                         <span className="text-xs text-muted-foreground" title={new Date(v.saved_at).toISOString()}>
                           {formatDistanceToNow(new Date(v.saved_at), { addSuffix: true })}
                         </span>
                       </div>
-                      <div className="text-[11px] text-muted-foreground flex items-center gap-3">
+                      <div className="text-xs2 text-muted-foreground flex items-center gap-3">
                         <span>{v.nodes?.length || 0} nodes · {v.edges?.length || 0} edges</span>
                         {v.schedule && <span className="font-mono">{v.schedule}</span>}
                         {v.saved_by && (

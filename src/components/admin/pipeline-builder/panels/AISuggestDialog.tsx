@@ -146,7 +146,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
               <button
                 key={ex}
                 onClick={() => setDescription(ex)}
-                className="text-[10px] px-2 py-0.5 rounded border border-border bg-background hover:bg-accent transition-colors"
+                className="text-2xs px-2 py-0.5 rounded border border-border bg-background hover:bg-accent transition-colors"
               >
                 {ex.slice(0, 40)}…
               </button>
@@ -169,13 +169,13 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
             <div className="space-y-1">
               {suggestion.nodes.map((n) => (
                 <div key={n.id} className="flex items-center gap-2 text-xs">
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">{n.id}</Badge>
-                  <span className="font-mono text-[11px] text-muted-foreground">{n.slug}</span>
+                  <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">{n.id}</Badge>
+                  <span className="font-mono text-xs2 text-muted-foreground">{n.slug}</span>
                   <span className="truncate">{n.label}</span>
                 </div>
               ))}
             </div>
-            <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/40">
+            <div className="text-2xs text-muted-foreground pt-2 border-t border-border/40">
               Edges: {suggestion.edges.map(e => `${e.source}→${e.target}`).join(', ')}
             </div>
           </div>

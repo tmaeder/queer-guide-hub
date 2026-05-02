@@ -75,7 +75,7 @@ export default function QuickAddPalette({ nodeTypes, onAdd }: QuickAddPalettePro
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium">{nt.display_name}</div>
                         {nt.description && (
-                          <div className="text-[11px] text-muted-foreground truncate">{nt.description}</div>
+                          <div className="text-xs2 text-muted-foreground truncate">{nt.description}</div>
                         )}
                       </div>
                     </CommandItem>

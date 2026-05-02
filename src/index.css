@@ -172,15 +172,18 @@
   --surface-dim: 0 0% 83%;
   --inverse-surface: 0 0% 4%;
 
-  /* ── Category colors — all mapped to brand accent ── */
-  --cat-venues:      346 87% 38%;
-  --cat-events:      346 87% 38%;
-  --cat-marketplace: 346 87% 38%;
-  --cat-places:      346 87% 38%;
-  --cat-hotels:      346 87% 38%;
-  --cat-travel:      346 87% 38%;
-  --cat-news:        346 87% 38%;
-  --cat-community:   346 87% 38%;
+  /* ── Category accent ──
+     All categories share the brand accent today. If we ever differentiate
+     per category, redefine these individually here. New code should prefer
+     --brand directly; --cat-* exists for the categoryColors() helper. */
+  --cat-venues:      var(--brand);
+  --cat-events:      var(--brand);
+  --cat-marketplace: var(--brand);
+  --cat-places:      var(--brand);
+  --cat-hotels:      var(--brand);
+  --cat-travel:      var(--brand);
+  --cat-news:        var(--brand);
+  --cat-community:   var(--brand);
 }
 
 .dark {
@@ -246,15 +249,15 @@
   --surface-dim: 0 0% 8%;
   --inverse-surface: 0 0% 90%;
 
-  /* ── Category colors — all mapped to brand accent (dark) ── */
-  --cat-venues:      346 100% 65%;
-  --cat-events:      346 100% 65%;
-  --cat-marketplace: 346 100% 65%;
-  --cat-places:      346 100% 65%;
-  --cat-hotels:      346 100% 65%;
-  --cat-travel:      346 100% 65%;
-  --cat-news:        346 100% 65%;
-  --cat-community:   346 100% 65%;
+  /* ── Category accent (dark) — aliased to --brand. See light mode block. ── */
+  --cat-venues:      var(--brand);
+  --cat-events:      var(--brand);
+  --cat-marketplace: var(--brand);
+  --cat-places:      var(--brand);
+  --cat-hotels:      var(--brand);
+  --cat-travel:      var(--brand);
+  --cat-news:        var(--brand);
+  --cat-community:   var(--brand);
 }
 
 /* ── MapLibre popup theme adaptation ───────────────────────────────── */

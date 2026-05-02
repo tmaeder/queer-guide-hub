@@ -4,6 +4,12 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontSize: {
+        // Tiny labels (badges, metadata, dense tables). Use sparingly.
+        '3xs': ['0.5625rem', { lineHeight: '0.75rem' }],  //  9px / 12px
+        '2xs': ['0.625rem',  { lineHeight: '0.875rem' }], // 10px / 14px
+        'xs2': ['0.6875rem', { lineHeight: '1rem' }],     // 11px / 16px
+      },
       colors: {
         border: 'hsl(var(--border) / <alpha-value>)',
         background: 'hsl(var(--background) / <alpha-value>)',

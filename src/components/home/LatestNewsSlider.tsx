@@ -30,17 +30,20 @@ const ENTITY_MAP: Record<string, string> = {
 const decodeHtmlEntities = (text: string): string =>
   text.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (_, body) => {
     if (body[0] === '#') {
-      const code = body[1] === 'x' || body[1] === 'X'
-        ? parseInt(body.slice(2), 16)
-        : parseInt(body.slice(1), 10);
+      const code =
+        body[1] === 'x' || body[1] === 'X'
+          ? parseInt(body.slice(2), 16)
+          : parseInt(body.slice(1), 10);
       return Number.isFinite(code) ? String.fromCodePoint(code) : _;
     }
     return ENTITY_MAP[body.toLowerCase()] ?? _;
   });
 
-const Hairline = () => (
-  <Box sx={{ height: '1px', bgcolor: 'currentColor', opacity: 0.12 }} />
-);
+const Hairline = () => <Box sx={{ height: '1px', bgcolor: 'currentColor', opacity: 0.12 }} />;
+
+// Editorial display font for headlines on this magazine-style block.
+// Body text inherits Inter from the MUI theme (see src/theme/muiTheme.ts).
+const DISPLAY_FONT = "'Plus Jakarta Sans', sans-serif";
 
 const pulse = {
   animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -102,7 +105,7 @@ const LatestNewsSlider = React.memo(() => {
           component="h2"
           sx={{
             m: 0,
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: DISPLAY_FONT,
             fontWeight: 800,
             fontSize: { xs: '1.75rem', md: '2.25rem' },
             letterSpacing: '-0.01em',
@@ -115,7 +118,6 @@ const LatestNewsSlider = React.memo(() => {
           component={LocalizedLink}
           to="/news"
           sx={{
-            fontFamily: "'Inter', sans-serif",
             fontSize: { xs: '0.8125rem', md: '0.875rem' },
             color: 'text.primary',
             textDecoration: 'none',
@@ -180,7 +182,6 @@ const LatestNewsSlider = React.memo(() => {
               alignItems: 'center',
               gap: 1,
               color: 'text.secondary',
-              fontFamily: "'Inter', sans-serif",
               fontSize: '0.75rem',
               fontWeight: 500,
               letterSpacing: '0.06em',
@@ -191,7 +192,9 @@ const LatestNewsSlider = React.memo(() => {
             {feature.publisher_name && (
               <>
                 <Box component="span">{feature.publisher_name}</Box>
-                <Box component="span" sx={{ opacity: 0.4 }}>·</Box>
+                <Box component="span" sx={{ opacity: 0.4 }}>
+                  ·
+                </Box>
               </>
             )}
             <Box component="span" sx={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -202,7 +205,7 @@ const LatestNewsSlider = React.memo(() => {
             component="h3"
             sx={{
               m: 0,
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: DISPLAY_FONT,
               fontWeight: 800,
               fontSize: 'clamp(1.75rem, 4vw, 3rem)',
               lineHeight: 1.1,
@@ -218,7 +221,6 @@ const LatestNewsSlider = React.memo(() => {
           {feature.excerpt && (
             <Box
               sx={{
-                fontFamily: "'Inter', sans-serif",
                 fontSize: { xs: '0.9375rem', md: '1rem' },
                 color: 'text.secondary',
                 lineHeight: 1.5,
@@ -256,7 +258,7 @@ const LatestNewsSlider = React.memo(() => {
               >
                 <Box
                   sx={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: DISPLAY_FONT,
                     fontWeight: 400,
                     fontSize: '0.875rem',
                     color: 'text.secondary',
@@ -268,7 +270,6 @@ const LatestNewsSlider = React.memo(() => {
                 <Box sx={{ minWidth: 0 }}>
                   <Box
                     sx={{
-                      fontFamily: "'Inter', sans-serif",
                       fontSize: '0.6875rem',
                       fontWeight: 500,
                       letterSpacing: '0.06em',
@@ -283,7 +284,9 @@ const LatestNewsSlider = React.memo(() => {
                     {a.publisher_name && (
                       <>
                         <Box component="span">{a.publisher_name}</Box>
-                        <Box component="span" sx={{ opacity: 0.4 }}>·</Box>
+                        <Box component="span" sx={{ opacity: 0.4 }}>
+                          ·
+                        </Box>
                       </>
                     )}
                     <Box component="span" sx={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -293,7 +296,7 @@ const LatestNewsSlider = React.memo(() => {
                   <Box
                     className="qg-news-title"
                     sx={{
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontFamily: DISPLAY_FONT,
                       fontWeight: 600,
                       fontSize: { xs: '0.9375rem', md: '1rem' },
                       lineHeight: 1.3,

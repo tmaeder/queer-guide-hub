@@ -129,7 +129,7 @@ export default function UnifiedDataOps() {
               role="tab"
               aria-selected={isActive}
               onClick={() => switchTab(key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-[13px] whitespace-nowrap border-b-2 transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
                 isActive
                   ? 'border-primary text-primary font-semibold'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'

@@ -110,7 +110,7 @@ export default function ReviewQueueTab() {
   const FilterButton = ({ value, label, count }: { value: Filter; label: string; count?: number }) => (
     <button
       onClick={() => setFilter(value)}
-      className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
+      className={`text-xs2 px-2.5 py-1 rounded border transition-colors ${
         filter === value
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -124,7 +124,7 @@ export default function ReviewQueueTab() {
       <div className="flex items-center gap-2 flex-wrap">
         <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-semibold">Review Queue</span>
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{items.length} pending</Badge>
+        <Badge variant="outline" className="text-2xs px-1.5 py-0">{items.length} pending</Badge>
         <div className="flex-1" />
         <FilterButton value="all" label="All" />
         <FilterButton value="hotels" label="Hotels/B&Bs" count={counts.hotels} />
@@ -143,9 +143,9 @@ export default function ReviewQueueTab() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 sticky top-0">
               <tr className="border-b border-border">
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Source</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Name</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Issue</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Source</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Name</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Issue</th>
               </tr>
             </thead>
             <tbody>
@@ -173,14 +173,14 @@ export default function ReviewQueueTab() {
                   >
                     <td className="px-3 py-2 align-top">
                       {isHotel && (
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900 mb-1">
+                        <Badge variant="outline" className="text-3xs px-1.5 py-0 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900 mb-1">
                           {String(n.accommodation_type)}
                         </Badge>
                       )}
-                      <div className="text-[11px] text-muted-foreground font-mono">{it.source_type}</div>
+                      <div className="text-xs2 text-muted-foreground font-mono">{it.source_type}</div>
                     </td>
                     <td className="px-3 py-2 font-medium align-top truncate max-w-[200px]" title={name}>{name}</td>
-                    <td className="px-3 py-2 text-[11px] text-amber-700 dark:text-amber-300 align-top">{issue}</td>
+                    <td className="px-3 py-2 text-xs2 text-amber-700 dark:text-amber-300 align-top">{issue}</td>
                   </tr>
                 );
               })}
@@ -197,7 +197,7 @@ export default function ReviewQueueTab() {
               <div>
                 <Label>Name</Label>
                 <div className="text-base font-semibold">{String(selected.normalized_data?.name ?? selected.normalized_data?.title ?? '(unnamed)')}</div>
-                <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                <div className="text-xs2 text-muted-foreground font-mono mt-0.5">
                   {selected.target_table} · {selected.source_type}
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function ReviewQueueTab() {
                   <Label>Warnings</Label>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {selected.ai_validation_result.warnings.map(w => (
-                      <Badge key={w} variant="outline" className="text-[10px] px-1.5 py-0 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900">
+                      <Badge key={w} variant="outline" className="text-2xs px-1.5 py-0 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900">
                         {w}
                       </Badge>
                     ))}
@@ -230,7 +230,7 @@ export default function ReviewQueueTab() {
                     {' · score '}
                     <span className="font-semibold">{(Number(selected.dedup_match_score ?? 0) * 100).toFixed(0)}%</span>
                   </div>
-                  <div className="text-[11px] text-muted-foreground mt-1">
+                  <div className="text-xs2 text-muted-foreground mt-1">
                     match_id: <code className="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">{selected.dedup_match_id}</code>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ export default function ReviewQueueTab() {
 
               <details className="text-xs">
                 <summary className="cursor-pointer text-muted-foreground hover:text-foreground py-1">Normalized payload</summary>
-                <pre className="text-[10px] bg-muted/40 p-2 rounded-md overflow-auto max-h-60 mt-1">
+                <pre className="text-2xs bg-muted/40 p-2 rounded-md overflow-auto max-h-60 mt-1">
                   {JSON.stringify(selected.normalized_data, null, 2)}
                 </pre>
               </details>
@@ -307,7 +307,7 @@ export default function ReviewQueueTab() {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{children}</div>;
+  return <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium">{children}</div>;
 }
 
 function MergeTable({ title, rows }: { title: string; rows: Array<{ field: string; staged: unknown; existing: unknown }> }) {
@@ -317,15 +317,15 @@ function MergeTable({ title, rows }: { title: string; rows: Array<{ field: strin
 
   return (
     <div className="border border-border rounded-md overflow-hidden">
-      <div className="px-3 py-1.5 bg-muted/40 text-[11px] text-muted-foreground font-medium">
+      <div className="px-3 py-1.5 bg-muted/40 text-xs2 text-muted-foreground font-medium">
         {title}
       </div>
       <table className="w-full">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider w-[110px]">Field</th>
-            <th className="text-left px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Staged</th>
-            <th className="text-left px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Existing</th>
+            <th className="text-left px-2 py-1 text-2xs font-medium text-muted-foreground uppercase tracking-wider w-[110px]">Field</th>
+            <th className="text-left px-2 py-1 text-2xs font-medium text-muted-foreground uppercase tracking-wider">Staged</th>
+            <th className="text-left px-2 py-1 text-2xs font-medium text-muted-foreground uppercase tracking-wider">Existing</th>
           </tr>
         </thead>
         <tbody>
@@ -333,9 +333,9 @@ function MergeTable({ title, rows }: { title: string; rows: Array<{ field: strin
             const changed = String(r.staged ?? '') !== String(r.existing ?? '');
             return (
               <tr key={r.field} className={`border-b border-border/40 ${changed ? 'bg-amber-50 dark:bg-amber-950/30' : ''}`}>
-                <td className="px-2 py-1 font-mono text-[11px]">{r.field}</td>
-                <td className="px-2 py-1 text-[11px] break-words">{fmt(r.staged)}</td>
-                <td className="px-2 py-1 text-[11px] break-words">{fmt(r.existing)}</td>
+                <td className="px-2 py-1 font-mono text-xs2">{r.field}</td>
+                <td className="px-2 py-1 text-xs2 break-words">{fmt(r.staged)}</td>
+                <td className="px-2 py-1 text-xs2 break-words">{fmt(r.existing)}</td>
               </tr>
             );
           })}

@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { MapPin, Plus, Grid, Map } from 'lucide-react';
+import { MapPin, Grid, Map } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';

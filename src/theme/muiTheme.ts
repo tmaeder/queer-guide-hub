@@ -3,6 +3,13 @@ import { duration, ease, transition } from '@/lib/animation';
 import './theme.d.ts';
 
 // ─── Brand Colors (importable outside React context) ─────────────────────────
+// IMPORTANT: these hex literals mirror the HSL CSS vars in `src/index.css`.
+// Keep them in sync — MUI's theme is created before CSS loads, so we can't
+// read `var(--brand)` here. If you change one side, change the other.
+//   --brand (light)   = 346 87% 38%   ≈ #b60d3d
+//   --brand (dark)    = 346 100% 65%  ≈ #ff7386
+//   --destructive (l) = 356 74% 40%   ≈ #b31b25
+//   --destructive (d) = 0 96% 65%     ≈ #fb5151
 export const brandColors = {
   main: '#b60d3d',
   light: '#ff7386',

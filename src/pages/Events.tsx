@@ -23,7 +23,6 @@ import { Switch } from '@/components/ui/switch';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import {
   Calendar,
-  Plus,
   Loader,
   Search,
   Filter,

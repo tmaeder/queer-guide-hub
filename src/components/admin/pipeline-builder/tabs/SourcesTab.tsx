@@ -117,7 +117,7 @@ export default function SourcesTab() {
         <div className="border border-border rounded-md bg-background overflow-hidden">
           <div className="px-4 py-2.5 border-b border-border flex items-center gap-2 flex-wrap">
             <div className="font-semibold text-sm">Ingest Sources</div>
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+            <Badge variant="outline" className="text-2xs px-1.5 py-0">
               {counts.all} total · {(counts.healthy)} healthy
             </Badge>
 
@@ -136,7 +136,7 @@ export default function SourcesTab() {
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                  className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
                     filter === f
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -180,7 +180,7 @@ export default function SourcesTab() {
               <thead className="bg-muted/40 sticky top-0 z-10">
                 <tr className="border-b border-border">
                   {['Source', 'Target', 'Health', 'Last success', 'Last run', 'Runs / Items', 'Schedule', ''].map((h, i) => (
-                    <th key={i} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={i} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -197,11 +197,11 @@ export default function SourcesTab() {
                     <tr key={s.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                       <td className="px-3 py-2.5 align-top">
                         <div className="font-medium truncate max-w-[240px]" title={s.name}>{s.name}</div>
-                        <div className="text-[11px] text-muted-foreground font-mono truncate max-w-[240px]">{s.slug}</div>
+                        <div className="text-xs2 text-muted-foreground font-mono truncate max-w-[240px]">{s.slug}</div>
                       </td>
                       <td className="px-3 py-2.5 align-top">
                         {s.target_table ? (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">{s.target_table}</Badge>
+                          <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">{s.target_table}</Badge>
                         ) : <span className="text-muted-foreground">—</span>}
                       </td>
                       <td className="px-3 py-2.5 align-top">
@@ -212,7 +212,7 @@ export default function SourcesTab() {
                         {s.last_error && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className="text-[10px] text-destructive mt-1 truncate max-w-[280px] cursor-help">
+                              <div className="text-2xs text-destructive mt-1 truncate max-w-[280px] cursor-help">
                                 {s.last_error}
                               </div>
                             </TooltipTrigger>
@@ -222,11 +222,11 @@ export default function SourcesTab() {
                           </Tooltip>
                         )}
                       </td>
-                      <td className="px-3 py-2.5 align-top text-[11px] text-muted-foreground"
+                      <td className="px-3 py-2.5 align-top text-xs2 text-muted-foreground"
                           title={s.last_success_at ? new Date(s.last_success_at).toISOString() : ''}>
                         {s.last_success_at ? formatDistanceToNow(new Date(s.last_success_at), { addSuffix: true }) : '—'}
                       </td>
-                      <td className="px-3 py-2.5 align-top text-[11px] text-muted-foreground"
+                      <td className="px-3 py-2.5 align-top text-xs2 text-muted-foreground"
                           title={s.last_run_at ? new Date(s.last_run_at).toISOString() : ''}>
                         {s.last_run_at ? formatDistanceToNow(new Date(s.last_run_at), { addSuffix: true }) : '—'}
                       </td>
@@ -235,7 +235,7 @@ export default function SourcesTab() {
                         <span className="text-muted-foreground"> / </span>
                         <span className="text-muted-foreground">{s.total_items_fetched}</span>
                       </td>
-                      <td className="px-3 py-2.5 align-top text-[11px] text-muted-foreground font-mono">
+                      <td className="px-3 py-2.5 align-top text-xs2 text-muted-foreground font-mono">
                         {s.schedule_cron ?? '—'}
                       </td>
                       <td className="px-3 py-2.5 align-top">
@@ -257,7 +257,7 @@ export default function SourcesTab() {
           </div>
 
           {!isLoading && (
-            <div className="px-3 py-1.5 border-t border-border text-[11px] text-muted-foreground">
+            <div className="px-3 py-1.5 border-t border-border text-xs2 text-muted-foreground">
               Showing {filtered.length} of {counts.all} sources
             </div>
           )}

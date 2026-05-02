@@ -115,7 +115,7 @@ export default function DLQTab() {
   const FilterButton = ({ value, label }: { value: StatusFilter; label: string }) => (
     <button
       onClick={() => setFilter(value)}
-      className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
+      className={`text-xs2 px-2.5 py-1 rounded border transition-colors ${
         filter === value
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -159,7 +159,7 @@ export default function DLQTab() {
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
                 {['Source', 'Stage', 'Status', 'Items', 'Next retry'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -171,7 +171,7 @@ export default function DLQTab() {
                   <td className="px-3 py-2 font-mono text-xs">{r.source_slug ?? '—'}</td>
                   <td className="px-3 py-2 font-mono text-xs">{r.stage}</td>
                   <td className="px-3 py-2">
-                    <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
+                    <span className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
                       {r.status}
                     </span>
                   </td>
@@ -192,7 +192,7 @@ export default function DLQTab() {
             <thead className="bg-muted/40 sticky top-0">
               <tr className="border-b border-border">
                 {['Stage', 'Source', 'Error', 'Attempts', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -208,7 +208,7 @@ export default function DLQTab() {
                   <td className="px-3 py-2 align-top max-w-[360px]">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="font-mono text-[11px] text-destructive truncate cursor-help">
+                        <div className="font-mono text-xs2 text-destructive truncate cursor-help">
                           {r.error_code && <strong>{r.error_code}: </strong>}
                           {r.error_message ?? '—'}
                         </div>
@@ -224,7 +224,7 @@ export default function DLQTab() {
                     {r.attempts}/{r.max_attempts}
                   </td>
                   <td className="px-3 py-2 align-top">
-                    <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
+                    <span className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
                       {r.status}
                     </span>
                   </td>
