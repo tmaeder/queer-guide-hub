@@ -1,6 +1,4 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Star } from 'lucide-react';
 import { useFeaturedPersonalities, type Personality } from '@/hooks/usePersonalities';
 
@@ -17,93 +15,58 @@ function getInitials(name: string) {
 function FeaturedItem({ p }: { p: Personality }) {
   const href = `/personalities/${p.slug ?? p.id}`;
   return (
-    <Box
-      component={LocalizedLink}
+    <LocalizedLink
       to={href}
       aria-label={`${p.name}${p.profession ? ', ' + p.profession : ''}`}
-      sx={{
-        flex: '0 0 auto',
-        width: 160,
-        textDecoration: 'none',
-        color: 'inherit',
-        display: 'block',
-        scrollSnapAlign: 'start',
-        transition: 'transform 0.2s ease',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          '& .featured-avatar': { boxShadow: 4 },
-        },
-      }}
+      className="flex-none w-40 block transition-transform hover:-translate-y-0.5 group"
+      style={{ scrollSnapAlign: 'start', textDecoration: 'none', color: 'inherit' }}
     >
-      <Box
-        className="featured-avatar"
-        sx={{
-          position: 'relative',
+      <div
+        className="featured-avatar relative flex items-center justify-center overflow-hidden mb-2 transition-shadow group-hover:shadow-lg"
+        style={{
           width: 160,
           height: 160,
           borderRadius: '50%',
-          overflow: 'hidden',
           background: 'linear-gradient(135deg, hsl(var(--brand) / 0.25) 0%, hsl(var(--brand) / 0.15) 100%)',
-          border: 2,
-          borderColor: 'brand.main',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'box-shadow 0.2s ease',
-          mb: 1,
+          border: '2px solid hsl(var(--brand))',
         }}
       >
         {p.image_url ? (
-          <Box
-            component="img"
+          <img
             src={p.image_url}
             alt={p.name}
             loading="lazy"
             decoding="async"
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
-          <Typography
-            sx={{
+          <span
+            style={{
               fontFamily: '"Plus Jakarta Sans", sans-serif',
               fontWeight: 700,
               fontSize: '2rem',
-              color: 'text.primary',
             }}
           >
             {getInitials(p.name)}
-          </Typography>
+          </span>
         )}
-      </Box>
-      <Typography
-        sx={{
+      </div>
+      <p
+        className="text-center truncate"
+        style={{
           fontFamily: '"Plus Jakarta Sans", sans-serif',
           fontWeight: 600,
           fontSize: '0.9rem',
-          color: 'text.primary',
-          textAlign: 'center',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
         }}
       >
         {p.name}
-      </Typography>
+      </p>
       {p.profession && (
-        <Typography
-          sx={{
-            fontSize: '0.75rem',
-            color: 'text.secondary',
-            textAlign: 'center',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
+        <p className="text-xs text-muted-foreground text-center truncate">
           {p.profession}
-        </Typography>
+        </p>
       )}
-    </Box>
+    </LocalizedLink>
   );
 }
 
@@ -114,50 +77,33 @@ export function FeaturedPersonalityRail() {
   if (!loading && featured.length === 0) return null;
 
   return (
-    <Box sx={{ mb: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+    <div className="mb-8">
+      <div className="flex items-center gap-2 mb-3">
         <Star size={18} style={{ color: 'hsl(var(--brand))' }} fill="hsl(var(--brand))" aria-hidden="true" />
-        <Typography
-          component="h2"
-          sx={{
+        <h2
+          style={{
             fontFamily: '"Plus Jakarta Sans", sans-serif',
             fontWeight: 700,
             fontSize: '1.125rem',
-            color: 'text.primary',
           }}
         >
           Featured icons
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 2.5,
-          overflowX: 'auto',
-          pb: 1,
-          scrollSnapType: 'x mandatory',
-          '&::-webkit-scrollbar': { height: 6 },
-          '&::-webkit-scrollbar-thumb': { bgcolor: 'divider', borderRadius: 3 },
-        }}
+        </h2>
+      </div>
+      <div
+        className="flex gap-5 overflow-x-auto pb-2"
+        style={{ scrollSnapType: 'x mandatory' }}
       >
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
-              <Box key={i} sx={{ flex: '0 0 auto', width: 160 }}>
-                <Box
-                  sx={{
-                    width: 160,
-                    height: 160,
-                    borderRadius: '50%',
-                    bgcolor: 'action.hover',
-                    mb: 1,
-                  }}
-                />
-                <Box sx={{ height: 14, bgcolor: 'action.hover', borderRadius: 0.5, mb: 0.5 }} />
-                <Box sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 0.5, width: '70%', mx: 'auto' }} />
-              </Box>
+              <div key={i} className="flex-none w-40">
+                <div className="bg-muted mb-2" style={{ width: 160, height: 160, borderRadius: '50%' }} />
+                <div className="h-3 bg-muted mb-1" />
+                <div className="h-3 bg-muted w-3/4 mx-auto" />
+              </div>
             ))
           : featured.map((p) => <FeaturedItem key={p.id} p={p} />)}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
