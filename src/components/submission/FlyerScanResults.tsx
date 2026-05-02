@@ -158,7 +158,7 @@ function ItemDetail({
               fontWeight: 600,
               fontSize: '0.75rem',
               ...(detected_type === 'venue'
-                ? { bgcolor: '#DB2777', color: '#fff' }
+                ? { bgcolor: 'hsl(var(--brand))', color: '#fff' }
                 : { bgcolor: 'action.hover' }),
             }}
           />
@@ -249,7 +249,7 @@ function ItemDetail({
                   ...(selectedVenueId === v.id
                     ? {
                         bgcolor: '#DB277720',
-                        borderColor: '#DB2777',
+                        borderColor: 'hsl(var(--brand))',
                         borderWidth: 1,
                         borderStyle: 'solid',
                       }
@@ -267,7 +267,7 @@ function ItemDetail({
         onClick={onApply}
         style={{
           width: '100%',
-          backgroundColor: detected_type === 'event' ? '#ec4899' : '#DB2777',
+          backgroundColor: detected_type === 'event' ? '#ec4899' : 'hsl(var(--brand))',
           color: '#fff',
         }}
       >
@@ -406,7 +406,7 @@ export function FlyerScanResults({
                   borderColor: isExpanded
                     ? effectiveType === 'event'
                       ? '#ec4899'
-                      : '#DB2777'
+                      : 'hsl(var(--brand))'
                     : 'divider',
                   borderRadius: 2,
                   overflow: 'hidden',
@@ -433,7 +433,7 @@ export function FlyerScanResults({
                       fontSize: '0.7rem',
                       height: 22,
                       bgcolor: effectiveType === 'event' ? '#ec489920' : '#DB277720',
-                      color: effectiveType === 'event' ? '#ec4899' : '#DB2777',
+                      color: effectiveType === 'event' ? '#ec4899' : 'hsl(var(--brand))',
                     }}
                   />
                   <Box sx={{ flex: 1, minWidth: 0 }}>

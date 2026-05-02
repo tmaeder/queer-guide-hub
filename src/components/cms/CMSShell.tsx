@@ -415,7 +415,7 @@ export function CMSShell() {
                       color: 'text.secondary',
                       cursor: 'pointer',
                       whiteSpace: 'nowrap',
-                      '&:hover': { color: '#DB2777' },
+                      '&:hover': { color: 'hsl(var(--brand))' },
                     }}
                   >
                     {crumb.label}

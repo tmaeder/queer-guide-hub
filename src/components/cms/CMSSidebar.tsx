@@ -292,7 +292,7 @@ export function CMSSidebar({
             sx={navItemSx(activeView === 'overview', brandColors.main)}
           >
             <ListItemIcon sx={{ minWidth: 36 }}>
-              <IconBadge icon={LayoutDashboard} color="#DB2777" size={15} />
+              <IconBadge icon={LayoutDashboard} color="hsl(var(--brand))" size={15} />
             </ListItemIcon>
             <ListItemText
               primary="Dashboard"

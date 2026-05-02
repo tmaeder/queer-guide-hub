@@ -100,7 +100,7 @@ function formatAmount(amount: number, currency: string): string {
  */
 function gradientForTrip(tripId: string): string {
   const palettes = [
-    ['#7C3AED', '#DB2777'],
+    ['#7C3AED', 'hsl(var(--brand))'],
     ['#F59E0B', '#EF4444'],
     ['#06B6D4', '#3B82F6'],
     ['#10B981', '#6366F1'],
@@ -565,7 +565,7 @@ function SharedTripPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  background: `linear-gradient(135deg, ${theme.palette.brand?.main || '#DB2777'} 0%, ${theme.palette.accent?.main || '#F59E0B'} 100%)`,
+                  background: `linear-gradient(135deg, ${theme.palette.brand?.main || 'hsl(var(--brand))'} 0%, ${theme.palette.accent?.main || '#F59E0B'} 100%)`,
                   color: 'common.white',
                 }}
               >

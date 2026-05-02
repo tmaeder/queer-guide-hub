@@ -27,7 +27,7 @@ export default function TripsDiscoverPage() {
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-        <Compass size={26} style={{ color: 'var(--brand-primary, #b60d3d)' }} />
+        <Compass size={26} style={{ color: 'hsl(var(--brand))' }} />
         <Typography variant="h4" sx={{ fontWeight: 800 }}>
           {t('trips.discover.title', 'Discover trips')}
         </Typography>
