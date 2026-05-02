@@ -23,6 +23,7 @@ import { ExploreMapFiltersPanel } from '@/components/map/ExploreMapFilters';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { hapticTrigger } from '@/hooks/useHaptics';
+import { useToast } from '@/hooks/use-toast';
 import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, clampBbox, type Bbox } from '@/utils/mapViewport';
 import {
   useCountryBoundaries,
@@ -122,6 +123,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   skipAutoFly = false,
 }) => {
   const navigate = useLocalizedNavigate();
+  const { toast } = useToast();
 
   // ── Map refs ─────────────────────────────────────────────────────────────
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -225,7 +227,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
         .addTo(map);
 
       popup.on('open', () => {
-        const link = popup.getElement()?.querySelector('a[href^="/"]');
+        const el = popup.getElement();
+        const link = el?.querySelector('a[href^="/"]');
         if (link) {
           link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -233,11 +236,52 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
             if (href) navigate(href);
           });
         }
+
+        const shareBtn = el?.querySelector('button[data-share-id]');
+        if (shareBtn) {
+          shareBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            hapticTrigger('nudge');
+            const btn = e.currentTarget as HTMLButtonElement;
+            const name = btn.getAttribute('data-share-name') ?? '';
+            const subtitle = btn.getAttribute('data-share-subtitle') ?? '';
+            const path = btn.getAttribute('data-share-url') ?? '';
+            const absoluteUrl = new URL(path, window.location.origin).toString();
+            const payload = { title: name, text: subtitle || name, url: absoluteUrl };
+
+            const fallbackToClipboard = async () => {
+              try {
+                await navigator.clipboard.writeText(absoluteUrl);
+                toast({
+                  title: 'Link kopiert / Link copied',
+                  description: 'Du kannst ihn jetzt einfügen / You can paste it now',
+                });
+              } catch {
+                toast({
+                  title: 'Teilen fehlgeschlagen / Share failed',
+                  variant: 'destructive',
+                });
+              }
+            };
+
+            if (typeof navigator.share === 'function') {
+              try {
+                await navigator.share(payload);
+              } catch (err) {
+                if ((err as { name?: string })?.name === 'AbortError') return;
+                console.error('navigator.share failed', err);
+                await fallbackToClipboard();
+              }
+            } else {
+              await fallbackToClipboard();
+            }
+          });
+        }
       });
 
       popupRef.current = popup;
     },
-    [navigate],
+    [navigate, toast],
   );
 
   // ── Map initialisation ───────────────────────────────────────────────────
