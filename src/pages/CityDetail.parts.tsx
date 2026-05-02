@@ -96,7 +96,7 @@ export function CityHero({
 }: CityHeroProps) {
   return (
     <>
-      <DetailHero imageUrl={imageUrl} alt={city.name} height={{ xs: 192, md: 240 }} />
+      <DetailHero imageUrl={imageUrl} alt={city.name} heightClassName="h-48 md:h-60" />
 
       <SafetyAlertBanner
         criminalization={

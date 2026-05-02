@@ -97,7 +97,7 @@ queer-guide-hub/
 The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git commands hang or fail, run `brctl download .git` first.
 
 ### DB Column Names (common traps)
-- `news_articles.is_featured` (NOT `featured`) — but `venues.featured` and `events.featured` ARE correct
+- All entity tables use `is_featured` (boolean). The legacy `featured` column on `venues` and `events` was dropped in PR #312; codebase migrated to `is_featured` end-to-end.
 - `personalities.birth_date` / `death_date` (date type, NOT `birth_year` / `death_year` int)
 - `news_sources.source_type` (NOT `type`), `.last_fetched_at` (NOT `last_fetch_at`)
 - `countries.code` (NOT `iso_code`)

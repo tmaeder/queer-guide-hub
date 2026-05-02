@@ -1,9 +1,11 @@
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import MuiButton from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface ConfirmBulkActionDialogProps {
   open: boolean;
@@ -14,24 +16,23 @@ interface ConfirmBulkActionDialogProps {
 }
 
 export function ConfirmBulkActionDialog({ open, action, count, onConfirm, onCancel }: ConfirmBulkActionDialogProps) {
+  const isDestructive = action === 'remove';
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth>
-      <DialogTitle>Confirm Action</DialogTitle>
-      <DialogContent>
-        <Typography>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
+      <DialogContent className="sm:max-w-xs">
+        <DialogHeader>
+          <DialogTitle>Confirm Action</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm">
           Are you sure you want to <strong>{action}</strong> {count} link{count !== 1 ? 's' : ''}?
-        </Typography>
+        </p>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+          <Button variant={isDestructive ? 'destructive' : 'default'} onClick={onConfirm}>
+            {action.charAt(0).toUpperCase() + action.slice(1)} {count} link{count !== 1 ? 's' : ''}
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <MuiButton onClick={onCancel}>Cancel</MuiButton>
-        <MuiButton
-          variant="contained"
-          color={action === 'remove' ? 'error' : 'primary'}
-          onClick={onConfirm}
-        >
-          {action.charAt(0).toUpperCase() + action.slice(1)} {count} link{count !== 1 ? 's' : ''}
-        </MuiButton>
-      </DialogActions>
     </Dialog>
   );
 }
