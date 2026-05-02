@@ -1,8 +1,14 @@
 /**
  * Shared API error reporter for Supabase edge functions.
- * POSTs errors to the ingest-api-error endpoint for triage via the feedback system.
+ *
+ * Two destinations:
+ *   1. The internal ingest-api-error endpoint (feedback system) — kept for triage.
+ *   2. Sentry, if SENTRY_DSN is set in the function env.
+ *
  * Best-effort — never throws, never blocks the caller.
  */
+
+import { captureError, initSentry } from "./sentry.ts";
 
 interface ReportOpts {
   status_code?: number
@@ -15,6 +21,17 @@ export async function reportApiError(
   err: unknown,
   opts: ReportOpts = {},
 ): Promise<void> {
+  // Send to Sentry first (synchronous capture, no network in the hot path).
+  // initSentry is idempotent and no-ops without SENTRY_DSN.
+  initSentry(functionName)
+  captureError(err, {
+    function: functionName,
+    status_code: opts.status_code ?? 500,
+    endpoint: opts.endpoint,
+    ...(opts.metadata ?? {}),
+  })
+
+  // Then forward to the internal feedback ingest endpoint.
   try {
     const ingestUrl = Deno.env.get('SUPABASE_URL')! + '/functions/v1/ingest-api-error'
     const secret = Deno.env.get('API_ERROR_SECRET')
