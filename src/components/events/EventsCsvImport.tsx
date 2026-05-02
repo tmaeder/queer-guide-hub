@@ -6,8 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface EventsCsvImportProps {
   onImportComplete?: () => void;
@@ -103,35 +101,31 @@ Tech Conference,Annual technology conference,conference,Convention Center,456 Co
         <DialogHeader>
           <DialogTitle>Import Events from CSV</DialogTitle>
         </DialogHeader>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box>
+        <div className="flex flex-col gap-4">
+          <div>
             <Label htmlFor="csv-file">Select CSV File</Label>
             <Input
               id="csv-file"
               type="file"
               accept=".csv"
               onChange={handleFileChange}
-
             />
-          </Box>
+          </div>
 
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-sm text-muted-foreground">
             CSV should include columns: title, description, event_type, venue_name, address, city, state, country, start_date, end_date, price_min, price_max, is_free, max_attendees, age_restriction, website, ticket_url, organizer_name, organizer_contact, featured
-          </Typography>
+          </p>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div className="flex justify-between">
             <Button variant="outline" onClick={downloadTemplate}>
               <Download style={{ height: 16, width: 16, marginRight: 8 }} />
               Download Template
             </Button>
-            <Button
-              onClick={handleImport}
-              disabled={!file || isUploading}
-            >
+            <Button onClick={handleImport} disabled={!file || isUploading}>
               {isUploading ? "Importing..." : "Import Events"}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
