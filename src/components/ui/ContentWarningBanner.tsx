@@ -6,12 +6,9 @@
  */
 
 import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
 import { AlertTriangle, Scale, Stethoscope, EyeOff } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface ContentWarnings {
   legal?: boolean;
@@ -62,76 +59,55 @@ export const ContentWarningBanner: React.FC<ContentWarningBannerProps> = ({
     return null;
   }
 
-  // Compact mode: just show chips inline
   if (compact) {
     return (
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+      <div className="flex gap-1 flex-wrap">
         {activeFlags.map((flag) => {
           const config = FLAG_CONFIG[flag];
           const Icon = config.icon;
           return (
-            <Chip
+            <Badge
               key={flag}
-              icon={<Icon size={12} />}
-              label={config.label}
-              size="small"
-              variant="outlined"
-              sx={{
-                height: 22,
-                fontSize: '0.7rem',
-                borderColor: config.color,
-                color: config.color,
-                '& .MuiChip-icon': { color: config.color },
-              }}
-            />
+              variant="outline"
+              className="h-[22px] text-[0.7rem] gap-1"
+              style={{ borderColor: config.color, color: config.color }}
+            >
+              <Icon size={12} />
+              {config.label}
+            </Badge>
           );
         })}
-      </Box>
+      </div>
     );
   }
 
-  // Full banner mode
   return (
-    <Alert
-      severity="warning"
-      icon={<AlertTriangle size={20} />}
-      action={
-        <Button color="inherit" size="small" onClick={() => setDismissed(true)}>
-          Dismiss
-        </Button>
-      }
-      sx={{ mb: 2 }}
-    >
-      <Box>
-        <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-          Content Notice
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: warnings.warnings?.length ? 1 : 0 }}>
+    <div className="mb-4 flex items-start gap-3 p-4 border border-yellow-500/40 bg-yellow-500/10 rounded-md">
+      <AlertTriangle size={20} className="text-yellow-700 shrink-0 mt-0.5" />
+      <div className="flex-1">
+        <p className="text-sm font-semibold mb-1">Content Notice</p>
+        <div className={`flex gap-1 flex-wrap ${warnings.warnings?.length ? 'mb-2' : ''}`}>
           {activeFlags.map((flag) => {
             const config = FLAG_CONFIG[flag];
             const Icon = config.icon;
             return (
-              <Chip
-                key={flag}
-                icon={<Icon size={12} />}
-                label={config.message}
-                size="small"
-                sx={{
-                  height: 'auto',
-                  '& .MuiChip-label': { whiteSpace: 'normal', py: 0.5 },
-                  fontSize: '0.75rem',
-                }}
-              />
+              <Badge key={flag} variant="secondary" className="text-xs gap-1 whitespace-normal py-1 h-auto">
+                <Icon size={12} />
+                {config.message}
+              </Badge>
             );
           })}
-        </Box>
+        </div>
         {warnings.warnings?.map((w, i) => (
-          <Typography key={i} variant="body2" color="text.secondary">
+          <p key={i} className="text-sm text-muted-foreground">
             {w}
-          </Typography>
+          </p>
         ))}
-      </Box>
-    </Alert>
+      </div>
+      <Button variant="ghost" size="sm" onClick={() => setDismissed(true)}>
+        Dismiss
+      </Button>
+    </div>
   );
 };
 
@@ -143,50 +119,35 @@ export const SensitivityBadges: React.FC<{
   relevanceScore?: number | null;
 }> = ({ sensitivityFlags, relevanceScore }) => {
   return (
-    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
+    <div className="flex gap-1 flex-wrap items-center">
       {relevanceScore != null && (
-        <Chip
-          label={`${(relevanceScore * 100).toFixed(0)}%`}
-          size="small"
-          sx={{
-            height: 20,
-            fontSize: '0.65rem',
-            fontWeight: 700,
-            bgcolor: relevanceScore >= 0.7
-              ? '#dcfce7'
-              : relevanceScore >= 0.3
-                ? '#fef9c3'
-                : '#fee2e2',
-            color: relevanceScore >= 0.7
-              ? '#166534'
-              : relevanceScore >= 0.3
-                ? '#854d0e'
-                : '#991b1b',
+        <Badge
+          className="h-5 text-[0.65rem] font-bold"
+          style={{
+            backgroundColor: relevanceScore >= 0.7 ? '#dcfce7' : relevanceScore >= 0.3 ? '#fef9c3' : '#fee2e2',
+            color: relevanceScore >= 0.7 ? '#166534' : relevanceScore >= 0.3 ? '#854d0e' : '#991b1b',
           }}
-        />
+        >
+          {`${(relevanceScore * 100).toFixed(0)}%`}
+        </Badge>
       )}
       {sensitivityFlags?.map((flag) => {
         const config = FLAG_CONFIG[flag.category as keyof typeof FLAG_CONFIG];
         if (!config) return null;
         const Icon = config.icon;
         return (
-          <Chip
+          <Badge
             key={flag.category}
-            icon={<Icon size={10} />}
-            label={config.label}
-            size="small"
-            sx={{
-              height: 20,
-              fontSize: '0.65rem',
-              borderColor: config.color,
-              color: config.color,
-              '& .MuiChip-icon': { color: config.color },
-            }}
-            variant="outlined"
-          />
+            variant="outline"
+            className="h-5 text-[0.65rem] gap-1"
+            style={{ borderColor: config.color, color: config.color }}
+          >
+            <Icon size={10} />
+            {config.label}
+          </Badge>
         );
       })}
-    </Box>
+    </div>
   );
 };
 
