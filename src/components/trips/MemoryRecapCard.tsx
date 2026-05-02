@@ -1,13 +1,10 @@
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import { Sparkles, MapPin, Calendar, Wallet, RefreshCw } from 'lucide-react';
+import { Sparkles, MapPin, Calendar, Wallet, RefreshCw, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useTripRecap, useGenerateTripRecap } from '@/hooks/useTripRecap';
 
@@ -15,12 +12,6 @@ interface Props {
   tripId: string;
 }
 
-/**
- * Memory-phase recap card. Shown atop the itinerary tab after a trip
- * ends. If no recap exists yet, offers a "Generate" CTA that calls
- * the `trip-recap` edge function. Once generated, shows the narrative
- * summary + structured highlights + a discreet "Regenerate" action.
- */
 export function MemoryRecapCard({ tripId }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -66,9 +57,9 @@ export function MemoryRecapCard({ tripId }: Props) {
     return (
       <Card>
         <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-            <CircularProgress size={20} />
-          </Box>
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
         </CardContent>
       </Card>
     );
@@ -78,52 +69,37 @@ export function MemoryRecapCard({ tripId }: Props) {
     return (
       <Card>
         <CardContent>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              flexWrap: 'wrap',
-            }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 40,
-                height: 40,
-                borderRadius: 2,
-                bgcolor: 'brand.main',
-                color: 'primary.contrastText',
-              }}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div
+              className="flex items-center justify-center w-10 h-10 rounded-md text-primary-foreground"
+              style={{ backgroundColor: 'hsl(var(--brand))' }}
             >
               <Sparkles size={20} />
-            </Box>
-            <Box sx={{ flex: 1, minWidth: 220 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+            </div>
+            <div className="flex-1 min-w-[220px]">
+              <p className="text-base font-bold">
                 {t('trips.recap.emptyTitle', 'Your trip, in a paragraph')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </p>
+              <p className="text-sm text-muted-foreground">
                 {t(
                   'trips.recap.emptyDescription',
                   'Generate a warm recap you can save or share — crafted from your places, days, and budget.',
                 )}
-              </Typography>
-            </Box>
+              </p>
+            </div>
             <Button
               variant="brand"
               onClick={() => handleGenerate(false)}
               disabled={generate.isPending}
             >
               {generate.isPending ? (
-                <CircularProgress size={16} sx={{ color: 'inherit', mr: 1 }} />
+                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
               ) : (
-                <Sparkles size={16} style={{ marginRight: 6 }} />
+                <Sparkles size={16} className="mr-1.5" />
               )}
               {t('trips.recap.generateCta', 'Generate recap')}
             </Button>
-          </Box>
+          </div>
         </CardContent>
       </Card>
     );
@@ -132,26 +108,10 @@ export function MemoryRecapCard({ tripId }: Props) {
   return (
     <Card>
       <CardContent>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            gap: 1,
-            mb: 1.25,
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              fontWeight: 700,
-              color: 'brand.main',
-            }}
-          >
+        <div className="flex justify-between items-start gap-2 mb-3">
+          <span className="uppercase tracking-wider font-bold text-xs" style={{ color: 'hsl(var(--brand))' }}>
             {t('trips.recap.badge', 'Trip recap')}
-          </Typography>
+          </span>
           <Button
             variant="outline"
             size="sm"
@@ -160,59 +120,48 @@ export function MemoryRecapCard({ tripId }: Props) {
             aria-label={t('trips.recap.regenerate', 'Regenerate recap')}
           >
             {generate.isPending ? (
-              <CircularProgress size={14} sx={{ color: 'inherit' }} />
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <RefreshCw size={14} />
             )}
           </Button>
-        </Box>
+        </div>
 
-        <Typography
-          variant="body1"
-          sx={{ fontSize: '1.0625rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', mb: 2 }}
+        <p
+          className="whitespace-pre-wrap mb-4"
+          style={{ fontSize: '1.0625rem', lineHeight: 1.65 }}
         >
           {recap.summary}
-        </Typography>
+        </p>
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+        <div className="flex flex-wrap gap-1.5">
           {highlights?.cities?.slice(0, 6).map((city) => (
-            <Chip
-              key={city}
-              size="small"
-              variant="outlined"
-              icon={<MapPin size={12} />}
-              label={city}
-            />
+            <Badge key={city} variant="outline" className="gap-1">
+              <MapPin size={12} />
+              {city}
+            </Badge>
           ))}
           {highlights?.favourite_day && (
-            <Chip
-              size="small"
-              variant="outlined"
-              icon={<Calendar size={12} />}
-              label={t('trips.recap.favouriteDay', 'Fullest day: {{date}}', {
+            <Badge variant="outline" className="gap-1">
+              <Calendar size={12} />
+              {t('trips.recap.favouriteDay', 'Fullest day: {{date}}', {
                 date: format(new Date(highlights.favourite_day.date), 'MMM d'),
               })}
-            />
+            </Badge>
           )}
           {totalSpentLabel && (
-            <Chip
-              size="small"
-              variant="outlined"
-              icon={<Wallet size={12} />}
-              label={totalSpentLabel}
-            />
+            <Badge variant="outline" className="gap-1">
+              <Wallet size={12} />
+              {totalSpentLabel}
+            </Badge>
           )}
-        </Box>
+        </div>
 
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ display: 'block', mt: 1.5 }}
-        >
+        <span className="block text-xs text-muted-foreground mt-3">
           {t('trips.recap.generatedAt', 'Generated {{date}}', {
             date: format(new Date(recap.generated_at), 'MMM d, yyyy'),
           })}
-        </Typography>
+        </span>
       </CardContent>
     </Card>
   );
