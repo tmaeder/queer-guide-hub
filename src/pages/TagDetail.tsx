@@ -13,6 +13,7 @@ export default function TagDetail() {
 
   useEffect(() => {
     if (slug) void getTagDetails(decodeURIComponent(slug));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getTagDetails identity changes every render in useTags; re-running on slug only is intentional
   }, [slug]);
 
   if (!slug) return <div className="p-8">Missing tag.</div>;

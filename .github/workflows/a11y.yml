@@ -54,6 +54,11 @@ jobs:
     timeout-minutes: 20
     env:
       E2E_BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+      # When these secrets are set, the `setup` Playwright project signs in
+      # and writes a storageState that promotes the 8 skipped admin axe specs
+      # into actual runs. When absent, admin specs skip as before.
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
