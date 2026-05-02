@@ -34,7 +34,7 @@ const ResizableHandle = ({
       width: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#e5e5e5',
+      backgroundColor: 'hsl(var(--border))',
       ...style,
     }}
     {...props}
@@ -47,7 +47,7 @@ const ResizableHandle = ({
         width: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'var(--mui-palette-action-hover, #f5f5f5)',
+        backgroundColor: 'hsl(var(--accent))',
       }}>
         <GripVertical style={{ height: 10, width: 10 }} />
       </div>
