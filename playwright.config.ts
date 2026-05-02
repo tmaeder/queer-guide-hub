@@ -31,11 +31,15 @@ export default defineConfig({
       dependencies: hasAdminCreds ? ['setup'] : [],
     },
     // P2-3 — mobile viewport project. Run with `--project=mobile`.
+    // Uses Chromium (already installed for the main suite) at iPhone 13's
+    // viewport + DPR, so we don't need to download WebKit just for screenshots.
     {
       name: 'mobile',
       testMatch: /visual-mobile\.spec\.ts$/,
       use: {
-        ...devices['iPhone 13'],
+        ...devices['Pixel 5'],
+        viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 3,
       },
     },
   ],
