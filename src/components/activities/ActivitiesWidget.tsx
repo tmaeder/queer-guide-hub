@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Activity, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -14,47 +12,22 @@ export function ActivitiesWidget({ destination }: ActivitiesWidgetProps) {
   const searchUrl = `https://www.getyourguide.com/s/?q=${encodeURIComponent(destination + ' LGBTQ')}&partner_id=${GYG_PARTNER_ID}`;
 
   return (
-    <Box
-      sx={{
-        textAlign: 'center',
-        py: 6,
-        px: 3,
-        bgcolor: 'action.hover',
-        borderRadius: 2,
-        border: '2px dashed',
-        borderColor: 'divider',
-      }}
-    >
-      <Box
-        sx={{
-          p: 2,
-          bgcolor: 'rgba(var(--muted-rgb, 128, 128, 128), 0.15)',
-          borderRadius: '50%',
-          width: 64,
-          height: 64,
-          mx: 'auto',
-          mb: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Activity style={{ height: 32, width: 32, color: 'var(--muted-foreground)' }} />
-      </Box>
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-        Tours & Activities
-      </Typography>
-      <Typography sx={{ color: 'text.secondary', mb: 2, maxWidth: 400, mx: 'auto' }}>
+    <div className="text-center py-12 px-6 bg-muted/40 rounded-2xl border-2 border-dashed border-border">
+      <div className="p-4 bg-muted rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <Activity className="h-8 w-8 text-muted-foreground" />
+      </div>
+      <h6 className="text-base font-semibold mb-1">Tours & Activities</h6>
+      <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
         Discover amazing experiences in {destination}. Browse tours, activities, and attractions.
-      </Typography>
+      </p>
       <Button
         variant="outline"
         size="sm"
         onClick={() => window.open(searchUrl, '_blank', 'noopener,noreferrer')}
       >
-        <ExternalLink style={{ height: 14, width: 14, marginRight: 6 }} />
+        <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
         Browse Tours on GetYourGuide
       </Button>
-    </Box>
+    </div>
   );
 }
