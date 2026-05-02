@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 import { useTripMutations, type TripDay } from '@/hooks/useTrips';
 import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import { SocialSignalBadges } from './SocialSignalBadges';
@@ -126,37 +126,43 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
     try {
       setSearchQuery(query);
-      const [venuesRes, eventsRes, hotelsRes] = await Promise.all([
-        supabase
-          .from('venues')
-          .select('id, name, category, city_id, country_id, latitude, longitude, address, foursquare_rating')
-          .ilike('name', `%${query}%`)
-          .limit(10),
-        supabase
-          .from('events')
-          .select('id, title, event_type, city_id, country_id, latitude, longitude')
-          .ilike('title', `%${query}%`)
-          .limit(10),
-        supabase
-          .from('hotels')
-          .select('id, name, star_rating, city_id, country_id, latitude, longitude, address')
-          .ilike('name', `%${query}%`)
-          .limit(10),
+      type VenueRow = { id: string; name: string; category?: string; city_id?: string; country_id?: string; latitude?: number; longitude?: number; address?: string; foursquare_rating?: number };
+      type EventRow = { id: string; title: string; event_type?: string; city_id?: string; country_id?: string; latitude?: number; longitude?: number };
+      type HotelRow = { id: string; name: string; star_rating?: number; city_id?: string; country_id?: string; latitude?: number; longitude?: number; address?: string };
+      const [venues, events, hotels] = await Promise.all([
+        listFromWhere<VenueRow>(
+          'venues',
+          'id, name, category, city_id, country_id, latitude, longitude, address, foursquare_rating',
+          [{ op: 'ilike', col: 'name', val: `%${query}%` }],
+          { limit: 10 },
+        ),
+        listFromWhere<EventRow>(
+          'events',
+          'id, title, event_type, city_id, country_id, latitude, longitude',
+          [{ op: 'ilike', col: 'title', val: `%${query}%` }],
+          { limit: 10 },
+        ),
+        listFromWhere<HotelRow>(
+          'hotels',
+          'id, name, star_rating, city_id, country_id, latitude, longitude, address',
+          [{ op: 'ilike', col: 'name', val: `%${query}%` }],
+          { limit: 10 },
+        ),
       ]);
 
       const mapped: SearchResult[] = [
-        ...(venuesRes.data || []).map((v) => ({
+        ...venues.map((v) => ({
           id: v.id, name: v.name, type: 'venue' as const,
           rating: v.foursquare_rating ?? undefined, address: v.address ?? undefined,
           latitude: v.latitude ?? undefined, longitude: v.longitude ?? undefined,
           country_id: v.country_id ?? undefined, city_id: v.city_id ?? undefined,
         })),
-        ...(eventsRes.data || []).map((e) => ({
+        ...events.map((e) => ({
           id: e.id, name: e.title, type: 'event' as const,
           latitude: e.latitude ?? undefined, longitude: e.longitude ?? undefined,
           country_id: e.country_id ?? undefined, city_id: e.city_id ?? undefined,
         })),
-        ...(hotelsRes.data || []).map((h) => ({
+        ...hotels.map((h) => ({
           id: h.id, name: h.name, type: 'hotel' as const,
           rating: h.star_rating ?? undefined, address: h.address ?? undefined,
           latitude: h.latitude ?? undefined, longitude: h.longitude ?? undefined,
