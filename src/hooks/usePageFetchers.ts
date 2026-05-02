@@ -118,6 +118,151 @@ export async function fetchEntityLinkReviewCount(): Promise<number> {
   return error ? 0 : (count ?? 0);
 }
 
+/** EventDetail.parts.tsx — slug→uuid fallback + attendees fetch. */
+export async function fetchEventBySlugOrId<T extends { id: string }>(
+  slug: string,
+  selectFields: string,
+  userId: string | undefined,
+): Promise<(T & { event_attendees: unknown[] }) | null> {
+  let { data, error } = await supabase
+    .from('events')
+    .select(selectFields)
+    .eq('slug', slug)
+    .single();
+  if (error && /uuid|invalid|no rows/i.test(error.message || '')) {
+    const fb = await supabase.from('events').select(selectFields).eq('id', slug).single();
+    data = fb.data;
+    error = fb.error;
+  }
+  if (error) {
+    if ((error as { code?: string }).code === 'PGRST116') return null;
+    throw error;
+  }
+  if (!data) return null;
+  const event = data as T;
+  if (userId) {
+    const { data: attendeesData } = await supabase
+      .from('event_attendees')
+      .select(`id, status, user_id, profiles:user_id (display_name, avatar_url)`)
+      .eq('event_id', event.id);
+    return { ...event, event_attendees: attendeesData ?? [] };
+  }
+  return { ...event, event_attendees: [] };
+}
+
+/** PersonalityDetail.parts.tsx — public personality by slug, then by id. */
+export async function fetchPublicPersonalityBySlugOrId<T = unknown>(
+  slugOrId: string,
+): Promise<T | null> {
+  let { data, error } = await supabase
+    .from('personalities')
+    .select('*')
+    .eq('slug', slugOrId)
+    .eq('visibility', 'public')
+    .maybeSingle();
+  if (!data && !error) {
+    const fb = await supabase
+      .from('personalities')
+      .select('*')
+      .eq('id', slugOrId)
+      .eq('visibility', 'public')
+      .maybeSingle();
+    data = fb.data;
+    error = fb.error;
+  }
+  if (error) throw error;
+  return (data ?? null) as T | null;
+}
+
+/** VenueDetail.parts.tsx — venue by slug + uuid + website domain fallback,
+ * plus reviews. Returns redirectTo when website-domain match succeeds. */
+export async function fetchVenueWithReviews<TVenue, TReview>(
+  slug: string,
+  selectFields: string,
+): Promise<{
+  venue: TVenue | null;
+  reviews: TReview[];
+  redirectTo?: string;
+  notFound?: boolean;
+}> {
+  let { data: venueData, error: venueError } = await supabase
+    .from('venues')
+    .select(selectFields)
+    .eq('slug', slug)
+    .single();
+  if (venueError && /uuid|invalid|no rows/i.test(venueError.message || '')) {
+    const fb = await supabase.from('venues').select(selectFields).eq('id', slug).single();
+    venueData = fb.data;
+    venueError = fb.error;
+  }
+  if (venueError && /\./.test(slug) && !/\s/.test(slug)) {
+    const host = slug.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0];
+    if (host) {
+      const { data: byWebsite } = await supabase
+        .from('venues')
+        .select('slug, id')
+        .or(`website.ilike.%${host}%,website.ilike.%www.${host}%`)
+        .limit(1)
+        .maybeSingle();
+      const w = byWebsite as { slug?: string; id?: string } | null;
+      if (w?.slug || w?.id) {
+        return { venue: null, reviews: [], redirectTo: `/venues/${w.slug || w.id}` };
+      }
+    }
+  }
+  if (venueError) {
+    if (
+      /no rows|not found|0 rows/i.test(venueError.message || '') ||
+      (venueError as { code?: string }).code === 'PGRST116'
+    ) {
+      return { venue: null, reviews: [], notFound: true };
+    }
+    throw venueError;
+  }
+  if (!venueData) return { venue: null, reviews: [], notFound: true };
+  const venue = venueData as TVenue & { id: string };
+  const { data: reviewsData, error: reviewsError } = await supabase
+    .from('venue_reviews')
+    .select(`*, profiles:user_id (display_name, avatar_url)`)
+    .eq('venue_id', venue.id)
+    .order('created_at', { ascending: false });
+  if (reviewsError) throw reviewsError;
+  return { venue: venue as TVenue, reviews: (reviewsData ?? []) as TReview[] };
+}
+
+/** admin/EmailTemplates.tsx — list + upsert email templates. */
+export async function fetchEmailTemplates() {
+  const { data, error } = await supabase.from('email_templates').select('*').order('name');
+  return { data: data ?? [], error };
+}
+
+export async function upsertEmailTemplate(
+  template: Record<string, unknown>,
+  editingId: string | null,
+) {
+  if (editingId) {
+    const { error } = await supabase
+      .from('email_templates')
+      .update(template as never)
+      .eq('id', editingId);
+    return { error };
+  }
+  const { error } = await supabase.from('email_templates').insert([template] as never);
+  return { error };
+}
+
+/** AdminQueerVillages.tsx — list cities + countries. */
+export async function fetchAllCitiesAndCountries() {
+  const [citiesRes, countriesRes] = await Promise.all([
+    supabase.from('cities').select('id, name, slug'),
+    supabase.from('countries').select('id, name'),
+  ]);
+  return {
+    cities: (citiesRes.data ?? []) as Array<{ id: string; name: string; slug?: string }>,
+    countries: (countriesRes.data ?? []) as Array<{ id: string; name: string }>,
+  };
+}
+
 /** AdminCountries.tsx — delete a country row. */
 export async function deleteCountry(id: string) {
   const { error } = await supabase.from('countries').delete().eq('id', id);

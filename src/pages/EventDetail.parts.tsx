@@ -33,6 +33,7 @@ import { EntityMap } from '@/components/map/EntityMap';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
 import { formatEventTime } from '@/lib/event-time';
 import { formatCurrency } from '@/lib/currency';
 import { isMeaningfulTag } from '@/utils/eventText';
@@ -84,31 +85,7 @@ export async function fetchEvent(
   slug: string,
   userId: string | undefined,
 ): Promise<EventWithRelations | null> {
-  let { data, error } = await supabase
-    .from('events')
-    .select(EVENT_SELECT_FIELDS)
-    .eq('slug', slug)
-    .single();
-
-  if (error && /uuid|invalid|no rows/i.test(error.message || '')) {
-    const fb = await supabase.from('events').select(EVENT_SELECT_FIELDS).eq('id', slug).single();
-    data = fb.data;
-    error = fb.error;
-  }
-  if (error) {
-    if (error.code === 'PGRST116') return null;
-    throw error;
-  }
-  if (!data) return null;
-
-  if (userId) {
-    const { data: attendeesData } = await supabase
-      .from('event_attendees')
-      .select(`id, status, user_id, profiles:user_id (display_name, avatar_url)`)
-      .eq('event_id', data.id);
-    return { ...data, event_attendees: attendeesData || [] } as EventWithRelations;
-  }
-  return { ...data, event_attendees: [] } as EventWithRelations;
+  return fetchEventBySlugOrId<EventWithRelations>(slug, EVENT_SELECT_FIELDS, userId);
 }
 
 export async function exportEventToCalendar(event: EventWithRelations) {
