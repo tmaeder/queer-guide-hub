@@ -45,12 +45,13 @@ const SubmitHub = () => {
           <CardContent>
             <p className="text-sm text-muted-foreground text-center">
               <strong>Tip:</strong>{' '}
-              <span
+              <button
+                type="button"
                 onClick={() => navigate('/auth')}
-                className="text-foreground underline cursor-pointer"
+                className="text-foreground underline cursor-pointer bg-transparent border-0 p-0 font-inherit"
               >
                 Sign in or create an account
-              </span>{' '}
+              </button>{' '}
               to submit content. Guest submissions are not currently supported.
             </p>
           </CardContent>

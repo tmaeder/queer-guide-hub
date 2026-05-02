@@ -88,7 +88,7 @@ export function PersonalitySelectionDialog({
                               : ''
                             }
                             {candidate.details.isLiving && candidate.details.birthYear && (
-                              <span style={{ color: 'hsl(142, 71%, 45%)' }}>• Living</span>
+                              <span style={{ color: 'hsl(var(--success))' }}>• Living</span>
                             )}
                           </Badge>
                         )}
