@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -124,19 +122,17 @@ export default function CityDetail() {
 
   if (!city) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        <Box sx={{ mx: 'auto', px: 2, py: 4, textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-            City Not Found
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto px-4 py-8 text-center">
+          <h5 className="text-xl font-bold mb-4">City Not Found</h5>
+          <p className="text-muted-foreground mb-6">
             The city you're looking for doesn't exist.
-          </Typography>
-          <LocalizedLink to="/places" style={{ color: 'inherit', fontWeight: 500 }}>
+          </p>
+          <LocalizedLink to="/places" className="font-medium" style={{ color: 'inherit' }}>
             ← Back to Places
           </LocalizedLink>
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
@@ -229,14 +225,14 @@ export default function CityDetail() {
         entityId={city.id}
       />
 
-      <Box sx={{ mx: 'auto', px: 2, pb: 4 }}>
+      <div className="mx-auto px-4 pb-8">
         <TrendingStrip city={city.name} className="mt-8" />
         <SimilarItems
           entity={{ type: 'city', id: city.id }}
           className="mt-6"
           title="Similar cities"
         />
-      </Box>
+      </div>
 
       <CreateTripDialog open={createTripOpen} onClose={() => setCreateTripOpen(false)} />
     </>
