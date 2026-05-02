@@ -79,7 +79,7 @@ async function fetchVenuesInBbox(
 ): Promise<PointFeature[]> {
   let query = supabase
     .from('venues')
-    .select('id, slug, name, category, latitude, longitude, city, country, featured')
+    .select('id, slug, name, category, latitude, longitude, city, country, is_featured')
     .neq('data_source', 'refuge_restrooms')
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
@@ -114,7 +114,7 @@ async function fetchVenuesInBbox(
         city: v.city,
         country: v.country,
         category: v.category,
-        featured: v.featured,
+        featured: v.is_featured,
       }),
     },
   }));

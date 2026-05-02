@@ -59,7 +59,7 @@ export function useTripLocalContext(trip: TripWithDetails | undefined) {
           .limit(6),
         supabase
           .from('queer_villages')
-          .select('id, name, description, slug, featured, city:city_id(id, name)')
+          .select('id, name, description, slug, is_featured, city:city_id(id, name)')
           .in('city_id', cityIds)
           .order('featured', { ascending: false })
           .limit(4),

@@ -14,105 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      _cleanup_personalities_2026_04_26: {
-        Row: {
-          bio: string | null
-          birth_date: string | null
-          classification: string | null
-          death_date: string | null
-          description: string | null
-          disposition: string | null
-          external_ids: Json | null
-          image_url: string | null
-          name: string | null
-          normalized_data: Json | null
-          personality_id: string | null
-          profession: string | null
-          raw_data: Json | null
-          slug: string | null
-          staged_at: string | null
-          staging_id: string | null
-          tags: string[] | null
-          wikidata_qid: string | null
-        }
-        Insert: {
-          bio?: string | null
-          birth_date?: string | null
-          classification?: string | null
-          death_date?: string | null
-          description?: string | null
-          disposition?: string | null
-          external_ids?: Json | null
-          image_url?: string | null
-          name?: string | null
-          normalized_data?: Json | null
-          personality_id?: string | null
-          profession?: string | null
-          raw_data?: Json | null
-          slug?: string | null
-          staged_at?: string | null
-          staging_id?: string | null
-          tags?: string[] | null
-          wikidata_qid?: string | null
-        }
-        Update: {
-          bio?: string | null
-          birth_date?: string | null
-          classification?: string | null
-          death_date?: string | null
-          description?: string | null
-          disposition?: string | null
-          external_ids?: Json | null
-          image_url?: string | null
-          name?: string | null
-          normalized_data?: Json | null
-          personality_id?: string | null
-          profession?: string | null
-          raw_data?: Json | null
-          slug?: string | null
-          staged_at?: string | null
-          staging_id?: string | null
-          tags?: string[] | null
-          wikidata_qid?: string | null
-        }
-        Relationships: []
-      }
-      _geonames_stage: {
-        Row: {
-          asciiname: string | null
-          cc: string | null
-          country_id: string | null
-          geoid: string | null
-          lat: number | null
-          lng: number | null
-          name: string | null
-          pop: number | null
-          tz: string | null
-        }
-        Insert: {
-          asciiname?: string | null
-          cc?: string | null
-          country_id?: string | null
-          geoid?: string | null
-          lat?: number | null
-          lng?: number | null
-          name?: string | null
-          pop?: number | null
-          tz?: string | null
-        }
-        Update: {
-          asciiname?: string | null
-          cc?: string | null
-          country_id?: string | null
-          geoid?: string | null
-          lat?: number | null
-          lng?: number | null
-          name?: string | null
-          pop?: number | null
-          tz?: string | null
-        }
-        Relationships: []
-      }
       access_logs: {
         Row: {
           created_at: string
@@ -4314,6 +4215,7 @@ export type Database = {
           group_id: string | null
           id: string
           images: string[] | null
+          is_featured: boolean
           is_free: boolean | null
           is_public: boolean
           is_recurring: boolean | null
@@ -4376,6 +4278,7 @@ export type Database = {
           group_id?: string | null
           id?: string
           images?: string[] | null
+          is_featured?: boolean
           is_free?: boolean | null
           is_public?: boolean
           is_recurring?: boolean | null
@@ -4438,6 +4341,7 @@ export type Database = {
           group_id?: string | null
           id?: string
           images?: string[] | null
+          is_featured?: boolean
           is_free?: boolean | null
           is_public?: boolean
           is_recurring?: boolean | null
@@ -8591,6 +8495,35 @@ export type Database = {
             foreignKeyName: "personalities_duplicate_of_id_fkey"
             columns: ["duplicate_of_id"]
             isOneToOne: false
+            referencedRelation: "personalities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personality_internal_notes: {
+        Row: {
+          notes: string
+          personality_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          notes?: string
+          personality_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          notes?: string
+          personality_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personality_internal_notes_personality_id_fkey"
+            columns: ["personality_id"]
+            isOneToOne: true
             referencedRelation: "personalities"
             referencedColumns: ["id"]
           },
@@ -14383,6 +14316,7 @@ export type Database = {
           id: string
           images: string[] | null
           instagram: string | null
+          is_featured: boolean
           is_organizer: boolean
           last_refreshed_at: string | null
           last_synced_at: string | null
@@ -14460,6 +14394,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           instagram?: string | null
+          is_featured?: boolean
           is_organizer?: boolean
           last_refreshed_at?: string | null
           last_synced_at?: string | null
@@ -14537,6 +14472,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           instagram?: string | null
+          is_featured?: boolean
           is_organizer?: boolean
           last_refreshed_at?: string | null
           last_synced_at?: string | null
@@ -16245,6 +16181,20 @@ export type Database = {
           staging_id: string
         }[]
       }
+      commit_marketplace_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          listing_id: string
+        }[]
+      }
+      commit_news_staging_item: {
+        Args: { p_actor?: string; p_staging_id: string }
+        Returns: {
+          action: string
+          article_id: string
+        }[]
+      }
       commit_personality_staging_batch: {
         Args: { p_limit?: number }
         Returns: {
@@ -17093,6 +17043,7 @@ export type Database = {
           id: string
           images: string[] | null
           instagram: string | null
+          is_featured: boolean
           is_organizer: boolean
           last_refreshed_at: string | null
           last_synced_at: string | null

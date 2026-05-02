@@ -113,7 +113,7 @@ export function TripLocalContext({ trip }: Props) {
                     <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                       {v.name}
                     </Typography>
-                    {v.featured && <Star size={12} style={{ color: '#F59E0B' }} />}
+                    {v.is_featured && <Star size={12} style={{ color: '#F59E0B' }} />}
                     {v.city?.name && (
                       <Typography variant="caption" color="text.secondary">
                         · {v.city.name}
