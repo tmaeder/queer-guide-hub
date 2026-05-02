@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Box from '@mui/material/Box';
 import { EnhancedImageUpload } from '@/components/security/EnhancedImageUpload';
 
 interface MediaUploaderProps {
@@ -21,11 +20,11 @@ export function MediaUploader({ onUploaded, onCancel }: MediaUploaderProps) {
           }}
           bucket="cms-media"
         />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+        <div className="flex justify-end gap-2 mt-4">
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -12,26 +10,24 @@ export function DonationSuccess() {
   return (
     <Card>
       <CardContent className="py-8 text-center space-y-4">
-        <CheckCircle
-          style={{ width: 48, height: 48, margin: '0 auto', color: 'var(--color-green-500, #22c55e)' }}
-        />
-        <Typography variant="h5" fontWeight={700}>
+        <CheckCircle className="w-12 h-12 mx-auto text-green-500" />
+        <h5 className="text-xl font-bold">
           {t('donate.thankYou', 'Thank you!')}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 400, mx: 'auto' }}>
+        </h5>
+        <p className="text-base text-muted-foreground max-w-md mx-auto">
           {t(
             'donate.successMessage',
             'Your donation helps keep queer.guide free and accessible for the LGBTQ+ community worldwide.'
           )}
-        </Typography>
-        <Box sx={{ pt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
+        </p>
+        <div className="pt-4 flex justify-center gap-4">
           <Button variant="outline" asChild>
             <LocalizedLink to="/">
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t('donate.backHome', 'Back to home')}
             </LocalizedLink>
           </Button>
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );
