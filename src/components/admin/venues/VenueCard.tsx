@@ -2,8 +2,6 @@ import { MapPin, Edit, Trash2, Star, CheckCircle, ExternalLink, Phone, Mail } fr
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface VenueData {
   name: string;
@@ -18,6 +16,7 @@ interface VenueData {
   email?: string;
   website?: string;
   tags?: string[];
+  is_featured?: boolean;
 }
 
 interface VenueCardProps {
@@ -34,16 +33,12 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
   return (
     <Card>
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: { md: 'flex-start' }, justifyContent: { md: 'space-between' } }}>
-          {/* Main Content */}
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            {/* Header */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 1 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 'tight' }}>{venue.name}</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                <Badge variant="outline">
-                  {venue.category}
-                </Badge>
+        <div className="flex flex-col md:flex-row gap-4 md:items-start md:justify-between">
+          <div className="flex-1 flex flex-col gap-3">
+            <div className="flex flex-wrap items-start gap-2">
+              <h6 className="text-base font-semibold leading-tight">{venue.name}</h6>
+              <div className="flex flex-wrap gap-1">
+                <Badge variant="outline">{venue.category}</Badge>
                 {venue.is_featured && (
                   <Badge>
                     <Star style={{ width: 12, height: 12, marginRight: 4 }} />
@@ -56,52 +51,51 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
                     Verified
                   </Badge>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
 
-            {/* Location & Price */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, fontSize: '0.875rem', color: 'text.secondary' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
                 <MapPin style={{ width: 12, height: 12 }} />
-                <Typography component="span">{venue.city}{venue.state && `, ${venue.state}`}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography component="span" sx={{ fontWeight: 500 }}>Price: {getPriceDisplay(venue.price_range)}</Typography>
-              </Box>
-            </Box>
+                <span>{venue.city}{venue.state && `, ${venue.state}`}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="font-medium">Price: {getPriceDisplay(venue.price_range)}</span>
+              </div>
+            </div>
 
-            {/* Description */}
             {venue.description && (
-              <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              <p
+                className="text-sm text-muted-foreground"
+                style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+              >
                 {venue.description}
-              </Typography>
+              </p>
             )}
 
-            {/* Contact Info */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
+            <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
               {venue.phone && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <div className="flex items-center gap-1">
                   <Phone style={{ width: 12, height: 12 }} />
-                  <Typography component="span">{venue.phone}</Typography>
-                </Box>
+                  <span>{venue.phone}</span>
+                </div>
               )}
               {venue.email && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <div className="flex items-center gap-1">
                   <Mail style={{ width: 12, height: 12 }} />
-                  <Typography component="span">{venue.email}</Typography>
-                </Box>
+                  <span>{venue.email}</span>
+                </div>
               )}
               {venue.website && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <div className="flex items-center gap-1">
                   <ExternalLink style={{ width: 12, height: 12 }} />
-                  <Typography component="span">Website</Typography>
-                </Box>
+                  <span>Website</span>
+                </div>
               )}
-            </Box>
+            </div>
 
-            {/* Tags */}
             {venue.tags && venue.tags.length > 0 && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              <div className="flex flex-wrap gap-1">
                 {venue.tags.slice(0, 3).map((tag: string, index: number) => (
                   <Badge key={index} variant="secondary">
                     {tag}
@@ -112,32 +106,21 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
                     +{venue.tags.length - 3} more
                   </Badge>
                 )}
-              </Box>
+              </div>
             )}
-          </Box>
+          </div>
 
-          {/* Actions */}
-          <Box sx={{ display: 'flex', gap: 1, flexDirection: { md: 'column' } }}>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(venue)}
-
-            >
-              <Edit style={{ width: 16, height: 16, marginRight: { md: 8 } }} />
-              <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Edit</Box>
+          <div className="flex md:flex-col gap-2">
+            <Button variant="outline" size="sm" onClick={() => onEdit(venue)}>
+              <Edit style={{ width: 16, height: 16 }} className="md:mr-2" />
+              <span className="hidden md:inline">Edit</span>
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => onDelete(venue)}
-
-            >
-              <Trash2 style={{ width: 16, height: 16, marginRight: { md: 8 } }} />
-              <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Delete</Box>
+            <Button variant="destructive" size="sm" onClick={() => onDelete(venue)}>
+              <Trash2 style={{ width: 16, height: 16 }} className="md:mr-2" />
+              <span className="hidden md:inline">Delete</span>
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

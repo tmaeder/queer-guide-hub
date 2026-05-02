@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useTranslation } from 'react-i18next';
@@ -77,12 +75,12 @@ export default function HotelDetail() {
 
   if (!loading && !hotel && !primaryError) {
     return (
-      <Container sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>Hotel not found</Typography>
+      <div className="container mx-auto py-16 text-center">
+        <h5 className="text-xl font-semibold mb-4">Hotel not found</h5>
         <Button asChild variant="outline">
           <LocalizedLink to="/hotels">Back to Hotels</LocalizedLink>
         </Button>
-      </Container>
+      </div>
     );
   }
 

@@ -2,7 +2,6 @@ import React from 'react';
 import { Shield, MapPin, Clock, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Box from '@mui/material/Box';
 
 interface LocationPrivacyGuardProps {
   children: React.ReactNode;
@@ -51,24 +50,16 @@ export function LocationPrivacyGuard({
   const privacyLocation = getPrivacyPreservingLocation();
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       {showWarning && locationData && (
         <Alert>
           <Shield style={{ height: 16, width: 16 }} />
           <AlertDescription>
-            <Box component="span">Location data is protected by privacy controls</Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                fontSize: '0.875rem',
-                color: 'text.secondary',
-              }}
-            >
+            <span>Location data is protected by privacy controls</span>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock style={{ height: 12, width: 12 }} />
-              <Box component="span">Auto-anonymized after 30 days</Box>
-            </Box>
+              <span>Auto-anonymized after 30 days</span>
+            </div>
           </AlertDescription>
         </Alert>
       )}
@@ -93,19 +84,11 @@ export function LocationPrivacyGuard({
       })}
 
       {locationData && !allowPreciseLocation && (
-        <Box
-          sx={{
-            fontSize: '0.75rem',
-            color: 'text.secondary',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-          }}
-        >
+        <div className="text-xs text-muted-foreground flex items-center gap-1">
           <AlertTriangle style={{ height: 12, width: 12 }} />
           Precise location coordinates are hidden for privacy
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
