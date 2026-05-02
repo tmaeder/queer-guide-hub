@@ -227,7 +227,6 @@
   "src/components/security/AutomatedSecurityScheduler.tsx",
   "src/components/security/ContentSanitizer.tsx",
   "src/components/security/AdminRouteGuard.tsx",
-  "src/components/security/EnhancedFormValidator.tsx",
   "src/components/security/EnhancedImageUpload.tsx",
   "src/components/security/EnhancedSecurityDashboard.tsx",
   "src/components/security/LocationPrivacyManager.tsx",
