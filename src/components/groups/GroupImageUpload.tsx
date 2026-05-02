@@ -2,11 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface GroupImageUploadProps {
   currentImages?: string[];
@@ -17,7 +15,7 @@ interface GroupImageUploadProps {
 export const GroupImageUpload = ({
   currentImages = [],
   onImagesChange,
-  maxImages = 5
+  maxImages = 5,
 }: GroupImageUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
@@ -86,36 +84,32 @@ export const GroupImageUpload = ({
     onImagesChange(newImages);
   };
 
+  const disabled = isUploading || currentImages.length >= maxImages;
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         <Label>Group Images ({currentImages.length}/{maxImages})</Label>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div className="flex items-center gap-2">
           <Input
             type="file"
             accept="image/*"
             multiple
             onChange={handleFileUpload}
-            disabled={isUploading || currentImages.length >= maxImages}
-
+            disabled={disabled}
             id="group-image-upload"
           />
           <Label
             htmlFor="group-image-upload"
+            className="flex items-center gap-2 px-4 py-2 transition-colors"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '8px 16px',
-              borderRadius: 6,
-              cursor: isUploading || currentImages.length >= maxImages ? 'not-allowed' : 'pointer',
-              opacity: isUploading || currentImages.length >= maxImages ? 0.5 : 1,
-              transition: 'background-color 0.2s',
+              cursor: disabled ? 'not-allowed' : 'pointer',
+              opacity: disabled ? 0.5 : 1,
             }}
           >
             {isUploading ? (
               <>
-                <Box sx={{ width: 16, height: 16, border: 2, borderColor: 'primary.main', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 Uploading...
               </>
             ) : (
@@ -125,52 +119,48 @@ export const GroupImageUpload = ({
               </>
             )}
           </Label>
-        </Box>
+        </div>
         {currentImages.length >= maxImages && (
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Maximum number of images reached.
-          </Typography>
+          <p className="text-sm text-muted-foreground">Maximum number of images reached.</p>
         )}
-      </Box>
+      </div>
 
       {currentImages.length > 0 && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {currentImages.map((imageUrl, index) => (
-            <Box key={index} sx={{ position: 'relative', '&:hover .remove-btn': { opacity: 1 } }}>
-              <Box sx={{ aspectRatio: '1', overflow: 'hidden' }}>
-                <Box
-                  component="img"
+            <div key={index} className="relative group">
+              <div className="overflow-hidden" style={{ aspectRatio: '1' }}>
+                <img
                   src={imageUrl}
                   alt={`Group image ${index + 1}`}
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/placeholder.svg';
                   }}
                 />
-              </Box>
+              </div>
               <Button
                 type="button"
                 variant="destructive"
                 size="sm"
-                className="remove-btn"
-
+                className="opacity-0 group-hover:opacity-100"
                 onClick={() => removeImage(index)}
               >
                 <X style={{ height: 12, width: 12 }} />
               </Button>
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
       {currentImages.length === 0 && (
-        <Box sx={{ border: 2, borderStyle: 'dashed', borderColor: 'text.disabled', borderRadius: 2, p: 4, textAlign: 'center' }}>
+        <div className="border-2 border-dashed p-8 text-center" style={{ borderColor: 'hsl(var(--muted-foreground) / 0.3)' }}>
           <ImageIcon style={{ width: 48, height: 48, margin: '0 auto', marginBottom: 16, opacity: 0.5 }} />
-          <Typography sx={{ color: 'text.secondary' }}>No images uploaded yet</Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>Upload images to showcase your group</Typography>
-        </Box>
+          <p className="text-muted-foreground">No images uploaded yet</p>
+          <p className="text-sm text-muted-foreground">Upload images to showcase your group</p>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
