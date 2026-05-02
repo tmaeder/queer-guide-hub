@@ -290,7 +290,7 @@ export function VenueHero({
             {venue.verified && (
               <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
             )}
-            {venue.featured && <Badge>Featured</Badge>}
+            {venue.is_featured && <Badge>Featured</Badge>}
             {venue.countries?.equality_score != null && (
               <EqualityScoreBadge score={venue.countries.equality_score} size="sm" />
             )}
