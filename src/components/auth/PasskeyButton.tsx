@@ -4,18 +4,14 @@ import { Fingerprint, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface PasskeyButtonProps {
   mode: 'enroll' | 'signin';
-  sx?: object;
   variant?: 'default' | 'outline' | 'secondary' | 'ghost';
 }
 
 export const PasskeyButton = ({
   mode,
-  sx,
   variant = 'outline'
 }: PasskeyButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +25,6 @@ export const PasskeyButton = ({
       if (mode === 'enroll') {
         const { error } = await enrollPasskey();
         if (error) {
-          // Log security event for failed passkey enrollment
           if (user) {
             await supabase.rpc('log_security_event', {
               p_event_type: 'PASSKEY_ENROLLMENT_FAILED',
@@ -44,7 +39,6 @@ export const PasskeyButton = ({
             variant: "destructive",
           });
         } else {
-          // Log successful passkey enrollment
           if (user) {
             await supabase.rpc('log_security_event', {
               p_event_type: 'PASSKEY_ENROLLMENT_SUCCESS',
@@ -61,7 +55,6 @@ export const PasskeyButton = ({
       } else {
         const { error } = await signInWithPasskey();
         if (error) {
-          // Log security event for failed passkey sign-in
           await supabase.rpc('log_security_event', {
             p_event_type: 'PASSKEY_SIGNIN_FAILED',
             p_user_id: null,
@@ -91,7 +84,6 @@ export const PasskeyButton = ({
     }
   };
 
-  // Don't show enroll button if passkey is already enrolled
   if (mode === 'enroll' && hasPasskey) {
     return null;
   }
@@ -105,22 +97,22 @@ export const PasskeyButton = ({
     : 'Use your device biometrics';
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...sx }}>
+    <div className="flex flex-col gap-2">
       <Button
         variant={variant}
         onClick={handlePasskeyAction}
         disabled={isLoading}
       >
         {isLoading ? (
-          <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
-          <Fingerprint style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Fingerprint className="mr-2 h-4 w-4" />
         )}
         {buttonText}
       </Button>
-      <Typography variant="caption" sx={{ color: 'text.secondary', textAlign: 'center' }}>
+      <span className="text-xs text-muted-foreground text-center">
         {buttonDescription}
-      </Typography>
-    </Box>
+      </span>
+    </div>
   );
 };

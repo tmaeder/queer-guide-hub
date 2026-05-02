@@ -8,7 +8,7 @@ import {
   findNearbyCities,
 } from '@/hooks/useOptimizedPlaces';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
-import { supabase } from '@/integrations/supabase/client';
+import { useContinents } from '@/hooks/useContinents';
 import { PlacesCard } from '@/components/places/PlacesCard';
 import { VillageCard } from '@/components/villages/VillageCard';
 import { PlacesSearch, type PlacesFilters } from '@/components/places/PlacesSearch';
@@ -68,25 +68,8 @@ export default function Places() {
   }, [loading]);
 
   // Fetch continents for grouping countries
-  const [continents, setContinents] = useState<Record<string, unknown>[]>([]);
-
-  useEffect(() => {
-    const fetchContinents = async () => {
-      try {
-        const { data: continentsData, error } = await supabase
-          .from('continents')
-          .select('*')
-          .order('name');
-
-        if (error) throw error;
-        setContinents(continentsData || []);
-      } catch (error) {
-        console.error('Error fetching continents:', error);
-      }
-    };
-
-    fetchContinents();
-  }, []);
+  // Fetch continents for grouping countries (DUP-4)
+  const { data: continents = [] } = useContinents();
 
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [selectedCountry, setSelectedCountry] = useState<Record<string, unknown> | null>(null);

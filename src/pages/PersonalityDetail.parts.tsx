@@ -18,7 +18,7 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import type { Personality } from '@/hooks/usePersonalities';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchPublicPersonalityBySlugOrId } from '@/hooks/usePageFetchers';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -52,27 +52,9 @@ export function transformPersonality(data: Record<string, unknown>): Personality
 
 // eslint-disable-next-line react-refresh/only-export-components
 export async function fetchPersonalityBySlug(slug: string): Promise<Personality | null> {
-  let { data, error } = await supabase
-    .from('personalities')
-    .select('*')
-    .eq('slug', slug)
-    .eq('visibility', 'public')
-    .maybeSingle();
-
-  if (!data && !error) {
-    const fallback = await supabase
-      .from('personalities')
-      .select('*')
-      .eq('id', slug)
-      .eq('visibility', 'public')
-      .maybeSingle();
-    data = fallback.data;
-    error = fallback.error;
-  }
-
-  if (error) throw error;
+  const data = await fetchPublicPersonalityBySlugOrId<Record<string, unknown>>(slug);
   if (!data) return null;
-  return transformPersonality(data as unknown as Record<string, unknown>);
+  return transformPersonality(data);
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

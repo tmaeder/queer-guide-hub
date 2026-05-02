@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Eye, Edit, Save, X, Mail, Loader2, FileText, TestTube } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchEmailTemplates, upsertEmailTemplate } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
@@ -54,19 +55,12 @@ export default function EmailTemplates() {
 
   const fetchTemplates = async () => {
     try {
-      const { data, error } = await supabase
-        .from('email_templates')
-        .select('*')
-        .order('name');
-
+      const { data, error } = await fetchEmailTemplates();
       if (error) throw error;
-
-      // Ensure variables is always an array
-      const processedTemplates = (data || []).map(template => ({
+      const processedTemplates = (data || []).map((template: Record<string, unknown>) => ({
         ...template,
-        variables: Array.isArray(template.variables) ? template.variables : []
+        variables: Array.isArray(template.variables) ? template.variables : [],
       }));
-
       setTemplates(processedTemplates);
     } catch (error) {
       console.error('Error fetching templates:', error);
@@ -85,9 +79,8 @@ export default function EmailTemplates() {
 
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from('email_templates')
-        .update({
+      const { error } = await upsertEmailTemplate(
+        {
           name: editingTemplate.name,
           description: editingTemplate.description,
           subject: editingTemplate.subject,
@@ -96,8 +89,9 @@ export default function EmailTemplates() {
           variables: editingTemplate.variables,
           is_active: editingTemplate.is_active,
           updated_by: user?.id,
-        })
-        .eq('id', editingTemplate.id);
+        },
+        editingTemplate.id,
+      );
 
       if (error) throw error;
 

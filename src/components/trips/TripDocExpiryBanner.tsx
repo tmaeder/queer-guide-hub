@@ -1,6 +1,4 @@
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { AlertTriangle, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router';
@@ -11,15 +9,11 @@ interface Props {
   trip: TripWithDetails;
 }
 
-/** Days a passport must remain valid past the trip end date. Six months is
- * the standard requirement for most international travel. */
 const PASSPORT_BUFFER_DAYS = 180;
 
 interface DocFlag {
   doc: TripDocument;
-  /** "expired" — already past expiry; "soon" — expires before trip end + buffer for passports / before trip start for everything else. */
   level: 'expired' | 'soon';
-  /** ISO date the document needs to remain valid through. */
   requiredThrough: string;
 }
 
@@ -44,13 +38,6 @@ function flagDocs(docs: TripDocument[], trip: TripWithDetails, now: Date): DocFl
   return out;
 }
 
-/**
- * Warns when any trip-attached or personal travel document expires before
- * the trip ends (or within the passport-validity buffer for passports).
- *
- * Renders nothing when the trip has no dates, no documents are loaded, or
- * everything is valid through the relevant cutoff.
- */
 export function TripDocExpiryBanner({ trip }: Props) {
   const { t } = useTranslation();
   const { data: tripDocs } = useTripDocuments(trip.id);
@@ -67,44 +54,31 @@ export function TripDocExpiryBanner({ trip }: Props) {
   const isSevere = expiredCount > 0;
 
   return (
-    <Box
+    <div
       role="alert"
-      sx={(theme) => ({
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 1.5,
-        px: 2,
-        py: 1.5,
-        mb: 2,
-        bgcolor: isSevere
-          ? theme.palette.mode === 'dark'
-            ? 'rgba(244, 67, 54, 0.12)'
-            : 'rgba(244, 67, 54, 0.08)'
-          : theme.palette.mode === 'dark'
-            ? 'rgba(255, 152, 0, 0.12)'
-            : 'rgba(255, 152, 0, 0.08)',
-        borderLeft: 4,
-        borderColor: isSevere ? 'error.main' : 'warning.main',
-      })}
+      className="flex items-start gap-3 px-4 py-3 mb-4"
+      style={{
+        backgroundColor: isSevere ? 'rgba(244, 67, 54, 0.08)' : 'rgba(255, 152, 0, 0.08)',
+        borderLeft: '4px solid',
+        borderLeftColor: isSevere ? 'hsl(var(--destructive))' : 'hsl(var(--warning))',
+      }}
     >
       {isSevere ? (
         <AlertTriangle style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
       ) : (
         <Clock style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
       )}
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5 }}>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold mb-1">
           {isSevere
             ? t('trips.docs.expiredTitle', 'Document expired')
             : t('trips.docs.expiringTitle', 'Document expires before trip ends')}
-        </Typography>
-        <Box component="ul" sx={{ m: 0, pl: 2, fontSize: '0.8125rem' }}>
+        </p>
+        <ul className="m-0 pl-4" style={{ fontSize: '0.8125rem' }}>
           {flags.map((f) => (
-            <Box component="li" key={f.doc.id}>
+            <li key={f.doc.id}>
               <strong>{f.doc.title}</strong>{' '}
-              <Typography component="span" variant="caption" color="text.secondary">
-                ({f.doc.doc_type})
-              </Typography>{' '}
+              <span className="text-xs text-muted-foreground">({f.doc.doc_type})</span>{' '}
               —{' '}
               {f.level === 'expired'
                 ? t('trips.docs.expiredOn', 'expired {{date}}', {
@@ -114,26 +88,18 @@ export function TripDocExpiryBanner({ trip }: Props) {
                     date: new Date(f.doc.expiry_date!).toLocaleDateString(),
                     through: new Date(f.requiredThrough).toLocaleDateString(),
                   })}
-            </Box>
+            </li>
           ))}
-        </Box>
-        <Typography
-          component={RouterLink}
+        </ul>
+        <RouterLink
           to={`/trips/${trip.id}?tab=docs`}
-          variant="caption"
-          sx={{
-            display: 'inline-block',
-            mt: 0.75,
-            color: 'primary.main',
-            textDecoration: 'none',
-            fontWeight: 600,
-            '&:hover': { opacity: 0.85 },
-          }}
+          className="inline-block mt-2 text-xs font-semibold text-primary hover:opacity-85"
+          style={{ textDecoration: 'none' }}
         >
           {t('trips.docs.manageLink', 'Manage documents →')}
-        </Typography>
-      </Box>
-    </Box>
+        </RouterLink>
+      </div>
+    </div>
   );
 }
 

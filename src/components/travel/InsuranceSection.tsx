@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Shield, Heart, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,57 +37,57 @@ const PROVIDERS = [
 export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
   if (compact) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+      <div className="flex items-center gap-3 p-4 bg-muted">
         <Shield style={{ height: 20, width: 20, color: 'var(--primary)', flexShrink: 0 }} />
-        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>Travel Insurance</Typography>
-          <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>LGBTQ+ friendly providers with partner coverage</Typography>
-        </Box>
+        <div className="flex-1">
+          <p className="font-semibold text-sm">Travel Insurance</p>
+          <p className="text-xs text-muted-foreground">LGBTQ+ friendly providers with partner coverage</p>
+        </div>
         <Button size="sm" onClick={() => window.open(PROVIDERS[0].url, '_blank', 'noopener')}>
           Compare
         </Button>
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+    <div>
+      <div className="flex items-center gap-2 mb-2">
         <Shield style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Travel Insurance</Typography>
-      </Box>
-      <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mb: 2 }}>
+        <p className="font-semibold text-base">Travel Insurance</p>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">
         LGBTQ+ friendly providers that cover same-sex partners, gender-affirming care, and HIV medication.
-      </Typography>
+      </p>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 1.5 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {PROVIDERS.map((p) => (
           <Card key={p.name} className="hover:shadow-sm transition-shadow">
             <CardContent style={{ padding: 16 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.name}</Typography>
+              <div className="flex justify-between items-start mb-2">
+                <p className="font-bold text-base">{p.name}</p>
                 <Badge variant="outline">{p.badge}</Badge>
-              </Box>
-              <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1 }}>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
                 {p.description}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5 }}>
+              </p>
+              <div className="flex items-center gap-1 mb-3">
                 <Heart style={{ height: 12, width: 12, color: 'var(--primary)' }} />
-                <Typography sx={{ fontSize: '0.7rem', color: 'primary.main', fontWeight: 500 }}>
+                <p className="text-xs text-primary font-medium">
                   {p.lgbtqNote}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '0.875rem' }}>{p.price}</Typography>
+                </p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="font-bold text-sm">{p.price}</p>
                 <Button size="sm" onClick={() => window.open(p.url, '_blank', 'noopener')}>
                   <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
                   Get Quote
                 </Button>
-              </Box>
+              </div>
             </CardContent>
           </Card>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

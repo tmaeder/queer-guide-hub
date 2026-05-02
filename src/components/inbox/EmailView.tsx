@@ -1,7 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Reply, Trash2, Archive, Download } from 'lucide-react';
@@ -59,41 +56,29 @@ export const EmailView: React.FC<EmailViewProps> = ({ email, onReply, onDelete, 
 
   return (
     <Card className="overflow-hidden">
-      {/* Header */}
-      <Box sx={{ p: 3, pb: 2 }}>
-        <Typography variant="h6" fontWeight={700} gutterBottom>
-          {email.subject}
-        </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-            gap: 1,
-          }}
-        >
-          <Box>
-            <Typography variant="body2" fontWeight={600}>
+      <div className="p-6 pb-4">
+        <h6 className="text-base font-bold mb-2">{email.subject}</h6>
+        <div className="flex justify-between items-start flex-wrap gap-2">
+          <div>
+            <p className="text-sm font-semibold">
               {email.from_name || email.from_address}
-            </Typography>
+            </p>
             {email.from_name && (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs text-muted-foreground">
                 &lt;{email.from_address}&gt;
-              </Typography>
+              </span>
             )}
-            <Typography variant="caption" color="text.secondary" display="block">
+            <span className="text-xs text-muted-foreground block">
               To: {email.to_address}
-            </Typography>
-          </Box>
-          <Typography variant="caption" color="text.secondary">
+            </span>
+          </div>
+          <span className="text-xs text-muted-foreground">
             {format(new Date(email.email_date), 'PPp')}
-          </Typography>
-        </Box>
-      </Box>
+          </span>
+        </div>
+      </div>
 
-      {/* Actions */}
-      <Box sx={{ px: 3, pb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      <div className="px-6 pb-4 flex gap-2 flex-wrap">
         {onReply && (
           <Button variant="outline" size="sm" onClick={() => onReply(email)}>
             <Reply className="h-4 w-4 mr-1" /> Reply
@@ -109,56 +94,42 @@ export const EmailView: React.FC<EmailViewProps> = ({ email, onReply, onDelete, 
             <Trash2 className="h-4 w-4 mr-1" /> Delete
           </Button>
         )}
-      </Box>
+      </div>
 
-      <Divider />
+      <hr className="border-border" />
 
-      {/* Body - HTML is sanitized with DOMPurify before rendering */}
-      <Box sx={{ p: 3 }}>
+      <div className="p-6">
         {sanitizedHtml ? (
           <div
             className="prose prose-sm max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
           />
         ) : (
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+          <p className="text-sm whitespace-pre-wrap">
             {email.body_text || '(No content)'}
-          </Typography>
+          </p>
         )}
-      </Box>
+      </div>
 
-      {/* Attachments */}
       {attachments.length > 0 && (
         <>
-          <Divider />
-          <Box sx={{ p: 3 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Attachments ({attachments.length})
-            </Typography>
+          <hr className="border-border" />
+          <div className="p-6">
+            <p className="text-sm font-medium mb-2">Attachments ({attachments.length})</p>
             <div className="space-y-1">
               {attachments.map((att, idx) => (
-                <Box
-                  key={idx}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    p: 1,
-                    borderRadius: 1,
-                    bgcolor: 'action.hover',
-                  }}
-                >
+                <div key={idx} className="flex items-center gap-2 p-2 bg-muted">
                   <Download className="h-4 w-4 text-muted-foreground" />
-                  <Typography variant="body2" noWrap sx={{ flex: 1 }}>
+                  <p className="text-sm truncate flex-1">
                     {att.filename || 'attachment'}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  </p>
+                  <span className="text-xs text-muted-foreground">
                     {att.size_bytes ? `${Math.round(att.size_bytes / 1024)}KB` : ''}
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
               ))}
             </div>
-          </Box>
+          </div>
         </>
       )}
     </Card>

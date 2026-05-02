@@ -1,6 +1,4 @@
 import { Badge } from '@/components/ui/badge';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import type { SignupData } from '../MultiStepSignup';
 
@@ -53,9 +51,9 @@ export default function InterestsStep({ data, updateData }: Props) {
     options: string[];
     field: 'lookingFor' | 'interests';
   }) => (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Typography variant="subtitle2">{title}</Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+    <div className="flex flex-col gap-2">
+      <p className="text-sm font-medium">{title}</p>
+      <div className="flex flex-wrap gap-2">
         {options.map((opt) => {
           const active = data[field].includes(opt);
           return (
@@ -77,15 +75,15 @@ export default function InterestsStep({ data, updateData }: Props) {
             </Badge>
           );
         })}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Typography variant="body2" color="text.secondary">
+    <div className="flex flex-col gap-6">
+      <p className="text-sm text-muted-foreground">
         {t('auth.signup.interestsBlurb', 'Optional — helps us personalise your guide. Skip if you prefer.')}
-      </Typography>
+      </p>
       <Section
         title={t('auth.signup.lookingForTitle', "I'm looking for")}
         options={LOOKING_FOR}
@@ -96,6 +94,6 @@ export default function InterestsStep({ data, updateData }: Props) {
         options={INTERESTS}
         field="interests"
       />
-    </Box>
+    </div>
   );
 }

@@ -1,6 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import { Link as RouterLink } from 'react-router';
 import {
   Bell,
@@ -12,6 +9,7 @@ import {
   CloudRain,
   FileWarning,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useTripNudges, useDismissTripNudge, type TripNudge } from '@/hooks/useTripNudges';
 
 interface Props {
@@ -26,11 +24,6 @@ const KIND_ICON: Record<TripNudge['kind'], typeof Bell> = {
   document_expiry: FileWarning,
 };
 
-/**
- * Slim stack of actionable nudge cards at the top of the trip
- * planner. Hidden when there are no active nudges. Each card
- * shows an icon, title, body, optional CTA, and a dismiss button.
- */
 export function TripNudgesBanner({ tripId }: Props) {
   const { data: nudges, isLoading } = useTripNudges(tripId);
   const dismiss = useDismissTripNudge();
@@ -38,7 +31,7 @@ export function TripNudgesBanner({ tripId }: Props) {
   if (isLoading || !nudges || nudges.length === 0) return null;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+    <div className="flex flex-col gap-2 mb-4">
       {nudges.map((n) => {
         const Icon = KIND_ICON[n.kind] ?? Bell;
         const tone =
@@ -46,68 +39,61 @@ export function TripNudgesBanner({ tripId }: Props) {
             ? { bg: 'rgba(220, 38, 38, 0.08)', fg: '#dc2626' }
             : n.severity === 'warning'
               ? { bg: 'rgba(217, 119, 6, 0.08)', fg: '#b45309' }
-              : { bg: 'action.hover', fg: 'text.primary' };
+              : { bg: 'hsl(var(--muted))', fg: 'hsl(var(--foreground))' };
+
+        const isInternal = n.action_url?.startsWith('/');
 
         return (
-          <Box
+          <div
             key={n.id}
-            sx={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 1.25,
-              p: 1.5,
-              bgcolor: tone.bg,
-            }}
+            className="flex items-start gap-3 p-3"
+            style={{ backgroundColor: tone.bg }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', color: tone.fg, mt: 0.25 }}>
+            <div className="flex items-center mt-0.5" style={{ color: tone.fg }}>
               {n.severity === 'critical' ? <AlertTriangle size={16} /> : <Icon size={16} />}
-            </Box>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
-                {n.title}
-              </Typography>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold leading-tight">{n.title}</p>
               {n.body && (
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mt: 0.25 }}
-                >
+                <span className="block text-xs text-muted-foreground mt-0.5">
                   {n.body}
-                </Typography>
+                </span>
               )}
               {n.action_url && n.action_label && (
-                <Box
-                  component={n.action_url.startsWith('/') ? RouterLink : 'a'}
-                  to={n.action_url.startsWith('/') ? n.action_url : undefined}
-                  href={!n.action_url.startsWith('/') ? n.action_url : undefined}
-                  target={!n.action_url.startsWith('/') ? '_blank' : undefined}
-                  rel={!n.action_url.startsWith('/') ? 'noopener noreferrer' : undefined}
-                  sx={{
-                    display: 'inline-block',
-                    mt: 0.75,
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: 'brand.main',
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' },
-                  }}
-                >
-                  {n.action_label} →
-                </Box>
+                isInternal ? (
+                  <RouterLink
+                    to={n.action_url}
+                    className="inline-block mt-2 text-xs font-semibold hover:underline"
+                    style={{ color: 'hsl(var(--brand))', textDecoration: 'none' }}
+                  >
+                    {n.action_label} →
+                  </RouterLink>
+                ) : (
+                  <a
+                    href={n.action_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-2 text-xs font-semibold hover:underline"
+                    style={{ color: 'hsl(var(--brand))', textDecoration: 'none' }}
+                  >
+                    {n.action_label} →
+                  </a>
+                )
               )}
-            </Box>
-            <IconButton
-              size="small"
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => dismiss.mutate({ id: n.id, tripId })}
               disabled={dismiss.isPending}
               aria-label="Dismiss"
-              sx={{ p: 0.5 }}
+              className="h-7 w-7 p-0"
             >
               <X size={14} />
-            </IconButton>
-          </Box>
+            </Button>
+          </div>
         );
       })}
-    </Box>
+    </div>
   );
 }

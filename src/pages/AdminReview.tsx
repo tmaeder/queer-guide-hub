@@ -36,7 +36,7 @@ import { useReviewCounts, type ReviewCounts } from '@/hooks/useReviewCounts';
 import { useReviewBulkActions, type BulkActionType } from '@/hooks/useReviewBulkActions';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchNewsQualityReviewCount, fetchEntityLinkReviewCount } from '@/hooks/usePageFetchers';
 
 // Lazy-load tab contents to keep initial bundle small
 const ReviewQueueEnhanced = lazy(() =>
@@ -173,7 +173,7 @@ const BULK_BUTTONS: Array<{
   { action: 'enrich', label: 'Apply Enrichments', icon: Zap, variant: 'outlined', color: 'hsl(var(--brand))' },
   { action: 'dedup', label: 'Resolve Duplicates', icon: Inbox, variant: 'outlined', color: '#ea580c' },
   { action: 'dismiss_low', label: 'Dismiss Low-Severity', icon: VolumeX, variant: 'outlined', color: '#a855f7' },
-  { action: 'reject_stale', label: 'Reject Stale', icon: Clock, variant: 'outlined', color: '#6b7280' },
+  { action: 'reject_stale', label: 'Reject Stale', icon: Clock, variant: 'outlined', color: 'hsl(var(--muted-foreground))' },
   { action: 'reject_all', label: 'Reject All', icon: XCircle, variant: 'outlined', muiColor: 'error' },
 ];
 
@@ -197,29 +197,13 @@ export default function AdminReview() {
 
   const { data: newsQualityCount = 0 } = useQuery({
     queryKey: ['news-quality-review-count'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('news_articles')
-        .select('id', { count: 'exact', head: true })
-        .eq('quality_status', 'review');
-      if (error) return 0;
-      return count ?? 0;
-    },
+    queryFn: fetchNewsQualityReviewCount,
     refetchInterval: 60_000,
   });
 
   const { data: entityReviewCount = 0 } = useQuery({
     queryKey: ['entity-link-review-count'],
-    queryFn: async () => {
-      // entity_link_review isn't in the generated types yet — go through any.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { count, error } = await (supabase as any)
-        .from('entity_link_review')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending');
-      if (error) return 0;
-      return count ?? 0;
-    },
+    queryFn: fetchEntityLinkReviewCount,
     refetchInterval: 60_000,
   });
 

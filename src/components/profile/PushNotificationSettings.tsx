@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Bell, BellOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -22,38 +20,24 @@ export function PushNotificationSettings() {
   if (!supported) return null;
 
   return (
-    <Card sx={{ mt: 3 }}>
+    <Card className="mt-6">
       <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              bgcolor: 'action.hover',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
+        <div className="flex items-start gap-4">
+          <div className="w-9 h-9 bg-muted/40 flex items-center justify-center shrink-0">
             {subscribed ? <Bell size={18} /> : <BellOff size={18} />}
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontWeight: 700 }}>
-              {t('settings.push.title', 'Travel reminders')}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 1 }}>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold">{t('settings.push.title', 'Travel reminders')}</p>
+            <p className="text-muted-foreground text-sm mb-2">
               {t(
                 'settings.push.body',
                 'Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.',
               )}
-            </Typography>
+            </p>
             {error && (
-              <Typography sx={{ color: 'error.main', fontSize: '0.8125rem', mb: 1 }}>
-                {error}
-              </Typography>
+              <p className="text-destructive text-[0.8125rem] mb-2">{error}</p>
             )}
-          </Box>
+          </div>
           <Button
             variant={subscribed ? 'outline' : 'default'}
             size="sm"
@@ -64,7 +48,7 @@ export function PushNotificationSettings() {
               ? t('settings.push.turnOff', 'Turn off')
               : t('settings.push.turnOn', 'Turn on')}
           </Button>
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

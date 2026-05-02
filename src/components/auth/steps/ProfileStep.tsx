@@ -1,8 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import type { SignupData } from '../MultiStepSignup';
 
@@ -39,12 +37,12 @@ export default function ProfileStep({ data, updateData }: Props) {
   const { t } = useTranslation();
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-      <Typography variant="body2" color="text.secondary">
+    <div className="flex flex-col gap-5">
+      <p className="text-sm text-muted-foreground">
         {t('auth.signup.profileBlurb', 'Tell us a bit about you. You can change everything later.')}
-      </Typography>
+      </p>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="display-name">{t('auth.fields.displayName', 'Display name')}</Label>
         <Input
           id="display-name"
@@ -55,9 +53,9 @@ export default function ProfileStep({ data, updateData }: Props) {
           onChange={(e) => updateData({ displayName: e.target.value })}
           required
         />
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="pronouns">{t('auth.fields.pronouns', 'Pronouns')}</Label>
         <Select value={data.pronouns} onValueChange={(v) => updateData({ pronouns: v })}>
           <SelectTrigger id="pronouns">
@@ -71,9 +69,9 @@ export default function ProfileStep({ data, updateData }: Props) {
             ))}
           </SelectContent>
         </Select>
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="country">{t('auth.fields.country', 'Country')}</Label>
         <Input
           id="country"
@@ -83,9 +81,9 @@ export default function ProfileStep({ data, updateData }: Props) {
           value={data.country}
           onChange={(e) => updateData({ country: e.target.value })}
         />
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="lang">{t('auth.fields.language', 'Preferred language')}</Label>
         <Select value={data.preferredLanguage} onValueChange={(v) => updateData({ preferredLanguage: v })}>
           <SelectTrigger id="lang">
@@ -99,7 +97,7 @@ export default function ProfileStep({ data, updateData }: Props) {
             ))}
           </SelectContent>
         </Select>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
