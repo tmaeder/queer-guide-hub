@@ -16,6 +16,10 @@ type _Locale = (typeof LOCALES)[number];
 
 const RAW_KEY_RE = /\btrips\.[a-zA-Z0-9_.]+/;
 
+// Note: _vercel/(insights|speed-insights) entries cover legacy Vercel
+// Analytics noise that lingered before the queer-guide-hub Cloudflare
+// Pages migration; safe to remove once a deploy without those tags has
+// fully rolled out and live console errors are clean for a week.
 const IGNORABLE_ERROR_RE =
   /sentry|posthog|google|umami|cloudflare|_vercel\/(insights|speed-insights)|failed to fetch dynamically imported module|manifest\.webmanifest|ResizeObserver loop|Failed to load resource|net::ERR_|ERR_SOCKET_NOT_CONNECTED|ERR_NETWORK_CHANGED|ERR_INTERNET_DISCONNECTED/i;
 
