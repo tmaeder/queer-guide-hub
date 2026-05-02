@@ -211,7 +211,6 @@
   "src/components/security/PrivacyControlCenter.tsx",
   "src/components/security/SecureFinancialDataViewer.tsx",
   "src/components/security/SecurityDashboard.tsx",
-  "src/components/security/SecurityMonitoringDashboard.tsx",
   "src/components/submission/FlyerScanResults.tsx",
   "src/components/submission/FlyerScanUpload.tsx",
   "src/components/tags/TagLinkedContent.tsx",
