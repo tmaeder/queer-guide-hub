@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-
 const LETTERS = [
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
   'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -20,65 +18,33 @@ export function StickyLetterBar({ letter, onChange, stickyTop = 64 }: Props) {
   ];
 
   return (
-    <Box
-      sx={{
-        position: 'sticky',
-        top: stickyTop,
-        zIndex: 10,
-        bgcolor: 'background.default',
-        backdropFilter: 'blur(8px)',
-        px: 1,
-        py: 0.75,
-        mb: 2,
-        overflowX: 'auto',
-        '&::-webkit-scrollbar': { height: 4 },
-        '&::-webkit-scrollbar-thumb': { bgcolor: 'divider', borderRadius: 2 },
-      }}
-      role="navigation"
+    <nav
       aria-label="Jump to letter"
+      className="z-10 bg-background backdrop-blur-md px-2 py-2 mb-4 overflow-x-auto"
+      style={{ position: 'sticky', top: stickyTop }}
     >
-      <Box sx={{ display: 'flex', gap: 0.25, alignItems: 'center', minWidth: 'max-content' }}>
+      <div className="flex gap-0.5 items-center" style={{ minWidth: 'max-content' }}>
         {entries.map(({ value, label }) => {
           const active = (value ?? null) === (letter ?? null);
           return (
-            <Box
-              component="button"
+            <button
               key={label}
               type="button"
               onClick={() => onChange(value)}
               aria-pressed={active}
               aria-label={value ? `Filter by ${label}` : 'Show all letters'}
-              sx={{
-                minWidth: 36,
-                height: 36,
-                px: 1,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 1,
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: '"Plus Jakarta Sans", sans-serif',
-                fontWeight: active ? 700 : 500,
-                fontSize: '0.875rem',
-                color: active ? 'brand.contrastText' : 'text.primary',
-                bgcolor: active ? 'brand.main' : 'transparent',
-                transition: 'all 0.15s ease',
-                '&:hover': {
-                  bgcolor: active ? 'brand.main' : 'action.hover',
-                },
-                '&:focus-visible': {
-                  outline: '2px solid',
-                  outlineColor: 'brand.main',
-                  outlineOffset: 2,
-                },
-              }}
+              className={`min-w-9 h-9 px-2 inline-flex items-center justify-center rounded-md border-none cursor-pointer text-sm transition-all ${
+                active
+                  ? 'bg-primary text-primary-foreground font-bold hover:bg-primary'
+                  : 'bg-transparent text-foreground font-medium hover:bg-muted/40'
+              } focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2`}
+              style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}
             >
               {label}
-            </Box>
+            </button>
           );
         })}
-      </Box>
-    </Box>
+      </div>
+    </nav>
   );
 }

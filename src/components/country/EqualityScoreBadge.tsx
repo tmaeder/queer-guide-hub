@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { getScoreLabel, getScoreRingColor } from '@/utils/equalityScore';
 
 interface EqualityScoreBadgeProps {
@@ -23,10 +21,9 @@ export default function EqualityScoreBadge({ score, size = 'md' }: EqualityScore
   const progress = score != null ? (displayScore / 100) * circumference : 0;
 
   return (
-    <Box sx={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-      <Box sx={{ position: 'relative', width: dims.outer, height: dims.outer }}>
+    <div className="inline-flex flex-col items-center gap-1">
+      <div className="relative" style={{ width: dims.outer, height: dims.outer }}>
         <svg width={dims.outer} height={dims.outer} style={{ transform: 'rotate(-90deg)' }}>
-          {/* Background circle */}
           <circle
             cx={dims.outer / 2}
             cy={dims.outer / 2}
@@ -35,7 +32,6 @@ export default function EqualityScoreBadge({ score, size = 'md' }: EqualityScore
             stroke="#e5e7eb"
             strokeWidth={dims.stroke}
           />
-          {/* Progress circle */}
           {score != null && (
             <circle
               cx={dims.outer / 2}
@@ -51,34 +47,31 @@ export default function EqualityScoreBadge({ score, size = 'md' }: EqualityScore
             />
           )}
         </svg>
-        <Box sx={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Typography sx={{
-            fontSize: dims.fontSize,
-            fontWeight: 700,
-            color: score != null ? ringColor : '#9ca3af',
-            lineHeight: 1,
-          }}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span
+            className="font-bold"
+            style={{
+              fontSize: dims.fontSize,
+              color: score != null ? ringColor : '#9ca3af',
+              lineHeight: 1,
+            }}
+          >
             {score != null ? displayScore : '?'}
-          </Typography>
-        </Box>
-      </Box>
+          </span>
+        </div>
+      </div>
       {size !== 'sm' && (
-        <Typography sx={{
-          fontSize: dims.labelSize,
-          fontWeight: 600,
-          color: score != null ? ringColor : '#9ca3af',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-        }}>
+        <span
+          className="font-semibold uppercase"
+          style={{
+            fontSize: dims.labelSize,
+            color: score != null ? ringColor : '#9ca3af',
+            letterSpacing: '0.05em',
+          }}
+        >
           {label}
-        </Typography>
+        </span>
       )}
-    </Box>
+    </div>
   );
 }
