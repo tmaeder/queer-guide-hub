@@ -1,6 +1,4 @@
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Sparkles, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -52,67 +50,39 @@ export function PackingMarketplaceSuggestions({ tripId }: Props) {
 
   if (!data || data.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-        <Typography variant="body2">{t('trips.packing.noSuggestions')}</Typography>
-      </Box>
+      <div className="text-center py-8 text-muted-foreground">
+        <p className="text-sm">{t('trips.packing.noSuggestions')}</p>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
           <ShoppingBag size={16} />
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+          <p className="text-sm font-bold">
             {t('trips.packing.suggestedTitle')}
-          </Typography>
-        </Box>
-        <Box
-          component="button"
+          </p>
+        </div>
+        <button
           type="button"
           disabled={smartLoading}
           onClick={onRequestSmartSuggestions}
-          sx={{
-            border: 0,
-            background: 'transparent',
-            color: 'brand.main',
-            fontWeight: 600,
-            fontSize: 13,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.5,
-            p: 0,
-            opacity: smartLoading ? 0.6 : 1,
-          }}
+          className="border-0 bg-transparent font-semibold text-[13px] cursor-pointer inline-flex items-center gap-1 p-0 disabled:opacity-60"
+          style={{ color: 'hsl(var(--brand))' }}
         >
           <Sparkles size={13} />
           {smartLoading ? t('trips.packing.smartLoading') : t('trips.packing.smartCta')}
-        </Box>
-      </Box>
+        </button>
+      </div>
 
       {Object.entries(groups).map(([category, items]) => (
-        <Box key={category}>
-          <Typography
-            variant="caption"
-            sx={{
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: 'text.secondary',
-              mb: 1,
-              display: 'block',
-            }}
-          >
+        <div key={category}>
+          <span className="font-bold uppercase tracking-wider text-xs text-muted-foreground mb-2 block">
             {t(`trips.packing.category.${category}`, { defaultValue: category })}
-          </Typography>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
-              gap: 1.5,
-            }}
-          >
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {(items ?? []).map((s) => (
               <SuggestionCard
                 key={s.id}
@@ -182,9 +152,9 @@ export function PackingMarketplaceSuggestions({ tripId }: Props) {
                 }}
               />
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
