@@ -116,12 +116,17 @@ The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git co
 
 LGBTQ+ travelers, locals, activists, researchers, allies. Warm, trusted, empowering. Safety-first, inclusive by default, content is the hero.
 
-- Brand: magenta `#b60d3d` (light) / `#ff7386` (dark), monochrome + single accent
+- Brand: magenta `#b60d3d` (light) / `#ff7386` (dark), monochrome + single accent. Reach for the brand color via `theme.palette.brand.main` or `hsl(var(--brand))`, never as a hex literal — ESLint warns on color literals outside `src/theme/` and `src/config/`.
 - Typography: Inter (body + most headings) + Plus Jakarta Sans (display only — homepage stats, personality cards, home widgets). Both self-hosted. See `docs/design-system/typography.md`.
-- Strict flat: 0 radius, 0 borders, 0 shadows, 0 underlines. Full-width fluid layout.
+- Strict flat: 0 radius, 0 borders, 0 shadows, 0 underlines. Enforced by `src/components/ui/__tests__/flat-compliance.test.tsx`.
 - Icons inline in text flow, never in separate containers. Minimal UI labeling.
 - Links by color/opacity only. Clean hover (0.85) and active (0.7) states.
-- Full light + dark mode (system preference + manual toggle)
+- Full light + dark mode (system preference + header toggle).
+- Components: shadcn-as-MUI wrappers in `src/components/ui/` — read `src/components/ui/README.md` before adding new ones.
+
+### Documented exceptions
+- **Error / warning** colors (`--destructive`, `--warning`) are visually distinct red, not brand magenta — semantic clarity wins over strict monochrome.
+- **Admin chromatic palette** (`--cat-*` tokens, content-type accents) is the only place where multiple hues appear. Stay monochrome anywhere a normal user can see.
 
 ### Design System Files
 - Tokens: `web/src/index.css` (CSS variables), `web/src/theme/muiTheme.ts` (MUI theme)
