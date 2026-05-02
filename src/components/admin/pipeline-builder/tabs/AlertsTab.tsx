@@ -6,17 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
-interface Alert {
-  id: number;
-  alert_kind: string;
-  severity: 'info' | 'warn' | 'error';
-  source_slug: string | null;
-  detail: Record<string, unknown>;
-  fingerprint: string;
-  acked_at: string | null;
-  created_at: string;
-}
+import {
+  fetchDataOpsAlerts,
+  ackDataOpsAlert,
+  type DataOpsAlert as Alert,
+} from '@/hooks/usePipelineBuilderTabs';
 
 type Filter = 'open' | 'all';
 
@@ -39,24 +33,14 @@ export default function AlertsTab() {
 
   const { data: alerts = [], isLoading } = useQuery<Alert[]>({
     queryKey: ['data-ops-alerts', filter],
-    queryFn: async () => {
-      let q = supabase.from('data_ops_alerts').select('*').order('created_at', { ascending: false }).limit(200);
-      if (filter === 'open') q = q.is('acked_at', null);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as Alert[];
-    },
+    queryFn: () => fetchDataOpsAlerts(filter),
     refetchInterval: 30_000,
   });
 
   const ack = useMutation({
     mutationFn: async (id: number) => {
       const { data: u } = await supabase.auth.getUser();
-      const { error } = await supabase.from('data_ops_alerts').update({
-        acked_at: new Date().toISOString(),
-        acked_by: u.user?.id ?? null,
-      }).eq('id', id);
-      if (error) throw error;
+      await ackDataOpsAlert(id, u.user?.id ?? null);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['data-ops-alerts'] }),
     onError: (e: Error) => toast({ title: 'Acknowledge failed', description: e.message, variant: 'destructive' }),

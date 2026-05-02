@@ -7,21 +7,11 @@ import { useToast } from '@/hooks/use-toast';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-
-interface DlqRow {
-  id: number;
-  staging_id: string | null;
-  source_slug: string | null;
-  stage: string;
-  error_code: string | null;
-  error_message: string | null;
-  attempts: number;
-  max_attempts: number;
-  status: string;
-  next_retry_at: string;
-  last_attempt_at: string | null;
-  created_at: string;
-}
+import {
+  fetchDlqRows,
+  retryDlqItem,
+  type DlqRow,
+} from '@/hooks/usePipelineBuilderTabs';
 
 interface SummaryRow {
   source_slug: string | null;
@@ -61,13 +51,7 @@ export default function DLQTab() {
 
   const { data: rows = [], isLoading } = useQuery<DlqRow[]>({
     queryKey: ['dlq-rows', filter],
-    queryFn: async () => {
-      let q = supabase.from('ingestion_dlq').select('*').order('next_retry_at', { ascending: true }).limit(200);
-      if (filter !== 'all') q = q.eq('status', filter);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as DlqRow[];
-    },
+    queryFn: () => fetchDlqRows(filter),
     refetchInterval: 15_000,
   });
 
@@ -84,12 +68,7 @@ export default function DLQTab() {
   });
 
   const retryNow = useMutation({
-    mutationFn: async (id: number) => {
-      const { error } = await supabase.from('ingestion_dlq').update({
-        status: 'pending', next_retry_at: new Date().toISOString(), locked_until: null,
-      }).eq('id', id);
-      if (error) throw error;
-    },
+    mutationFn: (id: number) => retryDlqItem(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dlq-rows'] }),
     onError: (e: Error) => toast({ title: 'Retry failed', description: e.message, variant: 'destructive' }),
   });

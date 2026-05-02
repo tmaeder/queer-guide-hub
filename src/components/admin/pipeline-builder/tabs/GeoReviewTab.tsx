@@ -1,10 +1,13 @@
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import {
+  approveIngestionStaging,
+  rejectIngestionStaging,
+} from '@/hooks/usePipelineBuilderTabs';
 import { GitMerge, MapPin, Check, X, Loader2 } from 'lucide-react';
 
 // Geo review — surfaces city / country staging rows flagged as merge_candidate
@@ -39,12 +42,7 @@ export default function GeoReviewTab() {
   });
 
   const approve = useMutation({
-    mutationFn: async (stagingId: string) => {
-      const { error } = await supabase.from('ingestion_staging')
-        .update({ review_status: 'approved', disposition: 'pending', updated_at: new Date().toISOString() })
-        .eq('id', stagingId);
-      if (error) throw error;
-    },
+    mutationFn: (stagingId: string) => approveIngestionStaging(stagingId),
     onSuccess: () => {
       toast({ title: 'Approved', description: 'Will merge on next commit cycle' });
       queryClient.invalidateQueries({ queryKey: ['geo-merge-candidates'] });
@@ -53,12 +51,7 @@ export default function GeoReviewTab() {
   });
 
   const reject = useMutation({
-    mutationFn: async (stagingId: string) => {
-      const { error } = await supabase.from('ingestion_staging')
-        .update({ review_status: 'rejected', disposition: 'rejected', updated_at: new Date().toISOString() })
-        .eq('id', stagingId);
-      if (error) throw error;
-    },
+    mutationFn: (stagingId: string) => rejectIngestionStaging(stagingId),
     onSuccess: () => {
       toast({ title: 'Rejected' });
       queryClient.invalidateQueries({ queryKey: ['geo-merge-candidates'] });
