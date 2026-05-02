@@ -16,7 +16,6 @@ import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'luci
 import { useUnifiedTags } from '@/hooks/useUnifiedTags';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
-import Box from '@mui/material/Box';
 
 interface VenueFiltersProps {
   onFiltersChange: (filters: {
@@ -294,10 +293,10 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+    <div className="flex flex-col gap-4 w-full">
       {/* Search Row */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
-        <Box sx={{ position: 'relative', flex: 1 }}>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search
             style={{
               position: 'absolute',
@@ -316,8 +315,8 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
 
           />
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        </div>
+        <div className="flex gap-2">
           <Button
             variant={nearMe ? 'default' : 'outline'}
             onClick={handleNearMeToggle}
@@ -348,36 +347,25 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           >
             <Filter style={{ width: 16, height: 16 }} />
             {activeFilterCount > 0 && (
-              <Box
-                component="span"
-                sx={{
-                  bgcolor: showAdvanced ? 'primary.contrastText' : 'primary.main',
-                  color: showAdvanced ? 'primary.main' : 'primary.contrastText',
-                  borderRadius: '50%',
+              <span
+                className="rounded-full flex items-center justify-center font-bold"
+                style={{
+                  backgroundColor: showAdvanced ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
+                  color: showAdvanced ? 'hsl(var(--primary))' : 'hsl(var(--primary-foreground))',
                   width: 20,
                   height: 20,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   fontSize: '0.7rem',
-                  fontWeight: 700,
                 }}
               >
                 {activeFilterCount}
-              </Box>
+              </span>
             )}
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Category Chips */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          flexWrap: 'wrap',
-        }}
-      >
+      <div className="flex gap-2 flex-wrap">
         {categories.map((cat) => (
           <Button
             key={cat}
@@ -389,11 +377,11 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             {cat}
           </Button>
         ))}
-      </Box>
+      </div>
 
-      {/* Active Filter Chips (always visible when filters applied and advanced is closed) */}
+      {/* Active Filter Chips */}
       {hasActiveFilters && !showAdvanced && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center' }}>
+        <div className="flex flex-wrap gap-[6px] items-center">
           {search && (
             <Badge variant="secondary">
               &ldquo;{search}&rdquo;
@@ -445,46 +433,29 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             Clear all
           </Button>
-        </Box>
+        </div>
       )}
 
       {/* Advanced Filters Panel */}
       {showAdvanced && (
-        <Box
-          component="nav"
+        <nav
           aria-label="Venue filters"
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2.5,
-            pt: 2,
-            borderTop: 1,
-            borderColor: 'divider',
-          }}
+          className="flex flex-col gap-5 pt-4 border-t border-border"
         >
           {/* City input */}
-          <Box sx={{ maxWidth: 400 }}>
-            <Label htmlFor="city">
-              City
-            </Label>
+          <div className="max-w-[400px]">
+            <Label htmlFor="city">City</Label>
             <Input
               id="city"
               placeholder="Enter city..."
               value={city}
               onChange={(e) => setCity(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-
             />
-          </Box>
+          </div>
 
-          {/* Filter dropdowns — 3 columns on desktop */}
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-              gap: 2.5,
-            }}
-          >
+          {/* Filter dropdowns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Tags */}
             <FilterDropdown
               label="Tags"
@@ -557,25 +528,20 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               searchPlaceholder="Search target groups..."
               emptyMessage="No target groups found."
             />
-          </Box>
+          </div>
 
           {/* Clear button */}
           {hasActiveFilters && (
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <Button
-                variant="outline"
-                onClick={clearFilters}
-                size="sm"
-
-              >
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={clearFilters} size="sm">
                 <X style={{ width: 14, height: 14 }} />
                 Clear All
               </Button>
-            </Box>
+            </div>
           )}
-        </Box>
+        </nav>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -608,12 +574,15 @@ function FilterDropdown({
   const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <div className="flex flex-col gap-2">
       <Label>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ width: 7, height: 7, bgcolor: dotColor, borderRadius: '50%' }} />
+        <div className="flex items-center gap-2">
+          <div
+            className="rounded-full"
+            style={{ width: 7, height: 7, backgroundColor: dotColor.includes('.') ? `hsl(var(--${dotColor.split('.')[0]}))` : dotColor }}
+          />
           {label}
-        </Box>
+        </div>
       </Label>
       <Popover open={open} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
@@ -638,9 +607,9 @@ function FilterDropdown({
               <CommandEmpty>{emptyMessage}</CommandEmpty>
               <CommandGroup>
                 {loading ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+                  <div className="flex items-center justify-center p-4">
                     <Loader2 style={{ width: 16, height: 16 }} />
-                  </Box>
+                  </div>
                 ) : (
                   items.map((item) => (
                     <CommandItem
@@ -656,15 +625,15 @@ function FilterDropdown({
                           opacity: selected.includes(item.label) ? 1 : 0,
                         }}
                       />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center gap-2">
                         {item.color && (
-                          <Box
-                            sx={{ width: 10, height: 10, borderRadius: '50%', border: 1, borderColor: 'divider' }}
-                            style={{ backgroundColor: item.color }}
+                          <div
+                            className="rounded-full border border-border"
+                            style={{ width: 10, height: 10, backgroundColor: item.color }}
                           />
                         )}
                         {item.label}
-                      </Box>
+                      </div>
                     </CommandItem>
                   ))
                 )}
@@ -674,15 +643,15 @@ function FilterDropdown({
         </PopoverContent>
       </Popover>
       {selected.length > 0 && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+        <div className="flex flex-wrap gap-1">
           {selected.map((val) => (
             <Badge key={val} variant="secondary">
               {val}
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => onToggle(val)} />
             </Badge>
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
