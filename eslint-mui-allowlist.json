@@ -151,7 +151,6 @@
   "src/components/donate/DonorWall.tsx",
   "src/components/entity/EntityDetailLayout.tsx",
   "src/components/events/EventCard.tsx",
-  "src/components/events/EventImageUpload.tsx",
   "src/components/events/EventsCalendarView.tsx",
   "src/components/events/RecurrencePicker.tsx",
   "src/components/events/TicketmasterImport.tsx",

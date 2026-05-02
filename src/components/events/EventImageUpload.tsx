@@ -6,8 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/uploadErrors";
 import { supabase } from "@/integrations/supabase/client";
 import { X, ImagePlus } from "lucide-react";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface EventImageUploadProps {
   images: string[];
@@ -18,7 +16,7 @@ interface EventImageUploadProps {
 export const EventImageUpload = ({
   images,
   onChange,
-  maxImages = 5
+  maxImages = 5,
 }: EventImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +36,6 @@ export const EventImageUpload = ({
       return;
     }
 
-    // Validate each file
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
         toast({
@@ -117,10 +114,9 @@ export const EventImageUpload = ({
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       <Label>Event Images (Optional)</Label>
 
-      {/* Upload Area */}
       <Card>
         <CardContent>
           <input
@@ -133,63 +129,60 @@ export const EventImageUpload = ({
             disabled={uploading || images.length >= maxImages}
           />
 
-          <Box
-            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          <div
+            className="flex flex-col items-center justify-center cursor-pointer"
             onClick={triggerFileInput}
           >
-            <Box sx={{ mb: 2 }}>
+            <div className="mb-4">
               <ImagePlus style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
-            </Box>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium">
                 {uploading ? "Uploading..." : "Click to upload event images"}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
+              </p>
+              <span className="text-xs text-muted-foreground">
                 PNG, JPG, WebP up to 20MB (max {maxImages} images)
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+              </span>
+              <span className="block mt-1 text-xs text-muted-foreground">
                 {images.length}/{maxImages} images uploaded
-              </Typography>
-            </Box>
-          </Box>
+              </span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Image Previews */}
       {images.length > 0 && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {images.map((imageUrl, index) => (
-            <Box key={index} sx={{ position: 'relative', '&:hover .remove-button': { opacity: 1 } }}>
-              <Box sx={{ aspectRatio: '16/9', borderRadius: 2, overflow: 'hidden', bgcolor: 'action.hover' }}>
-                <Box
-                  component="img"
+            <div key={index} className="relative group">
+              <div className="bg-muted overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                <img
                   src={imageUrl}
                   alt={`Event image ${index + 1}`}
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     (e.target as HTMLImageElement).src = '/placeholder.svg';
                   }}
                 />
-              </Box>
+              </div>
               <Button
                 variant="destructive"
                 size="sm"
-
-                className="remove-button"
+                className="opacity-0 group-hover:opacity-100"
                 onClick={() => removeImage(index)}
               >
                 <X style={{ height: 12, width: 12 }} />
               </Button>
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
       {images.length >= maxImages && (
-        <Typography variant="caption" color="text.secondary">
+        <span className="text-xs text-muted-foreground">
           Maximum number of images reached. Remove an image to upload more.
-        </Typography>
+        </span>
       )}
-    </Box>
+    </div>
   );
 };
