@@ -519,6 +519,25 @@ export async function toggleFeedbackVote(
   }
 }
 
+/** ReviewQueueTab — list pending review items, optional target_table filter. */
+export async function fetchReviewQueueItems<T = unknown>(
+  filter: { targetTable?: string; dedupStatus?: string },
+): Promise<T[]> {
+  let q = supabase
+    .from('ingestion_staging')
+    .select(
+      'id, source_type, source_name, target_table, entity_type, ai_validation_result, ai_confidence_score, dedup_status, dedup_match_id, dedup_match_score, dedup_details, normalized_data, review_status, created_at',
+    )
+    .eq('review_status', 'pending_review')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (filter.targetTable) q = q.eq('target_table', filter.targetTable);
+  if (filter.dedupStatus) q = q.eq('dedup_status', filter.dedupStatus);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []) as T[];
+}
+
 /** AdminFeedback controller — bulk update by id list. */
 export async function updateCommunitySubmissionsByIds(
   ids: string[],

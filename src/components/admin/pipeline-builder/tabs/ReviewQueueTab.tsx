@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle, XCircle, GitMerge, FilePlus2, ClipboardCheck, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchReviewQueueItems, updateRow, insertInto } from '@/hooks/usePageFetchers';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -37,22 +37,22 @@ export default function ReviewQueueTab() {
   const { data: items = [], isLoading } = useQuery<ReviewItem[]>({
     queryKey: ['review-queue', filter],
     queryFn: async () => {
-      let q = supabase
-        .from('ingestion_staging')
-        .select('id, source_type, source_name, target_table, entity_type, ai_validation_result, ai_confidence_score, dedup_status, dedup_match_id, dedup_match_score, dedup_details, normalized_data, review_status, created_at')
-        .eq('review_status', 'pending_review')
-        .order('created_at', { ascending: false })
-        .limit(200);
-      if (filter === 'venues' || filter === 'hotels') q = q.eq('target_table', 'venues');
-      if (filter === 'events')                        q = q.eq('target_table', 'events');
-      if (filter === 'personalities')                 q = q.eq('target_table', 'personalities');
-      if (filter === 'marketplace')                   q = q.eq('target_table', 'marketplace_listings');
-      if (filter === 'cities')                        q = q.eq('target_table', 'cities');
-      if (filter === 'countries')                     q = q.eq('target_table', 'countries');
-      if (filter === 'merge_candidate')               q = q.eq('dedup_status', 'merge_candidate');
-      const { data, error } = await q;
-      if (error) throw error;
-      const rows = (data ?? []) as ReviewItem[];
+      const targetTable =
+        filter === 'venues' || filter === 'hotels'
+          ? 'venues'
+          : filter === 'events'
+            ? 'events'
+            : filter === 'personalities'
+              ? 'personalities'
+              : filter === 'marketplace'
+                ? 'marketplace_listings'
+                : filter === 'cities'
+                  ? 'cities'
+                  : filter === 'countries'
+                    ? 'countries'
+                    : undefined;
+      const dedupStatus = filter === 'merge_candidate' ? 'merge_candidate' : undefined;
+      const rows = await fetchReviewQueueItems<ReviewItem>({ targetTable, dedupStatus });
       if (filter === 'hotels') return rows.filter(r => !!r.normalized_data?.accommodation_type);
       return rows;
     },
@@ -69,12 +69,12 @@ export default function ReviewQueueTab() {
       if (disposition === 'merge' || disposition === 'create_new') {
         update.dedup_status = disposition === 'create_new' ? 'unique' : 'duplicate';
       }
-      const { error: upErr } = await supabase.from('ingestion_staging').update(update).eq('id', item.id);
-      if (upErr) throw upErr;
+      const { error: upErr } = await updateRow('ingestion_staging', item.id, update);
+      if (upErr) throw upErr as Error;
 
       if (item.dedup_match_id && (disposition === 'merge' || disposition === 'create_new' || disposition === 'reject')) {
         const human = disposition === 'merge' ? 'confirmed_duplicate' : 'not_duplicate';
-        await supabase.from('dedup_decisions_feedback').insert({
+        await insertInto('dedup_decisions_feedback', {
           staging_id: item.id,
           candidate_venue_id: item.dedup_match_id,
           rpc_score: item.dedup_match_score,
@@ -83,7 +83,7 @@ export default function ReviewQueueTab() {
           reason: reason ?? null,
         });
       }
-      await supabase.from('ingestion_events').insert({
+      await insertInto('ingestion_events', {
         staging_id: item.id,
         stage: 'review_gate',
         new_status: disposition === 'reject' ? 'rejected' : 'approved',
