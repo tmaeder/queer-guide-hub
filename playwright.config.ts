@@ -30,5 +30,13 @@ export default defineConfig({
       },
       dependencies: hasAdminCreds ? ['setup'] : [],
     },
+    // P2-3 — mobile viewport project. Run with `--project=mobile`.
+    {
+      name: 'mobile',
+      testMatch: /visual-mobile\.spec\.ts$/,
+      use: {
+        ...devices['iPhone 13'],
+      },
+    },
   ],
 });
