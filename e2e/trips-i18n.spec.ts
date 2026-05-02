@@ -17,7 +17,7 @@ type _Locale = (typeof LOCALES)[number];
 const RAW_KEY_RE = /\btrips\.[a-zA-Z0-9_.]+/;
 
 const IGNORABLE_ERROR_RE =
-  /sentry|posthog|google|umami|cloudflare|failed to fetch dynamically imported module|manifest\.webmanifest|ResizeObserver loop|Failed to load resource|net::ERR_|ERR_SOCKET_NOT_CONNECTED|ERR_NETWORK_CHANGED|ERR_INTERNET_DISCONNECTED/i;
+  /sentry|posthog|google|umami|cloudflare|_vercel\/(insights|speed-insights)|failed to fetch dynamically imported module|manifest\.webmanifest|ResizeObserver loop|Failed to load resource|net::ERR_|ERR_SOCKET_NOT_CONNECTED|ERR_NETWORK_CHANGED|ERR_INTERNET_DISCONNECTED/i;
 
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
