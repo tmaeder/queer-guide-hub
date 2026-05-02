@@ -94,18 +94,12 @@ export default function AdminAccessibilityAttributes() {
       return;
     }
     try {
-      if (editingId) {
-        const { error } = await supabase
-          .from('accessibility_attributes')
-          .update(form)
-          .eq('id', editingId);
-        if (error) throw error;
-        toast({ title: 'Success', description: 'Attribute updated' });
-      } else {
-        const { error } = await crud.upsert(form, null);
-        if (error) throw error;
-        toast({ title: 'Success', description: 'Attribute created' });
-      }
+      const { error } = await crud.upsert(form, editingId);
+      if (error) throw error;
+      toast({
+        title: 'Success',
+        description: editingId ? 'Attribute updated' : 'Attribute created',
+      });
       setDialogOpen(false);
       invalidateTable();
     } catch (err: unknown) {
