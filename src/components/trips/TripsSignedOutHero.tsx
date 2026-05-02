@@ -40,7 +40,7 @@ export function TripsSignedOutHero() {
   const { t } = useTranslation();
   const theme = useTheme();
   const [authOpen, setAuthOpen] = useState(false);
-  const brand = theme.palette.brand?.main || '#DB2777';
+  const brand = theme.palette.brand?.main || 'hsl(var(--brand))';
   const accent = theme.palette.accent?.main || '#F59E0B';
   const { data: templates, isLoading } = useTripTemplates();
   const previewTemplates = (templates ?? []).slice(0, 3);

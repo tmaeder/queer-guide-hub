@@ -213,10 +213,7 @@ const Venues = () => {
               </IconButton>
             </Box>
 
-            <Button variant="outline" size="sm" onClick={() => navigate('/submit/venue')}>
-              <Plus size={14} />
-              {t('common.submit', 'Submit')}
-            </Button>
+            {/* P4-3 — Submit CTA consolidated to header. */}
           </Box>
         </Box>
 

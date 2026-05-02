@@ -300,7 +300,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
               height: 28,
               marginTop: -46,
               marginBottom: 18,
-              color: '#DB2777',
+              color: 'hsl(var(--brand))',
             }}
             aria-hidden="true"
           />

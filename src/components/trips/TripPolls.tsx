@@ -84,7 +84,7 @@ export function TripPolls({ tripId }: Props) {
 
   if (isLoading) return <PageLoadingState count={2} />;
 
-  const brandColor = theme.palette.brand?.main || '#DB2777';
+  const brandColor = theme.palette.brand?.main || 'hsl(var(--brand))';
 
   return (
     <Box>

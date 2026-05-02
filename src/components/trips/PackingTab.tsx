@@ -132,7 +132,7 @@ export function PackingTab({ tripId }: Props) {
   };
 
   if (totalCount === 0) {
-    const brand = theme?.palette?.brand?.main || '#DB2777';
+    const brand = theme?.palette?.brand?.main || 'hsl(var(--brand))';
     return (
       <Box
         sx={{

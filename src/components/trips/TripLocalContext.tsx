@@ -32,7 +32,7 @@ export function TripLocalContext({ trip }: Props) {
       {personalities.length > 0 && (
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-            <Users size={16} style={{ color: 'var(--brand-primary, #b60d3d)' }} />
+            <Users size={16} style={{ color: 'hsl(var(--brand))' }} />
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
               {t('trips.localContext.personalitiesTitle', "Notable from where you're going")}
             </Typography>
@@ -90,7 +90,7 @@ export function TripLocalContext({ trip }: Props) {
       {villages.length > 0 && (
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-            <MapIcon size={16} style={{ color: 'var(--brand-primary, #b60d3d)' }} />
+            <MapIcon size={16} style={{ color: 'hsl(var(--brand))' }} />
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
               {t('trips.localContext.villagesTitle', 'Queer neighborhoods')}
             </Typography>

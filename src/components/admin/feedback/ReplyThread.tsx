@@ -45,7 +45,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                 sx={{
                   p: 1,
                   borderLeft: 3,
-                  borderColor: isGithub ? '#6366f1' : '#b60d3d',
+                  borderColor: isGithub ? '#6366f1' : 'hsl(var(--brand))',
                   bgcolor: 'action.hover',
                   borderRadius: 1,
                 }}

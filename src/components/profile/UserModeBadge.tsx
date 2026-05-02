@@ -7,7 +7,7 @@ interface UserModeBadgeProps {
 }
 
 const modeConfig = {
-  dating: { icon: Heart, label: 'Looking for Love', bgcolor: 'rgba(236, 72, 153, 0.1)', color: '#db2777', borderColor: '#fbcfe8' },
+  dating: { icon: Heart, label: 'Looking for Love', bgcolor: 'rgba(236, 72, 153, 0.1)', color: 'hsl(var(--brand))', borderColor: '#fbcfe8' },
   friends: { icon: Users, label: 'Making Friends', bgcolor: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', borderColor: '#bfdbfe' },
   exploration: { icon: Map, label: 'Exploring', bgcolor: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', borderColor: '#bbf7d0' },
   fun: { icon: Smile, label: 'Here for Fun', bgcolor: 'rgba(234, 179, 8, 0.1)', color: '#ca8a04', borderColor: '#fef08a' },

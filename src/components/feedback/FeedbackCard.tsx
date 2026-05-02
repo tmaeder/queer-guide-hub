@@ -71,13 +71,13 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
             style={{
               width: 18,
               height: 18,
-              color: hasVoted ? '#DB2777' : 'var(--muted-foreground)',
+              color: hasVoted ? 'hsl(var(--brand))' : 'var(--muted-foreground)',
               transition: 'color 0.15s',
             }}
           />
           <Typography
             variant="caption"
-            sx={{ fontWeight: 700, color: hasVoted ? '#DB2777' : 'text.secondary' }}
+            sx={{ fontWeight: 700, color: hasVoted ? 'hsl(var(--brand))' : 'text.secondary' }}
           >
             {voteCount}
           </Typography>

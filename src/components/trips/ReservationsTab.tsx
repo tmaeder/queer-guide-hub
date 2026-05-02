@@ -163,7 +163,7 @@ export function ReservationsTab({ tripId }: Props) {
               height: 56,
               borderRadius: 2,
               bgcolor: (theme) =>
-                `${theme.palette.brand?.main || '#DB2777'}1a`,
+                `${theme.palette.brand?.main || 'hsl(var(--brand))'}1a`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -173,7 +173,7 @@ export function ReservationsTab({ tripId }: Props) {
           >
             <Ticket
               size={26}
-              style={{ color: 'var(--brand-magenta, #DB2777)' }}
+              style={{ color: 'hsl(var(--brand))' }}
             />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
@@ -217,7 +217,7 @@ export function ReservationsTab({ tripId }: Props) {
         <Box
           sx={{
             bgcolor: (theme) =>
-              `${theme.palette.brand?.main || '#DB2777'}14`,
+              `${theme.palette.brand?.main || 'hsl(var(--brand))'}14`,
             p: 2,
             display: 'flex',
             alignItems: 'center',

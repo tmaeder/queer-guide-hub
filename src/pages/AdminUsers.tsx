@@ -46,7 +46,7 @@ const ROLE_COLORS: Record<string, string> = {
   admin: '#ef4444',
   moderator: '#f97316',
   editor: '#3b82f6',
-  contributor: '#DB2777',
+  contributor: 'hsl(var(--brand))',
 };
 
 const columnHelper = createColumnHelper<UserRow>();

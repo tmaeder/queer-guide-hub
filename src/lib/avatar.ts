@@ -5,7 +5,7 @@
 
 const COLORS = [
   '#6366f1',
-  '#DB2777',
+  'hsl(var(--brand))',
   '#a855f7',
   '#d946ef',
   '#ec4899',

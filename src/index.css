@@ -136,10 +136,11 @@
   --accent: 0 0% 94%;
   --accent-foreground: 0 0% 4%;
 
-  --destructive: 346 87% 38%;
+  /* P1-2 — error/warning are distinct red, NOT brand magenta. Matches muiTheme #b31b25. */
+  --destructive: 356 74% 40%;
   --destructive-foreground: 0 0% 100%;
 
-  --warning: 346 87% 38%;
+  --warning: 356 74% 40%;
   --warning-foreground: 0 0% 100%;
 
   --success: 0 0% 4%;
@@ -211,10 +212,11 @@
   --accent: 0 0% 12%;
   --accent-foreground: 0 0% 95%;
 
-  --destructive: 346 100% 65%;
+  /* P1-2 — distinct red in dark mode. Matches muiTheme #fb5151. */
+  --destructive: 0 96% 65%;
   --destructive-foreground: 0 0% 100%;
 
-  --warning: 346 100% 65%;
+  --warning: 0 96% 65%;
   --warning-foreground: 0 0% 100%;
 
   --success: 0 0% 100%;

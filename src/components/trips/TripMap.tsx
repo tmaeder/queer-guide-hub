@@ -329,7 +329,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
 
     // Suggested event markers: square shape + brand accent to distinguish from
     // circular venue markers.
-    const eventColor = theme.palette.mode === 'dark' ? '#ff7386' : '#b60d3d';
+    const eventColor = theme.palette.mode === 'dark' ? 'hsl(var(--brand))' : 'hsl(var(--brand))';
     visibleEvents.forEach((event) => {
       const el = document.createElement('div');
       el.style.width = '10px';
@@ -496,7 +496,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
             <FilterChip
               active={showEvents}
               onClick={() => setShowEvents((v) => !v)}
-              color={theme.palette.mode === 'dark' ? '#ff7386' : '#b60d3d'}
+              color={theme.palette.mode === 'dark' ? 'hsl(var(--brand))' : 'hsl(var(--brand))'}
               label={t('trips.map.showEvents')}
             />
           </>

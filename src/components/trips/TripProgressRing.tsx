@@ -15,7 +15,7 @@ interface Props {
  */
 export function TripProgressRing({ trip, size = 72 }: Props) {
   const theme = useTheme();
-  const brand = theme.palette.brand?.main || '#DB2777';
+  const brand = theme.palette.brand?.main || 'hsl(var(--brand))';
   const divider = theme.palette.divider as string;
   const { percent } = computeTripProgress(trip);
 
