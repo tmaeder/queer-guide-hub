@@ -634,6 +634,9 @@ export async function listFrom<T = unknown>(
   let q = supabase.from(table as never).select(select as never);
   if (order) q = (q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }).order(order.col, { ascending: order.ascending ?? true });
   if (limit) q = (q as unknown as { limit: (n: number) => typeof q }).limit(limit);
+): Promise<T[]> {
+  let q = supabase.from(table as never).select(select as never);
+  if (order) q = (q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }).order(order.col, { ascending: order.ascending ?? true });
   const { data, error } = await q;
   if (error) throw error;
   return (data ?? []) as T[];

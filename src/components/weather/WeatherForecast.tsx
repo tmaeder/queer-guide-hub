@@ -3,8 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Cloud, Droplets, Wind, Gauge, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface WeatherDay {
   date: string;
@@ -34,7 +32,7 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
     if (latitude && longitude) {
       fetchWeatherForecast();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchWeatherForecast defined below, re-run on lat/lng/city change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latitude, longitude, cityName]);
 
   const fetchWeatherForecast = async () => {
@@ -72,26 +70,24 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
     });
   };
 
-  if (!latitude || !longitude) {
-    return null;
-  }
+  if (!latitude || !longitude) return null;
 
   if (loading) {
     return (
       <Card className={className}>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Cloud style={{ height: 20, width: 20 }} />
               Weather Forecast
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
-            <Loader2 style={{ height: 24, width: 24, animation: 'spin 1s linear infinite' }} />
-            <Typography component="span" sx={{ ml: 1 }}>Loading weather data...</Typography>
-          </Box>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span className="ml-2">Loading weather data...</span>
+          </div>
         </CardContent>
       </Card>
     );
@@ -102,77 +98,75 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
       <Card className={className}>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Cloud style={{ height: 20, width: 20 }} />
               Weather Forecast
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>{error}</Typography>
+          <p className="text-sm text-muted-foreground">{error}</p>
         </CardContent>
       </Card>
     );
   }
 
-  if (forecast.length === 0) {
-    return null;
-  }
+  if (forecast.length === 0) return null;
 
   return (
     <Card className={className}>
       <CardHeader>
         <CardTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center gap-2">
             <Cloud style={{ height: 20, width: 20 }} />
             5-Day Weather Forecast
             {cityName && <Badge variant="secondary">{cityName}</Badge>}
-          </Box>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(5, 1fr)' } }}>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {forecast.map((day, index) => (
-            <Box key={index} sx={{ textAlign: 'center' }}>
-              <Typography sx={{ fontWeight: 500, fontSize: '0.875rem', mb: 1 }}>
+            <div key={index} className="text-center">
+              <p className="font-medium text-sm mb-2">
                 {index === 0 ? 'Today' : formatDate(day.date)}
-              </Typography>
+              </p>
 
-              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+              <div className="flex justify-center mb-2">
                 <img
                   src={`https://openweathermap.org/img/wn/${day.icon}@2x.png`}
                   alt={day.description}
                   style={{ width: 48, height: 48 }}
                 />
-              </Box>
+              </div>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography sx={{ fontWeight: 600, fontSize: '1.125rem' }}>{day.temp}°C</Typography>
-                <Typography sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+              <div className="flex flex-col gap-1">
+                <p className="font-semibold text-lg">{day.temp}°C</p>
+                <p className="text-xs text-muted-foreground">
                   {day.tempMin}° / {day.tempMax}°
-                </Typography>
-                <Typography sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', textTransform: 'capitalize' }}>
+                </p>
+                <p className="text-xs text-muted-foreground capitalize">
                   {day.description}
-                </Typography>
-              </Box>
+                </p>
+              </div>
 
-              <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5, fontSize: '0.75rem' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+              <div className="mt-3 flex flex-col gap-1 text-xs">
+                <div className="flex items-center justify-center gap-1">
                   <Droplets style={{ height: 12, width: 12 }} />
                   {day.humidity}%
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                </div>
+                <div className="flex items-center justify-center gap-1">
                   <Wind style={{ height: 12, width: 12 }} />
                   {day.windSpeed} m/s
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                </div>
+                <div className="flex items-center justify-center gap-1">
                   <Gauge style={{ height: 12, width: 12 }} />
                   {day.pressure} hPa
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
           ))}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

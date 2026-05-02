@@ -1,9 +1,7 @@
 import { useCallback } from 'react';
 import { ChevronUp, Clock } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/useAuth';
 import { feedbackCategoryMap } from '@/config/feedbackCategories';
 import { timeAgo } from '@/utils/timezone';
@@ -42,99 +40,78 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
   );
 
   return (
-    <Box
-      onClick={onClick}
-      sx={{
-        p: 1.5,
-        bgcolor: 'background.paper',
-        cursor: 'pointer',
-        display: 'flex',
-        gap: 1.5,
-        transition: 'all 0.15s',
-      }}
-    >
-      {/* Vote column */}
-      <Tooltip title={user ? (hasVoted ? 'Remove vote' : 'Upvote') : 'Log in to vote'}>
-        <Box
-          onClick={handleVoteClick}
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 0.25,
-            minWidth: 36,
-            pt: 0.25,
-            cursor: 'pointer',
-          }}
-        >
-          <ChevronUp
-            style={{
-              width: 18,
-              height: 18,
-              color: hasVoted ? 'hsl(var(--brand))' : 'var(--muted-foreground)',
-              transition: 'color 0.15s',
-            }}
-          />
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 700, color: hasVoted ? 'hsl(var(--brand))' : 'text.secondary' }}
-          >
-            {voteCount}
-          </Typography>
-        </Box>
-      </Tooltip>
+    <TooltipProvider>
+      <div
+        onClick={onClick}
+        className="p-3 bg-background cursor-pointer flex gap-3 transition-all"
+      >
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              onClick={handleVoteClick}
+              className="flex flex-col items-center gap-0.5 pt-0.5 cursor-pointer"
+              style={{ minWidth: 36 }}
+            >
+              <ChevronUp
+                style={{
+                  width: 18,
+                  height: 18,
+                  color: hasVoted ? 'hsl(var(--brand))' : 'var(--muted-foreground)',
+                  transition: 'color 0.15s',
+                }}
+              />
+              <span
+                className="text-xs font-bold"
+                style={{ color: hasVoted ? 'hsl(var(--brand))' : 'hsl(var(--muted-foreground))' }}
+              >
+                {voteCount}
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            {user ? (hasVoted ? 'Remove vote' : 'Upvote') : 'Log in to vote'}
+          </TooltipContent>
+        </Tooltip>
 
-      {/* Content */}
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-          <Badge
-            variant="outline"
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Badge
+              variant="outline"
+              style={{
+                borderColor: cat.color,
+                color: cat.color,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 3,
+                fontSize: '0.65rem',
+                padding: '1px 6px',
+              }}
+            >
+              <Icon style={{ width: 10, height: 10 }} />
+              {cat.label}
+            </Badge>
+          </div>
+          <p className="text-sm font-semibold mb-0.5 truncate">{item.data.title}</p>
+          <p
+            className="text-xs text-muted-foreground"
             style={{
-              borderColor: cat.color,
-              color: cat.color,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 3,
-              fontSize: '0.65rem',
-              padding: '1px 6px',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: 1.4,
             }}
           >
-            <Icon style={{ width: 10, height: 10 }} />
-            {cat.label}
-          </Badge>
-        </Box>
-        <Typography
-          variant="body2"
-          sx={{
-            fontWeight: 600,
-            mb: 0.25,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {item.data.title}
-        </Typography>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            lineHeight: 1.4,
-          }}
-        >
-          {item.data.description}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.75 }}>
-          <Clock style={{ width: 10, height: 10, color: 'var(--muted-foreground)' }} />
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-            {timeAgo(item.submitted_at)}
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
+            {item.data.description}
+          </p>
+          <div className="flex items-center gap-1 mt-1.5">
+            <Clock style={{ width: 10, height: 10, color: 'var(--muted-foreground)' }} />
+            <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
+              {timeAgo(item.submitted_at)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </TooltipProvider>
   );
 }
