@@ -1,9 +1,6 @@
 import { useTranslation, Trans } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import Box from '@mui/material/Box';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Typography from '@mui/material/Typography';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export interface ConsentState {
   terms: boolean;
@@ -28,59 +25,48 @@ export function isConsentComplete(c: ConsentState): boolean {
 export function ConsentBlock({ value, onChange, errors }: Props) {
   const { t } = useTranslation();
 
-  const update = (key: keyof ConsentState) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    onChange({ ...value, [key]: e.target.checked });
+  const update = (key: keyof ConsentState) => (checked: boolean) =>
+    onChange({ ...value, [key]: checked });
 
-  const errorColor = (k: keyof ConsentState) => (errors?.[k] ? 'error.main' : 'text.secondary');
+  const errorClass = (k: keyof ConsentState) =>
+    errors?.[k] ? 'text-destructive' : 'text-muted-foreground';
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={value.terms}
-            onChange={update('terms')}
-            inputProps={{ 'aria-label': t('auth.consent.termsAria', 'Accept terms of service') }}
-          />
-        }
-        label={
-          <Typography variant="body2" sx={{ color: errorColor('terms') }}>
-            <Trans i18nKey="auth.consent.terms">
-              I agree to the <LocalizedLink to="/terms">Terms of Service</LocalizedLink>
-            </Trans>
-          </Typography>
-        }
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={value.privacy}
-            onChange={update('privacy')}
-            inputProps={{ 'aria-label': t('auth.consent.privacyAria', 'Accept privacy policy') }}
-          />
-        }
-        label={
-          <Typography variant="body2" sx={{ color: errorColor('privacy') }}>
-            <Trans i18nKey="auth.consent.privacy">
-              I agree to the <LocalizedLink to="/privacy">Privacy Policy</LocalizedLink>
-            </Trans>
-          </Typography>
-        }
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={value.age18}
-            onChange={update('age18')}
-            inputProps={{ 'aria-label': t('auth.consent.ageAria', 'Confirm age 18 or older') }}
-          />
-        }
-        label={
-          <Typography variant="body2" sx={{ color: errorColor('age18') }}>
-            {t('auth.consent.age', 'I confirm I am 18 years or older')}
-          </Typography>
-        }
-      />
-    </Box>
+    <div className="flex flex-col gap-2">
+      <label className="flex items-start gap-2 cursor-pointer">
+        <Checkbox
+          checked={value.terms}
+          onCheckedChange={(c) => update('terms')(c === true)}
+          aria-label={t('auth.consent.termsAria', 'Accept terms of service')}
+        />
+        <p className={`text-sm ${errorClass('terms')}`}>
+          <Trans i18nKey="auth.consent.terms">
+            I agree to the <LocalizedLink to="/terms">Terms of Service</LocalizedLink>
+          </Trans>
+        </p>
+      </label>
+      <label className="flex items-start gap-2 cursor-pointer">
+        <Checkbox
+          checked={value.privacy}
+          onCheckedChange={(c) => update('privacy')(c === true)}
+          aria-label={t('auth.consent.privacyAria', 'Accept privacy policy')}
+        />
+        <p className={`text-sm ${errorClass('privacy')}`}>
+          <Trans i18nKey="auth.consent.privacy">
+            I agree to the <LocalizedLink to="/privacy">Privacy Policy</LocalizedLink>
+          </Trans>
+        </p>
+      </label>
+      <label className="flex items-start gap-2 cursor-pointer">
+        <Checkbox
+          checked={value.age18}
+          onCheckedChange={(c) => update('age18')(c === true)}
+          aria-label={t('auth.consent.ageAria', 'Confirm age 18 or older')}
+        />
+        <p className={`text-sm ${errorClass('age18')}`}>
+          {t('auth.consent.age', 'I confirm I am 18 years or older')}
+        </p>
+      </label>
+    </div>
   );
 }
