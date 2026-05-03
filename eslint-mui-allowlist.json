@@ -117,7 +117,6 @@
   "src/components/security/AdminRouteGuard.tsx",
   "src/components/submission/FlyerScanResults.tsx",
   "src/components/tags/TagLinkedContent.tsx",
-  "src/components/tags/TagRelationshipGraph.tsx",
   "src/components/travel/AirportAutocomplete.tsx",
   "src/components/travel/FlightSearchForm.tsx",
   "src/components/trips/AddBudgetDialog.tsx",
