@@ -159,7 +159,7 @@ export default function AdminSubmissions() {
         <div>
           <h4 className="text-xl font-bold">
             Community Submissions
-          </p>
+          </h4>
           <p style={{ color: 'var(--muted-foreground)' }}>
             Review and manage community-submitted content
           </p>

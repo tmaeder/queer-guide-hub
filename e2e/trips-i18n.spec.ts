@@ -21,7 +21,7 @@ const RAW_KEY_RE = /\btrips\.[a-zA-Z0-9_.]+/;
 // Pages migration; safe to remove once a deploy without those tags has
 // fully rolled out and live console errors are clean for a week.
 const IGNORABLE_ERROR_RE =
-  /sentry|posthog|google|umami|cloudflare|failed to fetch dynamically imported module|manifest\.webmanifest|ResizeObserver loop|Failed to load resource|net::ERR_|ERR_SOCKET_NOT_CONNECTED|ERR_NETWORK_CHANGED|ERR_INTERNET_DISCONNECTED/i;
+  /sentry|posthog|google|umami|cloudflare|failed to fetch dynamically imported module|Failed to load module script|manifest\.webmanifest|ResizeObserver loop|Failed to load resource|net::ERR_|ERR_SOCKET_NOT_CONNECTED|ERR_NETWORK_CHANGED|ERR_INTERNET_DISCONNECTED/i;
 
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
