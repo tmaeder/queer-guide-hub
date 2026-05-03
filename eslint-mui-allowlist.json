@@ -10,7 +10,6 @@
   "src/components/admin/AutomationDashboard.tsx",
   "src/components/admin/EmailIngestionsPanel.tsx",
   "src/components/admin/LinkHealthDashboard.tsx",
-  "src/components/admin/ModerationQueue.tsx",
   "src/components/admin/NewsQualityReviewTab.tsx",
   "src/components/admin/ScrapeSourcesDashboard.tsx",
   "src/components/admin/TagAliasesSection.tsx",
