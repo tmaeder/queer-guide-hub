@@ -28,7 +28,6 @@
   "src/components/admin/automation/ModuleSettingsDialog.tsx",
   "src/components/admin/automation/ReviewQueue.tsx",
   "src/components/admin/data-table/AdminDataTable.tsx",
-  "src/components/admin/data-table/DataTableBulkEditDialog.tsx",
   "src/components/admin/data-table/DataTableFilters.tsx",
   "src/components/admin/data-table/DataTableToolbar.tsx",
   "src/components/admin/feedback/ApiErrorsKanban.tsx",

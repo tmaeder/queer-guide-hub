@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Checkbox from '@mui/material/Checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -96,34 +94,21 @@ export function DataTableBulkEditDialog({
           <DialogTitle>Bulk Edit {selectedIds.size} items</DialogTitle>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 1 }}>
-          <Typography variant="body2" color="text.secondary">
+        <div className="flex flex-col gap-4 py-2">
+          <p className="text-sm text-muted-foreground">
             Check the fields you want to update. Only checked fields will be changed.
-          </Typography>
+          </p>
 
           {fields.map((field) => (
-            <Box
+            <div
               key={field.key}
-              sx={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 1,
-                p: 1.5,
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: enabledFields.has(field.key)
-                  ? 'primary.main'
-                  : 'var(--border, #e4e4e7)',
-                opacity: enabledFields.has(field.key) ? 1 : 0.6,
-              }}
+              className={`flex items-start gap-2 p-3 rounded border ${enabledFields.has(field.key) ? 'border-primary opacity-100' : 'border-border opacity-60'}`}
             >
               <Checkbox
                 checked={enabledFields.has(field.key)}
-                onChange={() => toggleField(field.key)}
-                size="small"
-                sx={{ mt: -0.5 }}
+                onCheckedChange={() => toggleField(field.key)}
               />
-              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <div className="flex-1 flex flex-col gap-1">
                 <Label style={{ fontSize: 13, fontWeight: 500 }}>{field.label}</Label>
                 <BulkFieldInput
                   field={field}
@@ -131,10 +116,10 @@ export function DataTableBulkEditDialog({
                   onChange={(v) => setValues((prev) => ({ ...prev, [field.key]: v }))}
                   disabled={!enabledFields.has(field.key)}
                 />
-              </Box>
-            </Box>
+              </div>
+            </div>
           ))}
-        </Box>
+        </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>
@@ -178,14 +163,14 @@ function BulkFieldInput({
       );
     case 'boolean':
       return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div className="flex items-center gap-2">
           <Switch
             checked={value === true}
             onCheckedChange={(v) => onChange(v)}
             disabled={disabled}
           />
-          <Typography variant="body2">{value ? 'Yes' : 'No'}</Typography>
-        </Box>
+          <p className="text-sm">{value ? 'Yes' : 'No'}</p>
+        </div>
       );
     case 'text':
       return (
