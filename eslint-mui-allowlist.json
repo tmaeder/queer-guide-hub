@@ -27,7 +27,6 @@
   "src/components/admin/import-hub/ReviewQueueEnhanced.tsx",
   "src/components/admin/search-intelligence/IngestionQualityTab.tsx",
   "src/components/admin/search-intelligence/OverviewTab.tsx",
-  "src/components/admin/search-intelligence/ReindexTab.tsx",
   "src/components/admin/search-intelligence/SettingsTab.tsx",
   "src/components/admin/search-intelligence/SuggestionsTab.tsx",
   "src/components/admin/search-intelligence/SynonymsTab.tsx",
