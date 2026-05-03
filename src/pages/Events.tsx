@@ -52,6 +52,8 @@ import { displayCityName } from '@/utils/cityDisplay';
 import { dedupeCitiesByNormalized, normalizeCityLabel } from '@/utils/dateRange';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useSearchParams } from 'react-router-dom';
 
 
 type Event = Database['public']['Tables']['events']['Row'];
@@ -289,6 +291,54 @@ const Events = () => {
     handleFiltersChange();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showPast]);
+
+  // Reactive city filter — fire as soon as a value is picked from the
+  // combobox. Avoids the "user picks London but list doesn't update" trap.
+  const cityMounted = useRef(false);
+  useEffect(() => {
+    if (!cityMounted.current) {
+      cityMounted.current = true;
+      return;
+    }
+    handleFiltersChange();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city]);
+
+  // Debounced search — apply ~300ms after the user stops typing so the
+  // list filters live. Enter still flushes immediately via onKeyDown.
+  const debouncedSearch = useDebounce(search, 300);
+  const searchMounted = useRef(false);
+  useEffect(() => {
+    if (!searchMounted.current) {
+      searchMounted.current = true;
+      return;
+    }
+    handleFiltersChange();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
+
+  // Sync city + search to URL params for shareable / refreshable state.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    if (city) next.set('city', city);
+    else next.delete('city');
+    if (debouncedSearch) next.set('q', debouncedSearch);
+    else next.delete('q');
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city, debouncedSearch]);
+
+  // Hydrate filters from URL on first mount.
+  useEffect(() => {
+    const urlCity = searchParams.get('city');
+    const urlQ = searchParams.get('q');
+    if (urlCity) setCity(urlCity);
+    if (urlQ) setSearch(urlQ);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-12 md:py-20">
@@ -404,7 +454,7 @@ const Events = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="city">{t('pages.events.city', 'City')}</Label>
+                  <Label htmlFor="city">{t('pages.events.cities', 'Cities')}</Label>
                   <Popover open={cityOpen} onOpenChange={setCityOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -413,7 +463,7 @@ const Events = () => {
                         aria-expanded={cityOpen}
                         style={{ width: '100%', justifyContent: 'space-between' }}
                       >
-                        {city || 'Select city...'}
+                        {city || t('pages.events.selectCities', 'Select city…')}
                         <ChevronDown
                           style={{
                             marginLeft: 8,
