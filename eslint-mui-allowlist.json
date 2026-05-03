@@ -86,7 +86,6 @@
   "src/components/personalities/PersonalitiesFiltersBar.tsx",
   "src/components/personalization/TravelPrefsPrompt.tsx",
   "src/components/posts/PostCard.tsx",
-  "src/components/profile/TravelPreferencesEditor.tsx",
   "src/components/profile/UrlValidator.tsx",
   "src/components/search/SearchFeedbackButtons.tsx",
   "src/components/security/ContentSanitizer.tsx",
