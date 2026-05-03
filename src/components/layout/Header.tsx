@@ -67,7 +67,6 @@ import { motion } from 'motion/react';
 import IconButton from '@mui/material/IconButton';
 import ListItemButton from '@mui/material/ListItemButton';
 import { useTheme } from '@mui/material/styles';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -617,9 +616,6 @@ export function Header() {
                   {submitCta.label}
                 </Box>
               </Button>
-
-              {/* Theme toggle (P4-2) */}
-              <ThemeToggle />
 
               {/* Admin menu */}
               {(isAdmin || isModerator) && (
