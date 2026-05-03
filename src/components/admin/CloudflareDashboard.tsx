@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,13 +39,12 @@ export function CloudflareDashboard() {
     try {
       if (showRefreshToast) setRefreshing(true);
 
-      // First test if the API token is configured
       const testResult = await cloudflareAPI.getZoneInfo();
 
       const [analytics, zoneInfo, securitySettings, performanceSettings, threatAnalytics] =
         await Promise.allSettled([
           cloudflareAPI.getAnalytics(),
-          Promise.resolve(testResult), // Use the already fetched zone info
+          Promise.resolve(testResult),
           cloudflareAPI.getSecuritySettings(),
           cloudflareAPI.getPerformanceSettings(),
           cloudflareAPI.getThreatAnalytics(),
@@ -96,7 +93,7 @@ export function CloudflareDashboard() {
 
   useEffect(() => {
     fetchCloudflareData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRefresh = () => {
@@ -110,22 +107,22 @@ export function CloudflareDashboard() {
   const { analytics, zoneInfo, securitySettings, performanceSettings } = stats;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ p: 1, bgcolor: '#f97316', borderRadius: 2 }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg" style={{ backgroundColor: '#f97316' }}>
             <Cloud style={{ height: 24, width: 24, color: 'white' }} />
-          </Box>
-          <Box>
-            <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+          </div>
+          <div>
+            <h2 className="font-bold" style={{ fontSize: '1.5rem' }}>
               Cloudflare Dashboard
-            </Typography>
-            <p style={{ color: 'var(--muted-foreground)' }}>
+            </h2>
+            <p className="text-muted-foreground">
               Zone: {zoneInfo?.result?.name || 'Loading...'}
             </p>
-          </Box>
-        </Box>
+          </div>
+        </div>
         <Button onClick={handleRefresh} disabled={refreshing}>
           <RefreshCw
             style={{
@@ -136,7 +133,7 @@ export function CloudflareDashboard() {
           />
           Refresh
         </Button>
-      </Box>
+      </div>
 
       {/* Zone Status */}
       {zoneInfo && (
@@ -148,44 +145,38 @@ export function CloudflareDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' },
-                gap: 2,
-              }}
-            >
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-muted-foreground">
                   Status
-                </Typography>
+                </p>
                 <Badge variant={zoneInfo.result.status === 'active' ? 'default' : 'secondary'}>
                   {zoneInfo.result.status}
                 </Badge>
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Plan</Typography>
-                <Typography sx={{ fontWeight: 500 }}>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-muted-foreground">Plan</p>
+                <p className="font-medium">
                   {zoneInfo.result.plan?.name || 'Unknown'}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-muted-foreground">
                   Development Mode
-                </Typography>
+                </p>
                 <Badge variant={zoneInfo.result.development_mode > 0 ? 'destructive' : 'secondary'}>
                   {zoneInfo.result.development_mode > 0 ? 'ON' : 'OFF'}
                 </Badge>
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-muted-foreground">
                   Name Servers
-                </Typography>
-                <Typography sx={{ fontSize: '0.875rem' }}>
+                </p>
+                <p className="text-sm">
                   {zoneInfo.result.name_servers?.length || 0} configured
-                </Typography>
-              </Box>
-            </Box>
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -200,49 +191,39 @@ export function CloudflareDashboard() {
 
         <TabsContent value="analytics">
           {analytics ? (
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(4, 1fr)' },
-                gap: 3,
-              }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle
-
-                  >
+                  <CardTitle>
                     <BarChart3 style={{ height: 16, width: 16 }} />
                     Total Requests
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
                     {analytics.result?.totals?.requests?.all?.toLocaleString() || '0'}
-                  </Box>
-                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mt: 0.5 }}>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
                     {analytics.result?.totals?.requests?.cached || 0} cached
-                  </Typography>
+                  </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle
-
-                  >
+                  <CardTitle>
                     <TrendingUp style={{ height: 16, width: 16 }} />
                     Bandwidth
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
                     {((analytics.result?.totals?.bandwidth?.all || 0) / 1024 / 1024 / 1024).toFixed(
                       2,
                     )}{' '}
                     GB
-                  </Box>
-                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mt: 0.5 }}>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
                     {(
                       (analytics.result?.totals?.bandwidth?.cached || 0) /
                       1024 /
@@ -250,52 +231,48 @@ export function CloudflareDashboard() {
                       1024
                     ).toFixed(2)}{' '}
                     GB cached
-                  </Typography>
+                  </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle
-
-                  >
+                  <CardTitle>
                     <Users style={{ height: 16, width: 16 }} />
                     Unique Visitors
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
                     {analytics.result?.totals?.uniques?.all?.toLocaleString() || '0'}
-                  </Box>
-                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mt: 0.5 }}>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Last 24 hours
-                  </Typography>
+                  </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle
-
-                  >
+                  <CardTitle>
                     <Shield style={{ height: 16, width: 16 }} />
                     Threats Blocked
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
                     {analytics.result?.totals?.threats?.all?.toLocaleString() || '0'}
-                  </Box>
-                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mt: 0.5 }}>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Security events
-                  </Typography>
+                  </p>
                 </CardContent>
               </Card>
-            </Box>
+            </div>
           ) : (
             <Card>
               <CardContent>
-                <p style={{ color: 'var(--muted-foreground)' }}>Analytics data unavailable</p>
+                <p className="text-muted-foreground">Analytics data unavailable</p>
               </CardContent>
             </Card>
           )}
@@ -303,9 +280,7 @@ export function CloudflareDashboard() {
 
         <TabsContent value="security">
           {securitySettings ? (
-            <Box
-              sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>
@@ -314,17 +289,13 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  <div className="flex justify-between items-center">
                     <span>SSL Mode</span>
                     <Badge variant="default">
                       {securitySettings.result?.ssl?.value || 'Unknown'}
                     </Badge>
-                  </Box>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span>Always Use HTTPS</span>
                     <Badge
                       variant={
@@ -335,15 +306,13 @@ export function CloudflareDashboard() {
                     >
                       {securitySettings.result?.always_use_https?.value === 'on' ? 'ON' : 'OFF'}
                     </Badge>
-                  </Box>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span>Min TLS Version</span>
                     <Badge variant="outline">
                       {securitySettings.result?.min_tls_version?.value || 'Unknown'}
                     </Badge>
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -355,24 +324,22 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  <div className="flex justify-between items-center">
                     <span>Current Level</span>
                     <Badge variant="default">
                       {securitySettings.result?.security_level?.value || 'Unknown'}
                     </Badge>
-                  </Box>
-                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mt: 1 }}>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
                     Higher security levels provide more protection but may affect legitimate traffic
-                  </Typography>
+                  </p>
                 </CardContent>
               </Card>
-            </Box>
+            </div>
           ) : (
             <Card>
               <CardContent>
-                <p style={{ color: 'var(--muted-foreground)' }}>Security settings unavailable</p>
+                <p className="text-muted-foreground">Security settings unavailable</p>
               </CardContent>
             </Card>
           )}
@@ -380,9 +347,7 @@ export function CloudflareDashboard() {
 
         <TabsContent value="performance">
           {performanceSettings ? (
-            <Box
-              sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>
@@ -391,25 +356,19 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  <div className="flex justify-between items-center">
                     <span>Cache Level</span>
                     <Badge variant="default">
                       {performanceSettings.result?.cache_level?.value || 'Unknown'}
                     </Badge>
-                  </Box>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span>Browser Cache TTL</span>
                     <Badge variant="outline">
                       {performanceSettings.result?.browser_cache_ttl?.value || 'Unknown'}s
                     </Badge>
-                  </Box>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span>Development Mode</span>
                     <Badge
                       variant={
@@ -420,7 +379,7 @@ export function CloudflareDashboard() {
                     >
                       {performanceSettings.result?.development_mode?.value === 'on' ? 'ON' : 'OFF'}
                     </Badge>
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -432,9 +391,7 @@ export function CloudflareDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  <div className="flex justify-between items-center">
                     <span>Minify CSS</span>
                     <Badge
                       variant={
@@ -445,10 +402,8 @@ export function CloudflareDashboard() {
                     >
                       {performanceSettings.result?.minify?.value?.css === 'on' ? 'ON' : 'OFF'}
                     </Badge>
-                  </Box>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span>Minify JS</span>
                     <Badge
                       variant={
@@ -459,10 +414,8 @@ export function CloudflareDashboard() {
                     >
                       {performanceSettings.result?.minify?.value?.js === 'on' ? 'ON' : 'OFF'}
                     </Badge>
-                  </Box>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span>Minify HTML</span>
                     <Badge
                       variant={
@@ -473,14 +426,14 @@ export function CloudflareDashboard() {
                     >
                       {performanceSettings.result?.minify?.value?.html === 'on' ? 'ON' : 'OFF'}
                     </Badge>
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
-            </Box>
+            </div>
           ) : (
             <Card>
               <CardContent>
-                <p style={{ color: 'var(--muted-foreground)' }}>Performance settings unavailable</p>
+                <p className="text-muted-foreground">Performance settings unavailable</p>
               </CardContent>
             </Card>
           )}
@@ -493,83 +446,67 @@ export function CloudflareDashboard() {
               <CardDescription>Zone: {zoneInfo?.result?.name || 'Not connected'}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Box
-                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}
-              >
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 500 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-2">
+                  <h4 className="font-medium">
                     API Status
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </h4>
+                  <div className="flex items-center gap-2">
                     {stats.zoneInfo ? (
                       <>
                         <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
-                        <Box component="span" sx={{ fontSize: '0.875rem' }}>
+                        <span className="text-sm">
                           Connected
-                        </Box>
+                        </span>
                       </>
                     ) : (
                       <>
                         <AlertTriangle style={{ height: 16, width: 16, color: '#ef4444' }} />
-                        <Box component="span" sx={{ fontSize: '0.875rem' }}>
+                        <span className="text-sm">
                           Not Connected
-                        </Box>
+                        </span>
                       </>
                     )}
-                  </Box>
+                  </div>
                   {!stats.zoneInfo && (
-                    <Box
-                      sx={{
-                        mt: 2,
-                        p: 2,
-                        bgcolor: '#fefce8',
-                        border: 1,
-                        borderColor: '#fde047',
-                        borderRadius: 2,
-                      }}
+                    <div
+                      className="mt-4 p-4 rounded-lg"
+                      style={{ backgroundColor: '#fefce8', border: '1px solid #fde047' }}
                     >
-                      <Typography variant="h5" sx={{ fontWeight: 500, color: '#854d0e', mb: 1 }}>
+                      <h5 className="font-medium mb-2" style={{ color: '#854d0e' }}>
                         Setup Required
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.875rem', color: '#a16207', mb: 1.5 }}>
+                      </h5>
+                      <p className="text-sm mb-3" style={{ color: '#a16207' }}>
                         To use the Cloudflare dashboard, configure the following Supabase secrets:
-                      </Typography>
-                      <Box
-                        component="ol"
-                        sx={{
-                          fontSize: '0.875rem',
-                          color: '#a16207',
-                          listStyleType: 'decimal',
-                          listStylePosition: 'inside',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.5,
-                        }}
+                      </p>
+                      <ol
+                        className="text-sm flex flex-col gap-1"
+                        style={{ color: '#a16207', listStyleType: 'decimal', listStylePosition: 'inside' }}
                       >
-                        <li>Go to Cloudflare Dashboard &rarr; My Profile &rarr; API Tokens</li>
+                        <li>Go to Cloudflare Dashboard → My Profile → API Tokens</li>
                         <li>Create a token with Zone:Read permissions for your zone</li>
                         <li>
                           Set CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, and CLOUDFLARE_ACCOUNT_ID in
                           Supabase secrets
                         </li>
                         <li>Refresh this page</li>
-                      </Box>
-                    </Box>
+                      </ol>
+                    </div>
                   )}
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 500 }}>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <h4 className="font-medium">
                     Last Updated
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
                     {new Date().toLocaleString()}
-                  </Typography>
-                </Box>
-              </Box>
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </Box>
+    </div>
   );
 }
