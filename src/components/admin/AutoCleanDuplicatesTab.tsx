@@ -46,7 +46,7 @@ import {
 } from '@/hooks/useImportHubQueries';
 import { DuplicatePairCard } from './import-hub/DuplicatePairCard';
 import { MergeDialog } from './import-hub/MergeDialog';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 
 // ==================== Entity Type Config ====================
 

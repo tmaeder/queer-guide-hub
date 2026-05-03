@@ -9,7 +9,7 @@ import {
   XCircle, Key, Database
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { listFromWhere, listFrom } from '@/hooks/usePageFetchers';

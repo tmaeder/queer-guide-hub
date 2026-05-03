@@ -9,7 +9,7 @@ import {
   Play, RefreshCw, AlertTriangle, CheckCircle, Clock,
   Database, Globe, Rss, FileText, Zap, Key
 } from 'lucide-react';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 
 const SOURCE_TYPE_ICONS: Record<string, React.ReactNode> = {
   api: <Database style={{ height: 16, width: 16 }} />,

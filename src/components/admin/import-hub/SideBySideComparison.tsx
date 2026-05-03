@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, ArrowRight, Merge } from 'lucide-react';
 import { getFieldsForEntity, type FieldDef } from './StructuredFieldDisplay';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 
 interface SideBySideComparisonProps {
   entityType: string;

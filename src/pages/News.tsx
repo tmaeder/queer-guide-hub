@@ -609,7 +609,7 @@ export default function News() {
                     )}
                     {/* Rest in compact grid */}
                     {paginatedArticles.length > 3 && (
-                      <StaggerGrid sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: 'repeat(3, 1fr)' }, gap: 3 }}>
+                      <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {paginatedArticles.slice(3).map((article) => (
                           <NewsCard
                             key={article.id}
@@ -633,9 +633,9 @@ export default function News() {
 
                 {/* Grid / List View */}
                 {(viewMode === 'grid' || viewMode === 'list') && (
-                  <StaggerGrid sx={viewMode === 'grid'
-                    ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: 'repeat(3, 1fr)' }, gap: 3 }
-                    : { display: 'flex', flexDirection: 'column', gap: 2 }
+                  <StaggerGrid className={viewMode === 'grid'
+                    ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                    : 'flex flex-col gap-4'
                   }>
                     {paginatedArticles.map((article) => (
                       <NewsCard

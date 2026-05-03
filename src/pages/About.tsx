@@ -106,11 +106,7 @@ export default function About() {
       <div className="py-10 md:py-14 px-4 sm:px-6 md:px-8 bg-foreground text-background">
         <StaggerGrid
           stagger={0.1}
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            gap: { xs: 3, md: 4 },
-          }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
         >
           {statItems.map((stat, i) => (
             <div key={i} className="text-center">
@@ -196,13 +192,7 @@ export default function About() {
           What We Offer
         </h2>
 
-        <StaggerGrid
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-            gap: 2.5,
-          }}
-        >
+        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
@@ -242,13 +232,7 @@ export default function About() {
         <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
           <h2 className="font-extrabold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">Our Values</h2>
 
-          <StaggerGrid
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-              gap: 2.5,
-            }}
-          >
+          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             {values.map((value) => {
               const Icon = value.icon;
               return (
@@ -279,13 +263,7 @@ export default function About() {
             community members who volunteer their time and energy.
           </p>
 
-          <StaggerGrid
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-              gap: 2.5,
-            }}
-          >
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {team.map((member) => (
               <Card key={member.name} style={{ height: '100%' }}>
                 <CardContent

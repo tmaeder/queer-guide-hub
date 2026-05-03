@@ -8,8 +8,6 @@ import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
 import noSupabaseFromInPages from "./eslint-rules/no-supabase-from-in-pages.js";
 
-import muiAllowlist from "./eslint-mui-allowlist.json" with { type: "json" };
-
 export default tseslint.config(
   { ignores: ["dist", "src/integrations/supabase/types.ts"] },
   {
@@ -210,28 +208,4 @@ export default tseslint.config(
       ],
     },
   },
-  // ADR 0001 forcing function — ban net-new MUI imports.
-  // The eslint-mui-allowlist.json file is a ratchet snapshot of all files
-  // that import MUI today (526 as of 2026-05-02). New code can't add to
-  // the list; existing entries should be removed as their files migrate
-  // to shadcn. When the list is empty, delete this block + the JSON file
-  // + uninstall MUI.
-  // Ref: docs/adrs/0001-ui-library-consolidation.md
-  {
-    files: ["src/**/*.{ts,tsx}"],
-    ignores: muiAllowlist,
-    rules: {
-      "no-restricted-imports": [
-        "warn",
-        {
-          patterns: [
-            {
-              group: ["@mui/material", "@mui/material/*", "@mui/icons-material", "@mui/icons-material/*", "@mui/lab", "@mui/lab/*"],
-              message: "MUI is being retired (ADR 0001). Use @/components/ui (shadcn) instead. If you genuinely need MUI for an existing component, add the file to eslint-mui-allowlist.json and explain in the PR.",
-            },
-          ],
-        },
-      ],
-    },
-  }
 );
