@@ -7,7 +7,6 @@
   "src/components/admin/WorkflowDashboard.tsx",
   "src/components/admin/automation/ReviewQueue.tsx",
   "src/components/admin/feedback/StoryDetailDrawer.tsx",
-  "src/components/admin/search-intelligence/SynonymsTab.tsx",
   "src/components/admin/search-intelligence/TopicsTab.tsx",
   "src/components/animation/StaggerGrid.tsx",
   "src/components/booking/HotelBookingFlow.tsx",
