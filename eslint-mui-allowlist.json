@@ -33,7 +33,6 @@
   "src/components/home/LatestNewsSlider.tsx",
   "src/components/home/RegionalEventsCalendar.tsx",
   "src/components/layout/AuthGate.tsx",
-  "src/components/layout/Header.tsx",
   "src/components/loading/Spinner.tsx",
   "src/components/layout/AuthGate.tsx",
   "src/components/layout/LayoutShell.tsx",
