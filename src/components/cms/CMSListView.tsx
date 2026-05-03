@@ -14,8 +14,6 @@ import {
   ArrowUp,
   ArrowDown,
 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,12 +113,10 @@ export function CMSListView({
 
   const SortableHeader = ({ column, children }: { column: string; children: React.ReactNode }) => (
     <TableHead style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => updateSort(column)}>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', gap: 1, '&:hover': { color: 'text.primary' } }}
-      >
+      <div className="flex items-center gap-2 hover:text-foreground">
         {children}
         {getSortIcon(column)}
-      </Box>
+      </div>
     </TableHead>
   );
 
@@ -211,7 +207,7 @@ export function CMSListView({
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div className="flex flex-col gap-4">
         <CMSAdvancedFilters
           filters={filters}
           onFilterChange={updateFilter}
@@ -222,25 +218,20 @@ export function CMSListView({
         />
         <Card>
           <CardContent>
-            <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Box
-                sx={{
-                  '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
-                  animation: 'pulse 2s infinite',
-                }}
-              >
+            <div className="p-8 text-center">
+              <div className="animate-pulse">
                 Loading content...
-              </Box>
-            </Box>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </Box>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div className="flex flex-col gap-4">
         <CMSAdvancedFilters
           filters={filters}
           onFilterChange={updateFilter}
@@ -251,20 +242,20 @@ export function CMSListView({
         />
         <Card>
           <CardContent>
-            <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Typography color="error" sx={{ mb: 2 }}>
+            <div className="p-8 text-center">
+              <p className="text-destructive mb-4">
                 {error}
-              </Typography>
+              </p>
               <Button onClick={onRefresh}>Retry</Button>
-            </Box>
+            </div>
           </CardContent>
         </Card>
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Advanced Filters */}
       <CMSAdvancedFilters
         filters={filters}
@@ -276,21 +267,21 @@ export function CMSListView({
       />
 
       {/* View Mode Toggle & Bulk Actions */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
           {selectedItems.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" color="text.secondary">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
                 {selectedItems.length} selected
-              </Typography>
+              </span>
               <Button variant="outline" size="sm">
                 Bulk Actions
               </Button>
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div className="flex items-center gap-2">
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
@@ -305,8 +296,8 @@ export function CMSListView({
           >
             <List style={{ height: 16, width: 16 }} />
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Content Table */}
       <Card>
@@ -315,13 +306,13 @@ export function CMSListView({
         </CardHeader>
         <CardContent>
           {filteredData.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography color="text.secondary">
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
                 No content found matching your criteria.
-              </Typography>
-            </Box>
+              </p>
+            </div>
           ) : (
-            <Box sx={{ overflow: 'auto' }}>
+            <div className="overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -365,7 +356,7 @@ export function CMSListView({
                       </TableCell>
 
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <div className="flex items-center gap-3">
                           {item.image_url && (
                             <Avatar style={{ height: 32, width: 32 }}>
                               <AvatarImage src={item.image_url} alt={item.title} />
@@ -374,7 +365,7 @@ export function CMSListView({
                               </AvatarFallback>
                             </Avatar>
                           )}
-                          <Box>
+                          <div>
                             {editingId === (item.id as string) ? (
                               <Input
                                 autoFocus
@@ -388,39 +379,30 @@ export function CMSListView({
                                 style={{ height: 28, maxWidth: 320 }}
                               />
                             ) : (
-                              <Box
-                                component="button"
+                              <button
                                 onClick={() => onEdit(item)}
                                 onDoubleClick={(e) => {
                                   e.stopPropagation();
                                   startInlineEdit(item);
                                 }}
                                 title="Double-click to rename"
-                                sx={{
-                                  fontWeight: 500,
+                                className="font-medium text-left cursor-pointer bg-transparent border-0 p-0 hover:text-primary hover:underline"
+                                style={{
                                   overflow: 'hidden',
                                   display: '-webkit-box',
                                   WebkitLineClamp: 1,
                                   WebkitBoxOrient: 'vertical',
                                   maxWidth: 320,
-                                  textAlign: 'left',
-                                  cursor: 'pointer',
-                                  '&:hover': { color: 'primary.main', textDecoration: 'underline' },
-                                  textDecorationOffset: '4px',
-                                  background: 'none',
-                                  border: 'none',
-                                  p: 0,
                                   font: 'inherit',
                                 }}
                               >
                                 {(item.title as string) || 'Untitled'}
-                              </Box>
+                              </button>
                             )}
                             {item.description && (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{
+                              <p
+                                className="text-sm text-muted-foreground"
+                                style={{
                                   overflow: 'hidden',
                                   display: '-webkit-box',
                                   WebkitLineClamp: 1,
@@ -429,19 +411,19 @@ export function CMSListView({
                                 }}
                               >
                                 {item.description}
-                              </Typography>
+                              </p>
                             )}
-                          </Box>
-                        </Box>
+                          </div>
+                        </div>
                       </TableCell>
 
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <div className="flex items-center gap-2">
                           {getContentTypeIcon(item.content_type)}
-                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                          <span className="text-sm capitalize">
                             {item.content_type.replace('_', ' ')}
-                          </Typography>
-                        </Box>
+                          </span>
+                        </div>
                       </TableCell>
 
                       <TableCell>
@@ -502,9 +484,9 @@ export function CMSListView({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
-                              <Typography variant="body2" color="text.secondary" component="time">
+                              <time className="text-sm text-muted-foreground">
                                 {format(new Date(item.updated_at), 'MMM dd, yy')}
-                              </Typography>
+                              </time>
                             </TooltipTrigger>
                             <TooltipContent>
                               {format(new Date(item.updated_at), 'PPP p')}
@@ -517,9 +499,9 @@ export function CMSListView({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
-                              <Typography variant="body2" color="text.secondary" component="time">
+                              <time className="text-sm text-muted-foreground">
                                 {format(new Date(item.created_at), 'MMM dd, yy')}
-                              </Typography>
+                              </time>
                             </TooltipTrigger>
                             <TooltipContent>
                               {format(new Date(item.created_at), 'PPP p')}
@@ -529,7 +511,7 @@ export function CMSListView({
                       </TableCell>
 
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -574,25 +556,25 @@ export function CMSListView({
                                 )}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </Box>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" color="text.secondary">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
               Showing {(currentPage - 1) * pageSize + 1} to{' '}
               {Math.min(currentPage * pageSize, totalResults)} of {totalResults} results
-            </Typography>
+            </span>
             <Select
               value={pageSize.toString()}
               onValueChange={(value) => updateFilter('pageSize', parseInt(value))}
@@ -608,10 +590,10 @@ export function CMSListView({
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-            <Typography variant="body2" color="text.secondary">
+            <span className="text-sm text-muted-foreground">
               per page
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
           <Pagination>
             <PaginationContent>
@@ -663,8 +645,8 @@ export function CMSListView({
               </PaginationItem>
             </PaginationContent>
           </Pagination>
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
