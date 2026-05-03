@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useModeration, ModerationFilters } from '@/hooks/useModeration';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { supabase } from '@/integrations/supabase/client';
 import { listFromWhere } from '@/hooks/usePageFetchers';
 import {
   Flag,

@@ -57,7 +57,6 @@ import { CMSAdvancedFilters } from './CMSAdvancedFilters';
 import { useCMSFilters } from '@/hooks/useCMSFilters';
 import { useCMSShortcuts } from '@/hooks/useCMSShortcuts';
 import { getContentType } from '@/config/contentTypeRegistry';
-import { supabase } from '@/integrations/supabase/client';
 import { updateRow } from '@/hooks/usePageFetchers';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';

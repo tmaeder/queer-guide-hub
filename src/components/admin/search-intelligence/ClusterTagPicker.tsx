@@ -6,7 +6,6 @@ import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 import { searchUnifiedTagsByName } from '@/hooks/usePageFetchers';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 
