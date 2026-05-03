@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { listWithJoinDesc, deleteRow } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { ModernVideoPlayer } from '@/components/ui/modern-video-player';
 
@@ -45,16 +45,11 @@ export function VideoManager() {
   const loadVideos = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('videos')
-        .select(`
-          *,
-          renditions:video_renditions(*)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setVideos(data || []);
+      const data = await listWithJoinDesc<Video>(
+        'videos',
+        '*, renditions:video_renditions(*)',
+      );
+      setVideos(data);
     } catch (error) {
       console.error('Error loading videos:', error);
       toast.error('Failed to load videos');
@@ -67,11 +62,7 @@ export function VideoManager() {
     if (!confirm('Are you sure you want to delete this video?')) return;
 
     try {
-      const { error } = await supabase
-        .from('videos')
-        .delete()
-        .eq('id', videoId);
-
+      const { error } = await deleteRow('videos', videoId);
       if (error) throw error;
 
       toast.success('Video deleted successfully');

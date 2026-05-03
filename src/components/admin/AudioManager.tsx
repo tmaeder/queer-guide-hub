@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { listWithJoinDesc, deleteRow } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { ModernAudioPlayer } from '@/components/ui/modern-audio-player';
 
@@ -44,16 +44,11 @@ export function AudioManager() {
   const loadAudios = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('audio_files')
-        .select(`
-          *,
-          renditions:audio_renditions(*)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setAudios(data || []);
+      const data = await listWithJoinDesc<AudioFile>(
+        'audio_files',
+        '*, renditions:audio_renditions(*)',
+      );
+      setAudios(data);
     } catch (error) {
       console.error('Error loading audio files:', error);
       toast.error('Failed to load audio files');
@@ -66,11 +61,7 @@ export function AudioManager() {
     if (!confirm('Are you sure you want to delete this audio file?')) return;
 
     try {
-      const { error } = await supabase
-        .from('audio_files')
-        .delete()
-        .eq('id', audioId);
-
+      const { error } = await deleteRow('audio_files', audioId);
       if (error) throw error;
 
       toast.success('Audio file deleted successfully');

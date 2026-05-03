@@ -842,6 +842,20 @@ export async function fetchAllUserFavorites(userId: string) {
   };
 }
 
+/** AudioManager + VideoManager — list rows with one nested join, ordered desc. */
+export async function listWithJoinDesc<T = unknown>(
+  table: string,
+  selectClause: string,
+  orderCol = 'created_at',
+): Promise<T[]> {
+  const { data, error } = await supabase
+    .from(table as never)
+    .select(selectClause as never)
+    .order(orderCol, { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as T[];
+}
+
 /** AdminReview.tsx — count rows matching a single filter (or all). */
 export function useReviewCount(table: string, filterCol?: string, filterVal?: string) {
   const [count, setCount] = useState<number | null>(null);
