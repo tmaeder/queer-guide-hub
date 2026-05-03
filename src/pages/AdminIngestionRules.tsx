@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -167,8 +165,8 @@ export default function AdminIngestionRules() {
   };
 
   return (
-    <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+    <div className="max-w-screen-lg mx-auto p-6 flex flex-col gap-6">
+      <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="sm"
@@ -178,14 +176,14 @@ export default function AdminIngestionRules() {
           <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
         </Button>
         <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
+          <h4 className="text-xl font-bold">
             Ingestion Rules & URL Import
-          </Typography>
+          </p>
           <p style={{ color: 'var(--muted-foreground)' }}>
             Auto-tag/route community submissions; paste a URL to seed an inbox row.
           </p>
         </div>
-      </Box>
+      </div>
 
       <Card>
         <CardHeader>
@@ -194,7 +192,7 @@ export default function AdminIngestionRules() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex gap-2">
             <Input
               placeholder="https://bsky.app/profile/… or https://www.tiktok.com/… or any URL"
               value={importUrl}
@@ -207,59 +205,48 @@ export default function AdminIngestionRules() {
             <Button onClick={handleImport} disabled={importing || !importUrl}>
               {importing ? 'Importing…' : 'Import'}
             </Button>
-          </Box>
-          <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1, display: 'block' }}>
+          </div>
+          <p className="text-xs text-muted-foreground">
             Detects Bluesky / TikTok / generic OG-meta automatically. Submissions land in
             /admin/submissions for review.
-          </Typography>
+          </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="flex justify-between items-center">
             <CardTitle>Rules</CardTitle>
             <Button onClick={openNew} size="sm" style={{ display: 'flex', gap: 6 }}>
               <Plus style={{ width: 14, height: 14 }} /> New rule
             </Button>
-          </Box>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <Typography variant="body2">Loading…</Typography>
+            <p className="text-sm">Loading…</p>
           ) : rules.length === 0 ? (
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            <p className="text-sm">
               No rules yet. Create one to auto-tag or escalate matching submissions.
-            </Typography>
+            </p>
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div className="flex flex-col gap-2">
               {rules.map((r) => (
-                <Box
-                  key={r.id}
-                  sx={{
-                    p: 1.5,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    flexWrap: 'wrap',
-                  }}
-                >
+                <div key={r.id} className="p-3 border border-border flex items-center gap-3 flex-wrap">
                   <Switch
                     checked={r.enabled}
                     onCheckedChange={(v: boolean) =>
                       upsertMut.mutate({ ...r, enabled: v })
                     }
                   />
-                  <Box sx={{ flex: 1, minWidth: 200 }}>
-                    <Typography variant="subtitle2">{r.name}</Typography>
+                  <div className="flex-1 min-w-[200px]">
+                    <p className="text-sm font-medium">{r.name}</p>
                     {r.description && (
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      <p className="text-xs text-muted-foreground">
                         {r.description}
-                      </Typography>
+                      </p>
                     )}
-                    <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
+                    <div className="flex gap-1 mt-1 flex-wrap">
                       {r.match.platforms?.map((p) => (
                         <Badge key={p} variant="outline" style={{ fontSize: 10 }}>
                           {p}
@@ -280,8 +267,8 @@ export default function AdminIngestionRules() {
                           regex
                         </Badge>
                       )}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                   <Badge variant="outline">prio {r.priority}</Badge>
                   <Button
                     variant="ghost"
@@ -302,9 +289,9 @@ export default function AdminIngestionRules() {
                   >
                     <Trash2 style={{ width: 14, height: 14, color: '#ef4444' }} />
                   </Button>
-                </Box>
+                </div>
               ))}
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -319,7 +306,7 @@ export default function AdminIngestionRules() {
         onSave={(r) => upsertMut.mutate(r)}
         saving={upsertMut.isPending}
       />
-    </Box>
+    </div>
   );
 }
 
@@ -391,7 +378,7 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
         <DialogHeader>
           <DialogTitle>{rule?.id ? 'Edit rule' : 'New rule'}</DialogTitle>
         </DialogHeader>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <div className="flex flex-col gap-3">
           <Field label="Name">
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
@@ -411,9 +398,9 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
               onChange={(e) => setPriority(Number(e.target.value) || 0)}
             />
           </Field>
-          <Typography variant="overline" sx={{ mt: 1 }}>
+          <p>
             Match
-          </Typography>
+          </p>
           <Field label="Platforms (csv: telegram, tiktok, …)">
             <Input value={platforms} onChange={(e) => setPlatforms(e.target.value)} />
           </Field>
@@ -426,9 +413,9 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
           <Field label="Regex (case-insensitive)">
             <Input value={regex} onChange={(e) => setRegex(e.target.value)} />
           </Field>
-          <Typography variant="overline" sx={{ mt: 1 }}>
+          <p>
             Actions
-          </Typography>
+          </p>
           <Field label="Add labels (csv)">
             <Input value={addLabels} onChange={(e) => setAddLabels(e.target.value)} />
           </Field>
@@ -439,11 +426,11 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
               onChange={(e) => setSetPriorityVal(e.target.value)}
             />
           </Field>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center gap-2">
             <Switch checked={forceReview} onCheckedChange={setForceReview} />
-            <Typography variant="body2">Force review (status → pending)</Typography>
-          </Box>
-        </Box>
+            <p className="text-sm">Force review (status → pending)</p>
+          </div>
+        </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancel
@@ -459,11 +446,11 @@ function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Box>
-      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>
+    <div>
+      <p className="text-xs text-muted-foreground">
         {label}
-      </Typography>
+      </p>
       {children}
-    </Box>
+    </div>
   );
 }
