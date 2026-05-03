@@ -15,7 +15,6 @@
   "src/components/admin/AutoModerationQueue.tsx",
   "src/components/admin/AutomationDashboard.tsx",
   "src/components/admin/BatchGeoLinkDialog.tsx",
-  "src/components/admin/BulkEnrichDialog.tsx",
   "src/components/admin/CloudflareDashboard.tsx",
   "src/components/admin/EditLinkDialog.tsx",
   "src/components/admin/EmailIngestionsPanel.tsx",
