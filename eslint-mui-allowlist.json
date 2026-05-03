@@ -182,7 +182,6 @@
   "src/pages/Favorites.tsx",
   "src/pages/GroupDetail.tsx",
   "src/pages/HelpHotlines.tsx",
-  "src/pages/Marketplace.tsx",
   "src/pages/MarketplaceItemDetail.parts.tsx",
   "src/pages/NotFound.tsx",
   "src/pages/Page.tsx",
