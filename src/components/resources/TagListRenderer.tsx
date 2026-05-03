@@ -1,6 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Badge } from '@/components/ui/badge';
 import { Tag, ChevronRight } from 'lucide-react';
 import { getCategoryIcon, getCategoryShortName } from './categoryMeta';
@@ -39,278 +37,118 @@ export function TagListRenderer({
 
   if (displayMode === 'grid') {
     return (
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: 'repeat(2, 1fr)',
-            sm: 'repeat(3, 1fr)',
-            md: 'repeat(4, 1fr)',
-            lg: 'repeat(5, 1fr)',
-          },
-          gap: 1.5,
-        }}
-      >
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {tags.map((tag) => {
           const CatIcon = getCategoryIcon(getTagCategoryName(tag));
           const uses = tagUsageCounts[tag.name] || 0;
           return (
-            <Box
+            <button
               key={tag.id}
-              component="button"
               onClick={() => onTagClick(tag)}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                borderRadius: 2,
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
-                cursor: 'pointer',
-                textAlign: 'left',
-                p: 0,
-                font: 'inherit',
-                color: 'inherit',
-                transition: 'all 0.2s',
-                '@media (hover: hover)': {
-                  '&:hover': {
-                    borderColor: 'primary.main',
-                    transform: 'translateY(-2px)',
-                    boxShadow: 2,
-                  },
-                },
-                '&:focus-visible': {
-                  outline: '2px solid',
-                  outlineColor: 'primary.main',
-                  outlineOffset: 2,
-                },
-              }}
+              className="flex flex-col overflow-hidden rounded-lg bg-background border border-border cursor-pointer text-left p-0 transition-all hover:[@media(hover:hover)]:border-primary hover:[@media(hover:hover)]:-translate-y-0.5 hover:[@media(hover:hover)]:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
             >
-              <Box
-                sx={{
-                  position: 'relative',
-                  width: '100%',
-                  aspectRatio: '4 / 3',
-                  bgcolor: 'action.hover',
-                }}
-              >
+              <div className="relative w-full aspect-[4/3] bg-muted">
                 {tag.image_url ? (
-                  <Box
-                    component="img"
+                  <img
                     src={tag.image_url}
                     alt={tag.name}
                     loading="lazy"
-                    sx={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
+                    className="absolute inset-0 w-full h-full object-cover"
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
                 ) : (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      inset: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <CatIcon style={{ width: 28, height: 28, opacity: 0.3 }} />
-                  </Box>
+                  </div>
                 )}
                 {uses > 0 && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 6,
-                      right: 6,
-                      px: 0.75,
-                      py: 0.125,
-                      borderRadius: 1,
-                      bgcolor: 'rgba(0,0,0,0.6)',
-                      color: 'white',
-                      fontSize: '0.65rem',
-                      fontWeight: 600,
-                    }}
-                  >
+                  <div className="absolute top-1.5 right-1.5 px-1.5 py-px rounded bg-black/60 text-white text-[0.65rem] font-semibold">
                     {uses}
-                  </Box>
+                  </div>
                 )}
-              </Box>
-              <Box sx={{ p: 1.25, minHeight: 56, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                <Typography
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.825rem',
-                    lineHeight: 1.25,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+              </div>
+              <div className="p-2.5 min-h-[56px] flex flex-col gap-0.5">
+                <p className="font-semibold text-[0.825rem] leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
                   {tag.name}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    fontSize: '0.7rem',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                </p>
+                <span className="text-[0.7rem] text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
                   {getTagCategoryLabel(tag)}
-                </Typography>
-              </Box>
-            </Box>
+                </span>
+              </div>
+            </button>
           );
         })}
-      </Box>
+      </div>
     );
   }
 
   if (displayMode === 'list') {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <div className="flex flex-col gap-1">
         {tags.map((tag) => {
           const uses = tagUsageCounts[tag.name] || 0;
           return (
-            <Box
+            <button
               key={tag.id}
-              component="button"
               onClick={() => onTagClick(tag)}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-                minHeight: 44,
-                px: 1.5,
-                py: 1,
-                borderRadius: 2,
-                cursor: 'pointer',
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
-                textAlign: 'left',
-                font: 'inherit',
-                color: 'inherit',
-                '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
-                '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
-                transition: 'all 0.15s',
-              }}
+              className="flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-lg cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
             >
               {tag.image_url && (
-                <Box
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 1.5,
-                    overflow: 'hidden',
-                    flexShrink: 0,
-                    bgcolor: 'action.hover',
-                  }}
-                >
-                  <Box
-                    component="img"
+                <div className="w-10 h-10 rounded-md overflow-hidden flex-shrink-0 bg-muted">
+                  <img
                     src={tag.image_url}
                     alt={tag.name}
                     loading="lazy"
-                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    className="w-full h-full object-cover"
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
-                </Box>
+                </div>
               )}
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', lineHeight: 1.25 }}>
-                  {tag.name}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    display: 'block',
-                    fontSize: '0.7rem',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-[0.85rem] leading-tight">{tag.name}</p>
+                <span className="block text-[0.7rem] text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
                   {tag.description || getTagCategoryLabel(tag)}
-                </Typography>
-              </Box>
+                </span>
+              </div>
               {uses > 0 && (
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    flexShrink: 0,
-                    fontSize: '0.7rem',
-                    display: { xs: 'none', sm: 'block' },
-                  }}
-                >
+                <span className="hidden sm:block flex-shrink-0 text-[0.7rem] text-muted-foreground">
                   {uses} uses
-                </Typography>
+                </span>
               )}
               <Badge variant="secondary" style={{ flexShrink: 0 }}>
                 {getTagCategoryLabel(tag)}
               </Badge>
               <ChevronRight style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }} />
-            </Box>
+            </button>
           );
         })}
-      </Box>
+      </div>
     );
   }
 
   // Chips
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+    <div className="flex flex-wrap gap-2">
       {tags.map((tag) => {
         const uses = tagUsageCounts[tag.name] || 0;
         return (
-          <Box
+          <button
             key={tag.id}
-            component="button"
             onClick={() => onTagClick(tag)}
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.75,
-              minHeight: 36,
-              px: 1.5,
-              py: 0.75,
-              borderRadius: 999,
-              cursor: 'pointer',
-              bgcolor: 'background.paper',
-              border: '1px solid',
-              borderColor: 'divider',
-              font: 'inherit',
-              color: 'inherit',
-              '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
-              '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
-              transition: 'all 0.15s',
-            }}
+            className="inline-flex items-center gap-1.5 min-h-[36px] px-3 py-1.5 rounded-full cursor-pointer bg-background border border-border transition-all hover:border-primary hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           >
             <Tag style={{ width: 12, height: 12, opacity: 0.55 }} />
-            <Typography sx={{ fontWeight: 500, fontSize: '0.78rem' }}>{tag.name}</Typography>
+            <span className="font-medium text-[0.78rem]">{tag.name}</span>
             {uses > 0 && (
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                {uses}
-              </Typography>
+              <span className="text-[0.65rem] text-muted-foreground">{uses}</span>
             )}
-          </Box>
+          </button>
         );
       })}
-    </Box>
+    </div>
   );
 }
