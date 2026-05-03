@@ -75,7 +75,6 @@
   "src/components/trips/TripMap.tsx",
   "src/components/trips/TripPolls.tsx",
   "src/components/trips/TripSafetyBriefing.tsx",
-  "src/components/trips/TripSuggestions.tsx",
   "src/components/trips/TripsInboxSection.tsx",
   "src/components/ui/country-autocomplete.tsx",
   "src/lib/sx.ts",
