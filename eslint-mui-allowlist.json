@@ -54,7 +54,6 @@
   "src/components/cms/ContentListPanel/ContentListTable.tsx",
   "src/components/cms/ContentListPanel/index.tsx",
   "src/components/cms/MediaLibrary/MediaGrid.tsx",
-  "src/components/cms/MediaLibrary/MediaPreviewDrawer.tsx",
   "src/components/cms/MediaLibrary/index.tsx",
   "src/components/cms/ModerationQueue.tsx",
   "src/components/cms/ReviewQueue.tsx",

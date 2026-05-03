@@ -5,8 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Zap } from 'lucide-react';
 import type { OptimizationSettings } from './types';
 
@@ -49,18 +47,16 @@ export function MediaPreviewDrawer({
           </TabsList>
 
           <TabsContent value="settings">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+            <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle style={{ fontSize: '1.125rem' }}>Quality & Compression</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                          Quality: {settings.quality}%
-                        </Typography>
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <p className="text-sm font-medium mb-2">Quality: {settings.quality}%</p>
                         <input
                           type="range"
                           min="10"
@@ -69,17 +65,17 @@ export function MediaPreviewDrawer({
                           onChange={(e) => update({ quality: parseInt(e.target.value) })}
                           style={{ width: '100%' }}
                         />
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary">Smaller file</Typography>
-                          <Typography variant="caption" color="text.secondary">Better quality</Typography>
-                        </Box>
-                      </Box>
+                        <div className="flex justify-between mt-1">
+                          <span className="text-xs text-muted-foreground">Smaller file</span>
+                          <span className="text-xs text-muted-foreground">Better quality</span>
+                        </div>
+                      </div>
 
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Output Formats</Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <div>
+                        <p className="text-sm font-medium mb-2">Output Formats</p>
+                        <div className="flex flex-col gap-2">
                           {['WEBP', 'AVIF', 'JPEG', 'PNG'].map(format => (
-                            <Box key={format} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <div key={format} className="flex items-center gap-2">
                               <Checkbox
                                 checked={settings.formats.includes(format)}
                                 onCheckedChange={(checked) => {
@@ -90,14 +86,14 @@ export function MediaPreviewDrawer({
                                   }
                                 }}
                               />
-                              <Typography variant="body2">{format}</Typography>
+                              <span className="text-sm">{format}</span>
                               {format === 'WEBP' && <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>Recommended</Badge>}
                               {format === 'AVIF' && <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>Best compression</Badge>}
-                            </Box>
+                            </div>
                           ))}
-                        </Box>
-                      </Box>
-                    </Box>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -106,156 +102,163 @@ export function MediaPreviewDrawer({
                     <CardTitle style={{ fontSize: '1.125rem' }}>Resize Options</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           checked={settings.resize}
                           onCheckedChange={(checked) => update({ resize: !!checked })}
                         />
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Enable resizing</Typography>
-                      </Box>
+                        <span className="text-sm font-medium">Enable resizing</span>
+                      </div>
 
                       {settings.resize && (
                         <>
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>Max Width (px)</Typography>
+                          <div>
+                            <p className="text-sm font-medium">Max Width (px)</p>
                             <Input
                               type="number"
                               value={settings.maxWidth}
                               onChange={(e) => update({ maxWidth: parseInt(e.target.value) || 1920 })}
                               placeholder="1920"
                             />
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>Max Height (px)</Typography>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Max Height (px)</p>
                             <Input
                               type="number"
                               value={settings.maxHeight}
                               onChange={(e) => update({ maxHeight: parseInt(e.target.value) || 1080 })}
                               placeholder="1080"
                             />
-                          </Box>
+                          </div>
                         </>
                       )}
 
-                      <Typography variant="caption" color="text.secondary">
+                      <span className="text-xs text-muted-foreground">
                         Images will be resized proportionally to fit within these dimensions
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   </CardContent>
                 </Card>
-              </Box>
-            </Box>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="preview">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div className="flex flex-col gap-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Optimization Preview</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <Typography sx={{ fontWeight: 500 }}>Estimated Results</Typography>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2">Quality Level:</Typography>
-                          <Typography variant="body2" sx={{
-                            color: settings.quality >= 90 ? 'success.main' :
-                              settings.quality >= 70 ? 'warning.main' : 'error.main'
-                          }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <p className="font-medium">Estimated Results</p>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex justify-between">
+                          <span className="text-sm">Quality Level:</span>
+                          <span
+                            className="text-sm"
+                            style={{
+                              color:
+                                settings.quality >= 90
+                                  ? 'hsl(var(--success, 142 76% 36%))'
+                                  : settings.quality >= 70
+                                  ? 'hsl(var(--warning, 38 92% 50%))'
+                                  : 'hsl(var(--destructive))',
+                            }}
+                          >
                             {settings.quality >= 90 ? 'Excellent' :
                               settings.quality >= 70 ? 'Good' : 'Compressed'}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2">Est. Size Reduction:</Typography>
-                          <Typography variant="body2" sx={{ color: 'success.main' }}>
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Est. Size Reduction:</span>
+                          <span className="text-sm" style={{ color: 'hsl(142 76% 36%)' }}>
                             {100 - settings.quality}% - {100 - Math.floor(settings.quality * 0.8)}%
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2">Output Formats:</Typography>
-                          <Typography variant="body2">{settings.formats.length} format(s)</Typography>
-                        </Box>
-                      </Box>
-                    </Box>
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Output Formats:</span>
+                          <span className="text-sm">{settings.formats.length} format(s)</span>
+                        </div>
+                      </div>
+                    </div>
 
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <Typography sx={{ fontWeight: 500 }}>Format Benefits</Typography>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <div className="flex flex-col gap-2">
+                      <p className="font-medium">Format Benefits</p>
+                      <div className="flex flex-col gap-1">
                         {settings.formats.includes('WEBP') && (
-                          <Typography variant="caption" sx={{ color: 'success.main' }}>WebP: Up to 35% smaller than JPEG</Typography>
+                          <span className="text-xs" style={{ color: 'hsl(142 76% 36%)' }}>WebP: Up to 35% smaller than JPEG</span>
                         )}
                         {settings.formats.includes('AVIF') && (
-                          <Typography variant="caption" sx={{ color: 'success.main' }}>AVIF: Up to 50% smaller than JPEG</Typography>
+                          <span className="text-xs" style={{ color: 'hsl(142 76% 36%)' }}>AVIF: Up to 50% smaller than JPEG</span>
                         )}
                         {settings.formats.includes('JPEG') && (
-                          <Typography variant="caption" sx={{ color: 'info.main' }}>JPEG: Universal compatibility</Typography>
+                          <span className="text-xs" style={{ color: 'hsl(217 91% 60%)' }}>JPEG: Universal compatibility</span>
                         )}
-                      </Box>
-                    </Box>
-                  </Box>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            </Box>
+            </div>
           </TabsContent>
 
           <TabsContent value="advanced">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div className="flex flex-col gap-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Advanced Options</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
                           <Checkbox
                             checked={settings.preserveMetadata}
                             onCheckedChange={(checked) => update({ preserveMetadata: !!checked })}
                           />
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>Preserve Metadata</Typography>
-                            <Typography variant="caption" color="text.secondary">Keep EXIF data, copyright info</Typography>
-                          </Box>
-                        </Box>
+                          <div>
+                            <p className="text-sm font-medium">Preserve Metadata</p>
+                            <span className="text-xs text-muted-foreground">Keep EXIF data, copyright info</span>
+                          </div>
+                        </div>
 
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <div className="flex items-center gap-2">
                           <Checkbox
                             checked={settings.enableProgressiveJpeg}
                             onCheckedChange={(checked) => update({ enableProgressiveJpeg: !!checked })}
                           />
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>Progressive JPEG</Typography>
-                            <Typography variant="caption" color="text.secondary">Better loading experience</Typography>
-                          </Box>
-                        </Box>
-                      </Box>
+                          <div>
+                            <p className="text-sm font-medium">Progressive JPEG</p>
+                            <span className="text-xs text-muted-foreground">Better loading experience</span>
+                          </div>
+                        </div>
+                      </div>
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
                           <Checkbox
                             checked={settings.enableLosslessWebP}
                             onCheckedChange={(checked) => update({ enableLosslessWebP: !!checked })}
                           />
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>Lossless WebP</Typography>
-                            <Typography variant="caption" color="text.secondary">No quality loss</Typography>
-                          </Box>
-                        </Box>
-                      </Box>
-                    </Box>
-                  </Box>
+                          <div>
+                            <p className="text-sm font-medium">Lossless WebP</p>
+                            <span className="text-xs text-muted-foreground">No quality loss</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            </Box>
+            </div>
           </TabsContent>
         </Tabs>
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+        <div className="flex justify-end gap-2 pt-4 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
@@ -266,7 +269,7 @@ export function MediaPreviewDrawer({
             <Zap style={{ height: 16, width: 16, marginRight: 4 }} />
             Optimize {selectedCount} Files
           </Button>
-        </Box>
+        </div>
       </DialogContent>
     </Dialog>
   );
