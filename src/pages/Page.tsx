@@ -5,11 +5,8 @@
  */
 
 import { useParams } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import DOMPurify from 'dompurify';
 import { useCMSPage } from '@/hooks/useCMSPage';
 
@@ -21,122 +18,77 @@ export default function Page() {
 
   if (loading) {
     return (
-      <Container sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress  aria-label="Loading"/>
-      </Container>
+      <div className="container mx-auto py-16 text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto" aria-label="Loading" />
+      </div>
     );
   }
 
   if (notFound || !page) {
     return (
-      <Container sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-          Page Not Found
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
+      <div className="container mx-auto py-16 text-center">
+        <h4 className="text-2xl font-bold mb-2">Page Not Found</h4>
+        <p className="text-muted-foreground">
           The page you're looking for doesn't exist or hasn't been published yet.
-        </Typography>
-      </Container>
+        </p>
+      </div>
     );
   }
 
   const sanitizedHtml = page.body_html ? DOMPurify.sanitize(page.body_html) : '';
 
   return (
-    <Container sx={{ py: 4 }}>
+    <div className="container mx-auto py-8 px-4">
       {/* Cover image */}
       {page.cover_image_url && (
-        <Box
-          component="img"
+        <img
           src={page.cover_image_url}
           alt={page.cover_image_alt || page.title}
-          sx={{
-            width: '100%',
-            maxHeight: 400,
-            objectFit: 'cover',
-            borderRadius: 2,
-            mb: 3,
-          }}
+          className="w-full max-h-[400px] object-cover rounded-md mb-6"
         />
       )}
 
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        {page.category && <Chip label={page.category} size="small" sx={{ mb: 1 }} />}
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 800, lineHeight: 1.2, mb: 1 }}>
-          {page.title}
-        </Typography>
+      <div className="mb-8">
+        {page.category && (
+          <Badge variant="secondary" className="mb-2">
+            {page.category}
+          </Badge>
+        )}
+        <h1 className="text-4xl font-extrabold leading-tight mb-2">{page.title}</h1>
         {page.subtitle && (
-          <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 400, mb: 1 }}>
-            {page.subtitle}
-          </Typography>
+          <h6 className="text-xl text-muted-foreground font-normal mb-2">{page.subtitle}</h6>
         )}
         {page.published_at && (
-          <Typography variant="caption" color="text.secondary">
+          <p className="text-xs text-muted-foreground">
             Published{' '}
             {new Date(page.published_at).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
             })}
-          </Typography>
+          </p>
         )}
-      </Box>
+      </div>
 
       {/* Body */}
       {sanitizedHtml && (
-        <Box
+        <div
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-          sx={{
-            '& h1': { fontSize: '2rem', fontWeight: 700, mt: 4, mb: 2, lineHeight: 1.2 },
-            '& h2': { fontSize: '1.5rem', fontWeight: 700, mt: 3, mb: 1.5, lineHeight: 1.25 },
-            '& h3': { fontSize: '1.25rem', fontWeight: 600, mt: 2.5, mb: 1, lineHeight: 1.3 },
-            '& p': { fontSize: '1rem', lineHeight: 1.8, mb: 2 },
-            '& ul, & ol': { pl: 3, mb: 2 },
-            '& li': { mb: 0.75, lineHeight: 1.7 },
-            '& blockquote': {
-              borderLeft: 3,
-              borderColor: 'divider',
-              pl: 2,
-              ml: 0,
-              fontStyle: 'italic',
-              color: 'text.secondary',
-              my: 2,
-            },
-            '& a': { color: 'primary.main', textDecoration: 'underline' },
-            '& img': { maxWidth: '100%', height: 'auto', borderRadius: 1, my: 2 },
-            '& pre': {
-              bgcolor: 'grey.900',
-              color: 'grey.100',
-              borderRadius: 1,
-              p: 2,
-              overflow: 'auto',
-              my: 2,
-              fontSize: '0.875rem',
-            },
-            '& code': {
-              bgcolor: 'action.hover',
-              borderRadius: 0.5,
-              px: 0.75,
-              py: 0.25,
-              fontSize: '0.875em',
-            },
-            '& table': { borderCollapse: 'collapse', width: '100%', my: 2 },
-            '& th, & td': { border: 1, borderColor: 'divider', px: 1.5, py: 1, textAlign: 'left' },
-            '& th': { bgcolor: 'action.hover', fontWeight: 600 },
-            '& hr': { borderColor: 'divider', my: 3 },
-          }}
+          className="prose prose-neutral dark:prose-invert max-w-none"
         />
       )}
 
       {/* Tags */}
       {page.tags && page.tags.length > 0 && (
-        <Box sx={{ mt: 4, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+        <div className="mt-8 pt-4 border-t flex flex-wrap gap-1">
           {page.tags.map((tag) => (
-            <Chip key={tag} label={tag} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
+            <Badge key={tag} variant="secondary">
+              {tag}
+            </Badge>
           ))}
-        </Box>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }
