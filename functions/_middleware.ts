@@ -14,11 +14,8 @@ import { resolveMeta, canonicalUrl, isIndexable, DEFAULT_OG_IMAGE } from './_lib
 import { homepageJsonLd } from './_lib/jsonLd';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml } from './_lib/routeBody';
- * The SPA still renders client-side; this only fixes the crawler-visible HTML.
- * Pre-rendered body HTML is Phase 2.
- */
-import { resolveMeta, canonicalUrl, isIndexable, DEFAULT_OG_IMAGE } from './_lib/routeMeta';
-import { homepageJsonLd } from './_lib/jsonLd';
+import { resolveDetailRoute } from './_lib/detail';
+import type { Env } from './_lib/sitemap';
 
 const SKIP_PREFIXES = ['/api/', '/functions/', '/assets/', '/icons/', '/images/', '/fonts/'];
 const SKIP_SUFFIXES = [
@@ -69,8 +66,8 @@ class RootBodyInjector {
   }
 }
 
-export const onRequest: PagesFunction = async (context) => {
-  const { request, next } = context;
+export const onRequest: PagesFunction<Env> = async (context) => {
+  const { request, next, env } = context;
   const url = new URL(request.url);
   const { pathname } = url;
 
@@ -81,7 +78,12 @@ export const onRequest: PagesFunction = async (context) => {
   const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.includes('text/html')) return response;
 
-  const meta = resolveMeta(pathname);
+  // Phase 3: detail routes look up the row in Supabase and override
+  // meta/body/JSON-LD with type-specific values (LocalBusiness, Event, etc.).
+  // Returns null if the path isn't a detail route or the row isn't found.
+  const detail = await resolveDetailRoute(env, pathname);
+
+  const meta = detail?.meta ?? resolveMeta(pathname);
   const canonical = canonicalUrl(pathname);
   const ogImage = meta.ogImage ?? DEFAULT_OG_IMAGE;
   const indexable = isIndexable(pathname);
@@ -111,6 +113,9 @@ export const onRequest: PagesFunction = async (context) => {
   if (pathname === '/' || pathname === '') {
     headInjections.push(homepageJsonLd());
   }
+  if (detail?.jsonLd) {
+    headInjections.push(detail.jsonLd);
+  }
 
   const rewriter = new HTMLRewriter()
     .on('title', new TitleRewriter(meta.title))
@@ -119,10 +124,10 @@ export const onRequest: PagesFunction = async (context) => {
 
   const isBot = indexable && isBotUserAgent(request.headers.get('user-agent'));
   if (isBot) {
-    rewriter.on(
-      '#root',
-      new RootBodyInjector(buildBodyHtml(pathname, { title: meta.title, description: meta.description })),
-    );
+    const bodyHtml =
+      detail?.body ??
+      buildBodyHtml(pathname, { title: meta.title, description: meta.description });
+    rewriter.on('#root', new RootBodyInjector(bodyHtml));
   }
 
   const rewritten = rewriter.transform(response);
@@ -132,9 +137,10 @@ export const onRequest: PagesFunction = async (context) => {
   if (isBot || indexable) {
     rewritten.headers.append('Vary', 'User-Agent');
   }
-  const rewritten = rewriter.transform(response);
-
-  // Preserve original cache headers but ensure Vary on User-Agent isn't needed
-  // since we don't branch on UA in Phase 1.
+  // Detail pages are dynamic but the row content changes infrequently — let
+  // the edge cache hold for 5 minutes to bound Supabase load.
+  if (detail) {
+    rewritten.headers.set('Cache-Control', 'public, s-maxage=300, max-age=60');
+  }
   return rewritten;
 };
