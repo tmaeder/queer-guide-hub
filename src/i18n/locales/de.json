@@ -1445,5 +1445,14 @@
       "turnOn": "Einschalten",
       "turnOff": "Ausschalten"
     }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "Details anzeigen",
+      "share": "Teilen",
+      "linkCopied": "Link kopiert",
+      "linkCopiedDescription": "Du kannst ihn jetzt einfügen",
+      "shareFailed": "Teilen fehlgeschlagen"
+    }
   }
 }

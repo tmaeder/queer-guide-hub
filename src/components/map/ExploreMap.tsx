@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import i18next from 'i18next';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -250,12 +251,12 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
               try {
                 await navigator.clipboard.writeText(absoluteUrl);
                 toast({
-                  title: 'Link kopiert / Link copied',
-                  description: 'Du kannst ihn jetzt einfügen / You can paste it now',
+                  title: i18next.t('map.popup.linkCopied', { defaultValue: 'Link copied' }),
+                  description: i18next.t('map.popup.linkCopiedDescription', { defaultValue: 'You can paste it now' }),
                 });
               } catch {
                 toast({
-                  title: 'Teilen fehlgeschlagen / Share failed',
+                  title: i18next.t('map.popup.shareFailed', { defaultValue: 'Share failed' }),
                   variant: 'destructive',
                 });
               }
