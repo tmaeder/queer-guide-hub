@@ -32,6 +32,7 @@ import { homepageJsonLd } from './_lib/jsonLd';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml } from './_lib/routeBody';
 import { resolveDetailRoute } from './_lib/detail';
+import { resolveLandingRoute } from './_lib/landing';
 import type { Env } from './_lib/sitemap';
 
 const SKIP_PREFIXES = ['/api/', '/functions/', '/assets/', '/icons/', '/images/', '/fonts/'];
@@ -92,6 +93,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   if (SKIP_PREFIXES.some((p) => pathname.startsWith(p))) return next();
   if (SKIP_SUFFIXES.some((s) => pathname.endsWith(s))) return next();
+
+  // Standalone landing pages (/spaces/:tag, /pride/:year, /pride/:year/:city)
+  // bypass the SPA shell entirely and return a complete HTML document. These
+  // URLs don't exist as SPA routes, so handing them to the SPA would render
+  // 404 — a cloaking risk if we then served different content to bots.
+  const { basePath: landingBasePath } = splitLocale(pathname);
+  const landing = await resolveLandingRoute(env, landingBasePath);
+  if (landing) return landing;
 
   const response = await next();
   const contentType = response.headers.get('content-type') ?? '';

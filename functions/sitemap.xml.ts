@@ -18,6 +18,7 @@ export const onRequest: PagesFunction<Env> = async () => {
     { loc: `${ORIGIN}/sitemap-hotels.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-villages.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-tags.xml`, lastmod },
+    { loc: `${ORIGIN}/sitemap-landings.xml`, lastmod },
   ]);
   return xmlResponse(xml, 3600);
 };
