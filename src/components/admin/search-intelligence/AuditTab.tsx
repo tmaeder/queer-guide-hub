@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { callSearchIntelligence, AuditEntry } from '@/hooks/useSearchIntelligence';
 
 export function AuditTab() {
@@ -37,46 +39,46 @@ export function AuditTab() {
   }, [actionFilter, resourceFilter]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex flex-col gap-1 min-w-[200px]">
-          <Label htmlFor="action-filter">Action contains</Label>
-          <Input
-            id="action-filter"
-            value={actionFilter}
-            onChange={(e) => setActionFilter(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-1 min-w-[200px]">
-          <Label htmlFor="resource-filter">Resource type</Label>
-          <Input
-            id="resource-filter"
-            value={resourceFilter}
-            onChange={(e) => setResourceFilter(e.target.value)}
-          />
-        </div>
-      </div>
-      {error && <p className="text-destructive">{error}</p>}
+    <Stack spacing={2}>
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+        <TextField
+          label="Action contains"
+          value={actionFilter}
+          onChange={(e) => setActionFilter(e.target.value)}
+          size="small"
+          sx={{ minWidth: 200 }}
+        />
+        <TextField
+          label="Resource type"
+          value={resourceFilter}
+          onChange={(e) => setResourceFilter(e.target.value)}
+          size="small"
+          sx={{ minWidth: 200 }}
+        />
+      </Stack>
+      {error && <Typography color="error">{error}</Typography>}
       {loading ? (
-        <p>Loading…</p>
+        <Typography>Loading…</Typography>
       ) : entries.length === 0 ? (
-        <p className="text-muted-foreground">No audit entries match these filters.</p>
+        <Typography color="text.secondary">No audit entries match these filters.</Typography>
       ) : (
-        <div className="flex flex-col gap-2">
+        <Stack spacing={1}>
           {entries.map((e) => (
             <Card key={e.id}>
               <CardContent>
-                <div className="flex flex-row items-center gap-4">
+                <Stack direction="row" spacing={2} alignItems="center">
                   <Badge variant="secondary">{e.action}</Badge>
                   <Badge variant="secondary">{e.resource_type}</Badge>
                   {e.resource_id && (
-                    <span className="text-xs font-mono">{e.resource_id}</span>
+                    <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
+                      {e.resource_id}
+                    </Typography>
                   )}
-                  <div className="flex-1" />
-                  <span className="text-xs text-muted-foreground">
+                  <Box sx={{ flex: 1 }} />
+                  <Typography variant="caption" color="text.secondary">
                     {new Date(e.created_at).toLocaleString()}
-                  </span>
-                </div>
+                  </Typography>
+                </Stack>
                 {e.metadata && Object.keys(e.metadata).length > 0 && (
                   <pre
                     style={{
@@ -93,8 +95,8 @@ export function AuditTab() {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </Stack>
       )}
-    </div>
+    </Stack>
   );
 }

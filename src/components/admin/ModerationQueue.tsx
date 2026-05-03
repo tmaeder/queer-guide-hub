@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useModeration, ModerationFilters } from '@/hooks/useModeration';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 import {
   Flag,
   CheckCircle,
@@ -99,19 +99,18 @@ export function ModerationQueue() {
       setSelectAllCount(0);
     } else {
       // Fetch ALL matching IDs across pages
-      let query = supabase
-        .from('moderation_flags')
-        .select('id')
-        .order('created_at', { ascending: false })
-        .limit(2000);
-
-      if (filters.status) query = query.eq('status', filters.status);
-      if (filters.flag_type) query = query.eq('flag_type', filters.flag_type);
-      if (filters.content_type) query = query.eq('content_type', filters.content_type);
-      if (filters.source) query = query.eq('source', filters.source);
-
-      const { data } = await query;
-      const allIds = (data || []).map((f: { id: string }) => f.id);
+      const flt: Array<{ col: string; val: unknown }> = [];
+      if (filters.status) flt.push({ col: 'status', val: filters.status });
+      if (filters.flag_type) flt.push({ col: 'flag_type', val: filters.flag_type });
+      if (filters.content_type) flt.push({ col: 'content_type', val: filters.content_type });
+      if (filters.source) flt.push({ col: 'source', val: filters.source });
+      const data = await listFromWhere<{ id: string }>(
+        'moderation_flags',
+        'id',
+        flt,
+        { order: { col: 'created_at', ascending: false }, limit: 2000 },
+      );
+      const allIds = data.map((f) => f.id);
       setSelectedIds(allIds);
       setSelectAllCount(allIds.length);
     }

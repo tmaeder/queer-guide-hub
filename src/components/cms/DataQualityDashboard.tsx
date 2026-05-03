@@ -4,10 +4,13 @@
  */
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { RefreshCw, AlertTriangle, CheckCircle2, FileText, Clock, Languages, Loader2 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
+import { RefreshCw, AlertTriangle, CheckCircle2, FileText, Clock, Languages } from 'lucide-react';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import {
   loadDataQualityRow,
@@ -46,29 +49,53 @@ export function DataQualityDashboard() {
   }, [rows]);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-        <div>
-          <h5 className="text-xl font-bold mb-1">Data Quality</h5>
-          <p className="text-sm text-muted-foreground">
+    <Box>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 3,
+          gap: 2,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+            Data Quality
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
             Health metrics across all content types — refresh to recompute.
-          </p>
-        </div>
+          </Typography>
+        </Box>
         <Button
-          size="sm"
-          variant="outline"
+          size="small"
+          variant="outlined"
+          startIcon={<RefreshCw size={14} />}
           onClick={() => setRefreshKey((k) => k + 1)}
           disabled={loading}
-          className="font-semibold"
+          sx={{ textTransform: 'none', fontWeight: 600 }}
         >
-          <RefreshCw size={14} className="mr-1.5" />
           Refresh
         </Button>
-      </div>
+      </Box>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      {/* Summary tiles */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(5, 1fr)' },
+          gap: 1.5,
+          mb: 3,
+        }}
+      >
         <SummaryTile label="Total items" value={totals.total} icon={FileText} color="#64748b" />
-        <SummaryTile label="Published" value={totals.published} icon={CheckCircle2} color="#10b981" />
+        <SummaryTile
+          label="Published"
+          value={totals.published}
+          icon={CheckCircle2}
+          color="#10b981"
+        />
         <SummaryTile
           label="Missing required"
           value={totals.missingRequired}
@@ -87,38 +114,62 @@ export function DataQualityDashboard() {
           icon={Languages}
           color={totals.untranslated > 0 ? '#8b5cf6' : '#94a3b8'}
         />
-      </div>
+      </Box>
 
       {loading && rows.length === 0 ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
-        </div>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress size={32} aria-label="Loading" />
+        </Box>
       ) : (
-        <div className="border border-border rounded-md overflow-hidden bg-background">
-          <div className="grid grid-cols-[2fr_repeat(6,1fr)] px-4 py-2.5 bg-muted/30 border-b border-border text-[0.7rem] font-bold uppercase tracking-wider text-muted-foreground">
-            <div>Type</div>
-            <div className="text-right">Total</div>
-            <div className="text-right">Published</div>
-            <div className="text-right">Draft</div>
-            <div className="text-right">Missing req.</div>
-            <div className="text-right">Stale</div>
-            <div className="text-right">Untranslated</div>
-          </div>
+        <Box
+          sx={{
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 2,
+            overflow: 'hidden',
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '2fr repeat(6, 1fr)',
+              px: 2,
+              py: 1.25,
+              bgcolor: 'grey.50',
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              color: 'text.secondary',
+            }}
+          >
+            <Box>Type</Box>
+            <Box sx={{ textAlign: 'right' }}>Total</Box>
+            <Box sx={{ textAlign: 'right' }}>Published</Box>
+            <Box sx={{ textAlign: 'right' }}>Draft</Box>
+            <Box sx={{ textAlign: 'right' }}>Missing req.</Box>
+            <Box sx={{ textAlign: 'right' }}>Stale</Box>
+            <Box sx={{ textAlign: 'right' }}>Untranslated</Box>
+          </Box>
           {rows.map((row) => (
             <QualityRowView key={row.id} row={row} />
           ))}
-        </div>
+        </Box>
       )}
 
       {rows.some((r) => r.error) && (
-        <Alert className="mt-4">
-          <AlertDescription>
-            Some types failed to load metrics. Errors:{' '}
-            {rows.filter((r) => r.error).map((r) => `${r.label} (${r.error})`).join('; ')}
-          </AlertDescription>
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          Some types failed to load metrics. Errors:{' '}
+          {rows
+            .filter((r) => r.error)
+            .map((r) => `${r.label} (${r.error})`)
+            .join('; ')}
         </Alert>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -134,44 +185,84 @@ function SummaryTile({
   color: string;
 }) {
   return (
-    <div className="p-3 border border-border rounded-md bg-background flex flex-col gap-1">
-      <div className="flex items-center gap-1.5">
+    <Box
+      sx={{
+        p: 1.5,
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 2,
+        bgcolor: 'background.paper',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.5,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
         <Icon size={14} color={color} />
-        <span className="text-[0.7rem] text-muted-foreground">{label}</span>
-      </div>
-      <p className="text-xl font-bold" style={{ color }}>
+        <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+          {label}
+        </Typography>
+      </Box>
+      <Typography variant="h5" sx={{ fontWeight: 700, color }}>
         {value.toLocaleString()}
-      </p>
-    </div>
+      </Typography>
+    </Box>
   );
 }
 
 function QualityRowView({ row }: { row: QualityRow }) {
   const cell = (n: number, warn = false) => (
-    <div className={`text-right tabular-nums ${warn && n > 0 ? 'text-destructive font-semibold' : ''}`}>
+    <Box
+      sx={{
+        textAlign: 'right',
+        fontVariantNumeric: 'tabular-nums',
+        color: warn && n > 0 ? 'error.main' : 'text.primary',
+        fontWeight: warn && n > 0 ? 600 : 400,
+      }}
+    >
       {n.toLocaleString()}
-    </div>
+    </Box>
   );
   return (
-    <div className="grid grid-cols-[2fr_repeat(6,1fr)] px-4 py-2.5 border-b border-border last:border-b-0 text-[0.85rem] items-center hover:bg-muted">
-      <div className="flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
-        <p className="text-sm font-semibold">{row.label}</p>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: '2fr repeat(6, 1fr)',
+        px: 2,
+        py: 1.25,
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        '&:last-child': { borderBottom: 'none' },
+        fontSize: '0.85rem',
+        alignItems: 'center',
+        '&:hover': { bgcolor: 'action.hover' },
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box
+          sx={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            bgcolor: row.color,
+            flexShrink: 0,
+          }}
+        />
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {row.label}
+        </Typography>
         {row.error && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span><AlertTriangle size={14} color="#ef4444" /></span>
-            </TooltipTrigger>
-            <TooltipContent>{row.error}</TooltipContent>
+          <Tooltip title={row.error}>
+            <AlertTriangle size={14} color="#ef4444" />
           </Tooltip>
         )}
-      </div>
+      </Box>
       {cell(row.total)}
       {cell(row.published)}
       {cell(row.draft)}
       {cell(row.missingRequired, true)}
       {cell(row.staleCount, true)}
       {cell(row.untranslated, true)}
-    </div>
+    </Box>
   );
 }

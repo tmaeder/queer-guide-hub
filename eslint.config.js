@@ -42,9 +42,10 @@ export default tseslint.config(
         caughtErrorsIgnorePattern: "^_",
       }],
       "no-case-declarations": "warn",
-      // Tech-debt DUP-4: page-level supabase.from() migrated to hooks
-      // (PR #320). Components still warn — next milestone.
-      "queerguide/no-supabase-from-in-pages": "warn",
+      // DUP-4 complete: pages and components both clean of inline
+      // supabase.from(). Co-located use*Controller.{ts,tsx} files are
+      // exempted in the rule itself.
+      "queerguide/no-supabase-from-in-pages": "error",
       // Accessibility rules (WCAG 2.2 AA)
       "jsx-a11y/alt-text": "error",
       "jsx-a11y/anchor-has-content": "error",
@@ -64,18 +65,6 @@ export default tseslint.config(
       "jsx-a11y/no-static-element-interactions": "warn",
       "jsx-a11y/role-has-required-aria-props": "error",
       "jsx-a11y/role-supports-aria-props": "error",
-    },
-  },
-  // DUP-4: pages are now clean of inline supabase.from() — promote to error
-  // for src/pages/** so regressions fail CI. Components still warn until the
-  // next migration milestone.
-  {
-    files: ["src/pages/**/*.{ts,tsx}"],
-    // Co-located controller hooks (useXxxController.ts) inside a page folder
-    // are real hooks, just kept next to the page that uses them.
-    ignores: ["src/pages/**/use*Controller.{ts,tsx}"],
-    rules: {
-      "queerguide/no-supabase-from-in-pages": "error",
     },
   },
   // P2-1 — block hardcoded color literals outside theme/config files.

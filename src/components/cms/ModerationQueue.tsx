@@ -16,7 +16,7 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import { ThumbsUp, ThumbsDown, Flag, ShieldAlert, Inbox, MessageSquare } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere, updateRow } from '@/hooks/usePageFetchers';
 import { CommentThread } from './CommentThread';
 
 interface ModerationItem {
@@ -67,21 +67,24 @@ export function ModerationQueue() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    let q = supabase
-      .from('community_submissions')
-      .select(
-        'id, content_type, status, feedback_status, is_spam, priority, data, submitted_at, submitted_by, ip_address',
-      )
-      .order('submitted_at', { ascending: false })
-      .limit(100);
+    const filters: Array<{ col: string; val: unknown; op?: 'eq' | 'in' }> = [];
     if (filter === 'pending') {
-      q = q.in('feedback_status', ['new', 'under_review']).eq('is_spam', false);
+      filters.push({ col: 'feedback_status', val: ['new', 'under_review'], op: 'in' });
+      filters.push({ col: 'is_spam', val: false });
     } else if (filter === 'spam') {
-      q = q.eq('is_spam', true);
+      filters.push({ col: 'is_spam', val: true });
     }
-    const { data, error: err } = await q;
-    if (err) setError(err.message);
-    setItems((data ?? []) as unknown as ModerationItem[]);
+    try {
+      const data = await listFromWhere<ModerationItem>(
+        'community_submissions',
+        'id, content_type, status, feedback_status, is_spam, priority, data, submitted_at, submitted_by, ip_address',
+        filters,
+        { order: { col: 'submitted_at', ascending: false }, limit: 100 },
+      );
+      setItems(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load');
+    }
     setLoading(false);
   }, [filter]);
 
@@ -104,13 +107,13 @@ export function ModerationQueue() {
       patch: Partial<Pick<ModerationItem, 'feedback_status' | 'is_spam' | 'status'>>,
     ) => {
       setActionId(id);
-      const { error: err } = await supabase
-        .from('community_submissions')
-        .update({ ...patch, reviewed_at: new Date().toISOString() })
-        .eq('id', id);
+      const { error: err } = await updateRow('community_submissions', id, {
+        ...patch,
+        reviewed_at: new Date().toISOString(),
+      });
       setActionId(null);
       if (err) {
-        setError(err.message);
+        setError((err as { message: string }).message);
       } else {
         setItems((prev) => prev.filter((i) => i.id !== id));
       }

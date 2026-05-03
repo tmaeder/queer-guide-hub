@@ -9,7 +9,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Loader2 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { mapStyle } from '@/config/mapStyle';
 import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
@@ -272,8 +273,8 @@ export const EntityMap: React.FC<EntityMapProps> = ({
   }, [primary, nearby, mapReady, showPopup]);
 
   return (
-    <div className={`relative rounded-lg overflow-hidden ${className ?? ''}`}>
-      <div ref={containerRef} style={{ height, width: '100%' }} />
+    <Box className={className} sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden' }}>
+      <Box ref={containerRef} sx={{ height, width: '100%' }} />
 
       <div
         ref={tooltipRef}
@@ -292,11 +293,21 @@ export const EntityMap: React.FC<EntityMapProps> = ({
       />
 
       {!mapReady && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-[5]">
-          <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
-        </div>
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'rgba(255,255,255,0.7)',
+            zIndex: 5,
+          }}
+        >
+          <CircularProgress size={24} aria-label="Loading" />
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

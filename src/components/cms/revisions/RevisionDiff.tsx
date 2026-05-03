@@ -4,15 +4,24 @@
  * Shows old (red) and new (green) values for each changed field.
  */
 
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  Stack,
+  Divider,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
 import { X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface RevisionDiffProps {
   changes: Record<string, { old: unknown; new: unknown }>;
   onClose: () => void;
 }
 
+/** Format a value for display. JSON objects are pretty-printed. */
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) return '(empty)';
   if (typeof value === 'object') {
@@ -25,6 +34,11 @@ function formatValue(value: unknown): string {
   return String(value);
 }
 
+/**
+ * Compute a simple inline diff for two strings.
+ * Returns an array of segments: { text, type: 'same' | 'removed' | 'added' }.
+ * This is a word-level diff using a basic LCS approach.
+ */
 interface DiffSegment {
   text: string;
   type: 'same' | 'removed' | 'added';
@@ -34,9 +48,11 @@ function computeInlineDiff(oldStr: string, newStr: string): DiffSegment[] {
   const oldWords = oldStr.split(/(\s+)/);
   const newWords = newStr.split(/(\s+)/);
 
+  // Simple LCS-based word diff
   const m = oldWords.length;
   const n = newWords.length;
 
+  // For very long strings, fall back to block diff
   if (m > 500 || n > 500) {
     const segments: DiffSegment[] = [];
     if (oldStr) segments.push({ text: oldStr, type: 'removed' });
@@ -44,7 +60,10 @@ function computeInlineDiff(oldStr: string, newStr: string): DiffSegment[] {
     return segments;
   }
 
-  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  // Build LCS table
+  const dp: number[][] = Array.from({ length: m + 1 }, () =>
+    Array(n + 1).fill(0)
+  );
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
@@ -56,6 +75,7 @@ function computeInlineDiff(oldStr: string, newStr: string): DiffSegment[] {
     }
   }
 
+  // Backtrack to build diff
   const segments: DiffSegment[] = [];
   let i = m;
   let j = n;
@@ -75,6 +95,7 @@ function computeInlineDiff(oldStr: string, newStr: string): DiffSegment[] {
     }
   }
 
+  // Reverse and merge adjacent segments of the same type
   stack.reverse();
   for (const seg of stack) {
     if (segments.length > 0 && segments[segments.length - 1].type === seg.type) {
@@ -91,33 +112,48 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
   const segments = computeInlineDiff(oldStr, newStr);
 
   return (
-    <div className="font-mono text-[0.8rem] leading-relaxed whitespace-pre-wrap">
+    <Typography
+      variant="body2"
+      component="div"
+      sx={{ fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}
+    >
       {segments.map((seg, idx) => {
         if (seg.type === 'removed') {
           return (
-            <span
+            <Box
               key={idx}
-              className="line-through rounded-sm px-0.5"
-              style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#dc2626' }}
+              component="span"
+              sx={{
+                backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                color: '#dc2626',
+                textDecoration: 'line-through',
+                borderRadius: '2px',
+                px: 0.25,
+              }}
             >
               {seg.text}
-            </span>
+            </Box>
           );
         }
         if (seg.type === 'added') {
           return (
-            <span
+            <Box
               key={idx}
-              className="rounded-sm px-0.5"
-              style={{ backgroundColor: 'rgba(34, 197, 94, 0.15)', color: '#16a34a' }}
+              component="span"
+              sx={{
+                backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                color: '#16a34a',
+                borderRadius: '2px',
+                px: 0.25,
+              }}
             >
               {seg.text}
-            </span>
+            </Box>
           );
         }
         return <span key={idx}>{seg.text}</span>;
       })}
-    </div>
+    </Typography>
   );
 }
 
@@ -126,77 +162,129 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
 
   if (fieldNames.length === 0) {
     return (
-      <div className="border border-border p-6 rounded-md">
-        <div className="flex flex-row justify-between items-center mb-4">
-          <p className="text-base font-semibold">Changes</p>
-          <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0">
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight={600}>
+            Changes
+          </Typography>
+          <IconButton size="small" onClick={onClose}>
             <X size={16} />
-          </Button>
-        </div>
-        <p className="text-sm text-muted-foreground">No changes detected.</p>
-      </div>
+          </IconButton>
+        </Stack>
+        <Typography variant="body2" color="text.secondary">
+          No changes detected.
+        </Typography>
+      </Paper>
     );
   }
 
   return (
-    <div className="border border-border p-6 rounded-md">
-      <div className="flex flex-row justify-between items-center mb-4">
-        <p className="text-base font-semibold">
+    <Paper variant="outlined" sx={{ p: 3 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+        <Typography variant="subtitle1" fontWeight={600}>
           Changes ({fieldNames.length} field{fieldNames.length !== 1 ? 's' : ''})
-        </p>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0">
-              <X size={16} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Close diff</TooltipContent>
+        </Typography>
+        <Tooltip title="Close diff">
+          <IconButton size="small" onClick={onClose}>
+            <X size={16} />
+          </IconButton>
         </Tooltip>
-      </div>
+      </Stack>
 
-      <div className="flex flex-col gap-4 divide-y divide-border">
+      <Stack spacing={2} divider={<Divider />}>
         {fieldNames.map((field) => {
           const { old: oldVal, new: newVal } = changes[field];
           const oldStr = formatValue(oldVal);
           const newStr = formatValue(newVal);
-          const isStringDiff = typeof oldVal === 'string' && typeof newVal === 'string';
+          const isStringDiff =
+            typeof oldVal === 'string' && typeof newVal === 'string';
 
           return (
-            <div key={field} className="pt-4 first:pt-0">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+            <Box key={field}>
+              <Typography
+                variant="caption"
+                fontWeight={600}
+                color="text.secondary"
+                sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1, display: 'block' }}
+              >
                 {field.replace(/_/g, ' ')}
-              </span>
+              </Typography>
 
               {isStringDiff ? (
                 <InlineDiff oldStr={oldStr} newStr={newStr} />
               ) : (
-                <div className="flex flex-col gap-2">
-                  <div
-                    className="border rounded-sm p-3"
-                    style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+                <Stack spacing={1}>
+                  {/* Old value */}
+                  <Box
+                    sx={{
+                      backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                      borderRadius: 1,
+                      p: 1.5,
+                    }}
                   >
-                    <span className="text-xs font-semibold text-destructive block mb-1">Removed</span>
-                    <p className="font-mono text-[0.8rem] whitespace-pre-wrap break-words">{oldStr}</p>
-                  </div>
-                  <div
-                    className="border rounded-sm p-3"
-                    style={{ backgroundColor: 'rgba(34, 197, 94, 0.08)', borderColor: 'rgba(34, 197, 94, 0.2)' }}
+                    <Typography
+                      variant="caption"
+                      color="error.main"
+                      fontWeight={600}
+                      sx={{ display: 'block', mb: 0.5 }}
+                    >
+                      Removed
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: 'monospace',
+                        fontSize: '0.8rem',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {oldStr}
+                    </Typography>
+                  </Box>
+
+                  {/* New value */}
+                  <Box
+                    sx={{
+                      backgroundColor: 'rgba(34, 197, 94, 0.08)',
+                      border: '1px solid rgba(34, 197, 94, 0.2)',
+                      borderRadius: 1,
+                      p: 1.5,
+                    }}
                   >
-                    <span className="text-xs font-semibold block mb-1" style={{ color: '#16a34a' }}>Added</span>
-                    <p className="font-mono text-[0.8rem] whitespace-pre-wrap break-words">{newStr}</p>
-                  </div>
-                </div>
+                    <Typography
+                      variant="caption"
+                      color="success.main"
+                      fontWeight={600}
+                      sx={{ display: 'block', mb: 0.5 }}
+                    >
+                      Added
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: 'monospace',
+                        fontSize: '0.8rem',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {newStr}
+                    </Typography>
+                  </Box>
+                </Stack>
               )}
-            </div>
+            </Box>
           );
         })}
-      </div>
+      </Stack>
 
-      <div className="mt-4 flex justify-end">
-        <Button size="sm" variant="ghost" onClick={onClose}>
+      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button size="small" onClick={onClose} color="inherit">
           Close
         </Button>
-      </div>
-    </div>
+      </Box>
+    </Paper>
   );
 }

@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { insertRow } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { captureContext, captureScreenshot } from '@/utils/feedbackContext';
 import { feedbackCategories } from '@/config/feedbackCategories';
@@ -108,7 +109,7 @@ export function FeedbackButton() {
         }
       }
 
-      const { error } = await supabase.from('community_submissions' as const).insert({
+      const { error } = await insertRow('community_submissions', {
         content_type: 'feedback',
         data: {
           title: form.title.trim(),

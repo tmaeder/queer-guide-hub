@@ -16,7 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import type { NewsCategory } from '@/hooks/useNews';
 
 type NewsSource = Tables<'news_sources'>;
@@ -72,12 +72,12 @@ export const NewsFilters = ({
   // Fetch countries and cities
   useEffect(() => {
     const fetchData = async () => {
-      const [{ data: countriesData }, { data: citiesData }] = await Promise.all([
-        supabase.from('countries').select('id, name').order('name'),
-        supabase.from('cities').select('id, name').order('name'),
+      const [countriesData, citiesData] = await Promise.all([
+        listFrom<CountryOption>('countries', 'id, name', { col: 'name' }),
+        listFrom<CityOption>('cities', 'id, name', { col: 'name' }),
       ]);
-      if (countriesData) setCountries(countriesData);
-      if (citiesData) setCities(citiesData);
+      setCountries(countriesData);
+      setCities(citiesData);
     };
     fetchData();
   }, []);

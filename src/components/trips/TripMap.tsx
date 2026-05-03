@@ -9,7 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchTripMapVenues, fetchTripMapEvents } from '@/hooks/useTripSuggestions';
 import { Button } from '@/components/ui/button';
 import { mapStyle } from '@/config/mapStyle';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
@@ -132,41 +132,14 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
 
   const { data: suggestedVenues = [] } = useQuery({
     queryKey: ['trip-map-venues', cityIds],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [] as SuggestedVenue[];
-      const { data, error } = await supabase
-        .from('venues')
-        .select('id, name, category, latitude, longitude')
-        .in('city_id', cityIds)
-        .not('latitude', 'is', null)
-        .not('longitude', 'is', null)
-        .order('foursquare_rating', { ascending: false, nullsFirst: false })
-        .limit(50);
-      if (error) throw error;
-      return (data || []) as SuggestedVenue[];
-    },
+    queryFn: () => fetchTripMapVenues<SuggestedVenue>(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
 
   const { data: suggestedEvents = [] } = useQuery({
     queryKey: ['trip-map-events', cityIds, startDate, endDate],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [] as SuggestedEvent[];
-      let query = supabase
-        .from('events')
-        .select('id, title, event_type, start_date, latitude, longitude')
-        .in('city_id', cityIds)
-        .not('latitude', 'is', null)
-        .not('longitude', 'is', null);
-      if (startDate) query = query.gte('start_date', startDate);
-      if (endDate) query = query.lte('start_date', endDate);
-      const { data, error } = await query
-        .order('start_date', { ascending: true })
-        .limit(50);
-      if (error) throw error;
-      return (data || []) as SuggestedEvent[];
-    },
+    queryFn: () => fetchTripMapEvents<SuggestedEvent>(cityIds, startDate, endDate),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });

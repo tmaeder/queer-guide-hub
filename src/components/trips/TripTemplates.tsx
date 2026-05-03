@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations } from '@/hooks/useTrips';
-import { supabase } from '@/integrations/supabase/client';
+import { insertRows } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
 
@@ -43,7 +43,7 @@ export function TripTemplates() {
               sort_order: idx,
               created_by: user.id,
             }));
-            const { error } = await supabase.from('trip_places').insert(rows);
+            const { error } = await insertRows('trip_places', rows);
             if (error) {
               console.warn('[TripTemplates] trip_places seed failed', error);
             }

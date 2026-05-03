@@ -400,7 +400,7 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                       <p className="text-muted-foreground">{importResult.details}</p>
                     )}
                     {importResult.hint && (
-                      <p style={{ color: 'hsl(var(--brand))' }}>💡 {importResult.hint}</p>
+                      <p style={{ color: 'hsl(var(--primary))' }}>💡 {importResult.hint}</p>
                     )}
                     {importResult.errors && importResult.errors.length > 0 && (
                       <div>

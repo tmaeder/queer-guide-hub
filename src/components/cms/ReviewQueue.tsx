@@ -31,7 +31,10 @@ import {
 } from 'lucide-react';
 import Checkbox from '@mui/material/Checkbox';
 import { useContext } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchCMSReviewQueueMetadata,
+  fetchRecordTitle,
+} from '@/hooks/useCMSContentMetadata';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';
@@ -108,15 +111,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     setLoading(true);
     setActionError(null);
     try {
-      const { data, error } = await supabase
-        .from('cms_content_metadata' as 'events')
-        .select('*')
-        .eq('workflow_state', 'review')
-        .order('last_edited_at', { ascending: false });
-
-      if (error) throw error;
-
-      const metaItems = (data || []) as unknown as CMSContentMetadata[];
+      const metaItems = await fetchCMSReviewQueueMetadata<CMSContentMetadata>();
 
       // Enrich with title from source tables
       const enriched: ReviewQueueItem[] = [];
@@ -124,11 +119,12 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
         const config = getContentType(meta.source_table);
         if (!config) continue;
 
-        const { data: record } = await supabase
-          .from(config.tableName as 'events')
-          .select(config.titleField)
-          .eq(config.primaryKey, meta.source_id)
-          .single();
+        const record = await fetchRecordTitle(
+          config.tableName,
+          config.primaryKey,
+          meta.source_id,
+          config.titleField,
+        );
 
         enriched.push({
           metadata: meta,

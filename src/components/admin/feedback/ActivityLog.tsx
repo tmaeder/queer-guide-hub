@@ -1,4 +1,7 @@
 import { useMemo, useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Collapse from '@mui/material/Collapse';
 import { ChevronDown, ChevronRight, History } from 'lucide-react';
 import { timeAgo } from '@/utils/timezone';
 import { kanbanColumns, priorityFor } from './constants';
@@ -59,34 +62,43 @@ export function ActivityLog({ entries, adminById }: Props) {
   if (grouped.length === 0) return null;
 
   return (
-    <div className="mb-4">
-      <div
+    <Box sx={{ mb: 2 }}>
+      <Box
         onClick={() => setOpen(!open)}
-        className="flex flex-row items-center gap-1 cursor-pointer py-1"
+        sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', py: 0.5 }}
       >
         {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         <History size={12} />
-        <span className="text-xs font-semibold">
+        <Typography variant="caption" sx={{ fontWeight: 600 }}>
           Activity ({grouped.length})
-        </span>
-      </div>
-      {open && (
-        <div className="mt-1 p-2 bg-muted rounded max-h-[220px] overflow-y-auto">
+        </Typography>
+      </Box>
+      <Collapse in={open}>
+        <Box
+          sx={{
+            mt: 0.5,
+            p: 1,
+            bgcolor: 'action.hover',
+            borderRadius: 1,
+            maxHeight: 220,
+            overflowY: 'auto',
+          }}
+        >
           {grouped.map((e) => (
-            <div key={e.id} className="mb-1">
-              <span className="block text-xs" style={{ fontSize: '0.7rem' }}>
+            <Box key={e.id} sx={{ mb: 0.5 }}>
+              <Typography variant="caption" sx={{ display: 'block', fontSize: '0.7rem' }}>
                 <strong>
                   {e.actor_id ? adminById[e.actor_id]?.display_name ?? 'Admin' : 'System'}
                 </strong>{' '}
                 {renderChange(e, adminById)}
-              </span>
-              <span className="text-xs text-muted-foreground" style={{ fontSize: '0.6rem' }}>
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
                 {timeAgo(e.at)}
-              </span>
-            </div>
+              </Typography>
+            </Box>
           ))}
-        </div>
-      )}
-    </div>
+        </Box>
+      </Collapse>
+    </Box>
   );
 }

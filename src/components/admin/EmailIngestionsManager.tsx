@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import {
   Mail,
   RefreshCw,
@@ -78,14 +78,13 @@ export function EmailIngestionsManager() {
   const fetchIngestions = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('email_ingestions' as never)
-        .select('*')
-        .order('received_at', { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
-      setIngestions((data as EmailIngestion[]) || []);
+      const data = await listFrom<EmailIngestion>(
+        'email_ingestions',
+        '*',
+        { col: 'received_at', ascending: false },
+        100,
+      );
+      setIngestions(data);
     } catch (_error) {
       toast({
         title: 'Error',

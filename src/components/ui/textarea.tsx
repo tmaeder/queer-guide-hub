@@ -1,22 +1,76 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import InputBase from '@mui/material/InputBase';
 
-const Textarea = React.forwardRef<
-  HTMLTextAreaElement,
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>
->(({ className, ...props }, ref) => {
-  return (
-    <textarea
-      className={cn(
-        "flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
-  )
-})
-Textarea.displayName = "Textarea"
+export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
-export { Textarea }
-export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>
+/**
+ * Textarea wrapper around MUI InputBase (multiline).
+ *
+ * Guards against re-entrant onChange loops when an external caller writes to
+ * the underlying element via the native value setter and dispatches both
+ * `input` and `change` events. Swallows a synthetic onChange whose target
+ * value matches what we already relayed, breaking the feedback cycle that
+ * can trigger React #185 with TextareaAutosize's layout effect. Typing,
+ * paste, IME composition are unaffected (each produces a distinct value).
+ */
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, style, onChange, value, defaultValue, ...props }, ref) => {
+    const lastSeenRef = React.useRef<string | undefined>(
+      typeof value === 'string'
+        ? value
+        : typeof defaultValue === 'string'
+          ? defaultValue
+          : undefined,
+    );
+
+    React.useEffect(() => {
+      if (typeof value === 'string') lastSeenRef.current = value;
+    }, [value]);
+
+    const handleChange = React.useCallback(
+      (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const next = e.target.value;
+        if (next === lastSeenRef.current) return;
+        lastSeenRef.current = next;
+        onChange?.(e);
+      },
+      [onChange],
+    );
+
+    return (
+      <InputBase
+        inputRef={ref}
+        className={className}
+        style={style}
+        multiline
+        minRows={3}
+        fullWidth
+        value={value}
+        defaultValue={defaultValue}
+        onChange={handleChange as unknown as React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>}
+        sx={{
+          px: 1.5,
+          py: 1,
+          fontSize: '0.875rem',
+          bgcolor: 'action.hover',
+          borderRadius: 1.25,
+          '&:focus-within': {
+            bgcolor: 'action.selected',
+          },
+          '& textarea::placeholder': {
+            color: 'text.secondary',
+            opacity: 1,
+          },
+          '&.Mui-disabled': {
+            cursor: 'not-allowed',
+            opacity: 0.5,
+          },
+        }}
+        {...(props as Record<string, unknown>)}
+      />
+    );
+  },
+);
+Textarea.displayName = 'Textarea';
+
+export { Textarea };

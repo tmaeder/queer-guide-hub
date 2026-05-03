@@ -23,7 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Skeleton from '@mui/material/Skeleton';
 import { ChevronDown, ChevronRight, Mail, Calendar, MapPin, AlertCircle, Clock } from 'lucide-react';
 import { Link } from 'react-router';
-import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 
 interface EmailIngestion {
   id: string;
@@ -62,18 +62,13 @@ export const EmailIngestionsPanel: React.FC = () => {
 
   const fetchIngestions = async () => {
     setLoading(true);
-    let query = supabase
-      .from('email_ingestions')
-      .select('*')
-      .order('received_at', { ascending: false })
-      .limit(50);
-
-    if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter);
-    }
-
-    const { data } = await query;
-    setIngestions((data as EmailIngestion[]) || []);
+    const filters: Array<{ col: string; val: unknown }> = [];
+    if (statusFilter !== 'all') filters.push({ col: 'status', val: statusFilter });
+    const data = await listFromWhere<EmailIngestion>('email_ingestions', '*', filters, {
+      order: { col: 'received_at', ascending: false },
+      limit: 50,
+    });
+    setIngestions(data);
     setLoading(false);
   };
 

@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Upload, Video, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
+import { insertRow } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 
 interface VideoUploadProps {
@@ -71,18 +74,14 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
       if (uploadError) throw uploadError;
 
       // Create video record
-      const { data: _videoRecord, error: dbError } = await supabase
-        .from('videos')
-        .insert([{
-          id: video.id,
-          title: video.title,
-          description: video.description,
-          original_filename: video.file.name,
-          storage_path: filePath,
-          status: 'uploaded'
-        }])
-        .select()
-        .single();
+      const { error: dbError } = await insertRow('videos', {
+        id: video.id,
+        title: video.title,
+        description: video.description,
+        original_filename: video.file.name,
+        storage_path: filePath,
+        status: 'uploaded',
+      });
 
       if (dbError) throw dbError;
 
@@ -170,121 +169,131 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Upload Zone */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Video className="h-5 w-5" />
+          <CardTitle>
+            <Video style={{ width: 20, height: 20 }} />
             Upload Videos
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div
+          <Box
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors hover:border-primary ${
-              isDragActive ? 'border-primary bg-primary/10' : 'border-border bg-transparent'
-            }`}
+            sx={{
+              border: 2,
+              borderStyle: 'dashed',
+              borderRadius: 2,
+              p: 4,
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              borderColor: isDragActive ? 'primary.main' : 'divider',
+              bgcolor: isDragActive ? 'primary.light' : 'transparent',
+              '&:hover': { borderColor: 'primary.main' },
+            }}
           >
             <input {...getInputProps()} />
-            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <Upload style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
             {isDragActive ? (
-              <p className="text-base font-medium">Drop video files here...</p>
+              <Typography variant="subtitle1">Drop video files here...</Typography>
             ) : (
-              <div>
-                <p className="text-base font-medium mb-2">
+              <Box>
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>
                   Drag & drop video files here, or click to select
-                </p>
-                <p className="text-sm text-muted-foreground">
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
                   Supports MP4, MOV, AVI, MKV, WebM
-                </p>
-              </div>
+                </Typography>
+              </Box>
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Video List */}
       {videos.length > 0 && (
-        <div className="flex flex-col gap-4">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {videos.map((video) => (
             <Card key={video.id}>
               <CardContent>
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                      <Video className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  </div>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box sx={{ flexShrink: 0 }}>
+                    <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Video style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
+                    </Box>
+                  </Box>
 
-                  <div className="flex-1 flex flex-col gap-4">
-                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                      <div>
-                        <p className="text-sm font-medium">Title</p>
+                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Title</Typography>
                         <Input
                           value={video.title}
                           onChange={(e) => updateVideoInfo(video.id, 'title', e.target.value)}
                           placeholder="Video title"
                         />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Status</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div
-                            className={`w-2 h-2 rounded-full ${
-                              video.status === 'completed'
-                                ? 'bg-green-600'
-                                : video.status === 'error'
-                                ? 'bg-destructive'
-                                : 'bg-yellow-500'
-                            }`}
-                          />
-                          <p className="text-sm capitalize">{video.status}</p>
-                        </div>
-                      </div>
-                    </div>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Status</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                          <Box sx={{
+                            width: 8, height: 8, borderRadius: '50%',
+                            bgcolor: video.status === 'completed' ? 'success.main' :
+                                     video.status === 'error' ? 'error.main' : 'warning.main'
+                          }} />
+                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{video.status}</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
 
-                    <div>
-                      <p className="text-sm font-medium">Description</p>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Description</Typography>
                       <Textarea
                         value={video.description}
                         onChange={(e) => updateVideoInfo(video.id, 'description', e.target.value)}
                         placeholder="Video description"
                         rows={2}
                       />
-                    </div>
+                    </Box>
 
                     {/* Progress */}
                     {video.status === 'uploading' && (
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <p className="text-sm">Uploading...</p>
-                          <p className="text-sm">{Math.round(video.uploadProgress)}%</p>
-                        </div>
+                      <Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="body2">Uploading...</Typography>
+                          <Typography variant="body2">{Math.round(video.uploadProgress)}%</Typography>
+                        </Box>
                         <Progress value={video.uploadProgress} />
-                      </div>
+                      </Box>
                     )}
 
                     {video.status === 'processing' && (
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <p className="text-sm">Processing video...</p>
-                          <p className="text-sm">{video.processingProgress || 0}%</p>
-                        </div>
+                      <Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="body2">Processing video...</Typography>
+                          <Typography variant="body2">{video.processingProgress || 0}%</Typography>
+                        </Box>
                         <Progress value={video.processingProgress || 0} />
-                      </div>
+                      </Box>
                     )}
-                  </div>
+                  </Box>
 
-                  <Button variant="ghost" size="sm" onClick={() => removeVideo(video.id)}>
-                    <X className="h-4 w-4" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeVideo(video.id)}
+
+                  >
+                    <X style={{ width: 16, height: 16 }} />
                   </Button>
-                </div>
+                </Box>
               </CardContent>
             </Card>
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

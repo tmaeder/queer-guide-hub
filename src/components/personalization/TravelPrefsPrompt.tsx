@@ -4,7 +4,7 @@ import { Sparkles, X } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchProfileTravelPreferences } from '@/hooks/useTravelPreferencesEditor';
 
 const DISMISSED_KEY = 'qg_travel_prefs_dismissed';
 
@@ -16,12 +16,7 @@ export function TravelPrefsPrompt() {
     queryKey: ['has-travel-prefs', user?.id],
     queryFn: async () => {
       if (!user) return true;
-      const { data } = await supabase
-        .from('profiles')
-        .select('travel_preferences')
-        .eq('user_id', user.id)
-        .single();
-      const prefs = data?.travel_preferences as Record<string, unknown> | null;
+      const prefs = await fetchProfileTravelPreferences(user.id);
       return prefs && Object.keys(prefs).length > 0;
     },
     enabled: !!user && !dismissed,

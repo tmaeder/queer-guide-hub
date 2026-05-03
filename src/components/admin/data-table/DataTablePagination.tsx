@@ -1,4 +1,6 @@
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -32,19 +34,34 @@ export function DataTablePagination({
   const to = Math.min(page * pageSize, totalCount);
 
   return (
-    <div className="flex flex-row items-center justify-between px-4 py-3 border-t border-border flex-wrap gap-2">
-      <div className="flex flex-row items-center gap-4">
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        px: 2,
+        py: 1.5,
+        borderTop: '1px solid var(--border, #e4e4e7)',
+        flexWrap: 'wrap',
+        gap: 1,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         {selectedCount > 0 && (
-          <p className="text-sm font-medium">{selectedCount} selected</p>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            {selectedCount} selected
+          </Typography>
         )}
-        <p className="text-sm text-muted-foreground">
+        <Typography variant="body2" color="text.secondary">
           {from}-{to} of {totalCount.toLocaleString()}
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
-      <div className="flex flex-row items-center gap-4">
-        <div className="flex flex-row items-center gap-2">
-          <p className="text-sm text-muted-foreground">Rows</p>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="body2" color="text.secondary">
+            Rows
+          </Typography>
           <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
             <SelectTrigger style={{ width: 70, height: 32 }}>
               <SelectValue />
@@ -57,9 +74,9 @@ export function DataTablePagination({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </Box>
 
-        <div className="flex flex-row items-center gap-1">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Button
             variant="outline"
             size="icon"
@@ -78,9 +95,9 @@ export function DataTablePagination({
           >
             <ChevronLeft style={{ height: 14, width: 14 }} />
           </Button>
-          <p className="text-sm px-2 min-w-[60px] text-center">
+          <Typography variant="body2" sx={{ px: 1, minWidth: 60, textAlign: 'center' }}>
             {page} / {totalPages || 1}
-          </p>
+          </Typography>
           <Button
             variant="outline"
             size="icon"
@@ -99,8 +116,8 @@ export function DataTablePagination({
           >
             <ChevronsRight style={{ height: 14, width: 14 }} />
           </Button>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

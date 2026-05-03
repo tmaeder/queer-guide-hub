@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Collapse from '@mui/material/Collapse';
+import InputAdornment from '@mui/material/InputAdornment';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import type { ExploreMapFilters as Filters } from '@/hooks/useExploreMapData';
 
 interface ExploreMapFiltersProps {
@@ -26,70 +29,78 @@ export const ExploreMapFiltersPanel: React.FC<ExploreMapFiltersProps> = ({
   };
 
   return (
-    <div className="px-3 pt-2 pb-2 bg-background/90 backdrop-blur-md">
+    <Box sx={{ px: 1.5, pb: 1, pt: 1, bgcolor: 'rgba(var(--mui-palette-background-defaultChannel) / 0.92)', backdropFilter: 'blur(8px)' }}>
       {/* Compact bar: search + toggle */}
-      <div className="flex flex-row gap-2 items-center">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search map…"
-            aria-label="Search map locations"
-            value={filters.search ?? ''}
-            onChange={(e) => updateFilter('search', e.target.value || undefined)}
-            className="h-9 text-sm pl-9 pr-9"
-          />
-          {filters.search && (
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="Clear search"
-              onClick={() => updateFilter('search', undefined)}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-            >
-              <X size={14} />
-            </Button>
-          )}
-        </div>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <TextField
+          size="small"
+          placeholder="Search map…"
+          aria-label="Search map locations"
+          value={filters.search ?? ''}
+          onChange={(e) => updateFilter('search', e.target.value || undefined)}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={16} />
+                </InputAdornment>
+              ),
+              ...(filters.search
+                ? {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton size="small" aria-label="Clear search" onClick={() => updateFilter('search', undefined)}>
+                          <X size={14} />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }
+                : {}),
+            },
+          }}
+          sx={{ flex: 1, '& .MuiInputBase-root': { height: 36, fontSize: '0.85rem' } }}
+        />
 
-        <Button
-          variant="ghost"
-          size="sm"
+        <IconButton
+          size="small"
           aria-label={open ? 'Hide filters' : 'Show filters'}
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className="h-9 w-9 p-0"
+          sx={{
+            width: 36,
+            height: 36,
+          }}
         >
           <SlidersHorizontal size={16} />
-        </Button>
-      </div>
+        </IconButton>
+      </Box>
 
       {/* Expanded filters */}
-      {open && (
-        <div className="mt-3 flex flex-row gap-2 flex-wrap items-center">
-          <div className="flex flex-col gap-1 min-w-[140px]">
-            <Label htmlFor="map-category" className="text-xs">Category</Label>
-            <Input
-              id="map-category"
-              value={filters.category ?? ''}
-              onChange={(e) => updateFilter('category', e.target.value || undefined)}
-              className="h-9 text-sm"
-            />
-          </div>
+      <Collapse in={open}>
+        <Box sx={{ mt: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+          <TextField
+            size="small"
+            label="Category"
+            value={filters.category ?? ''}
+            onChange={(e) => updateFilter('category', e.target.value || undefined)}
+            sx={{ minWidth: 140, '& .MuiInputBase-root': { height: 36, fontSize: '0.85rem' } }}
+          />
 
           {hasActiveFilters && (
             <Button
-              variant="ghost"
-              size="sm"
+              size="small"
+              color="error"
+              variant="text"
+              startIcon={<X size={14} />}
               onClick={clearAll}
-              className="text-destructive text-xs"
+              sx={{ textTransform: 'none', fontSize: '0.8rem' }}
             >
-              <X size={14} className="mr-1" />
               Clear all
             </Button>
           )}
-        </div>
-      )}
-    </div>
+        </Box>
+      </Collapse>
+    </Box>
   );
 };
 

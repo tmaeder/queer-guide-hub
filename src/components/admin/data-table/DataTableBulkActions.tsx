@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { deleteRowsByIds } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { DataTableBulkEditDialog } from './DataTableBulkEditDialog';
 import type { BulkEditFieldConfig } from './types';
@@ -44,10 +44,7 @@ export function DataTableBulkActions({
   const handleBulkDelete = async () => {
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from(tableName as 'venues')
-        .delete()
-        .in('id', Array.from(selectedIds));
+      const { error } = await deleteRowsByIds(tableName, Array.from(selectedIds));
       if (error) throw error;
       toast.success(`Deleted ${selectedCount} items`);
       onClearSelection();
