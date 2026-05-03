@@ -29,6 +29,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
+import { detectScript, tokenize, isBareLgbtqQuery } from "./queryPrep";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
 import {
 	parseJsonBody,
@@ -144,6 +145,47 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	if (!queryR.ok) return errorResponse(queryR, cors);
 	const q = queryR.value;
 
+	// Bug #16: punctuation/emoji/control-only queries collapse to nothing
+	// after tokenisation. Don't run the ranking pipeline on no signal.
+	const tokens = tokenize(q);
+	if (tokens.length === 0) {
+		return json(
+			{ hits: [], suggestions: [], facetDistribution: {}, processingTimeMS: Date.now() - started, reason: "empty_after_tokenize" },
+			200,
+			cors,
+		);
+	}
+
+	// Bug #10: non-Latin script. Without aliases populated for the queried
+	// city, fuzzy matching against the Latin index would return random
+	// near-matches (柏林 → Bamberg). The aliases backfill (seed-city-aliases.sh)
+	// covers the most-populous cities; for everything else we'd rather
+	// return empty + a hint than a wrong answer.
+	const script = detectScript(q);
+	if (script !== "latin" && script !== "mixed") {
+		// Try a strict alias match against the cities index. If none, give up.
+		const aliasHits = await meiliMultiSearch(env, {
+			indexes: ["cities"],
+			query: q,
+			facets: INDEX_FACETS,
+			hitsPerPage: 5,
+			useHybrid: false,
+		}).catch(() => null);
+		if (!aliasHits || aliasHits.hits.length === 0) {
+			return json(
+				{ hits: [], suggestions: [], facetDistribution: {}, processingTimeMS: Date.now() - started, reason: "unsupported_script", script },
+				200,
+				cors,
+			);
+		}
+		// Fall through with the alias-matched seed hits as the primary result.
+		return json(
+			{ hits: aliasHits.hits, suggestions: aliasHits.hits.slice(0, 5), facetDistribution: {}, processingTimeMS: Date.now() - started, script },
+			200,
+			cors,
+		);
+	}
+
 	const filtersR = validFilters(body.filters);
 	if (!filtersR.ok) return errorResponse(filtersR, cors);
 	const filters: ValidatedFilters = filtersR.value;
@@ -160,6 +202,30 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
 	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
 	const debug = body.debug === true;
+
+	// Bug #9: a bare LGBTQ+ token query ('gay', 'queer', 'trans') is a
+	// stop-word in the venue/event indexes — running it through the full
+	// pipeline takes ~6s for an essentially random ranking. Route it to
+	// the popular-entities path (sub-200ms) instead.
+	if (isBareLgbtqQuery(tokens)) {
+		const popular = await popularEntities(env, ["venue", "event"], hitsPerPage * (page + 1));
+		const slice = popular.slice(page * hitsPerPage, (page + 1) * hitsPerPage);
+		return json(
+			{
+				hits: slice,
+				suggestions: slice.slice(0, 5),
+				nbHits: slice.length,
+				page,
+				hitsPerPage,
+				totalHits: popular.length,
+				facetDistribution: {},
+				processingTimeMS: Date.now() - started,
+				reason: "bare_stopword_query",
+			},
+			200,
+			cors,
+		);
+	}
 
 	// Query rewrite: translates non-EN, extracts intent hints (city, type), adds synonyms.
 	// Enabled when lang != en OR query is short (< 3 words). Skipped for power queries.
@@ -737,6 +803,29 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
 	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
 
+	// Bug #9: edge cache. Trending only changes meaningfully every few minutes
+	// and the underlying RPC is the slowest endpoint per p95 (~1-3s). Cache
+	// keyed by (types, city, limit). Personalised responses bypass the cache.
+	const isPersonal = !!(user_id || session_id);
+	const cacheKey = isPersonal
+		? null
+		: new Request(
+			`https://search.queer.guide/_cache/trending?t=${types.slice().sort().join(",")}&c=${encodeURIComponent(city ?? "")}&l=${limit}`,
+		);
+	const cache = (caches as unknown as { default: Cache }).default;
+	if (cacheKey) {
+		const cached = await cache.match(cacheKey).catch(() => null);
+		if (cached) {
+			// Re-attach CORS — Cloudflare's edge cache doesn't store/replay
+			// per-origin headers in a useful way for us.
+			const body = await cached.text();
+			return new Response(body, {
+				status: 200,
+				headers: { ...cors, "Content-Type": "application/json", "X-Cache": "HIT" },
+			});
+		}
+	}
+
 	const url = `${env.SUPABASE_URL}/rest/v1/rpc/get_trending_entities`;
 	const res = await fetch(url, {
 		method: "POST",
@@ -755,7 +844,7 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 	const list = (await res.json()) as Array<{ city?: string; score?: number; [k: string]: unknown }>;
 
 	// Soft personalization: if we have signal, boost items in user cities / interests.
-	if (user_id || session_id) {
+	if (isPersonal) {
 		const sig = await getUserSignal(env, { user_id, session_id });
 		const citySet = new Set(
 			[sig?.home_city, ...(sig?.recent_cities || [])]
@@ -769,7 +858,22 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 			return (b.score || 0) - (a.score || 0);
 		});
 	}
-	return json({ trending: list.slice(0, limit) }, 200, cors);
+
+	const payload = JSON.stringify({ trending: list.slice(0, limit) });
+	if (cacheKey) {
+		// 5-minute TTL. Stale-while-revalidate gives us 1 minute of grace.
+		const cacheable = new Response(payload, {
+			status: 200,
+			headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300, stale-while-revalidate=60" },
+		});
+		// Don't await — fire and forget so the user doesn't pay for the cache write.
+		(globalThis as unknown as { ctx?: ExecutionContext }).ctx?.waitUntil?.(cache.put(cacheKey, cacheable.clone()));
+		await cache.put(cacheKey, cacheable).catch(() => void 0);
+	}
+	return new Response(payload, {
+		status: 200,
+		headers: { ...cors, "Content-Type": "application/json", "X-Cache": "MISS" },
+	});
 }
 
 // ─────────────────────────────────────────────

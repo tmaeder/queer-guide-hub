@@ -27,28 +27,46 @@ for idx in venues events cities countries news marketplace personalities tags qu
 done
 
 echo "=== Configuring venues ==="
+# stopWords: bug #9. The corpus is overwhelmingly LGBTQ+ so these tokens are
+# in most documents and contribute zero ranking signal — they just slow the
+# query and drag in irrelevant matches. Bare-token queries ('gay', 'queer',
+# 'trans') still work because the worker routes them to a "browse all" path.
 meili PUT "/indexes/venues/settings" '{
   "searchableAttributes": ["title", "description", "address", "city", "country", "tags", "category"],
-  "filterableAttributes": ["city", "country", "category", "featured", "tags", "target_groups", "type", "_geo"],
+  "filterableAttributes": ["city", "city_id", "country", "category", "featured", "tags", "cluster_ids", "target_groups", "type", "_geo"],
   "sortableAttributes": ["title", "_geo"],
   "displayedAttributes": ["*"],
+  "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"],
   "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 4, "twoTypos": 8}}
 }'
 
 echo "=== Configuring events ==="
 meili PUT "/indexes/events/settings" '{
   "searchableAttributes": ["title", "description", "venue_name", "city", "country", "event_type"],
-  "filterableAttributes": ["city", "country", "event_type", "featured", "is_free", "start_date", "target_groups", "type", "_geo"],
+  "filterableAttributes": ["city", "city_id", "country", "event_type", "featured", "is_free", "start_date", "cluster_ids", "target_groups", "type", "_geo"],
   "sortableAttributes": ["start_date", "title", "_geo"],
-  "displayedAttributes": ["*"]
+  "displayedAttributes": ["*"],
+  "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"]
 }'
 
 echo "=== Configuring cities ==="
+# Bug #4. Exact name match must dominate so "berlin" returns Berlin, not
+# Leipzig. Two changes:
+#   1. Move `exactness` ahead of `proximity`/`attribute` in rankingRules.
+#   2. Tighten typoTolerance so 6-char tokens like "berlin" do not fuzz-match
+#      to "leipzig" (oneTypo at 8, twoTypos at 12).
+# `aliases` is added as a searchable attribute so multilingual city names
+# match their English forms (bug #10): the seed-city-aliases.sh script
+# populates it with English/native pairs (München <-> munich, 東京 <-> tokyo).
+# `population` is sortable and used as the final ranking rule so identical
+# name matches break ties by city size (Berlin DE > Berlin OH).
 meili PUT "/indexes/cities/settings" '{
-  "searchableAttributes": ["title", "description", "country"],
+  "searchableAttributes": ["title", "aliases", "country"],
   "filterableAttributes": ["country", "country_code", "type", "_geo"],
   "sortableAttributes": ["title", "population", "_geo"],
-  "displayedAttributes": ["*"]
+  "displayedAttributes": ["*"],
+  "rankingRules": ["words", "typo", "exactness", "attribute", "proximity", "sort", "population:desc"],
+  "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 8, "twoTypos": 12}}
 }'
 
 echo "=== Configuring countries ==="
