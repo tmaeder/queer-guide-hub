@@ -4,23 +4,21 @@
  * relative dates, status indicators, and polished empty states.
  */
 
-import { useState, lazy, Suspense } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
-import { alpha } from '@mui/material/styles';
-import Menu from '@mui/material/Menu';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Divider from '@mui/material/Divider';
+import { lazy, Suspense } from 'react';
 import { Plus, Search, RefreshCw, X, Columns3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { ContentListFilters } from './ContentListFilters';
 import { ContentListTable } from './ContentListTable';
 import { useContentListController } from './useContentListController';
@@ -31,197 +29,141 @@ const BulkActionsBar = lazy(() =>
 );
 
 interface ContentListPanelProps {
-  /** Content type ID or undefined for "all content". Falls back to URL :type param. */
   contentTypeId?: string;
-  /** Called when editing an item. Falls back to AdminShell context. */
   onEdit?: (contentType: string, itemId: string) => void;
-  /** Called when creating an item. Falls back to AdminShell context. */
   onCreate?: (contentType: string) => void;
 }
 
 export function ContentListPanel(props: ContentListPanelProps) {
   const c = useContentListController(props);
 
-  const [columnsMenuAnchor, setColumnsMenuAnchor] = useState<HTMLElement | null>(null);
-
   const typeColor = c.config?.color || '#6b7280';
   const Icon = c.config?.icon;
 
   return (
-    <Box>
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
           {Icon && (
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: alpha(typeColor, 0.12),
-                flexShrink: 0,
-              }}
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: `${typeColor}1f` }}
             >
               <Icon size={16} style={{ color: typeColor }} />
-            </Box>
+            </div>
           )}
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          <h5 className="text-xl font-bold">
             {c.config ? c.config.label.plural : 'All Content'}
-          </Typography>
+          </h5>
           {!c.loading && (
-            <Chip
-              label={c.totalCount.toLocaleString()}
-              size="small"
-              sx={{
-                height: 22,
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                bgcolor: alpha(typeColor, 0.08),
-                color: typeColor,
-              }}
-            />
-          )}
-        </Box>
-        <Stack direction="row" spacing={1}>
-          <Tooltip title="Refresh">
-            <IconButton
-              size="small"
-              onClick={() => c.loadItems()}
-              sx={{ transition: 'transform 0.3s', '&:active': { transform: 'rotate(180deg)' } }}
+            <Badge
+              variant="secondary"
+              className="h-[22px] text-xs font-semibold"
+              style={{ backgroundColor: `${typeColor}14`, color: typeColor }}
             >
-              <RefreshCw size={16} />
-            </IconButton>
+              {c.totalCount.toLocaleString()}
+            </Badge>
+          )}
+        </div>
+        <div className="flex flex-row gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => c.loadItems()}>
+                <RefreshCw size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Refresh</TooltipContent>
           </Tooltip>
           <Suspense fallback={null}>
             <BulkEnrichDialog onComplete={() => c.loadItems()} />
           </Suspense>
           {c.config && (
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<Plus size={16} />}
-              onClick={() => c.onCreate(c.config!.id)}
-              sx={{ textTransform: 'none' }}
-            >
+            <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
+              <Plus size={16} className="mr-1" />
               New {c.config.label.singular}
             </Button>
           )}
-        </Stack>
-      </Box>
+        </div>
+      </div>
 
-      {/* ── Toolbar: search + columns menu ──────────────────────── */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <TextField
-          size="small"
-          placeholder={
-            c.config
-              ? `Search ${c.config.label.plural.toLowerCase()}...`
-              : 'Search all content...'
-          }
-          value={c.search}
-          onChange={(e) => c.setSearch(e.target.value)}
-          sx={{ width: { xs: '100%', sm: 320 } }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search size={16} />
-                </InputAdornment>
-              ),
-              endAdornment: c.search ? (
-                <InputAdornment position="end">
-                  <IconButton size="small" onClick={() => c.setSearch('')} edge="end">
-                    <X size={14} />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
-            },
-          }}
-        />
+      <div className="flex items-center gap-4 mb-4">
+        <div className="relative w-full sm:w-[320px]">
+          <Search size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder={c.config ? `Search ${c.config.label.plural.toLowerCase()}...` : 'Search all content...'}
+            value={c.search}
+            onChange={(e) => c.setSearch(e.target.value)}
+            className="pl-7 pr-7 h-9"
+          />
+          {c.search && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+              onClick={() => c.setSearch('')}
+            >
+              <X size={14} />
+            </Button>
+          )}
+        </div>
         {c.selected.size > 0 && (
-          <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+          <p className="text-sm text-muted-foreground whitespace-nowrap">
             {c.selected.size} selected
-          </Typography>
+          </p>
         )}
         {c.contentTypeId && c.allListColumns.length > 0 && (
-          <Box sx={{ ml: 'auto' }}>
-            <Tooltip title="Columns">
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<Columns3 size={14} />}
-                onClick={(e) => setColumnsMenuAnchor(e.currentTarget)}
-                sx={{ textTransform: 'none' }}
-              >
-                Columns
-                {c.hiddenColumns.length > 0 && (
-                  <Typography
-                    component="span"
-                    variant="caption"
-                    sx={{ ml: 0.5, color: 'text.secondary' }}
-                  >
-                    ({c.allListColumns.length - c.hiddenColumns.length}/{c.allListColumns.length})
-                  </Typography>
-                )}
-              </Button>
-            </Tooltip>
-            <Menu
-              anchorEl={columnsMenuAnchor}
-              open={Boolean(columnsMenuAnchor)}
-              onClose={() => setColumnsMenuAnchor(null)}
-              slotProps={{ paper: { sx: { minWidth: 220 } } }}
-            >
-              <Box sx={{ px: 2, py: 1 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+          <div className="ml-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <Columns3 size={14} className="mr-1" />
+                  Columns
+                  {c.hiddenColumns.length > 0 && (
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      ({c.allListColumns.length - c.hiddenColumns.length}/{c.allListColumns.length})
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="min-w-[220px]">
+                <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold">
                   Visible columns
-                </Typography>
-              </Box>
-              <Divider />
-              {c.allListColumns.map((f) => {
-                const visible = !c.hiddenColumns.includes(f.name);
-                return (
-                  <MenuItem
-                    key={f.name}
-                    dense
-                    onClick={() =>
-                      c.setHiddenColumns(
-                        visible
-                          ? [...c.hiddenColumns, f.name]
-                          : c.hiddenColumns.filter((n) => n !== f.name),
-                      )
-                    }
-                  >
-                    <FormControlLabel
-                      control={<Checkbox size="small" checked={visible} sx={{ p: 0.5 }} />}
-                      label={
-                        <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                          {f.label}
-                        </Typography>
-                      }
-                      sx={{ m: 0, pointerEvents: 'none' }}
-                    />
-                  </MenuItem>
-                );
-              })}
-              {c.hiddenColumns.length > 0 && (
-                <>
-                  <Divider />
-                  <MenuItem dense onClick={() => c.setHiddenColumns([])}>
-                    <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                      Show all
-                    </Typography>
-                  </MenuItem>
-                </>
-              )}
-            </Menu>
-          </Box>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {c.allListColumns.map((f) => {
+                  const visible = !c.hiddenColumns.includes(f.name);
+                  return (
+                    <DropdownMenuItem
+                      key={f.name}
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        c.setHiddenColumns(
+                          visible
+                            ? [...c.hiddenColumns, f.name]
+                            : c.hiddenColumns.filter((n) => n !== f.name),
+                        );
+                      }}
+                      className="gap-2"
+                    >
+                      <Checkbox checked={visible} />
+                      <span className="text-sm">{f.label}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+                {c.hiddenColumns.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={() => c.setHiddenColumns([])}>
+                      <span className="text-sm">Show all</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
-      </Box>
+      </div>
 
-      {/* ── Entity filters ──────────────────────────────────────── */}
       <ContentListFilters
         filterFields={c.filterFields}
         filters={c.filters}
@@ -230,7 +172,6 @@ export function ContentListPanel(props: ContentListPanelProps) {
         clearFilters={c.clearFilters}
       />
 
-      {/* ── Table ───────────────────────────────────────────────── */}
       <ContentListTable
         contentTypeId={c.contentTypeId}
         config={c.config}
@@ -269,6 +210,6 @@ export function ContentListPanel(props: ContentListPanelProps) {
           />
         </Suspense>
       )}
-    </Box>
+    </div>
   );
 }
