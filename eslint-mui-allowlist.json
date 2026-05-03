@@ -222,7 +222,6 @@
   "src/pages/Personalities.tsx",
   "src/pages/PersonalityDetail.parts.tsx",
   "src/pages/Places.tsx",
-  "src/pages/ProfessionDetail.tsx",
   "src/pages/ProfileSettings.tsx",
   "src/pages/QueerVillageDetail.parts.tsx",
   "src/pages/SearchResults.tsx",
