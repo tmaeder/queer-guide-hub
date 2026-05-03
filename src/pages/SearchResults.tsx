@@ -104,7 +104,7 @@ export default function SearchResults() {
     cluster_ids: initialClusterIds.length > 0 ? initialClusterIds : undefined,
   });
 
-  const { results, loading, error, errorKind, totalHits } = useSearch(query, {
+  const { results, loading, error, errorKind } = useSearch(query, {
     ...filters,
     types: selectedTab === 'all' ? filters.types : [selectedTab],
   });
