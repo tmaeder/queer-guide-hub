@@ -118,7 +118,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
               <Skeleton />
               <Skeleton />
               <Skeleton />
-            </Box>
+            </div>
           </CardContent>
         </Card>
         

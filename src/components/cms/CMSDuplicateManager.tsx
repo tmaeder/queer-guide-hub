@@ -102,12 +102,6 @@ export function CMSDuplicateManager() {
   const pendingCandidates = duplicateCandidates.filter(c => c.status === 'pending');
   const reviewedCandidates = duplicateCandidates.filter(c => c.status !== 'pending');
 
-  const getScoreColor = (score: number) => {
-    if (score >= 0.9) return 'error.main';
-    if (score >= 0.8) return 'warning.main';
-    return 'success.main';
-  };
-
   const getStatusStyle = (status: string): React.CSSProperties => {
     switch (status) {
       case 'pending': return { backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fde68a' };
@@ -243,7 +237,7 @@ export function CMSDuplicateManager() {
       <div className="text-center">
         <h4 className="text-xl font-bold">
           {Math.round(candidate.similarity_score * 100)}%
-        </p>
+        </h4>
         <p className="text-sm text-muted-foreground">Similarity Score</p>
         <Progress value={candidate.similarity_score * 100} />
       </div>
@@ -393,7 +387,7 @@ export function CMSDuplicateManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h5 className="text-lg font-semibold">Duplicate Detection</p>
+          <h5 className="text-lg font-semibold">Duplicate Detection</h5>
           <p className="text-sm text-muted-foreground">Review and manage potential duplicate content</p>
         </div>
         <Button
@@ -413,7 +407,7 @@ export function CMSDuplicateManager() {
             <CardTitle>Pending Review</CardTitle>
           </CardHeader>
           <CardContent>
-            <h5 className="text-lg font-semibold">{pendingCandidates.length}</p>
+            <h5 className="text-lg font-semibold">{pendingCandidates.length}</h5>
           </CardContent>
         </Card>
 
@@ -424,7 +418,7 @@ export function CMSDuplicateManager() {
           <CardContent>
             <h5 className="text-lg font-semibold">
               {reviewedCandidates.filter(c => c.status === 'merged').length}
-            </p>
+            </h5>
           </CardContent>
         </Card>
 
@@ -435,7 +429,7 @@ export function CMSDuplicateManager() {
           <CardContent>
             <h5 className="text-lg font-semibold">
               {reviewedCandidates.filter(c => c.status === 'not_duplicate').length}
-            </p>
+            </h5>
           </CardContent>
         </Card>
 
@@ -446,7 +440,7 @@ export function CMSDuplicateManager() {
           <CardContent>
             <h5 className="text-lg font-semibold">
               {reviewedCandidates.filter(c => c.status === 'deferred').length}
-            </p>
+            </h5>
           </CardContent>
         </Card>
       </div>
@@ -463,7 +457,7 @@ export function CMSDuplicateManager() {
               <Card>
                 <CardContent>
                   <Check style={{ height: 48, width: 48, color: '#22c55e', margin: '0 auto 16px' }} />
-                  <h6 className="text-base font-semibold">No pending duplicates</p>
+                  <h6 className="text-base font-semibold">No pending duplicates</h6>
                   <p className="text-sm text-muted-foreground">All potential duplicates have been reviewed</p>
                 </CardContent>
               </Card>
