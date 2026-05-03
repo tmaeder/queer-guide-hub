@@ -1,7 +1,4 @@
 import { useMemo, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import {
   Plus,
   Trash2,
@@ -83,7 +80,6 @@ export function ReservationsTab({ tripId }: Props) {
 
   const items = useMemo(() => reservations ?? [], [reservations]);
 
-  // Compute "next up" — the reservation with the soonest future check-in
   const nextUp = useMemo(() => {
     const now = new Date();
     const upcoming = items
@@ -108,25 +104,10 @@ export function ReservationsTab({ tripId }: Props) {
     if (status === 'confirmed') {
       return (
         <Badge variant="outline">
-          <Box
-            component="span"
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.5,
-            }}
-          >
-            <Box
-              component="span"
-              sx={{
-                width: 6,
-                height: 6,
-                borderRadius: '50%',
-                bgcolor: '#10B981',
-              }}
-            />
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
             {t('trips.reservations.status.confirmed')}
-          </Box>
+          </span>
         </Badge>
       );
     }
@@ -144,48 +125,19 @@ export function ReservationsTab({ tripId }: Props) {
   if (items.length === 0) {
     return (
       <>
-        <Box sx={{ mb: 3 }}>
+        <div className="mb-6">
           <ReservationSuggestionsPanel tripId={tripId} />
-        </Box>
-        <Box
-          sx={{
-            textAlign: 'center',
-            py: { xs: 6, md: 10 },
-            px: 3,
-            border: '1.5px dashed',
-            borderColor: 'divider',
-            borderRadius: 3,
-          }}
-        >
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: 2,
-              bgcolor: (theme) =>
-                `${theme.palette.brand?.main || 'hsl(var(--brand))'}1a`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
-              mb: 1.5,
-            }}
-          >
-            <Ticket
-              size={26}
-              style={{ color: 'hsl(var(--brand))' }}
-            />
-          </Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+        </div>
+        <div className="rounded-3xl border border-dashed border-muted px-6 py-12 text-center md:py-20">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-[hsl(var(--brand)/0.1)]">
+            <Ticket size={26} style={{ color: 'hsl(var(--brand))' }} />
+          </div>
+          <h3 className="mb-1 text-lg font-bold">
             {t('trips.reservations.emptyTitle')}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mb: 3, maxWidth: 360, mx: 'auto' }}
-          >
+          </h3>
+          <p className="mx-auto mb-6 max-w-[360px] text-sm text-muted-foreground">
             {t('trips.reservations.emptyDescription')}
-          </Typography>
+          </p>
           <Button
             variant="brand"
             onClick={() => {
@@ -196,7 +148,7 @@ export function ReservationsTab({ tripId }: Props) {
             <Plus size={16} style={{ marginRight: 6 }} />
             {t('trips.reservations.add')}
           </Button>
-        </Box>
+        </div>
         <AddReservationDialog
           open={addOpen}
           onClose={() => {
@@ -211,60 +163,29 @@ export function ReservationsTab({ tripId }: Props) {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Next up card */}
       {nextUp && (
-        <Box
-          sx={{
-            bgcolor: (theme) =>
-              `${theme.palette.brand?.main || 'hsl(var(--brand))'}14`,
-            p: 2,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-          }}
-        >
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: 1.5,
-              bgcolor: 'brand.main',
-              color: 'brand.contrastText',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
+        <div className="flex items-center gap-3 bg-[hsl(var(--brand)/0.08)] p-4">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[hsl(var(--brand))] text-[hsl(var(--brand-foreground,white))]">
             <CalendarClock size={18} />
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              variant="caption"
-              sx={{
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                fontWeight: 700,
-                color: 'brand.main',
-                fontSize: '0.68rem',
-                display: 'block',
-              }}
+          </div>
+          <div className="min-w-0 flex-1">
+            <span
+              className="block text-[0.68rem] font-bold uppercase text-[hsl(var(--brand))]"
+              style={{ letterSpacing: '0.06em' }}
             >
               {t('trips.reservations.nextUp')}
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
-              {nextUp.title}
-            </Typography>
+            </span>
+            <p className="truncate text-sm font-bold">{nextUp.title}</p>
             {nextUp.check_in && (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs text-muted-foreground">
                 {format(new Date(nextUp.check_in), 'EEE, MMM d · HH:mm')}
-              </Typography>
+              </span>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-
 
       {TYPE_ORDER.map((type) => {
         const typeItems = grouped[type];
@@ -272,121 +193,104 @@ export function ReservationsTab({ tripId }: Props) {
 
         const Icon = TYPE_ICONS[type] || Package;
         return (
-          <Box key={type}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.25 }}>
-              <Box
-                sx={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 1.25,
-                  bgcolor: 'action.hover',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+          <div key={type}>
+            <div className="mb-3 flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-accent">
                 <Icon size={14} />
-              </Box>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 700,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                }}
+              </div>
+              <h4
+                className="text-sm font-bold"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
               >
                 {typeLabel(type)}
-              </Typography>
+              </h4>
               <Badge variant="secondary">{typeItems.length}</Badge>
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5 }}>
-            {typeItems.map((res) => (
-              <Card
-                key={res.id}
-                hoverable
-                className="mb-1"
-                onClick={() => { setEditItem(res); setAddOpen(true); }}
-              >
-                <CardContent>
-                  <Box className="flex items-center gap-2">
-                    <Box
-                      className="rounded-full flex items-center justify-center shrink-0"
-                      sx={{ width: 32, height: 32, bgcolor: 'action.hover' }}
-                    >
-                      <Icon size={15} />
-                    </Box>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {typeItems.map((res) => (
+                <Card
+                  key={res.id}
+                  hoverable
+                  className="mb-1"
+                  onClick={() => {
+                    setEditItem(res);
+                    setAddOpen(true);
+                  }}
+                >
+                  <CardContent>
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent">
+                        <Icon size={15} />
+                      </div>
 
-                    <div className="flex-1 min-w-0">
-                      <Box className="flex items-center gap-1.5">
-                        <Typography variant="body2" fontWeight={600} noWrap>
-                          {res.title}
-                        </Typography>
-                        {statusBadge(res.status)}
-                      </Box>
-                      <Box className="flex items-center gap-2 mt-0.5">
-                        {res.check_in && (
-                          <Typography variant="caption" color="text.secondary">
-                            {format(new Date(res.check_in), 'MMM d, HH:mm')}
-                          </Typography>
-                        )}
-                        {res.check_in && res.check_out && (
-                          <Typography variant="caption" color="text.secondary">-</Typography>
-                        )}
-                        {res.check_out && (
-                          <Typography variant="caption" color="text.secondary">
-                            {format(new Date(res.check_out), 'MMM d, HH:mm')}
-                          </Typography>
-                        )}
-                        {res.provider && (
-                          <Typography variant="caption" color="text.secondary">
-                            {res.provider}
-                          </Typography>
-                        )}
-                        {res.confirmation_code && (
-                          <Badge variant="outline">
-                            <Box component="span" sx={{ fontFamily: 'monospace', fontSize: 10 }}>
-                              {res.confirmation_code}
-                            </Box>
-                          </Badge>
-                        )}
-                      </Box>
-                    </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="truncate text-sm font-semibold">{res.title}</p>
+                          {statusBadge(res.status)}
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                          {res.check_in && (
+                            <span>{format(new Date(res.check_in), 'MMM d, HH:mm')}</span>
+                          )}
+                          {res.check_in && res.check_out && <span>-</span>}
+                          {res.check_out && (
+                            <span>{format(new Date(res.check_out), 'MMM d, HH:mm')}</span>
+                          )}
+                          {res.provider && <span>{res.provider}</span>}
+                          {res.confirmation_code && (
+                            <Badge variant="outline">
+                              <span className="font-mono text-[10px]">
+                                {res.confirmation_code}
+                              </span>
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
 
-                    <Box className="flex items-center gap-1 shrink-0">
-                      {res.amount != null && res.currency && (
-                        <Typography variant="body2" fontWeight={700}>
-                          {formatAmount(Number(res.amount), res.currency)}
-                        </Typography>
-                      )}
-                      {res.booking_url && (
-                        <IconButton
-                          size="small"
-                          href={res.booking_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          sx={{ minWidth: 44, minHeight: 44 }}
+                      <div className="flex shrink-0 items-center gap-1">
+                        {res.amount != null && res.currency && (
+                          <p className="text-sm font-bold">
+                            {formatAmount(Number(res.amount), res.currency)}
+                          </p>
+                        )}
+                        {res.booking_url && (
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="icon"
+                            className="h-11 w-11 p-0"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <a
+                              href={res.booking_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="Open booking"
+                            >
+                              <ExternalLink size={14} />
+                            </a>
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-11 w-11 p-0 opacity-50 hover:opacity-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirmId(res.id);
+                          }}
+                          aria-label="Delete"
                         >
-                          <ExternalLink size={14} />
-                        </IconButton>
-                      )}
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteConfirmId(res.id);
-                        }}
-                        sx={{ opacity: 0.5, '&:hover': { opacity: 1 }, minWidth: 44, minHeight: 44 }}
-                      >
-                        <Trash2 size={14} />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            ))}
-            </Box>
-          </Box>
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         );
       })}
 
@@ -414,7 +318,6 @@ export function ReservationsTab({ tripId }: Props) {
         existing={editItem}
       />
 
-      {/* Delete confirmation */}
       <Dialog
         open={!!deleteConfirmId}
         onOpenChange={(open) => !open && setDeleteConfirmId(null)}
@@ -439,6 +342,6 @@ export function ReservationsTab({ tripId }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 }
