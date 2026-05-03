@@ -10,7 +10,6 @@
   "src/pages/CMSRoutePage.tsx",
   "src/pages/HelpHotlines.tsx",
   "src/pages/QueerVillageDetail.parts.tsx",
-  "src/pages/Venues.tsx",
   "src/test/__tests__/test-utils.test.tsx",
   "src/test/test-utils.tsx",
   "src/theme/muiTheme.ts"
